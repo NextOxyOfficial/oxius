@@ -78,6 +78,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? _selectedCity;
   String? _selectedUpazila;
 
+  // Date of birth + gender — editable here so users can reach 100% profile
+  // completion (these are required at registration but were missing from
+  // settings, so social-login / older users had no way to add them).
+  DateTime? _selectedDob;
+  String _gender = '';
+  static const List<String> _genderOptions = ['Male', 'Female', 'Other'];
+
   bool _isInitialLoading = true;
   bool _isLoadingDivisions = false;
   bool _isLoadingCities = false;
@@ -206,6 +213,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _addressController.text = profile.address ?? '';
     _zipController.text = profile.zip ?? '';
     _aboutController.text = profile.about ?? '';
+    _selectedDob = _parseDob(profile.dateOfBirth);
+    _gender = (profile.gender ?? '').trim();
 
     _selectedDivision = _normalizeNullable(profile.state);
     _selectedCity = _normalizeNullable(profile.city);
@@ -220,6 +229,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  DateTime? _parseDob(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    return DateTime.tryParse(raw.trim());
+  }
+
+  String? _formatDob(DateTime? d) {
+    if (d == null) return null;
+    final m = d.month.toString().padLeft(2, '0');
+    final day = d.day.toString().padLeft(2, '0');
+    return '${d.year}-$m-$day';
+  }
+
+  Future<void> _pickDob() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDob ?? DateTime(now.year - 18, now.month, now.day),
+      firstDate: DateTime(1900),
+      lastDate: now,
+    );
+    if (picked != null && mounted) {
+      setState(() => _selectedDob = picked);
     }
   }
 
@@ -332,7 +366,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _normalized(_aboutController.text) != _normalized(original.about) ||
         _normalized(_selectedDivision) != _normalized(original.state) ||
         _normalized(_selectedCity) != _normalized(original.city) ||
-        _normalized(_selectedUpazila) != _normalized(original.upazila);
+        _normalized(_selectedUpazila) != _normalized(original.upazila) ||
+        _normalized(_formatDob(_selectedDob)) !=
+            _normalized(original.dateOfBirth) ||
+        _normalized(_gender) != _normalized(original.gender);
   }
 
   bool get _hasPrivacyChanges {
@@ -597,6 +634,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'instagram_link': _instagramController.text.trim(),
         'whatsapp_link': _whatsappController.text.trim(),
         'about': _aboutController.text.trim(),
+        if (_formatDob(_selectedDob) != null)
+          'date_of_birth': _formatDob(_selectedDob),
+        if (_gender.isNotEmpty) 'gender': _gender,
         'email_public': _userProfile?.emailPublic ?? false,
         'phone_public': _userProfile?.phonePublic ?? false,
         'professional_details_public': _areProfessionalFieldsPublic,
@@ -1422,6 +1462,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       keyboardType: TextInputType.phone,
                     ),
                   ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildSectionCard(
+              title: 'Personal details',
+              subtitle: 'Date of birth and gender.',
+              icon: Icons.cake_outlined,
+              child: Column(
+                children: [
+                  _buildDobField(),
+                  const SizedBox(height: 10),
+                  _buildGenderField(),
                 ],
               ),
             ),
@@ -2501,6 +2554,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         );
       },
+    );
+  }
+
+  String? get _matchedGender {
+    for (final o in _genderOptions) {
+      if (o.toLowerCase() == _gender.trim().toLowerCase()) return o;
+    }
+    return null;
+  }
+
+  Widget _buildGenderField() {
+    return _buildDropdownField(
+      label: 'Gender',
+      hintText: 'Select gender',
+      icon: Icons.wc_outlined,
+      value: _matchedGender,
+      items: _genderOptions,
+      isLoading: false,
+      enabled: true,
+      onChanged: (value) => setState(() => _gender = value ?? ''),
+    );
+  }
+
+  Widget _buildDobField() {
+    final display = _formatDob(_selectedDob) ?? '';
+    return InkWell(
+      onTap: _pickDob,
+      borderRadius: BorderRadius.circular(14),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: 'Date of birth',
+          labelStyle: AppFonts.roboto(
+              fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
+          prefixIcon: const Icon(Icons.cake_outlined,
+              color: _primaryColor, size: 20),
+          suffixIcon: const Icon(Icons.calendar_today_rounded,
+              color: _mutedTextColor, size: 18),
+          filled: true,
+          fillColor: _softSurfaceColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: _cardBorderColor),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: _cardBorderColor),
+          ),
+        ),
+        child: Text(
+          display.isEmpty ? 'Select your date of birth' : display,
+          style: AppFonts.roboto(
+            fontSize: 14,
+            color: display.isEmpty ? _mutedTextColor : _headingTextColor,
+          ),
+        ),
+      ),
     );
   }
 

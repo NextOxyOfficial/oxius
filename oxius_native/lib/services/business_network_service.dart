@@ -110,11 +110,15 @@ class BusinessNetworkService {
     }
   }
 
-  /// Get posts feed with pagination
+  /// Get posts feed with pagination.
+  ///
+  /// [forceRefresh] bypasses the first-page cache so an explicit user refresh
+  /// (pull-to-refresh or tapping the active feed tab) always pulls fresh data.
   static Future<Map<String, dynamic>> getPosts({
     int page = 1,
     int pageSize = 5,
     String? olderThan,
+    bool forceRefresh = false,
   }) async {
     try {
       String url = '$_baseUrl/posts/?page=$page&page_size=$pageSize';
@@ -159,6 +163,7 @@ class BusinessNetworkService {
             fetchData,
             freshTtl: const Duration(seconds: 45),
             staleTtl: const Duration(hours: 6),
+            forceRefresh: forceRefresh,
           );
         } catch (_) {
           data = await fetchData();

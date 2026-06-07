@@ -206,7 +206,10 @@ def social_login(request):
         if referral_code:
             ref_by = User.objects.filter(referral_code=referral_code).first()
 
-        user = User(email=email, name=name, is_active=True)
+        # phone=None (not "") so phone-less social users don't collide on the
+        # UNIQUE phone index. The user is prompted to add a real phone later via
+        # the "complete your profile" flow.
+        user = User(email=email, name=name, is_active=True, phone=None)
         # Social accounts have no usable password until the user sets one.
         user.set_unusable_password()
         _import_photo(user)

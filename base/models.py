@@ -86,7 +86,13 @@ class User(AbstractUser):
     whatsapp_link = models.CharField(null=True, blank=True, default="")
     is_vendor = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    phone = models.CharField(unique=True, max_length=100, default="", blank=True)
+    # null=True so users without a phone (e.g. social-login signups) store NULL
+    # instead of "" — multiple NULLs are allowed under a UNIQUE index, but
+    # multiple "" rows would collide. Without this, the 2nd phone-less user
+    # (social login) fails to save. Existing "" rows are left as-is.
+    phone = models.CharField(
+        unique=True, max_length=100, default="", blank=True, null=True
+    )
     email = models.EmailField(unique=True, default="", null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)

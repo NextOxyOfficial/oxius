@@ -20,6 +20,8 @@ class UserProfile {
   final String? company;
   final String? website;
   final String? about;
+  final String? dateOfBirth; // "YYYY-MM-DD"
+  final String? gender;
   final bool? kyc;
   final String? country;
   final double balance;
@@ -57,6 +59,8 @@ class UserProfile {
     this.company,
     this.website,
     this.about,
+    this.dateOfBirth,
+    this.gender,
     this.kyc,
     this.country,
     this.balance = 0.0,
@@ -96,6 +100,8 @@ class UserProfile {
       company: json['company'],
       website: json['website'],
       about: json['about'],
+      dateOfBirth: json['date_of_birth']?.toString(),
+      gender: json['gender']?.toString(),
       kyc: json['kyc'],
       country: json['country'],
       balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0.0,
@@ -136,6 +142,8 @@ class UserProfile {
       if (company != null) 'company': company,
       if (website != null) 'website': website,
       if (about != null) 'about': about,
+      if (dateOfBirth != null) 'date_of_birth': dateOfBirth,
+      if (gender != null) 'gender': gender,
       if (kyc != null) 'kyc': kyc,
       if (country != null) 'country': country,
       'balance': balance,
@@ -176,6 +184,8 @@ class UserProfile {
     String? company,
     String? website,
     String? about,
+    String? dateOfBirth,
+    String? gender,
     bool? kyc,
     String? country,
     double? balance,
@@ -213,6 +223,8 @@ class UserProfile {
       company: company ?? this.company,
       website: website ?? this.website,
       about: about ?? this.about,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      gender: gender ?? this.gender,
       kyc: kyc ?? this.kyc,
       country: country ?? this.country,
       balance: balance ?? this.balance,

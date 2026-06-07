@@ -397,13 +397,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     _lastScrollPosition = currentScrollPosition;
   }
 
-  Future<void> _loadPosts() async {
+  Future<void> _loadPosts({bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 5);
+    final result = await BusinessNetworkService.getPosts(
+        page: 1, pageSize: 5, forceRefresh: forceRefresh);
 
     if (mounted) {
       setState(() {
@@ -456,9 +457,22 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     _currentPage = 1;
     _lastCreatedAt = null;
     await Future.wait([
-      _loadPosts(),
+      _loadPosts(forceRefresh: true),
       _loadSponsoredProducts(),
     ]);
+  }
+
+  /// Scroll the feed to the top and pull fresh posts — used when the user taps
+  /// the already-active "Recent" feed tab (standard "tap active tab" behaviour).
+  void _scrollToTopAndRefresh() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+    _refreshPosts();
   }
 
   void _openCreatePost() {
@@ -628,8 +642,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
     switch (index) {
       case 0:
-        // Recent - already on this screen.
+        // "Recent" feed tab. Tapping it (even when already selected) now
+        // scrolls to top and reloads fresh posts instead of doing nothing.
         setState(() => _currentNavIndex = 0);
+        _scrollToTopAndRefresh();
         break;
       case 1:
         if (isLoggedIn) {

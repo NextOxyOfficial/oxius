@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../services/business_network_service.dart';
 import '../services/eshop_service.dart';
@@ -480,6 +481,27 @@ class DeepLinkService {
         ),
       );
       return;
+    }
+
+    // Fallback: an internal link we have no dedicated native screen for. Before
+    // this existed, such links (e.g. a notification "Visit" button pointing at a
+    // path we don't map) silently did nothing. Now we open the real web page so
+    // the action always goes somewhere; if that fails, land on home.
+    if (isWebLink) {
+      final opened = await _launchExternal(uri.toString());
+      if (!opened) navigator.pushNamed('/');
+    } else {
+      navigator.pushNamed('/');
+    }
+  }
+
+  Future<bool> _launchExternal(String url) async {
+    final parsed = Uri.tryParse(url);
+    if (parsed == null) return false;
+    try {
+      return await launchUrl(parsed, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      return false;
     }
   }
 
