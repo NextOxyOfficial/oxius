@@ -767,8 +767,14 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     * 5
                 ),
                 interest_score=(F("common_tag_count") * 10),
+                # Demote your own posts well below your network's content. The
+                # value offsets the freshness boost (recency up to +140) a
+                # just-created post would otherwise get, so your own post never
+                # pins itself to the top of your own feed — it still appears,
+                # interspersed below others, and can climb only if it earns real
+                # engagement (engagement_decay).
                 own_post_penalty=Case(
-                    When(author=user, then=Value(-22)),
+                    When(author=user, then=Value(-165)),
                     default=Value(0),
                     output_field=IntegerField(),
                 ),
