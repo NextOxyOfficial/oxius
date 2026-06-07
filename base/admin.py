@@ -1707,34 +1707,6 @@ def custom_index(request, extra_context=None):
 admin.site.index = custom_index
 
 
-@admin.register(UserNotification)
-class UserNotificationAdmin(admin.ModelAdmin):
-    """Read-only history of notifications. To SEND one, use the single
-    "Push Notifications" panel (Home › Base › Push Notifications) — every send
-    there is saved here and delivered with its deep link.
-    """
-    list_display = (
-        "title",
-        "user",
-        "notification_type",
-        "deep_link",
-        "is_read",
-        "created_at",
-    )
-    list_filter = ("notification_type", "is_read", "created_at")
-    search_fields = ("title", "body", "user__email", "deep_link")
-    readonly_fields = (
-        "user",
-        "title",
-        "body",
-        "image",
-        "deep_link",
-        "notification_type",
-        "data",
-        "is_read",
-        "created_at",
-    )
-
-    def has_add_permission(self, request):
-        # Sending lives in one place — the Push Notifications panel.
-        return False
+# NOTE: UserNotification has no admin on purpose — sending happens only in the
+# "Push Notifications" panel (registered on FCMToken), and the saved rows are
+# consumed by the app's Updates tab via the API. No separate admin needed.
