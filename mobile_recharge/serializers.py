@@ -13,13 +13,17 @@ class OperatorSerializer(serializers.ModelSerializer):
     def get_icon(self, obj):
         if obj.icon and obj.icon.name:
             try:
+                url = obj.icon.url
+                # R2 / S3 custom-domain URLs are already absolute — use as-is.
+                if url.startswith("http://") or url.startswith("https://"):
+                    return url
                 request = self.context.get("request")
                 if request:
-                    return request.build_absolute_uri(obj.icon.url)
+                    return request.build_absolute_uri(url)
                 # Fallback to absolute URL in production
                 if not settings.DEBUG:
-                    return f"https://adsyclub.com{obj.icon.url}"
-                return obj.icon.url
+                    return f"https://adsyclub.com{url}"
+                return url
             except Exception as e:
                 print(f"Error getting icon URL for {obj.name}: {e}")
                 return None

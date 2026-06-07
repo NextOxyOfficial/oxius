@@ -18,6 +18,13 @@ def _absolute_media_url(request, media_url):
     if not media_url:
         return None
 
+    # Already an absolute URL (e.g. a Cloudflare R2 / S3 custom-domain URL such as
+    # https://media.adsyclub.com/...). Return it untouched — prepending a host or
+    # running it through build_absolute_uri would corrupt it into
+    # "https://adsyclub.comhttps://media.adsyclub.com/...".
+    if media_url.startswith("http://") or media_url.startswith("https://"):
+        return media_url
+
     if request:
         absolute_url = request.build_absolute_uri(media_url)
         host = request.get_host().split(":")[0].lower()
