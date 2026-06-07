@@ -1,16 +1,75 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from django.db.models import F
+from django.db.models.functions import Greatest
+from django.utils import timezone
 from .models import (
-    BusinessNetworkFollowerModel, 
-    BusinessNetworkPostLike, 
+    BusinessNetworkFollowerModel,
+    BusinessNetworkPostLike,
     BusinessNetworkPostComment,
     BusinessNetworkMindforceComment,
     BusinessNetworkMediaLike,
     BusinessNetworkMediaComment,
-    BusinessNetworkNotification
+    BusinessNetworkNotification,
+    BusinessNetworkPost,
+    UserSavedPosts,
 )
 from base.fcm_service import send_fcm_notification
 from base.models import FCMToken
+
+
+# ---------------------------------------------------------------------------
+# Denormalized feed counters
+# ---------------------------------------------------------------------------
+# Keep BusinessNetworkPost.{like_count, comment_count, save_count, last_activity_at}
+# in sync with their source rows. We use atomic F() .update() so concurrent
+# likes/comments can't lose increments, and .update() (not .save()) so we don't
+# re-trigger the post's slug/id logic. Greatest(..., 0) floors decrements at 0.
+
+def _bump_post_counter(post_id, field, delta, touch_activity):
+    if not post_id:
+        return
+    updates = {}
+    if delta > 0:
+        updates[field] = F(field) + delta
+    else:
+        updates[field] = Greatest(F(field) + delta, 0)
+    if touch_activity:
+        updates["last_activity_at"] = timezone.now()
+    BusinessNetworkPost.objects.filter(pk=post_id).update(**updates)
+
+
+@receiver(post_save, sender=BusinessNetworkPostLike)
+def increment_post_like_count(sender, instance, created, **kwargs):
+    if created:
+        _bump_post_counter(instance.post_id, "like_count", 1, touch_activity=True)
+
+
+@receiver(post_delete, sender=BusinessNetworkPostLike)
+def decrement_post_like_count(sender, instance, **kwargs):
+    _bump_post_counter(instance.post_id, "like_count", -1, touch_activity=False)
+
+
+@receiver(post_save, sender=BusinessNetworkPostComment)
+def increment_post_comment_count(sender, instance, created, **kwargs):
+    if created:
+        _bump_post_counter(instance.post_id, "comment_count", 1, touch_activity=True)
+
+
+@receiver(post_delete, sender=BusinessNetworkPostComment)
+def decrement_post_comment_count(sender, instance, **kwargs):
+    _bump_post_counter(instance.post_id, "comment_count", -1, touch_activity=False)
+
+
+@receiver(post_save, sender=UserSavedPosts)
+def increment_post_save_count(sender, instance, created, **kwargs):
+    if created:
+        _bump_post_counter(instance.post_id, "save_count", 1, touch_activity=True)
+
+
+@receiver(post_delete, sender=UserSavedPosts)
+def decrement_post_save_count(sender, instance, **kwargs):
+    _bump_post_counter(instance.post_id, "save_count", -1, touch_activity=False)
 
 @receiver(post_save, sender=BusinessNetworkFollowerModel)
 def create_follow_notification(sender, instance, created, **kwargs):

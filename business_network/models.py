@@ -306,6 +306,15 @@ class BusinessNetworkPost(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Denormalized engagement counters, kept in sync by signals (see signals.py).
+    # They let the feed rank by engagement without a COUNT(...) join per post on
+    # every request, and power the time-decayed "hot" ranking.
+    like_count = models.PositiveIntegerField(default=0)
+    comment_count = models.PositiveIntegerField(default=0)
+    save_count = models.PositiveIntegerField(default=0)
+    # Last time anyone liked/commented/saved — used to surface freshly active posts.
+    last_activity_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         indexes = [
             models.Index(
@@ -315,6 +324,11 @@ class BusinessNetworkPost(models.Model):
             models.Index(
                 fields=["author", "-created_at"],
                 name="bn_post_author_recent_idx",
+            ),
+            # Speeds up the engagement/time-decay ordering in the society feed.
+            models.Index(
+                fields=["visibility", "is_banned", "-last_activity_at"],
+                name="bn_post_activity_idx",
             ),
         ]
     

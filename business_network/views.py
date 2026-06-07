@@ -8,14 +8,16 @@ from django.db.models import (
     BigIntegerField,
     Case,
     Count,
+    ExpressionWrapper,
     F,
+    FloatField,
     IntegerField,
     Q,
     Subquery,
     Value,
     When,
 )
-from django.db.models.functions import Cast, Mod
+from django.db.models.functions import Cast, Extract, Mod, Now, Power
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -534,9 +536,6 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         if device_level == "low":
             return (
                 queryset.annotate(
-                    like_count=Count("post_likes", distinct=True),
-                    comment_count=Count("post_comments", distinct=True),
-                    follower_count=Count("post_followers", distinct=True),
                     relationship_score=Case(
                         When(author_id__in=users_following, then=Value(150)),
                         When(author_id__in=users_followers, then=Value(115)),
@@ -623,9 +622,6 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
         queryset = (
             queryset.annotate(
-                like_count=Count("post_likes", distinct=True),
-                comment_count=Count("post_comments", distinct=True),
-                follower_count=Count("post_followers", distinct=True),
                 common_tag_count=Count(
                     "tags",
                     filter=Q(tags__tag__in=interest_tags),
@@ -793,12 +789,48 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 "post_likes__user",
                 "post_comments__author",
             )
+            # Time-decayed global engagement ("hotness") from the denormalized
+            # counters — no COUNT join needed. Gravity decay so fresh activity
+            # outweighs stale: engagement / (age_hours + 2)^1.5.
+            .annotate(
+                _age_hours=ExpressionWrapper(
+                    Extract(Now() - F("created_at"), "epoch") / 3600.0,
+                    output_field=FloatField(),
+                ),
+            )
+            .annotate(
+                engagement_decay=ExpressionWrapper(
+                    (
+                        F("like_count") * 3
+                        + F("comment_count") * 5
+                        + F("save_count") * 4
+                    )
+                    / Power(F("_age_hours") + 2.0, 1.5)
+                    * 30.0,
+                    output_field=FloatField(),
+                ),
+            )
+            # Single blended relevance score (Facebook-style) instead of a strict
+            # tier cascade, so a highly-engaged or fresher post can climb past a
+            # quieter one even across relationship tiers, while the large
+            # relationship weights keep your own society near the top.
+            .annotate(
+                final_score=ExpressionWrapper(
+                    F("relationship_score")
+                    + F("recency_score")
+                    + F("community_score")
+                    + F("activity_score")
+                    + F("interest_score")
+                    + F("location_score")
+                    + F("profession_score")
+                    + F("seen_penalty")
+                    + F("own_post_penalty")
+                    + F("engagement_decay"),
+                    output_field=FloatField(),
+                ),
+            )
             .order_by(
-                "-relationship_score",
-                "-freshness_bucket",
-                "-activity_score",
-                "-community_score",
-                "-seen_penalty",
+                "-final_score",
                 "-shuffle_boost",
                 "shuffle_score",
                 "-created_at",
