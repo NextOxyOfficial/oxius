@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/eshop_manager_models.dart';
+import '../utils/api_error.dart';
 
 class EshopManagerService {
   static String get baseUrl => ApiService.baseUrl;
@@ -389,12 +390,13 @@ class EshopManagerService {
           'data': data,
         };
       } else {
-        final error = json.decode(response.body);
-        print('❌ Error response: $error');
+        final apiErr =
+            ApiError.fromResponse(response.statusCode, response.body);
+        print('❌ Error response: ${response.body}');
         return {
           'success': false,
-          'message': error.toString(),
-          'errors': error,
+          'message': apiErr.message,
+          'code': apiErr.code,
         };
       }
     } catch (e) {
@@ -463,11 +465,12 @@ class EshopManagerService {
           'data': data,
         };
       } else {
-        final error = json.decode(response.body);
+        final apiErr =
+            ApiError.fromResponse(response.statusCode, response.body);
         return {
           'success': false,
-          'message': error['message'] ?? 'Failed to create product',
-          'errors': error,
+          'message': apiErr.message,
+          'code': apiErr.code,
         };
       }
     } catch (e) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/widgets/api_error_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
@@ -296,14 +297,16 @@ class _PostGigScreenState extends State<PostGigScreen> {
           );
           Navigator.pop(context, true); // Return true to indicate success
         } else {
+          final msg = (result['error'] ?? 'Failed to post gig').toString();
           setState(() {
-            _showError = result['error'] ?? 'Failed to post gig';
+            _showError = msg;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['error'] ?? 'Failed to post gig'),
-              backgroundColor: Colors.red,
-            ),
+          // Shows the real backend reason; a KYC error opens a sheet with a
+          // "Complete Verification" button instead of a vague red toast.
+          ApiErrorUI.show(
+            context,
+            message: msg,
+            code: result['code']?.toString(),
           );
         }
       }

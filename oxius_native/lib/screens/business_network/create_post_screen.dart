@@ -11,6 +11,8 @@ import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/image_compressor.dart';
 import '../../utils/network_error_handler.dart';
+import '../../utils/api_error.dart';
+import '../../widgets/api_error_ui.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -467,16 +469,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        final customMessage = NetworkErrorHandler.isNetworkError(e)
-            ? null
-            : 'Failed to create post';
-
-        NetworkErrorHandler.showErrorSnackbar(
-          context,
-          e,
-          customMessage: customMessage,
-          onRetry: _createPost,
-        );
+        if (e is ApiError) {
+          // Real backend reason — KYC opens a verification sheet, others toast.
+          ApiErrorUI.show(context, message: e.message, code: e.code);
+        } else if (NetworkErrorHandler.isNetworkError(e)) {
+          NetworkErrorHandler.showErrorSnackbar(context, e,
+              onRetry: _createPost);
+        } else {
+          ApiErrorUI.fromError(context, e);
+        }
       }
     } finally {
       if (mounted) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../models/business_network_models.dart';
 import '../../services/user_search_service.dart';
@@ -597,15 +598,13 @@ class _ReplyInputState extends State<_ReplyInput> {
                                   final avatarUrl =
                                       AppConfig.getAbsoluteUrl(data['photo']);
                                   if (avatarUrl.isNotEmpty) {
-                                    return Image.network(
+                                    return AppImage.network(
                                       avatarUrl,
                                       fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Icon(Icons.person,
-                                            color: Colors.grey.shade400,
-                                            size: 14);
-                                      },
+                                      width: 28,
+                                      height: 28,
+                                      errorWidget: Icon(Icons.person,
+                                          color: Colors.grey.shade400, size: 14),
                                     );
                                   }
                                   return Icon(Icons.person,
@@ -859,19 +858,19 @@ class _CommentItemState extends State<_CommentItem> {
                       final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
 
                       if (avatarUrl.isNotEmpty) {
-                        return Image.network(
+                        return AppImage.network(
                           avatarUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade100,
-                              child: Icon(
-                                Icons.person,
-                                color: Colors.grey.shade400,
-                                size: avatarSize * 0.6,
-                              ),
-                            );
-                          },
+                          width: avatarSize,
+                          height: avatarSize,
+                          errorWidget: Container(
+                            color: Colors.grey.shade100,
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.grey.shade400,
+                              size: avatarSize * 0.6,
+                            ),
+                          ),
                         );
                       }
                       return Container(

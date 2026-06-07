@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
+import '../widgets/api_error_ui.dart';
 import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -339,7 +340,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       }
     } catch (e) {
       print('Error submitting form: $e');
-      _showErrorSnackBar('Failed to create post: ${e.toString()}');
+      // Show the real backend reason (KYC / validation / limits) instead of a
+      // generic "Failed to create post".
+      if (mounted) ApiErrorUI.fromError(context, e);
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

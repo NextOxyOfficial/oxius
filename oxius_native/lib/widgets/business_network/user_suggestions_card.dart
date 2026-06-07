@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../config/app_config.dart';
 import '../../screens/business_network/profile_screen.dart';
@@ -462,24 +463,13 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                 child: AspectRatio(
                   aspectRatio: 1.0,
                   child: imageUrl.isNotEmpty
-                      ? Image.network(
+                      ? AppImage.network(
                           imageUrl,
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
-                          headers: const {
-                            'User-Agent':
-                                'Mozilla/5.0 (compatible; Flutter/3.0)',
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return _buildPlaceholderImage(isMobile);
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            print('❌ Image load error for: $imageUrl');
-                            print('❌ Error: $error');
-                            return _buildPlaceholderImage(isMobile);
-                          },
+                          placeholder: _buildPlaceholderImage(isMobile),
+                          errorWidget: _buildPlaceholderImage(isMobile),
                         )
                       : _buildPlaceholderImage(isMobile),
                 ),

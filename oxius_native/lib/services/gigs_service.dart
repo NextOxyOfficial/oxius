@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import '../utils/api_error.dart';
 
 class GigsService {
   static String get baseUrl => ApiService.baseUrl;
@@ -318,18 +319,15 @@ class GigsService {
         final dynamic data = json.decode(response.body);
         return {'success': true, 'data': data};
       } else {
-        final dynamic errorData = json.decode(response.body);
-        String errorMessage = 'Failed to post gig';
-        if (errorData is Map) {
-          if (errorData['errors'] != null) {
-            errorMessage = errorData['errors'].toString();
-          } else if (errorData['error'] != null) {
-            errorMessage = errorData['error'].toString();
-          } else if (errorData['detail'] != null) {
-            errorMessage = errorData['detail'].toString();
-          }
-        }
-        return {'success': false, 'error': errorMessage};
+        // Surface the real backend reason (KYC pending, limits, validation…)
+        // including the `message` field the old code ignored, plus `code` so the
+        // UI can special-case KYC.
+        final apiErr = ApiError.fromResponse(response.statusCode, response.body);
+        return {
+          'success': false,
+          'error': apiErr.message,
+          'code': apiErr.code,
+        };
       }
     } catch (e) {
       return {'success': false, 'error': e.toString()};

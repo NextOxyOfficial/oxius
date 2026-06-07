@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/sale_post.dart';
+import '../utils/api_error.dart';
 
 class SalePostService {
   final String baseUrl;
@@ -407,10 +408,10 @@ class SalePostService {
           // Parse failed, treat as error
         }
         print('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
-        throw Exception('Validation error: ${response.body}');
+        throw ApiError.fromResponse(response.statusCode, response.body);
       } else {
         print('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
-        throw Exception('Failed to create post');
+        throw ApiError.fromResponse(response.statusCode, response.body);
       }
     } catch (e) {
       print('Error creating sale post: $e');

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import '../utils/api_error.dart';
 
 class WorkspaceService {
   static String get baseUrl => ApiService.baseUrl;
@@ -148,8 +149,7 @@ class WorkspaceService {
       if (response.statusCode == 201 || response.statusCode == 200) {
         return Map<String, dynamic>.from(json.decode(response.body));
       } else {
-        final error = json.decode(response.body);
-        throw Exception(error['detail'] ?? 'Failed to create gig');
+        throw ApiError.fromResponse(response.statusCode, response.body);
       }
     } catch (e) {
       rethrow;
@@ -169,8 +169,7 @@ class WorkspaceService {
       if (response.statusCode == 200) {
         return Map<String, dynamic>.from(json.decode(response.body));
       } else {
-        final error = json.decode(response.body);
-        throw Exception(error['detail'] ?? 'Failed to update gig');
+        throw ApiError.fromResponse(response.statusCode, response.body);
       }
     } catch (e) {
       rethrow;
@@ -275,8 +274,7 @@ class WorkspaceService {
       if (response.statusCode == 201 || response.statusCode == 200) {
         return Map<String, dynamic>.from(json.decode(response.body));
       } else {
-        final error = json.decode(response.body);
-        throw Exception(error['detail'] ?? 'Failed to create order');
+        throw ApiError.fromResponse(response.statusCode, response.body);
       }
     } catch (e) {
       rethrow;
@@ -379,8 +377,7 @@ class WorkspaceService {
       if (response.statusCode == 200) {
         return Map<String, dynamic>.from(json.decode(response.body));
       } else {
-        final error = json.decode(response.body);
-        throw Exception(error['detail'] ?? 'Failed to complete payment');
+        throw ApiError.fromResponse(response.statusCode, response.body);
       }
     } catch (e) {
       rethrow;

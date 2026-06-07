@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import '../models/business_network_models.dart';
 import 'api_service.dart';
 import 'api_cache.dart';
+import '../utils/api_error.dart';
 import 'auth_service.dart';
 
 class BusinessNetworkService {
@@ -340,8 +341,8 @@ class BusinessNetworkService {
           return post;
         }
 
-        throw Exception(
-            'Failed to create post: ${response.statusCode} ${response.data}');
+        throw ApiError.fromResponse(
+            response.statusCode ?? 0, response.data?.toString() ?? '');
       }
 
       final headers = await ApiService.getHeaders();
@@ -373,8 +374,7 @@ class BusinessNetworkService {
         return post;
       }
 
-      throw Exception(
-          'Failed to create post: ${response.statusCode} ${response.body}');
+      throw ApiError.fromResponse(response.statusCode, response.body);
     } catch (e, stackTrace) {
       print('Error creating post: $e');
       print('Stack trace: $stackTrace');

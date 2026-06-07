@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
@@ -197,33 +198,19 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                               );
                             },
                           )
-                        : Image.network(
+                        : AppImage.network(
                             _businessNetworkLogoUrl!,
                             height: 32,
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Text(
-                                'Business Network',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
-                                  letterSpacing: -0.3,
-                                ),
-                              );
-                            },
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Text(
-                                'Business Network',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
-                                  letterSpacing: -0.3,
-                                ),
-                              );
-                            },
+                            errorWidget: const Text(
+                              'Business Network',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
                           ))
                     : const Text(
                         'Business Network',
@@ -503,19 +490,19 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
           ),
           child: ClipOval(
             child: user.profilePicture != null
-                ? Image.network(
+                ? AppImage.network(
                     user.profilePicture!,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: Icon(
-                          Icons.person,
-                          size: 20,
-                          color: Colors.grey.shade400,
-                        ),
-                      );
-                    },
+                    width: 40,
+                    height: 40,
+                    errorWidget: Container(
+                      color: Colors.grey.shade200,
+                      child: Icon(
+                        Icons.person,
+                        size: 20,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
                   )
                 : Container(
                     color: Colors.grey.shade200,
