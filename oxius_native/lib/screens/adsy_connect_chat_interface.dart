@@ -1449,6 +1449,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         if (!mounted) return;
         final goSettings = await showDialog<bool>(
           context: context,
+          // Local navigator — this chat screen lives in an OverlayEntry above
+          // the root Navigator, so a root-navigator dialog would be hidden
+          // behind the overlay until the user pops the page with Back.
+          useRootNavigator: false,
           builder: (ctx) => AlertDialog(
             title: const Row(
               children: [
@@ -3285,6 +3289,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     showDialog(
       context: context,
       barrierColor: Colors.black87,
+      // Local navigator — see _startRecording: the chat screen sits above the
+      // root Navigator in an overlay, so root-navigator dialogs are hidden.
+      useRootNavigator: false,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.zero,
@@ -3404,6 +3411,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 Navigator.pop(context);
                 final confirm = await showDialog<bool>(
                   context: context,
+                  useRootNavigator: false,
                   builder: (context) => AlertDialog(
                     title: const Text('Delete Image'),
                     content: const Text(
