@@ -66,6 +66,14 @@
           }
         },
         {
+          "client_id": "866607241594-etpl995pjasmg1m9bbvc2lpb2jh9g3h6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oxius.app",
+            "certificate_hash": "807b396cda3cb65a55e0fd21f0a1c9345136daa2"
+          }
+        },
+        {
           "client_id": "866607241594-db9qnsee72hn10dr42n854a62jqu0235.apps.googleusercontent.com",
           "client_type": 3
         }
