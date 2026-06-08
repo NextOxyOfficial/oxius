@@ -461,6 +461,46 @@
                   </div>
                 </div>
               </div>
+              <!-- Target locations -->
+              <div class="mt-6">
+                <label class="block text-sm font-semibold text-gray-800 mb-1">
+                  📍 Where should your ad show?
+                </label>
+                <p class="text-xs text-gray-500 mb-3">
+                  Show your sponsorship all over Bangladesh, or target specific
+                  divisions / cities / areas — users see ads matching their address.
+                </p>
+                <div class="flex gap-4 mb-3">
+                  <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="radio" :value="true" v-model="targetAllBangladesh" @change="onTargetModeChange" class="text-amber-500" />
+                    All over Bangladesh
+                  </label>
+                  <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="radio" :value="false" v-model="targetAllBangladesh" @change="onTargetModeChange" class="text-amber-500" />
+                    Specific locations
+                  </label>
+                </div>
+
+                <div v-if="!targetAllBangladesh" class="space-y-2">
+                  <div
+                    v-for="(loc, i) in form.locations"
+                    :key="i"
+                    class="flex flex-col sm:flex-row gap-2 items-stretch"
+                  >
+                    <select v-model="loc.division" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="">Any division</option>
+                      <option v-for="d in bdDivisions" :key="d" :value="d">{{ d }}</option>
+                    </select>
+                    <input v-model="loc.city" type="text" placeholder="City / District (optional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <input v-model="loc.area" type="text" placeholder="Area / Upazila (optional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <button type="button" @click="removeLocationRow(i)" class="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm" title="Remove">✕</button>
+                  </div>
+                  <button type="button" @click="addLocationRow" class="text-sm text-amber-600 font-medium hover:underline">
+                    + Add another location
+                  </button>
+                </div>
+              </div>
+
               <!-- Error message - only show if there's an error and no success -->
               <div
                 v-if="submitError && !submitSuccess"
@@ -611,7 +651,29 @@ const form = ref({
   selectedPackage: 1,
   logo: null,
   banners: [],
+  locations: [],
 });
+
+// Location targeting: empty list = show all over Bangladesh.
+const bdDivisions = [
+  "Dhaka", "Chattogram", "Khulna", "Rajshahi",
+  "Barishal", "Sylhet", "Rangpur", "Mymensingh",
+];
+const targetAllBangladesh = ref(true);
+function addLocationRow() {
+  form.value.locations.push({ division: "", city: "", area: "" });
+}
+function removeLocationRow(index) {
+  form.value.locations.splice(index, 1);
+  if (form.value.locations.length === 0) targetAllBangladesh.value = true;
+}
+function onTargetModeChange() {
+  if (targetAllBangladesh.value) {
+    form.value.locations = [];
+  } else if (form.value.locations.length === 0) {
+    addLocationRow();
+  }
+}
 
 // Logo handling
 const logoFileInput = ref(null);
@@ -633,7 +695,10 @@ const resetForm = () => {
     profileUrl: "",
     selectedPackage: 1,
     logo: null,
+    banners: [],
+    locations: [],
   };
+  targetAllBangladesh.value = true;
   logoPreview.value = null;
   logoFilename.value = "";
   banners.value = [];
@@ -668,7 +733,14 @@ const populateFormForEdit = (sponsor) => {
     profileUrl: sponsor.profile_url || "",
     selectedPackage: sponsor.package?.id || 1,
     logo: null, // Don't pre-populate file input
+    banners: [],
+    locations: (sponsor.locations || []).map((l) => ({
+      division: l.division || "",
+      city: l.city || "",
+      area: l.area || "",
+    })),
   };
+  targetAllBangladesh.value = (form.value.locations.length === 0);
 
   // Set logo preview if exists
   if (sponsor.logo) {
@@ -958,6 +1030,14 @@ const submitFormDirectFetch = async () => {
     if (form.value.logo) {
       formData.append("logo", form.value.logo);
     }
+
+    // Target locations (empty => shown all over Bangladesh)
+    const cleanLocations = targetAllBangladesh.value
+      ? []
+      : (form.value.locations || []).filter(
+          (l) => (l.division || l.city || l.area || "").toString().trim() !== ""
+        );
+    formData.append("locations", JSON.stringify(cleanLocations));
 
     // Try with post method from useApi first
     try {

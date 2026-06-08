@@ -144,6 +144,7 @@ class GoldSponsorService {
     required int packageId,
     XFile? logoFile,
     List<Map<String, dynamic>>? banners,
+    List<Map<String, String>>? locations,
   }) async {
     try {
       final token = AuthService.accessToken;
@@ -173,6 +174,15 @@ class GoldSponsorService {
       if (profileUrl != null && profileUrl.trim().isNotEmpty) {
         request.fields['profile_url'] = profileUrl.trim();
       }
+
+      // Target locations (empty => shown all over Bangladesh)
+      final cleanLocations = (locations ?? [])
+          .where((l) =>
+              (l['division'] ?? '').trim().isNotEmpty ||
+              (l['city'] ?? '').trim().isNotEmpty ||
+              (l['area'] ?? '').trim().isNotEmpty)
+          .toList();
+      request.fields['locations'] = jsonEncode(cleanLocations);
 
       // Add logo file if provided (cross-platform)
       if (logoFile != null) {

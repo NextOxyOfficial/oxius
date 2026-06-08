@@ -36,6 +36,18 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   bool _isLoadingBalance = true;
   double _userBalance = 0;
   String? _error;
+
+  // Location targeting: empty list = shown all over Bangladesh.
+  bool _targetAllBangladesh = true;
+  final List<Map<String, String>> _locations = [];
+  int _locSeq = 0;
+  static const List<String> _bdDivisions = [
+    'Dhaka', 'Chattogram', 'Khulna', 'Rajshahi',
+    'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh',
+  ];
+
+  void _addLocationRow() => setState(
+      () => _locations.add({'_id': '${_locSeq++}', 'division': '', 'city': '', 'area': ''}));
   bool _success = false;
 
   List<SponsorshipPackage> _packages = [];
@@ -183,6 +195,15 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         packageId: _selectedPackageId,
         logoFile: _logoFile, // Pass XFile directly
         banners: bannerData,
+        locations: _targetAllBangladesh
+            ? <Map<String, String>>[]
+            : _locations
+                .map((l) => {
+                      'division': l['division'] ?? '',
+                      'city': l['city'] ?? '',
+                      'area': l['area'] ?? '',
+                    })
+                .toList(),
       );
 
       if (mounted) {
@@ -575,6 +596,10 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   ),
                 ),
 
+              // Target locations
+              _buildLocationSection(),
+              const SizedBox(height: 20),
+
               // Submit Button
               SizedBox(
                 width: double.infinity,
@@ -605,6 +630,113 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLocationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('📍 Where should your ad show?',
+            style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937))),
+        const SizedBox(height: 4),
+        const Text(
+          'Show all over Bangladesh, or target specific divisions/cities — users see ads matching their address.',
+          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: RadioListTile<bool>(
+                value: true,
+                groupValue: _targetAllBangladesh,
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: const Text('All Bangladesh', style: TextStyle(fontSize: 13)),
+                onChanged: (v) => setState(() {
+                  _targetAllBangladesh = true;
+                  _locations.clear();
+                }),
+              ),
+            ),
+            Expanded(
+              child: RadioListTile<bool>(
+                value: false,
+                groupValue: _targetAllBangladesh,
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Specific', style: TextStyle(fontSize: 13)),
+                onChanged: (v) => setState(() {
+                  _targetAllBangladesh = false;
+                  if (_locations.isEmpty) _addLocationRow();
+                }),
+              ),
+            ),
+          ],
+        ),
+        if (!_targetAllBangladesh) ...[
+          ..._locations.map(_buildLocationRow),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _addLocationRow,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add another location'),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildLocationRow(Map<String, String> loc) {
+    return Padding(
+      key: ValueKey(loc['_id']),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: DropdownButtonFormField<String>(
+              value: (loc['division'] ?? '').isEmpty ? null : loc['division'],
+              isExpanded: true,
+              decoration: const InputDecoration(
+                hintText: 'Division',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              ),
+              items: _bdDivisions
+                  .map((d) => DropdownMenuItem(
+                      value: d,
+                      child: Text(d, style: const TextStyle(fontSize: 13))))
+                  .toList(),
+              onChanged: (v) => setState(() => loc['division'] = v ?? ''),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            flex: 4,
+            child: TextFormField(
+              initialValue: loc['city'],
+              style: const TextStyle(fontSize: 13),
+              decoration: const InputDecoration(
+                hintText: 'City (optional)',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              ),
+              onChanged: (v) => loc['city'] = v,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18, color: Colors.red),
+            onPressed: () => setState(() => _locations.remove(loc)),
+          ),
+        ],
       ),
     );
   }
