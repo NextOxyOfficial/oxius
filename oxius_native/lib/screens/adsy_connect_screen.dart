@@ -28,7 +28,6 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   Timer? _pollingTimer;
   Timer? _onlineStatusTimer;
   StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
-  String? _openingChatroomId;
   OverlayEntry? _activeChatOverlay;
   String? _activeOverlayChatroomId;
 
@@ -439,28 +438,26 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   Future<void> _openChat(Map<String, dynamic> chat) async {
     final chatroomId = chat['id']?.toString();
     if (chatroomId == null || chatroomId.isEmpty) return;
-    if (_openingChatroomId != null) return;
+    // Already showing this exact chat — nothing to do.
+    if (_activeOverlayChatroomId == chatroomId) return;
 
-    _openingChatroomId = chatroomId;
-    try {
-      await AdsyConnectService.markChatroomAsRead(chatroomId);
-    } catch (e) {
-      print('Error marking chatroom as read: $e');
-    }
+    // Open the chat overlay immediately so the tap always feels responsive.
+    // Previously we awaited markChatroomAsRead() here while holding an
+    // open-guard; a slow/hung request left that guard stuck, so further taps
+    // were silently ignored until the screen was rebuilt by switching tabs.
+    _showChatOverlay(<String, dynamic>{
+      ...chat,
+      'id': chatroomId,
+      'userId': chat['userId']?.toString() ?? '',
+      'userName': chat['userName']?.toString() ?? 'Unknown',
+    });
 
-    try {
-      if (!mounted) return;
-      _showChatOverlay(<String, dynamic>{
-        ...chat,
-        'id': chatroomId,
-        'userId': chat['userId']?.toString() ?? '',
-        'userName': chat['userName']?.toString() ?? 'Unknown',
-      });
-    } finally {
-      if (_openingChatroomId == chatroomId) {
-        _openingChatroomId = null;
-      }
-    }
+    // Mark as read in the background — never block the tap on a network call.
+    unawaited(
+      AdsyConnectService.markChatroomAsRead(chatroomId).catchError((e) {
+        print('Error marking chatroom as read: $e');
+      }),
+    );
   }
 
   void _showChatOverlay(Map<String, dynamic> chat) {
