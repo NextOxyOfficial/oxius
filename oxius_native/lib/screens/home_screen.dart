@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/footer.dart';
 import '../widgets/profile_completion_sheet.dart';
+import '../widgets/mandatory_profile_sheet.dart';
 import '../widgets/mobile_drawer.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/sale_category.dart';
@@ -98,8 +99,14 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted && !_disposed) {
         _scrollService.initialize(_scrollController);
         _handleInitialScrollIfNeeded();
-        // Show the "complete your profile" sheet once after login.
-        ProfileCompletionSheet.maybeShowPending(context);
+        // Mandatory identity fields first (blocking), then the soft completion
+        // nudge for everything else.
+        () async {
+          await MandatoryProfileSheet.maybeShow(context);
+          if (mounted && !_disposed && context.mounted) {
+            ProfileCompletionSheet.maybeShowPending(context);
+          }
+        }();
         if (widget.autoRefreshOnOpen) {
           _refreshIndicatorKey.currentState?.show();
         }

@@ -37,6 +37,8 @@ class User {
   final int? productLimit;
   final int profileCompletion;
   final List<Map<String, dynamic>> missingSteps;
+  // True when first name, last name, phone and date of birth are all set.
+  final bool mandatoryProfileComplete;
   final bool isSuspended;
   final String suspensionReason;
 
@@ -68,6 +70,7 @@ class User {
     this.productLimit,
     this.profileCompletion = 100,
     this.missingSteps = const [],
+    this.mandatoryProfileComplete = true,
     this.isSuspended = false,
     this.suspensionReason = '',
   });
@@ -135,6 +138,8 @@ class User {
           : const [],
       isSuspended: json['is_suspended'] == true,
       suspensionReason: (json['suspension_reason'] ?? '').toString(),
+      // Default true so older payloads / cached users don't get falsely blocked.
+      mandatoryProfileComplete: json['mandatory_profile_complete'] != false,
     );
   }
 

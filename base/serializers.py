@@ -77,12 +77,25 @@ class ProfileCompletionMixin(serializers.Serializer):
 
     profile_completion = serializers.SerializerMethodField()
     missing_steps = serializers.SerializerMethodField()
+    # True only when the four mandatory identity fields are all filled. The app
+    # shows a blocking "complete your profile" sheet until this is True.
+    mandatory_profile_complete = serializers.SerializerMethodField()
 
     def get_profile_completion(self, obj):
         return compute_profile_completion(obj)[0]
 
     def get_missing_steps(self, obj):
         return compute_profile_completion(obj)[1]
+
+    def get_mandatory_profile_complete(self, obj):
+        if obj is None:
+            return False
+        return bool(
+            (getattr(obj, "first_name", "") or "").strip()
+            and (getattr(obj, "last_name", "") or "").strip()
+            and (getattr(obj, "phone", "") or "").strip()
+            and getattr(obj, "date_of_birth", None)
+        )
 
 
 class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
