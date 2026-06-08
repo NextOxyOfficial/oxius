@@ -365,8 +365,12 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
       final timeDifference = currentTimestamp - callTimestamp;
 
-      // If call is older than 30 seconds, ignore it
-      if (timeDifference > 30000) {
+      // Ignore only genuinely stale calls. The FCM TTL is 60s and the backend
+      // keeps a call ringing for 90s, so the old 30s cap silently dropped valid
+      // calls that arrived a little late on a killed/Doze device (the #1 reason
+      // a pocketed phone "never rang"). Allow up to 60s and ignore small
+      // negative skew (device clock slightly behind the server).
+      if (timeDifference > 60000) {
         _log('🚫 Ignoring old call notification (${timeDifference}ms old)');
         return;
       }

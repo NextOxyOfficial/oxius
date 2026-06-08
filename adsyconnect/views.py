@@ -221,7 +221,18 @@ def _send_call_data_message(*, target_user, payload):
                 str_payload = {k: str(v) if v is not None else '' for k, v in payload.items()}
 
                 channel_name_val = str_payload.get('channel_name', '')
-                collapse_key = f"call_{channel_name_val}" if channel_name_val else None
+                # CRITICAL: an incoming_call ring and a terminal call_status
+                # (cancel/missed/ended) must NOT share a collapse_key. FCM keeps
+                # only the LAST message per collapse_key while a device is
+                # offline/Doze (app killed). If they shared one, a quick
+                # caller-side cancel would replace the still-undelivered
+                # incoming_call and the callee's phone would never ring.
+                msg_type = str_payload.get('type', '')
+                if channel_name_val:
+                    _ck_prefix = 'callstatus' if msg_type == 'call_status' else 'call'
+                    collapse_key = f"{_ck_prefix}_{channel_name_val}"
+                else:
+                    collapse_key = None
 
                 # iOS vs Android split:
                 # Android: data-only message → Dart background isolate fires → shows local
