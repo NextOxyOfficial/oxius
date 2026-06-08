@@ -443,6 +443,9 @@ class AuthService {
       // Continue with local logout even if backend call fails
       print('❌ Logout API call failed: $e');
     } finally {
+      // Detach this device's push token from the account while creds are still
+      // valid, so it stops receiving this account's notifications immediately.
+      await FCMService.removeBackendToken(_accessToken);
       // Clear local auth data
       print('🧹 About to call clearAuthData()...');
       await clearAuthData();

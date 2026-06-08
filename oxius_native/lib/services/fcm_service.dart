@@ -1114,6 +1114,30 @@ class FCMService {
     return null;
   }
 
+  /// Detach this device's FCM token from the (about-to-logout) account on the
+  /// backend so the device stops receiving that account's push immediately.
+  /// Must be called BEFORE the access token is cleared on logout.
+  static Future<void> removeBackendToken(String? accessToken) async {
+    if (accessToken == null || accessToken.isEmpty) return;
+    try {
+      final fcmToken = _fcmToken ?? await _getPersistedFcmToken();
+      await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/remove-fcm-token/'),
+            headers: {
+              'Authorization': 'Bearer $accessToken',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(
+                {if (fcmToken != null && fcmToken.isNotEmpty) 'fcm_token': fcmToken}),
+          )
+          .timeout(const Duration(seconds: 5));
+      _log('🔕 Removed backend FCM token on logout');
+    } catch (e) {
+      _log('removeBackendToken failed (non-fatal): $e');
+    }
+  }
+
   /// Sync the current (or persisted) FCM token to the backend.
   /// Call this after login/session restore so the token upload doesn't get skipped.
   static Future<void> syncTokenWithBackend() async {

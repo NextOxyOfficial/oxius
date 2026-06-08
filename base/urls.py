@@ -148,6 +148,7 @@ urlpatterns = [
     ),
     path("add-user-balance/", postBalance),
     path("save-fcm-token/", save_fcm_token, name="save-fcm-token"),
+    path("remove-fcm-token/", remove_fcm_token, name="remove-fcm-token"),
     path("get-user-nid/", get_nid),
     path("add-user-nid/", add_nid),
     path("update-user-nid/", update_nid),

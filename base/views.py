@@ -5724,6 +5724,24 @@ def delete_search_history_item(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def remove_fcm_token(request):
+    """Detach the device's FCM token from the current user on logout, so this
+    device stops receiving the logged-out account's push immediately. If no
+    token is supplied, all of the user's tokens are removed."""
+    from .models import FCMToken
+
+    fcm_token = str(request.data.get('fcm_token') or '').strip()
+    if fcm_token:
+        deleted, _ = FCMToken.objects.filter(
+            user=request.user, token=fcm_token
+        ).delete()
+    else:
+        deleted, _ = FCMToken.objects.filter(user=request.user).delete()
+    return Response({'removed': deleted}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def save_fcm_token(request):
     """Save or update user's FCM token for push notifications"""
     from .models import FCMToken
@@ -5758,6 +5776,12 @@ def save_fcm_token(request):
             defaults['voip_environment'] = voip_environment
 
         if fcm_token:
+            # One physical device = one account. Detach this token from every
+            # OTHER user so a previously-logged-in account on this device stops
+            # receiving push the moment the current user registers.
+            FCMToken.objects.filter(token=fcm_token).exclude(
+                user=request.user
+            ).delete()
             token_obj, created = FCMToken.objects.update_or_create(
                 user=request.user,
                 token=fcm_token,
@@ -5765,6 +5789,9 @@ def save_fcm_token(request):
             )
         else:
             synthetic_token = f"voip:{voip_token}"
+            FCMToken.objects.filter(voip_token=voip_token).exclude(
+                user=request.user
+            ).delete()
             token_obj, created = FCMToken.objects.update_or_create(
                 user=request.user,
                 voip_token=voip_token,
