@@ -446,13 +446,13 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               ),
               // Centered large avatar
               Positioned(
-                bottom: -48,
+                bottom: -60,
                 left: 0,
                 right: 0,
                 child: Center(
                   child: Container(
-                    width: 96,
-                    height: 96,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
@@ -482,7 +482,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
           ),
           // Profile info below banner
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 74, 16, 16),
             child: Column(
               children: [
                 // Name row

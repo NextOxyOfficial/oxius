@@ -89,10 +89,15 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text('Blocked Users'),
+        title: const Text(
+          'Blocked Users',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF111827),
-        elevation: 0.5,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
       ),
       body: AdsyRefreshIndicator(
         onRefresh: _loadBlockedUsers,
@@ -100,82 +105,185 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         child: _isLoading
             ? const Center(child: AdsyLoadingIndicator())
             : _blockedUsers.isEmpty
-                ? ListView(
+                ? _buildEmptyState()
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(14, 16, 14, 24),
+                    itemCount: _blockedUsers.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) =>
+                        _buildBlockedTile(_blockedUsers[index]),
+                  ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        const SizedBox(height: 110),
+        Center(
+          child: Column(
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFFF1F5F9),
+                ),
+                child: Icon(Icons.block_rounded,
+                    size: 44, color: Colors.grey.shade400),
+              ),
+              const SizedBox(height: 22),
+              const Text(
+                'No blocked users',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 50),
+                child: Text(
+                  "You haven't blocked anyone yet. People you block can't "
+                  "message you or see your activity.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13.5,
+                    height: 1.55,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBlockedTile(Map<String, dynamic> item) {
+    final user = _blockedInfo(item);
+    final userId = (user['id'] ?? item['blocked'] ?? '').toString();
+    final avatarUrl = _avatarUrl(user);
+    final name = _displayName(user);
+    final username = (user['username'] ?? '').toString();
+    final isUnblocking = _unblockingIds.contains(userId);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEDF0F4)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: userId.isEmpty
+              ? null
+              : () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileScreen(userId: userId),
+                    ),
+                  ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFEFF2F6),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: avatarUrl.isNotEmpty
+                      ? Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _avatarInitial(name),
+                        )
+                      : _avatarInitial(name),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 120),
-                      Icon(Icons.block_rounded,
-                          size: 56, color: Colors.grey.shade300),
-                      const SizedBox(height: 12),
                       Text(
-                        'No blocked users',
-                        textAlign: TextAlign.center,
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        username.isNotEmpty ? '@$username' : 'Blocked user',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
+                          color: Colors.grey.shade500,
                         ),
                       ),
                     ],
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: _blockedUsers.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final item = _blockedUsers[index];
-                      final user = _blockedInfo(item);
-                      final userId =
-                          (user['id'] ?? item['blocked'] ?? '').toString();
-                      final avatarUrl = _avatarUrl(user);
-                      final name = _displayName(user);
-                      final username = (user['username'] ?? '').toString();
-                      final isUnblocking = _unblockingIds.contains(userId);
-
-                      return Material(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        child: ListTile(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          leading: CircleAvatar(
-                            backgroundImage: avatarUrl.isNotEmpty
-                                ? NetworkImage(avatarUrl)
-                                : null,
-                            child: avatarUrl.isEmpty
-                                ? Text(name.isNotEmpty
-                                    ? name[0].toUpperCase()
-                                    : 'U')
-                                : null,
-                          ),
-                          title: Text(name),
-                          subtitle: username.isNotEmpty
-                              ? Text('@$username')
-                              : const Text('Blocked user'),
-                          onTap: userId.isEmpty
-                              ? null
-                              : () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          ProfileScreen(userId: userId),
-                                    ),
-                                  ),
-                          trailing: TextButton(
-                            onPressed:
-                                isUnblocking ? null : () => _unblock(item),
-                            child: isUnblocking
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: AdsyLoadingIndicator(strokeWidth: 2),
-                                  )
-                                : const Text('Unblock'),
-                          ),
-                        ),
-                      );
-                    },
                   ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: isUnblocking ? null : () => _unblock(item),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFDC2626),
+                    backgroundColor: const Color(0xFFFEF2F2),
+                    side: const BorderSide(color: Color(0xFFFECACA)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(0, 38),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: isUnblocking
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: AdsyLoadingIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Unblock',
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w700),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _avatarInitial(String name) {
+    return Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'U',
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF64748B),
+        ),
       ),
     );
   }

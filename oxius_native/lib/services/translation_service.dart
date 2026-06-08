@@ -49,6 +49,8 @@ class TranslationService extends ChangeNotifier {
       'popular_packages': 'Popular Packages',
       'all_packages': 'All Packages',
       'recharge_now': 'Recharge Now',
+      'pending_task': 'Pending Task',
+      'my_gigs': 'My Gigs',
     },
     'bn': {
       'premium_access': 'প্রিমিয়াম অ্যাক্সেস',
@@ -88,6 +90,8 @@ class TranslationService extends ChangeNotifier {
       'popular_packages': 'জনপ্রিয় প্যাকেজ',
       'all_packages': 'সব প্যাকেজ',
       'recharge_now': 'রিচার্জ করুন',
+      'pending_task': 'অপেক্ষমাণ কাজ',
+      'my_gigs': 'আমার গিগ',
     },
   };
 

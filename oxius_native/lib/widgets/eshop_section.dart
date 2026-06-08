@@ -204,7 +204,11 @@ class _EshopSectionState extends State<EshopSection> {
           const SizedBox(height: 16),
 
           // 3. Hot Arrivals Section (New & Hot)
-          const HotArrivalsSection(),
+          HotArrivalsSection(
+            // "View All" → open the full eShop (was a no-op because no
+            // callback was passed).
+            onViewAllPressed: () => Navigator.pushNamed(context, '/eshop'),
+          ),
           const SizedBox(height: 16),
 
           // 4. Product Grid
