@@ -12,6 +12,14 @@ class MandatoryProfileSheet {
 
   static Future<void> maybeShow(BuildContext context) async {
     if (_showing) return;
+    // Pull the current status from the backend first. Existing logged-in users
+    // may have cached data from before `mandatory_profile_complete` existed —
+    // that reads as "complete" and hid this sheet, so it only appeared after a
+    // fresh login. Refreshing makes it appear on app open too.
+    try {
+      await UserStateService().refreshUserData();
+    } catch (_) {}
+    if (!context.mounted) return;
     final user = UserStateService().currentUser;
     if (user == null || user.mandatoryProfileComplete) return;
     _showing = true;
@@ -104,7 +112,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'সংরক্ষণ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
+        setState(() => _error = 'সেভ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -200,7 +208,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                               height: 22,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2.5, color: Colors.white))
-                          : const Text('সংরক্ষণ করে চালিয়ে যান',
+                          : const Text('সেভ করুন ',
                               style: TextStyle(
                                   fontSize: 15.5,
                                   fontWeight: FontWeight.w700,
