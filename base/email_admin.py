@@ -172,4 +172,8 @@ class EmailTemplatePreviewAdmin(admin.ModelAdmin):
         """Returns the rendered email HTML for use inside the preview iframe."""
         key = request.GET.get("template", "")
         _, html = render_email_preview(key)
-        return HttpResponse(html)
+        resp = HttpResponse(html)
+        # Allow this response to be framed by the (same-origin) admin preview
+        # page — Django defaults X-Frame-Options to DENY, which blocks the iframe.
+        resp["X-Frame-Options"] = "SAMEORIGIN"
+        return resp
