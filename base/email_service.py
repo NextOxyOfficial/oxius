@@ -11,6 +11,8 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 ADMIN_EMAIL = "alimulislam50@gmail.com"
+SUPPORT_EMAIL = "support@adsyclub.com"
+SUPPORT_PHONE = "+8801896144066"
 SITE_NAME = "AdsyClub"
 SITE_URL = "https://adsyclub.com"
 # Match the AdsyConnect chat header (blue -> indigo -> violet).
@@ -18,7 +20,7 @@ BRAND_COLOR = "#6366F1"          # indigo (solid uses: links, button fallback)
 BRAND_COLOR_DARK = "#8B5CF6"     # violet
 BRAND_GRADIENT = "linear-gradient(135deg,#3B82F6,#6366F1,#8B5CF6)"
 BRAND_GRADIENT_BAR = "linear-gradient(90deg,#3B82F6,#6366F1,#8B5CF6)"
-BRAND_SHADOW = "rgba(99,102,241,0.32)"
+BRAND_SHADOW = "rgba(99,102,241,0.16)"
 
 
 def _logo_url():
@@ -103,6 +105,11 @@ def _base_template(title, body_content, footer_note=""):
 <span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
 <a href="{SITE_URL}/contact-us" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Contact</a>
 </div>
+<div style="margin:0 0 14px;color:#64748b;font-size:12px;line-height:1.7;">
+Need help? <a href="mailto:{SUPPORT_EMAIL}" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-weight:600;">{SUPPORT_EMAIL}</a>
+<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
+<a href="tel:{SUPPORT_PHONE}" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-weight:600;">{SUPPORT_PHONE}</a>
+</div>
 <div style="margin:0 0 6px;color:#9aa5b4;font-size:11px;">&copy; {year} {SITE_NAME}. All rights reserved.</div>
 <div style="margin:0;color:#b8c2cf;font-size:11px;line-height:1.5;">This is an automated message — please do not reply to this email.<br>If you didn't request this, you can safely ignore it.</div>
 </td>
@@ -134,7 +141,7 @@ def _info_table(rows_html):
 def _button(text, url):
     """CTA button"""
     return f"""<div style="text-align:center;margin:28px 0;">
-<a href="{url}" style="display:inline-block;padding:14px 40px;background:{BRAND_GRADIENT};color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 12px {BRAND_SHADOW};">{text}</a>
+<a href="{url}" style="display:inline-block;padding:14px 40px;background:{BRAND_GRADIENT};color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 2px 5px {BRAND_SHADOW};">{text}</a>
 </div>"""
 
 
@@ -621,6 +628,79 @@ def send_mobile_recharge_email(user, amount, phone_number):
 
     html = _base_template(subject, body)
     return _send_email(subject, user.email, f"Mobile recharge successful: ৳{amount}", html)
+
+
+def send_password_changed_email(user):
+    """Confirm to a user that their account password was changed."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = "Your AdsyClub password was changed"
+    text = (
+        f"Hi {name}, the password for your AdsyClub account was just changed. "
+        "If this wasn't you, reset it immediately and contact support."
+    )
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">This is a confirmation that the password for your AdsyClub account was just changed.</p>
+
+{_info_table(
+    _info_row("Account", user.email or "N/A") +
+    _info_row("Changed on", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+)}
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">If you made this change, no further action is needed.</p>
+{_button("Go to AdsyClub", SITE_URL)}
+"""
+
+    html = _base_template(
+        subject, body,
+        "If you did NOT change your password, reset it right away and contact our "
+        f"support team at {SUPPORT_EMAIL} or {SUPPORT_PHONE}.",
+    )
+    return _send_email(subject, user.email, text, html)
+
+
+def send_product_order_email(seller, order, items):
+    """Notify a store owner that they received a new product order."""
+    if not seller or not seller.email:
+        return False
+    name = seller.name or seller.first_name or "there"
+    subject = "🛍️ You received a new order"
+
+    item_rows = ""
+    for it in items:
+        product_name = it.product.name if getattr(it, "product", None) else "Product"
+        item_rows += _info_row(f"{product_name} × {it.quantity}", f"৳{it.price}")
+
+    text = (
+        f"Hi {name}, you received a new order (#{order.order_number}) on AdsyClub. "
+        "Please review and process it."
+    )
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Good news — you've received a <strong>new order</strong> for your store. Please review and process it promptly.</p>
+
+{_info_table(
+    _info_row("Order No", f"#{order.order_number}") +
+    item_rows +
+    _info_row("Buyer", order.name or "N/A") +
+    _info_row("Phone", order.phone or "N/A") +
+    _info_row("Delivery address", order.address or "N/A") +
+    _info_row("Payment", order.get_payment_method_display() if hasattr(order, "get_payment_method_display") else (order.payment_method or "N/A"))
+)}
+
+{_button("Manage Order", SITE_URL + "/shop-manager")}
+"""
+
+    html = _base_template(
+        subject, body,
+        "Process this order promptly to keep your store rating high. Need help? "
+        f"Contact {SUPPORT_EMAIL}.",
+    )
+    return _send_email(subject, seller.email, text, html)
 
 
 def send_test_email(to_email=None):

@@ -34,6 +34,29 @@ class _SampleSeller(_SampleUser):
         return "Karim Hossain"
 
 
+class _SampleProduct:
+    def __init__(self, name):
+        self.name = name
+
+
+class _SampleItem:
+    def __init__(self, name, quantity, price):
+        self.product = _SampleProduct(name)
+        self.quantity = quantity
+        self.price = price
+
+
+class _SampleOrder:
+    order_number = "AC284417"
+    name = "Rahim Uddin"
+    phone = "01700000000"
+    address = "House 12, Road 5, Dhanmondi, Dhaka"
+    payment_method = "cash_on_delivery"
+
+    def get_payment_method_display(self):
+        return "Cash on Delivery"
+
+
 def _registry():
     """(key, label, render_callable) for every previewable email."""
     from . import email_service as es
@@ -57,7 +80,12 @@ def _registry():
         ("pro_subscription", "Pro subscription", lambda: es.send_pro_subscription_email(u, 1, 149)),
         ("referral_reward", "Referral reward", lambda: es.send_referral_reward_email(u, 100, "signup")),
         ("password_reset", "Password reset OTP", lambda: es.send_password_reset_email(u, "123456")),
+        ("password_changed", "Password changed", lambda: es.send_password_changed_email(u)),
         ("mobile_recharge", "Mobile recharge", lambda: es.send_mobile_recharge_email(u, 50, "01700000000")),
+        ("product_order", "Store: new order received", lambda: es.send_product_order_email(
+            s, _SampleOrder(),
+            [_SampleItem("Wireless Earbuds", 1, 1490), _SampleItem("Phone Case", 2, 250)],
+        )),
     ]
 
 

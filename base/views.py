@@ -2162,6 +2162,12 @@ def change_password(request):
     user.set_password(new_password)
     user.save()
 
+    try:
+        from .email_service import send_password_changed_email
+        send_password_changed_email(user)
+    except Exception as e:
+        print(f"Error sending password-changed email: {e}")
+
     return Response(
         {"message": "Password changed successfully"}, status=status.HTTP_200_OK
     )
@@ -3718,6 +3724,19 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                     except Exception as e:
                         print(
                             f"Error creating order notification for seller {seller_id}: {str(e)}"
+                        )
+
+                    # Email the store owner about the new order (their items only)
+                    try:
+                        from .email_service import send_product_order_email
+                        seller_items = (
+                            order.items.select_related("product")
+                            .filter(product__owner=product_owner)
+                        )
+                        send_product_order_email(product_owner, order, seller_items)
+                    except Exception as e:
+                        print(
+                            f"Error sending order email to seller {seller_id}: {str(e)}"
                         )
 
                 except User.DoesNotExist:
