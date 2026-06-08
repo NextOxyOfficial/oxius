@@ -21,9 +21,17 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
   List<ClassifiedPost> _posts = [];
   bool _isLoading = false;
 
-  // Pagination
-  int _currentPage = 1;
-  final int _itemsPerPage = 10;
+  // Status filter tab: all | active | pending | paused | completed
+  String _statusFilter = 'all';
+
+  static const Color _brand = Color(0xFF10B981);
+  static const List<({String key, String label})> _statusTabs = [
+    (key: 'all', label: 'All'),
+    (key: 'active', label: 'Active'),
+    (key: 'pending', label: 'Pending'),
+    (key: 'paused', label: 'Paused'),
+    (key: 'completed', label: 'Completed'),
+  ];
 
   @override
   void initState() {
@@ -171,16 +179,23 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
     );
   }
 
-  List<ClassifiedPost> get _paginatedPosts {
-    final startIndex = (_currentPage - 1) * _itemsPerPage;
-    final endIndex = startIndex + _itemsPerPage;
-    return _posts.sublist(
-      startIndex,
-      endIndex > _posts.length ? _posts.length : endIndex,
-    );
+  /// Normalised status bucket used by both the badge and the filter tabs.
+  String _statusOf(ClassifiedPost p) {
+    final s = p.serviceStatus.toLowerCase();
+    if (s == 'completed') return 'completed';
+    if (!p.activeService) return 'paused';
+    if (s == 'pending') return 'pending';
+    if (s == 'approved') return 'active';
+    return 'other';
   }
 
-  int get _totalPages => (_posts.length / _itemsPerPage).ceil();
+  List<ClassifiedPost> get _filteredPosts {
+    if (_statusFilter == 'all') return _posts;
+    return _posts.where((p) => _statusOf(p) == _statusFilter).toList();
+  }
+
+  int _statusCount(String key) =>
+      key == 'all' ? _posts.length : _posts.where((p) => _statusOf(p) == key).length;
 
   @override
   Widget build(BuildContext context) {
@@ -243,128 +258,212 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
       body: _isLoading
           ? const Center(
               child: AdsyLoadingIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                valueColor: AlwaysStoppedAnimation<Color>(_brand),
               ),
             )
-          : _posts.isEmpty
-              ? _buildEmptyState()
-              : Column(
-                  children: [
-                    // Stats Bar
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      color: Colors.white,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total: ${_posts.length}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF374151),
-                            ),
-                          ),
-                          Text(
-                            'Page $_currentPage of $_totalPages',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Posts List
-                    Expanded(
-                      child: AdsyRefreshIndicator(
-                        onRefresh: _loadPosts,
-                        color: const Color(0xFF10B981),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(4),
-                          itemCount: _paginatedPosts.length,
-                          itemBuilder: (context, index) {
-                            return _buildPostCard(_paginatedPosts[index]);
-                          },
-                        ),
-                      ),
-                    ),
-
-                    // Pagination
-                    if (_totalPages > 1) _buildPagination(),
-                  ],
+          : Column(
+              children: [
+                if (_posts.isNotEmpty) _buildStatusTabs(),
+                Expanded(
+                  child: _posts.isEmpty
+                      ? _buildEmptyState()
+                      : (_filteredPosts.isEmpty
+                          ? _buildNoFilterResults()
+                          : AdsyRefreshIndicator(
+                              onRefresh: _loadPosts,
+                              color: _brand,
+                              child: ListView.builder(
+                                // 2px side padding as requested.
+                                padding:
+                                    const EdgeInsets.fromLTRB(2, 8, 2, 16),
+                                itemCount: _filteredPosts.length,
+                                itemBuilder: (context, index) =>
+                                    _buildPostCard(_filteredPosts[index]),
+                              ),
+                            )),
                 ),
+              ],
+            ),
     );
   }
 
-  Widget _buildEmptyState() {
+  /// Horizontal status filter tabs with live counts.
+  Widget _buildStatusTabs() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(2, 8, 2, 0),
+        child: Row(
+          children: _statusTabs.map((tab) {
+            final selected = _statusFilter == tab.key;
+            final count = _statusCount(tab.key);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: GestureDetector(
+                onTap: () => setState(() => _statusFilter = tab.key),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: selected ? _brand : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: selected
+                          ? _brand
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        tab.label,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: selected
+                              ? Colors.white
+                              : const Color(0xFF475569),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? Colors.white.withValues(alpha: 0.22)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: selected
+                                ? Colors.white
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoFilterResults() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.post_add_outlined,
-            size: 80,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
+          Icon(Icons.filter_alt_off_rounded, size: 56, color: Colors.grey[300]),
+          const SizedBox(height: 14),
           Text(
-            'No posts yet',
+            'No ${_statusFilter == 'all' ? '' : '$_statusFilter '}posts',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
               color: Colors.grey[700],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
-            'Create your first post to get started',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ClassifiedPostFormScreen(),
-                ),
-              );
-              if (result == true) {
-                _loadPosts();
-              }
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('Create Post'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
+            'Try a different status filter.',
+            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 104,
+              height: 104,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _brand.withValues(alpha: 0.08),
+              ),
+              child: Icon(Icons.post_add_rounded,
+                  size: 48, color: _brand.withValues(alpha: 0.65)),
+            ),
+            const SizedBox(height: 22),
+            Text(
+              'No posts yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey[800],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Post a free service ad and reach customers near you.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 13.5, height: 1.5, color: Colors.grey[500]),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ClassifiedPostFormScreen(),
+                    ),
+                  );
+                  if (result == true) _loadPosts();
+                },
+                icon: const Icon(Icons.add_rounded, size: 20),
+                label: const Text('Create Post',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _brand,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPostCard(ClassifiedPost post) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEDF0F4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -597,55 +696,4 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
     );
   }
 
-  Widget _buildPagination() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Previous Button
-          OutlinedButton(
-            onPressed:
-                _currentPage > 1 ? () => setState(() => _currentPage--) : null,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF10B981),
-              side: const BorderSide(color: Color(0xFFE5E7EB)),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: const Text('Previous', style: TextStyle(fontSize: 12)),
-          ),
-
-          // Page Numbers
-          Text(
-            'Page $_currentPage of $_totalPages',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF374151),
-            ),
-          ),
-
-          // Next Button
-          OutlinedButton(
-            onPressed: _currentPage < _totalPages
-                ? () => setState(() => _currentPage++)
-                : null,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF10B981),
-              side: const BorderSide(color: Color(0xFFE5E7EB)),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: const Text('Next', style: TextStyle(fontSize: 12)),
-          ),
-        ],
-      ),
-    );
-  }
 }
