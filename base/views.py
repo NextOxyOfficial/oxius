@@ -197,8 +197,25 @@ def social_login(request):
             print(f"Social photo import failed (non-blocking): {img_err}")
         return False
 
+    # The login page sends create_if_missing=false so it can ask the user to
+    # confirm (with terms acceptance) BEFORE a brand-new account is created. The
+    # register page (and the confirmed login flow) sends true. Defaults to true
+    # for backward compatibility.
+    _cim = request.data.get("create_if_missing")
+    create_if_missing = str(_cim).lower() not in ("false", "0", "no")
+
     user = User.objects.filter(email__iexact=email).first()
     created = False
+
+    if user is None and not create_if_missing:
+        return Response(
+            {
+                "code": "account_not_found",
+                "email": email,
+                "detail": "এই ইমেইলে কোনো অ্যাকাউন্ট খোলা নেই।",
+            },
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     if user is None:
         # Find-or-create: register a brand new social user.

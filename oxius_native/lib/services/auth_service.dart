@@ -202,6 +202,27 @@ class AuthResponse {
   }
 }
 
+/// Result of a social login/registration attempt.
+class SocialAuthOutcome {
+  final AuthResponse? auth; // non-null on success
+  final bool cancelled; // user dismissed the provider picker
+  final bool accountNotFound; // no account for this email (login page confirms)
+  final String? idToken; // reuse to create after the user confirms
+  final String provider;
+  final String? errorMessage; // human-readable failure, if any
+
+  const SocialAuthOutcome({
+    this.auth,
+    this.cancelled = false,
+    this.accountNotFound = false,
+    this.idToken,
+    required this.provider,
+    this.errorMessage,
+  });
+
+  bool get isSuccess => auth != null;
+}
+
 class AuthService {
   static const String _userKey = 'adsyclub_user';
   static const String _tokenKey = 'adsyclub_token';
@@ -315,18 +336,37 @@ class AuthService {
   /// [provider] must be `'google'` or `'facebook'`. Returns `null` if the user
   /// cancels the provider picker. On success the backend find-or-creates the
   /// user and we persist the session just like a normal login.
-  static Future<AuthResponse?> socialLogin(String provider) async {
-    final String? idToken;
-    if (provider == 'google') {
-      idToken = await SocialAuthService.signInWithGoogle();
-    } else if (provider == 'facebook') {
-      idToken = await SocialAuthService.signInWithFacebook();
-    } else {
-      throw Exception('Unsupported provider: $provider');
+  /// Roll back the Google/Facebook provider session (e.g. when the user
+  /// declines the "create account?" confirmation on the login page).
+  static Future<void> socialSignOut() => SocialAuthService.signOut();
+
+  /// Social login / registration.
+  ///
+  /// [createIfMissing]: the login page passes `false` so the backend will NOT
+  /// silently create a brand-new account — instead it returns `accountNotFound`
+  /// and the UI asks the user to confirm (with terms acceptance) before calling
+  /// again with `createIfMissing: true`. The register page passes `true`.
+  ///
+  /// [reuseIdToken]: pass the token from a prior `accountNotFound` outcome so the
+  /// confirmed create doesn't pop the provider picker a second time.
+  static Future<SocialAuthOutcome> socialLogin(
+    String provider, {
+    bool createIfMissing = true,
+    String? reuseIdToken,
+  }) async {
+    String? idToken = reuseIdToken;
+    if (idToken == null) {
+      if (provider == 'google') {
+        idToken = await SocialAuthService.signInWithGoogle();
+      } else if (provider == 'facebook') {
+        idToken = await SocialAuthService.signInWithFacebook();
+      } else {
+        throw Exception('Unsupported provider: $provider');
+      }
     }
 
     if (idToken == null) {
-      return null; // user cancelled
+      return SocialAuthOutcome(cancelled: true, provider: provider);
     }
 
     try {
@@ -336,6 +376,7 @@ class AuthService {
         body: jsonEncode({
           'provider': provider,
           'id_token': idToken,
+          'create_if_missing': createIfMissing,
         }),
       );
 
@@ -343,20 +384,30 @@ class AuthService {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final authResponse = AuthResponse.fromJson(data);
         await _persistAuthData(authResponse);
-        // Clear the logout flag so session restoration works next launch.
-        return authResponse;
-      } else {
-        try {
-          final Map<String, dynamic> errorData = jsonDecode(response.body);
-          throw Exception(
-              errorData['error'] ?? errorData['detail'] ?? 'Social login failed');
-        } catch (_) {
-          throw Exception(
-              'Social login failed (${response.statusCode})');
-        }
+        return SocialAuthOutcome(
+            auth: authResponse, provider: provider, idToken: idToken);
       }
+
+      Map<String, dynamic>? data;
+      try {
+        data = jsonDecode(response.body) as Map<String, dynamic>;
+      } catch (_) {}
+
+      // No account for this email yet — let the login page confirm + create.
+      if (response.statusCode == 404 && data?['code'] == 'account_not_found') {
+        return SocialAuthOutcome(
+            accountNotFound: true, provider: provider, idToken: idToken);
+      }
+
+      // Any other failure: roll back the provider session, surface a clean msg.
+      await SocialAuthService.signOut();
+      final msg = (data?['error'] ?? data?['detail'] ?? '').toString().trim();
+      return SocialAuthOutcome(
+        provider: provider,
+        errorMessage:
+            msg.isNotEmpty ? msg : 'সাইন ইন করা যায়নি। আবার চেষ্টা করুন।',
+      );
     } catch (e) {
-      // Roll back the firebase/provider session if backend exchange failed.
       await SocialAuthService.signOut();
       rethrow;
     }

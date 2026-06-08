@@ -124,9 +124,42 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     });
 
     try {
-      final authResponse = await AuthService.socialLogin(provider);
+      // On the LOGIN page we never silently register: ask the backend not to
+      // create, and if there's no account, confirm with the user (+ terms).
+      var outcome =
+          await AuthService.socialLogin(provider, createIfMissing: false);
 
-      // Null means the user cancelled the provider picker — silently abort.
+      if (outcome.cancelled) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+
+      if (outcome.accountNotFound) {
+        if (mounted) setState(() => _isLoading = false);
+        final confirmed = await _confirmCreateSocialAccount();
+        if (confirmed != true) {
+          await AuthService.socialSignOut();
+          return;
+        }
+        if (mounted) setState(() => _isLoading = true);
+        outcome = await AuthService.socialLogin(
+          provider,
+          createIfMissing: true,
+          reuseIdToken: outcome.idToken,
+        );
+      }
+
+      if (outcome.errorMessage != null) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = outcome.errorMessage!;
+          });
+        }
+        return;
+      }
+
+      final authResponse = outcome.auth;
       if (authResponse == null) {
         if (mounted) setState(() => _isLoading = false);
         return;
@@ -173,6 +206,79 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Login-page only: confirm creating a brand-new account for an unregistered
+  /// email, gated on accepting the terms & privacy policy.
+  Future<bool?> _confirmCreateSocialAccount() {
+    bool agreed = false;
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            'নতুন অ্যাকাউন্ট তৈরি করবেন?',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'এই ইমেইলে কোনো অ্যাকাউন্ট খোলা নেই। আপনি কি একটি নতুন '
+                'অ্যাকাউন্ট তৈরি করতে চান?',
+                style: TextStyle(
+                    fontSize: 14, height: 1.5, color: Color(0xFF475569)),
+              ),
+              const SizedBox(height: 14),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => setLocal(() => agreed = !agreed),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: agreed,
+                          onChanged: (v) =>
+                              setLocal(() => agreed = v ?? false),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'আমি শর্তাবলী ও গোপনীয়তা নীতিতে সম্মত।',
+                          style: TextStyle(
+                              fontSize: 13, color: Color(0xFF334155)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('বাতিল'),
+            ),
+            FilledButton(
+              onPressed: agreed ? () => Navigator.pop(ctx, true) : null,
+              style: FilledButton.styleFrom(backgroundColor: _primaryColor),
+              child: const Text('অ্যাকাউন্ট তৈরি করুন'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override

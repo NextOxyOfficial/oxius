@@ -405,9 +405,27 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      final authResponse = await AuthService.socialLogin(provider);
+      // The register page intentionally creates the account if it's new —
+      // no extra confirmation needed here.
+      final outcome =
+          await AuthService.socialLogin(provider, createIfMissing: true);
 
-      // Null means the user cancelled the provider picker.
+      if (outcome.cancelled) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+
+      if (outcome.errorMessage != null) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = outcome.errorMessage!;
+          });
+        }
+        return;
+      }
+
+      final authResponse = outcome.auth;
       if (authResponse == null) {
         if (mounted) setState(() => _isLoading = false);
         return;
