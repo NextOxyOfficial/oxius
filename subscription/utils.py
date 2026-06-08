@@ -7,7 +7,7 @@ from .models import Subscription, SubscriptionPlan, SubscriptionLog
 STORE_SUBSCRIPTION_EXPIRED_CODE = 'STORE_SUBSCRIPTION_EXPIRED'
 STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN = (
     'এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। '
-    'সাবস্ক্রিপশন নবায়ন করলে স্টোরটি আবার দেখা যাবে।'
+    'সাবস্ক্রিপশন রিনিউ করলে স্টোরটি আবার দেখা যাবে।'
 )
 
 

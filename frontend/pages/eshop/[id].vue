@@ -736,7 +736,7 @@ const isDescriptionExpanded = ref(false);
 const storeUnavailableMessage = ref(null);
 const storeExpiredCode = "STORE_SUBSCRIPTION_EXPIRED";
 const defaultStoreExpiredMessage =
-  "এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন নবায়ন করলে স্টোরটি আবার দেখা যাবে।";
+  "এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন রিনিউ করলে স্টোরটি আবার দেখা যাবে।";
 
 // Sidebar state
 const isSidebarOpen = ref(false);

@@ -17,7 +17,7 @@ class EshopService {
   static const String storeSubscriptionExpiredCode =
       'STORE_SUBSCRIPTION_EXPIRED';
   static const String defaultStoreSubscriptionExpiredMessage =
-      'এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন নবায়ন করলে স্টোরটি আবার দেখা যাবে।';
+      'এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন রিনিউ করলে স্টোরটি আবার দেখা যাবে।';
 
   static Future<Map<String, String>> _jsonHeaders() async {
     final headers = await ApiService.getHeaders();
