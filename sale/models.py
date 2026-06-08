@@ -219,22 +219,33 @@ class SalePost(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Email the owner when their classified ad is approved (pending -> active)
+        has_email = self.user and getattr(self.user, "email", "")
+        # New "Amar sheba" ad submitted -> confirm it's received & under review.
+        if previous_status is None and self.status == "pending" and has_email:
+            try:
+                from base.email_service import send_post_received_email, SITE_URL
+                send_post_received_email(
+                    self.user, self.title, "Amar sheba ad",
+                    f"{SITE_URL}/sale/{self.slug}",
+                )
+            except Exception as e:
+                print(f"Error sending Amar sheba received email: {e}")
+
+        # Ad approved (pending -> active): now live.
         if (
             previous_status
             and previous_status != self.status
             and self.status == "active"
-            and self.user
-            and getattr(self.user, "email", "")
+            and has_email
         ):
             try:
                 from base.email_service import send_post_approved_email, SITE_URL
                 send_post_approved_email(
-                    self.user, self.title, "classified ad",
+                    self.user, self.title, "Amar sheba ad",
                     f"{SITE_URL}/sale/{self.slug}",
                 )
             except Exception as e:
-                print(f"Error sending classified approved email: {e}")
+                print(f"Error sending Amar sheba approved email: {e}")
 
 
 class SaleImage(models.Model):

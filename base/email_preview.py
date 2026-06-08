@@ -140,11 +140,10 @@ def _registry():
         ("withdraw_rejected", "Withdraw declined + refund", lambda: es.send_withdraw_rejected_email(
             u, 500, "TXN10002", "Bank details could not be verified.")),
         ("kyc_received", "KYC received (under review)", lambda: es.send_kyc_received_email(u)),
-        ("post_approved", "Post / listing approved", lambda: es.send_post_approved_email(
-            u, "iPhone 13 Pro - like new", "classified ad", "https://adsyclub.com/sale/iphone-13-pro")),
-        ("post_rejected", "Post / listing rejected", lambda: es.send_post_rejected_email(
-            u, "iPhone 13 Pro - like new", "classified ad", "Images did not match the description.",
-            "https://adsyclub.com/sale/iphone-13-pro")),
+        ("sale_received", "Amar sheba ad: under review", lambda: es.send_post_received_email(
+            u, "iPhone 13 Pro - like new", "Amar sheba ad", "https://adsyclub.com/sale/iphone-13-pro")),
+        ("sale_approved", "Amar sheba ad: approved", lambda: es.send_post_approved_email(
+            u, "iPhone 13 Pro - like new", "Amar sheba ad", "https://adsyclub.com/sale/iphone-13-pro")),
         ("driver_approved", "Rideshare: driver approved", lambda: es.send_driver_approved_email(u)),
         ("driver_rejected", "Rideshare: driver not approved", lambda: es.send_driver_rejected_email(
             u, "Driving license could not be verified.")),

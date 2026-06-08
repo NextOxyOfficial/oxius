@@ -882,6 +882,30 @@ def send_post_rejected_email(user, title, kind="post", reason="", link=""):
     return _send_email(subject, user.email, text, html)
 
 
+def send_post_received_email(user, title, kind="post", link=""):
+    """Confirm a post/listing was received and is under review."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = f"Your {kind} is under review"
+    text = f"Hi {name}, we've received your {kind} \"{title}\" and it is now under review."
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thanks for your submission! We've received your {kind} and our team is reviewing it. You'll get an email the moment it's approved and live.</p>
+
+{_info_table(
+    _info_row(kind.capitalize(), title or "—") +
+    _info_row("Status", "Under review") +
+    _info_row("Submitted", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+)}
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">Reviews are usually completed within a few hours.</p>
+{_button("View submission", link or SITE_URL)}
+"""
+    html = _base_template(subject, body, "You don't need to do anything else right now.")
+    return _send_email(subject, user.email, text, html)
+
+
 def send_driver_approved_email(user):
     """Notify a rideshare driver that their application was approved."""
     if not user or not user.email:
