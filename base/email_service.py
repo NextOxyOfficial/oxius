@@ -47,7 +47,7 @@ def _base_template(title, body_content, footer_note=""):
 
     note_html = ""
     if footer_note:
-        note_html = f"""<tr><td style="padding:0 36px 28px;">
+        note_html = f"""<tr><td class="ec-pad" style="padding:0 36px 28px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;border-radius:10px;">
 <tr><td style="padding:14px 18px;"><p style="margin:0;color:#64748b;font-size:13px;line-height:1.55;">{footer_note}</p></td></tr>
 </table></td></tr>"""
@@ -59,9 +59,15 @@ def _base_template(title, body_content, footer_note=""):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="x-apple-disable-message-reformatting">
 <title>{title}</title>
+<style>
+@media only screen and (max-width:600px) {{
+  .ec-wrap {{ padding-left:4px !important; padding-right:4px !important; }}
+  .ec-pad {{ padding-left:16px !important; padding-right:16px !important; }}
+}}
+</style>
 </head>
 <body style="margin:0;padding:0;background-color:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#eef1f5;padding:32px 14px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="ec-wrap" style="background-color:#eef1f5;padding:32px 14px;">
 <tr><td align="center">
 <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:600px;max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
 
@@ -70,7 +76,7 @@ def _base_template(title, body_content, footer_note=""):
 
 <!-- Logo header -->
 <tr>
-<td style="padding:30px 32px 22px;text-align:center;background-color:#ffffff;border-bottom:1px solid #eef1f5;">
+<td class="ec-pad" style="padding:30px 32px 22px;text-align:center;background-color:#ffffff;border-bottom:1px solid #eef1f5;">
 <img src="{logo}" alt="{SITE_NAME}" height="42" style="height:42px;width:auto;border:0;display:inline-block;outline:none;text-decoration:none;">
 <div style="margin:10px 0 0;color:#94a3b8;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;">Social Business Network</div>
 </td>
@@ -78,14 +84,14 @@ def _base_template(title, body_content, footer_note=""):
 
 <!-- Title -->
 <tr>
-<td style="padding:28px 36px 0;">
+<td class="ec-pad" style="padding:28px 36px 0;">
 <h2 style="margin:0;color:#0f172a;font-size:21px;font-weight:700;letter-spacing:-0.2px;">{title}</h2>
 </td>
 </tr>
 
 <!-- Body -->
 <tr>
-<td style="padding:18px 36px 30px;">
+<td class="ec-pad" style="padding:18px 36px 30px;">
 {body_content}
 </td>
 </tr>
@@ -94,7 +100,7 @@ def _base_template(title, body_content, footer_note=""):
 
 <!-- Footer -->
 <tr>
-<td style="background-color:#f8fafc;padding:30px 32px;border-top:1px solid #e8edf3;text-align:center;">
+<td class="ec-pad" style="background-color:#f8fafc;padding:30px 32px;border-top:1px solid #e8edf3;text-align:center;">
 <div style="margin:0 0 4px;color:#0f172a;font-size:16px;font-weight:800;letter-spacing:-0.2px;">{SITE_NAME}</div>
 <div style="margin:0 0 16px;color:#94a3b8;font-size:12px;">Bangladesh's Social Business Network</div>
 <div style="margin:0 0 16px;">
