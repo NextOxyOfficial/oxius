@@ -223,10 +223,24 @@ def social_login(request):
         if referral_code:
             ref_by = User.objects.filter(referral_code=referral_code).first()
 
+        # Seed first/last from the provider's given/family name (or split the
+        # display name) as a starting point. The user's own first/last is the
+        # source of truth and `name` is derived from it (see User.save()), so we
+        # never store the provider's display name on its own.
+        given = (decoded.get("given_name") or "").strip()
+        family = (decoded.get("family_name") or "").strip()
+        if not given and not family and name:
+            _parts = name.split()
+            given = _parts[0]
+            family = " ".join(_parts[1:]) if len(_parts) > 1 else ""
+
         # phone=None (not "") so phone-less social users don't collide on the
         # UNIQUE phone index. The user is prompted to add a real phone later via
         # the "complete your profile" flow.
-        user = User(email=email, name=name, is_active=True, phone=None)
+        user = User(
+            email=email, first_name=given, last_name=family,
+            is_active=True, phone=None,
+        )
         # Social accounts have no usable password until the user sets one.
         user.set_unusable_password()
         _import_photo(user)
@@ -256,10 +270,21 @@ def social_login(request):
                 {"error": "Your account is inactive. Please contact support."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        # Backfill name / photo for existing users who never set them.
+        # Backfill first/last (and photo) for existing users who never set them —
+        # `name` is derived from first/last, so we never write the provider name
+        # on its own and never overwrite a name the user already entered.
         changed = False
-        if name and not (user.name or "").strip():
-            user.name = name
+        given = (decoded.get("given_name") or "").strip()
+        family = (decoded.get("family_name") or "").strip()
+        if not given and not family and name:
+            _parts = name.split()
+            given = _parts[0]
+            family = " ".join(_parts[1:]) if len(_parts) > 1 else ""
+        if given and not (user.first_name or "").strip():
+            user.first_name = given
+            changed = True
+        if family and not (user.last_name or "").strip():
+            user.last_name = family
             changed = True
         if picture and not user.image:
             changed = _import_photo(user) or changed

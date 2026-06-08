@@ -161,6 +161,16 @@ class User(AbstractUser):
         if not self.username or "@" in self.username:
             self.username = generate_unique_username(self)
 
+        # The display `name` always follows the user's own first/last name. This
+        # is the single source of truth, so a social-login (Google/Facebook)
+        # provider name can never be stored separately or override what the user
+        # entered. When first/last are both empty we leave `name` as-is.
+        derived_name = (
+            f"{(self.first_name or '').strip()} {(self.last_name or '').strip()}".strip()
+        )
+        if derived_name:
+            self.name = derived_name
+
         if not self.referral_code:
             # Generate a unique referral code
             while True:
