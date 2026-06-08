@@ -918,31 +918,8 @@ class MessageViewSet(viewsets.ModelViewSet):
         chatroom.last_message_preview = message.get_preview()
         chatroom.save()
         
-        # Send push notification to receiver (only if they're not in this chat)
-        try:
-            is_receiver_in_chat = ActiveChatSession.is_user_in_chat(message.receiver, chatroom)
-            
-            if is_receiver_in_chat:
-                print(f'📍 Skipping push notification - receiver is in this chat')
-            else:
-                from base.fcm_service import send_message_notification
-                
-                sender_name = request.user.get_full_name() or request.user.username or request.user.email
-                print(f'📤 Attempting to send chat notification to {message.receiver.email}')
-                send_message_notification(
-                    recipient_user=message.receiver,
-                    sender_user=request.user,
-                    sender_name=sender_name,
-                    message_text=message.get_preview(),
-                    chat_id=str(chatroom.id)
-                )
-                print(f'✅ Chat notification sent to {message.receiver.email}')
-        except Exception as e:
-            print(f'❌ Error sending chat notification: {e}')
-            import traceback
-            traceback.print_exc()
-        
-        # Return full message serialization with all fields
+        # Realtime delivery first (in-process, fast) so the sender's request is
+        # never held up by anything network-bound.
         output_serializer = MessageSerializer(message, context={'request': request})
         _broadcast_to_user(
             message.receiver_id,
@@ -951,6 +928,30 @@ class MessageViewSet(viewsets.ModelViewSet):
                 'message': output_serializer.data,
             },
         )
+
+        # Push notification is offloaded to Celery. Each FCM send is a blocking
+        # network call, and sending them inline here intermittently exceeded the
+        # client's HTTP timeout (the message was still saved, so it "delivered"
+        # but the request reported a timeout). The task re-checks whether the
+        # receiver is currently in this chat before notifying.
+        try:
+            from .tasks import send_chat_push_notification
+
+            sender_name = (
+                request.user.get_full_name()
+                or request.user.username
+                or request.user.email
+            )
+            send_chat_push_notification.delay(
+                receiver_id=str(message.receiver_id),
+                sender_id=str(request.user.id),
+                sender_name=sender_name,
+                message_preview=message.get_preview(),
+                chatroom_id=str(chatroom.id),
+            )
+        except Exception as e:
+            logger.warning('Failed to enqueue chat push notification: %s', e)
+
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['post'])
