@@ -17,56 +17,95 @@ BRAND_COLOR = "#10B981"
 BRAND_COLOR_DARK = "#059669"
 
 
+def _logo_url():
+    """The current AdsyClub brand logo (as shown on the site), with a stable
+    static fallback so emails always render a logo even if the DB is unreachable."""
+    try:
+        from .models import Logo
+        logo = Logo.objects.first()
+        if logo and logo.image:
+            url = logo.image.url
+            return url if url.startswith("http") else SITE_URL + url
+    except Exception:
+        pass
+    return f"{SITE_URL}/static/frontend/images/logo.png"
+
+
 def _base_template(title, body_content, footer_note=""):
-    """Base HTML email template - professional white/light gray theme"""
+    """Base HTML email — international-grade layout: brand accent, AdsyClub logo
+    header, clean body and a professional multi-link footer. Built with tables +
+    inline styles for maximum email-client compatibility."""
+    logo = _logo_url()
+    year = timezone.now().year
+
+    note_html = ""
+    if footer_note:
+        note_html = f"""<tr><td style="padding:0 36px 28px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;border:1px solid #eef1f5;border-left:3px solid {BRAND_COLOR};border-radius:10px;">
+<tr><td style="padding:14px 16px;"><p style="margin:0;color:#64748b;font-size:13px;line-height:1.55;">{footer_note}</p></td></tr>
+</table></td></tr>"""
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="x-apple-disable-message-reformatting">
 <title>{title}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f3f4f6;padding:32px 16px;">
+<body style="margin:0;padding:0;background-color:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#eef1f5;padding:32px 14px;">
 <tr><td align="center">
-<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:600px;max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
 
-<!-- Header -->
+<!-- Brand accent -->
+<tr><td style="height:5px;background:linear-gradient(90deg,{BRAND_COLOR},{BRAND_COLOR_DARK});font-size:0;line-height:0;">&nbsp;</td></tr>
+
+<!-- Logo header -->
 <tr>
-<td style="background:linear-gradient(135deg,{BRAND_COLOR},{BRAND_COLOR_DARK});padding:28px 32px;text-align:center;">
-<h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.3px;">{SITE_NAME}</h1>
-<p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:12px;letter-spacing:0.5px;">Social Business Network</p>
+<td style="padding:30px 32px 22px;text-align:center;background-color:#ffffff;border-bottom:1px solid #eef1f5;">
+<img src="{logo}" alt="{SITE_NAME}" height="42" style="height:42px;width:auto;border:0;display:inline-block;outline:none;text-decoration:none;">
+<div style="margin:10px 0 0;color:#94a3b8;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;">Social Business Network</div>
 </td>
 </tr>
 
-<!-- Title Bar -->
+<!-- Title -->
 <tr>
-<td style="padding:24px 32px 0;border-bottom:1px solid #e5e7eb;">
-<h2 style="margin:0 0 16px;color:#111827;font-size:20px;font-weight:600;">{title}</h2>
+<td style="padding:28px 36px 0;">
+<h2 style="margin:0;color:#0f172a;font-size:21px;font-weight:700;letter-spacing:-0.2px;">{title}</h2>
 </td>
 </tr>
 
-<!-- Body Content -->
+<!-- Body -->
 <tr>
-<td style="padding:24px 32px;">
+<td style="padding:18px 36px 30px;">
 {body_content}
 </td>
 </tr>
 
-<!-- Footer Note -->
-{"<tr><td style='padding:0 32px 24px;'><div style='background-color:#f9fafb;border-radius:8px;padding:16px;border-left:3px solid " + BRAND_COLOR + ";'><p style='margin:0;color:#6b7280;font-size:13px;line-height:1.5;'>" + footer_note + "</p></div></td></tr>" if footer_note else ""}
+{note_html}
 
 <!-- Footer -->
 <tr>
-<td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-<p style="margin:0 0 8px;color:#9ca3af;font-size:12px;">© {timezone.now().year} {SITE_NAME}. All rights reserved.</p>
-<p style="margin:0;color:#9ca3af;font-size:11px;">
-<a href="{SITE_URL}" style="color:{BRAND_COLOR};text-decoration:none;">{SITE_URL}</a>
-</p>
+<td style="background-color:#f8fafc;padding:30px 32px;border-top:1px solid #e8edf3;text-align:center;">
+<div style="margin:0 0 4px;color:#0f172a;font-size:16px;font-weight:800;letter-spacing:-0.2px;">{SITE_NAME}</div>
+<div style="margin:0 0 16px;color:#94a3b8;font-size:12px;">Bangladesh's Social Business Network</div>
+<div style="margin:0 0 16px;">
+<a href="{SITE_URL}" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Website</a>
+<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
+<a href="{SITE_URL}/faq" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Help Center</a>
+<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
+<a href="{SITE_URL}/privacy-policy" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Privacy</a>
+<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
+<a href="{SITE_URL}/contact-us" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Contact</a>
+</div>
+<div style="margin:0 0 6px;color:#9aa5b4;font-size:11px;">&copy; {year} {SITE_NAME}. All rights reserved.</div>
+<div style="margin:0;color:#b8c2cf;font-size:11px;line-height:1.5;">This is an automated message — please do not reply to this email.<br>If you didn't request this, you can safely ignore it.</div>
 </td>
 </tr>
 
 </table>
+<div style="color:#aab3c0;font-size:11px;margin-top:18px;">Sent with care by {SITE_NAME} &middot; <a href="{SITE_URL}" style="color:#8a96a5;text-decoration:none;">{SITE_URL}</a></div>
 </td></tr>
 </table>
 </body>
@@ -90,8 +129,8 @@ def _info_table(rows_html):
 
 def _button(text, url):
     """CTA button"""
-    return f"""<div style="text-align:center;margin:24px 0;">
-<a href="{url}" style="display:inline-block;padding:12px 32px;background-color:{BRAND_COLOR};color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;letter-spacing:0.3px;">{text}</a>
+    return f"""<div style="text-align:center;margin:28px 0;">
+<a href="{url}" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,{BRAND_COLOR},{BRAND_COLOR_DARK});color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(16,185,129,0.30);">{text}</a>
 </div>"""
 
 
