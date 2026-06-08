@@ -168,10 +168,16 @@ def expire_due_subscriptions(now=None, trigger='system'):
     legacy_count = 0
     legacy_results = []
 
+    # Reconcile EVERY store flagged pro with a tracked validity (pro_validity set):
+    # if it has no active *paid* subscription backing it, expire it. This catches
+    # not only date-expired ones (pro_validity <= now) but also stores whose paid
+    # plan was cancelled/downgraded to Free while pro_validity still pointed to a
+    # future date — those never tripped the date-based check, so their products
+    # kept showing in the public feed. Manual/legacy pro (pro_validity IS NULL) is
+    # deliberately left untouched.
     legacy_expired_users = User.objects.filter(
         is_pro=True,
         pro_validity__isnull=False,
-        pro_validity__lte=now,
     )
 
     for user in legacy_expired_users:
