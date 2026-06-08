@@ -709,135 +709,243 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     );
   }
 
+  static const Color _amber = Color(0xFFD97706);
+  static const Color _ink = Color(0xFF1F2937);
+  static const Color _muted = Color(0xFF6B7280);
+  static const Color _line = Color(0xFFE5E7EB);
+
   Widget _buildLocationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('📍 Where should your ad show?',
-            style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1F2937))),
-        const SizedBox(height: 4),
-        const Text(
-          'Show all over Bangladesh, or target specific divisions/cities — users see ads matching their address.',
-          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: RadioListTile<bool>(
-                value: true,
-                groupValue: _targetAllBangladesh,
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: const Text('All Bangladesh', style: TextStyle(fontSize: 13)),
-                onChanged: (v) => setState(() {
-                  _targetAllBangladesh = true;
-                  _locations.clear();
-                }),
-              ),
-            ),
-            Expanded(
-              child: RadioListTile<bool>(
-                value: false,
-                groupValue: _targetAllBangladesh,
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Row(
-                  children: [
-                    const Flexible(child: Text('Specific', style: TextStyle(fontSize: 13))),
-                    if (_discountPercent > 0) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD1FAE5),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text('$_discountPercent% OFF',
-                            style: const TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF059669))),
-                      ),
-                    ],
-                  ],
-                ),
-                onChanged: (v) => setState(() {
-                  _targetAllBangladesh = false;
-                  if (_locations.isEmpty) _addLocationRow();
-                }),
-              ),
-            ),
-          ],
-        ),
-        if (!_targetAllBangladesh) ...[
-          ..._locations.map(_buildLocationRow),
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton.icon(
-                onPressed: _locations.length >= _maxLocations ? null : _addLocationRow,
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add another location'),
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(8)),
+                child: const Icon(Icons.location_on_rounded, size: 18, color: _amber),
               ),
-              Text('${_locations.length} / $_maxLocations',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text('Where should your ad show?',
+                    style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700, color: _ink)),
+              ),
             ],
           ),
-        ],
-        if (_selectedPackagePrice > 0)
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFBEB),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFFDE68A)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _discountEligible
-                    ? Row(
-                        children: [
-                          const Text('You pay ', style: TextStyle(fontSize: 13, color: Color(0xFF374151))),
-                          Text('৳${_effectivePrice.toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF059669))),
-                          const SizedBox(width: 6),
-                          Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF9CA3AF),
-                                  decoration: TextDecoration.lineThrough)),
-                          const SizedBox(width: 6),
-                          Text('$_discountPercent% off',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF059669))),
-                        ],
-                      )
-                    : Text(
-                        'You pay ৳${_selectedPackagePrice.toStringAsFixed(0)}'
-                        '${_targetAllBangladesh ? ' (all over Bangladesh)' : ' (full price)'}',
-                        style: const TextStyle(fontSize: 13, color: Color(0xFF374151))),
-                if (!_targetAllBangladesh &&
-                    _distinctDivisionCount > _maxDiscountDivisions)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'ⓘ Discount applies to up to $_maxDiscountDivisions divisions. You\'re targeting $_distinctDivisionCount — full price.',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFFB45309)),
-                    ),
-                  ),
-              ],
-            ),
+          const SizedBox(height: 6),
+          const Text(
+            'Show all over Bangladesh, or target specific divisions/cities — users see ads matching their address.',
+            style: TextStyle(fontSize: 11.5, color: _muted, height: 1.4),
           ),
-      ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _modeCard(
+                  selected: _targetAllBangladesh,
+                  icon: Icons.public_rounded,
+                  label: 'All Bangladesh',
+                  onTap: () => setState(() {
+                    _targetAllBangladesh = true;
+                    _locations.clear();
+                  }),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _modeCard(
+                  selected: !_targetAllBangladesh,
+                  icon: Icons.place_rounded,
+                  label: 'Specific',
+                  badge: _discountPercent > 0 ? '$_discountPercent% OFF' : null,
+                  onTap: () => setState(() {
+                    _targetAllBangladesh = false;
+                    if (_locations.isEmpty) _addLocationRow();
+                  }),
+                ),
+              ),
+            ],
+          ),
+          if (!_targetAllBangladesh) ...[
+            const SizedBox(height: 12),
+            ..._locations
+                .asMap()
+                .entries
+                .map((e) => _buildLocationRow(e.value, e.key + 1)),
+            if (_locations.length < _maxLocations) _addLocationButton(),
+          ],
+          if (_selectedPackagePrice > 0) ...[
+            const SizedBox(height: 12),
+            _priceSummary(),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _buildLocationRow(Map<String, String> loc) {
+  Widget _modeCard({
+    required bool selected,
+    required IconData icon,
+    required String label,
+    String? badge,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFFFFBEB) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: selected ? _amber : _line, width: selected ? 1.5 : 1),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon,
+                    size: 18, color: selected ? _amber : const Color(0xFF9CA3AF)),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(label,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: selected ? _ink : _muted)),
+                ),
+              ],
+            ),
+            if (badge != null) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                    color: const Color(0xFFD1FAE5),
+                    borderRadius: BorderRadius.circular(999)),
+                child: Text(badge,
+                    style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF059669))),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _addLocationButton() {
+    return InkWell(
+      onTap: _addLocationRow,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _amber.withValues(alpha: 0.45), width: 1.2),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add_rounded, size: 18, color: _amber),
+            const SizedBox(width: 6),
+            const Text('Add another location',
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600, color: _amber)),
+            const SizedBox(width: 8),
+            Text('${_locations.length}/$_maxLocations',
+                style: const TextStyle(fontSize: 11.5, color: Color(0xFF9CA3AF))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _priceSummary() {
+    final showFullNote = !_targetAllBangladesh &&
+        _distinctDivisionCount > _maxDiscountDivisions;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _discountEligible ? const Color(0xFFECFDF5) : const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: _discountEligible ? const Color(0xFFA7F3D0) : _line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('You pay', style: TextStyle(fontSize: 12.5, color: _muted)),
+              const Spacer(),
+              if (_discountEligible) ...[
+                Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF9CA3AF),
+                        decoration: TextDecoration.lineThrough)),
+                const SizedBox(width: 6),
+                Text('৳${_effectivePrice.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF059669))),
+              ] else
+                Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+            ],
+          ),
+          if (_discountEligible)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                  '🎉 $_discountPercent% off · targeting ${_distinctDivisionCount <= 1 ? "1 division" : "$_distinctDivisionCount divisions"}',
+                  style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF059669))),
+            )
+          else if (_targetAllBangladesh)
+            const Padding(
+              padding: EdgeInsets.only(top: 2),
+              child: Text('Shown all over Bangladesh',
+                  style: TextStyle(fontSize: 11.5, color: _muted)),
+            ),
+          if (showFullNote)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'ⓘ Discount applies to up to $_maxDiscountDivisions divisions. You\'re targeting $_distinctDivisionCount — full price.',
+                style: const TextStyle(fontSize: 11, color: Color(0xFFB45309)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationRow(Map<String, String> loc, int number) {
     final division = loc['division'] ?? '';
     final city = loc['city'] ?? '';
     final cities = _citiesByDivision[division] ?? const <String>[];
@@ -845,38 +953,59 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     return Container(
       key: ValueKey(loc['_id']),
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: const Color(0xFFFAFBFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _line),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(
-                child: _locDropdown(
-                  hint: 'Select division',
-                  value: division.isEmpty ? null : division,
-                  items: _divisionOptions,
-                  onChanged: (v) {
-                    setState(() {
-                      loc['division'] = v ?? '';
-                      loc['city'] = '';
-                      loc['area'] = '';
-                    });
-                    if (v != null) _loadCitiesFor(v);
-                  },
+              Container(
+                width: 20,
+                height: 20,
+                decoration: const BoxDecoration(
+                    color: Color(0xFFFEF3C7), shape: BoxShape.circle),
+                child: Center(
+                  child: Text('$number',
+                      style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: _amber)),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.close, size: 18, color: Colors.red),
-                onPressed: () => setState(() => _locations.remove(loc)),
+              const SizedBox(width: 8),
+              const Text('Target location',
+                  style: TextStyle(
+                      fontSize: 11.5, fontWeight: FontWeight.w600, color: _muted)),
+              const Spacer(),
+              InkWell(
+                onTap: () => setState(() => _locations.remove(loc)),
+                borderRadius: BorderRadius.circular(20),
+                child: const Padding(
+                  padding: EdgeInsets.all(2),
+                  child: Icon(Icons.close_rounded, size: 17, color: Color(0xFFEF4444)),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
+          _locDropdown(
+            hint: 'Select division',
+            value: division.isEmpty ? null : division,
+            items: _divisionOptions,
+            onChanged: (v) {
+              setState(() {
+                loc['division'] = v ?? '';
+                loc['city'] = '';
+                loc['area'] = '';
+              });
+              if (v != null) _loadCitiesFor(v);
+            },
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
@@ -894,7 +1023,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   },
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Expanded(
                 child: _locDropdown(
                   hint: 'Area (optional)',
@@ -920,17 +1049,26 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   }) {
     // Guard against a value that isn't in items yet (e.g. before they load).
     final safeValue = (value != null && items.contains(value)) ? value : null;
+    OutlineInputBorder border(Color c, [double w = 1]) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: c, width: w));
     return DropdownButtonFormField<String>(
       value: safeValue,
       isExpanded: true,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+          size: 20, color: Color(0xFF9CA3AF)),
+      style: const TextStyle(fontSize: 13, color: _ink),
       hint: Text(hint,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+          style: const TextStyle(fontSize: 12.5, color: Color(0xFF9CA3AF)),
           overflow: TextOverflow.ellipsis),
       decoration: InputDecoration(
-        border: const OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        filled: !enabled,
-        fillColor: const Color(0xFFF1F5F9),
+        isDense: true,
+        filled: true,
+        fillColor: enabled ? Colors.white : const Color(0xFFF1F5F9),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        enabledBorder: border(_line),
+        disabledBorder: border(_line),
+        focusedBorder: border(_amber, 1.4),
       ),
       items: items
           .map((d) => DropdownMenuItem(
