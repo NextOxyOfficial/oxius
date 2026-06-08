@@ -494,10 +494,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
+                      // Static determinate ring (NOT the animated AdsyLoading
+                      // spinner) — this just shows how much of the form is
+                      // filled, so it must not look like a "verification in
+                      // progress" loader before anything is submitted.
                       SizedBox(
                         width: 70,
                         height: 70,
-                        child: AdsyLoadingIndicator(
+                        child: CircularProgressIndicator(
                           value: progress / 100,
                           strokeWidth: 7,
                           backgroundColor: const Color(0xFFE2E8F0),
