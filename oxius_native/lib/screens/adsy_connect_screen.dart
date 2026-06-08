@@ -212,6 +212,22 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               _chatConversations.insert(0, newChat);
             }
           }
+
+          // Re-order by most recent activity so a conversation that just
+          // received a message jumps to the top in real time, instead of
+          // staying put until the screen is reloaded. (The in-place merge
+          // above keeps each chat at its old position otherwise.)
+          _chatConversations.sort((a, b) {
+            final ta = a['timestamp'];
+            final tb = b['timestamp'];
+            final da = ta is DateTime
+                ? ta
+                : DateTime.fromMillisecondsSinceEpoch(0);
+            final db = tb is DateTime
+                ? tb
+                : DateTime.fromMillisecondsSinceEpoch(0);
+            return db.compareTo(da);
+          });
         });
       }
     } catch (e) {
