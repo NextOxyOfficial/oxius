@@ -180,6 +180,7 @@ urlpatterns = [
     path("auth/delete-account/", delete_account, name="delete-account"),
     # subscription
     path("subscribe/", subscribeToPro, name="subscribe"),
+    path("pro-pricing/", pro_pricing, name="pro-pricing"),
     # sms and otp
     path("send-sms/", smsSend),
     path("send-otp/", sendOTP),

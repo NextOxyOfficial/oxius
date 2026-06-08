@@ -1704,3 +1704,42 @@ class EmailTemplatePreview(models.Model):
     class Meta:
         verbose_name = "Email template"
         verbose_name_plural = "Email templates (preview)"
+
+
+class ProPricing(models.Model):
+    """Single source of truth for Pro subscription pricing (admin-managed).
+
+    `regular_price` is the normal monthly price; while `discount_active` is on,
+    customers are shown/charged `discount_price`. Edit these from the admin to
+    change pricing without an app update."""
+    regular_price = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal('299'),
+        help_text='Normal monthly price (shown struck-through during a discount).')
+    discount_price = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal('149'),
+        help_text='Discounted monthly price charged while the discount is active.')
+    discount_active = models.BooleanField(default=True)
+    discount_label = models.CharField(
+        max_length=120, blank=True, default='Limited-time offer')
+    yearly_discount = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal('289'),
+        help_text='Flat amount saved when buying 12 months at once.')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Pro pricing'
+        verbose_name_plural = 'Pro pricing'
+
+    @property
+    def effective_monthly_price(self):
+        return self.discount_price if self.discount_active else self.regular_price
+
+    @classmethod
+    def current(cls):
+        obj = cls.objects.first()
+        if obj is None:
+            obj = cls.objects.create()
+        return obj
+
+    def __str__(self):
+        return f"Pro: regular {self.regular_price}, now {self.effective_monthly_price}"

@@ -59,12 +59,20 @@ def process_auto_renewals():
         end_date__lte=soon,
     ).select_related("user", "plan")
 
+    # Charge the live Pro price (admin-managed source of truth), not the legacy
+    # SubscriptionPlan.price — customers actually pay the ProPricing amount.
+    try:
+        from base.models import ProPricing
+        live_price = ProPricing.current().effective_monthly_price
+    except Exception:
+        live_price = None
+
     renewed = 0
     nudged = 0
     for sub in subs:
         user = sub.user
         plan = sub.plan
-        price = plan.price
+        price = live_price if live_price is not None else plan.price
         try:
             balance = user.balance or 0
             if balance >= price:

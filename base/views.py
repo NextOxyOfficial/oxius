@@ -2391,6 +2391,24 @@ def subscribeToPro(request):
     return Response(resp, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def pro_pricing(request):
+    """Public Pro subscription pricing (single source of truth, admin-managed).
+
+    The app uses `effective_price` for the actual charge and shows
+    `regular_price` struck-through when `discount_active` is true."""
+    p = ProPricing.current()
+    return Response({
+        "regular_price": str(p.regular_price),
+        "discount_price": str(p.discount_price),
+        "discount_active": p.discount_active,
+        "discount_label": p.discount_label,
+        "effective_price": str(p.effective_monthly_price),
+        "yearly_discount": str(p.yearly_discount),
+    })
+
+
 @api_view(["POST"])
 def set_new_password(request):
     method = request.data.get("method")

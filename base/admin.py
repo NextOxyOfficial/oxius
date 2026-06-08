@@ -1798,3 +1798,18 @@ admin.site.index = custom_index
 # NOTE: UserNotification has no admin on purpose — sending happens only in the
 # "Push Notifications" panel (registered on FCMToken), and the saved rows are
 # consumed by the app's Updates tab via the API. No separate admin needed.
+
+
+@admin.register(ProPricing)
+class ProPricingAdmin(admin.ModelAdmin):
+    """Single source of truth for Pro subscription pricing."""
+    list_display = ('regular_price', 'discount_price', 'discount_active',
+                    'discount_label', 'yearly_discount', 'updated_at')
+    list_editable = ('discount_price', 'discount_active')
+
+    def has_add_permission(self, request):
+        # Keep it a singleton — only one pricing row.
+        return not ProPricing.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False

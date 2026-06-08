@@ -54,7 +54,7 @@ def _registry():
         ("kyc_rejected", "KYC rejected", lambda: es.send_kyc_rejected_email(u, "Submitted document was unclear.")),
         ("suspended", "Account suspended", lambda: es.send_account_suspended_email(u, "Policy violation.")),
         ("unsuspended", "Account restored", lambda: es.send_account_unsuspended_email(u)),
-        ("pro_subscription", "Pro subscription", lambda: es.send_pro_subscription_email(u, 1, 499)),
+        ("pro_subscription", "Pro subscription", lambda: es.send_pro_subscription_email(u, 1, 149)),
         ("referral_reward", "Referral reward", lambda: es.send_referral_reward_email(u, 100, "signup")),
         ("password_reset", "Password reset OTP", lambda: es.send_password_reset_email(u, "123456")),
         ("mobile_recharge", "Mobile recharge", lambda: es.send_mobile_recharge_email(u, 50, "01700000000")),
