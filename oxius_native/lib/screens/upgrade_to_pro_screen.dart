@@ -28,6 +28,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   bool _isSubscribing = false;
   bool _isLoadingBalance = false;
+  bool _autoRenew = false;
+  bool _autoRenewBusy = false;
+  bool _autoRenewLoaded = false;
   int _selectedMonths = 1;
   final int _monthlyPrice = 149;
   final int _yearlyDiscount = 289;
@@ -40,6 +43,45 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   void initState() {
     super.initState();
     _refreshBalance();
+    _loadAutoRenew();
+  }
+
+  Future<void> _loadAutoRenew() async {
+    if (!_userState.isPro) return;
+    final data = await _subscriptionService.getAutoRenew();
+    if (!mounted || data == null) return;
+    setState(() {
+      _autoRenew = data['auto_renew'] == true;
+      _autoRenewLoaded = true;
+    });
+  }
+
+  Future<void> _toggleAutoRenew(bool value) async {
+    if (_autoRenewBusy) return;
+    setState(() {
+      _autoRenewBusy = true;
+      _autoRenew = value; // optimistic
+    });
+    final result = await _subscriptionService.setAutoRenew(value);
+    if (!mounted) return;
+    setState(() {
+      _autoRenewBusy = false;
+      if (result != null && result['auto_renew'] is bool) {
+        _autoRenew = result['auto_renew'] as bool;
+      } else {
+        _autoRenew = !value; // revert on failure
+      }
+    });
+    final msg = (result?['message'] ?? '').toString();
+    if (msg.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: _autoRenew ? _mint : const Color(0xFF64748B),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _refreshBalance() async {
@@ -104,6 +146,10 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildQuickStatusStrip(),
+            if (_userState.isPro) ...[
+              const SizedBox(height: 10),
+              _buildAutoRenewCard(),
+            ],
             const SizedBox(height: 10),
             _buildPlanComposer(),
             const SizedBox(height: 10),
@@ -206,6 +252,64 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoRenewCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: _panel,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: _mint.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: const Icon(Icons.autorenew_rounded, color: _mint, size: 22),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'অটো-রিনিউ',
+                  style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: _ink),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'মেয়াদ শেষে Adsy Pay ব্যালেন্স থেকে স্বয়ংক্রিয়ভাবে রিনিউ হবে।',
+                  style:
+                      TextStyle(fontSize: 11.5, color: _muted, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          if (_autoRenewBusy)
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2.2),
+            )
+          else
+            Switch.adaptive(
+              value: _autoRenew,
+              activeColor: _mint,
+              onChanged: _autoRenewLoaded ? _toggleAutoRenew : null,
+            ),
         ],
       ),
     );
