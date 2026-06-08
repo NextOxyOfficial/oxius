@@ -47,17 +47,24 @@ class RechargeAdmin(admin.ModelAdmin):
     list_display = ('user','phone_number','status_display','operator', 'package', 'amount', 'created_at')
     list_filter=('status','operator', 'package', 'amount', 'created_at')
     search_fields = ('user__email', 'user__name', 'phone_number')
-    actions = ['approve_recharges']
-    
+    readonly_fields = ('balance_charged', 'provider_reference', 'provider_response',
+                       'processed_at', 'failure_reason', 'transaction_id', 'created_at')
+    actions = ['approve_recharges', 'fail_and_refund_recharges']
+
+    _STATUS_STYLES = {
+        'completed': ('green', '✓ Completed'),
+        'pending': ('orange', '⏳ Pending'),
+        'processing': ('#2563EB', '⚙️ Processing'),
+        'failed': ('#DC2626', '✕ Failed'),
+        'refunded': ('#7C3AED', '↩ Refunded'),
+    }
+
     def status_display(self, obj):
         """Display status with color coding"""
-        if obj.status == 'completed':
-            return format_html('<span style="color: green; font-weight: bold;">✓ Completed</span>')
-        elif obj.status == 'pending':
-            return format_html('<span style="color: orange; font-weight: bold;">⏳ Pending</span>')
-        return obj.status
+        color, label = self._STATUS_STYLES.get(obj.status, ('#64748B', obj.status))
+        return format_html('<span style="color: {}; font-weight: bold;">{}</span>', color, label)
     status_display.short_description = 'Status'
-    
+
     def save_model(self, request, obj, form, change):
         """Override save_model - let signals handle notifications"""
         # Store the original status if this is an update
@@ -83,20 +90,43 @@ class RechargeAdmin(admin.ModelAdmin):
         """Admin action to approve selected recharge requests"""
         approved_count = 0
         
+        from .services import _record_success_ledger
         for recharge in queryset:
-            if recharge.status == 'pending':
-                print(f"Approving recharge {recharge.id} for user {recharge.user}")
-                
-                # Simply update status - signals will handle notification creation
+            if recharge.status in ('pending', 'processing'):
                 recharge.status = 'completed'
                 recharge.save()
+                _record_success_ledger(recharge)
                 approved_count += 1
-        
+
         if approved_count > 0:
             messages.success(request, f"Successfully approved {approved_count} recharge(s). Notifications will be sent to users.")
         else:
             messages.warning(request, "No pending recharges were found to approve.")
-    
+
     approve_recharges.short_description = "✓ Approve selected recharge requests"
 
+    def fail_and_refund_recharges(self, request, queryset):
+        """Mark selected recharges as failed and refund the charged amount."""
+        from .services import refund_balance
+        n = 0
+        for recharge in queryset:
+            if recharge.status in ('pending', 'processing', 'failed'):
+                refunded = refund_balance(recharge)
+                recharge.status = 'refunded' if refunded else 'failed'
+                if not recharge.failure_reason:
+                    recharge.failure_reason = 'Cancelled by admin'
+                recharge.save()
+                n += 1
+        messages.success(request, f"{n} recharge(s) marked failed and refunded.")
+    fail_and_refund_recharges.short_description = "✕ Mark failed & refund balance"
+
 admin.site.register(Recharge, RechargeAdmin)
+
+
+@admin.register(RechargeProviderConfig)
+class RechargeProviderConfigAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_enabled', 'base_url', 'updated_at')
+    list_editable = ('is_enabled',)
+    fields = ('name', 'is_enabled', 'base_url', 'api_key', 'api_secret',
+              'extra_config', 'created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at')

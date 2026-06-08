@@ -41,7 +41,30 @@ class RechargeListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         # Always filter by the current user — admin access is via Django admin panel
         return Recharge.objects.filter(user=self.request.user).order_by('-created_at')
-    
+
+    def perform_create(self, serializer):
+        """Charge the Adsy Pay balance, store the recharge, then hand it to the
+        provider (or leave it pending for manual processing). The amount is taken
+        from the selected package server-side so it can't be tampered with."""
+        from .services import charge_balance, process_recharge
+
+        user = self.request.user
+        package = serializer.validated_data.get('package')
+        amount = package.price if package else serializer.validated_data.get('amount')
+        if not amount or amount <= 0:
+            raise ValidationError('সঠিক রিচার্জ পরিমাণ দিন।')
+
+        with transaction.atomic():
+            ok, err = charge_balance(user, amount)
+            if not ok:
+                raise ValidationError(err)
+            recharge = serializer.save(balance_charged=True, amount=amount)
+
+        # Outside the charge transaction so a provider/network hiccup never rolls
+        # back the (already-saved) request; failures auto-refund inside.
+        process_recharge(recharge)
+        return recharge
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():

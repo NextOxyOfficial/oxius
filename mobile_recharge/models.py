@@ -42,12 +42,55 @@ class Recharge(models.Model):
     phone_number = models.CharField(max_length=20)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     RECHARGE_STATUS = [
-        ('pending', 'Pending'),
-        ('completed', 'Completed'),
+        ('pending', 'Pending'),        # awaiting processing (manual or provider)
+        ('processing', 'Processing'),  # sent to provider, awaiting result
+        ('completed', 'Completed'),    # delivered successfully
+        ('failed', 'Failed'),          # could not deliver (balance refunded)
+        ('refunded', 'Refunded'),      # cancelled + money returned
     ]
     status = models.CharField(max_length=20, choices=RECHARGE_STATUS, default='pending')
     transaction_id = models.CharField(max_length=100, blank=True)
+    # Whether the user's Adsy Pay balance was charged for this recharge (so a
+    # refund only happens once).
+    balance_charged = models.BooleanField(default=False)
+    # --- Third-party provider automation fields (filled when a provider runs) ---
+    provider_reference = models.CharField(max_length=128, blank=True, default='')
+    provider_response = models.JSONField(default=dict, blank=True)
+    failure_reason = models.CharField(max_length=255, blank=True, default='')
+    processed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
-        return f"Recharge {self.id}: {self.phone_number} - ${self.amount}"
+        return f"Recharge {self.id}: {self.phone_number} - ৳{self.amount} ({self.status})"
+
+
+class RechargeProviderConfig(models.Model):
+    """Holds the third-party recharge API credentials. Leave is_enabled OFF until
+    real API details are filled in — while disabled, recharges are created and
+    held as 'pending' for manual processing. Turn it ON to auto-process.
+
+    Only the most recently-updated enabled config is used.
+    """
+    name = models.CharField(max_length=100, default='Recharge Provider')
+    is_enabled = models.BooleanField(
+        default=False,
+        help_text='Turn ON only after the API details below are filled in. '
+                  'While OFF, recharges stay pending for manual processing.')
+    base_url = models.URLField(blank=True, default='', help_text='Provider API base URL')
+    api_key = models.CharField(max_length=255, blank=True, default='')
+    api_secret = models.CharField(max_length=255, blank=True, default='')
+    extra_config = models.JSONField(
+        default=dict, blank=True,
+        help_text='Any extra provider parameters (sender id, account, etc.) as JSON.')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Recharge provider (API)'
+        verbose_name_plural = 'Recharge provider (API)'
+
+    def __str__(self):
+        return f"{self.name} ({'enabled' if self.is_enabled else 'disabled'})"

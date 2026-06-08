@@ -65,7 +65,11 @@ class RechargeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recharge
         fields = '__all__'
-        read_only_fields = ['user', 'transaction_id']
+        read_only_fields = [
+            'user', 'transaction_id', 'status', 'balance_charged',
+            'provider_reference', 'provider_response', 'failure_reason',
+            'processed_at',
+        ]
     
     def get_package_details(self, obj):
         """Pass request context to nested PackageSerializer for proper URL building"""
