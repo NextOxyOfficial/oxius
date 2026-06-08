@@ -1050,7 +1050,15 @@ async function handleForm() {
       await getUserDetails();
     } else {
       errors.value = res?.error?.data?.errors || {};
-      showToast("Error", "Failed to update profile", "red");
+      // Show the backend's clean, human-readable reason (e.g. "ফোন নম্বর আবশ্যক।")
+      // instead of a generic message.
+      showToast(
+        "Error",
+        res?.error?.data?.message ||
+          res?.error?.message ||
+          "প্রোফাইল আপডেট করা যায়নি। আবার চেষ্টা করুন।",
+        "red"
+      );
     }
   } catch (error) {
     console.error("Profile update error:", error);

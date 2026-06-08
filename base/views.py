@@ -383,6 +383,28 @@ def update_user(request, email):
                     {"message": "Failed to process store banner", "error": str(e)},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+    # Mandatory profile fields must not be saved empty — partial=True would
+    # otherwise let them slip through silently. Tell the user exactly which one
+    # is missing (plain Bangla text, not a serializer/code dump).
+    MANDATORY_LABELS = {
+        "phone": "ফোন নম্বর",
+        "first_name": "নামের প্রথম অংশ",
+        "last_name": "নামের শেষ অংশ",
+        "date_of_birth": "জন্ম তারিখ",
+    }
+    mandatory_errors = {}
+    for field_name, label in MANDATORY_LABELS.items():
+        if field_name in data:
+            value = data.get(field_name)
+            if value is None or str(value).strip() == "":
+                mandatory_errors[field_name] = [f"{label} দিন।"]
+    if mandatory_errors:
+        first_label = MANDATORY_LABELS[next(iter(mandatory_errors))]
+        return Response(
+            {"message": f"{first_label} আবশ্যক।", "errors": mandatory_errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     data["id"] = user.id
     serializer = UserSerializer(user, data=data, partial=True)
 

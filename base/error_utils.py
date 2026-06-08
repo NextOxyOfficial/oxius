@@ -83,11 +83,24 @@ def custom_exception_handler(exc, context):
     human-readable ``message`` is always present for the app to display — so a
     raw serializer dump or exception code is never the only thing the user sees.
     """
+    import logging
+    from rest_framework import status as drf_status
+    from rest_framework.response import Response
     from rest_framework.views import exception_handler as drf_exception_handler
 
     response = drf_exception_handler(exc, context)
     if response is None:
-        return response
+        # An unhandled exception (DB error, KeyError, etc.). Without this, DRF
+        # re-raises and Django returns its HTML 500 page — which the app then
+        # shows as raw "code". Return clean JSON instead so the user always sees
+        # plain, human-readable text.
+        logging.getLogger("django.request").exception(
+            "Unhandled API exception: %s", exc
+        )
+        return Response(
+            {"message": "কিছু একটা সমস্যা হয়েছে। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।"},
+            status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     data = response.data
     if isinstance(data, dict):
