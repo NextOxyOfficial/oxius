@@ -930,6 +930,79 @@ def send_driver_rejected_email(user, reason=""):
     return _send_email(subject, user.email, text, html)
 
 
+def send_ride_receipt_email(ride):
+    """Send the rider a trip receipt when a ride is completed."""
+    rider = getattr(ride, "rider", None)
+    if not rider or not getattr(rider, "email", ""):
+        return False
+    name = rider.name or rider.first_name or "there"
+    fare = ride.final_fare or ride.fare_estimate or 0
+    distance = ride.distance_km
+    minutes = int((ride.duration_seconds or 0) / 60)
+    pay = (
+        ride.get_payment_method_display()
+        if hasattr(ride, "get_payment_method_display")
+        else (ride.payment_method or "N/A")
+    )
+    driver = getattr(ride, "assigned_driver", None)
+    driver_name = (driver.name or driver.first_name) if driver else ""
+
+    subject = "Your ride receipt 🚗"
+    text = f"Hi {name}, thanks for riding with AdsyClub. Total fare: ৳{fare}."
+    driver_row = _info_row("Driver", driver_name) if driver_name else ""
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thanks for riding with AdsyClub! Here's your trip receipt.</p>
+
+{_info_table(
+    _info_row("From", ride.pickup_address or "—") +
+    _info_row("To", ride.drop_address or "—") +
+    _info_row("Distance", f"{distance} km") +
+    (_info_row("Duration", f"{minutes} min") if minutes else "") +
+    driver_row +
+    _info_row("Payment", pay) +
+    _info_row("Total fare", f"<strong>৳{fare}</strong>")
+)}
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">Don't forget to rate your driver in the app — it helps keep AdsyClub rides great.</p>
+{_button("Open AdsyClub", SITE_URL)}
+"""
+    html = _base_template(subject, body, "We hope you enjoyed your ride. See you next time!")
+    return _send_email(subject, rider.email, text, html)
+
+
+def send_support_reply_email(ticket, reply_message=""):
+    """Notify a ticket owner that support replied to their ticket."""
+    user = getattr(ticket, "user", None)
+    if not user or not getattr(user, "email", ""):
+        return False
+    name = user.name or user.first_name or "there"
+    subject = f"New reply to your support ticket"
+    msg = (reply_message or "").strip()
+    preview = (msg[:240] + "…") if len(msg) > 240 else msg
+    text = f"Hi {name}, the AdsyClub support team replied to your ticket \"{ticket.title}\"."
+
+    quote = (
+        f"""<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;border-radius:10px;margin:16px 0;">
+<tr><td style="padding:14px 16px;"><p style="margin:0;color:#334155;font-size:14px;line-height:1.6;">{preview}</p></td></tr>
+</table>"""
+        if preview else ""
+    )
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 8px;">Our support team has replied to your ticket <strong>"{ticket.title}"</strong>:</p>
+{quote}
+{_button("View &amp; reply", SITE_URL + "/support")}
+"""
+    html = _base_template(
+        subject, body,
+        "Reply from the app or website to continue the conversation with our team.",
+    )
+    return _send_email(subject, user.email, text, html)
+
+
 def send_test_email(to_email=None):
     """Send a test email to verify SMTP configuration"""
     if not to_email:

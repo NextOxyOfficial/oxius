@@ -94,7 +94,15 @@ class TicketReplyCreateView(generics.CreateAPIView):
             ticket.save()
 
         reply = serializer.save(ticket=ticket, user=user, is_from_admin=is_admin)
-        
+
+        # Email the ticket owner when support (admin) replies
+        if is_admin and ticket.user_id != user.id:
+            try:
+                from base.email_service import send_support_reply_email
+                send_support_reply_email(ticket, getattr(reply, "message", ""))
+            except Exception as e:
+                print(f"Error sending support reply email: {e}")
+
         # Send push notification
         try:
             from base.fcm_service import send_fcm_notification

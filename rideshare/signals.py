@@ -3,7 +3,7 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
-from .models import DriverProfile
+from .models import DriverProfile, Ride
 
 
 @receiver(pre_save, sender=DriverProfile)
@@ -36,3 +36,29 @@ def _email_on_driver_approval_change(sender, instance, created, **kwargs):
             send_driver_rejected_email(user)
     except Exception as e:
         print(f"Error sending driver approval email: {e}")
+
+
+@receiver(pre_save, sender=Ride)
+def _capture_ride_status(sender, instance, **kwargs):
+    """Remember the prior ride status so post_save can detect completion."""
+    if instance.pk:
+        instance._old_ride_status = (
+            sender.objects.filter(pk=instance.pk)
+            .values_list("status", flat=True)
+            .first()
+        )
+    else:
+        instance._old_ride_status = None
+
+
+@receiver(post_save, sender=Ride)
+def _email_ride_receipt(sender, instance, created, **kwargs):
+    old = getattr(instance, "_old_ride_status", None)
+    if created or old == instance.status:
+        return
+    if instance.status == Ride.STATUS_COMPLETED:
+        try:
+            from base.email_service import send_ride_receipt_email
+            send_ride_receipt_email(instance)
+        except Exception as e:
+            print(f"Error sending ride receipt email: {e}")

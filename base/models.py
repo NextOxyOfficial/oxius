@@ -585,6 +585,14 @@ class MicroGigPost(models.Model):
     appeal_count = models.IntegerField(default=0, help_text="Number of times this gig has been appealed")
 
     def save(self, *args, **kwargs):
+        # Remember prior gig_status so we can email on an approve/reject transition.
+        previous_gig_status = None
+        if self.pk:
+            previous_gig_status = (
+                type(self).objects.filter(pk=self.pk)
+                .values_list("gig_status", flat=True).first()
+            )
+
         if not self.slug:
             self.slug = generate_unique_slug(MicroGigPost, self.title, self)
 
@@ -610,6 +618,27 @@ class MicroGigPost(models.Model):
             self.gig_status = "completed"
 
         super(MicroGigPost, self).save(*args, **kwargs)
+
+        # Email the gig owner when their gig is approved or rejected.
+        if (
+            previous_gig_status
+            and previous_gig_status != self.gig_status
+            and self.user
+            and getattr(self.user, "email", "")
+        ):
+            try:
+                from .email_service import (
+                    send_post_approved_email,
+                    send_post_rejected_email,
+                    SITE_URL,
+                )
+                link = f"{SITE_URL}/micro-gigs/{self.slug}"
+                if self.gig_status == "approved":
+                    send_post_approved_email(self.user, self.title, "gig", link)
+                elif self.gig_status == "rejected":
+                    send_post_rejected_email(self.user, self.title, "gig", "", link)
+            except Exception as e:
+                print(f"Error sending gig status email: {e}")
 
     def __str__(self):
         return self.title

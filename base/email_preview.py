@@ -82,6 +82,29 @@ class _SampleOrder:
         return "Pending"
 
 
+class _SampleRide:
+    def __init__(self, rider, driver):
+        self.rider = rider
+        self.assigned_driver = driver
+        self.final_fare = 185
+        self.fare_estimate = 185
+        self.distance_km = "6.4"
+        self.duration_seconds = 1080  # 18 min
+        self.pickup_address = "Dhanmondi 27, Dhaka"
+        self.drop_address = "Gulshan 1, Dhaka"
+        self.payment_method = "cash"
+
+    def get_payment_method_display(self):
+        return "Cash"
+
+
+class _SampleTicket:
+    def __init__(self, user):
+        self.user = user
+        self.user_id = "sample-user"
+        self.title = "Withdrawal not received yet"
+
+
 def _registry():
     """(key, label, render_callable) for every previewable email."""
     from . import email_service as es
@@ -125,6 +148,17 @@ def _registry():
         ("driver_approved", "Rideshare: driver approved", lambda: es.send_driver_approved_email(u)),
         ("driver_rejected", "Rideshare: driver not approved", lambda: es.send_driver_rejected_email(
             u, "Driving license could not be verified.")),
+        ("gig_approved", "Gig post approved", lambda: es.send_post_approved_email(
+            u, "Quick logo feedback task", "gig", "https://adsyclub.com/micro-gigs/quick-logo")),
+        ("gig_rejected", "Gig post rejected", lambda: es.send_post_rejected_email(
+            u, "Quick logo feedback task", "gig", "The task description was incomplete.",
+            "https://adsyclub.com/micro-gigs/quick-logo")),
+        ("ride_receipt", "Rideshare: ride receipt", lambda: es.send_ride_receipt_email(
+            _SampleRide(u, s))),
+        ("support_reply", "Support ticket reply", lambda: es.send_support_reply_email(
+            _SampleTicket(u),
+            "Thanks for reaching out! We've reviewed your withdrawal — it will be "
+            "processed within 24 hours. Sorry for the delay.")),
     ]
 
 
