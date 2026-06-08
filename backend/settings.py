@@ -152,6 +152,9 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
+    # Always attach a clean, human-readable `message` to API errors so the app
+    # never shows a raw serializer dump / exception code.
+    "EXCEPTION_HANDLER": "base.error_utils.custom_exception_handler",
 }
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

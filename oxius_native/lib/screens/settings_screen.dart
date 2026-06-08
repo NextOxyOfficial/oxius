@@ -2361,7 +2361,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onRefresh: _handleRefresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+        // Screen-side padding kept tight (2px) per design.
+        padding: const EdgeInsets.fromLTRB(2, 0, 2, 8),
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(

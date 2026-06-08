@@ -370,15 +370,19 @@ def update_user(request, email):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
+            print(f"update_user save error: {e}")
             return Response(
-                {"message": "Failed to save user", "error": str(e)},
+                {"message": "তথ্য সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    print(serializer.errors)
-    # Return validation errors if serializer is not valid
+    # Surface a clean, human-readable validation error (with a per-field map so
+    # the app can highlight the exact inputs) instead of the raw serializer dump.
+    from .error_utils import humanize_errors
+
+    message, field_map = humanize_errors(serializer.errors)
     return Response(
-        {"message": "Validation failed", "errors": serializer.errors},
+        {"message": message, "errors": field_map},
         status=status.HTTP_400_BAD_REQUEST,
     )
 

@@ -255,6 +255,20 @@ class UserSearchView(generics.ListAPIView):
         # Get all matching users (excluding superusers)
         users = User.objects.filter(search_query).exclude(is_superuser=True)
 
+        # Hide users who haven't completed their mandatory profile (first & last
+        # name, phone, date of birth). A freshly-created social account found by
+        # its raw email looks unprofessional, so keep half-set-up users out of
+        # search results until they finish onboarding.
+        users = users.exclude(
+            Q(first_name__isnull=True)
+            | Q(first_name="")
+            | Q(last_name__isnull=True)
+            | Q(last_name="")
+            | Q(phone__isnull=True)
+            | Q(phone="")
+            | Q(date_of_birth__isnull=True)
+        )
+
         # Hide blocked relationships in BOTH directions: a user I blocked must
         # not appear in my search, and a user who blocked me must not appear in
         # my search either (and vice-versa) — until the block is removed.
