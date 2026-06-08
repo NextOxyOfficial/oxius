@@ -81,12 +81,30 @@
 		<string>tel</string>
 		<string>mailto</string>
 	</array>
+	<!-- Google Sign-In iOS OAuth client ID (read first by the google_sign_in
+	     plugin). Mirrors CLIENT_ID in GoogleService-Info.plist. -->
+	<key>GIDClientID</key>
+	<string>866607241594-dqi9v5bqeipr6ihe75loafltfobca578.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>adsyclub</string>
+			</array>
+		</dict>
+		<!-- Google Sign-In: reversed iOS OAuth client ID. Required by the
+		     GoogleSignIn SDK to handle the OAuth callback. Without this the
+		     SDK has no client configuration and tapping "Continue with
+		     Google" terminated the app. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>GoogleSignIn</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.866607241594-dqi9v5bqeipr6ihe75loafltfobca578</string>
 			</array>
 		</dict>
 	</array>

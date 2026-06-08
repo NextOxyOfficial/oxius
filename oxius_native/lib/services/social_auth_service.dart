@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -14,26 +15,41 @@ class SocialAuthService {
   /// Sign in with Google and return a Firebase ID token.
   /// Returns `null` if the user cancels the picker.
   static Future<String?> signInWithGoogle() async {
-    // Ensure a clean picker every time (avoids silently reusing a stale account).
-    await _googleSignIn.signOut();
+    try {
+      // Ensure a clean picker every time (avoids silently reusing a stale account).
+      await _googleSignIn.signOut();
 
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) {
-      return null; // user cancelled
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return null; // user cancelled
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCred =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      return userCred.user?.getIdToken(true);
+    } on PlatformException catch (e) {
+      // Some platforms throw instead of returning null when the user dismisses
+      // the Google account picker — treat those as a plain cancellation.
+      const cancelCodes = {
+        'sign_in_canceled',
+        'sign_in_cancelled',
+        'canceled',
+        'cancelled',
+      };
+      if (cancelCodes.contains(e.code)) {
+        return null;
+      }
+      rethrow;
     }
-
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
-
-    final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    final UserCredential userCred =
-        await FirebaseAuth.instance.signInWithCredential(credential);
-
-    return userCred.user?.getIdToken(true);
   }
 
   /// Sign in with Facebook and return a Firebase ID token.
