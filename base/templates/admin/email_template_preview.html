@@ -7,7 +7,7 @@
     email যায় সেটা নিচে দেখানো হবে। এখান থেকে design কেমন লাগছে বুঝে body উন্নত করতে পারবেন।
   </p>
 
-  <form method="get" style="margin:0 0 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <form method="get" style="margin:0 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <label style="font-weight:600;color:#1e293b;">Template:</label>
     <select name="template" onchange="this.form.submit()"
             style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;min-width:280px;font-size:14px;background:#fff;">
@@ -15,6 +15,20 @@
         <option value="{{ key }}" {% if key == selected %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
+  </form>
+
+  <form method="post" style="margin:0 0 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">
+    {% csrf_token %}
+    <input type="hidden" name="template" value="{{ selected }}">
+    <label style="font-weight:600;color:#1e293b;">📤 Send a test to:</label>
+    <input type="email" name="test_email" required value="{{ default_test_email }}"
+           placeholder="you@example.com"
+           style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;min-width:240px;font-size:14px;background:#fff;">
+    <button type="submit" name="send_test" value="1"
+            style="padding:9px 18px;border:0;border-radius:8px;background:#6366F1;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">
+      Send test
+    </button>
+    <span style="color:#94a3b8;font-size:12px;">Sends the selected template (with sample data) to this address.</span>
   </form>
 
   {% if subject %}

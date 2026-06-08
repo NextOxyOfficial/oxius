@@ -124,7 +124,11 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import path
 
-from .email_preview import email_template_choices, render_email_preview
+from .email_preview import (
+    email_template_choices,
+    render_email_preview,
+    send_test_email_for,
+)
 from .models import EmailTemplatePreview
 
 
@@ -155,7 +159,42 @@ class EmailTemplatePreviewAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         choices = email_template_choices()
-        selected = request.GET.get("template") or (choices[0][0] if choices else "")
+        selected = (
+            request.POST.get("template")
+            or request.GET.get("template")
+            or (choices[0][0] if choices else "")
+        )
+
+        # Handle "Send test" — render the selected template and email it out.
+        if request.method == "POST" and "send_test" in request.POST:
+            from django.http import HttpResponseRedirect
+            test_email = (request.POST.get("test_email") or "").strip()
+            if not test_email:
+                self.message_user(
+                    request, "Enter an email address to send the test to.",
+                    level=messages.ERROR,
+                )
+            else:
+                try:
+                    ok = send_test_email_for(selected, test_email)
+                    if ok:
+                        self.message_user(
+                            request,
+                            f"✅ Test '{selected}' email sent to {test_email}.",
+                            level=messages.SUCCESS,
+                        )
+                    else:
+                        self.message_user(
+                            request,
+                            "❌ Could not send. Check Email Settings (SMTP) in the admin.",
+                            level=messages.ERROR,
+                        )
+                except Exception as e:
+                    self.message_user(
+                        request, f"❌ Error sending test: {e}", level=messages.ERROR,
+                    )
+            return HttpResponseRedirect(f"?template={selected}")
+
         subject = ""
         if selected:
             subject, _ = render_email_preview(selected)
@@ -165,6 +204,7 @@ class EmailTemplatePreviewAdmin(admin.ModelAdmin):
             "templates": choices,
             "selected": selected,
             "subject": subject,
+            "default_test_email": getattr(request.user, "email", "") or "",
         }
         return render(request, self.change_list_template, context)
 

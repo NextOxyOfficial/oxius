@@ -121,6 +121,18 @@ def email_template_choices():
     return [(key, label) for key, label, _ in _registry()]
 
 
+def send_test_email_for(key, to_email):
+    """Render the template `key` (with sample data) and actually send it to
+    `to_email` so the design can be checked in a real inbox."""
+    subject, html = render_email_preview(key)
+    from . import email_service as es
+    text = (
+        f"This is a test of the '{key}' email template from the AdsyClub admin "
+        "preview. (Sample data.)"
+    )
+    return es._send_email(subject or "AdsyClub test email", to_email, text, html)
+
+
 def render_email_preview(key):
     """Return (subject, html) for the template `key`, captured without sending."""
     from . import email_service as es
