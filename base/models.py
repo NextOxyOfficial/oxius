@@ -272,6 +272,13 @@ class NID(models.Model):
                     send_kyc_rejected_email(self.user)
                 except Exception as e:
                     print(f"Error sending KYC rejected email: {e}")
+            elif previous is None and not self.approved and not self.rejected:
+                # First-time submission — confirm it's received & under review.
+                try:
+                    from .email_service import send_kyc_received_email
+                    send_kyc_received_email(self.user)
+                except Exception as e:
+                    print(f"Error sending KYC received email: {e}")
 
 
 class Logo(models.Model):
@@ -913,6 +920,17 @@ class Balance(models.Model):
             self.completed = True
             self.user.balance += self.amount
             self.user.save()
+
+            # Notify the user their withdrawal was declined + refunded
+            try:
+                from .email_service import send_withdraw_rejected_email
+                if self.user and self.user.email:
+                    send_withdraw_rejected_email(
+                        self.user, self.payable_amount, str(self.id),
+                        getattr(self, "rejection_reason", "") or "",
+                    )
+            except Exception as e:
+                print(f"Error sending withdraw rejected email: {e}")
         if self.transaction_type == "deposit":
             self.user.balance += self.payable_amount
             self.completed = True

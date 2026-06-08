@@ -196,6 +196,14 @@ class SalePost(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        # Detect a moderation transition into "active" (approved / now live).
+        previous_status = None
+        if self.pk:
+            previous_status = (
+                type(self).objects.filter(pk=self.pk)
+                .values_list("status", flat=True).first()
+            )
+
         if not self.slug:
             self.slug = generate_unique_slug(SalePost, self.title, self)
 
@@ -210,6 +218,23 @@ class SalePost(models.Model):
                 pass
 
         super().save(*args, **kwargs)
+
+        # Email the owner when their classified ad is approved (pending -> active)
+        if (
+            previous_status
+            and previous_status != self.status
+            and self.status == "active"
+            and self.user
+            and getattr(self.user, "email", "")
+        ):
+            try:
+                from base.email_service import send_post_approved_email, SITE_URL
+                send_post_approved_email(
+                    self.user, self.title, "classified ad",
+                    f"{SITE_URL}/sale/{self.slug}",
+                )
+            except Exception as e:
+                print(f"Error sending classified approved email: {e}")
 
 
 class SaleImage(models.Model):

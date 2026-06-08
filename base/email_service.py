@@ -767,6 +767,163 @@ def send_order_confirmation_email(buyer, order):
     return _send_email(subject, email, text, html)
 
 
+def send_withdraw_rejected_email(user, amount, transaction_id, reason=""):
+    """Notify a user their withdrawal was rejected and the amount refunded."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = "Withdrawal request declined"
+    text = (
+        f"Hi {name}, your withdrawal request of ৳{amount} could not be approved "
+        f"and the amount has been refunded to your Adsy Pay balance."
+    )
+    reason_row = _info_row("Reason", reason) if reason else ""
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your withdrawal request could not be approved this time. The full amount has been <strong>refunded to your Adsy Pay balance</strong>.</p>
+
+{_info_table(
+    _info_row("Amount", f"৳{amount}") +
+    _info_row("Reference", str(transaction_id)) +
+    reason_row +
+    _info_row("Status", "Declined &amp; refunded")
+)}
+
+{_button("View Balance", SITE_URL + "/deposit-withdraw")}
+"""
+    html = _base_template(
+        subject, body,
+        f"If you have questions about this, contact {SUPPORT_EMAIL} or {SUPPORT_PHONE}.",
+    )
+    return _send_email(subject, user.email, text, html)
+
+
+def send_kyc_received_email(user):
+    """Confirm that a KYC submission was received and is under review."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = "We received your verification request"
+    text = (
+        f"Hi {name}, we've received your identity verification (KYC) and it is "
+        "now under review. We'll email you once it's processed."
+    )
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you — we've received your identity verification (KYC) submission. Our team is reviewing it now.</p>
+
+{_info_table(
+    _info_row("Status", "Under review") +
+    _info_row("Submitted", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+)}
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">Reviews are usually completed within 24–48 hours. We'll email you as soon as it's done.</p>
+"""
+    html = _base_template(
+        subject, body,
+        "You don't need to do anything else right now.",
+    )
+    return _send_email(subject, user.email, text, html)
+
+
+def send_post_approved_email(user, title, kind="post", link=""):
+    """Notify a user that their post/listing was approved and is now live."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = f"Your {kind} is live 🎉"
+    text = f"Hi {name}, your {kind} \"{title}\" has been approved and is now live on AdsyClub."
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Good news — your {kind} has been <strong>approved</strong> and is now live on AdsyClub. 🎉</p>
+
+{_info_table(
+    _info_row(kind.capitalize(), title or "—") +
+    _info_row("Status", "Approved &amp; live")
+)}
+
+{_button("View it", link or SITE_URL)}
+"""
+    html = _base_template(subject, body, "Thanks for contributing to the AdsyClub community.")
+    return _send_email(subject, user.email, text, html)
+
+
+def send_post_rejected_email(user, title, kind="post", reason="", link=""):
+    """Notify a user that their post/listing was not approved."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = f"Your {kind} was not approved"
+    text = f"Hi {name}, your {kind} \"{title}\" was not approved."
+    reason_row = _info_row("Reason", reason) if reason else ""
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thanks for your submission. Unfortunately your {kind} <strong>could not be approved</strong> at this time.</p>
+
+{_info_table(
+    _info_row(kind.capitalize(), title or "—") +
+    reason_row +
+    _info_row("Status", "Not approved")
+)}
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">You're welcome to edit it to meet our guidelines and submit again.</p>
+{_button("Review &amp; edit", link or SITE_URL)}
+"""
+    html = _base_template(
+        subject, body,
+        f"Questions? Contact {SUPPORT_EMAIL} and we'll be glad to help.",
+    )
+    return _send_email(subject, user.email, text, html)
+
+
+def send_driver_approved_email(user):
+    """Notify a rideshare driver that their application was approved."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = "You're approved to drive 🚗"
+    text = f"Hi {name}, your AdsyClub driver application has been approved. You can now go online and accept rides."
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Congratulations — your driver application has been <strong>approved</strong>! You can now go online and start accepting ride requests. 🚗</p>
+
+{_info_table(
+    _info_row("Status", "Approved") +
+    _info_row("Next step", "Go online in the app to receive rides")
+)}
+
+{_button("Open AdsyClub", SITE_URL)}
+"""
+    html = _base_template(subject, body, "Drive safely and provide great service to earn top ratings.")
+    return _send_email(subject, user.email, text, html)
+
+
+def send_driver_rejected_email(user, reason=""):
+    """Notify a rideshare driver that their application was not approved."""
+    if not user or not user.email:
+        return False
+    name = user.name or user.first_name or "there"
+    subject = "Update on your driver application"
+    text = f"Hi {name}, your AdsyClub driver application was not approved."
+    reason_row = _info_row("Reason", reason) if reason else ""
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you for applying to drive with AdsyClub. After review, your application <strong>could not be approved</strong> at this time.</p>
+
+{_info_table(
+    _info_row("Status", "Not approved") +
+    reason_row
+)}
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">You may update your details and re-apply.</p>
+"""
+    html = _base_template(
+        subject, body,
+        f"For details, contact {SUPPORT_EMAIL} or {SUPPORT_PHONE}.",
+    )
+    return _send_email(subject, user.email, text, html)
+
+
 def send_test_email(to_email=None):
     """Send a test email to verify SMTP configuration"""
     if not to_email:
