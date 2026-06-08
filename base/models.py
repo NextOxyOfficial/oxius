@@ -1753,6 +1753,27 @@ class UserNotification(models.Model):
         return f"{who}: {self.title}"
 
 
+class NotificationRead(models.Model):
+    """Per-user read receipt for a UserNotification.
+
+    Broadcast notifications (UserNotification.user is null) are a single row
+    shared by everyone, so their row-level `is_read` flag can't track who has
+    read them. This table records, per user, which notifications they've read —
+    so a broadcast stays "seen" after a reload.
+    """
+    notification = models.ForeignKey(
+        UserNotification, on_delete=models.CASCADE, related_name="read_receipts"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notification_reads"
+    )
+    read_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("notification", "user")
+        indexes = [models.Index(fields=["user", "notification"])]
+
+
 class EmailTemplatePreview(models.Model):
     """Placeholder model that gives the email-template preview tool an entry in
     the admin sidebar. It stores no data — the admin page renders the real email

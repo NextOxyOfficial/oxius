@@ -226,6 +226,8 @@ class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
 class UserNotificationSerializer(serializers.ModelSerializer):
     # Convenience flag for the client: only show the "Visit" button when set.
     has_visit = serializers.SerializerMethodField()
+    # Per-user read state (broadcasts use per-user read receipts, not the row flag).
+    is_read = serializers.SerializerMethodField()
 
     class Meta:
         model = UserNotification
@@ -243,6 +245,14 @@ class UserNotificationSerializer(serializers.ModelSerializer):
 
     def get_has_visit(self, obj):
         return bool((obj.deep_link or "").strip())
+
+    def get_is_read(self, obj):
+        # Own notifications use their row flag; broadcasts (user is null) use the
+        # set of read receipts for this user passed in via serializer context.
+        if obj.user_id is not None:
+            return bool(obj.is_read)
+        read_ids = self.context.get("read_broadcast_ids") or set()
+        return obj.id in read_ids
 
 
 class NIDSerializer(serializers.ModelSerializer):
