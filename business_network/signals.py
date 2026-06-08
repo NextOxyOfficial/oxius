@@ -14,7 +14,7 @@ from .models import (
     BusinessNetworkPost,
     UserSavedPosts,
 )
-from base.fcm_service import send_fcm_notification
+from base.fcm_service import send_fcm_notification_async
 from base.models import FCMToken
 
 
@@ -85,7 +85,7 @@ def create_follow_notification(sender, instance, created, **kwargs):
         # Send FCM push notification
         tokens = FCMToken.objects.filter(user=instance.following, is_active=True)
         for token in tokens:
-            send_fcm_notification(
+            send_fcm_notification_async(
                 fcm_token=token.token,
                 title='New Follower',
                 body=f'{instance.follower.get_full_name() or instance.follower.email} started following you',
@@ -118,7 +118,7 @@ def create_post_like_notification(sender, instance, created, **kwargs):
         # Send FCM push notification
         tokens = FCMToken.objects.filter(user=instance.post.author, is_active=True)
         for token in tokens:
-            send_fcm_notification(
+            send_fcm_notification_async(
                 fcm_token=token.token,
                 title='Post Liked',
                 body=f'{instance.user.get_full_name() or instance.user.email} liked your post',
@@ -149,7 +149,7 @@ def create_post_comment_notification(sender, instance, created, **kwargs):
         tokens = FCMToken.objects.filter(user=instance.post.author, is_active=True)
         comment_preview = instance.content[:50] + '...' if len(instance.content) > 50 else instance.content
         for token in tokens:
-            send_fcm_notification(
+            send_fcm_notification_async(
                 fcm_token=token.token,
                 title='New Comment',
                 body=f'{instance.author.get_full_name() or instance.author.email}: {comment_preview}',
