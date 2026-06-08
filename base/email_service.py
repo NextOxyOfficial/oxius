@@ -703,6 +703,64 @@ def send_product_order_email(seller, order, items):
     return _send_email(subject, seller.email, text, html)
 
 
+def send_order_confirmation_email(buyer, order):
+    """Order confirmation to the customer with full order + payment details."""
+    email = (getattr(buyer, "email", None) if buyer else None) or getattr(order, "email", None)
+    if not email:
+        return False
+    name = (getattr(buyer, "name", None) if buyer else None) or order.name or "there"
+    subject = f"Order confirmed — #{order.order_number}"
+
+    item_rows = ""
+    try:
+        order_items = order.items.select_related("product").all()
+    except Exception:
+        order_items = []
+    for it in order_items:
+        product_name = it.product.name if getattr(it, "product", None) else "Product"
+        item_rows += _info_row(f"{product_name} × {it.quantity}", f"৳{it.price}")
+
+    pay_method = (
+        order.get_payment_method_display()
+        if hasattr(order, "get_payment_method_display")
+        else (order.payment_method or "N/A")
+    )
+    order_status = (
+        order.get_order_status_display()
+        if hasattr(order, "get_order_status_display")
+        else (order.order_status or "Pending")
+    )
+
+    text = (
+        f"Hi {name}, your AdsyClub order #{order.order_number} is confirmed. "
+        f"Total: ৳{order.total}."
+    )
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you for your order! 🎉 Here are your order and payment details.</p>
+
+{_info_table(
+    _info_row("Order No", f"#{order.order_number}") +
+    item_rows +
+    _info_row("Delivery fee", f"৳{order.delivery_fee}") +
+    _info_row("Total paid", f"৳{order.total}") +
+    _info_row("Payment method", pay_method) +
+    _info_row("Status", order_status) +
+    _info_row("Delivery address", order.address or "N/A")
+)}
+
+{_button("View My Order", SITE_URL + "/order/" + str(order.id))}
+"""
+
+    html = _base_template(
+        subject, body,
+        "We'll keep you posted as your order is processed and shipped. "
+        f"Need help? Contact {SUPPORT_EMAIL} or {SUPPORT_PHONE}.",
+    )
+    return _send_email(subject, email, text, html)
+
+
 def send_test_email(to_email=None):
     """Send a test email to verify SMTP configuration"""
     if not to_email:

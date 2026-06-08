@@ -46,15 +46,40 @@ class _SampleItem:
         self.price = price
 
 
+class _SampleItemsManager:
+    """Mimics order.items.select_related(...).all() for previews."""
+    def __init__(self, items):
+        self._items = items
+
+    def select_related(self, *args, **kwargs):
+        return self
+
+    def all(self):
+        return self._items
+
+
 class _SampleOrder:
     order_number = "AC284417"
+    id = "ac284417-sample"
     name = "Rahim Uddin"
     phone = "01700000000"
     address = "House 12, Road 5, Dhanmondi, Dhaka"
     payment_method = "cash_on_delivery"
+    order_status = "pending"
+    delivery_fee = 60
+    total = 2050
+
+    def __init__(self):
+        self.items = _SampleItemsManager([
+            _SampleItem("Wireless Earbuds", 1, 1490),
+            _SampleItem("Phone Case", 2, 250),
+        ])
 
     def get_payment_method_display(self):
         return "Cash on Delivery"
+
+    def get_order_status_display(self):
+        return "Pending"
 
 
 def _registry():
@@ -85,6 +110,9 @@ def _registry():
         ("product_order", "Store: new order received", lambda: es.send_product_order_email(
             s, _SampleOrder(),
             [_SampleItem("Wireless Earbuds", 1, 1490), _SampleItem("Phone Case", 2, 250)],
+        )),
+        ("order_confirmation", "Customer: order confirmation", lambda: es.send_order_confirmation_email(
+            u, _SampleOrder(),
         )),
     ]
 

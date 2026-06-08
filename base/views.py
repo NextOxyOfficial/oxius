@@ -3744,6 +3744,14 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         f"Error: Seller with id {seller_id} does not exist for order {order.id}"
                     )
 
+            # Email the customer their order + payment confirmation (registered users)
+            try:
+                from .email_service import send_order_confirmation_email
+                if buyer and getattr(buyer, "is_authenticated", False):
+                    send_order_confirmation_email(buyer, order)
+            except Exception as e:
+                print(f"Error sending order confirmation email to buyer: {str(e)}")
+
             # Return the complete order details
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
