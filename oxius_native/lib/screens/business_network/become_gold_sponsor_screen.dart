@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../services/auth_service.dart';
 import '../../services/gold_sponsor_service.dart';
+import '../../services/geo_service.dart';
 import '../../models/gold_sponsor_models.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -41,12 +42,49 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   bool _targetAllBangladesh = true;
   final List<Map<String, String>> _locations = [];
   int _locSeq = 0;
-  int _discountPercent = 0; // % off for specific-location targeting
+  int _discountPercent = 0; // % off for tightly-targeted ads
   int _maxLocations = 10;
-  static const List<String> _bdDivisions = [
-    'Dhaka', 'Chattogram', 'Khulna', 'Rajshahi',
-    'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh',
-  ];
+  int _maxDiscountDivisions = 2;
+
+  // Geo data from the database (names match user addresses — no manual typing).
+  List<String> _divisionOptions = [];
+  final Map<String, List<String>> _citiesByDivision = {};
+  final Map<String, List<String>> _areasByCity = {};
+
+  Future<void> _loadDivisions() async {
+    try {
+      final rows = await GeoService.getRegions('Bangladesh');
+      if (!mounted) return;
+      setState(() => _divisionOptions = rows
+          .map((r) => (r['name_eng'] ?? '').toString())
+          .where((s) => s.isNotEmpty)
+          .toList());
+    } catch (_) {}
+  }
+
+  Future<void> _loadCitiesFor(String division) async {
+    if (division.isEmpty || _citiesByDivision.containsKey(division)) return;
+    try {
+      final rows = await GeoService.getCities(division);
+      if (!mounted) return;
+      setState(() => _citiesByDivision[division] = rows
+          .map((r) => (r['name_eng'] ?? '').toString())
+          .where((s) => s.isNotEmpty)
+          .toList());
+    } catch (_) {}
+  }
+
+  Future<void> _loadAreasFor(String city) async {
+    if (city.isEmpty || _areasByCity.containsKey(city)) return;
+    try {
+      final rows = await GeoService.getUpazilas(city);
+      if (!mounted) return;
+      setState(() => _areasByCity[city] = rows
+          .map((r) => (r['name_eng'] ?? '').toString())
+          .where((s) => s.isNotEmpty)
+          .toList());
+    } catch (_) {}
+  }
 
   void _addLocationRow() {
     if (_locations.length >= _maxLocations) return;
@@ -54,14 +92,25 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         .add({'_id': '${_locSeq++}', 'division': '', 'city': '', 'area': ''}));
   }
 
+  int get _distinctDivisionCount => _locations
+      .map((l) => (l['division'] ?? '').trim().toLowerCase())
+      .where((s) => s.isNotEmpty)
+      .toSet()
+      .length;
+
+  bool get _discountEligible =>
+      !_targetAllBangladesh &&
+      _locations.isNotEmpty &&
+      _distinctDivisionCount <= _maxDiscountDivisions;
+
   double get _selectedPackagePrice {
     final pkg = _packages.where((p) => p.id == _selectedPackageId);
     return pkg.isEmpty ? 0 : pkg.first.price.toDouble();
   }
 
-  double get _effectivePrice => _targetAllBangladesh
-      ? _selectedPackagePrice
-      : (_selectedPackagePrice * (100 - _discountPercent) / 100).roundToDouble();
+  double get _effectivePrice => _discountEligible
+      ? (_selectedPackagePrice * (100 - _discountPercent) / 100).roundToDouble()
+      : _selectedPackagePrice;
   bool _success = false;
 
   List<SponsorshipPackage> _packages = [];
@@ -72,6 +121,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     _loadUserBalance();
     _loadPackages();
     _loadPricingConfig();
+    _loadDivisions();
   }
 
   Future<void> _loadPricingConfig() async {
@@ -80,6 +130,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     setState(() {
       _discountPercent = cfg['discount'] ?? 0;
       _maxLocations = cfg['maxLocations'] ?? 10;
+      _maxDiscountDivisions = cfg['maxDiscountDivisions'] ?? 2;
     });
   }
 
@@ -746,75 +797,149 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: const Color(0xFFFDE68A)),
             ),
-            child: _targetAllBangladesh
-                ? Text(
-                    'You pay ৳${_selectedPackagePrice.toStringAsFixed(0)} (all over Bangladesh)',
-                    style: const TextStyle(fontSize: 13, color: Color(0xFF374151)))
-                : Row(
-                    children: [
-                      const Text('You pay ', style: TextStyle(fontSize: 13, color: Color(0xFF374151))),
-                      Text('৳${_effectivePrice.toStringAsFixed(0)}',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF059669))),
-                      const SizedBox(width: 6),
-                      Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF9CA3AF),
-                              decoration: TextDecoration.lineThrough)),
-                      const SizedBox(width: 6),
-                      Text('$_discountPercent% off',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF059669))),
-                    ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _discountEligible
+                    ? Row(
+                        children: [
+                          const Text('You pay ', style: TextStyle(fontSize: 13, color: Color(0xFF374151))),
+                          Text('৳${_effectivePrice.toStringAsFixed(0)}',
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF059669))),
+                          const SizedBox(width: 6),
+                          Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF9CA3AF),
+                                  decoration: TextDecoration.lineThrough)),
+                          const SizedBox(width: 6),
+                          Text('$_discountPercent% off',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF059669))),
+                        ],
+                      )
+                    : Text(
+                        'You pay ৳${_selectedPackagePrice.toStringAsFixed(0)}'
+                        '${_targetAllBangladesh ? ' (all over Bangladesh)' : ' (full price)'}',
+                        style: const TextStyle(fontSize: 13, color: Color(0xFF374151))),
+                if (!_targetAllBangladesh &&
+                    _distinctDivisionCount > _maxDiscountDivisions)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'ⓘ Discount applies to up to $_maxDiscountDivisions divisions. You\'re targeting $_distinctDivisionCount — full price.',
+                      style: const TextStyle(fontSize: 11, color: Color(0xFFB45309)),
+                    ),
                   ),
+              ],
+            ),
           ),
       ],
     );
   }
 
   Widget _buildLocationRow(Map<String, String> loc) {
-    return Padding(
+    final division = loc['division'] ?? '';
+    final city = loc['city'] ?? '';
+    final cities = _citiesByDivision[division] ?? const <String>[];
+    final areas = _areasByCity[city] ?? const <String>[];
+    return Container(
       key: ValueKey(loc['_id']),
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
         children: [
-          Expanded(
-            flex: 4,
-            child: DropdownButtonFormField<String>(
-              value: (loc['division'] ?? '').isEmpty ? null : loc['division'],
-              isExpanded: true,
-              decoration: const InputDecoration(
-                hintText: 'Division',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _locDropdown(
+                  hint: 'Select division',
+                  value: division.isEmpty ? null : division,
+                  items: _divisionOptions,
+                  onChanged: (v) {
+                    setState(() {
+                      loc['division'] = v ?? '';
+                      loc['city'] = '';
+                      loc['area'] = '';
+                    });
+                    if (v != null) _loadCitiesFor(v);
+                  },
+                ),
               ),
-              items: _bdDivisions
-                  .map((d) => DropdownMenuItem(
-                      value: d,
-                      child: Text(d, style: const TextStyle(fontSize: 13))))
-                  .toList(),
-              onChanged: (v) => setState(() => loc['division'] = v ?? ''),
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            flex: 4,
-            child: TextFormField(
-              initialValue: loc['city'],
-              style: const TextStyle(fontSize: 13),
-              decoration: const InputDecoration(
-                hintText: 'City (optional)',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              IconButton(
+                icon: const Icon(Icons.close, size: 18, color: Colors.red),
+                onPressed: () => setState(() => _locations.remove(loc)),
               ),
-              onChanged: (v) => loc['city'] = v,
-            ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 18, color: Colors.red),
-            onPressed: () => setState(() => _locations.remove(loc)),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: _locDropdown(
+                  hint: 'City (optional)',
+                  value: city.isEmpty ? null : city,
+                  items: cities,
+                  enabled: division.isNotEmpty,
+                  onChanged: (v) {
+                    setState(() {
+                      loc['city'] = v ?? '';
+                      loc['area'] = '';
+                    });
+                    if (v != null) _loadAreasFor(v);
+                  },
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _locDropdown(
+                  hint: 'Area (optional)',
+                  value: (loc['area'] ?? '').isEmpty ? null : loc['area'],
+                  items: areas,
+                  enabled: city.isNotEmpty,
+                  onChanged: (v) => setState(() => loc['area'] = v ?? ''),
+                ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _locDropdown({
+    required String hint,
+    required String? value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    bool enabled = true,
+  }) {
+    // Guard against a value that isn't in items yet (e.g. before they load).
+    final safeValue = (value != null && items.contains(value)) ? value : null;
+    return DropdownButtonFormField<String>(
+      value: safeValue,
+      isExpanded: true,
+      hint: Text(hint,
+          style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+          overflow: TextOverflow.ellipsis),
+      decoration: InputDecoration(
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        filled: !enabled,
+        fillColor: const Color(0xFFF1F5F9),
+      ),
+      items: items
+          .map((d) => DropdownMenuItem(
+              value: d,
+              child: Text(d,
+                  style: const TextStyle(fontSize: 13),
+                  overflow: TextOverflow.ellipsis)))
+          .toList(),
+      onChanged: enabled ? onChanged : null,
     );
   }
 

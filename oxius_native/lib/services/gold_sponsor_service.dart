@@ -22,6 +22,8 @@ class GoldSponsorService {
           'discount':
               (d['specific_location_discount_percent'] as num?)?.toInt() ?? 0,
           'maxLocations': (d['max_custom_locations'] as num?)?.toInt() ?? 10,
+          'maxDiscountDivisions':
+              (d['max_discount_divisions'] as num?)?.toInt() ?? 2,
         };
       }
     } catch (e) {

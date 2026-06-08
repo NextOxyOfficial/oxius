@@ -490,12 +490,18 @@
                     :key="i"
                     class="flex flex-col sm:flex-row gap-2 items-stretch"
                   >
-                    <select v-model="loc.division" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                      <option value="">Any division</option>
-                      <option v-for="d in bdDivisions" :key="d" :value="d">{{ d }}</option>
+                    <select v-model="loc.division" @change="onRowDivisionChange(loc)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="">Select division</option>
+                      <option v-for="d in divisionOptions" :key="d.name_eng" :value="d.name_eng">{{ d.name_eng }}</option>
                     </select>
-                    <input v-model="loc.city" type="text" placeholder="City / District (optional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-                    <input v-model="loc.area" type="text" placeholder="Area / Upazila (optional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                    <select v-model="loc.city" @change="onRowCityChange(loc)" :disabled="!loc.division" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-100">
+                      <option value="">City / District (optional)</option>
+                      <option v-for="c in (citiesByDivision[loc.division] || [])" :key="c.name_eng" :value="c.name_eng">{{ c.name_eng }}</option>
+                    </select>
+                    <select v-model="loc.area" :disabled="!loc.city" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:bg-gray-100">
+                      <option value="">Area / Upazila (optional)</option>
+                      <option v-for="a in (areasByCity[loc.city] || [])" :key="a.name_eng" :value="a.name_eng">{{ a.name_eng }}</option>
+                    </select>
                     <button type="button" @click="removeLocationRow(i)" class="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm" title="Remove">✕</button>
                   </div>
                   <div class="flex items-center justify-between">
@@ -513,17 +519,20 @@
 
                 <!-- Price summary -->
                 <div v-if="fullPrice > 0" class="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-100 text-sm">
-                  <template v-if="targetAllBangladesh">
-                    <span class="text-gray-700">You pay </span>
-                    <span class="font-bold text-gray-900">৳{{ fullPrice.toLocaleString() }}</span>
-                    <span class="text-gray-500"> (all over Bangladesh)</span>
-                  </template>
-                  <template v-else>
+                  <template v-if="discountEligible">
                     <span class="text-gray-700">You pay </span>
                     <span class="font-bold text-emerald-600">৳{{ effectivePrice.toLocaleString() }}</span>
                     <span class="line-through text-gray-400 ml-1">৳{{ fullPrice.toLocaleString() }}</span>
                     <span class="text-emerald-600 font-medium ml-1">· {{ discountPercent }}% off</span>
                   </template>
+                  <template v-else>
+                    <span class="text-gray-700">You pay </span>
+                    <span class="font-bold text-gray-900">৳{{ fullPrice.toLocaleString() }}</span>
+                    <span class="text-gray-500"> (full price)</span>
+                  </template>
+                  <p v-if="!targetAllBangladesh && distinctDivisionCount > maxDiscountDivisions" class="mt-1 text-xs text-amber-700">
+                    ⓘ Discount applies to up to {{ maxDiscountDivisions }} divisions. You're targeting {{ distinctDivisionCount }} — full price.
+                  </p>
                 </div>
               </div>
 
@@ -681,13 +690,56 @@ const form = ref({
 });
 
 // Location targeting: empty list = show all over Bangladesh.
-const bdDivisions = [
-  "Dhaka", "Chattogram", "Khulna", "Rajshahi",
-  "Barishal", "Sylhet", "Rangpur", "Mymensingh",
-];
 const targetAllBangladesh = ref(true);
-const discountPercent = ref(0); // % off for specific-location targeting
+const discountPercent = ref(0); // % off for tightly-targeted ads
 const maxLocations = ref(10);
+const maxDiscountDivisions = ref(2);
+
+// Geo data straight from the database, so the names always match user addresses
+// (no manual typing, no spelling mistakes).
+const divisionOptions = ref([]);      // [{ name_eng, name_ban }]
+const citiesByDivision = ref({});     // { divisionName: [{ name_eng }] }
+const areasByCity = ref({});          // { cityName: [{ name_eng }] }
+
+async function fetchDivisions() {
+  try {
+    const res = await get("/geo/regions/?country_name_eng=Bangladesh");
+    const d = res?.data || res || [];
+    divisionOptions.value = Array.isArray(d) ? d : [];
+  } catch (e) {
+    console.error("Divisions load failed:", e);
+  }
+}
+async function loadCitiesFor(division) {
+  if (!division || citiesByDivision.value[division]) return;
+  try {
+    const res = await get(`/geo/cities/?region_name_eng=${encodeURIComponent(division)}`);
+    const d = res?.data || res || [];
+    citiesByDivision.value = { ...citiesByDivision.value, [division]: Array.isArray(d) ? d : [] };
+  } catch (e) {
+    console.error("Cities load failed:", e);
+  }
+}
+async function loadAreasFor(city) {
+  if (!city || areasByCity.value[city]) return;
+  try {
+    const res = await get(`/geo/upazila/?city_name_eng=${encodeURIComponent(city)}`);
+    const d = res?.data || res || [];
+    areasByCity.value = { ...areasByCity.value, [city]: Array.isArray(d) ? d : [] };
+  } catch (e) {
+    console.error("Areas load failed:", e);
+  }
+}
+async function onRowDivisionChange(loc) {
+  loc.city = "";
+  loc.area = "";
+  await loadCitiesFor(loc.division);
+}
+async function onRowCityChange(loc) {
+  loc.area = "";
+  await loadAreasFor(loc.city);
+}
+
 function addLocationRow() {
   if (form.value.locations.length >= maxLocations.value) return;
   form.value.locations.push({ division: "", city: "", area: "" });
@@ -703,6 +755,22 @@ function onTargetModeChange() {
     addLocationRow();
   }
 }
+
+const distinctDivisionCount = computed(() => {
+  const set = new Set(
+    form.value.locations
+      .map((l) => (l.division || "").trim().toLowerCase())
+      .filter(Boolean)
+  );
+  return set.size;
+});
+const discountEligible = computed(
+  () =>
+    !targetAllBangladesh.value &&
+    form.value.locations.length > 0 &&
+    distinctDivisionCount.value <= maxDiscountDivisions.value
+);
+
 async function fetchPricingConfig() {
   try {
     const res = await get("/bn/gold-sponsors/pricing-config/");
@@ -710,6 +778,7 @@ async function fetchPricingConfig() {
     if (d) {
       discountPercent.value = Number(d.specific_location_discount_percent) || 0;
       maxLocations.value = Number(d.max_custom_locations) || 10;
+      maxDiscountDivisions.value = Number(d.max_discount_divisions) || 2;
     }
   } catch (e) {
     console.error("Pricing config fetch failed:", e);
@@ -782,6 +851,12 @@ const populateFormForEdit = (sponsor) => {
     })),
   };
   targetAllBangladesh.value = (form.value.locations.length === 0);
+  // Load the city/area options for each existing target so the dropdowns show them.
+  fetchDivisions();
+  for (const l of form.value.locations) {
+    if (l.division) loadCitiesFor(l.division);
+    if (l.city) loadAreasFor(l.city);
+  }
 
   // Set logo preview if exists
   if (sponsor.logo) {
@@ -954,13 +1029,14 @@ const selectedPackage = computed(() => {
 
 const fullPrice = computed(() => Number(selectedPackage.value?.price) || 0);
 const effectivePrice = computed(() => {
-  if (targetAllBangladesh.value) return fullPrice.value;
+  if (!discountEligible.value) return fullPrice.value;
   return Math.round(fullPrice.value * (1 - discountPercent.value / 100));
 });
 
 // Fetch packages from API
 const fetchPackages = async () => {
   fetchPricingConfig();
+  fetchDivisions();
   isLoadingPackages.value = true;
   packageError.value = "";
 
