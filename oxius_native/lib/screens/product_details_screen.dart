@@ -37,6 +37,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
 
   int _selectedImageIndex = 0;
   int _quantity = 1;
+  bool _shortDescExpanded = false;
   bool _isLoading = true;
   bool _isLoadingStoreProducts = false;
 
@@ -858,12 +859,35 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             const SizedBox(height: 10),
             Text(
               shortDescription,
+              // Cap long short-descriptions so a vendor pasting a wall of text
+              // can't blow up the layout; the toggle below reveals the rest.
+              maxLines: _shortDescExpanded ? null : 3,
+              overflow: _shortDescExpanded
+                  ? TextOverflow.visible
+                  : TextOverflow.ellipsis,
               style: AppFonts.roboto(
                 fontSize: 12,
                 color: _slate500,
                 height: 1.5,
               ),
             ),
+            if (shortDescription.trim().length > 140)
+              GestureDetector(
+                onTap: () => setState(
+                    () => _shortDescExpanded = !_shortDescExpanded),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    _shortDescExpanded ? 'কম দেখান' : 'আরও দেখুন',
+                    style: AppFonts.roboto(
+                      fontSize: 12,
+                      color: _emerald,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ],
       ),
