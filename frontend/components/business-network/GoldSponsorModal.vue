@@ -478,6 +478,9 @@
                   <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                     <input type="radio" :value="false" v-model="targetAllBangladesh" @change="onTargetModeChange" class="text-amber-500" />
                     Specific locations
+                    <span v-if="discountPercent > 0" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      {{ discountPercent }}% OFF
+                    </span>
                   </label>
                 </div>
 
@@ -495,9 +498,32 @@
                     <input v-model="loc.area" type="text" placeholder="Area / Upazila (optional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                     <button type="button" @click="removeLocationRow(i)" class="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm" title="Remove">✕</button>
                   </div>
-                  <button type="button" @click="addLocationRow" class="text-sm text-amber-600 font-medium hover:underline">
-                    + Add another location
-                  </button>
+                  <div class="flex items-center justify-between">
+                    <button
+                      type="button"
+                      @click="addLocationRow"
+                      :disabled="form.locations.length >= maxLocations"
+                      class="text-sm text-amber-600 font-medium hover:underline disabled:text-gray-400 disabled:no-underline"
+                    >
+                      + Add another location
+                    </button>
+                    <span class="text-xs text-gray-400">{{ form.locations.length }} / {{ maxLocations }}</span>
+                  </div>
+                </div>
+
+                <!-- Price summary -->
+                <div v-if="fullPrice > 0" class="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-100 text-sm">
+                  <template v-if="targetAllBangladesh">
+                    <span class="text-gray-700">You pay </span>
+                    <span class="font-bold text-gray-900">৳{{ fullPrice.toLocaleString() }}</span>
+                    <span class="text-gray-500"> (all over Bangladesh)</span>
+                  </template>
+                  <template v-else>
+                    <span class="text-gray-700">You pay </span>
+                    <span class="font-bold text-emerald-600">৳{{ effectivePrice.toLocaleString() }}</span>
+                    <span class="line-through text-gray-400 ml-1">৳{{ fullPrice.toLocaleString() }}</span>
+                    <span class="text-emerald-600 font-medium ml-1">· {{ discountPercent }}% off</span>
+                  </template>
                 </div>
               </div>
 
@@ -660,7 +686,10 @@ const bdDivisions = [
   "Barishal", "Sylhet", "Rangpur", "Mymensingh",
 ];
 const targetAllBangladesh = ref(true);
+const discountPercent = ref(0); // % off for specific-location targeting
+const maxLocations = ref(10);
 function addLocationRow() {
+  if (form.value.locations.length >= maxLocations.value) return;
   form.value.locations.push({ division: "", city: "", area: "" });
 }
 function removeLocationRow(index) {
@@ -672,6 +701,18 @@ function onTargetModeChange() {
     form.value.locations = [];
   } else if (form.value.locations.length === 0) {
     addLocationRow();
+  }
+}
+async function fetchPricingConfig() {
+  try {
+    const res = await get("/bn/gold-sponsors/pricing-config/");
+    const d = res?.data || res;
+    if (d) {
+      discountPercent.value = Number(d.specific_location_discount_percent) || 0;
+      maxLocations.value = Number(d.max_custom_locations) || 10;
+    }
+  } catch (e) {
+    console.error("Pricing config fetch failed:", e);
   }
 }
 
@@ -911,8 +952,15 @@ const selectedPackage = computed(() => {
   return packages.value.find((pkg) => pkg.id === form.value.selectedPackage);
 });
 
+const fullPrice = computed(() => Number(selectedPackage.value?.price) || 0);
+const effectivePrice = computed(() => {
+  if (targetAllBangladesh.value) return fullPrice.value;
+  return Math.round(fullPrice.value * (1 - discountPercent.value / 100));
+});
+
 // Fetch packages from API
 const fetchPackages = async () => {
+  fetchPricingConfig();
   isLoadingPackages.value = true;
   packageError.value = "";
 

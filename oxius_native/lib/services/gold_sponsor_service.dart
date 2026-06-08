@@ -10,10 +10,30 @@ class GoldSponsorService {
   static String get baseUrl => ApiService.baseUrl;
   
   // Fetch sponsorship packages
+  /// Pricing rules for location targeting (discount % + max custom locations).
+  static Future<Map<String, int>> getPricingConfig() async {
+    try {
+      final response = await http
+          .get(Uri.parse('$baseUrl/bn/gold-sponsors/pricing-config/'))
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        final d = json.decode(response.body) as Map<String, dynamic>;
+        return {
+          'discount':
+              (d['specific_location_discount_percent'] as num?)?.toInt() ?? 0,
+          'maxLocations': (d['max_custom_locations'] as num?)?.toInt() ?? 10,
+        };
+      }
+    } catch (e) {
+      print('getPricingConfig error: $e');
+    }
+    return {'discount': 0, 'maxLocations': 10};
+  }
+
   static Future<List<SponsorshipPackage>> getPackages() async {
     try {
       final token = AuthService.accessToken;
-      
+
       final headers = {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',

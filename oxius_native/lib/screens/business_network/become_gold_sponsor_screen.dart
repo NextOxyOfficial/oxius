@@ -41,13 +41,27 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   bool _targetAllBangladesh = true;
   final List<Map<String, String>> _locations = [];
   int _locSeq = 0;
+  int _discountPercent = 0; // % off for specific-location targeting
+  int _maxLocations = 10;
   static const List<String> _bdDivisions = [
     'Dhaka', 'Chattogram', 'Khulna', 'Rajshahi',
     'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh',
   ];
 
-  void _addLocationRow() => setState(
-      () => _locations.add({'_id': '${_locSeq++}', 'division': '', 'city': '', 'area': ''}));
+  void _addLocationRow() {
+    if (_locations.length >= _maxLocations) return;
+    setState(() => _locations
+        .add({'_id': '${_locSeq++}', 'division': '', 'city': '', 'area': ''}));
+  }
+
+  double get _selectedPackagePrice {
+    final pkg = _packages.where((p) => p.id == _selectedPackageId);
+    return pkg.isEmpty ? 0 : pkg.first.price.toDouble();
+  }
+
+  double get _effectivePrice => _targetAllBangladesh
+      ? _selectedPackagePrice
+      : (_selectedPackagePrice * (100 - _discountPercent) / 100).roundToDouble();
   bool _success = false;
 
   List<SponsorshipPackage> _packages = [];
@@ -57,6 +71,16 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     super.initState();
     _loadUserBalance();
     _loadPackages();
+    _loadPricingConfig();
+  }
+
+  Future<void> _loadPricingConfig() async {
+    final cfg = await GoldSponsorService.getPricingConfig();
+    if (!mounted) return;
+    setState(() {
+      _discountPercent = cfg['discount'] ?? 0;
+      _maxLocations = cfg['maxLocations'] ?? 10;
+    });
   }
 
   @override
@@ -670,7 +694,26 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 groupValue: _targetAllBangladesh,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Specific', style: TextStyle(fontSize: 13)),
+                title: Row(
+                  children: [
+                    const Flexible(child: Text('Specific', style: TextStyle(fontSize: 13))),
+                    if (_discountPercent > 0) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD1FAE5),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text('$_discountPercent% OFF',
+                            style: const TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF059669))),
+                      ),
+                    ],
+                  ],
+                ),
                 onChanged: (v) => setState(() {
                   _targetAllBangladesh = false;
                   if (_locations.isEmpty) _addLocationRow();
@@ -681,15 +724,49 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         ),
         if (!_targetAllBangladesh) ...[
           ..._locations.map(_buildLocationRow),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: _addLocationRow,
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add another location'),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton.icon(
+                onPressed: _locations.length >= _maxLocations ? null : _addLocationRow,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add another location'),
+              ),
+              Text('${_locations.length} / $_maxLocations',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+            ],
           ),
         ],
+        if (_selectedPackagePrice > 0)
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFBEB),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFDE68A)),
+            ),
+            child: _targetAllBangladesh
+                ? Text(
+                    'You pay ৳${_selectedPackagePrice.toStringAsFixed(0)} (all over Bangladesh)',
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF374151)))
+                : Row(
+                    children: [
+                      const Text('You pay ', style: TextStyle(fontSize: 13, color: Color(0xFF374151))),
+                      Text('৳${_effectivePrice.toStringAsFixed(0)}',
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF059669))),
+                      const SizedBox(width: 6),
+                      Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF9CA3AF),
+                              decoration: TextDecoration.lineThrough)),
+                      const SizedBox(width: 6),
+                      Text('$_discountPercent% off',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF059669))),
+                    ],
+                  ),
+          ),
       ],
     );
   }
