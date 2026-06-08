@@ -329,7 +329,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(2, 16, 2, 16),
+        padding: const EdgeInsets.fromLTRB(4, 16, 4, 16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -337,7 +337,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
             children: [
               // Info Card
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Colors.amber.shade50, Colors.yellow.shade50],

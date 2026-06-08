@@ -419,7 +419,7 @@ def update_user(request, email):
         except Exception as e:
             print(f"update_user save error: {e}")
             return Response(
-                {"message": "তথ্য সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"},
+                {"message": "তথ্য সেভ করা যায়নি। আবার চেষ্টা করুন।"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

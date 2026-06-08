@@ -1999,7 +1999,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       'ride cancelled': 'রাইড বাতিল হয়েছে।',
       'application submitted! wait for admin approval.':
           'আবেদন জমা হয়েছে। এখন অ্যাডমিন অনুমোদনের জন্য অপেক্ষা করুন।',
-      'profile saved': 'প্রোফাইল সংরক্ষণ করা হয়েছে।',
+      'profile saved': 'প্রোফাইল সেভ করা হয়েছে।',
       'you are now online': 'আপনি এখন অনলাইনে আছেন।',
       'you are now offline': 'আপনি এখন অফলাইনে আছেন।',
       'done!': 'সম্পন্ন হয়েছে!',
