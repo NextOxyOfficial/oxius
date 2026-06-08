@@ -938,6 +938,35 @@ class GoldSponsor(models.Model):
         return self.business_name
 
 
+class GoldSponsorLocation(models.Model):
+    """One geographic target for a Gold Sponsor ad.
+
+    A sponsor with NO location rows is shown all over Bangladesh (default). With
+    one or more rows it's shown only to users whose division/city/area matches at
+    least one row. Within a row, leave a field blank to match any value for it —
+    e.g. division="Dhaka" with blank city/area targets the whole Dhaka division.
+    """
+    sponsor = models.ForeignKey(
+        GoldSponsor, on_delete=models.CASCADE, related_name='locations')
+    division = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text='Division / State (e.g. Dhaka). Blank = any division.')
+    city = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text='City / District. Blank = any city.')
+    area = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text='Area / Upazila. Blank = any area.')
+
+    class Meta:
+        verbose_name = 'Target location'
+        verbose_name_plural = 'Target locations'
+
+    def __str__(self):
+        bits = [b for b in (self.division, self.city, self.area) if b]
+        return ' › '.join(bits) or 'All Bangladesh'
+
+
 def sponsor_banner_path(instance, filename):
     """Generate a unique path for uploading sponsor banners"""
     ext = filename.split('.')[-1]

@@ -89,14 +89,30 @@ class GoldSponsorBannerInline(admin.TabularInline):
     extra = 1
     fields = ['title', 'image', 'link_url', 'order', 'is_active']
 
+
+class GoldSponsorLocationInline(admin.TabularInline):
+    """Target locations. No rows = shown all over Bangladesh; add rows to limit
+    the sponsor to those divisions/cities/areas."""
+    model = GoldSponsorLocation
+    extra = 1
+    verbose_name = "Target location (no rows = all Bangladesh)"
+    verbose_name_plural = "Target locations (leave empty to show all over Bangladesh)"
+
 @admin.register(GoldSponsor)
 class GoldSponsorAdmin(admin.ModelAdmin):
-    list_display = ['business_name', 'user', 'contact_email', 'package', 'status', 'views', 'is_featured', 'start_date', 'end_date']
+    list_display = ['business_name', 'user', 'contact_email', 'package', 'status', 'targeted_locations', 'views', 'is_featured', 'start_date', 'end_date']
     list_filter = ['status', 'is_featured', 'package', 'created_at', 'user']
-    search_fields = ['business_name', 'contact_email', 'phone_number', 'user__username', 'user__email']
+    search_fields = ['business_name', 'contact_email', 'phone_number', 'user__username', 'user__email', 'locations__division', 'locations__city', 'locations__area']
     ordering = ['-created_at']
     readonly_fields = ['slug', 'views', 'created_at', 'updated_at']
-    inlines = [GoldSponsorBannerInline]
+    inlines = [GoldSponsorBannerInline, GoldSponsorLocationInline]
+
+    def targeted_locations(self, obj):
+        rows = obj.locations.all()
+        if not rows:
+            return "🇧🇩 All Bangladesh"
+        return ", ".join(str(r) for r in rows[:3]) + ("…" if rows.count() > 3 else "")
+    targeted_locations.short_description = 'Locations'
     
     fieldsets = (
         ('Owner Information', {

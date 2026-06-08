@@ -4,7 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from django.db.models import F
-from business_network.models import SponsorshipPackage, GoldSponsor,GoldSponsorBanner
+from django.db.models import Q
+from business_network.models import SponsorshipPackage, GoldSponsor,GoldSponsorBanner, GoldSponsorLocation
 from .serializers import SponsorshipPackageSerializer, GoldSponsorCreateSerializer, GoldSponsorSerializer
 
 class SponsorshipPackageListView(generics.ListAPIView):
@@ -34,9 +35,37 @@ class GoldSponsorCreateView(generics.CreateAPIView):
         )
 
 class GoldSponsorListView(generics.ListAPIView):
-    """Get all active Gold Sponsors (for display purposes)"""
-    queryset = GoldSponsor.objects.filter(status='active').order_by('?')
+    """Active Gold Sponsors, filtered by the requesting user's location.
+
+    A sponsor with no target locations shows all over Bangladesh. A targeted
+    sponsor shows only to a logged-in user whose division (state) / city /
+    upazila matches at least one of its target rows. Anonymous visitors see only
+    the untargeted (all-Bangladesh) sponsors.
+    """
     serializer_class = GoldSponsorSerializer
+
+    def get_queryset(self):
+        base = GoldSponsor.objects.filter(status='active')
+        user = self.request.user if self.request.user.is_authenticated else None
+
+        # Sponsors that have at least one target row.
+        targeted_ids = set(
+            GoldSponsorLocation.objects.values_list('sponsor_id', flat=True)
+        )
+        # Untargeted sponsors (no rows) show everywhere.
+        keep_ids = set(base.exclude(id__in=targeted_ids).values_list('id', flat=True))
+
+        if user:
+            u_div = (getattr(user, 'state', '') or '').strip()
+            u_city = (getattr(user, 'city', '') or '').strip()
+            u_area = (getattr(user, 'upazila', '') or '').strip()
+            rows = GoldSponsorLocation.objects.filter(sponsor_id__in=targeted_ids)
+            rows = rows.filter(Q(division='') | Q(division__iexact=u_div))
+            rows = rows.filter(Q(city='') | Q(city__iexact=u_city))
+            rows = rows.filter(Q(area='') | Q(area__iexact=u_area))
+            keep_ids |= set(rows.values_list('sponsor_id', flat=True))
+
+        return base.filter(id__in=keep_ids).order_by('?')
 
 @api_view(['GET'])
 def gold_sponsor_stats(request):

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from business_network.models import SponsorshipPackage, GoldSponsor, GoldSponsorBanner
+from business_network.models import SponsorshipPackage, GoldSponsor, GoldSponsorBanner, GoldSponsorLocation
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 class SponsorshipPackageSerializer(serializers.ModelSerializer):
@@ -70,9 +70,49 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
             # Create banners from FormData
             for banner_data in banner_list:
                 GoldSponsorBanner.objects.create(sponsor=sponsor, **banner_data)
-            
+
+            # Create target locations (no rows = shown all over Bangladesh)
+            self._save_locations(sponsor, request)
+
             return sponsor
         except DjangoValidationError as e:            raise serializers.ValidationError(str(e))
+
+    def _save_locations(self, sponsor, request, clear=False):
+        """Save the sponsor's target locations from either a JSON `locations`
+        list or FormData (`location_count` + `location_<i>_division/city/area`)."""
+        from business_network.models import GoldSponsorLocation
+        if request is None:
+            return
+        rows = []
+        raw = request.data.get('locations')
+        if raw:
+            import json
+            try:
+                parsed = json.loads(raw) if isinstance(raw, str) else raw
+                for r in (parsed or []):
+                    rows.append({
+                        'division': (r.get('division') or '').strip(),
+                        'city': (r.get('city') or '').strip(),
+                        'area': (r.get('area') or '').strip(),
+                    })
+            except Exception:
+                pass
+        else:
+            try:
+                count = int(request.data.get('location_count', 0))
+            except (TypeError, ValueError):
+                count = 0
+            for i in range(count):
+                rows.append({
+                    'division': (request.data.get(f'location_{i}_division') or '').strip(),
+                    'city': (request.data.get(f'location_{i}_city') or '').strip(),
+                    'area': (request.data.get(f'location_{i}_area') or '').strip(),
+                })
+        rows = [r for r in rows if r['division'] or r['city'] or r['area']]
+        if clear:
+            sponsor.locations.all().delete()
+        for r in rows:
+            GoldSponsorLocation.objects.create(sponsor=sponsor, **r)
     
     def update(self, instance, validated_data):
         banners_data = validated_data.pop('banners', [])
@@ -112,21 +152,31 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
                     # Only add banner if it has at least a title or image
                     if title or image:
                         GoldSponsorBanner.objects.create(sponsor=sponsor, **banner_data)
-        
+
+            # Update target locations only when the client sends them.
+            if ('locations' in request.data) or ('location_count' in request.data):
+                self._save_locations(sponsor, request, clear=True)
+
         return sponsor
+
+class GoldSponsorLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GoldSponsorLocation
+        fields = ['division', 'city', 'area']
 
 class GoldSponsorSerializer(serializers.ModelSerializer):
     package = SponsorshipPackageSerializer(read_only=True)
     banners = GoldSponsorBannerSerializer(many=True, read_only=True)
+    locations = GoldSponsorLocationSerializer(many=True, read_only=True)
     user_username = serializers.CharField(source='user.username', read_only=True)
     days_remaining = serializers.SerializerMethodField()
     is_active_status = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = GoldSponsor
         fields = [
             'id', 'business_name', 'business_description', 'contact_email',
-            'phone_number', 'website', 'profile_url', 'logo', 'package', 'banners',
+            'phone_number', 'website', 'profile_url', 'logo', 'package', 'banners', 'locations',
             'start_date', 'end_date', 'status', 'is_featured', 'views', 'created_at',
             'user_username', 'days_remaining', 'is_active_status'
         ]
