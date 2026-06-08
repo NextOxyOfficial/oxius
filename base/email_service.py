@@ -13,8 +13,12 @@ logger = logging.getLogger(__name__)
 ADMIN_EMAIL = "alimulislam50@gmail.com"
 SITE_NAME = "AdsyClub"
 SITE_URL = "https://adsyclub.com"
-BRAND_COLOR = "#10B981"
-BRAND_COLOR_DARK = "#059669"
+# Match the AdsyConnect chat header (blue -> indigo -> violet).
+BRAND_COLOR = "#6366F1"          # indigo (solid uses: links, button fallback)
+BRAND_COLOR_DARK = "#8B5CF6"     # violet
+BRAND_GRADIENT = "linear-gradient(135deg,#3B82F6,#6366F1,#8B5CF6)"
+BRAND_GRADIENT_BAR = "linear-gradient(90deg,#3B82F6,#6366F1,#8B5CF6)"
+BRAND_SHADOW = "rgba(99,102,241,0.32)"
 
 
 def _logo_url():
@@ -41,8 +45,8 @@ def _base_template(title, body_content, footer_note=""):
     note_html = ""
     if footer_note:
         note_html = f"""<tr><td style="padding:0 36px 28px;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;border:1px solid #eef1f5;border-left:3px solid {BRAND_COLOR};border-radius:10px;">
-<tr><td style="padding:14px 16px;"><p style="margin:0;color:#64748b;font-size:13px;line-height:1.55;">{footer_note}</p></td></tr>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;border-radius:10px;">
+<tr><td style="padding:14px 18px;"><p style="margin:0;color:#64748b;font-size:13px;line-height:1.55;">{footer_note}</p></td></tr>
 </table></td></tr>"""
 
     return f"""<!DOCTYPE html>
@@ -59,7 +63,7 @@ def _base_template(title, body_content, footer_note=""):
 <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:600px;max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
 
 <!-- Brand accent -->
-<tr><td style="height:5px;background:linear-gradient(90deg,{BRAND_COLOR},{BRAND_COLOR_DARK});font-size:0;line-height:0;">&nbsp;</td></tr>
+<tr><td style="height:5px;background:{BRAND_GRADIENT_BAR};font-size:0;line-height:0;">&nbsp;</td></tr>
 
 <!-- Logo header -->
 <tr>
@@ -130,7 +134,7 @@ def _info_table(rows_html):
 def _button(text, url):
     """CTA button"""
     return f"""<div style="text-align:center;margin:28px 0;">
-<a href="{url}" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,{BRAND_COLOR},{BRAND_COLOR_DARK});color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(16,185,129,0.30);">{text}</a>
+<a href="{url}" style="display:inline-block;padding:14px 40px;background:{BRAND_GRADIENT};color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 12px {BRAND_SHADOW};">{text}</a>
 </div>"""
 
 
