@@ -219,12 +219,34 @@ class _InboxScreenState extends State<InboxScreen>
           _updates = combined;
           _isLoadingUpdates = false;
         });
+        // Persist "seen" for saved push notifications so they don't re-appear as
+        // unread after a reload (broadcasts have no per-user read flag of their
+        // own — this records a per-user read receipt on the backend).
+        _markPushUpdatesSeen();
       }
     } catch (e) {
       print('Error loading updates: $e');
       if (mounted) {
         setState(() => _isLoadingUpdates = false);
       }
+    }
+  }
+
+  Future<void> _markPushUpdatesSeen() async {
+    final hasUnreadPush =
+        _updates.any((u) => u['push_id'] is int && u['isRead'] != true);
+    if (!hasUnreadPush) return;
+    try {
+      await AppNotificationService.markAllRead();
+      if (mounted) {
+        setState(() {
+          for (final u in _updates) {
+            if (u['push_id'] is int) u['isRead'] = true;
+          }
+        });
+      }
+    } catch (e) {
+      print('Error marking push updates seen: $e');
     }
   }
 
@@ -486,13 +508,24 @@ class _InboxScreenState extends State<InboxScreen>
       try {
         final headers = await ApiService.getHeaders();
 
-        // Mark each unread update as read
+        // Saved push notifications (id like "push_4") use the notifications API;
+        // admin notices use the admin-notice endpoint. Sending a push id to the
+        // admin-notice endpoint silently failed, so they never persisted.
+        bool markedPush = false;
         for (var update in unreadUpdates) {
-          await http.post(
-            Uri.parse(ApiService.getApiUrl(
-                'admin-notice/${update['id']}/mark-read/')),
-            headers: headers,
-          );
+          final pushId = update['push_id'];
+          if (pushId is int) {
+            if (!markedPush) {
+              await AppNotificationService.markAllRead();
+              markedPush = true;
+            }
+          } else {
+            await http.post(
+              Uri.parse(ApiService.getApiUrl(
+                  'admin-notice/${update['id']}/mark-read/')),
+              headers: headers,
+            );
+          }
         }
 
         // Update UI
