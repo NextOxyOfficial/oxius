@@ -329,7 +329,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(2, 16, 2, 16),
         child: Form(
           key: _formKey,
           child: Column(
