@@ -1037,13 +1037,17 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
         # Filter based on the query parameters
         filters = Q(service_status="approved", active_service=True)
         if category and category != "undefined" and category.strip():
+            category = category.strip()
             try:
                 # Validate that category is a valid UUID before using it
                 uuid.UUID(str(category))
                 filters &= Q(category__id=category)
             except (ValueError, AttributeError):
-                # Invalid UUID format, skip category filter
-                pass
+                # Not a UUID -> treat the value as a category slug (e.g. the
+                # Bengali slug used by web/deep-link navigation). Without this
+                # the category filter was silently dropped, so a single
+                # category page showed posts from every category.
+                filters &= Q(category__slug=category)
         if title:
             filters &= Q(title__icontains=title)
         if country:
@@ -1067,7 +1071,15 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
 
 @api_view(["GET"])
 def classifiedCategoryPosts(request, cid):
-    posts = list(ClassifiedCategoryPost.objects.filter(category=cid))
+    # `cid` may be a category UUID (in-app navigation) or a slug (web/deep
+    # link). Filtering category=<slug> against the UUID pk would raise, so
+    # branch on the value type.
+    try:
+        uuid.UUID(str(cid))
+        qs = ClassifiedCategoryPost.objects.filter(category__id=cid)
+    except (ValueError, AttributeError):
+        qs = ClassifiedCategoryPost.objects.filter(category__slug=cid)
+    posts = list(qs)
     # for random category posts
     shuffle(posts)
     serializer = ClassifiedPostSerializer(posts, many=True)
