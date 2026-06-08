@@ -212,71 +212,172 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
   /// email, gated on accepting the terms & privacy policy.
   Future<bool?> _confirmCreateSocialAccount() {
     bool agreed = false;
+    const labelStyle =
+        TextStyle(fontSize: 13, height: 1.6, color: Color(0xFF334155));
+    final linkStyle = TextStyle(
+      fontSize: 13,
+      height: 1.6,
+      fontWeight: FontWeight.w700,
+      color: _primaryColor,
+      decoration: TextDecoration.underline,
+      decorationColor: _primaryColor,
+    );
+
     return showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(
-            'নতুন অ্যাকাউন্ট তৈরি করবেন?',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'এই ইমেইলে কোনো অ্যাকাউন্ট খোলা নেই। আপনি কি একটি নতুন '
-                'অ্যাকাউন্ট তৈরি করতে চান?',
-                style: TextStyle(
-                    fontSize: 14, height: 1.5, color: Color(0xFF475569)),
-              ),
-              const SizedBox(height: 14),
-              InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () => setLocal(() => agreed = !agreed),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
+        builder: (ctx, setLocal) {
+          void toggle() => setLocal(() => agreed = !agreed);
+          return Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+            backgroundColor: Colors.white,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 26, 22, 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 62,
+                    height: 62,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _primaryColor.withValues(alpha: 0.10),
+                    ),
+                    child: Icon(Icons.person_add_alt_1_rounded,
+                        color: _primaryColor, size: 30),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'নতুন অ্যাকাউন্ট খুলবেন?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 9),
+                  const Text(
+                    'এই জিমেইল দিয়ে এখনো কোনো অ্যাকাউন্ট খোলা হয়নি। '
+                    'নতুন একটি অ্যাকাউন্ট খুলে শুরু করতে চান?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 14, height: 1.55, color: Color(0xFF475569)),
+                  ),
+                  const SizedBox(height: 18),
+                  // Consent card — the শর্তাবলী / গোপনীয়তা নীতি words are tappable
+                  // and open the real screens; the rest toggles the checkbox.
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: Checkbox(
+                            value: agreed,
+                            onChanged: (v) => setLocal(() => agreed = v ?? false),
+                            activeColor: _primaryColor,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5)),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap: toggle,
+                                child: const Text('আমি AdsyClub-এর ',
+                                    style: labelStyle),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.of(ctx).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const TermsAndConditionsScreen(),
+                                  ),
+                                ),
+                                child: Text('শর্তাবলী', style: linkStyle),
+                              ),
+                              GestureDetector(
+                                onTap: toggle,
+                                child: const Text(' ও ', style: labelStyle),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.of(ctx).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const PrivacyPolicyScreen(),
+                                  ),
+                                ),
+                                child:
+                                    Text('গোপনীয়তা নীতি', style: linkStyle),
+                              ),
+                              GestureDetector(
+                                onTap: toggle,
+                                child: const Text(' পড়েছি এবং সম্মত আছি।',
+                                    style: labelStyle),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
                     children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: agreed,
-                          onChanged: (v) =>
-                              setLocal(() => agreed = v ?? false),
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            foregroundColor: const Color(0xFF64748B),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('বাতিল',
+                              style: TextStyle(
+                                  fontSize: 14.5, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'আমি শর্তাবলী ও গোপনীয়তা নীতিতে সম্মত।',
-                          style: TextStyle(
-                              fontSize: 13, color: Color(0xFF334155)),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton(
+                          onPressed:
+                              agreed ? () => Navigator.pop(ctx, true) : null,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _primaryColor,
+                            disabledBackgroundColor: const Color(0xFFCBD5E1),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('অ্যাকাউন্ট খুলুন',
+                              style: TextStyle(
+                                  fontSize: 14.5, fontWeight: FontWeight.w700)),
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('বাতিল'),
             ),
-            FilledButton(
-              onPressed: agreed ? () => Navigator.pop(ctx, true) : null,
-              style: FilledButton.styleFrom(backgroundColor: _primaryColor),
-              child: const Text('অ্যাকাউন্ট তৈরি করুন'),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
