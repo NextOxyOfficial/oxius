@@ -319,15 +319,30 @@ class SalePostService {
   }
 
   /// Fetch divisions (regions)
+  /// Drop rows sharing the same name_eng so DropdownButton never sees two items
+  /// with the same value (the geo data can return duplicate "Dhaka" rows).
+  static List<Map<String, dynamic>> _dedupeGeo(List list) {
+    final seen = <String>{};
+    final out = <Map<String, dynamic>>[];
+    for (final raw in list) {
+      if (raw is! Map) continue;
+      final item = Map<String, dynamic>.from(raw);
+      final name = (item['name_eng'] ?? '').toString().trim();
+      if (name.isEmpty || !seen.add(name)) continue;
+      out.add(item);
+    }
+    return out;
+  }
+
   Future<List<Map<String, dynamic>>> fetchDivisions() async {
     try {
       final uri = Uri.parse('$baseUrl/geo/regions/?country_name_eng=Bangladesh');
       final response = await client.get(uri);
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data is List) {
-          return data.cast<Map<String, dynamic>>();
+          return _dedupeGeo(data);
         }
       }
       return [];
@@ -342,11 +357,11 @@ class SalePostService {
     try {
       final uri = Uri.parse('$baseUrl/geo/cities/?region_name_eng=$division');
       final response = await client.get(uri);
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data is List) {
-          return data.cast<Map<String, dynamic>>();
+          return _dedupeGeo(data);
         }
       }
       return [];
@@ -361,11 +376,11 @@ class SalePostService {
     try {
       final uri = Uri.parse('$baseUrl/geo/upazila/?city_name_eng=$district');
       final response = await client.get(uri);
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data is List) {
-          return data.cast<Map<String, dynamic>>();
+          return _dedupeGeo(data);
         }
       }
       return [];

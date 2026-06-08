@@ -3,6 +3,22 @@ import 'package:http/http.dart' as http;
 import 'api_service.dart';
 
 class GeoService {
+  /// Remove rows that share the same `name_eng`. The geo dataset occasionally
+  /// returns duplicates (e.g. two "Dhaka" rows); feeding those into a
+  /// DropdownButton crashes it with "2 or more items with the same value".
+  static List<Map<String, dynamic>> _dedupeByNameEng(List list) {
+    final seen = <String>{};
+    final out = <Map<String, dynamic>>[];
+    for (final raw in list) {
+      if (raw is! Map) continue;
+      final item = Map<String, dynamic>.from(raw);
+      final name = (item['name_eng'] ?? '').toString().trim();
+      if (name.isEmpty || !seen.add(name)) continue;
+      out.add(item);
+    }
+    return out;
+  }
+
   // Get regions/states by country
   static Future<List<Map<String, dynamic>>> getRegions(String country) async {
     try {
@@ -14,7 +30,7 @@ class GeoService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
+          return _dedupeByNameEng(data);
         }
         return [];
       } else {
@@ -37,7 +53,7 @@ class GeoService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
+          return _dedupeByNameEng(data);
         }
         return [];
       } else {
@@ -60,7 +76,7 @@ class GeoService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
+          return _dedupeByNameEng(data);
         }
         return [];
       } else {

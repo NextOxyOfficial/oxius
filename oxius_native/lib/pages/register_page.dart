@@ -1378,13 +1378,27 @@ class _RegisterPageState extends State<RegisterPage> {
     required ValueChanged<String?> onChanged,
     String? error,
   }) {
+    // De-duplicate items: the geo data can return the same name twice (e.g. two
+    // "Dhaka" rows), which makes DropdownButton assert "2 or more items with the
+    // same value". Also drop a selected value that isn't in the list (else it
+    // asserts "zero items with this value").
+    final seen = <String>{};
+    final uniqueItems = <String>[];
+    for (final item in items) {
+      final trimmed = item.trim();
+      if (trimmed.isEmpty || !seen.add(trimmed)) continue;
+      uniqueItems.add(trimmed);
+    }
+    final effectiveValue =
+        (value != null && seen.contains(value.trim())) ? value.trim() : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputLabel(label),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          initialValue: value,
+          initialValue: effectiveValue,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
               color: _bodyTextColor),
@@ -1421,7 +1435,7 @@ class _RegisterPageState extends State<RegisterPage> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          items: items
+          items: uniqueItems
               .map(
                 (item) => DropdownMenuItem<String>(
                   value: item,
