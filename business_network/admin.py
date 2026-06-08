@@ -166,3 +166,16 @@ class GoldSponsorBannerAdmin(admin.ModelAdmin):
     search_fields = ['title', 'sponsor__business_name']
     ordering = ['sponsor', 'order']
 
+
+
+@admin.register(GoldSponsorSettings)
+class GoldSponsorSettingsAdmin(admin.ModelAdmin):
+    """Pricing/limits for Gold Sponsor location targeting (singleton)."""
+    list_display = ['specific_location_discount_percent', 'max_custom_locations', 'updated_at']
+    list_editable = ['max_custom_locations']
+
+    def has_add_permission(self, request):
+        return not GoldSponsorSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False

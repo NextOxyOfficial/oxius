@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from business_network.models import SponsorshipPackage, GoldSponsor, GoldSponsorBanner, GoldSponsorLocation
+from business_network.models import SponsorshipPackage, GoldSponsor, GoldSponsorBanner, GoldSponsorLocation, GoldSponsorSettings
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 class SponsorshipPackageSerializer(serializers.ModelSerializer):
@@ -64,25 +64,38 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
             if title or image:
                 banner_list.append(banner_data)
         
+        # Target locations (no rows = shown all over Bangladesh). Parse first so
+        # we can apply the location-targeting discount + enforce the max.
+        location_rows = self._parse_location_rows(request)
+        settings_cfg = GoldSponsorSettings.current()
+        if len(location_rows) > settings_cfg.max_custom_locations:
+            raise serializers.ValidationError(
+                f"You can target at most {settings_cfg.max_custom_locations} locations."
+            )
+
         try:
-            sponsor = super().create(validated_data)
-            
+            sponsor = GoldSponsor(**validated_data)
+            # Targeted ads are discounted; whole-Bangladesh ads pay full price.
+            sponsor._is_location_targeted = len(location_rows) > 0
+            sponsor.save()
+
             # Create banners from FormData
             for banner_data in banner_list:
                 GoldSponsorBanner.objects.create(sponsor=sponsor, **banner_data)
 
-            # Create target locations (no rows = shown all over Bangladesh)
-            self._save_locations(sponsor, request)
+            # Create target locations
+            for r in location_rows:
+                GoldSponsorLocation.objects.create(sponsor=sponsor, **r)
 
             return sponsor
         except DjangoValidationError as e:            raise serializers.ValidationError(str(e))
 
-    def _save_locations(self, sponsor, request, clear=False):
-        """Save the sponsor's target locations from either a JSON `locations`
-        list or FormData (`location_count` + `location_<i>_division/city/area`)."""
-        from business_network.models import GoldSponsorLocation
+    def _parse_location_rows(self, request):
+        """Parse target locations from a JSON `locations` list or FormData
+        (`location_count` + `location_<i>_division/city/area`). Returns cleaned
+        non-empty rows."""
         if request is None:
-            return
+            return []
         rows = []
         raw = request.data.get('locations')
         if raw:
@@ -108,12 +121,8 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
                     'city': (request.data.get(f'location_{i}_city') or '').strip(),
                     'area': (request.data.get(f'location_{i}_area') or '').strip(),
                 })
-        rows = [r for r in rows if r['division'] or r['city'] or r['area']]
-        if clear:
-            sponsor.locations.all().delete()
-        for r in rows:
-            GoldSponsorLocation.objects.create(sponsor=sponsor, **r)
-    
+        return [r for r in rows if r['division'] or r['city'] or r['area']]
+
     def update(self, instance, validated_data):
         banners_data = validated_data.pop('banners', [])
         package_id = validated_data.pop('package_id', None)
@@ -155,7 +164,14 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
 
             # Update target locations only when the client sends them.
             if ('locations' in request.data) or ('location_count' in request.data):
-                self._save_locations(sponsor, request, clear=True)
+                rows = self._parse_location_rows(request)
+                max_loc = GoldSponsorSettings.current().max_custom_locations
+                if len(rows) > max_loc:
+                    raise serializers.ValidationError(
+                        f"You can target at most {max_loc} locations.")
+                sponsor.locations.all().delete()
+                for r in rows:
+                    GoldSponsorLocation.objects.create(sponsor=sponsor, **r)
 
         return sponsor
 

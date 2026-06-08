@@ -8,11 +8,13 @@ from .views import (
     update_gold_sponsor,
     delete_gold_sponsor,
     increment_sponsor_views,
-    sponsor_banners
+    sponsor_banners,
+    gold_sponsor_pricing_config,
 )
 
 urlpatterns = [
     path('packages/', SponsorshipPackageListView.as_view(), name='sponsorship-packages'),
+    path('pricing-config/', gold_sponsor_pricing_config, name='gold-sponsor-pricing-config'),
     path('apply/', GoldSponsorCreateView.as_view(), name='gold-sponsor-apply'),
     path('list/', GoldSponsorListView.as_view(), name='gold-sponsor-list'),
     path('stats/', gold_sponsor_stats, name='gold-sponsor-stats'),

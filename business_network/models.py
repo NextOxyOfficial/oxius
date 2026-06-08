@@ -878,7 +878,10 @@ class GoldSponsor(models.Model):
     
     # Views tracking
     views = models.PositiveIntegerField(default=0)
-    
+
+    # Amount actually charged (after any location-targeting discount)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     # Status and timestamps
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     is_featured = models.BooleanField(default=False)
@@ -908,14 +911,21 @@ class GoldSponsor(models.Model):
         
         # Handle payment deduction for new sponsorships
         if not self.pk and self.user and self.package:  # Only for new instances
-            if self.user.balance < self.package.price:
+            price = self.package.price
+            # Location-targeted ads (specific divisions/cities) are discounted;
+            # whole-Bangladesh ads pay full price. Discount % is admin-managed.
+            if getattr(self, '_is_location_targeted', False):
+                price = GoldSponsorSettings.current().discounted(price)
+
+            if self.user.balance < price:
                 from django.core.exceptions import ValidationError
-                raise ValidationError(f"Insufficient balance. You need ৳{self.package.price} but have ৳{self.user.balance}")
-            
+                raise ValidationError(f"Insufficient balance. You need ৳{price} but have ৳{self.user.balance}")
+
             # Deduct money from user's balance
-            self.user.balance -= self.package.price
+            self.user.balance -= price
             self.user.save()
-            
+            self.amount_paid = price
+
         super().save(*args, **kwargs)
     
     def increment_views(self):
@@ -965,6 +975,45 @@ class GoldSponsorLocation(models.Model):
     def __str__(self):
         bits = [b for b in (self.division, self.city, self.area) if b]
         return ' › '.join(bits) or 'All Bangladesh'
+
+
+class GoldSponsorSettings(models.Model):
+    """Admin-managed pricing/limits for Gold Sponsor ads (singleton).
+
+    Whole-Bangladesh ads pay the full package price; location-targeted ads get
+    `specific_location_discount_percent` off. Edit these without touching the
+    frontend — both web and app read them from the pricing-config endpoint.
+    """
+    specific_location_discount_percent = models.PositiveIntegerField(
+        default=70,
+        help_text='Discount % applied when a sponsor targets specific locations '
+                  '(vs all over Bangladesh).')
+    max_custom_locations = models.PositiveIntegerField(
+        default=10,
+        help_text='Maximum number of custom target locations a sponsor can add.')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Gold Sponsor settings'
+        verbose_name_plural = 'Gold Sponsor settings'
+
+    def __str__(self):
+        return (f'{self.specific_location_discount_percent}% off targeted · '
+                f'max {self.max_custom_locations} locations')
+
+    @classmethod
+    def current(cls):
+        obj = cls.objects.first()
+        if obj is None:
+            obj = cls.objects.create()
+        return obj
+
+    def discounted(self, price):
+        from decimal import Decimal, ROUND_HALF_UP
+        price = Decimal(str(price))
+        pct = Decimal(str(self.specific_location_discount_percent))
+        result = price * (Decimal('100') - pct) / Decimal('100')
+        return result.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
 
 def sponsor_banner_path(instance, filename):

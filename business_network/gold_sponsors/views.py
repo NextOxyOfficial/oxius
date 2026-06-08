@@ -5,8 +5,20 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from django.db.models import F
 from django.db.models import Q
-from business_network.models import SponsorshipPackage, GoldSponsor,GoldSponsorBanner, GoldSponsorLocation
+from business_network.models import SponsorshipPackage, GoldSponsor,GoldSponsorBanner, GoldSponsorLocation, GoldSponsorSettings
 from .serializers import SponsorshipPackageSerializer, GoldSponsorCreateSerializer, GoldSponsorSerializer
+
+
+@api_view(['GET'])
+def gold_sponsor_pricing_config(request):
+    """Public Gold Sponsor pricing rules (admin-managed). The frontend uses this
+    to show the discounted price for location-targeted ads and cap the number of
+    custom locations — no app/web release needed to change them."""
+    cfg = GoldSponsorSettings.current()
+    return Response({
+        'specific_location_discount_percent': cfg.specific_location_discount_percent,
+        'max_custom_locations': cfg.max_custom_locations,
+    })
 
 class SponsorshipPackageListView(generics.ListAPIView):
     """Get all active sponsorship packages"""
