@@ -141,38 +141,119 @@ class AppUpdateService {
     await prefs.setInt(info.snoozeKey, until);
   }
 
+  static const _accent = Color(0xFF059669);
+
   static Future<void> _showUpdateDialog(
     BuildContext context,
     AppUpdateInfo info,
   ) {
-    return showDialog<void>(
+    return showModalBottomSheet<void>(
       context: context,
-      barrierDismissible: !info.forceUpdate,
-      builder: (dialogContext) {
+      isScrollControlled: true,
+      isDismissible: !info.forceUpdate,
+      enableDrag: !info.forceUpdate,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
         return PopScope(
           canPop: !info.forceUpdate,
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
             ),
-            title: Text(info.title),
-            content: Text(info.message),
-            actions: [
-              if (!info.forceUpdate)
-                TextButton(
-                  onPressed: () async {
-                    await _snooze(info);
-                    if (dialogContext.mounted) {
-                      Navigator.of(dialogContext).pop();
-                    }
-                  },
-                  child: const Text('Later'),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(22, 12, 22, 22),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!info.forceUpdate)
+                      Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 18),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 8),
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: _accent.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.system_update_rounded,
+                          color: _accent, size: 32),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      info.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      info.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.5,
+                        color: Color(0xFF475569),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openStore(info.storeUrl),
+                        icon: const Icon(Icons.download_rounded, size: 20),
+                        label: const Text('এখনই আপডেট করুন'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _accent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          textStyle: const TextStyle(
+                              fontSize: 15.5, fontWeight: FontWeight.w700),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                    if (!info.forceUpdate) ...[
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: () async {
+                            await _snooze(info);
+                            if (sheetContext.mounted) {
+                              Navigator.of(sheetContext).pop();
+                            }
+                          },
+                          child: const Text(
+                            'পরে',
+                            style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF64748B)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              FilledButton(
-                onPressed: () => _openStore(info.storeUrl),
-                child: const Text('Update Now'),
               ),
-            ],
+            ),
           ),
         );
       },
