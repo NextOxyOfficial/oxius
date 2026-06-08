@@ -65,6 +65,12 @@
 	<string>AdsyClub needs access to your camera to take photos for posts, products, and video calls.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>AdsyClub needs access to your microphone for voice messages and video calls.</string>
+	<!-- Required by the Agora RTC SDK on iOS 14+. During call setup Agora probes
+	     the local network; without this key iOS silently blocks it, which can stop
+	     iOS<->Android calls from connecting (while Android<->Android, which has no
+	     such restriction, still works). -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>AdsyClub uses your local network to connect voice and video calls.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>AdsyClub uses your location to show nearby products, services, and available rides in your area.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
