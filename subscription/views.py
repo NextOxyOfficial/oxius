@@ -330,3 +330,57 @@ class SubscriptionUpgradeView(APIView):
             
         # Add other payment methods as needed
         return False, "Payment method not supported"
+
+
+class AutoRenewView(APIView):
+    """Get or toggle auto-renew on the user's active paid subscription.
+
+    GET  -> {auto_renew, has_active_pro, end_date, plan, price}
+    POST {auto_renew: bool} -> updates it.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _active_paid_sub(self, user):
+        return (
+            Subscription.objects.filter(
+                user=user, status="active", plan__price__gt=0,
+                end_date__gt=timezone.now(),
+            )
+            .select_related("plan")
+            .order_by("-end_date")
+            .first()
+        )
+
+    def get(self, request):
+        sub = self._active_paid_sub(request.user)
+        if not sub:
+            return Response({"has_active_pro": False, "auto_renew": False})
+        return Response({
+            "has_active_pro": True,
+            "auto_renew": sub.auto_renew,
+            "end_date": sub.end_date,
+            "plan": sub.plan.name,
+            "price": str(sub.plan.price),
+            "duration_days": sub.plan.duration_days,
+        })
+
+    def post(self, request):
+        sub = self._active_paid_sub(request.user)
+        if not sub:
+            return Response(
+                {"message": "কোনো সক্রিয় Pro সাবস্ক্রিপশন নেই।"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        raw = request.data.get("auto_renew")
+        enabled = str(raw).lower() in ("true", "1", "yes", "on")
+        sub.auto_renew = enabled
+        sub.save(update_fields=["auto_renew", "updated_at"])
+        return Response({
+            "auto_renew": sub.auto_renew,
+            "message": (
+                "অটো-রিনিউ চালু করা হয়েছে — মেয়াদ শেষে Adsy Pay ব্যালেন্স থেকে "
+                "স্বয়ংক্রিয়ভাবে রিনিউ হবে।"
+                if sub.auto_renew else
+                "অটো-রিনিউ বন্ধ করা হয়েছে।"
+            ),
+        })

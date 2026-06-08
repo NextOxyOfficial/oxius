@@ -515,6 +515,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "subscription.tasks.deactivate_expired_subscriptions",
         "schedule": timedelta(minutes=10),  # Run every 10 minutes
     },
+    "process-subscription-auto-renewals": {
+        "task": "subscription.tasks.process_auto_renewals",
+        "schedule": timedelta(hours=6),  # Charge balance / follow up on renewals
+    },
     "cascade-expired-ride-targets": {
         "task": "rideshare.tasks.cascade_expired_ride_targets",
         "schedule": timedelta(seconds=30),  # Run every 30 seconds to check 1-minute timeouts
