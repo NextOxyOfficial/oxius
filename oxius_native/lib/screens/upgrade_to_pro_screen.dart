@@ -32,8 +32,10 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   bool _autoRenewBusy = false;
   bool _autoRenewLoaded = false;
   int _selectedMonths = 1;
-  final int _monthlyPrice = 149;
-  final int _yearlyDiscount = 289;
+  int _monthlyPrice = 149;     // effective (discounted) monthly price
+  int _regularPrice = 299;     // normal monthly price (struck-through)
+  int _yearlyDiscount = 289;
+  bool _discountActive = true;
 
   int get _totalPrice => _selectedMonths == 1
       ? _monthlyPrice
@@ -44,6 +46,19 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     super.initState();
     _refreshBalance();
     _loadAutoRenew();
+    _loadPricing();
+  }
+
+  Future<void> _loadPricing() async {
+    final data = await _subscriptionService.getProPricing();
+    if (!mounted || data == null) return;
+    int? toInt(dynamic v) => double.tryParse('$v')?.round();
+    setState(() {
+      _monthlyPrice = toInt(data['effective_price']) ?? _monthlyPrice;
+      _regularPrice = toInt(data['regular_price']) ?? _regularPrice;
+      _yearlyDiscount = toInt(data['yearly_discount']) ?? _yearlyDiscount;
+      _discountActive = data['discount_active'] == true;
+    });
   }
 
   Future<void> _loadAutoRenew() async {
@@ -465,14 +480,32 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                     ),
                   ],
                   const SizedBox(width: 8),
-                  Text(
-                    price,
-                    maxLines: 1,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: _primary,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (months == 1 &&
+                          _discountActive &&
+                          _regularPrice > _monthlyPrice)
+                        Text(
+                          '৳$_regularPrice',
+                          maxLines: 1,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: _muted,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      Text(
+                        price,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

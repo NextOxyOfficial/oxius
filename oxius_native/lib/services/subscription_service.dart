@@ -46,6 +46,21 @@ class SubscriptionService {
     }
   }
 
+  /// Public Pro pricing (regular / discount / effective), admin-managed.
+  Future<Map<String, dynamic>?> getProPricing() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiService.baseUrl}/pro-pricing/'),
+      ).timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      print('getProPricing error: $e');
+    }
+    return null;
+  }
+
   /// Read the auto-renew status of the active paid subscription.
   Future<Map<String, dynamic>?> getAutoRenew() async {
     try {
