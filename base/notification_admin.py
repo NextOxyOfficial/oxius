@@ -37,6 +37,12 @@ class NotificationAdminPanel(admin.ModelAdmin):
             deep_link = (request.POST.get('deep_link') or '').strip()
             data_type = request.POST.get('data_type', 'general')
             recipient_type = request.POST.get('recipient_type')
+            # '' = all platforms, or 'android' / 'ios' to target one.
+            platform = (request.POST.get('platform') or '').strip().lower()
+            platform_label = (
+                ' (Android only)' if platform == 'android'
+                else ' (iOS only)' if platform == 'ios' else ''
+            )
 
             if not title or not body:
                 messages.error(request, '❌ Title and message are required')
@@ -55,10 +61,11 @@ class NotificationAdminPanel(admin.ModelAdmin):
                     created = send_push_notification(
                         title=title, body=body, deep_link=deep_link,
                         notification_type=data_type, broadcast=True, data=extra,
+                        platform=platform,
                     )
                     messages.success(
                         request,
-                        '✅ Broadcast sent to all devices and saved to Updates.',
+                        f'✅ Broadcast sent{platform_label} and saved to Updates.',
                     )
 
                 elif recipient_type == 'specific':
@@ -71,9 +78,11 @@ class NotificationAdminPanel(admin.ModelAdmin):
                     send_push_notification(
                         title=title, body=body, deep_link=deep_link,
                         notification_type=data_type, users=[user], data=extra,
+                        platform=platform,
                     )
                     messages.success(
-                        request, f'✅ Sent to {user.email} and saved to Updates.'
+                        request,
+                        f'✅ Sent to {user.email}{platform_label} and saved to Updates.'
                     )
 
                 elif recipient_type == 'active':
@@ -88,11 +97,11 @@ class NotificationAdminPanel(admin.ModelAdmin):
                     created = send_push_notification(
                         title=title, body=body, deep_link=deep_link,
                         notification_type=data_type, users=active_users,
-                        data=extra,
+                        data=extra, platform=platform,
                     )
                     messages.success(
                         request,
-                        f'✅ Sent to {len(created)} active users and saved.',
+                        f'✅ Sent to {len(created)} active users{platform_label} and saved.',
                     )
                 else:
                     messages.error(request, '❌ Unknown recipient type')
@@ -110,6 +119,8 @@ class NotificationAdminPanel(admin.ModelAdmin):
             'title': 'Send Push Notification',
             'total_tokens': FCMToken.objects.filter(is_active=True).count(),
             'total_users': User.objects.filter(fcm_tokens__is_active=True).distinct().count(),
+            'android_tokens': FCMToken.objects.filter(is_active=True, device_type='android').count(),
+            'ios_tokens': FCMToken.objects.filter(is_active=True, device_type='ios').count(),
         }
         return render(request, 'admin/send_notification_form.html', context)
     

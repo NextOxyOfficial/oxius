@@ -25,6 +25,7 @@ def send_push_notification(
     data=None,
     users=None,
     broadcast=False,
+    platform=None,
 ):
     """Persist + push a notification.
 
@@ -32,6 +33,8 @@ def send_push_notification(
       notification.
     - broadcast=True: store a single broadcast row (user=None) visible to
       everyone in the Updates tab, and fan the push out to all active devices.
+    - platform: restrict the PUSH delivery to a device type — "android" or
+      "ios". None/blank = both. (The saved Updates entry is unaffected.)
 
     Returns the list of created UserNotification objects.
     """
@@ -45,9 +48,13 @@ def send_push_notification(
     # to the app's notification handler (which then follows deep_link).
     base_data.setdefault("click_action", "FLUTTER_NOTIFICATION_CLICK")
 
+    platform = (platform or "").strip().lower() or None
+
     created = []
 
     def _deliver(notification, token_qs):
+        if platform in ("android", "ios"):
+            token_qs = token_qs.filter(device_type=platform)
         payload = dict(base_data)
         payload["notification_id"] = str(notification.id)
         tokens = list(token_qs.values_list("token", flat=True))

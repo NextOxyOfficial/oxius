@@ -27,6 +27,22 @@
             </select>
         </div>
 
+        <!-- Platform filter -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
+                📱 Platform:
+            </label>
+            <select name="platform"
+                    style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;">
+                <option value="">All platforms ({{ total_tokens }} devices)</option>
+                <option value="android">🤖 Android only ({{ android_tokens }} devices)</option>
+                <option value="ios">🍎 iOS only ({{ ios_tokens }} devices)</option>
+            </select>
+            <small style="color: #6B7280; display: block; margin-top: 5px;">
+                Push is delivered only to the chosen platform. The in-app Updates entry is unaffected.
+            </small>
+        </div>
+
         <!-- Specific User Email (hidden by default) -->
         <div id="user_email_field" style="margin-bottom: 25px; display: none;">
             <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
