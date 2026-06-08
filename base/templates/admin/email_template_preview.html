@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div style="max-width:780px;">
+  <p style="color:#475569;margin:0 0 16px;">
+    নিচের dropdown থেকে একটি email template বেছে নিন — গ্রাহকের কাছে ঠিক যে রকম
+    email যায় সেটা নিচে দেখানো হবে। এখান থেকে design কেমন লাগছে বুঝে body উন্নত করতে পারবেন।
+  </p>
+
+  <form method="get" style="margin:0 0 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <label style="font-weight:600;color:#1e293b;">Template:</label>
+    <select name="template" onchange="this.form.submit()"
+            style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;min-width:280px;font-size:14px;background:#fff;">
+      {% for key, label in templates %}
+        <option value="{{ key }}" {% if key == selected %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  {% if subject %}
+    <p style="color:#334155;margin:0 0 10px;font-size:14px;">
+      <span style="color:#64748b;">Subject:</span> <strong>{{ subject }}</strong>
+    </p>
+  {% endif %}
+
+  <iframe src="raw-preview/?template={{ selected }}"
+          title="Email preview"
+          style="width:100%;height:78vh;border:1px solid #e2e8f0;border-radius:10px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);"></iframe>
+</div>
+{% endblock %}

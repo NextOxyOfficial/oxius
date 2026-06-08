@@ -115,3 +115,61 @@ class EmailSettingsAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(reverse('admin:base_emailsettings_changelist'))
     
     send_test_email.short_description = 'Send test email'
+
+
+# ---------------------------------------------------------------------------
+# Email template preview (see what reaches the customer + tune the design)
+# ---------------------------------------------------------------------------
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.urls import path
+
+from .email_preview import email_template_choices, render_email_preview
+from .models import EmailTemplatePreview
+
+
+@admin.register(EmailTemplatePreview)
+class EmailTemplatePreviewAdmin(admin.ModelAdmin):
+    """Preview-only page: pick an email template from the dropdown and see the
+    exact HTML the customer receives, rendered live below."""
+    change_list_template = "admin/email_template_preview.html"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def get_urls(self):
+        urls = [
+            path(
+                "raw-preview/",
+                self.admin_site.admin_view(self.raw_preview),
+                name="email-template-raw",
+            ),
+        ]
+        return urls + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        choices = email_template_choices()
+        selected = request.GET.get("template") or (choices[0][0] if choices else "")
+        subject = ""
+        if selected:
+            subject, _ = render_email_preview(selected)
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Email templates",
+            "templates": choices,
+            "selected": selected,
+            "subject": subject,
+        }
+        return render(request, self.change_list_template, context)
+
+    def raw_preview(self, request):
+        """Returns the rendered email HTML for use inside the preview iframe."""
+        key = request.GET.get("template", "")
+        _, html = render_email_preview(key)
+        return HttpResponse(html)

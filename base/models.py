@@ -1694,3 +1694,13 @@ class UserNotification(models.Model):
     def __str__(self):
         who = self.user.email if self.user else "broadcast"
         return f"{who}: {self.title}"
+
+
+class EmailTemplatePreview(models.Model):
+    """Placeholder model that gives the email-template preview tool an entry in
+    the admin sidebar. It stores no data — the admin page renders the real email
+    HTML live (see base/email_preview.py)."""
+
+    class Meta:
+        verbose_name = "Email template"
+        verbose_name_plural = "Email templates (preview)"
