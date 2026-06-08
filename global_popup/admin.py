@@ -1,7 +1,16 @@
 from django.contrib import admin
-from .models import PopupDesktop, PopupMobile, PopupView
+from .models import PopupDesktop, PopupMobile, PopupMobileLocation, PopupView
 
 # Register your models here.
+
+
+class PopupMobileLocationInline(admin.TabularInline):
+    """Add as many target locations as you like. Leave a popup with NO rows to
+    show it everywhere; add rows to restrict it to those divisions/cities/areas."""
+    model = PopupMobileLocation
+    extra = 1
+    verbose_name = "Target location (blank list = show everywhere)"
+    verbose_name_plural = "Target locations (leave empty to show everywhere)"
 
 
 @admin.register(PopupDesktop)
@@ -16,12 +25,20 @@ class PopupDesktopAdmin(admin.ModelAdmin):
 
 @admin.register(PopupMobile)
 class PopupMobileAdmin(admin.ModelAdmin):
-    list_display = ['id', 'is_active', 'show_for_logged_in_users',
+    inlines = [PopupMobileLocationInline]
+    list_display = ['id', 'is_active', 'targeted_locations', 'show_for_logged_in_users',
                     'show_for_anonymous_users', 'viewing_condition', 'total_views', 'created_at']
     list_filter = ['is_active', 'show_for_logged_in_users',
                    'show_for_anonymous_users', 'viewing_condition', 'created_at']
-    search_fields = ['id']
+    search_fields = ['id', 'locations__division', 'locations__city', 'locations__area']
     readonly_fields = ['total_views', 'created_at', 'updated_at']
+
+    def targeted_locations(self, obj):
+        rows = obj.locations.all()
+        if not rows:
+            return "🌍 Everywhere"
+        return ", ".join(str(r) for r in rows[:4]) + ("…" if rows.count() > 4 else "")
+    targeted_locations.short_description = 'Locations'
 
 
 @admin.register(PopupView)

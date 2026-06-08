@@ -111,15 +111,42 @@ class PopupMobileView(APIView):
         if not popups.exists():
             return Response([])
 
-        # Filter popups based on viewing conditions
+        popups = popups.prefetch_related('locations')
+
+        # Filter popups based on location targeting + viewing conditions
         available_popups = []
         for popup in popups:
+            if not self._location_matches(popup, user):
+                continue
             should_show = self.should_show_popup(popup, user, session_key)
             if should_show:
                 available_popups.append(popup)
 
         serializer = PopupMobileSerializer(available_popups, many=True)
         return Response(serializer.data)
+
+    @staticmethod
+    def _location_matches(popup, user):
+        """A popup with no target rows shows everywhere. Otherwise it shows only
+        to a logged-in user whose division/city/area matches at least one row
+        (blank fields in a row match anything)."""
+        rows = list(popup.locations.all())
+        if not rows:
+            return True
+        if user is None:
+            return False  # location-targeted popup, anonymous visitor
+        u_div = (getattr(user, 'state', '') or '').strip().lower()
+        u_city = (getattr(user, 'city', '') or '').strip().lower()
+        u_area = (getattr(user, 'upazila', '') or '').strip().lower()
+        for r in rows:
+            if r.division and r.division.strip().lower() != u_div:
+                continue
+            if r.city and r.city.strip().lower() != u_city:
+                continue
+            if r.area and r.area.strip().lower() != u_area:
+                continue
+            return True
+        return False
 
     def should_show_popup(self, popup, user, session_key):
         """Check if popup should be shown based on viewing condition"""

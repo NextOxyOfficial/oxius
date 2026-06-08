@@ -73,6 +73,35 @@ class PopupMobile(models.Model):
         return f"Mobile Popup - ID: {self.id}"
 
 
+class PopupMobileLocation(models.Model):
+    """One geographic target for a mobile popup.
+
+    A popup with NO location rows shows everywhere (backward compatible). With
+    one or more rows, it shows only to users matching at least one row. Within a
+    row, leave a field blank to match any value for it — e.g. division="Dhaka"
+    with blank city/area targets the whole Dhaka division.
+    """
+    popup = models.ForeignKey(
+        PopupMobile, on_delete=models.CASCADE, related_name='locations')
+    division = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text='Division / State (e.g. Dhaka). Blank = any division.')
+    city = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text='City / District. Blank = any city.')
+    area = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text='Area / Upazila. Blank = any area.')
+
+    class Meta:
+        verbose_name = 'Target location'
+        verbose_name_plural = 'Target locations'
+
+    def __str__(self):
+        bits = [b for b in (self.division, self.city, self.area) if b]
+        return ' › '.join(bits) or 'Any location'
+
+
 class PopupView(models.Model):
     """Track popup views per user/session"""
     popup_desktop = models.ForeignKey(
