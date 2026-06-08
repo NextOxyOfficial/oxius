@@ -4,6 +4,7 @@ Professional email templates with white/light gray theme.
 All transactional emails for users and admin notifications.
 """
 import logging
+from email.utils import formataddr, parseaddr
 from django.core.mail import send_mail, EmailMultiAlternatives, get_connection
 from django.conf import settings
 from django.utils import timezone
@@ -189,10 +190,15 @@ def _send_email(subject, to_email, text_content, html_content):
             password=email_settings['host_password'],
         )
         
+        # Show the sender as "AdsyClub <address>" (clean display name).
+        raw_from = email_settings['from_email']
+        from_addr = parseaddr(raw_from)[1] or raw_from
+        from_email = formataddr((SITE_NAME, from_addr))
+
         msg = EmailMultiAlternatives(
-            subject=f"[{SITE_NAME}] {subject}",
+            subject=subject,
             body=text_content,
-            from_email=email_settings['from_email'],
+            from_email=from_email,
             to=[to_email],
             connection=connection,
         )
