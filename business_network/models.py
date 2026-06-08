@@ -912,9 +912,10 @@ class GoldSponsor(models.Model):
         # Handle payment deduction for new sponsorships
         if not self.pk and self.user and self.package:  # Only for new instances
             price = self.package.price
-            # Location-targeted ads (specific divisions/cities) are discounted;
-            # whole-Bangladesh ads pay full price. Discount % is admin-managed.
-            if getattr(self, '_is_location_targeted', False):
+            # Discount applies only to tightly-targeted ads (a few divisions);
+            # whole-Bangladesh or broadly-targeted ads pay full price. The
+            # serializer sets _discount_eligible based on distinct divisions.
+            if getattr(self, '_discount_eligible', False):
                 price = GoldSponsorSettings.current().discounted(price)
 
             if self.user.balance < price:
@@ -991,6 +992,10 @@ class GoldSponsorSettings(models.Model):
     max_custom_locations = models.PositiveIntegerField(
         default=10,
         help_text='Maximum number of custom target locations a sponsor can add.')
+    max_discount_divisions = models.PositiveIntegerField(
+        default=2,
+        help_text='The discount applies only when the targeting covers at most '
+                  'this many distinct divisions. More divisions = full price.')
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

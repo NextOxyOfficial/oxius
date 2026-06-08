@@ -18,6 +18,7 @@ def gold_sponsor_pricing_config(request):
     return Response({
         'specific_location_discount_percent': cfg.specific_location_discount_percent,
         'max_custom_locations': cfg.max_custom_locations,
+        'max_discount_divisions': cfg.max_discount_divisions,
     })
 
 class SponsorshipPackageListView(generics.ListAPIView):

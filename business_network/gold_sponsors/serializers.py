@@ -73,10 +73,19 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
                 f"You can target at most {settings_cfg.max_custom_locations} locations."
             )
 
+        # Discount only when the targeting is tight (few distinct divisions).
+        distinct_divisions = {
+            (r.get('division') or '').strip().lower()
+            for r in location_rows if (r.get('division') or '').strip()
+        }
+        discount_eligible = (
+            len(location_rows) > 0
+            and len(distinct_divisions) <= settings_cfg.max_discount_divisions
+        )
+
         try:
             sponsor = GoldSponsor(**validated_data)
-            # Targeted ads are discounted; whole-Bangladesh ads pay full price.
-            sponsor._is_location_targeted = len(location_rows) > 0
+            sponsor._discount_eligible = discount_eligible
             sponsor.save()
 
             # Create banners from FormData
