@@ -69,6 +69,18 @@ def handle_recharge_status_change(sender, instance, created, **kwargs):
     else:
         if created:
             print(f"ℹ️ New recharge created with status: {instance.status}")
+            # Email the admin so a freshly submitted recharge gets processed/
+            # approved promptly. Sent after commit so it reflects the saved row
+            # and never blocks/rolls back the request; failures are swallowed.
+            def _email_admin_new_recharge():
+                try:
+                    from base.email_service import notify_admin_new_recharge
+                    notify_admin_new_recharge(instance)
+                except Exception as e:
+                    print(f"❌ Error sending recharge admin email: {e}")
+
+            from django.db import transaction
+            transaction.on_commit(_email_admin_new_recharge)
         else:
             print(f"ℹ️ Update without previous status tracking")
     

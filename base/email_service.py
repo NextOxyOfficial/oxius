@@ -321,9 +321,10 @@ def send_welcome_email(user):
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:16px 0;">Here's what you can do on AdsyClub:</p>
 <ul style="color:#374151;font-size:14px;line-height:2;padding-left:20px;margin:0 0 16px;">
 <li><strong>Business Network</strong> – Connect with professionals</li>
-<li><strong>Buy & Sell</strong> – Trade products & services</li>
+<li><strong>eShop</strong> – Shop brand-new products</li>
+<li><strong>পুরোনো কেনাবেচা</strong> – Buy &amp; sell used items</li>
 <li><strong>Workspace Gigs</strong> – Hire or get hired</li>
-<li><strong>AdsyConnect</strong> – Chat, voice & video calls</li>
+<li><strong>AdsyConnect</strong> – Chat, voice &amp; video calls</li>
 <li><strong>eLearning</strong> – Learn new skills</li>
 </ul>
 
@@ -1181,6 +1182,39 @@ def notify_admin_new_registration(user):
     html = _base_template(subject, body)
     email_settings = _get_email_settings()
     return _send_email(subject, email_settings['admin_email'], f"New user registered: {name} ({user.email})", html)
+
+
+def notify_admin_new_recharge(recharge):
+    """Notify admin when a user submits a mobile recharge request, so it can be
+    processed/approved promptly."""
+    user = recharge.user
+    name = (user.name or user.first_name or user.username) if user else "Unknown"
+    operator = recharge.operator.name if recharge.operator else "N/A"
+    subject = "New Mobile Recharge Request"
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">A user has submitted a mobile recharge request that needs processing.</p>
+
+{_info_table(
+    _info_row("User", name) +
+    _info_row("Recharge Number", recharge.phone_number) +
+    _info_row("Operator", operator) +
+    _info_row("Amount", f"৳{recharge.amount}") +
+    _info_row("Status", recharge.get_status_display()) +
+    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+)}
+
+{_button("View in Admin", SITE_URL + "/admin/mobile_recharge/recharge/")}
+"""
+
+    html = _base_template(subject, body)
+    email_settings = _get_email_settings()
+    return _send_email(
+        subject,
+        email_settings['admin_email'],
+        f"New recharge request: {recharge.phone_number} (৳{recharge.amount})",
+        html,
+    )
 
 
 def notify_admin_withdrawal_request(user, amount, payment_method, payment_number):
