@@ -5844,12 +5844,59 @@ def remove_fcm_token(request):
     return Response({'removed': deleted}, status=status.HTTP_200_OK)
 
 
+def _redeliver_unread_on_return(user):
+    """Re-push recent unread notifications when a user comes back online.
+
+    A push sent while the user was logged out (no device token) is lost — the
+    saved Updates-tab entry survives, but the user never gets pinged. So when
+    they register a token after being offline, re-deliver the last few unread
+    notifications as a push (without creating duplicate Updates rows). A short
+    cooldown prevents re-spamming on rapid re-logins / token refreshes.
+    """
+    from datetime import timedelta
+    from django.core.cache import cache
+    from django.utils import timezone
+    from .models import UserNotification, FCMToken
+    from .fcm_service import send_fcm_notification_multicast
+
+    cooldown_key = f"redeliver_on_return_{user.id}"
+    if cache.get(cooldown_key):
+        return
+    week_ago = timezone.now() - timedelta(days=7)
+    unread = list(
+        UserNotification.objects.filter(
+            user=user, is_read=False, created_at__gte=week_ago
+        ).order_by('-created_at')[:3]
+    )
+    if not unread:
+        return
+    tokens = list(
+        FCMToken.objects.filter(user=user, is_active=True)
+        .values_list('token', flat=True)
+    )
+    if not tokens:
+        return
+    cache.set(cooldown_key, True, 60 * 60 * 6)  # don't repeat for 6 hours
+    for n in reversed(unread):  # oldest first so the newest lands last
+        data = {
+            'notification_id': str(n.id),
+            'notification_type': n.notification_type or 'general',
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+        }
+        if n.deep_link:
+            data['deep_link'] = n.deep_link
+        try:
+            send_fcm_notification_multicast(tokens, n.title, n.body, data)
+        except Exception as e:
+            print(f'   re-deliver push failed: {e}')
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_fcm_token(request):
     """Save or update user's FCM token for push notifications"""
     from .models import FCMToken
-    
+
     print(f'\n📱 FCM Token Registration Request')
     print(f'   User: {request.user.email}')
     print(f'   Request data: {request.data}')
@@ -5869,7 +5916,13 @@ def save_fcm_token(request):
     print(f'   Token: {fcm_token[:50]}...')
     print(f'   VoIP Token: {voip_token[:24]}...')
     print(f'   Device: {device_type}')
-    
+
+    # Was the user fully offline (no active device) before this registration?
+    # If so, we'll re-deliver any unread notifications they missed while away.
+    was_offline = not FCMToken.objects.filter(
+        user=request.user, is_active=True
+    ).exists()
+
     try:
         defaults = {
             'is_active': True,
@@ -5904,7 +5957,14 @@ def save_fcm_token(request):
         
         action = 'created' if created else 'updated'
         print(f'   ✅ FCM token {action} successfully')
-        
+
+        # If the user just came back online, re-push what they missed.
+        if was_offline and fcm_token:
+            try:
+                _redeliver_unread_on_return(request.user)
+            except Exception as e:
+                print(f'   re-delivery error: {e}')
+
         return Response({
             'message': 'FCM token saved successfully',
             'created': created,
