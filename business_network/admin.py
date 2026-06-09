@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from .models import *
 # Register your models here.
@@ -98,8 +99,55 @@ class GoldSponsorLocationInline(admin.TabularInline):
     verbose_name = "Target location (no rows = all Bangladesh)"
     verbose_name_plural = "Target locations (leave empty to show all over Bangladesh)"
 
+class GoldSponsorAdminForm(forms.ModelForm):
+    """Surfaces the wallet-charge rule as a normal form error.
+
+    Creating a NEW Gold Sponsor charges the owner's wallet inside
+    GoldSponsor.save(). When the balance is too low that save() raises a
+    ValidationError, which the Django admin does NOT catch during save_model
+    -> it bubbles up as a raw HTTP 500 ("couldn't add the sponsor"). Validating
+    here instead means the admin shows exactly what's wrong, inline, and never
+    reaches the failing save().
+    """
+
+    class Meta:
+        model = GoldSponsor
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Only a brand-new sponsor charges the wallet; editing one does not.
+        if self.instance and self.instance.pk:
+            return cleaned_data
+
+        user = cleaned_data.get('user')
+        package = cleaned_data.get('package')
+
+        if user and not package:
+            raise forms.ValidationError(
+                "Select a Sponsorship Package — it sets the price charged to the "
+                "owner and the sponsorship duration."
+            )
+
+        if user and package:
+            price = package.price or 0
+            balance = user.balance or 0
+            if balance < price:
+                who = getattr(user, 'email', None) or getattr(user, 'username', None) or str(user)
+                raise forms.ValidationError(
+                    "Insufficient wallet balance to create this Gold Sponsor. "
+                    f"Creating it charges ৳{price} from {who}, whose wallet "
+                    f"currently holds only ৳{balance}. Top up the user's "
+                    "balance, or choose a cheaper package."
+                )
+
+        return cleaned_data
+
+
 @admin.register(GoldSponsor)
 class GoldSponsorAdmin(admin.ModelAdmin):
+    form = GoldSponsorAdminForm
     list_display = ['business_name', 'user', 'contact_email', 'package', 'status', 'targeted_locations', 'views', 'is_featured', 'start_date', 'end_date']
     list_filter = ['status', 'is_featured', 'package', 'created_at', 'user']
     search_fields = ['business_name', 'contact_email', 'phone_number', 'user__username', 'user__email', 'locations__division', 'locations__city', 'locations__area']
