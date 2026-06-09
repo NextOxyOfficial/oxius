@@ -27,11 +27,24 @@ WELCOME_SMS = [
 ]
 
 
+# Leading honorifics/titles to skip so "Md Alimul Islam" greets "Alimul", not "Md".
+_TITLES = {
+    "md", "mohammad", "mohammed", "muhammad", "mohd", "mr", "mrs", "ms", "miss",
+    "mst", "most", "sri", "srimati", "dr", "engr", "alhaj",
+    "মো", "মোঃ", "মোহাম্মদ", "জনাব", "মিস্টার", "ডা", "শ্রী",
+}
+
+
+def _first_name(name):
+    parts = [p for p in (name or "").strip().split() if p]
+    while parts and parts[0].lower().rstrip(".।") in _TITLES:
+        parts.pop(0)
+    return parts[0] if parts else "বন্ধু"
+
+
 def pick_welcome_sms(name):
     """A random welcome line with the user's first name filled in."""
-    n = (name or "").strip()
-    n = n.split(" ")[0] if n else "বন্ধু"
-    return random.choice(WELCOME_SMS).format(name=n)
+    return random.choice(WELCOME_SMS).format(name=_first_name(name))
 
 
 def send_welcome_sms(name, phone):
