@@ -54,7 +54,7 @@ CATALOG = [
         eligible=lambda s, u: bool(s.pending.get("kyc")) and _has_balance(s),
         build=lambda s, u: (
             "৳{} তুলে নিন 💰".format(int(float(s.pending["withdrawable_balance"]))),
-            "{}, আপনার ৳{} ব্যালেন্স তোলার জন্য প্রস্তুত। KYC verify করে এখনই withdraw করুন।".format(
+            "{}, আপনার ৳{} ব্যালান্স উইথড্র করার জন্যে রেডি। KYC ভেরিফাই করে এখনই উইথড্র করুন।".format(
                 _name(u), int(float(s.pending["withdrawable_balance"]))
             ),
         ),
@@ -68,7 +68,7 @@ CATALOG = [
         eligible=lambda s, u: bool(s.pending.get("subscription_expiring")),
         build=lambda s, u: (
             "আপনার Pro-এর মেয়াদ শেষ হচ্ছে ⏳",
-            "এখনই renew করুন — আপনার স্টোর আর Pro সুবিধাগুলো চালু রাখতে।",
+            "এখনই রিনিউ করুন — আপনার স্টোর আর Pro সুবিধাগুলো চালু রাখতে।",
         ),
     ),
     # 3) Win-back dormant users (7–30 days idle). Link → feed.
