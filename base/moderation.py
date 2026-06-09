@@ -1,19 +1,21 @@
 """One-click admin moderation from email.
 
 Each pending item (Amar Sheba post, Sale post, MicroGig, Workspace gig) sends the
-admin an email with Approve / Reject buttons. Those buttons carry a signed,
-expiring token (no login needed, but only the server can mint it). To stay safe
-from email clients that pre-fetch links, the GET shows a small confirm page and
-the actual state change happens on the POST.
+admin an email with Approve / Reject buttons carrying a signed, expiring token.
+
+Security: the link only *identifies* the item + action — performing it still
+requires an authenticated **staff** session. So a forwarded/leaked email is
+useless to anyone who isn't logged into the admin (they're bounced to the admin
+login). The confirm page's POST is CSRF-protected, and the GET (which never
+changes state) is safe against email link pre-fetching.
 """
 
 from django.apps import apps
+from django.contrib.auth.views import redirect_to_login
 from django.core import signing
 from django.http import HttpResponse
+from django.middleware.csrf import get_token
 from django.utils.html import escape
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
 
 SITE_URL = "https://adsyclub.com"
 _SALT = "adsyclub.moderation.v1"
@@ -122,10 +124,12 @@ def _shell(title, message, emoji="ℹ️", color="#374151", extra=""):
     )
 
 
-@csrf_exempt
-@api_view(["GET", "POST"])
-@permission_classes([AllowAny])
 def moderate(request, token):
+    # Must be a logged-in admin. A forwarded/leaked email link is then useless to
+    # anyone else — they get bounced to the admin login.
+    if not (request.user.is_authenticated and request.user.is_staff):
+        return redirect_to_login(request.get_full_path(), login_url="/admin/login/")
+
     try:
         data = signing.loads(token, salt=_SALT, max_age=_MAX_AGE)
     except signing.SignatureExpired:
@@ -167,6 +171,7 @@ def moderate(request, token):
         )
     confirm_btn = (
         f"""<form method="post" style="margin-top:18px;">
+<input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}">
 <button type="submit" style="background:{color};color:#fff;border:0;border-radius:10px;
 padding:13px 30px;font-size:15px;font-weight:600;cursor:pointer;">{verb} নিশ্চিত করুন</button></form>"""
     )

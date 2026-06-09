@@ -252,7 +252,7 @@ def _action_buttons(approve_url, reject_url):
     </td>
   </tr>
 </table>
-<p style="text-align:center;color:#9ca3af;font-size:12px;margin:0 0 4px;">এক ক্লিকে রিভিউ করুন — confirm পেজ দেখাবে, তারপরই অ্যাকশন হবে।</p>
+<p style="text-align:center;color:#9ca3af;font-size:12px;margin:0 0 4px;">নিরাপত্তার জন্য Approve/Reject করতে admin-এ লগইন থাকতে হবে; এরপর একটি confirm পেজ দেখিয়ে তবেই অ্যাকশন হবে।</p>
 """
 
 
