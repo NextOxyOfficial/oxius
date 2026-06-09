@@ -112,7 +112,7 @@ def process_auto_renewals():
                     "Pro রিনিউ করতে ব্যালেন্স দরকার ⏳",
                     f"আপনার Pro সাবস্ক্রিপশন শীঘ্রই শেষ হচ্ছে। অটো-রিনিউয়ের জন্য "
                     f"Adsy Pay-তে ৳{int(price)} দরকার, এখন আছে ৳{int(balance)}। "
-                    f"রিচার্জ করলে মেয়াদ স্বয়ংক্রিয়ভাবে বেড়ে যাবে।",
+                    f"রিচার্জ করলে মেয়াদ অটোমেটিক বেড়ে যাবে।",
                     f"{SITE}/deposit-withdraw",
                     "autorenew_balance_low",
                     cooldown_days=2,
