@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
+import '../../services/business_network_service.dart';
 
 class PostActions extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -23,17 +24,42 @@ class PostActions extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
         children: [
-          // Like Button
-          _ActionButton(
-            iconPath: post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
-            label: _formatCount(post.likesCount),
+          // Like: the heart toggles the like; the "N likes" label opens a
+          // bottom sheet listing everyone who liked this post.
+          InkWell(
             onTap: onLike,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 2),
+              child: Image.asset(
+                post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
+                width: 22,
+                height: 22,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: () => _showLikers(context),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Text(
+                '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 16),
-          // Comment Button
+          // Comment: opens post details where all comments are shown.
           _ActionButton(
             iconPath: 'assets/icons/comments.png',
-            label: _formatCount(post.commentsCount),
+            label:
+                '${_formatCount(post.commentsCount)} ${post.commentsCount == 1 ? 'Comment' : 'Comments'}',
             onTap: onComment,
           ),
           const SizedBox(width: 16),
@@ -61,6 +87,16 @@ class PostActions extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  void _showLikers(BuildContext context) {
+    if (post.postLikes.isEmpty) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _LikersBottomSheet(likes: post.postLikes),
     );
   }
 
@@ -114,6 +150,186 @@ class _ActionButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet that lists the users who liked a post, with a follow /
+/// unfollow action on the right for each one.
+class _LikersBottomSheet extends StatefulWidget {
+  final List<PostLike> likes;
+
+  const _LikersBottomSheet({required this.likes});
+
+  @override
+  State<_LikersBottomSheet> createState() => _LikersBottomSheetState();
+}
+
+class _LikersBottomSheetState extends State<_LikersBottomSheet> {
+  final Set<String> _busy = {}; // userUuid currently toggling
+  final Map<String, bool> _followOverride = {}; // userUuid -> isFollowing
+
+  bool _isFollowing(PostLike like) =>
+      _followOverride[like.userUuid] ?? like.isFollowing;
+
+  Future<void> _toggle(PostLike like) async {
+    final uuid = like.userUuid;
+    if (uuid.isEmpty || _busy.contains(uuid)) return;
+    final current = _isFollowing(like);
+    setState(() => _busy.add(uuid));
+    final ok = await BusinessNetworkService.toggleFollow(uuid, current);
+    if (!mounted) return;
+    setState(() {
+      _busy.remove(uuid);
+      if (ok) _followOverride[uuid] = !current;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final likes = widget.likes;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Grab handle
+              Container(
+                margin: const EdgeInsets.only(top: 10, bottom: 6),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Title
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.favorite, color: Color(0xFFEF4444), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${likes.length} ${likes.length == 1 ? 'like' : 'likes'}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollController,
+                  itemCount: likes.length,
+                  separatorBuilder: (_, __) =>
+                      Divider(height: 1, color: Colors.grey.shade100),
+                  itemBuilder: (context, index) => _buildLikerRow(likes[index]),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLikerRow(PostLike like) {
+    final following = _isFollowing(like);
+    final busy = _busy.contains(like.userUuid);
+    final hasImage = like.userImage != null && like.userImage!.isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: Colors.grey.shade200,
+            backgroundImage: hasImage ? NetworkImage(like.userImage!) : null,
+            child: !hasImage
+                ? Text(
+                    like.userName.isNotEmpty
+                        ? like.userName[0].toUpperCase()
+                        : '?',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    like.userName.isNotEmpty ? like.userName : 'AdsyClub user',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (like.isVerified) ...[
+                  const SizedBox(width: 4),
+                  const Icon(Icons.verified, size: 16, color: Color(0xFF3B82F6)),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          _buildFollowButton(like, following, busy),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowButton(PostLike like, bool following, bool busy) {
+    return SizedBox(
+      height: 34,
+      child: OutlinedButton(
+        onPressed: busy || like.userUuid.isEmpty ? null : () => _toggle(like),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: following ? Colors.white : const Color(0xFF2563EB),
+          foregroundColor: following ? const Color(0xFF374151) : Colors.white,
+          side: BorderSide(
+            color: following ? Colors.grey.shade300 : const Color(0xFF2563EB),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: busy
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(
+                following ? 'Following' : 'Follow',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }

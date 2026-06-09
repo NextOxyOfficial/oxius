@@ -412,16 +412,38 @@ class PostTag {
 class PostLike {
   final int id;
   final int user;
+  final String userUuid; // user PK string, used for the follow/unfollow API
+  final String userName;
+  final String? userImage;
+  final bool isVerified;
+  final bool isFollowing;
 
   PostLike({
     required this.id,
     required this.user,
+    this.userUuid = '',
+    this.userName = '',
+    this.userImage,
+    this.isVerified = false,
+    this.isFollowing = false,
   });
 
   factory PostLike.fromJson(Map<String, dynamic> json) {
+    final ud = (json['user_details'] is Map)
+        ? json['user_details'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    var name = (ud['name'] ?? ud['username'] ?? '').toString().trim();
+    if (name.isEmpty) {
+      name = '${ud['first_name'] ?? ''} ${ud['last_name'] ?? ''}'.trim();
+    }
     return PostLike(
       id: _parseId(json['id']),
       user: _parseId(json['user']),
+      userUuid: (ud['id'] ?? json['user'] ?? '').toString(),
+      userName: name,
+      userImage: ud['image'] ?? ud['avatar'] ?? ud['profile_picture'],
+      isVerified: ud['is_verified'] ?? ud['kyc'] ?? false,
+      isFollowing: ud['isFollowing'] ?? ud['is_following'] ?? false,
     );
   }
 
