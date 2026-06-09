@@ -85,7 +85,7 @@ class _HeroBannerState extends State<HeroBanner> {
           'icon': Icons.sell,
           'image': 'assets/images/sign.png',
           'label':
-              _translationService.t('sale_listing', fallback: 'পুরোনো কেনাবেচা'),
+              'পুরোনো কেনাবেচা',
           'color': const Color(0xFF4F46E5), // Indigo
           'bgColor': const Color(0xFFF0F9FF),
         },
@@ -926,7 +926,7 @@ class _HeroBannerState extends State<HeroBanner> {
                   MaterialPageRoute(
                       builder: (context) => const ElearningScreen()),
                 );
-              } else if (service['label'] == _translationService.t('sale_listing', fallback: 'পুরোনো কেনাবেচা') ||
+              } else if (service['label'] == 'পুরোনো কেনাবেচা' ||
                   service['label'] == 'Buy & Sell') {
                 Navigator.pushNamed(context, '/sale');
               } else if (service['label'] == _translationService.t('ride_share', fallback: 'Ride Share') ||

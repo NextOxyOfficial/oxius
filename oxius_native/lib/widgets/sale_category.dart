@@ -351,8 +351,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _translationService.t('sale_listing',
-                          fallback: 'পুরোনো কেনাবেচা মার্কেটপ্লেস'),
+                      'পুরোনো কেনাবেচা মার্কেটপ্লেস',
                       style: AppFonts.roboto(
                         fontSize: screenWidth * 0.042,
                         fontWeight: FontWeight.w700,
@@ -363,7 +362,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      _translationService.t('buy_and_sell_products', fallback: 'Buy & sell amazing products'),
+                      'পুরোনো জিনিস সহজে কেনাবেচা করুন',
                       style: AppFonts.roboto(
                         fontSize: screenWidth * 0.028,
                         color: Colors.grey.shade600,

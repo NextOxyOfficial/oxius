@@ -95,13 +95,13 @@
                     <h2
                       class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200 cursor-pointer"
                     >
-                      {{ $t("sale_listing") }}
+                      পুরোনো কেনাবেচা মার্কেটপ্লেস
                     </h2>
                   </NuxtLink>
                   <p
                     class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium"
                   >
-                    Buy & sell amazing products
+                    পুরোনো জিনিস সহজে কেনাবেচা করুন
                   </p>
                 </div>
               </div>

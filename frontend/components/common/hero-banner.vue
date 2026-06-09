@@ -210,7 +210,7 @@
                       class="size-7"
                     />
                   </div>
-                  <span>{{ $t("sale_listing") }}</span>
+                  <span>পুরোনো কেনাবেচা</span>
                 </NuxtLink>
 
                 <!-- MindForce -->
@@ -483,9 +483,7 @@
             />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-800">{{
-              $t("sale_listing")
-            }}</span>
+            <span class="text-sm font-medium leading-tight text-gray-800">পুরোনো কেনাবেচা</span>
           </div>
         </NuxtLink>
         <!-- MindForce -->
