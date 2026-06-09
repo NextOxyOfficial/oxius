@@ -603,6 +603,28 @@ def send_kyc_rejected_email(user, reason=""):
     return _send_email(subject, user.email, f"Hi {name}, KYC update.", html)
 
 
+def send_gold_sponsor_email(user, *, subject, heading, message_html,
+                            button_text="", button_url="", footer_note=""):
+    """Generic Gold Sponsor lifecycle email (renewal reminders, auto-renew
+    receipts, expiry & win-back). Fire-and-forget so the lifecycle task is never
+    blocked on SMTP, and a no-op if the user has no email address. Email only
+    actually delivers once EMAIL_HOST_PASSWORD is configured; push is separate."""
+    email = getattr(user, 'email', None)
+    if not email:
+        return False
+    name = (getattr(user, 'name', None) or getattr(user, 'first_name', None)
+            or getattr(user, 'username', None) or 'there')
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#111827;font-size:16px;line-height:1.5;margin:0 0 16px;font-weight:600;">{heading}</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{message_html}</p>
+{_button(button_text, button_url) if (button_text and button_url) else ""}
+"""
+    html = _base_template(subject, body, footer_note)
+    _dispatch_async(_send_email, subject, email, f"Hi {name}, {heading}", html)
+    return True
+
+
 def send_account_suspended_email(user, reason=""):
     """Email sent when an account is suspended."""
     name = user.name or user.first_name or user.username

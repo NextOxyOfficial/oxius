@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from .models import *
 # Register your models here.
 
@@ -148,8 +148,8 @@ class GoldSponsorAdminForm(forms.ModelForm):
 @admin.register(GoldSponsor)
 class GoldSponsorAdmin(admin.ModelAdmin):
     form = GoldSponsorAdminForm
-    list_display = ['business_name', 'user', 'contact_email', 'package', 'status', 'targeted_locations', 'views', 'is_featured', 'start_date', 'end_date']
-    list_filter = ['status', 'is_featured', 'package', 'created_at', 'user']
+    list_display = ['business_name', 'user', 'contact_email', 'package', 'status', 'auto_renew', 'targeted_locations', 'views', 'is_featured', 'start_date', 'end_date']
+    list_filter = ['status', 'auto_renew', 'is_featured', 'package', 'created_at', 'user']
     search_fields = ['business_name', 'contact_email', 'phone_number', 'user__username', 'user__email', 'locations__division', 'locations__city', 'locations__area']
     ordering = ['-created_at']
     readonly_fields = ['slug', 'views', 'created_at', 'updated_at']
@@ -173,7 +173,7 @@ class GoldSponsorAdmin(admin.ModelAdmin):
             'fields': ('contact_email', 'phone_number', 'website', 'profile_url')
         }),
         ('Sponsorship Details', {
-            'fields': ('package', 'start_date', 'end_date', 'status', 'is_featured')
+            'fields': ('package', 'start_date', 'end_date', 'status', 'is_featured', 'auto_renew')
         }),
         ('Analytics', {
             'fields': ('views',),
@@ -185,8 +185,52 @@ class GoldSponsorAdmin(admin.ModelAdmin):
         }),
     )
     
-    actions = ['approve_sponsors', 'reject_sponsors', 'feature_sponsors', 'unfeature_sponsors']
-    
+    actions = [
+        'approve_sponsors', 'reject_sponsors', 'feature_sponsors', 'unfeature_sponsors',
+        'extend_one_period_charge', 'extend_one_period_free',
+        'enable_auto_renew', 'disable_auto_renew',
+    ]
+
+    def extend_one_period_charge(self, request, queryset):
+        """Renew/extend by one package period, charging each owner's wallet."""
+        ok = 0
+        for sponsor in queryset:
+            result = sponsor.extend(charge=True, reason='admin')
+            if result.get('ok'):
+                ok += 1
+            else:
+                self.message_user(
+                    request,
+                    f'“{sponsor.business_name}”: could not extend — '
+                    + (f"insufficient balance (needs ৳{result.get('price')}, "
+                       f"has ৳{result.get('balance')})."
+                       if result.get('reason') == 'insufficient_balance'
+                       else result.get('reason', 'error')),
+                    level=messages.WARNING,
+                )
+        if ok:
+            self.message_user(request, f'{ok} sponsor(s) extended (wallet charged).')
+    extend_one_period_charge.short_description = "Renew/extend 1 period (charge wallet)"
+
+    def extend_one_period_free(self, request, queryset):
+        """Comp extension — extend by one package period without charging."""
+        ok = 0
+        for sponsor in queryset:
+            if sponsor.extend(charge=False, reason='admin_comp').get('ok'):
+                ok += 1
+        self.message_user(request, f'{ok} sponsor(s) extended free of charge.')
+    extend_one_period_free.short_description = "Extend 1 period (free / comp)"
+
+    def enable_auto_renew(self, request, queryset):
+        updated = queryset.update(auto_renew=True)
+        self.message_user(request, f'Auto-renew enabled for {updated} sponsor(s).')
+    enable_auto_renew.short_description = "Enable auto-renew"
+
+    def disable_auto_renew(self, request, queryset):
+        updated = queryset.update(auto_renew=False)
+        self.message_user(request, f'Auto-renew disabled for {updated} sponsor(s).')
+    disable_auto_renew.short_description = "Disable auto-renew"
+
     def approve_sponsors(self, request, queryset):
         updated = queryset.update(status='active')
         self.message_user(request, f'{updated} sponsors approved successfully.')
@@ -214,6 +258,21 @@ class GoldSponsorBannerAdmin(admin.ModelAdmin):
     search_fields = ['title', 'sponsor__business_name']
     ordering = ['sponsor', 'order']
 
+
+
+@admin.register(GoldSponsorReminderLog)
+class GoldSponsorReminderLogAdmin(admin.ModelAdmin):
+    """Audit trail of the multi-step renewal follow-ups (read-only)."""
+    list_display = ['sponsor', 'stage', 'channel', 'sent_at']
+    list_filter = ['stage', 'channel', 'sent_at']
+    search_fields = ['sponsor__business_name', 'sponsor__user__email']
+    ordering = ['-sent_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(GoldSponsorSettings)

@@ -18,8 +18,9 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoldSponsor
         fields = [
-            'business_name', 'business_description', 'contact_email', 
-            'phone_number', 'website', 'profile_url', 'logo', 'package_id', 'banners'
+            'business_name', 'business_description', 'contact_email',
+            'phone_number', 'website', 'profile_url', 'logo', 'package_id', 'banners',
+            'auto_renew'
         ]
     
     def validate_package_id(self, value):
@@ -202,7 +203,7 @@ class GoldSponsorSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'business_name', 'business_description', 'contact_email',
             'phone_number', 'website', 'profile_url', 'logo', 'package', 'banners', 'locations',
-            'start_date', 'end_date', 'status', 'is_featured', 'views', 'created_at',
+            'start_date', 'end_date', 'status', 'is_featured', 'auto_renew', 'views', 'created_at',
             'user_username', 'days_remaining', 'is_active_status'
         ]
         read_only_fields = ['id', 'start_date', 'end_date', 'status', 'is_featured', 'views', 'created_at']

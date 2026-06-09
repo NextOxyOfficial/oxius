@@ -208,6 +208,44 @@ def update_gold_sponsor(request, sponsor_id):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['POST'])
+def renew_gold_sponsor(request, sponsor_id):
+    """Manually renew/extend a Gold Sponsor by one package period, charging the
+    owner's Adsy Pay balance (the app's "Renew now" button)."""
+    if not request.user.is_authenticated:
+        return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        sponsor = GoldSponsor.objects.get(id=sponsor_id, user=request.user)
+    except GoldSponsor.DoesNotExist:
+        return Response({'error': 'Sponsor not found or you do not have permission'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    result = sponsor.extend(charge=True, reason='manual')
+
+    if result.get('ok'):
+        return Response({
+            'message': 'Gold Sponsor renewed successfully!',
+            'end_date': sponsor.end_date,
+            'amount_charged': str(result.get('price') or 0),
+            'sponsor': GoldSponsorSerializer(sponsor).data,
+        })
+
+    if result.get('reason') == 'insufficient_balance':
+        price = result.get('price') or 0
+        balance = result.get('balance') or 0
+        return Response({
+            'error': 'insufficient_balance',
+            'message': (f'Insufficient balance: renewal costs ৳{price} but your '
+                        f'wallet has ৳{balance}. Please top up and try again.'),
+            'required': str(price),
+            'balance': str(balance),
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({'error': result.get('reason', 'renew_failed')},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['DELETE'])
 def delete_gold_sponsor(request, sponsor_id):
     """Delete a Gold Sponsor (only owner can delete)"""

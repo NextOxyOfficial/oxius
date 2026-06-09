@@ -885,6 +885,10 @@ class GoldSponsor(models.Model):
     # Status and timestamps
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     is_featured = models.BooleanField(default=False)
+    # When True, the lifecycle task charges the owner's wallet shortly before
+    # expiry and extends the sponsorship automatically (with email + push
+    # follow-ups). When False, the owner gets multi-step renewal reminders.
+    auto_renew = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -944,9 +948,96 @@ class GoldSponsor(models.Model):
             remaining = self.end_date - timezone.now()
             return max(0, remaining.days)
         return 0
-    
+
+    def extend(self, *, charge=True, reason='manual'):
+        """Extend the sponsorship by one package period and re-activate it.
+
+        Used by both the manual "Renew now" endpoint/admin action and the
+        auto-renew lifecycle task. When ``charge`` is True the package price is
+        deducted from the owner's wallet (a comp/admin extension can pass
+        ``charge=False``).
+
+        Returns a dict describing the outcome:
+          {'ok': True,  'price': D, 'end_date': dt}
+          {'ok': False, 'reason': 'insufficient_balance', 'price': D, 'balance': D}
+        Never raises for the insufficient-balance case so callers can decide how
+        to surface it (push/email follow-up vs. admin message).
+        """
+        from datetime import timedelta
+
+        if not self.package:
+            return {'ok': False, 'reason': 'no_package'}
+
+        price = self.package.price or 0
+        if charge and price:
+            balance = self.user.balance or 0
+            if balance < price:
+                return {
+                    'ok': False,
+                    'reason': 'insufficient_balance',
+                    'price': price,
+                    'balance': balance,
+                }
+            self.user.balance = balance - price
+            self.user.save(update_fields=['balance'])
+            self.amount_paid = (self.amount_paid or 0) + price
+            # Best-effort wallet ledger entry (non-fatal if the model rejects it).
+            try:
+                from base.models import Balance
+                Balance.objects.create(
+                    user=self.user,
+                    transaction_type='gold_sponsor',
+                    amount=price,
+                    payable_amount=price,
+                    completed=True,
+                    approved=True,
+                )
+            except Exception:
+                pass
+
+        now = timezone.now()
+        base = self.end_date if (self.end_date and self.end_date > now) else now
+        self.end_date = base + timedelta(days=30 * self.package.duration_months)
+        self.status = 'active'
+        self.save(update_fields=['end_date', 'status', 'amount_paid', 'updated_at'])
+
+        # New cycle -> let the multi-step reminders fire again next period.
+        try:
+            self.reminder_logs.all().delete()
+        except Exception:
+            pass
+
+        return {'ok': True, 'price': price, 'end_date': self.end_date, 'reason': reason}
+
     def __str__(self):
         return self.business_name
+
+
+class GoldSponsorReminderLog(models.Model):
+    """One row per follow-up step sent for a sponsor, so the lifecycle task
+    never sends the same step twice. Cleared when a sponsor renews so the next
+    period starts a fresh reminder sequence."""
+    STAGE_CHOICES = (
+        ('expiry_7d', 'Expires in 7 days'),
+        ('expiry_3d', 'Expires in 3 days'),
+        ('expiry_1d', 'Expires tomorrow'),
+        ('autorenew_success', 'Auto-renewed'),
+        ('autorenew_low', 'Auto-renew needs balance'),
+        ('expired_notice', 'Expired notice'),
+        ('winback', 'Win-back'),
+    )
+    sponsor = models.ForeignKey(
+        GoldSponsor, on_delete=models.CASCADE, related_name='reminder_logs')
+    stage = models.CharField(max_length=40, choices=STAGE_CHOICES)
+    channel = models.CharField(max_length=20, default='push')
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('sponsor', 'stage')
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"{self.sponsor_id} · {self.stage}"
 
 
 class GoldSponsorLocation(models.Model):

@@ -519,6 +519,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "subscription.tasks.process_auto_renewals",
         "schedule": timedelta(hours=6),  # Charge balance / follow up on renewals
     },
+    "process-gold-sponsor-lifecycle": {
+        "task": "business_network.tasks.process_gold_sponsor_lifecycle",
+        "schedule": timedelta(hours=6),  # Auto-renew + multi-step renewal follow-ups
+    },
     "cascade-expired-ride-targets": {
         "task": "rideshare.tasks.cascade_expired_ride_targets",
         "schedule": timedelta(seconds=30),  # Run every 30 seconds to check 1-minute timeouts

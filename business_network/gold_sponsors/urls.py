@@ -6,6 +6,7 @@ from .views import (
     gold_sponsor_stats,
     user_gold_sponsors,
     update_gold_sponsor,
+    renew_gold_sponsor,
     delete_gold_sponsor,
     increment_sponsor_views,
     sponsor_banners,
@@ -20,6 +21,7 @@ urlpatterns = [
     path('stats/', gold_sponsor_stats, name='gold-sponsor-stats'),
     path('my-sponsors/', user_gold_sponsors, name='user-gold-sponsors'),
     path('update/<int:sponsor_id>/', update_gold_sponsor, name='update-gold-sponsor'),
+    path('renew/<int:sponsor_id>/', renew_gold_sponsor, name='renew-gold-sponsor'),
     path('delete/<int:sponsor_id>/', delete_gold_sponsor, name='delete-gold-sponsor'),    path('increment-views/<int:sponsor_id>/', increment_sponsor_views, name='increment-sponsor-views'),
     path('<int:sponsor_id>/banners/', sponsor_banners, name='sponsor-banners'),
 ]
