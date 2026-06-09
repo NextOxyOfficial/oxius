@@ -603,6 +603,10 @@ class MicroGigPost(models.Model):
     appeal_count = models.IntegerField(default=0, help_text="Number of times this gig has been appealed")
 
     def save(self, *args, **kwargs):
+        # True only on the very first insert. Each completed task calls
+        # gig.save() too, so we use this (not "status is pending") to make sure
+        # the admin gets the review email ONCE, when the gig post is created.
+        is_new = self._state.adding
         # Remember prior gig_status so we can email on an approve/reject transition.
         previous_gig_status = None
         if self.pk:
@@ -658,8 +662,8 @@ class MicroGigPost(models.Model):
             except Exception as e:
                 print(f"Error sending gig status email: {e}")
 
-        # New gig pending review -> notify admin with one-click approve/reject.
-        if previous_gig_status is None and self.gig_status == "pending":
+        # New gig POST created -> notify admin once (never on per-task saves).
+        if is_new and self.gig_status == "pending":
             try:
                 from base.moderation import notify_admin_pending
                 notify_admin_pending(self)
