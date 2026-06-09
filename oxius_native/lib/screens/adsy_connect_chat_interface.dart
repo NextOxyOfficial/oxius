@@ -266,6 +266,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   String? _lastSeenTime;
   Timer? _onlineStatusTimer;
   Timer? _remoteTypingResetTimer;
+  Timer? _activeChatHeartbeat;
   StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
   Map<String, dynamic>? _replyingToMessage;
 
@@ -286,6 +287,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     WidgetsBinding.instance.addObserver(this);
     ActiveChatTracker.setActiveChat(widget.chatroomId);
     AdsyConnectService.setActiveChat(widget.chatroomId);
+    _startActiveChatHeartbeat();
     _isOtherUserOnline = widget.isOnline;
     _loadChatroomStatus();
     _loadMessages();
@@ -325,7 +327,30 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       // Also pull any messages that may have arrived while we were paused —
       // belt-and-suspenders against socket replay gaps.
       _loadMessages();
+      // Back on screen: re-mark this chat active so we keep suppressing its push.
+      AdsyConnectService.setActiveChat(widget.chatroomId);
+      _startActiveChatHeartbeat();
+    } else {
+      // App backgrounded: the user isn't looking at the chat, so let its push
+      // through again and stop the heartbeat.
+      _stopActiveChatHeartbeat();
+      AdsyConnectService.clearActiveChat();
     }
+  }
+
+  // Refresh the "active chat" marker periodically so the backend's freshness
+  // window never expires while this screen stays open (prevents push for the
+  // chat the user is actively viewing).
+  void _startActiveChatHeartbeat() {
+    _activeChatHeartbeat?.cancel();
+    _activeChatHeartbeat = Timer.periodic(const Duration(minutes: 2), (_) {
+      AdsyConnectService.setActiveChat(widget.chatroomId);
+    });
+  }
+
+  void _stopActiveChatHeartbeat() {
+    _activeChatHeartbeat?.cancel();
+    _activeChatHeartbeat = null;
   }
 
   void _onItemPositionsChanged() {
@@ -441,6 +466,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     );
     ActiveChatTracker.clearActiveChat();
     AdsyConnectService.clearActiveChat();
+    _activeChatHeartbeat?.cancel();
     _realtimeSubscription?.cancel();
     _remoteTypingResetTimer?.cancel();
     _messageController.dispose();

@@ -439,10 +439,18 @@ class ActiveChatSession(models.Model):
     
     @classmethod
     def is_user_in_chat(cls, user, chatroom):
-        """Check if user is currently viewing a specific chat"""
+        """Whether the user is actively viewing this chat.
+
+        We keep a freshness window so a session left stuck by a closed tab,
+        backgrounded app or crash (where the client never sent "clear") can't
+        suppress push notifications forever. Clients refresh the session while
+        the chat stays open (heartbeat); after the window it's treated as left.
+        """
         try:
             session = cls.objects.get(user=user)
-            return session.chatroom_id == chatroom.id if session.chatroom else False
+            if not session.chatroom or session.chatroom_id != chatroom.id:
+                return False
+            return session.updated_at >= timezone.now() - timedelta(minutes=10)
         except cls.DoesNotExist:
             return False
 

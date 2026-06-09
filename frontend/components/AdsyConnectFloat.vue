@@ -116,7 +116,7 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <button
-                @click="activeMiniChat = null"
+                @click="closeMiniConversation"
                 class="p-1 hover:bg-gray-200 rounded transition-colors"
               >
                 <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
@@ -277,6 +277,10 @@ const toggleMiniChat = async () => {
     }
     // Start periodic refresh for new messages
     startChatRoomsPolling()
+  } else {
+    // Closing the float — no longer viewing any chat.
+    activeMiniChat.value = null
+    leaveChat()
   }
   hasNewMessages.value = false
 }
@@ -285,10 +289,20 @@ const openFullChat = () => {
   navigateTo('/inbox')
 }
 
+// Tell the backend which chat the user is viewing, so it doesn't push a
+// notification for messages they can already see (heartbeat + clear on leave).
+const { enterChat, leaveChat } = useActiveChat()
+
+const closeMiniConversation = () => {
+  activeMiniChat.value = null
+  leaveChat()
+}
+
 const selectMiniChat = async (chat: any) => {
   activeMiniChat.value = chat
   miniMessages.value = []
-  
+  enterChat(chat.id)
+
   try {
     const { data, error } = await get(`/adsyconnect/messages/?chatroom=${chat.id}`)
     if (data && !error) {
@@ -358,6 +372,7 @@ onMounted(async () => {
 // Cleanup on unmount - stopPolling handles all intervals
 onUnmounted(() => {
   stopPolling()
+  leaveChat()
 })
 </script>
 

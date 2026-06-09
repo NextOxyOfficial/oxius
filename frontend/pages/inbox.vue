@@ -1986,6 +1986,8 @@
 const { t } = useI18n();
 const { user } = useAuth();
 const { get, post, put, patch, del } = useApi();
+// Suppress push for the AdsyConnect chat being viewed (heartbeat + clear on leave).
+const { enterChat, leaveChat } = useActiveChat();
 const route = useRoute();
 const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
 const { formatDate } = useUtils();
@@ -2335,11 +2337,13 @@ onMounted(async () => {
 // Cleanup on unmount
 onUnmounted(() => {
   stopPolling();
+  leaveChat();
 });
 
 // Go back to chat list (mobile only)
 function goBackToChatList() {
   isMobileChatView.value = false;
+  leaveChat();
 }
 
 // Enhanced selectAdsyChat to switch tab
@@ -2360,7 +2364,10 @@ async function selectAdsyChatWithTab(chat) {
   
   // Select the chat
   await selectAdsyChat(chat);
-  
+
+  // Suppress push for this chat while it's open on screen.
+  enterChat(String(chat.id));
+
   // Enable mobile chat view
   isMobileChatView.value = true;
   
