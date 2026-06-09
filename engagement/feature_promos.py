@@ -14,8 +14,11 @@ SITE = "https://adsyclub.com"
 
 # feature -> { "deep_link": url, "messages": [(title, body), ...] }
 FEATURE_PROMOS = {
+    # Amar Sheba = everyday SERVICE ads (post a service, find a service person).
+    # /classified resolves on the app (services screen); web /classified redirects
+    # to /classified-categories.
     "amarseba": {
-        "deep_link": SITE + "/sale",
+        "deep_link": SITE + "/classified",
         "messages": [
             ("আপনার সেবা এখন সবার হাতের নাগালে 🛠️",
              "ইলেকট্রিশিয়ান, টিউটর, পার্লার — যেকোনো সেবা দিন বা নিন ‘আমার সেবা’-তে। আজই দেখুন!"),
@@ -29,11 +32,12 @@ FEATURE_PROMOS = {
              "প্লাম্বার থেকে গৃহশিক্ষক — সব সেবা এক জায়গায়। এখনই ব্রাউজ করুন।"),
         ],
     },
+    # eShop = brand-NEW products / e-commerce (sellers' stores).
     "eshop": {
         "deep_link": SITE + "/eshop",
         "messages": [
-            ("eShop-এ আপনার পছন্দের পণ্য 🛒",
-             "দারুণ দামে কেনাকাটা করুন AdsyClub eShop-এ। নতুন পণ্য দেখে নিন!"),
+            ("eShop-এ নতুন পণ্যের সম্ভার 🛒",
+             "ব্র্যান্ড-নিউ পণ্য দারুণ দামে কিনুন AdsyClub eShop-এ। আজই দেখে নিন!"),
             ("নিজের স্টোর খুলুন eShop-এ 🏪",
              "Pro হয়ে আপনার পণ্য সারা দেশে বিক্রি করুন। আজই স্টোর চালু করুন।"),
             ("আজকের সেরা ডিল eShop-এ 🔥",
@@ -41,7 +45,23 @@ FEATURE_PROMOS = {
             ("কেনাকাটা এখন আরও সহজ 🛍️",
              "ঘরে বসেই অর্ডার করুন, ক্যাশ অন ডেলিভারিতে পান। eShop দেখুন।"),
             ("eShop — বিক্রি করুন, আয় করুন 💵",
-             "আপনার পণ্যের ছবি দিন, অর্ডার পান। eShop-এ ব্যবসা শুরু করুন।"),
+             "আপনার নতুন পণ্যের ছবি দিন, অর্ডার পান। eShop-এ ব্যবসা শুরু করুন।"),
+        ],
+    },
+    # Sale marketplace = buy/sell USED / second-hand items.
+    "sale": {
+        "deep_link": SITE + "/sale",
+        "messages": [
+            ("পুরোনো জিনিস বিক্রি করুন সহজে 📦",
+             "ব্যবহৃত ফোন, ফার্নিচার, গাড়ি — যা আছে বিক্রি করুন Sale মার্কেটপ্লেসে।"),
+            ("কম দামে ভালো জিনিস কিনুন 🛒",
+             "Sale মার্কেটপ্লেসে ব্যবহৃত পণ্য কিনুন সাশ্রয়ী দামে। আজই ঘুরে দেখুন।"),
+            ("অব্যবহৃত জিনিস পড়ে আছে? বিক্রি করুন 💰",
+             "ঘরের অপ্রয়োজনীয় জিনিস Sale মার্কেটপ্লেসে পোস্ট করে আয় করুন।"),
+            ("Sale মার্কেটপ্লেস — পুরোনো জিনিসের কেনাবেচা 🔄",
+             "সেকেন্ড-হ্যান্ড জিনিস কেনা-বেচার সবচেয়ে সহজ জায়গা। দেখে নিন।"),
+            ("আপনার এলাকায় পুরোনো জিনিস খুঁজুন 📍",
+             "কাছাকাছি ব্যবহৃত পণ্য কিনুন বা বিক্রি করুন Sale মার্কেটপ্লেসে।"),
         ],
     },
     "mindforce": {
@@ -60,7 +80,7 @@ FEATURE_PROMOS = {
         ],
     },
     "workspace": {
-        "deep_link": SITE + "/business-network/workspace",
+        "deep_link": SITE + "/business-network/workspaces",
         "messages": [
             ("কাজ খুঁজছেন? Workspace দেখুন 💼",
              "ফ্রিল্যান্স গিগ পোস্ট করুন বা কাজ নিন AdsyClub Workspace-এ।"),
@@ -105,7 +125,7 @@ FEATURE_PROMOS = {
         ],
     },
     "news": {
-        "deep_link": SITE + "/news",
+        "deep_link": SITE + "/adsy-news",
         "messages": [
             ("আজকের খবর AdsyNews-এ 📰",
              "দেশ-বিদেশের সর্বশেষ খবর পড়ুন AdsyClub News-এ।"),
