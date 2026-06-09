@@ -31,6 +31,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   bool _autoRenew = false;
   bool _autoRenewBusy = false;
   bool _autoRenewLoaded = false;
+  bool? _hasActivePro; // server-confirmed paid-Pro status (null until loaded)
   int _selectedMonths = 1;
   int _monthlyPrice = 149;     // effective (discounted) monthly price
   int _regularPrice = 299;     // normal monthly price (struck-through)
@@ -40,6 +41,11 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   int get _totalPrice => _selectedMonths == 1
       ? _monthlyPrice
       : (_monthlyPrice * _selectedMonths) - _yearlyDiscount;
+
+  // Prefer the server's confirmed paid-Pro status once loaded; fall back to the
+  // cached (possibly stale) user state until then — so an expired/cancelled or
+  // free account never shows "Pro active".
+  bool get _isPro => _hasActivePro ?? _userState.isPro;
 
   @override
   void initState() {
@@ -62,12 +68,14 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   }
 
   Future<void> _loadAutoRenew() async {
-    if (!_userState.isPro) return;
+    // Always ask the server for the authoritative paid-Pro status so the screen
+    // never relies on a stale cached flag.
     final data = await _subscriptionService.getAutoRenew();
     if (!mounted || data == null) return;
     setState(() {
+      _hasActivePro = data['has_active_pro'] == true;
       _autoRenew = data['auto_renew'] == true;
-      _autoRenewLoaded = true;
+      _autoRenewLoaded = _hasActivePro == true;
     });
   }
 
@@ -161,7 +169,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildQuickStatusStrip(),
-            if (_userState.isPro) ...[
+            if (_isPro) ...[
               const SizedBox(height: 10),
               _buildAutoRenewCard(),
             ],
@@ -177,7 +185,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   }
 
   Widget _buildQuickStatusStrip() {
-    final isPro = _userState.isPro;
+    final isPro = _isPro;
     final balance = _userState.balance;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -604,7 +612,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   }
 
   Widget _buildBottomCheckoutBar(double bottomInset) {
-    final isPro = _userState.isPro;
+    final isPro = _isPro;
     final balance = _userState.balance;
     final hasEnoughFunds = balance >= _totalPrice;
 
@@ -764,7 +772,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       return;
     }
 
-    if (_userState.isPro) {
+    if (_isPro) {
       _showAlreadyProSnackbar();
       return;
     }
