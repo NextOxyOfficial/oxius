@@ -453,19 +453,14 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
   }
 
   Widget _buildPostCard(ClassifiedPost post) {
+    // List row separated by a thin divider line (like the AdsyPay transaction
+    // history) instead of individual elevated cards.
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEDF0F4)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFEDF0F4), width: 1),
+        ),
       ),
       child: Column(
         children: [

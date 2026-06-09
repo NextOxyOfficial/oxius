@@ -351,7 +351,8 @@ class _SaleCategoryState extends State<SaleCategory> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _translationService.t('sale_listing', fallback: 'Buy & Sell'),
+                      _translationService.t('sale_listing',
+                          fallback: 'পুরোনো কেনাবেচা মার্কেটপ্লেস'),
                       style: AppFonts.roboto(
                         fontSize: screenWidth * 0.042,
                         fontWeight: FontWeight.w700,

@@ -353,22 +353,22 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
 
   Widget _buildContactRow(IconData icon, String text, VoidCallback? onTap) {
     final row = Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: Colors.amber.shade600),
+          Icon(icon, size: 20, color: Colors.amber.shade600),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 15,
                 color: onTap != null ? Colors.amber.shade700 : const Color(0xFF374151),
                 fontWeight: FontWeight.w500,
+                height: 1.4,
                 decoration: TextDecoration.none,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -502,7 +502,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                       
                       // Content
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(2, 18, 2, 28),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -545,43 +545,48 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                 
                                 // Business Name
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        widget.sponsor.businessName,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: -0.3,
-                                          color: Color(0xFF111827),
-                                        ),
-                                      ),
-                                      if (widget.sponsor.businessDescription != null) ...[
-                                        const SizedBox(height: 3),
-                                        Html(
-                                          data: widget.sponsor.businessDescription!,
-                                          onLinkTap: (url, attributes, element) {
-                                            UrlLauncherUtils.launchExternalUrl(url);
-                                          },
-                                          style: {
-                                            '*': Style(
-                                              margin: Margins.zero,
-                                              padding: HtmlPaddings.zero,
-                                              fontSize: FontSize(12),
-                                              color: Colors.grey.shade600,
-                                              lineHeight: const LineHeight(1.3),
-                                              maxLines: 2,
-                                              textOverflow: TextOverflow.ellipsis,
-                                            ),
-                                          },
-                                        ),
-                                      ],
-                                    ],
+                                  child: Text(
+                                    widget.sponsor.businessName,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.3,
+                                      color: Color(0xFF111827),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
+
+                            // Full business description — no truncation so sponsors
+                            // can share complete details about their business.
+                            if (widget.sponsor.businessDescription != null) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.amber.shade100),
+                                ),
+                                child: Html(
+                                  data: widget.sponsor.businessDescription!,
+                                  onLinkTap: (url, attributes, element) {
+                                    UrlLauncherUtils.launchExternalUrl(url);
+                                  },
+                                  style: {
+                                    '*': Style(
+                                      margin: Margins.zero,
+                                      padding: HtmlPaddings.zero,
+                                      fontSize: FontSize(15.5),
+                                      color: const Color(0xFF374151),
+                                      lineHeight: const LineHeight(1.6),
+                                    ),
+                                  },
+                                ),
+                              ),
+                            ],
                             
                             const SizedBox(height: 20),
                             
