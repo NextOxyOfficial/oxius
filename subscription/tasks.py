@@ -100,7 +100,7 @@ def process_auto_renewals():
                 _notify(
                     user,
                     "Pro সাবস্ক্রিপশন রিনিউ হয়েছে ✅",
-                    f"Adsy Pay ব্যালান্স থেকে ৳{int(price)} কেটে আপনার Pro মেয়াদ "
+                    f"Adsy Pay ব্যালেন্স থেকে ৳{int(price)} কেটে আপনার Pro মেয়াদ "
                     f"{sub.end_date:%d-%m-%Y} পর্যন্ত বাড়ানো হয়েছে।",
                     f"{SITE}/upgrade-to-pro",
                     "autorenew_success",
@@ -109,7 +109,7 @@ def process_auto_renewals():
                 # Balance too low — follow up (once every 2 days) to top up.
                 if _notify(
                     user,
-                    "Pro রিনিউ করতে ব্যালান্স দরকার ⏳",
+                    "Pro রিনিউ করতে ব্যালেন্স দরকার ⏳",
                     f"আপনার Pro সাবস্ক্রিপশন শীঘ্রই শেষ হচ্ছে। অটো-রিনিউয়ের জন্য "
                     f"Adsy Pay-তে ৳{int(price)} দরকার, এখন আছে ৳{int(balance)}। "
                     f"রিচার্জ করলে মেয়াদ অটোমেটিক বেড়ে যাবে।",

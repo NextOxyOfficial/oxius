@@ -71,7 +71,7 @@ def _notify_renewed(sponsor, result):
         email_subject="আপনার Gold Sponsorship রিনিউ হয়েছে",
         email_heading="আপনার Gold Sponsorship অটো-রিনিউ হয়েছে ✅",
         email_body_html=(
-            f"আপনার Adsy Pay ব্যালান্স থেকে ৳{price} কেটে “{biz}”-এর মেয়াদ "
+            f"আপনার Adsy Pay ব্যালেন্স থেকে ৳{price} কেটে “{biz}”-এর মেয়াদ "
             f"<strong>{end:%d-%m-%Y}</strong> পর্যন্ত বাড়ানো হয়েছে। ফিচার্ড থাকার জন্য ধন্যবাদ!"
         ),
         deep_link=RENEW_DEEPLINK,
@@ -141,17 +141,17 @@ def process_gold_sponsor_lifecycle():
                     bal = int(res.get('balance') or 0)
                     if _notify_sponsor(
                         s, 'autorenew_low',
-                        push_title="রিনিউ করতে ব্যালান্স দরকার ⏳",
+                        push_title="রিনিউ করতে ব্যালেন্স দরকার ⏳",
                         push_body=f"“{biz}” অটো-রিনিউয়ের জন্য ৳{price} দরকার, আছে ৳{bal}। রিচার্জ করলে অটো বেড়ে যাবে।",
-                        email_subject="Gold Sponsorship অটো-রিনিউ করতে ব্যালান্স যোগ করুন",
+                        email_subject="Gold Sponsorship অটো-রিনিউ করতে ব্যালেন্স যোগ করুন",
                         email_heading="এখনো অটো-রিনিউ করা যায়নি",
                         email_body_html=(
                             f"“{biz}”-এর অটো-রিনিউয়ের জন্য Adsy Pay-তে ৳{price} দরকার, "
-                            f"কিন্তু আপনার আছে ৳{bal}। ব্যালান্স যোগ করলে মেয়াদ শেষ হওয়ার "
+                            f"কিন্তু আপনার আছে ৳{bal}। ব্যালেন্স যোগ করলে মেয়াদ শেষ হওয়ার "
                             f"আগেই এটি অটোমেটিক রিনিউ হয়ে যাবে।"
                         ),
                         deep_link=DEPOSIT_DEEPLINK,
-                        button_text="ব্যালান্স যোগ করুন",
+                        button_text="ব্যালেন্স যোগ করুন",
                     ):
                         stats["autorenew_low"] += 1
                 continue
