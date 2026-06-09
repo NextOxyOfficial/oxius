@@ -7,7 +7,7 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 SITE = "https://adsyclub.com"
-RENEW_DEEPLINK = f"{SITE}/adsy-business-network"   # Gold Sponsor management hub
+RENEW_DEEPLINK = f"{SITE}/business-network"         # Gold Sponsor management hub (sidebar)
 DEPOSIT_DEEPLINK = f"{SITE}/deposit-withdraw"      # top-up wallet
 
 
