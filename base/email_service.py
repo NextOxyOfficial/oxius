@@ -327,7 +327,7 @@ def send_welcome_email(user):
 <li><strong>eLearning</strong> – Learn new skills</li>
 </ul>
 
-{_button("Get Started", SITE_URL + "/adsy-business-network")}
+{_button("Get Started", SITE_URL + "/business-network")}
 """
 
     html = _base_template(subject, body, "If you didn't create this account, please contact our support team.")
@@ -472,7 +472,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
     _info_row("Status", "Pending")
 )}
 
-{_button("View Order", SITE_URL + "/adsy-business-network/workspace")}
+{_button("View Order", SITE_URL + "/business-network/workspaces")}
 """
     buyer_html = _base_template("Gig Order Placed", buyer_body, "The seller will review and accept your order shortly.")
     _send_email("Gig Order Placed", buyer.email, f"Your gig order for '{gig_title}' has been placed.", buyer_html)
@@ -490,7 +490,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
     _info_row("Status", "Pending - Action Required")
 )}
 
-{_button("Review Order", SITE_URL + "/adsy-business-network/workspace")}
+{_button("Review Order", SITE_URL + "/business-network/workspaces")}
 """
     seller_html = _base_template("New Gig Order Received", seller_body, "Please review and accept or decline this order within 24 hours.")
     _send_email("New Gig Order Received", seller.email, f"New order received for '{gig_title}'.", seller_html)
@@ -513,7 +513,7 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
     _info_row("Status", "Completed ✓")
 )}
 
-{_button("Leave a Review", SITE_URL + "/adsy-business-network/workspace")}
+{_button("Leave a Review", SITE_URL + "/business-network/workspaces")}
 """
     buyer_html = _base_template("Gig Order Completed", buyer_body)
     _send_email("Gig Order Completed", buyer.email, f"Your gig order for '{gig_title}' is completed.", buyer_html)
@@ -562,7 +562,7 @@ def send_gig_order_status_email(recipient_user, gig_title, order_id, new_status,
     _info_row("New Status", f'<span style="color:{color};font-weight:600;">{new_status.replace("_", " ").title()}</span>')
 )}
 
-{_button("View Order", SITE_URL + "/adsy-business-network/workspace")}
+{_button("View Order", SITE_URL + "/business-network/workspaces")}
 """
 
     html = _base_template(subject, body)
@@ -578,7 +578,7 @@ def send_kyc_approved_email(user):
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your KYC verification has been <strong style="color:{BRAND_COLOR};">approved</strong>! You now have access to all features on AdsyClub.</p>
 
-{_button("Go to Dashboard", SITE_URL + "/adsy-business-network")}
+{_button("Go to Dashboard", SITE_URL + "/business-network")}
 """
 
     html = _base_template(subject, body)
@@ -596,7 +596,7 @@ def send_kyc_rejected_email(user, reason=""):
 {"<p style='color:#374151;font-size:14px;line-height:1.6;margin:0 0 16px;'><strong>Reason:</strong> " + reason + "</p>" if reason else ""}
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Please resubmit your documents with clear, valid information.</p>
 
-{_button("Resubmit KYC", SITE_URL + "/adsy-business-network/profile")}
+{_button("Resubmit KYC", SITE_URL + "/my-account")}
 """
 
     html = _base_template(subject, body, "If you believe this is an error, please contact our support team.")
@@ -672,7 +672,7 @@ def send_pro_subscription_email(user, months, amount):
     _info_row("Activated", timezone.now().strftime("%B %d, %Y"))
 )}
 
-{_button("Explore Pro Features", SITE_URL + "/adsy-business-network")}
+{_button("Explore Pro Features", SITE_URL + "/business-network")}
 """
 
     html = _base_template(subject, body)
