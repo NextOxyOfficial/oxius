@@ -48,7 +48,10 @@ CITY_AREAS = {
         {"name": "Uttarkhan"},
         {"name": "Vashantek"},
         {"name": "Vatara"},
-        {"name": "Wari"}
+        {"name": "Wari"},
+        {"name": "Savar"},
+        {"name": "Nabinagar"},
+        {"name": "Sripur"}
     ],
     "Gazipur": [
         {"name": "Joydebpur"},
