@@ -1025,21 +1025,43 @@ class GetClassifiedPosts(generics.ListAPIView):
         return queryset
 
 
+def _loc_filter_value(value):
+    """Normalize a location query param. Empty or placeholder values
+    ("undefined", "null", "all country", …) mean 'no location filter', so the
+    list falls back to showing posts from everywhere instead of nothing."""
+    if not value:
+        return None
+    v = value.strip()
+    if v.lower() in {
+        "undefined", "null", "none", "all", "all country",
+        "all over bangladesh", "select", "select location",
+    }:
+        return None
+    return v
+
+
 class ClassifiedCategoryPostFilterView(generics.ListAPIView):
     serializer_class = ClassifiedPostSerializer
     pagination_class = ClassifiedPostPagination
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        country = self.request.GET.get("country")
-        state = self.request.GET.get("state")
-        city = self.request.GET.get("city")
-        upazila = self.request.GET.get("upazila")
+        country = _loc_filter_value(self.request.GET.get("country"))
+        state = _loc_filter_value(self.request.GET.get("state"))
+        city = _loc_filter_value(self.request.GET.get("city"))
+        upazila = _loc_filter_value(self.request.GET.get("upazila"))
         category = self.request.GET.get("category")
         title = self.request.GET.get("title")
-        exclude_state = self.request.GET.get("exclude_state")
-        exclude_city = self.request.GET.get("exclude_city")
-        exclude_upazila = self.request.GET.get("exclude_upazila")
+        exclude_state = _loc_filter_value(self.request.GET.get("exclude_state"))
+        exclude_city = _loc_filter_value(self.request.GET.get("exclude_city"))
+        exclude_upazila = _loc_filter_value(self.request.GET.get("exclude_upazila"))
+
+        # Only a country (or a placeholder) selected means "all over the
+        # country" — don't narrow by country alone, since every post is in
+        # Bangladesh and some legacy posts have no country saved (which would
+        # otherwise return an empty list).
+        if country and not (state or city or upazila):
+            country = None
 
         # Filter based on the query parameters
         filters = Q(service_status="approved", active_service=True)
