@@ -351,7 +351,7 @@ def send_message_notification(recipient_user, sender_user, sender_name, message_
         _safe_print(f'Sending to token: {token[:50]}...')
         result = send_fcm_notification(
             fcm_token=token,
-            title=f'New message from {sender_name}',
+            title=sender_name,
             body=truncated_message,
             data={
                 'type': 'message',
