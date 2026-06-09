@@ -3163,6 +3163,35 @@ class AllProductsListView(generics.ListAPIView):
             "category", "image"
         )
 
+        # Unfiltered browse (e.g. the app's homepage eShop section, or the default
+        # product list with no ordering/search/category): interleave products
+        # across stores so one owner's recent bulk uploads don't dominate. The
+        # default "-created_at" otherwise clusters a single store at the top, which
+        # is why the homepage was showing products from only one store.
+        _ordering_param = self.request.query_params.get("ordering")
+        _has_search = any(
+            (self.request.query_params.get(k) or "").strip()
+            for k in ("search", "name", "description", "keywords")
+        )
+        _has_category = any(
+            (self.request.query_params.get(k) or "").strip() not in ("", "undefined")
+            for k in ("category", "category_slug")
+        )
+        if not _ordering_param and not _has_search and not _has_category:
+            from django.db.models import F, Window
+            from django.db.models.functions import RowNumber
+
+            # RowNumber within each store (newest first); ordering by that rank
+            # first means we show one product from each store, then the next from
+            # each store, and so on — a store-diverse, stable, paginatable feed.
+            return queryset.annotate(
+                _store_rank=Window(
+                    expression=RowNumber(),
+                    partition_by=[F("owner_id")],
+                    order_by=F("created_at").desc(),
+                )
+            ).order_by("_store_rank", "-created_at")
+
         # Handle ordering parameter
         ordering = self.request.query_params.get("ordering", "-created_at")
         if ordering:
