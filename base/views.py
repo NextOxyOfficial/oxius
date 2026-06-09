@@ -3811,6 +3811,27 @@ class OrderWithItemsCreate(generics.CreateAPIView):
             except Exception as e:
                 print(f"Error sending order confirmation email to buyer: {str(e)}")
 
+            # Notify admin of the new order (informational copy).
+            try:
+                from django.utils import timezone as _tz
+                from .moderation import notify_admin_info
+                notify_admin_info(
+                    subject=f"নতুন অর্ডার #{order.order_number} 🛒",
+                    label="eShop order",
+                    intro="eShop-এ একটি নতুন অর্ডার এসেছে।",
+                    rows=[
+                        ("Order #", str(order.order_number)),
+                        ("Customer", order.name or "—"),
+                        ("Phone", order.phone or "—"),
+                        ("Total", f"৳{order.total}"),
+                        ("Placed", _tz.now().strftime("%b %d, %Y %I:%M %p")),
+                    ],
+                    admin_path=f"/admin/base/order/{order.id}/change/",
+                    text_summary=f"New order #{order.order_number}: ৳{order.total}",
+                )
+            except Exception as e:
+                print(f"Error sending admin order email: {str(e)}")
+
             # Return the complete order details
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 

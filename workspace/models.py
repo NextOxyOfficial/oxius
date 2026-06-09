@@ -129,7 +129,43 @@ class Gig(models.Model):
         verbose_name = "Gig"
         verbose_name_plural = "Gigs"
         ordering = ['-created_at']
-    
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        prev_status = None
+        if not is_new:
+            prev_status = (
+                type(self).objects.filter(pk=self.pk)
+                .values_list("status", flat=True).first()
+            )
+        super().save(*args, **kwargs)
+
+        # New gig pending review -> notify admin with one-click approve/reject.
+        if is_new and self.status == "pending":
+            try:
+                from base.moderation import notify_admin_pending
+                notify_admin_pending(self)
+            except Exception:
+                pass
+
+        # Approved/rejected -> let the seller know.
+        has_email = self.user and getattr(self.user, "email", "")
+        if prev_status and prev_status != self.status and has_email:
+            try:
+                from base.email_service import (
+                    send_post_approved_email, send_post_rejected_email, SITE_URL,
+                )
+                link = f"{SITE_URL}/business-network/workspace"
+                if self.status == "active":
+                    send_post_approved_email(self.user, self.title, "Workspace gig", link)
+                elif self.status == "rejected":
+                    send_post_rejected_email(
+                        self.user, self.title, "Workspace gig",
+                        self.rejection_reason or "", link,
+                    )
+            except Exception as e:
+                print(f"Error sending workspace gig status email: {e}")
+
     def __str__(self):
         return f"{self.title} by {self.user.first_name}"
     

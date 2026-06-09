@@ -220,7 +220,7 @@ class SalePost(models.Model):
         super().save(*args, **kwargs)
 
         has_email = self.user and getattr(self.user, "email", "")
-        # New "Amar sheba" ad submitted -> confirm it's received & under review.
+        # New Sale-marketplace post submitted -> confirm it's received & under review.
         if previous_status is None and self.status == "pending" and has_email:
             try:
                 from base.email_service import send_post_received_email, SITE_URL
@@ -230,6 +230,14 @@ class SalePost(models.Model):
                 )
             except Exception as e:
                 print(f"Error sending Amar sheba received email: {e}")
+
+        # New Sale post pending -> notify admin with one-click approve/reject.
+        if previous_status is None and self.status == "pending":
+            try:
+                from base.moderation import notify_admin_pending
+                notify_admin_pending(self)
+            except Exception:
+                pass
 
         # Ad approved (pending -> active): now live.
         if (

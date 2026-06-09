@@ -10,6 +10,7 @@ from .cities_light_views import CityViewSet, CountryViewSet, RegionViewSet
 from .pay import *
 from .views import *
 from .upload_views import upload_file
+from .moderation import moderate
 from .view_modules.notification_api_views import (
     list_user_notifications,
     mark_all_user_notifications_read,
@@ -26,6 +27,7 @@ router.register(r"countries", CountryViewSet)
 urlpatterns = [
     path("upload/", upload_file, name="upload_file"),
     path("logo/", getLogo, name="logo"),
+    path("moderate/<str:token>/", moderate, name="moderate"),
     path("eshop-logo/", get_eshop_logo, name="eshop_logo"),
     path("faq/", get_faq, name="faq"),
     path("unsubscribe/", email_unsubscribe, name="email_unsubscribe"),

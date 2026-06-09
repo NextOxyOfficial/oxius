@@ -448,9 +448,17 @@ class ClassifiedCategoryPost(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
         if not self.slug:
             self.slug = generate_unique_slug(ClassifiedCategoryPost, self.title, self)
         super(ClassifiedCategoryPost, self).save(*args, **kwargs)
+        # New Amar Sheba post awaiting review -> notify admin with quick actions.
+        if is_new and self.service_status == "pending":
+            try:
+                from base.moderation import notify_admin_pending
+                notify_admin_pending(self)
+            except Exception:
+                pass
 
     def __str__(self):
         return self.title
@@ -649,6 +657,14 @@ class MicroGigPost(models.Model):
                     send_post_rejected_email(self.user, self.title, "gig", "", link)
             except Exception as e:
                 print(f"Error sending gig status email: {e}")
+
+        # New gig pending review -> notify admin with one-click approve/reject.
+        if previous_gig_status is None and self.gig_status == "pending":
+            try:
+                from base.moderation import notify_admin_pending
+                notify_admin_pending(self)
+            except Exception:
+                pass
 
     def __str__(self):
         return self.title
@@ -1193,9 +1209,35 @@ class Product(models.Model):
     views = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
         if not self.slug:
             self.slug = generate_unique_slug(Product, self.name, self)
         super(Product, self).save(*args, **kwargs)
+        # New eShop product added -> notify admin (informational).
+        if is_new:
+            try:
+                from django.utils import timezone
+                from base.moderation import notify_admin_info
+                owner = self.owner
+                oname = "—"
+                if owner is not None:
+                    oname = (getattr(owner, "name", "") or getattr(owner, "first_name", "")
+                             or getattr(owner, "email", "") or "—")
+                notify_admin_info(
+                    subject="নতুন eShop প্রোডাক্ট যোগ হয়েছে 🛍️",
+                    label="eShop product",
+                    intro="একটি নতুন প্রোডাক্ট eShop-এ যোগ করা হয়েছে।",
+                    rows=[
+                        ("Owner", oname),
+                        ("Product", self.name),
+                        ("Price", f"৳{self.sale_price or self.regular_price}"),
+                        ("Added", timezone.now().strftime("%b %d, %Y %I:%M %p")),
+                    ],
+                    admin_path=f"/admin/base/product/{self.pk}/change/",
+                    text_summary=f"New eShop product: {self.name}",
+                )
+            except Exception:
+                pass
 
     def __str__(self):
         return self.name

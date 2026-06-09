@@ -218,6 +218,85 @@ def _send_email(subject, to_email, text_content, html_content):
         return False
 
 
+def _dispatch_async(target, *args, **kwargs):
+    """Fire-and-forget an email off the request thread (each _send_email opens
+    its own SMTP connection, ~1-2s). Used for admin notifications so creating a
+    post/order stays snappy."""
+    import threading
+
+    def _run():
+        try:
+            target(*args, **kwargs)
+        except Exception as exc:  # pragma: no cover
+            logger.error(f"async email dispatch failed: {exc}")
+        finally:
+            try:
+                from django.db import connections
+                connections.close_all()
+            except Exception:
+                pass
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
+def _action_buttons(approve_url, reject_url):
+    """Green Approve + red Reject buttons for admin moderation emails."""
+    return f"""
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px auto 4px;">
+  <tr>
+    <td style="padding:6px;">
+      <a href="{approve_url}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 26px;border-radius:10px;">✅ Approve</a>
+    </td>
+    <td style="padding:6px;">
+      <a href="{reject_url}" style="display:inline-block;background:#dc2626;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 26px;border-radius:10px;">❌ Reject</a>
+    </td>
+  </tr>
+</table>
+<p style="text-align:center;color:#9ca3af;font-size:12px;margin:0 0 4px;">এক ক্লিকে রিভিউ করুন — confirm পেজ দেখাবে, তারপরই অ্যাকশন হবে।</p>
+"""
+
+
+def send_admin_moderation_email(*, subject, label, intro, rows, model_key=None,
+                                pk=None, admin_path="", text_summary=""):
+    """Notify the admin of a new item. If model_key+pk are given the email
+    carries one-click Approve / Reject buttons; otherwise it's informational
+    (e.g. a new order) with a link into the admin.
+
+    rows: list of (key, value) string pairs shown in the details table.
+    """
+    info = _info_table("".join(_info_row(k, v) for k, v in rows))
+
+    actions = ""
+    if model_key and pk:
+        try:
+            from .moderation import moderation_url
+            actions = _action_buttons(
+                moderation_url(model_key, pk, "approve"),
+                moderation_url(model_key, pk, "reject"),
+            )
+        except Exception as exc:  # pragma: no cover
+            logger.error(f"moderation link build failed: {exc}")
+
+    review = ""
+    if admin_path:
+        review = (
+            f'<p style="text-align:center;margin:10px 0 0;">'
+            f'<a href="{SITE_URL}{admin_path}" style="color:{BRAND_COLOR};font-size:13px;'
+            f'text-decoration:none;">Admin-এ বিস্তারিত দেখুন →</a></p>'
+        )
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{intro}</p>
+{info}
+{actions}
+{review}
+"""
+    html = _base_template(subject, body)
+    email_settings = _get_email_settings()
+    to_email = email_settings.get("admin_email") or ADMIN_EMAIL
+    return _send_email(subject, to_email, text_summary or subject, html)
+
+
 # ============================================================
 # USER EMAILS
 # ============================================================
