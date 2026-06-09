@@ -450,7 +450,7 @@ class ActiveChatSession(models.Model):
             session = cls.objects.get(user=user)
             if not session.chatroom or session.chatroom_id != chatroom.id:
                 return False
-            return session.updated_at >= timezone.now() - timedelta(minutes=10)
+            return session.updated_at >= timezone.now() - timedelta(minutes=20)
         except cls.DoesNotExist:
             return False
 
