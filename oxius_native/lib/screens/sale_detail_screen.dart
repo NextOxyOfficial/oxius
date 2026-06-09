@@ -418,8 +418,12 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
 
   Widget _buildProductInfoSection() {
     final post = _post!;
-    final deliveryLocation =
-        post.division != null && post.district != null && post.area != null
+    // Prefer the backend-computed location string so what shows is driven by
+    // the server; fall back to the local parts / "All Over Bangladesh".
+    final deliveryLocation = (post.location != null &&
+            post.location!.trim().isNotEmpty)
+        ? post.location!.trim()
+        : post.division != null && post.district != null && post.area != null
             ? '${post.division}, ${post.district}, ${post.area}'
             : post.division != null && post.district != null
                 ? '${post.division}, ${post.district}'

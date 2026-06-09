@@ -69,6 +69,17 @@ class SaleConditionSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "value", "description"]
 
 
+def _sale_location_display(obj):
+    """Human-readable location for a sale post (deduped), or a sensible default
+    ("সারা বাংলাদেশ") when no specific location is set — so the app never shows a
+    blank location for all-over-Bangladesh posts."""
+    seen = []
+    for part in (obj.area, obj.district, obj.division):
+        if part and part.strip() and part.strip() not in seen:
+            seen.append(part.strip())
+    return ", ".join(seen) if seen else "সারা বাংলাদেশ"
+
+
 class SalePostListSerializer(serializers.ModelSerializer):
     """Serializer for listing sale posts with minimal information"""
 
@@ -80,6 +91,7 @@ class SalePostListSerializer(serializers.ModelSerializer):
     main_image = serializers.SerializerMethodField()
     image_count = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
 
     class Meta:
         model = SalePost
@@ -97,6 +109,7 @@ class SalePostListSerializer(serializers.ModelSerializer):
             "division",
             "district",
             "area",
+            "location",
             "status",
             "view_count",
             "created_at",
@@ -147,6 +160,9 @@ class SalePostListSerializer(serializers.ModelSerializer):
     def get_user_name(self, obj):
         return obj.user.get_full_name() or obj.user.username
 
+    def get_location(self, obj):
+        return _sale_location_display(obj)
+
 
 class SalePostDetailSerializer(serializers.ModelSerializer):
     """Serializer for detailed view of a sale post"""
@@ -160,6 +176,7 @@ class SalePostDetailSerializer(serializers.ModelSerializer):
     condition_details = SaleConditionSerializer(
         source="condition_object", read_only=True
     )
+    location = serializers.SerializerMethodField()
 
     class Meta:
         model = SalePost
@@ -179,6 +196,7 @@ class SalePostDetailSerializer(serializers.ModelSerializer):
             "division",
             "district",
             "area",
+            "location",
             "detailed_address",
             "phone",
             "email",
@@ -197,6 +215,9 @@ class SalePostDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_location(self, obj):
+        return _sale_location_display(obj)
 
 
 class SalePostCreateSerializer(serializers.ModelSerializer):
