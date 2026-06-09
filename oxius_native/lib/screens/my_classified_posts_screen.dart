@@ -190,7 +190,12 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
   }
 
   List<ClassifiedPost> get _filteredPosts {
-    if (_statusFilter == 'all') return _posts;
+    if (_statusFilter == 'all') {
+      // Active posts always float to the top of the "All" tab.
+      final active = _posts.where((p) => _statusOf(p) == 'active').toList();
+      final rest = _posts.where((p) => _statusOf(p) != 'active').toList();
+      return [...active, ...rest];
+    }
     return _posts.where((p) => _statusOf(p) == _statusFilter).toList();
   }
 
@@ -470,19 +475,16 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top Row: Image and Info
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Image — sized to the full height of the row content.
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        width: 90,
                         child: Container(
-                          width: 70,
-                          height: 70,
                           color: const Color(0xFFF3F4F6),
                           child: post.medias != null && post.medias!.isNotEmpty
                               ? CachedNetworkImage(
@@ -502,118 +504,117 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                                 ),
                         ),
                       ),
+                    ),
 
-                      const SizedBox(width: 10),
+                    const SizedBox(width: 10),
 
-                      // Details
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            Text(
-                              post.title,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1F2937),
-                                height: 1.3,
-                                letterSpacing: -0.1,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            // Price and Status Badge Row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Price
-                                Text(
-                                  post.displayPrice,
+                    // Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title + status badge
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  post.title,
                                   style: const TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF10B981),
-                                    letterSpacing: -0.2,
+                                    color: Color(0xFF1F2937),
+                                    height: 1.3,
+                                    letterSpacing: -0.1,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
+                              ),
+                              const SizedBox(width: 8),
+                              _buildStatusBadge(post),
+                            ],
+                          ),
 
-                                // Status Badge
-                                _buildStatusBadge(post),
-                              ],
-                            ),
+                          const SizedBox(height: 4),
 
-                            const SizedBox(height: 4),
-
-                            // Date
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.access_time_rounded,
-                                  size: 11,
-                                  color: Color(0xFF6B7280),
+                          // Price + posted time (time now sits beside the price)
+                          Row(
+                            children: [
+                              Text(
+                                post.displayPrice,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF10B981),
+                                  letterSpacing: -0.2,
                                 ),
-                                const SizedBox(width: 3),
-                                Text(
+                              ),
+                              const SizedBox(width: 10),
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 11,
+                                color: Color(0xFF6B7280),
+                              ),
+                              const SizedBox(width: 3),
+                              Flexible(
+                                child: Text(
                                   post.getRelativeTime(),
                                   style: const TextStyle(
                                     fontSize: 10,
                                     color: Color(0xFF6B7280),
                                   ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                              ),
+                            ],
+                          ),
 
-                  const SizedBox(height: 8),
+                          const SizedBox(height: 8),
 
-                  // Action Buttons Row (Below image)
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      _buildActionButton(
-                        icon: Icons.visibility_outlined,
-                        label: 'View',
-                        onTap: () => _handleAction(post, 'view'),
+                          // Action buttons — moved up beside the details (where
+                          // the posted time used to be).
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              _buildActionButton(
+                                icon: Icons.visibility_outlined,
+                                label: 'View',
+                                onTap: () => _handleAction(post, 'view'),
+                              ),
+                              if (post.serviceStatus.toLowerCase() != 'completed')
+                                _buildActionButton(
+                                  icon: Icons.edit_outlined,
+                                  label: 'Edit',
+                                  onTap: () => _handleAction(post, 'edit'),
+                                ),
+                              if (post.serviceStatus.toLowerCase() != 'completed')
+                                _buildActionButton(
+                                  icon: post.activeService
+                                      ? Icons.pause_circle_outline
+                                      : Icons.play_circle_outline,
+                                  label: post.activeService ? 'Pause' : 'Activate',
+                                  onTap: () => _handleAction(
+                                      post, post.activeService ? 'pause' : 'activate'),
+                                  color: post.activeService
+                                      ? Colors.orange
+                                      : const Color(0xFF10B981),
+                                ),
+                              if (post.serviceStatus.toLowerCase() != 'completed')
+                                _buildActionButton(
+                                  icon: Icons.check_circle_outline,
+                                  label: 'Complete',
+                                  onTap: () => _handleAction(post, 'complete'),
+                                  color: Colors.blue,
+                                ),
+                            ],
+                          ),
+                        ],
                       ),
-                      if (post.serviceStatus.toLowerCase() != 'completed')
-                        _buildActionButton(
-                          icon: Icons.edit_outlined,
-                          label: 'Edit',
-                          onTap: () => _handleAction(post, 'edit'),
-                        ),
-                      if (post.serviceStatus.toLowerCase() != 'completed')
-                        _buildActionButton(
-                          icon: post.activeService
-                              ? Icons.pause_circle_outline
-                              : Icons.play_circle_outline,
-                          label: post.activeService ? 'Pause' : 'Activate',
-                          onTap: () => _handleAction(
-                              post, post.activeService ? 'pause' : 'activate'),
-                          color: post.activeService
-                              ? Colors.orange
-                              : const Color(0xFF10B981),
-                        ),
-                      if (post.serviceStatus.toLowerCase() != 'completed')
-                        _buildActionButton(
-                          icon: Icons.check_circle_outline,
-                          label: 'Complete',
-                          onTap: () => _handleAction(post, 'complete'),
-                          color: Colors.blue,
-                        ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
