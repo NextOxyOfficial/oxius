@@ -355,7 +355,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                       style: AppFonts.roboto(
                         fontSize: screenWidth * 0.042,
                         fontWeight: FontWeight.w700,
-                        color: Colors.grey.shade900,
+                        color: Colors.grey.shade800,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

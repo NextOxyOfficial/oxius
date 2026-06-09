@@ -177,7 +177,7 @@ class PostHeader extends StatelessWidget {
                 Text(
                   _formatTimeAgo(post.createdAt),
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 13.5,
                     color: Colors.grey.shade600,
                   ),
                 ),

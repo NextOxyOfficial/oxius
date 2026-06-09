@@ -217,9 +217,23 @@ class AdsyConnectChatInterface extends StatefulWidget {
       _AdsyConnectChatInterfaceState();
 }
 
+/// Controller that hides the IME composing-region underline that otherwise
+/// appears under the word being typed.
+class _NoComposingController extends TextEditingController {
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    return super
+        .buildTextSpan(context: context, style: style, withComposing: false);
+  }
+}
+
 class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     with WidgetsBindingObserver {
-  final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _messageController = _NoComposingController();
   final TextEditingController _searchController = TextEditingController();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =

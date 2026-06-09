@@ -136,6 +136,7 @@ class MentionParser {
         alignment: PlaceholderAlignment.baseline,
         baseline: TextBaseline.alphabetic,
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () => onMentionTap?.call(mentionName),
           child: Container(
             margin: const EdgeInsets.only(left: 1, right: 0),
@@ -186,6 +187,7 @@ class MentionParser {
           alignment: PlaceholderAlignment.baseline,
           baseline: TextBaseline.alphabetic,
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => onMentionTap?.call(mentionName),
             child: Container(
               margin: const EdgeInsets.only(left: 1, right: 0),
@@ -272,6 +274,7 @@ class MentionParser {
           alignment: PlaceholderAlignment.baseline,
           baseline: TextBaseline.alphabetic,
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => onMentionTap?.call(mentionName),
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 3),

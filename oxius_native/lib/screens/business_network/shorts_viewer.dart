@@ -1368,7 +1368,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
           Positioned(
             left: 12,
             right: 80,
-            bottom: 50,
+            bottom: 80,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -1452,9 +1452,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.95),
-                      fontSize: 13,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      height: 1.2,
+                      height: 1.25,
                     ),
                   ),
                 ],
@@ -1466,9 +1466,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 12,
+                      fontSize: 15,
                       fontWeight: FontWeight.w400,
-                      height: 1.3,
+                      height: 1.35,
                     ),
                   ),
                 ],

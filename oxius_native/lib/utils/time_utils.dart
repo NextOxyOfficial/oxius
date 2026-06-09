@@ -7,18 +7,18 @@ class TimeUtils {
 
       if (difference.inDays > 365) {
         final years = (difference.inDays / 365).floor();
-        return '${years}y';
+        return '$years Year';
       } else if (difference.inDays > 30) {
         final months = (difference.inDays / 30).floor();
-        return '${months}mo';
+        return '$months Month';
       } else if (difference.inDays > 0) {
-        return '${difference.inDays}d';
+        return '${difference.inDays} Day';
       } else if (difference.inHours > 0) {
-        return '${difference.inHours}h';
+        return '${difference.inHours} Hour';
       } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes}m';
+        return '${difference.inMinutes} Minute';
       } else {
-        return 'now';
+        return 'Just now';
       }
     } catch (e) {
       return '';
