@@ -613,15 +613,15 @@ def send_gold_sponsor_email(user, *, subject, heading, message_html,
     if not email:
         return False
     name = (getattr(user, 'name', None) or getattr(user, 'first_name', None)
-            or getattr(user, 'username', None) or 'there')
+            or getattr(user, 'username', None) or 'গ্রাহক')
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">প্রিয় <strong>{name}</strong>,</p>
 <p style="color:#111827;font-size:16px;line-height:1.5;margin:0 0 16px;font-weight:600;">{heading}</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{message_html}</p>
 {_button(button_text, button_url) if (button_text and button_url) else ""}
 """
     html = _base_template(subject, body, footer_note)
-    _dispatch_async(_send_email, subject, email, f"Hi {name}, {heading}", html)
+    _dispatch_async(_send_email, subject, email, f"প্রিয় {name}, {heading}", html)
     return True
 
 

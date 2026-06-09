@@ -13,7 +13,7 @@ DEPOSIT_DEEPLINK = f"{SITE}/deposit-withdraw"      # top-up wallet
 
 def _notify_sponsor(sponsor, stage, *, push_title, push_body, email_subject,
                     email_heading, email_body_html, deep_link,
-                    button_text="Renew now"):
+                    button_text="এখনই রিনিউ করুন"):
     """Deliver one lifecycle step (push + email) exactly once per sponsor+stage.
 
     Returns True if this was a fresh send, False if the step was already sent
@@ -68,14 +68,14 @@ def _notify_renewed(sponsor, result):
         sponsor, 'autorenew_success',
         push_title="Gold Sponsor রিনিউ হয়েছে ✅",
         push_body=f"“{biz}” স্পনসরশিপ {end:%d-%m-%Y} পর্যন্ত বাড়ানো হয়েছে।",
-        email_subject="Your Gold Sponsorship was renewed",
-        email_heading="Your Gold Sponsorship has been auto-renewed ✅",
+        email_subject="আপনার Gold Sponsorship রিনিউ হয়েছে",
+        email_heading="আপনার Gold Sponsorship অটো-রিনিউ হয়েছে ✅",
         email_body_html=(
-            f"We charged ৳{price} from your Adsy Pay balance and extended "
-            f"“{biz}” until <strong>{end:%d %b %Y}</strong>. Thanks for staying featured!"
+            f"আপনার Adsy Pay ব্যালান্স থেকে ৳{price} কেটে “{biz}”-এর মেয়াদ "
+            f"<strong>{end:%d-%m-%Y}</strong> পর্যন্ত বাড়ানো হয়েছে। ফিচার্ড থাকার জন্য ধন্যবাদ!"
         ),
         deep_link=RENEW_DEEPLINK,
-        button_text="View sponsorship",
+        button_text="স্পনসরশিপ দেখুন",
     )
 
 
@@ -123,9 +123,9 @@ def process_gold_sponsor_lifecycle():
                     s, 'expired_notice',
                     push_title="Gold Sponsor মেয়াদ শেষ ⏳",
                     push_body=f"“{biz}” স্পনসরশিপের মেয়াদ শেষ হয়েছে। রিনিউ করলে আবার ফিচার্ড হবে।",
-                    email_subject="Your Gold Sponsorship has expired",
-                    email_heading="Your Gold Sponsorship has expired",
-                    email_body_html=f"“{biz}” is no longer featured. Renew now to get back in front of customers.",
+                    email_subject="আপনার Gold Sponsorship-এর মেয়াদ শেষ হয়েছে",
+                    email_heading="আপনার Gold Sponsorship-এর মেয়াদ শেষ হয়েছে",
+                    email_body_html=f"“{biz}” এখন আর ফিচার্ড নেই। আবার গ্রাহকদের সামনে আসতে এখনই রিনিউ করুন।",
                     deep_link=RENEW_DEEPLINK,
                 )
                 continue
@@ -143,15 +143,15 @@ def process_gold_sponsor_lifecycle():
                         s, 'autorenew_low',
                         push_title="রিনিউ করতে ব্যালান্স দরকার ⏳",
                         push_body=f"“{biz}” অটো-রিনিউয়ের জন্য ৳{price} দরকার, আছে ৳{bal}। রিচার্জ করলে অটো বেড়ে যাবে।",
-                        email_subject="Top up to auto-renew your Gold Sponsorship",
-                        email_heading="We couldn't auto-renew yet",
+                        email_subject="Gold Sponsorship অটো-রিনিউ করতে ব্যালান্স যোগ করুন",
+                        email_heading="এখনো অটো-রিনিউ করা যায়নি",
                         email_body_html=(
-                            f"Auto-renew for “{biz}” needs ৳{price} in your Adsy Pay "
-                            f"balance, but you currently have ৳{bal}. Add balance and "
-                            f"it renews automatically before it expires."
+                            f"“{biz}”-এর অটো-রিনিউয়ের জন্য Adsy Pay-তে ৳{price} দরকার, "
+                            f"কিন্তু আপনার আছে ৳{bal}। ব্যালান্স যোগ করলে মেয়াদ শেষ হওয়ার "
+                            f"আগেই এটি অটোমেটিক রিনিউ হয়ে যাবে।"
                         ),
                         deep_link=DEPOSIT_DEEPLINK,
-                        button_text="Add balance",
+                        button_text="ব্যালান্স যোগ করুন",
                     ):
                         stats["autorenew_low"] += 1
                 continue
@@ -170,9 +170,9 @@ def process_gold_sponsor_lifecycle():
                     s, stage,
                     push_title="Gold Sponsor শেষ হতে চলেছে ⏰",
                     push_body=f"“{biz}” স্পনসরশিপ {when} শেষ হবে। এখনই রিনিউ করে ফিচার্ড থাকুন।",
-                    email_subject="Your Gold Sponsorship is expiring soon",
-                    email_heading=f"“{biz}” expires in {max(days_left, 0)} day(s)",
-                    email_body_html=f"Renew now to keep “{biz}” featured without any interruption.",
+                    email_subject="আপনার Gold Sponsorship শীঘ্রই শেষ হচ্ছে",
+                    email_heading=f"“{biz}” আর {max(days_left, 0)} দিনে শেষ হবে",
+                    email_body_html=f"কোনো বিরতি ছাড়াই “{biz}” ফিচার্ড রাখতে এখনই রিনিউ করুন।",
                     deep_link=RENEW_DEEPLINK,
                 ):
                     stats["reminded"] += 1
@@ -192,9 +192,9 @@ def process_gold_sponsor_lifecycle():
                 s, 'winback',
                 push_title="ফিরে আসুন — Gold Sponsor 🌟",
                 push_body=f"“{s.business_name}” আবার ফিচার করতে চান? এক ক্লিকেই রিনিউ করুন।",
-                email_subject="Bring your business back to the spotlight",
-                email_heading="Renew your Gold Sponsorship",
-                email_body_html=f"“{s.business_name}” is no longer featured. Renew in one click to reach customers again.",
+                email_subject="আপনার ব্যবসাকে আবার স্পটলাইটে আনুন",
+                email_heading="আপনার Gold Sponsorship রিনিউ করুন",
+                email_body_html=f"“{s.business_name}” এখন আর ফিচার্ড নেই। এক ক্লিকেই রিনিউ করে আবার গ্রাহকদের কাছে পৌঁছান।",
                 deep_link=RENEW_DEEPLINK,
             ):
                 stats["winback"] += 1
