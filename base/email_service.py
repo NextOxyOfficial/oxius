@@ -373,7 +373,7 @@ def send_transfer_received_email(receiver_user, sender_user, amount, transaction
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("From", sender_name) +
+    _info_row("প্রেরক", sender_name) +
     _info_row("Transaction ID", str(transaction_id)[:12]) +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
@@ -397,7 +397,7 @@ def send_deposit_email(user, amount, transaction_id, payment_method=""):
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("Method", payment_method or "Online Payment") +
+    _info_row("মাধ্যম", payment_method or "Online Payment") +
     _info_row("Transaction ID", str(transaction_id)[:12]) +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
@@ -421,9 +421,9 @@ def send_withdraw_email(user, amount, transaction_id, payment_method="", payment
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("Method", payment_method or "N/A") +
-    _info_row("Account", payment_number or "N/A") +
-    _info_row("Status", "Processing") +
+    _info_row("মাধ্যম", payment_method or "N/A") +
+    _info_row("অ্যাকাউন্ট", payment_number or "N/A") +
+    _info_row("স্ট্যাটাস", "Processing") +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
@@ -446,7 +446,7 @@ def send_withdraw_approved_email(user, amount, transaction_id):
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("Status", "Approved ✓") +
+    _info_row("স্ট্যাটাস", "Approved ✓") +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 """
@@ -462,7 +462,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
 
     # Email to buyer
     buyer_body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{buyer_name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{buyer_name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your gig order has been placed successfully.</p>
 
 {_info_table(
@@ -470,7 +470,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
     _info_row("Seller", seller_name) +
     _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Order ID", str(order_id)[:12]) +
-    _info_row("Status", "Pending")
+    _info_row("স্ট্যাটাস", "Pending")
 )}
 
 {_button("View Order", SITE_URL + "/business-network/workspaces")}
@@ -480,7 +480,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
 
     # Email to seller
     seller_body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{seller_name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{seller_name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">You have received a new gig order!</p>
 
 {_info_table(
@@ -488,7 +488,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
     _info_row("Buyer", buyer_name) +
     _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Order ID", str(order_id)[:12]) +
-    _info_row("Status", "Pending - Action Required")
+    _info_row("স্ট্যাটাস", "Pending - Action Required")
 )}
 
 {_button("Review Order", SITE_URL + "/business-network/workspaces")}
@@ -504,14 +504,14 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
 
     # Email to buyer
     buyer_body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{buyer_name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{buyer_name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your gig order has been <strong style="color:{BRAND_COLOR};">completed</strong> and payment has been released to the seller.</p>
 
 {_info_table(
     _info_row("Gig", gig_title) +
     _info_row("Seller", seller_name) +
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("Status", "Completed ✓")
+    _info_row("স্ট্যাটাস", "Completed ✓")
 )}
 
 {_button("Leave a Review", SITE_URL + "/business-network/workspaces")}
@@ -521,14 +521,14 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
 
     # Email to seller
     seller_body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{seller_name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{seller_name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">A gig order has been completed and <strong style="color:{BRAND_COLOR};">৳{amount}</strong> has been added to your balance!</p>
 
 {_info_table(
     _info_row("Gig", gig_title) +
     _info_row("Buyer", buyer_name) +
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("Status", "Payment Released ✓")
+    _info_row("স্ট্যাটাস", "Payment Released ✓")
 )}
 
 {_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
@@ -860,7 +860,7 @@ def send_order_confirmation_email(buyer, order):
     _info_row("Delivery fee", f"৳{order.delivery_fee}") +
     _info_row("Total paid", f"৳{order.total}") +
     _info_row("Payment method", pay_method) +
-    _info_row("Status", order_status) +
+    _info_row("স্ট্যাটাস", order_status) +
     _info_row("Delivery address", order.address or "N/A")
 )}
 
@@ -894,7 +894,7 @@ def send_withdraw_rejected_email(user, amount, transaction_id, reason=""):
     _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Reference", str(transaction_id)) +
     reason_row +
-    _info_row("Status", "Declined &amp; refunded")
+    _info_row("স্ট্যাটাস", "Declined &amp; refunded")
 )}
 
 {_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
@@ -921,7 +921,7 @@ def send_kyc_received_email(user):
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you — we've received your identity verification (KYC) submission. Our team is reviewing it now.</p>
 
 {_info_table(
-    _info_row("Status", "Under review") +
+    _info_row("স্ট্যাটাস", "Under review") +
     _info_row("Submitted", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
@@ -947,7 +947,7 @@ def send_post_approved_email(user, title, kind="post", link=""):
 
 {_info_table(
     _info_row(kind.capitalize(), title or "—") +
-    _info_row("Status", "Approved &amp; live")
+    _info_row("স্ট্যাটাস", "Approved &amp; live")
 )}
 
 {_button("View it", link or SITE_URL)}
@@ -971,7 +971,7 @@ def send_post_rejected_email(user, title, kind="post", reason="", link=""):
 {_info_table(
     _info_row(kind.capitalize(), title or "—") +
     reason_row +
-    _info_row("Status", "Not approved")
+    _info_row("স্ট্যাটাস", "Not approved")
 )}
 
 <p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">You're welcome to edit it to meet our guidelines and submit again.</p>
@@ -997,7 +997,7 @@ def send_post_received_email(user, title, kind="post", link=""):
 
 {_info_table(
     _info_row(kind.capitalize(), title or "—") +
-    _info_row("Status", "Under review") +
+    _info_row("স্ট্যাটাস", "Under review") +
     _info_row("Submitted", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
@@ -1020,7 +1020,7 @@ def send_driver_approved_email(user):
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Congratulations — your driver application has been <strong>approved</strong>! You can now go online and start accepting ride requests. 🚗</p>
 
 {_info_table(
-    _info_row("Status", "Approved") +
+    _info_row("স্ট্যাটাস", "Approved") +
     _info_row("Next step", "Go online in the app to receive rides")
 )}
 
@@ -1043,7 +1043,7 @@ def send_driver_rejected_email(user, reason=""):
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you for applying to drive with AdsyClub. After review, your application <strong>could not be approved</strong> at this time.</p>
 
 {_info_table(
-    _info_row("Status", "Not approved") +
+    _info_row("স্ট্যাটাস", "Not approved") +
     reason_row
 )}
 
@@ -1169,9 +1169,9 @@ def notify_admin_new_registration(user):
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">A new user has registered on AdsyClub.</p>
 
 {_info_table(
-    _info_row("Name", name) +
-    _info_row("Email", user.email or "N/A") +
-    _info_row("Phone", user.phone or "N/A") +
+    _info_row("নাম", name) +
+    _info_row("ইমেইল", user.email or "N/A") +
+    _info_row("ফোন", user.phone or "N/A") +
     _info_row("Referred By", str(user.refer) if user.refer else "Direct") +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
@@ -1200,7 +1200,7 @@ def notify_admin_new_recharge(recharge):
     _info_row("Recharge Number", recharge.phone_number) +
     _info_row("Operator", operator) +
     _info_row("Amount", f"৳{recharge.amount}") +
-    _info_row("Status", recharge.get_status_display()) +
+    _info_row("স্ট্যাটাস", recharge.get_status_display()) +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
@@ -1227,10 +1227,10 @@ def notify_admin_withdrawal_request(user, amount, payment_method, payment_number
 
 {_info_table(
     _info_row("User", name) +
-    _info_row("Email", user.email or "N/A") +
+    _info_row("ইমেইল", user.email or "N/A") +
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("Method", payment_method or "N/A") +
-    _info_row("Account", payment_number or "N/A") +
+    _info_row("মাধ্যম", payment_method or "N/A") +
+    _info_row("অ্যাকাউন্ট", payment_number or "N/A") +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
@@ -1251,8 +1251,8 @@ def notify_admin_kyc_submission(user):
 
 {_info_table(
     _info_row("User", name) +
-    _info_row("Email", user.email or "N/A") +
-    _info_row("Phone", user.phone or "N/A") +
+    _info_row("ইমেইল", user.email or "N/A") +
+    _info_row("ফোন", user.phone or "N/A") +
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
