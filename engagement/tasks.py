@@ -340,3 +340,84 @@ def run_nudge_engine(dry_run=False):
         result["by_nudge"] = dict(Counter(p["nudge"] for p in plan))
     logger.info("run_nudge_engine: sent=%s dry_run=%s", sent, dry_run)
     return result
+
+
+@shared_task
+def run_feature_promos():
+    """Feature-awareness campaign.
+
+    Spreads ~2 promo notifications per user per day across 9am–9pm Bangladesh
+    time, at random hours so they don't all fire at once, and never repeats a
+    line it sent the same user within the last week. Goes to every active user
+    with a device. Toggle with ENGAGEMENT_FEATURE_PROMOS_ENABLED.
+    """
+    import random
+    from django.db.models import Count
+    from .feature_promos import pick_promo
+
+    if not getattr(settings, "ENGAGEMENT_FEATURE_PROMOS_ENABLED", True):
+        return {"skipped": "disabled"}
+
+    per_day = int(getattr(settings, "ENGAGEMENT_FEATURE_PROMOS_PER_DAY", 2))
+    now = timezone.now()  # UTC
+    bdt = now + timedelta(hours=6)  # Bangladesh Standard Time = UTC+6
+    hour = bdt.hour
+    if not (9 <= hour < 21):  # only 9am–9pm BDT
+        return {"skipped": "outside-window", "bdt_hour": hour}
+
+    # Spread the remaining sends over the hours left in today's window, so each
+    # user's messages land at random, different times instead of all together.
+    runs_remaining = max(1, 21 - hour)
+
+    bdt_midnight = bdt.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_start_utc = bdt_midnight - timedelta(hours=6)
+    week_ago = now - timedelta(days=7)
+
+    sent_today = dict(
+        NudgeLog.objects.filter(
+            nudge_key__startswith="promo_", sent_at__gte=day_start_utc
+        )
+        .values("user")
+        .annotate(c=Count("id"))
+        .values_list("user", "c")
+    )
+
+    users = User.objects.filter(is_active=True, fcm_tokens__is_active=True).distinct()
+
+    from base.push_notifications import send_push_notification
+
+    sent = 0
+    for user in users.iterator(chunk_size=500):
+        need = per_day - sent_today.get(user.id, 0)
+        if need <= 0:
+            continue
+        # Probability spread: send `need` over the remaining `runs_remaining`.
+        if random.random() >= (need / runs_remaining):
+            continue
+        recent = set(
+            NudgeLog.objects.filter(
+                user=user, nudge_key__startswith="promo_", sent_at__gte=week_ago
+            ).values_list("nudge_key", flat=True)
+        )
+        key, title, body, deep_link = pick_promo(exclude_keys=recent)
+        try:
+            send_push_notification(
+                title=title,
+                body=body,
+                deep_link=deep_link,
+                notification_type="feature",
+                users=[user],
+            )
+            NudgeLog.objects.create(
+                user=user,
+                nudge_key=key,
+                channel="push",
+                title=title,
+                deep_link=deep_link,
+            )
+            sent += 1
+        except Exception:
+            logger.exception("feature promo send failed for user %s", user.id)
+
+    logger.info("run_feature_promos: sent=%s bdt_hour=%s", sent, hour)
+    return {"sent": sent, "bdt_hour": hour, "runs_remaining": runs_remaining}

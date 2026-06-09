@@ -543,6 +543,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "engagement.tasks.run_nudge_engine",
         "schedule": timedelta(hours=2),  # Pick + deliver the best nudge per user
     },
+    "run-feature-promos": {
+        "task": "engagement.tasks.run_feature_promos",
+        "schedule": timedelta(hours=1),  # Spread ~2 feature promos/user across 9am-9pm
+    },
 }
 
 # --- Engagement / assistant-brain nudge engine ---
@@ -556,6 +560,13 @@ ENGAGEMENT_NUDGE_PER_RUN_CAP = 300        # max sends per engine run (anti-burst
 # data has accumulated and the lifecycle stages are trustworthy. Flip to True
 # then. Hard-data nudges (KYC withdraw, subscription, onboarding) send regardless.
 ENGAGEMENT_LIFECYCLE_NUDGES_ENABLED = False
+
+# --- Feature-awareness promos (Amar Sheba, eShop, Mindforce, Workspace,
+# Rideshare, MicroGigs, News). ~N varied Bangla promos per user per day, spread
+# at random times across 9am-9pm BDT, no line repeated within a week. Sent to
+# every active user with a device. Flip ENABLED to False to pause instantly.
+ENGAGEMENT_FEATURE_PROMOS_ENABLED = True
+ENGAGEMENT_FEATURE_PROMOS_PER_DAY = 2
 
 # ShurjoPay Settings
 SP_USERNAME = "lyriczsoft"
