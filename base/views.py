@@ -730,7 +730,9 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
 class GetMicroGigs(generics.ListCreateAPIView):
     serializer_class = MicroGigPostSerializer
     permission_classes = [AllowAny]
-    pagination_class = None  # Disable pagination for Vue compatibility
+    # Backward-compatible: app paginates via page/page_size, homepage via
+    # limit/offset (plain array), the full page (no params) still gets all.
+    pagination_class = MicroGigPagination
 
     def get_queryset(self):
         queryset = MicroGigPost.objects.exclude(
