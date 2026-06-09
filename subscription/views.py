@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.db import transaction
 
 from .models import *
 from .serializers import *
@@ -208,7 +209,8 @@ class SubscriptionUpgradeView(APIView):
     Upgrade user subscription to a different plan
     """
     permission_classes = [permissions.IsAuthenticated]
-    
+
+    @transaction.atomic
     def post(self, request):
         plan_id = request.data.get('plan_id')
         if not plan_id:
@@ -216,7 +218,12 @@ class SubscriptionUpgradeView(APIView):
                 {"error": "Plan ID is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
+
+        # Serialize concurrent/duplicate upgrade requests for this user by locking
+        # their row first, so a double-tap or retried request can't activate (and
+        # charge for) a subscription twice.
+        type(request.user).objects.select_for_update().get(pk=request.user.pk)
+
         try:
             # Get the selected plan
             new_plan = get_object_or_404(SubscriptionPlan, id=plan_id)
@@ -296,6 +303,9 @@ class SubscriptionUpgradeView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
             
         except Exception as e:
+            # Roll back any partial changes (e.g. payment deducted but activation
+            # failed) so the user is never left half-charged.
+            transaction.set_rollback(True)
             return Response(
                 {"error": f"Failed to upgrade subscription: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
