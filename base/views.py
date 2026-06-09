@@ -405,6 +405,7 @@ def update_user(request, email):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    had_phone = bool(user.phone)  # capture before save to detect a first-time add
     data["id"] = user.id
     serializer = UserSerializer(user, data=data, partial=True)
 
@@ -412,6 +413,10 @@ def update_user(request, email):
         try:
             user.save()  # Save any direct changes to the user instance
             serializer.save()  # Save changes from the serializer
+            # First phone added (e.g. after Google login) -> welcome SMS, once.
+            if not had_phone and user.phone:
+                from .welcome_sms import send_welcome_sms_async
+                send_welcome_sms_async(user.name or user.first_name, user.phone)
             return Response(
                 {"message": "User updated successfully", "data": serializer.data},
                 status=status.HTTP_200_OK,
@@ -1899,7 +1904,10 @@ def _send_smsinbd_message(phone, message):
 @api_view(["POST", "GET"])
 def smsSend(request):
     phone = request.GET.get("phone")
-    message = "Welcome to AdsyClub.com! You can now connect people enjoy services around you and earn money by completing tasks. Thank you!"
+    # Personalized, randomly-picked Bangla welcome so not everyone gets the same.
+    from .welcome_sms import pick_welcome_sms
+    name = getattr(request.user, "name", "") or getattr(request.user, "first_name", "")
+    message = pick_welcome_sms(name)
 
     try:
         sent, provider_message = _send_smsinbd_message(phone, message)
