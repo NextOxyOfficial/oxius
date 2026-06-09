@@ -47,7 +47,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
 
   void _showSponsorModal(GoldSponsor sponsor) {
     _incrementViews(sponsor.id);
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -116,14 +116,15 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                           color: Colors.amber.shade700,
                         ),
                       ),
-                      Icon(Icons.chevron_right, size: 16, color: Colors.amber.shade700),
+                      Icon(Icons.chevron_right,
+                          size: 16, color: Colors.amber.shade700),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          
+
           // Content: Loading, Empty, or Sponsors List
           if (_isLoading)
             _buildLoadingContent()
@@ -241,13 +242,15 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
                                   color: Colors.grey.shade200,
-                                  child: Icon(Icons.business, color: Colors.grey.shade400, size: 24),
+                                  child: Icon(Icons.business,
+                                      color: Colors.grey.shade400, size: 24),
                                 );
                               },
                             )
                           : Container(
                               color: Colors.grey.shade200,
-                              child: Icon(Icons.business, color: Colors.grey.shade400, size: 24),
+                              child: Icon(Icons.business,
+                                  color: Colors.grey.shade400, size: 24),
                             ),
                     ),
                   ),
@@ -263,7 +266,8 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                       ),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.star, size: 10, color: Colors.white),
+                    child:
+                        const Icon(Icons.star, size: 10, color: Colors.white),
                   ),
                 ),
               ],
@@ -285,7 +289,6 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
       ),
     );
   }
-
 }
 
 // Sponsor Detail Modal
@@ -332,7 +335,8 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
   }
 
   Future<void> _loadBanners() async {
-    final banners = await GoldSponsorService.getSponsorBanners(widget.sponsor.id);
+    final banners =
+        await GoldSponsorService.getSponsorBanners(widget.sponsor.id);
     if (mounted) {
       setState(() {
         _banners = banners;
@@ -353,19 +357,21 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
 
   Widget _buildContactRow(IconData icon, String text, VoidCallback? onTap) {
     final row = Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 9),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: Colors.amber.shade600),
+          Icon(icon, size: 16, color: Colors.amber.shade700),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 15,
-                color: onTap != null ? Colors.amber.shade700 : const Color(0xFF374151),
-                fontWeight: FontWeight.w500,
+                fontSize: 12.5,
+                color: onTap != null
+                    ? Colors.amber.shade800
+                    : const Color(0xFF475569),
+                fontWeight: FontWeight.w600,
                 height: 1.4,
                 decoration: TextDecoration.none,
               ),
@@ -374,10 +380,432 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
         ],
       ),
     );
-    
-    return onTap != null
-        ? GestureDetector(onTap: onTap, child: row)
-        : row;
+
+    return onTap != null ? GestureDetector(onTap: onTap, child: row) : row;
+  }
+
+  bool get _hasContactInfo {
+    return (widget.sponsor.contactEmail?.trim().isNotEmpty ?? false) ||
+        (widget.sponsor.phoneNumber?.trim().isNotEmpty ?? false) ||
+        (widget.sponsor.website?.trim().isNotEmpty ?? false);
+  }
+
+  bool get _showLegacySponsorDetail => false;
+
+  Widget _buildSponsorPanel(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sponsorLogo(64),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.sponsor.businessName,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        height: 1.12,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        _modernGoldBadge(),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${_formatViews(widget.sponsor.views)} views',
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => Navigator.pop(context),
+                borderRadius: BorderRadius.circular(999),
+                child: const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: Color(0xFF64748B),
+                    size: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildBannerCarousel(),
+          if (widget.sponsor.businessDescription != null &&
+              widget.sponsor.businessDescription!.trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Html(
+              data: widget.sponsor.businessDescription!,
+              onLinkTap: (url, attributes, element) {
+                UrlLauncherUtils.launchExternalUrl(url);
+              },
+              style: {
+                '*': Style(
+                  margin: Margins.zero,
+                  padding: HtmlPaddings.zero,
+                  fontSize: FontSize(13.5),
+                  color: const Color(0xFF334155),
+                  lineHeight: const LineHeight(1.45),
+                ),
+                'p': Style(margin: Margins.only(bottom: 6)),
+              },
+            ),
+          ],
+          if (_hasContactInfo) ...[
+            const SizedBox(height: 10),
+            const Divider(height: 1, color: Color(0xFFE5E7EB)),
+            const SizedBox(height: 9),
+            if (widget.sponsor.contactEmail?.trim().isNotEmpty ?? false)
+              _buildContactRow(
+                Icons.email_rounded,
+                widget.sponsor.contactEmail!.trim(),
+                null,
+              ),
+            if (widget.sponsor.phoneNumber?.trim().isNotEmpty ?? false)
+              _buildContactRow(
+                Icons.phone_rounded,
+                widget.sponsor.phoneNumber!.trim(),
+                null,
+              ),
+            if (widget.sponsor.website?.trim().isNotEmpty ?? false)
+              _buildContactRow(
+                Icons.language_rounded,
+                widget.sponsor.website!.trim(),
+                () => _launchUrl(widget.sponsor.website!.trim()),
+              ),
+          ],
+          if (widget.sponsor.profileUrl != null &&
+              widget.sponsor.profileUrl!.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildVisitProfileButton(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Widget _buildSponsorHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sponsorLogo(58),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _modernGoldBadge(),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        '${_formatViews(widget.sponsor.views)} views',
+                        style: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  widget.sponsor.businessName,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    height: 1.12,
+                    letterSpacing: -0.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () => Navigator.pop(context),
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: const Icon(
+                Icons.close_rounded,
+                color: Color(0xFF475569),
+                size: 18,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBannerCarousel() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: 168,
+        color: const Color(0xFFFFFBEB),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (_banners.isNotEmpty && !_isLoadingBanners)
+              PageView.builder(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentBannerIndex = i),
+                itemCount: _banners.length,
+                itemBuilder: (context, index) => Image.network(
+                  _banners[index].image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _bannerFallback(),
+                ),
+              )
+            else
+              _bannerFallback(),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.18),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (_banners.length > 1)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 9,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _banners.length,
+                    (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: _currentBannerIndex == index ? 15 : 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        color: _currentBannerIndex == index
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.55),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Widget _buildDescriptionCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Html(
+        data: widget.sponsor.businessDescription!,
+        onLinkTap: (url, attributes, element) {
+          UrlLauncherUtils.launchExternalUrl(url);
+        },
+        style: {
+          '*': Style(
+            margin: Margins.zero,
+            padding: HtmlPaddings.zero,
+            fontSize: FontSize(13.5),
+            color: const Color(0xFF334155),
+            lineHeight: const LineHeight(1.45),
+          ),
+          'p': Style(margin: Margins.only(bottom: 6)),
+        },
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Widget _buildContactCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 1),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        children: [
+          if (widget.sponsor.contactEmail?.trim().isNotEmpty ?? false)
+            _buildContactRow(
+              Icons.email_rounded,
+              widget.sponsor.contactEmail!.trim(),
+              null,
+            ),
+          if (widget.sponsor.phoneNumber?.trim().isNotEmpty ?? false)
+            _buildContactRow(
+              Icons.phone_rounded,
+              widget.sponsor.phoneNumber!.trim(),
+              null,
+            ),
+          if (widget.sponsor.website?.trim().isNotEmpty ?? false)
+            _buildContactRow(
+              Icons.language_rounded,
+              widget.sponsor.website!.trim(),
+              () => _launchUrl(widget.sponsor.website!.trim()),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVisitProfileButton() {
+    return FilledButton.icon(
+      onPressed: () {
+        Navigator.pop(context);
+        _launchUrl(widget.sponsor.profileUrl!.trim());
+      },
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color(0xFFF59E0B),
+        foregroundColor: Colors.white,
+        minimumSize: const Size.fromHeight(48),
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      icon: const Icon(Icons.open_in_new_rounded, size: 18),
+      label: const Text(
+        'Visit Profile',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _sponsorLogo(double size) {
+    return Container(
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xFFF59E0B), width: 1.4),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF59E0B).withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: widget.sponsor.logo != null
+            ? Image.network(
+                widget.sponsor.logo!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _logoFallback(),
+              )
+            : _logoFallback(),
+      ),
+    );
+  }
+
+  Widget _modernGoldBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFFFDB9B)),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 13),
+          SizedBox(width: 4),
+          Text(
+            'Gold Sponsor',
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFFB45309),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -390,7 +818,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
         return Container(
           clipBehavior: Clip.antiAlias,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFFF8FAFC),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -408,264 +836,276 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
               Expanded(
                 child: SingleChildScrollView(
                   controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Banner + overlapping logo + views chip
-                      SizedBox(
-                        height: 210,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            // Banner image (or gradient fallback)
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              height: 172,
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  if (_banners.isNotEmpty && !_isLoadingBanners)
-                                    PageView.builder(
-                                      controller: _pageController,
-                                      onPageChanged: (i) => setState(
-                                          () => _currentBannerIndex = i),
-                                      itemCount: _banners.length,
-                                      itemBuilder: (context, index) =>
-                                          Image.network(
-                                        _banners[index].image,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            _bannerFallback(),
-                                      ),
-                                    )
-                                  else
-                                    _bannerFallback(),
-                                  // Bottom gradient for legibility
-                                  Positioned(
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      height: 90,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.black.withOpacity(0.45),
-                                          ],
+                      _buildSponsorPanel(context),
+                      if (_showLegacySponsorDetail) ...[
+                        // Banner + overlapping logo + views chip
+                        SizedBox(
+                          height: 210,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              // Banner image (or gradient fallback)
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: 172,
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    if (_banners.isNotEmpty &&
+                                        !_isLoadingBanners)
+                                      PageView.builder(
+                                        controller: _pageController,
+                                        onPageChanged: (i) => setState(
+                                            () => _currentBannerIndex = i),
+                                        itemCount: _banners.length,
+                                        itemBuilder: (context, index) =>
+                                            Image.network(
+                                          _banners[index].image,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              _bannerFallback(),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Gold Sponsor badge
-                                  Positioned(
-                                      top: 12, left: 12, child: _goldBadge()),
-                                  // Close button
-                                  Positioned(
-                                    top: 10,
-                                    right: 10,
-                                    child: GestureDetector(
-                                      onTap: () => Navigator.pop(context),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.4),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(Icons.close_rounded,
-                                            color: Colors.white, size: 18),
-                                      ),
-                                    ),
-                                  ),
-                                  // Page dots
-                                  if (_banners.length > 1)
+                                      )
+                                    else
+                                      _bannerFallback(),
+                                    // Bottom gradient for legibility
                                     Positioned(
-                                      bottom: 10,
                                       left: 0,
                                       right: 0,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: List.generate(
-                                          _banners.length,
-                                          (index) => Container(
-                                            width: 6,
-                                            height: 6,
-                                            margin: const EdgeInsets.symmetric(
-                                                horizontal: 2),
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: _currentBannerIndex == index
-                                                  ? Colors.white
-                                                  : Colors.white
-                                                      .withOpacity(0.45),
-                                            ),
+                                      bottom: 0,
+                                      child: Container(
+                                        height: 90,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withOpacity(0.45),
+                                            ],
                                           ),
                                         ),
                                       ),
                                     ),
-                                ],
-                              ),
-                            ),
-                            // Logo overlapping the banner bottom-left
-                            Positioned(
-                              top: 138,
-                              left: 16,
-                              child: Container(
-                                width: 72,
-                                height: 72,
-                                padding: const EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.15),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                    // Gold Sponsor badge
+                                    Positioned(
+                                        top: 12, left: 12, child: _goldBadge()),
+                                    // Close button
+                                    Positioned(
+                                      top: 10,
+                                      right: 10,
+                                      child: GestureDetector(
+                                        onTap: () => Navigator.pop(context),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.black.withOpacity(0.4),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.close_rounded,
+                                              color: Colors.white, size: 18),
+                                        ),
+                                      ),
                                     ),
+                                    // Page dots
+                                    if (_banners.length > 1)
+                                      Positioned(
+                                        bottom: 10,
+                                        left: 0,
+                                        right: 0,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: List.generate(
+                                            _banners.length,
+                                            (index) => Container(
+                                              width: 6,
+                                              height: 6,
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 2),
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color:
+                                                    _currentBannerIndex == index
+                                                        ? Colors.white
+                                                        : Colors.white
+                                                            .withOpacity(0.45),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(13),
-                                  child: widget.sponsor.logo != null
-                                      ? Image.network(widget.sponsor.logo!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
-                                              _logoFallback())
-                                      : _logoFallback(),
+                              ),
+                              // Logo overlapping the banner bottom-left
+                              Positioned(
+                                top: 138,
+                                left: 16,
+                                child: Container(
+                                  width: 72,
+                                  height: 72,
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.15),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(13),
+                                    child: widget.sponsor.logo != null
+                                        ? Image.network(widget.sponsor.logo!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                _logoFallback())
+                                        : _logoFallback(),
+                                  ),
                                 ),
                               ),
-                            ),
-                            // Views chip on the banner (bottom-right)
-                            Positioned(
-                              top: 142,
-                              right: 14,
-                              child: _viewsChip(widget.sponsor.views),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Business name
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 12, 0),
-                        child: Text(
-                          widget.sponsor.businessName,
-                          style: const TextStyle(
-                            fontSize: 21,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.3,
-                            color: Color(0xFF111827),
+                              // Views chip on the banner (bottom-right)
+                              Positioned(
+                                top: 142,
+                                right: 14,
+                                child: _viewsChip(widget.sponsor.views),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
 
-                      // Full business description — no truncation so sponsors
-                      // can share complete details about their business.
-                      if (widget.sponsor.businessDescription != null &&
-                          widget.sponsor.businessDescription!.trim().isNotEmpty)
+                        // Business name
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 12, 4, 0),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF9FAFB),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFFEFF1F4)),
-                            ),
-                            child: Html(
-                              data: widget.sponsor.businessDescription!,
-                              onLinkTap: (url, attributes, element) {
-                                UrlLauncherUtils.launchExternalUrl(url);
-                              },
-                              style: {
-                                '*': Style(
-                                  margin: Margins.zero,
-                                  padding: HtmlPaddings.zero,
-                                  fontSize: FontSize(15.5),
-                                  color: const Color(0xFF374151),
-                                  lineHeight: const LineHeight(1.6),
-                                ),
-                              },
+                          padding: const EdgeInsets.fromLTRB(16, 12, 12, 0),
+                          child: Text(
+                            widget.sponsor.businessName,
+                            style: const TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                              color: Color(0xFF111827),
                             ),
                           ),
                         ),
 
-                      const SizedBox(height: 16),
-
-                      // Contact info
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-                        child: Column(
-                          children: [
-                            if (widget.sponsor.contactEmail != null)
-                              _buildContactRow(Icons.email_rounded,
-                                  widget.sponsor.contactEmail!, null),
-                            if (widget.sponsor.phoneNumber != null)
-                              _buildContactRow(Icons.phone_rounded,
-                                  widget.sponsor.phoneNumber!, null),
-                            if (widget.sponsor.website != null)
-                              _buildContactRow(
-                                  Icons.language_rounded,
-                                  widget.sponsor.website!,
-                                  () => _launchUrl(widget.sponsor.website!)),
-                          ],
-                        ),
-                      ),
-
-                      // Visit Profile
-                      if (widget.sponsor.profileUrl != null)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 14, 4, 0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                              _launchUrl(widget.sponsor.profileUrl!);
-                            },
+                        // Full business description — no truncation so sponsors
+                        // can share complete details about their business.
+                        if (widget.sponsor.businessDescription != null &&
+                            widget.sponsor.businessDescription!
+                                .trim()
+                                .isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(4, 12, 4, 0),
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.amber.shade500,
-                                    Colors.orange.shade500,
-                                  ],
-                                ),
+                                color: const Color(0xFFF9FAFB),
                                 borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.orange.withOpacity(0.3),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                                border:
+                                    Border.all(color: const Color(0xFFEFF1F4)),
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.open_in_new_rounded,
-                                      color: Colors.white, size: 18),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Visit Profile',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
+                              child: Html(
+                                data: widget.sponsor.businessDescription!,
+                                onLinkTap: (url, attributes, element) {
+                                  UrlLauncherUtils.launchExternalUrl(url);
+                                },
+                                style: {
+                                  '*': Style(
+                                    margin: Margins.zero,
+                                    padding: HtmlPaddings.zero,
+                                    fontSize: FontSize(15.5),
+                                    color: const Color(0xFF374151),
+                                    lineHeight: const LineHeight(1.6),
                                   ),
-                                ],
+                                },
                               ),
                             ),
                           ),
+
+                        const SizedBox(height: 16),
+
+                        // Contact info
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+                          child: Column(
+                            children: [
+                              if (widget.sponsor.contactEmail != null)
+                                _buildContactRow(Icons.email_rounded,
+                                    widget.sponsor.contactEmail!, null),
+                              if (widget.sponsor.phoneNumber != null)
+                                _buildContactRow(Icons.phone_rounded,
+                                    widget.sponsor.phoneNumber!, null),
+                              if (widget.sponsor.website != null)
+                                _buildContactRow(
+                                    Icons.language_rounded,
+                                    widget.sponsor.website!,
+                                    () => _launchUrl(widget.sponsor.website!)),
+                            ],
+                          ),
                         ),
+
+                        // Visit Profile
+                        if (widget.sponsor.profileUrl != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(4, 14, 4, 0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                                _launchUrl(widget.sponsor.profileUrl!);
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.amber.shade500,
+                                      Colors.orange.shade500,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.orange.withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.open_in_new_rounded,
+                                        color: Colors.white, size: 18),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Visit Profile',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ],
                   ),
                 ),
@@ -748,7 +1188,8 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.visibility_rounded, size: 15, color: Colors.amber.shade700),
+          Icon(Icons.visibility_rounded,
+              size: 15, color: Colors.amber.shade700),
           const SizedBox(width: 5),
           Text(
             '${_formatViews(views)} views',
