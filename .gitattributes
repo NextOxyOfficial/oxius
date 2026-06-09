@@ -1,0 +1,35 @@
+# Normalize line endings so Windows / macOS / Linux teammates never produce
+# noisy CRLF-vs-LF diffs or merge conflicts. Text files are stored as LF in the
+# repo; binaries are auto-detected and left untouched.
+* text=auto
+
+# Always LF for code/config the server runs, regardless of OS checkout.
+*.py    text eol=lf
+*.sh    text eol=lf
+*.vue   text eol=lf
+*.js    text eol=lf
+*.ts    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.md    text eol=lf
+
+# Treat these as binary (never touch line endings).
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.mp3   binary
+*.mp4   binary
+*.zip   binary
+*.jks   binary
+*.keystore binary
