@@ -487,7 +487,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (post.division != null || post.district != null)
+              if (deliveryLocation.trim().isNotEmpty)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

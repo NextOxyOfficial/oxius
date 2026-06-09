@@ -1,13 +1,5 @@
 <template>
   <div>
-    <!-- Sale Search Bar -->
-    <SaleSearchBar
-      :initial-search-term="''"
-      :is-searching="false"
-      @search="handleSearch"
-      @clear-location="handleClearLocation"
-    />
-
     <div class="max-w-6xl mx-auto px-1 py-3">
       <!-- Seller Profile Header -->
       <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -416,7 +408,7 @@
                   class="flex flex-col sm:flex-row bg-white rounded-lg overflow-hidden"
                 >
                   <div
-                    class="relative sm:w-1/3 aspect-video sm:aspect-none cursor-pointer"
+                    class="relative sm:w-1/3 aspect-video sm:self-start cursor-pointer"
                     @click="navigateToPost(product.slug)"
                   >
                     <div

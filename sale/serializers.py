@@ -80,7 +80,19 @@ def _sale_location_display(obj):
     return ", ".join(seen) if seen else "সারা বাংলাদেশ"
 
 
-class SalePostListSerializer(serializers.ModelSerializer):
+class _NullifyEmptyLocationMixin:
+    """Return null (not "") for empty division/district/area so clients that
+    join these parts don't render stray commas like ", ," for all-over posts."""
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field in ("division", "district", "area"):
+            if field in data and not str(data[field] or "").strip():
+                data[field] = None
+        return data
+
+
+class SalePostListSerializer(_NullifyEmptyLocationMixin, serializers.ModelSerializer):
     """Serializer for listing sale posts with minimal information"""
 
     category_name = serializers.CharField(source="category.name", read_only=True)
@@ -164,7 +176,7 @@ class SalePostListSerializer(serializers.ModelSerializer):
         return _sale_location_display(obj)
 
 
-class SalePostDetailSerializer(serializers.ModelSerializer):
+class SalePostDetailSerializer(_NullifyEmptyLocationMixin, serializers.ModelSerializer):
     """Serializer for detailed view of a sale post"""
 
     images = SaleImageSerializer(many=True, read_only=True)

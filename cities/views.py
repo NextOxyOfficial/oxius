@@ -65,7 +65,7 @@ def upazila(request):
     name_eng = request.GET.get('city_name_eng', None)
     name_ban = request.GET.get('city_name_ban', None)
 
-    upazilas = Upazila.objects.all()
+    upazilas = Upazila.objects.all().order_by("name_eng")
 
     if city_id:
         upazilas = upazilas.filter(city_id=city_id)
