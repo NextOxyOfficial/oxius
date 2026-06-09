@@ -304,34 +304,34 @@ def send_admin_moderation_email(*, subject, label, intro, rows, model_key=None,
 def send_welcome_email(user):
     """Send welcome email to newly registered user"""
     name = user.name or user.first_name or user.username or "there"
-    subject = "Welcome to AdsyClub!"
-    text = f"Hi {name}, Welcome to AdsyClub! Your account has been created successfully."
+    subject = "AdsyClub-এ স্বাগতম! 🎉"
+    text = f"হ্যালো {name}, AdsyClub-এ স্বাগতম! আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে।"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Welcome to <strong>{SITE_NAME}</strong>! Your account has been created successfully. You're now part of Bangladesh's leading social business network.</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;"><strong>{SITE_NAME}</strong>-এ স্বাগতম! আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে। আপনি এখন বাংলাদেশের অন্যতম সোশ্যাল বিজনেস নেটওয়ার্কের সদস্য।</p>
 
 {_info_table(
-    _info_row("Name", name) +
-    _info_row("Email", user.email or "N/A") +
-    _info_row("Phone", user.phone or "N/A") +
-    _info_row("Referral Code", user.referral_code or "N/A")
+    _info_row("নাম", name) +
+    _info_row("ইমেইল", user.email or "N/A") +
+    _info_row("ফোন", user.phone or "N/A") +
+    _info_row("রেফারেল কোড", user.referral_code or "N/A")
 )}
 
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:16px 0;">Here's what you can do on AdsyClub:</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:16px 0;">AdsyClub-এ আপনি যা যা করতে পারবেন:</p>
 <ul style="color:#374151;font-size:14px;line-height:2;padding-left:20px;margin:0 0 16px;">
-<li><strong>Business Network</strong> – Connect with professionals</li>
-<li><strong>eShop</strong> – Shop brand-new products</li>
-<li><strong>পুরোনো কেনাবেচা</strong> – Buy &amp; sell used items</li>
-<li><strong>Workspace Gigs</strong> – Hire or get hired</li>
-<li><strong>AdsyConnect</strong> – Chat, voice &amp; video calls</li>
-<li><strong>eLearning</strong> – Learn new skills</li>
+<li><strong>Business Network</strong> – পেশাদারদের সাথে যুক্ত হোন</li>
+<li><strong>eShop</strong> – নতুন পণ্য কিনুন</li>
+<li><strong>পুরোনো কেনাবেচা</strong> – ব্যবহৃত জিনিস কেনাবেচা করুন</li>
+<li><strong>Workspace Gigs</strong> – কাজ দিন বা কাজ নিন</li>
+<li><strong>AdsyConnect</strong> – চ্যাট, ভয়েস ও ভিডিও কল</li>
+<li><strong>eLearning</strong> – নতুন দক্ষতা শিখুন</li>
 </ul>
 
-{_button("Get Started", SITE_URL + "/business-network")}
+{_button("শুরু করুন", SITE_URL + "/business-network")}
 """
 
-    html = _base_template(subject, body, "If you didn't create this account, please contact our support team.")
+    html = _base_template(subject, body, "আপনি যদি এই অ্যাকাউন্টটি তৈরি না করে থাকেন, অনুগ্রহ করে আমাদের সাপোর্ট টিমের সাথে যোগাযোগ করুন।")
     return _send_email(subject, user.email, text, html)
 
 
@@ -339,24 +339,24 @@ def send_transfer_sent_email(sender_user, receiver_user, amount, transaction_id)
     """Email to sender after successful fund transfer"""
     name = sender_user.name or sender_user.first_name or sender_user.username
     receiver_name = receiver_user.name or receiver_user.first_name or receiver_user.username
-    subject = "Fund Transfer Successful"
-    text = f"Hi {name}, You sent ৳{amount} to {receiver_name}."
+    subject = "ফান্ড ট্রান্সফার সফল হয়েছে"
+    text = f"হ্যালো {name}, আপনি {receiver_name}-কে ৳{amount} পাঠিয়েছেন।"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your fund transfer has been completed successfully.</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ফান্ড ট্রান্সফার সফলভাবে সম্পন্ন হয়েছে।</p>
 
 {_info_table(
-    _info_row("Amount", f"৳{amount}") +
-    _info_row("Sent To", receiver_name) +
+    _info_row("পরিমাণ", f"৳{amount}") +
+    _info_row("প্রাপক", receiver_name) +
     _info_row("Transaction ID", str(transaction_id)[:12]) +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("View Balance", SITE_URL + "/deposit-withdraw")}
+{_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 """
 
-    html = _base_template(subject, body, "This is an automated notification. If you didn't make this transfer, contact support immediately.")
+    html = _base_template(subject, body, "এটি একটি স্বয়ংক্রিয় নোটিফিকেশন। আপনি যদি এই ট্রান্সফার না করে থাকেন, অবিলম্বে সাপোর্টে যোগাযোগ করুন।")
     return _send_email(subject, sender_user.email, text, html)
 
 
@@ -368,17 +368,17 @@ def send_transfer_received_email(receiver_user, sender_user, amount, transaction
     text = f"Hi {name}, You received ৳{amount} from {sender_name}."
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">You have received a fund transfer to your AdsyClub wallet.</p>
 
 {_info_table(
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("From", sender_name) +
     _info_row("Transaction ID", str(transaction_id)[:12]) +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("View Balance", SITE_URL + "/deposit-withdraw")}
+{_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 """
 
     html = _base_template(subject, body)
@@ -392,17 +392,17 @@ def send_deposit_email(user, amount, transaction_id, payment_method=""):
     text = f"Hi {name}, Your deposit of ৳{amount} was successful."
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your deposit has been processed successfully and added to your wallet.</p>
 
 {_info_table(
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Method", payment_method or "Online Payment") +
     _info_row("Transaction ID", str(transaction_id)[:12]) +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("View Balance", SITE_URL + "/deposit-withdraw")}
+{_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 """
 
     html = _base_template(subject, body)
@@ -416,15 +416,15 @@ def send_withdraw_email(user, amount, transaction_id, payment_method="", payment
     text = f"Hi {name}, Your withdrawal of ৳{amount} has been submitted."
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your withdrawal request has been submitted and is being processed.</p>
 
 {_info_table(
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Method", payment_method or "N/A") +
     _info_row("Account", payment_number or "N/A") +
     _info_row("Status", "Processing") +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
 {_button("View Transactions", SITE_URL + "/deposit-withdraw")}
@@ -441,13 +441,13 @@ def send_withdraw_approved_email(user, amount, transaction_id):
     text = f"Hi {name}, Your withdrawal of ৳{amount} has been approved."
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your withdrawal request has been <strong style="color:{BRAND_COLOR};">approved</strong> and the funds have been sent to your account.</p>
 
 {_info_table(
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Status", "Approved ✓") +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 """
 
@@ -468,7 +468,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
 {_info_table(
     _info_row("Gig", gig_title) +
     _info_row("Seller", seller_name) +
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Order ID", str(order_id)[:12]) +
     _info_row("Status", "Pending")
 )}
@@ -486,7 +486,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
 {_info_table(
     _info_row("Gig", gig_title) +
     _info_row("Buyer", buyer_name) +
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Order ID", str(order_id)[:12]) +
     _info_row("Status", "Pending - Action Required")
 )}
@@ -510,7 +510,7 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
 {_info_table(
     _info_row("Gig", gig_title) +
     _info_row("Seller", seller_name) +
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Status", "Completed ✓")
 )}
 
@@ -527,11 +527,11 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
 {_info_table(
     _info_row("Gig", gig_title) +
     _info_row("Buyer", buyer_name) +
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Status", "Payment Released ✓")
 )}
 
-{_button("View Balance", SITE_URL + "/deposit-withdraw")}
+{_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 """
     seller_html = _base_template("Payment Released", seller_body)
     _send_email("Payment Released - Gig Completed", seller.email, f"Payment of ৳{amount} released for '{gig_title}'.", seller_html)
@@ -554,7 +554,7 @@ def send_gig_order_status_email(recipient_user, gig_title, order_id, new_status,
     subject = f"Gig Order: {label}"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{desc}</p>
 
 {_info_table(
@@ -576,7 +576,7 @@ def send_kyc_approved_email(user):
     subject = "KYC Verification Approved"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your KYC verification has been <strong style="color:{BRAND_COLOR};">approved</strong>! You now have access to all features on AdsyClub.</p>
 
 {_button("Go to Dashboard", SITE_URL + "/business-network")}
@@ -592,7 +592,7 @@ def send_kyc_rejected_email(user, reason=""):
     subject = "KYC Verification Update"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Unfortunately, your KYC verification could not be approved at this time.</p>
 {"<p style='color:#374151;font-size:14px;line-height:1.6;margin:0 0 16px;'><strong>Reason:</strong> " + reason + "</p>" if reason else ""}
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Please resubmit your documents with clear, valid information.</p>
@@ -632,7 +632,7 @@ def send_account_suspended_email(user, reason=""):
     subject = "Your AdsyClub account has been suspended"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your AdsyClub account has been <strong style="color:#DC2626;">suspended</strong>. While suspended you will not be able to use any of the app's services.</p>
 {"<p style='color:#374151;font-size:14px;line-height:1.6;margin:0 0 16px;'><strong>Reason:</strong> " + reason + "</p>" if reason else ""}
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">If you believe this is a mistake, please contact our support team.</p>
@@ -648,7 +648,7 @@ def send_account_unsuspended_email(user):
     subject = "Your AdsyClub account has been restored"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Good news — your AdsyClub account has been <strong style="color:{BRAND_COLOR};">restored</strong>. You can use the app again.</p>
 
 {_button("Open AdsyClub", SITE_URL)}
@@ -664,12 +664,12 @@ def send_pro_subscription_email(user, months, amount):
     subject = "Pro Subscription Activated"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your <strong style="color:{BRAND_COLOR};">Pro subscription</strong> has been activated! Enjoy premium features.</p>
 
 {_info_table(
     _info_row("Plan", f"{months} Month(s)") +
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Activated", timezone.now().strftime("%B %d, %Y"))
 )}
 
@@ -687,7 +687,7 @@ def send_referral_reward_email(user, reward_amount, claim_type):
     role = "referring a friend" if claim_type == "referrer" else "signing up via referral"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Congratulations! You earned <strong style="color:{BRAND_COLOR};">৳{reward_amount}</strong> for {role}. The reward has been added to your wallet.</p>
 
 {_info_table(
@@ -696,7 +696,7 @@ def send_referral_reward_email(user, reward_amount, claim_type):
     _info_row("Date", timezone.now().strftime("%B %d, %Y"))
 )}
 
-{_button("View Balance", SITE_URL + "/deposit-withdraw")}
+{_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 """
 
     html = _base_template(subject, body)
@@ -709,7 +709,7 @@ def send_password_reset_email(user, otp):
     subject = "Password Reset OTP"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your password reset OTP is:</p>
 
 <div style="text-align:center;margin:24px 0;">
@@ -734,7 +734,7 @@ def send_mobile_recharge_email(user, amount, phone_number):
 {_info_table(
     _info_row("Recharge Amount", f"৳{amount}") +
     _info_row("Phone Number", phone_number) +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
 <p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">Thank you for using AdsyClub mobile recharge service.</p>
@@ -756,7 +756,7 @@ def send_password_changed_email(user):
     )
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">This is a confirmation that the password for your AdsyClub account was just changed.</p>
 
 {_info_table(
@@ -794,7 +794,7 @@ def send_product_order_email(seller, order, items):
     )
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Good news — you've received a <strong>new order</strong> for your store. Please review and process it promptly.</p>
 
 {_info_table(
@@ -851,7 +851,7 @@ def send_order_confirmation_email(buyer, order):
     )
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you for your order! 🎉 Here are your order and payment details.</p>
 
 {_info_table(
@@ -887,17 +887,17 @@ def send_withdraw_rejected_email(user, amount, transaction_id, reason=""):
     )
     reason_row = _info_row("Reason", reason) if reason else ""
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your withdrawal request could not be approved this time. The full amount has been <strong>refunded to your Adsy Pay balance</strong>.</p>
 
 {_info_table(
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Reference", str(transaction_id)) +
     reason_row +
     _info_row("Status", "Declined &amp; refunded")
 )}
 
-{_button("View Balance", SITE_URL + "/deposit-withdraw")}
+{_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 """
     html = _base_template(
         subject, body,
@@ -917,7 +917,7 @@ def send_kyc_received_email(user):
         "now under review. We'll email you once it's processed."
     )
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you — we've received your identity verification (KYC) submission. Our team is reviewing it now.</p>
 
 {_info_table(
@@ -942,7 +942,7 @@ def send_post_approved_email(user, title, kind="post", link=""):
     subject = f"Your {kind} is live 🎉"
     text = f"Hi {name}, your {kind} \"{title}\" has been approved and is now live on AdsyClub."
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Good news — your {kind} has been <strong>approved</strong> and is now live on AdsyClub. 🎉</p>
 
 {_info_table(
@@ -965,7 +965,7 @@ def send_post_rejected_email(user, title, kind="post", reason="", link=""):
     text = f"Hi {name}, your {kind} \"{title}\" was not approved."
     reason_row = _info_row("Reason", reason) if reason else ""
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thanks for your submission. Unfortunately your {kind} <strong>could not be approved</strong> at this time.</p>
 
 {_info_table(
@@ -992,7 +992,7 @@ def send_post_received_email(user, title, kind="post", link=""):
     subject = f"Your {kind} is under review"
     text = f"Hi {name}, we've received your {kind} \"{title}\" and it is now under review."
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thanks for your submission! We've received your {kind} and our team is reviewing it. You'll get an email the moment it's approved and live.</p>
 
 {_info_table(
@@ -1016,7 +1016,7 @@ def send_driver_approved_email(user):
     subject = "You're approved to drive 🚗"
     text = f"Hi {name}, your AdsyClub driver application has been approved. You can now go online and accept rides."
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Congratulations — your driver application has been <strong>approved</strong>! You can now go online and start accepting ride requests. 🚗</p>
 
 {_info_table(
@@ -1039,7 +1039,7 @@ def send_driver_rejected_email(user, reason=""):
     text = f"Hi {name}, your AdsyClub driver application was not approved."
     reason_row = _info_row("Reason", reason) if reason else ""
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you for applying to drive with AdsyClub. After review, your application <strong>could not be approved</strong> at this time.</p>
 
 {_info_table(
@@ -1078,7 +1078,7 @@ def send_ride_receipt_email(ride):
     driver_row = _info_row("Driver", driver_name) if driver_name else ""
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Thanks for riding with AdsyClub! Here's your trip receipt.</p>
 
 {_info_table(
@@ -1117,7 +1117,7 @@ def send_support_reply_email(ticket, reply_message=""):
     )
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 8px;">Our support team has replied to your ticket <strong>"{ticket.title}"</strong>:</p>
 {quote}
 {_button("View &amp; reply", SITE_URL + "/support")}
@@ -1173,7 +1173,7 @@ def notify_admin_new_registration(user):
     _info_row("Email", user.email or "N/A") +
     _info_row("Phone", user.phone or "N/A") +
     _info_row("Referred By", str(user.refer) if user.refer else "Direct") +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
 {_button("View in Admin", SITE_URL + "/admin/base/user/")}
@@ -1201,7 +1201,7 @@ def notify_admin_new_recharge(recharge):
     _info_row("Operator", operator) +
     _info_row("Amount", f"৳{recharge.amount}") +
     _info_row("Status", recharge.get_status_display()) +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
 {_button("View in Admin", SITE_URL + "/admin/mobile_recharge/recharge/")}
@@ -1228,10 +1228,10 @@ def notify_admin_withdrawal_request(user, amount, payment_method, payment_number
 {_info_table(
     _info_row("User", name) +
     _info_row("Email", user.email or "N/A") +
-    _info_row("Amount", f"৳{amount}") +
+    _info_row("পরিমাণ", f"৳{amount}") +
     _info_row("Method", payment_method or "N/A") +
     _info_row("Account", payment_number or "N/A") +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
 {_button("Review in Admin", SITE_URL + "/admin/base/balance/")}
@@ -1253,7 +1253,7 @@ def notify_admin_kyc_submission(user):
     _info_row("User", name) +
     _info_row("Email", user.email or "N/A") +
     _info_row("Phone", user.phone or "N/A") +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
 {_button("Review KYC", SITE_URL + "/admin/base/nid/")}
@@ -1278,7 +1278,7 @@ def notify_admin_user_blocked(blocker, blocked_user, reason=""):
     _info_row("Blocked User", f"{blocked_name} (@{blocked_user.username})") +
     _info_row("Blocked Email", blocked_user.email or "N/A") +
     _info_row("Reason", reason or "Not specified") +
-    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+    _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
 <p style="color:#ef4444;font-size:14px;line-height:1.6;margin:16px 0;font-weight:600;">⚠️ Please review the blocked user's content and account within 24 hours per our content moderation policy.</p>

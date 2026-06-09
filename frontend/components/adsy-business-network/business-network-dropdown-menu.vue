@@ -208,44 +208,46 @@
       </div>
 
       <!-- 2026 New Year Reward Section -->
-      <div class="px-2 pb-3">
+      <div class="px-3 pb-2">
         <NuxtLink
           to="/new-year-offer"
           @click="closeMenu"
-          class="block relative rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-800/40 group transition-all duration-300 hover:shadow-md hover:border-emerald-300 cursor-pointer"
+          class="group relative block overflow-hidden rounded-xl border border-emerald-100 bg-emerald-50/80 transition hover:border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-900/15"
         >
           <!-- Animated gradient background -->
-          <div class="absolute inset-0 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-emerald-900/20 opacity-80"></div>
+          <div class="hidden"></div>
           
           <!-- Sparkle decorations -->
-          <div class="absolute top-1 right-2 text-lg opacity-70 group-hover:opacity-100 transition-opacity">✨</div>
-          <div class="absolute bottom-1 left-2 text-sm opacity-50 group-hover:opacity-80 transition-opacity">🎉</div>
+          <div class="hidden"></div>
+          <div class="hidden"></div>
 
-          <div class="relative p-3 flex items-center gap-3">
+          <div class="relative flex items-center gap-2.5 p-2.5">
             <!-- Gift Icon -->
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <UIcon name="i-heroicons-gift" class="w-5 h-5 text-white" />
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm">
+              <UIcon name="i-heroicons-gift" class="h-4 w-4 text-white" />
             </div>
 
             <!-- Text Content -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <h4 class="font-semibold text-emerald-800 dark:text-emerald-300 text-sm">
+                <h4 class="truncate text-[13px] font-bold leading-4 text-emerald-900 dark:text-emerald-200">
                   2026 New Year Reward
                 </h4>
-                <span class="px-1.5 py-0.5 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] font-bold rounded-full animate-pulse">
+                <span class="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black leading-none text-white">
                   NEW
                 </span>
               </div>
-              <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-                Refer friends & earn ৳10!
+              <p
+                class="mt-0.5 truncate text-[11px] font-medium text-emerald-700 dark:text-emerald-300"
+              >
+                Refer friends and earn rewards
               </p>
             </div>
 
             <!-- Arrow -->
             <UIcon 
               name="i-heroicons-arrow-right" 
-              class="w-4 h-4 text-emerald-500 transform transition-transform group-hover:translate-x-1" 
+              class="h-4 w-4 text-emerald-600 transition group-hover:translate-x-0.5"
             />
           </div>
         </NuxtLink>
@@ -417,14 +419,6 @@ const navigationLinks = computed(() => [
     color: "text-purple-600 dark:text-purple-400",
     bg: "from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10",
     border: "border-purple-200 dark:border-purple-800/30",
-  },
-  {
-    label: "Ride Share",
-    to: "/rideshare",
-    icon: "i-heroicons-map",
-    color: "text-teal-600 dark:text-teal-400",
-    bg: "from-teal-100 to-teal-50 dark:from-teal-900/30 dark:to-teal-900/10",
-    border: "border-teal-200 dark:border-teal-800/30",
   },
   {
     label: t("ad"),

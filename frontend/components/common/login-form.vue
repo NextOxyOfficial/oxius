@@ -119,7 +119,7 @@
               <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
             </svg>
             <UIcon v-else name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
-            <span>{{ isGoogleLoading ? (t("please_wait") || "Please wait…") : (t("continue_with_google") || "Continue with Google") }}</span>
+            <span>{{ googleButtonLabel }}</span>
           </button>
 
           <div class="text-center mt-4">
@@ -149,6 +149,17 @@ const btnDisabled = ref(false);
 const error = ref("");
 const isLoading = ref(false);
 const isGoogleLoading = ref(false);
+
+const translateOr = (key, fallback) => {
+  const value = t(key);
+  return value && value !== key ? value : fallback;
+};
+
+const googleButtonLabel = computed(() =>
+  isGoogleLoading.value
+    ? translateOr("please_wait", "Please wait...")
+    : translateOr("continue_with_google", "Continue with Google")
+);
 
 async function handleGoogleLogin() {
   if (isGoogleLoading.value) return;
