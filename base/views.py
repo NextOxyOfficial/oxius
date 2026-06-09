@@ -4,6 +4,8 @@ import random
 import re
 import uuid
 from decimal import Decimal, InvalidOperation
+from datetime import timedelta
+from django.db import transaction
 from random import shuffle
 
 import requests
@@ -2411,67 +2413,109 @@ def verify_reset_otp(request):
 def subscribeToPro(request):
     user = request.user
     months = request.GET.get("months")
-    total = request.GET.get("total")
 
-    if not months or not total:
+    if not months:
         return Response(
-            {"error": "Both months and total are required"},
+            {"error": "months is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    try:
+        months = int(months)
+        if months < 1:
+            raise ValueError
+    except (TypeError, ValueError):
+        return Response(
+            {"error": "Invalid months value"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # Check if this is the user's first subscription (only pay commission once)
-    is_first_time = not Subscription.objects.filter(user=user).exists()
+    with transaction.atomic():
+        # Lock this user so rapid duplicate requests (double-tap, client retry, or
+        # the GET being prefetched) can't create two subscriptions / charge twice.
+        user = User.objects.select_for_update().get(pk=user.pk)
 
-    # Convert total to Decimal for calculations
-    total_decimal = Decimal(total)
-
-    # Create transaction record for the subscription purchase
-    Balance.objects.create(
-        user=user,
-        amount=total_decimal,
-        payable_amount=total_decimal,
-        transaction_type="pro_subscription",
-        completed=True,
-        approved=True,
-        bank_status="completed",
-        description=f"Pro subscription purchase for {months} month(s)",
-    )
-
-    # Create the subscription record
-    subscription = Subscription.objects.create(user=user, months=months, total=total)
-
-    # Process referral commission for first-time subscribers
-    commission_processed = False
-    if is_first_time and user.refer:  # Check if user has a referrer
-        try:
-            referrer = user.refer
-            # Calculate 5% commission
-            commission_amount = total_decimal * Decimal("0.05")  # 5% commission
-
-            # Update referrer's balance
-            referrer.balance += commission_amount
-            # Track total commission earned by referrer
-            referrer.commission_earned += commission_amount
-            referrer.save()
-
-            # Create transaction record
-            Balance.objects.create(
-                user=referrer,
-                to_user=user,
-                amount=commission_amount,
-                transaction_type="referral_commission",
-                completed=True,
-                bank_status="completed",
-                description=f"Referral commission from {user.name or user.email}'s first Pro subscription",
+        # Idempotency: a subscription created seconds ago means this is the same
+        # request firing twice — return it instead of charging again.
+        recent = (
+            Subscription.objects.filter(
+                user=user,
+                created_at__gte=timezone.now() - timedelta(seconds=60),
             )
-            commission_processed = True
-            print(
-                f"Referral commission of {commission_amount} credited to {referrer.email}"
+            .order_by("-created_at")
+            .first()
+        )
+        if recent:
+            return Response(
+                {
+                    "message": "Subscription already processed",
+                    "status": "success",
+                    "subscription_id": recent.id,
+                    "duplicate": True,
+                },
+                status=status.HTTP_200_OK,
             )
-        except Exception as e:
-            print(f"Error processing referral commission: {str(e)}")
 
-    # Create notification for pro subscription
+        # Price is computed server-side from admin-managed pricing — never trust a
+        # client-sent total (the amount used to be taken straight from the query
+        # string, so it could be tampered with).
+        pricing = ProPricing.current()
+        monthly = Decimal(str(pricing.effective_monthly_price))
+        if months == 1:
+            total_decimal = monthly
+        else:
+            total_decimal = monthly * months - Decimal(str(pricing.yearly_discount))
+        if total_decimal <= 0:
+            total_decimal = monthly * months
+
+        if user.balance < total_decimal:
+            return Response(
+                {"error": "Insufficient balance"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # First subscription? (referral commission is paid only once)
+        is_first_time = not Subscription.objects.filter(user=user).exists()
+
+        # Transaction record for the purchase
+        Balance.objects.create(
+            user=user,
+            amount=total_decimal,
+            payable_amount=total_decimal,
+            transaction_type="pro_subscription",
+            completed=True,
+            approved=True,
+            bank_status="completed",
+            description=f"Pro subscription purchase for {months} month(s)",
+        )
+
+        # Subscription.save() flips is_pro, sets pro_validity and deducts balance.
+        subscription = Subscription.objects.create(
+            user=user, months=months, total=total_decimal
+        )
+
+        # Referral commission for first-time subscribers
+        commission_processed = False
+        if is_first_time and user.refer:
+            try:
+                referrer = user.refer
+                commission_amount = total_decimal * Decimal("0.05")  # 5%
+                referrer.balance += commission_amount
+                referrer.commission_earned += commission_amount
+                referrer.save()
+                Balance.objects.create(
+                    user=referrer,
+                    to_user=user,
+                    amount=commission_amount,
+                    transaction_type="referral_commission",
+                    completed=True,
+                    bank_status="completed",
+                    description=f"Referral commission from {user.name or user.email}'s first Pro subscription",
+                )
+                commission_processed = True
+            except Exception as e:
+                print(f"Error processing referral commission: {str(e)}")
+
+    # Notification (outside the charge transaction)
     try:
         create_pro_subscription_notification(
             user=user, months=int(months), amount=total_decimal
@@ -2479,13 +2523,15 @@ def subscribeToPro(request):
     except Exception as e:
         print(f"Error creating subscription notification: {str(e)}")
 
-    resp = {
-        "message": "Subscription successful",
-        "status": "success",
-        "subscription_id": subscription.id,
-        "commission_processed": commission_processed,
-    }
-    return Response(resp, status=status.HTTP_200_OK)
+    return Response(
+        {
+            "message": "Subscription successful",
+            "status": "success",
+            "subscription_id": subscription.id,
+            "commission_processed": commission_processed,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(["GET"])

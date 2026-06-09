@@ -139,6 +139,9 @@ class User(AbstractUser):
     #   subscription
     is_pro = models.BooleanField(default=False)
     pro_validity = models.DateTimeField(null=True, blank=True)
+    # Pro auto-renew preference (the app's Pro lives on User.is_pro/pro_validity,
+    # so the renew preference is stored here too rather than on a Subscription row).
+    auto_renew = models.BooleanField(default=False)
     store_name = models.CharField(max_length=40, blank=True, default="")
     store_username = models.CharField(max_length=40, blank=True, default="")
     store_description = models.TextField(null=True, blank=True, default="")
