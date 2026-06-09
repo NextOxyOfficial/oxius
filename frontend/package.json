@@ -33,6 +33,7 @@
     "@tiptap/starter-kit": "^2.2.1",
     "@tiptap/vue-3": "^2.2.1",
     "date-fns": "^4.1.0",
+    "firebase": "^10.14.1",
     "html2pdf.js": "^0.10.3",
     "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",

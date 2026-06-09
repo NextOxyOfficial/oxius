@@ -370,7 +370,72 @@ export function useAuth() {
         message: "Unable to sign in right now. Please try again.",
       };
     }
-  };  // Helper function to get current token (with auto-refresh if needed)
+  };
+
+  // Google / social login: exchange a Firebase ID token for our JWTs via the
+  // same backend endpoint the Flutter app uses. createIfMissing=false on the
+  // login screen (so we can confirm before registering a brand-new account),
+  // true on the register screen.
+  const socialLogin = async (
+    idToken: string,
+    opts: { createIfMissing?: boolean; refer?: string | null } = {}
+  ) => {
+    try {
+      const body: any = {
+        id_token: idToken,
+        create_if_missing: opts.createIfMissing ? true : false,
+      };
+      if (opts.refer) body.refer = opts.refer;
+
+      const { data, error } = await useFetch<any>(baseURL + "/auth/social/", {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (error.value) {
+        const payload =
+          error.value?.data || error.value?.response?._data || {};
+        if (payload?.code === "account_not_found") {
+          return {
+            loggedIn: false,
+            accountNotFound: true,
+            email: payload.email,
+            message: payload.detail || "No account found for this Google account.",
+          };
+        }
+        return {
+          loggedIn: false,
+          message:
+            payload?.error || payload?.detail || "Google sign-in failed.",
+        };
+      }
+
+      if (data.value) {
+        user.value = data.value;
+        jwt.value = data.value.access;
+        if (data.value.refresh) refreshToken.value = data.value.refresh;
+        const username = useCookie("username");
+        if (data.value.user && data.value.user.username) {
+          username.value = data.value.user.username;
+        }
+        await persistAuthData(data.value);
+        return {
+          loggedIn: true,
+          user: data.value.user,
+          user_type: data.value.user?.user_type,
+        };
+      }
+      return { loggedIn: false, message: "Google sign-in failed." };
+    } catch (err) {
+      return {
+        loggedIn: false,
+        message: "Unable to sign in with Google right now.",
+      };
+    }
+  };
+
+  // Helper function to get current token (with auto-refresh if needed)
   const getValidToken = async () => {
     if (!jwt.value || typeof jwt.value !== 'string') {
       // Try to refresh if we have a refresh token but no access token
@@ -459,6 +524,7 @@ export function useAuth() {
     isAuthenticated,
     jwtLogin,
     login,
+    socialLogin,
     logout,
     notifs,
     refreshTokens,
