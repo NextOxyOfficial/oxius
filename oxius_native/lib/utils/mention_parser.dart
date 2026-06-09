@@ -22,6 +22,37 @@ class MentionParser {
     caseSensitive: false,
   );
 
+  // Emoji codepoints (approximate, but covers the common set incl. ZWJ
+  // sequences, skin-tone modifiers, flags and variation selectors). Used to
+  // render emojis a little larger than the text they sit next to.
+  static final RegExp _emojiRegex = RegExp(
+    r'(?:[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{1F1E6}-\u{1F1FF}\u{2122}\u{2139}\u{20E3}\u{FE0F}\u{200D}])+',
+    unicode: true,
+  );
+
+  /// Split [text] into spans, rendering emoji runs ~1.4x larger than the
+  /// surrounding text so emojis in posts/comments don't look tiny.
+  static List<InlineSpan> _emojiAwareSpans(String text, TextStyle baseStyle) {
+    if (text.isEmpty) return const <InlineSpan>[];
+    final double base = baseStyle.fontSize ?? 14;
+    final TextStyle emojiStyle = baseStyle.copyWith(fontSize: base * 1.4);
+    final List<InlineSpan> spans = [];
+    int last = 0;
+    for (final m in _emojiRegex.allMatches(text)) {
+      if (m.start > last) {
+        spans.add(
+            TextSpan(text: text.substring(last, m.start), style: baseStyle));
+      }
+      spans.add(
+          TextSpan(text: text.substring(m.start, m.end), style: emojiStyle));
+      last = m.end;
+    }
+    if (last < text.length) {
+      spans.add(TextSpan(text: text.substring(last), style: baseStyle));
+    }
+    return spans;
+  }
+
   // flutter_mentions default markup format:
   //   ${trigger}[__${id}__](__${display}__)
   // Example:
@@ -94,10 +125,8 @@ class MentionParser {
     for (final match in _mentionRegexDelimited.allMatches(text)) {
       // Add text before mention
       if (match.start > lastIndex) {
-        spans.add(TextSpan(
-          text: text.substring(lastIndex, match.start),
-          style: plainStyle,
-        ));
+        spans.addAll(_emojiAwareSpans(
+            text.substring(lastIndex, match.start), plainStyle));
       }
 
       // Add mention as a styled chip
@@ -147,10 +176,8 @@ class MentionParser {
       for (final match
           in _mentionRegexCapitalizedFallback.allMatches(remaining)) {
         if (match.start > localLast) {
-          spans.add(TextSpan(
-            text: remaining.substring(localLast, match.start),
-            style: plainStyle,
-          ));
+          spans.addAll(_emojiAwareSpans(
+              remaining.substring(localLast, match.start), plainStyle));
         }
 
         final mentionName =
@@ -193,10 +220,8 @@ class MentionParser {
       }
 
       if (localLast < remaining.length) {
-        spans.add(TextSpan(
-          text: remaining.substring(localLast),
-          style: plainStyle,
-        ));
+        spans.addAll(
+            _emojiAwareSpans(remaining.substring(localLast), plainStyle));
       }
 
       return spans;
@@ -204,10 +229,7 @@ class MentionParser {
 
     // Add remaining text
     if (lastIndex < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastIndex),
-        style: plainStyle,
-      ));
+      spans.addAll(_emojiAwareSpans(text.substring(lastIndex), plainStyle));
     }
 
     return spans;
@@ -325,10 +347,8 @@ class MentionParser {
         if (pos < nextIndex) nextIndex = pos;
       }
 
-      spans.add(TextSpan(
-        text: text.substring(index, nextIndex),
-        style: normalStyle,
-      ));
+      spans.addAll(
+          _emojiAwareSpans(text.substring(index, nextIndex), normalStyle));
       index = nextIndex;
     }
 
