@@ -3811,21 +3811,47 @@ class OrderWithItemsCreate(generics.CreateAPIView):
             except Exception as e:
                 print(f"Error sending order confirmation email to buyer: {str(e)}")
 
-            # Notify admin of the new order (informational copy).
+            # Notify admin of the new order — include each shop + its owner's
+            # phone/address so the admin can call the seller to follow up.
             try:
                 from django.utils import timezone as _tz
                 from .moderation import notify_admin_info
+
+                order_rows = [
+                    ("Order #", str(order.order_number)),
+                    ("Customer", order.name or "—"),
+                    ("Customer phone", order.phone or "—"),
+                    ("Delivery address", order.address or "—"),
+                    ("Total", f"৳{order.total}"),
+                    ("Placed", _tz.now().strftime("%b %d, %Y %I:%M %p")),
+                ]
+
+                # Distinct shop owners for the items in this order.
+                seen_owners = {}
+                for it in order.items.select_related("product", "product__owner").all():
+                    own = getattr(it.product, "owner", None) if it.product_id else None
+                    if own and own.id not in seen_owners:
+                        seen_owners[own.id] = own
+
+                shop_rows = []
+                multi = len(seen_owners) > 1
+                for idx, own in enumerate(seen_owners.values(), 1):
+                    addr = ", ".join(
+                        x for x in [own.address, own.upazila, own.city, own.state] if x
+                    ) or "—"
+                    tag = f" {idx}" if multi else ""
+                    shop_rows += [
+                        (f"🏪 Shop{tag}", own.store_name or "—"),
+                        (f"Owner{tag}", own.name or own.first_name or "—"),
+                        (f"📞 Owner phone{tag}", own.phone or "—"),
+                        (f"Owner address{tag}", addr),
+                    ]
+
                 notify_admin_info(
                     subject=f"নতুন অর্ডার #{order.order_number} 🛒",
                     label="eShop order",
-                    intro="eShop-এ একটি নতুন অর্ডার এসেছে।",
-                    rows=[
-                        ("Order #", str(order.order_number)),
-                        ("Customer", order.name or "—"),
-                        ("Phone", order.phone or "—"),
-                        ("Total", f"৳{order.total}"),
-                        ("Placed", _tz.now().strftime("%b %d, %Y %I:%M %p")),
-                    ],
+                    intro="eShop-এ একটি নতুন অর্ডার এসেছে। নিচে শপ ও শপ-মালিকের যোগাযোগ তথ্য দেওয়া হলো — দরকারে সরাসরি কল করে ফলোআপ করতে পারেন।",
+                    rows=order_rows + shop_rows,
                     admin_path=f"/admin/base/order/{order.id}/change/",
                     text_summary=f"New order #{order.order_number}: ৳{order.total}",
                 )
