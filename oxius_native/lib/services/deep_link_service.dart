@@ -539,7 +539,13 @@ class DeepLinkService {
 
   void _retryPending() {
     if (_pendingUri == null) return;
-    if (_pendingRetryCount >= 10) {
+    // Up to 40 tries × 300ms ≈ 12s. A deep link tapped from a fully-closed app
+    // fires before the root navigator exists; on a slow cold start the old 3s
+    // window expired and the tap silently did nothing (e.g. the Mindforce promo
+    // not opening). 12s comfortably covers first-launch initialisation, and we
+    // still navigate the instant the navigator is ready — so fast starts are
+    // unaffected.
+    if (_pendingRetryCount >= 40) {
       _pendingUri = null;
       _pendingRetryCount = 0;
       return;
