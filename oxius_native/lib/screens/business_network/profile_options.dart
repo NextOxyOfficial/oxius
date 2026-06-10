@@ -182,7 +182,10 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     final bool isPro = _resolvedPro(user);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      // Dark icons like every other page. The old `.light` (white icons,
+      // meant for a dark cover photo) made the status bar unreadable/white
+      // over the typically light banner.
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         body: AdsyRefreshIndicator(

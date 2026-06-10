@@ -25,8 +25,11 @@ class _EditPostScreenState extends State<EditPostScreen> {
   final GlobalKey<FlutterMentionsState> _contentMentionKey =
       GlobalKey<FlutterMentionsState>();
   List<Map<String, dynamic>> _mentionUserData = [];
-  late String _titleText;
-  late String _contentText;
+  // Non-late with safe defaults: late fields crash with
+  // LateInitializationError when a hot-reload swaps in this class on an
+  // already-mounted State (initState does not re-run).
+  String _titleText = '';
+  String _contentText = '';
   late final TextEditingController _tagController;
   late final List<String> _tags;
   late String _visibility;
