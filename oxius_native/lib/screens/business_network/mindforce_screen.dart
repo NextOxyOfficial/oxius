@@ -214,37 +214,16 @@ class _MindForceScreenState extends State<MindForceScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _page,
-      // Back-style header: MindForce is a destination screen, so a simple
-      // back AppBar reads better than the full network header. The bottom
-      // navigation bar stays so the network footer is still one tap away.
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: _ink, size: 22),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        centerTitle: false,
-        titleSpacing: 0,
-        title: const Text(
-          'MindForce',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: _ink,
-            letterSpacing: -0.3,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: _line),
-        ),
-      ),
       body: _isLoading
-          ? SkeletonLoader.listView(itemCount: 6, showAvatar: true)
-          : _buildProblemsList(
-              activeCount: activeCount, solvedCount: solvedCount),
+          ? SafeArea(
+              bottom: false,
+              child: SkeletonLoader.listView(itemCount: 6, showAvatar: true),
+            )
+          : SafeArea(
+              bottom: false,
+              child: _buildProblemsList(
+                  activeCount: activeCount, solvedCount: solvedCount),
+            ),
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
               currentIndex: 4, // More tab since MindForce is in drawer
@@ -269,6 +248,24 @@ class _MindForceScreenState extends State<MindForceScreen> {
         children: [
           Row(
             children: [
+              Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+                child: InkWell(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  borderRadius: BorderRadius.circular(10),
+                  child: const SizedBox(
+                    width: 34,
+                    height: 36,
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      size: 21,
+                      color: _ink,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               Container(
                 width: 36,
                 height: 36,
@@ -995,8 +992,8 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                               size: 18, color: Colors.red),
                                           SizedBox(width: 10),
                                           Text('Delete',
-                                              style: TextStyle(
-                                                  color: Colors.red)),
+                                              style:
+                                                  TextStyle(color: Colors.red)),
                                         ],
                                       ),
                                     ),
@@ -1355,8 +1352,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                 Navigator.pop(sheetContext, true);
                               } else {
                                 setSheetState(() => saving = false);
-                                ScaffoldMessenger.of(sheetContext)
-                                    .showSnackBar(
+                                ScaffoldMessenger.of(sheetContext).showSnackBar(
                                   const SnackBar(
                                     content:
                                         Text('Could not update the problem'),

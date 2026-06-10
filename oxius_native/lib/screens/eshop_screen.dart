@@ -1223,6 +1223,7 @@ class _EshopScreenState extends State<EshopScreen>
         gridDelegate: ProductCardLayout.buildGridDelegate(
           availableWidth: constraints.maxWidth,
           screenWidth: MediaQuery.of(context).size.width,
+          textScale: MediaQuery.textScalerOf(context).scale(1.0),
         ),
         itemCount: _searchResults.length,
         itemBuilder: (context, index) {
@@ -1373,7 +1374,8 @@ class _EshopScreenState extends State<EshopScreen>
                 gridDelegate: ProductCardLayout.buildGridDelegate(
                   availableWidth: constraints.maxWidth,
                   screenWidth: MediaQuery.of(context).size.width,
-                ),
+          textScale: MediaQuery.textScalerOf(context).scale(1.0),
+        ),
                 itemCount: displayProducts.length,
                 itemBuilder: (context, index) {
                   return ProductCard(

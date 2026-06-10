@@ -727,8 +727,21 @@
                           
                           <!-- Text Content -->
                           <div v-else class="px-3.5 py-2">
-                            <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words" v-html="linkifyText(message.content || message.display_content)"></p>
-                            <CommonFirstLinkPreview :text="message.content || message.display_content || ''" />
+                            <!-- Quoted reply context (parsed from the content header) -->
+                            <div
+                              v-if="adsyReplyMeta(message)"
+                              class="mb-1.5 px-2.5 py-1.5 rounded-lg border-l-2 max-w-full overflow-hidden"
+                              :class="isOwnMessage(message) ? 'bg-white/15 border-white/60' : 'bg-gray-100 border-emerald-500'"
+                            >
+                              <p class="text-[11px] font-semibold truncate" :class="isOwnMessage(message) ? 'text-white/90' : 'text-emerald-700'">
+                                {{ adsyReplyMeta(message).sender }}
+                              </p>
+                              <p class="text-[11px] truncate" :class="isOwnMessage(message) ? 'text-white/70' : 'text-gray-500'">
+                                {{ adsyReplyMeta(message).preview }}
+                              </p>
+                            </div>
+                            <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words" v-html="linkifyText(adsyMessageBody(message))"></p>
+                            <CommonFirstLinkPreview :text="adsyMessageBody(message) || ''" />
                             <!-- Time and Status for Text Messages -->
                             <div class="mt-1 flex items-center justify-end gap-1">
                               <span v-if="message.is_edited" class="text-[10px] opacity-50 italic">edited</span>
@@ -2406,6 +2419,38 @@ function formatFileSize(bytes) {
 }
 
 // Convert URLs in text to clickable links
+// AdsyConnect reply messages embed their context inside content as
+// "\u21a9\ufe0f(uuid) Sender: preview\n\nactual body" (the mobile app's
+// format). Parse it so the thread shows a proper quote block instead of the
+// raw header ("broken code").
+const ADSY_REPLY_PREFIXES = ['\u21a9\ufe0f', '\u00e2\u2020\u00a9\u00ef\u00b8', '\u21a9'];
+
+function adsyReplyMeta(message) {
+  const raw = (message?.content || '').replace(/^\s+/, '');
+  const prefix = ADSY_REPLY_PREFIXES.find((x) => raw.startsWith(x));
+  if (!prefix) return null;
+  const sep = raw.indexOf('\n\n');
+  if (sep === -1) return null;
+  let header = raw.slice(prefix.length, sep).trim();
+  if (header.startsWith('(')) {
+    const close = header.indexOf(')');
+    if (close !== -1) header = header.slice(close + 1).trim();
+  }
+  const colon = header.indexOf(':');
+  if (colon === -1) return null;
+  return {
+    sender: header.slice(0, colon).trim() || 'Reply',
+    preview: header.slice(colon + 1).trim(),
+    body: raw.slice(sep + 2).trimStart(),
+  };
+}
+
+function adsyMessageBody(message) {
+  const meta = adsyReplyMeta(message);
+  if (meta) return meta.body;
+  return message?.content || message?.display_content || '';
+}
+
 function linkifyText(text) {
   if (!text) return '';
   
@@ -2691,7 +2736,7 @@ function toggleAdsyMessageMenu(messageId) {
 
 function startEditAdsyMessage(message) {
   editingAdsyMessage.value = message;
-  editAdsyMessageContent.value = message.content;
+  editAdsyMessageContent.value = adsyMessageBody(message);
   activeAdsyMessageMenu.value = null;
   showAdsyEditModal.value = true;
 }

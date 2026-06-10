@@ -917,7 +917,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: crossAxisSpacing,
               mainAxisSpacing: mainAxisSpacing,
-            ),
+          textScale: MediaQuery.textScalerOf(context).scale(1.0),
+        ),
             delegate: SliverChildBuilderDelegate(
               (context, index) => ProductCard(
                 product: _products[index],

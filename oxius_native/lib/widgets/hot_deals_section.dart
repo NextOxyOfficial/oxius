@@ -221,12 +221,11 @@ class _HotDealsSectionState extends State<HotDealsSection> {
           );
         }
       },
-      child: IntrinsicWidth(
-        child: Container(
-          constraints: const BoxConstraints(
-            minWidth: 65,
-            maxWidth: 85,
-          ),
+      // Fixed width — the old IntrinsicWidth wrapper asked the infinite-width
+      // image for its intrinsic size, which is unbounded, so in release builds
+      // the whole card silently failed to lay out and the strip looked empty.
+      child: Container(
+          width: 78,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(12),
@@ -327,7 +326,6 @@ class _HotDealsSectionState extends State<HotDealsSection> {
             ],
           ),
         ),
-      ),
     );
   }
 }

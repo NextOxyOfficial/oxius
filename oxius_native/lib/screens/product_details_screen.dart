@@ -1765,7 +1765,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: crossAxisSpacing,
                   mainAxisSpacing: mainAxisSpacing,
-                ),
+          textScale: MediaQuery.textScalerOf(context).scale(1.0),
+        ),
                 itemCount: _similarProducts.length,
                 itemBuilder: (context, index) {
                   return ProductCard(

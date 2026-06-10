@@ -21,7 +21,7 @@ class ProductCardLayout {
     // "BOTTOM OVERFLOWED" stripe. Grow the reserve with the text scale and
     // keep a small constant slack for per-device glyph differences.
     final ts = textScale.clamp(1.0, 1.6);
-    return base + 6.0 + (ts - 1.0) * 76.0;
+    return base + 10.0 + (ts - 1.0) * 76.0;
   }
 
   static double cardHeight({
