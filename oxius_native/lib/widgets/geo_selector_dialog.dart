@@ -262,7 +262,8 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                           margin: const EdgeInsets.only(bottom: 14),
                           decoration: BoxDecoration(
                             color: _allOverBangladesh
-                                ? const Color(0xFF10B981).withValues(alpha: 0.08)
+                                ? const Color(0xFF10B981)
+                                    .withValues(alpha: 0.08)
                                 : const Color(0xFFF9FAFB),
                             border: Border.all(
                               color: _allOverBangladesh
@@ -369,6 +370,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
+                              menuMaxHeight: _dropdownMenuMaxHeight(context),
+                              itemHeight: 52,
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
                               initialValue: _regions
                                       .any((r) => r.nameEng == _selectedState)
                                   ? _selectedState
@@ -376,29 +381,31 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               decoration: const InputDecoration(
                                 hintText: 'Choose division',
                                 hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF), fontSize: 12),
+                                    color: Color(0xFF9CA3AF), fontSize: 15),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 10,
+                                  horizontal: 12,
+                                  vertical: 13,
                                 ),
                               ),
-                              isDense: true,
+                              isDense: false,
                               isExpanded: true,
                               icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   color: Color(0xFF6B7280),
-                                  size: 18),
+                                  size: 22),
                               items: _regions.map((region) {
                                 return DropdownMenuItem(
                                   value: region.nameEng,
                                   child: Text(
                                     region.nameEng,
                                     style: const TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 15,
                                       color: Color(0xFF111827),
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.2,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 );
                               }).toList(),
@@ -443,6 +450,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
+                              menuMaxHeight: _dropdownMenuMaxHeight(context),
+                              itemHeight: 52,
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
                               initialValue:
                                   _cities.any((c) => c.nameEng == _selectedCity)
                                       ? _selectedCity
@@ -450,29 +461,31 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               decoration: const InputDecoration(
                                 hintText: 'Choose city',
                                 hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF), fontSize: 12),
+                                    color: Color(0xFF9CA3AF), fontSize: 15),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 10,
+                                  horizontal: 12,
+                                  vertical: 13,
                                 ),
                               ),
-                              isDense: true,
+                              isDense: false,
                               isExpanded: true,
                               icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   color: Color(0xFF6B7280),
-                                  size: 18),
+                                  size: 22),
                               items: _cities.map((city) {
                                 return DropdownMenuItem(
                                   value: city.nameEng,
                                   child: Text(
                                     city.nameEng,
                                     style: const TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 15,
                                       color: Color(0xFF111827),
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.2,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 );
                               }).toList(),
@@ -517,6 +530,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
+                              menuMaxHeight: _dropdownMenuMaxHeight(context),
+                              itemHeight: 52,
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
                               initialValue: _upazilas
                                       .any((u) => u.nameEng == _selectedUpazila)
                                   ? _selectedUpazila
@@ -524,29 +541,31 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               decoration: const InputDecoration(
                                 hintText: 'Choose area',
                                 hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF), fontSize: 12),
+                                    color: Color(0xFF9CA3AF), fontSize: 15),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 10,
+                                  horizontal: 12,
+                                  vertical: 13,
                                 ),
                               ),
-                              isDense: true,
+                              isDense: false,
                               isExpanded: true,
                               icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   color: Color(0xFF6B7280),
-                                  size: 18),
+                                  size: 22),
                               items: _upazilas.map((upazila) {
                                 return DropdownMenuItem(
                                   value: upazila.nameEng,
                                   child: Text(
                                     upazila.nameEng,
                                     style: const TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 15,
                                       color: Color(0xFF111827),
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.2,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 );
                               }).toList(),
@@ -668,6 +687,11 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
         ),
       ),
     );
+  }
+
+  double _dropdownMenuMaxHeight(BuildContext context) {
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    return (screenHeight * 0.42).clamp(220.0, 340.0).toDouble();
   }
 
   Widget _buildFormField({
