@@ -216,7 +216,10 @@ CATALOG = [
         key="area_services",
         priority=80,
         cooldown_days=6,
-        deep_link=f"{SITE}/classified-categories",
+        # /classified (the আমার সেবা hub) — resolves in-app via the deep-link
+        # alias AND is a valid web page; /classified-categories was opening
+        # the browser on builds whose alias map lacked that segment.
+        deep_link=f"{SITE}/classified",
         eligible=lambda s, u: bool(s.pending.get("area_services")),
         build=_area_services_build,
     ),
