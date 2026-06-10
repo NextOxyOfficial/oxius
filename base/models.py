@@ -160,9 +160,27 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
+    @staticmethod
+    def _capitalize_words(value):
+        """First letter of every word uppercased; the rest left untouched.
+
+        Product rule: names always display with leading capitals even when
+        the user typed lowercase. Only the first character of each word is
+        changed, so spellings like "McDonald" or all-caps brand names are
+        not mangled, and Bangla text (caseless) passes through unchanged.
+        """
+        if not value:
+            return value
+        return " ".join(
+            w[:1].upper() + w[1:] if w else w for w in str(value).split(" ")
+        )
+
     def save(self, *args, **kwargs):
         if not self.username or "@" in self.username:
             self.username = generate_unique_username(self)
+
+        self.first_name = self._capitalize_words((self.first_name or "").strip())
+        self.last_name = self._capitalize_words((self.last_name or "").strip())
 
         # The display `name` always follows the user's own first/last name. This
         # is the single source of truth, so a social-login (Google/Facebook)
@@ -173,6 +191,8 @@ class User(AbstractUser):
         )
         if derived_name:
             self.name = derived_name
+        elif self.name:
+            self.name = self._capitalize_words(self.name.strip())
 
         if not self.referral_code:
             # Generate a unique referral code

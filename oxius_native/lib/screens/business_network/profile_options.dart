@@ -1043,14 +1043,26 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     );
 
     try {
-      final result = await BusinessNetworkService.getShortsFeed(
+      // Fast path: a single feed page (usually cached) is enough to find the
+      // first video — the player loads the rest itself. Only when page 1 has
+      // no videos do we look further (those pages fetch in parallel).
+      var result = await BusinessNetworkService.getShortsFeed(
         startPage: 1,
         pageSize: 12,
-        pageWindow: 3,
+        pageWindow: 1,
       );
-      if (!context.mounted) return;
-      final posts = (result['posts'] as List<BusinessNetworkPost>?) ??
+      var posts = (result['posts'] as List<BusinessNetworkPost>?) ??
           <BusinessNetworkPost>[];
+      if (posts.isEmpty && (result['hasMore'] as bool? ?? false)) {
+        result = await BusinessNetworkService.getShortsFeed(
+          startPage: 2,
+          pageSize: 12,
+          pageWindow: 2,
+        );
+        posts = (result['posts'] as List<BusinessNetworkPost>?) ??
+            <BusinessNetworkPost>[];
+      }
+      if (!context.mounted) return;
 
       BusinessNetworkPost? firstPost;
       PostMedia? firstMedia;

@@ -216,23 +216,26 @@ class BusinessNetworkService {
     int pageWindow = 3,
     Set<int> excludePostIds = const {},
   }) async {
+    // Fetch the whole page window IN PARALLEL. The old serial loop made
+    // opening Shorts wait for up to three back-to-back feed requests —
+    // the single biggest reason the screen took so long to appear.
+    final results = await Future.wait(
+      List.generate(
+        pageWindow,
+        (index) => getPosts(page: startPage + index, pageSize: pageSize),
+      ),
+    );
+
     final collectedPosts = <BusinessNetworkPost>[];
-    var currentPage = startPage;
     var hasMore = true;
+    var currentPage = startPage;
 
-    for (var index = 0; index < pageWindow; index++) {
-      if (!hasMore) {
-        break;
-      }
-
-      final result = await getPosts(page: currentPage, pageSize: pageSize);
+    for (final result in results) {
       final pagePosts = (result['posts'] as List<BusinessNetworkPost>?) ??
           <BusinessNetworkPost>[];
-
       collectedPosts.addAll(pagePosts);
       hasMore = result['hasMore'] as bool? ?? false;
       currentPage += 1;
-
       if (pagePosts.isEmpty) {
         hasMore = false;
         break;
