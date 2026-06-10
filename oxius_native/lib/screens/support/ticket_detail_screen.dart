@@ -271,7 +271,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                 child: Text(
                                   _ticket!.title,
                                   style: const TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 19,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF1F2937),
                                   ),
@@ -291,7 +291,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                   _getStatusLabel(_ticket!.status),
                                   style: TextStyle(
                                     color: _getStatusColor(_ticket!.status),
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -302,8 +302,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                           Text(
                             'Created ${_formatDateTime(_ticket!.createdAt)}',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 13,
                               color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -353,7 +354,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                   decoration: InputDecoration(
                                     hintText: 'Type your reply...',
                                     hintStyle: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 15,
                                       color: Colors.grey[400],
                                     ),
                                     filled: true,
@@ -377,9 +378,11 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                     ),
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
-                                      vertical: 12,
+                                      vertical: 13,
                                     ),
                                   ),
+                                  style: const TextStyle(
+                                      fontSize: 15, height: 1.35),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -476,8 +479,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     Text(
                       isFromAdmin ? 'Support Team' : user.username,
                       style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF1F2937),
                       ),
                     ),
@@ -529,6 +532,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey[500],
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -552,9 +556,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       "body": Style(
                         margin: Margins.zero,
                         padding: HtmlPaddings.zero,
-                        fontSize: FontSize(13),
+                        fontSize: FontSize(15),
                         color: const Color(0xFF374151),
-                        lineHeight: const LineHeight(1.5),
+                        lineHeight: const LineHeight(1.55),
                       ),
                       "p": Style(
                         margin: Margins.zero,

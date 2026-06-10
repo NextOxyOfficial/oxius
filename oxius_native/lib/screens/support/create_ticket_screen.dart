@@ -81,8 +81,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
           'Create Support Ticket',
           style: TextStyle(
             color: Color(0xFF1F2937),
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
           ),
         ),
         bottom: PreferredSize(
@@ -120,9 +120,10 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                     child: Text(
                       'Our support team will respond to your ticket within 24 hours.',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: const Color(0xFF3B82F6),
                         fontWeight: FontWeight.w500,
+                        height: 1.35,
                       ),
                     ),
                   ),
@@ -135,8 +136,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
             Text(
               'Subject',
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
                 color: const Color(0xFF374151),
               ),
             ),
@@ -146,7 +147,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
               decoration: InputDecoration(
                 hintText: 'Brief description of your issue',
                 hintStyle: TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   color: Colors.grey.shade400,
                 ),
                 filled: true,
@@ -165,10 +166,11 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                       const BorderSide(color: Color(0xFF3B82F6), width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  horizontal: 14,
+                  vertical: 14,
                 ),
               ),
+              style: const TextStyle(fontSize: 15, height: 1.35),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a subject';
@@ -185,8 +187,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
             Text(
               'Message',
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
                 color: const Color(0xFF374151),
               ),
             ),
@@ -197,7 +199,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
               decoration: InputDecoration(
                 hintText: 'Describe your issue in detail...',
                 hintStyle: TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   color: Colors.grey.shade400,
                 ),
                 filled: true,
@@ -215,8 +217,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                   borderSide:
                       const BorderSide(color: Color(0xFF3B82F6), width: 2),
                 ),
-                contentPadding: const EdgeInsets.all(12),
+                contentPadding: const EdgeInsets.all(14),
               ),
+              style: const TextStyle(fontSize: 15, height: 1.4),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a message';
@@ -256,8 +259,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                     : const Text(
                         'Submit Ticket',
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
               ),

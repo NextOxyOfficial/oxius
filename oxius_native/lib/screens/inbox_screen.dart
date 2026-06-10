@@ -449,7 +449,6 @@ class _InboxScreenState extends State<InboxScreen>
     }).toList();
   }
 
-
   void _setTicketStatusFilter(String filter) {
     setState(() {
       _ticketStatusFilter = filter;
@@ -550,7 +549,6 @@ class _InboxScreenState extends State<InboxScreen>
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -838,7 +836,7 @@ class _InboxScreenState extends State<InboxScreen>
                           isExpanded: true,
                           isDense: true,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF374151),
                           ),
@@ -916,7 +914,7 @@ class _InboxScreenState extends State<InboxScreen>
                             side: const BorderSide(color: Color(0xFF10B981)),
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             textStyle: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w600),
+                                fontSize: 13, fontWeight: FontWeight.w700),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
                           ),
@@ -940,7 +938,7 @@ class _InboxScreenState extends State<InboxScreen>
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             textStyle: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w600),
+                                fontSize: 13, fontWeight: FontWeight.w700),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
                           ),
@@ -983,7 +981,6 @@ class _InboxScreenState extends State<InboxScreen>
           : null,
     );
   }
-
 
   Widget _buildUpdatesList() {
     if (_isLoadingUpdates) {
@@ -1235,7 +1232,7 @@ class _InboxScreenState extends State<InboxScreen>
                         child: Text(
                           update['title'],
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 15,
                             fontWeight:
                                 isUnread ? FontWeight.w700 : FontWeight.w600,
                             color: const Color(0xFF1F2937),
@@ -1248,8 +1245,9 @@ class _InboxScreenState extends State<InboxScreen>
                       Text(
                         _formatTimestamp(update['timestamp']),
                         style: TextStyle(
-                          fontSize: 9,
+                          fontSize: 11,
                           color: Colors.grey.shade400,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -1258,7 +1256,8 @@ class _InboxScreenState extends State<InboxScreen>
                   Text(
                     update['message'],
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 13,
+                      height: 1.35,
                       fontWeight: FontWeight.w400,
                       color: const Color(0xFF6B7280),
                       letterSpacing: -0.1,
@@ -1377,7 +1376,7 @@ class _InboxScreenState extends State<InboxScreen>
                         child: Text(
                           ticket['title'],
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 15,
                             fontWeight:
                                 isUnread ? FontWeight.w700 : FontWeight.w600,
                             color: const Color(0xFF1F2937),
@@ -1398,7 +1397,7 @@ class _InboxScreenState extends State<InboxScreen>
                           statusLabel,
                           style: TextStyle(
                             color: statusColor,
-                            fontSize: 8,
+                            fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1409,7 +1408,8 @@ class _InboxScreenState extends State<InboxScreen>
                   Text(
                     'Ticket #${ticket['id']}',
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 11,
+                      height: 1.25,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF3B82F6),
                       letterSpacing: -0.1,
@@ -1419,7 +1419,8 @@ class _InboxScreenState extends State<InboxScreen>
                   Text(
                     ticket['message'],
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 13,
+                      height: 1.35,
                       fontWeight: FontWeight.w400,
                       color: const Color(0xFF6B7280),
                       letterSpacing: -0.1,
@@ -1431,8 +1432,9 @@ class _InboxScreenState extends State<InboxScreen>
                   Text(
                     _formatTimestamp(ticket['timestamp']),
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 11,
                       color: Colors.grey.shade400,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -1562,7 +1564,7 @@ class _InboxScreenState extends State<InboxScreen>
                         Text(
                           update['title'],
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1F2937),
                           ),
@@ -1571,8 +1573,9 @@ class _InboxScreenState extends State<InboxScreen>
                         Text(
                           _formatTimestamp(update['timestamp']),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 13,
                             color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -1598,7 +1601,7 @@ class _InboxScreenState extends State<InboxScreen>
                     Text(
                       update['message'],
                       style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 17,
                         height: 1.6,
                         color: Color(0xFF374151),
                       ),
@@ -1707,8 +1710,8 @@ class _InboxScreenState extends State<InboxScreen>
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF059669)
-                                .withValues(alpha: 0.28),
+                            color:
+                                const Color(0xFF059669).withValues(alpha: 0.28),
                             blurRadius: 14,
                             offset: const Offset(0, 6),
                           ),
@@ -1718,8 +1721,8 @@ class _InboxScreenState extends State<InboxScreen>
                         height: 52,
                         child: ElevatedButton.icon(
                           onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.check_circle_rounded,
-                              size: 19),
+                          icon:
+                              const Icon(Icons.check_circle_rounded, size: 19),
                           label: const Text('Got it'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF059669),
@@ -2125,8 +2128,7 @@ class _NewChatModalState extends State<_NewChatModal> {
                                                   letterSpacing: -0.2,
                                                 ),
                                                 maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                             // Verified badge — same source
@@ -2143,23 +2145,21 @@ class _NewChatModalState extends State<_NewChatModal> {
                                             if (user['is_pro'] == true) ...[
                                               const SizedBox(width: 4),
                                               Container(
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    horizontal: 6,
-                                                    vertical: 1.5),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 1.5),
                                                 decoration: BoxDecoration(
                                                   color:
                                                       const Color(0xFF3B82F6),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          8),
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 child: const Text(
                                                   'Pro',
                                                   style: TextStyle(
                                                     fontSize: 10,
-                                                    fontWeight:
-                                                        FontWeight.w700,
+                                                    fontWeight: FontWeight.w700,
                                                     color: Colors.white,
                                                   ),
                                                 ),
