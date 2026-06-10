@@ -1097,7 +1097,32 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
             posts = posts.exclude(city__iexact=exclude_city)
         if exclude_upazila:
             posts = posts.exclude(upazila__iexact=exclude_upazila)
+
+        # Remember where this user last browsed services so the engagement
+        # brain can target them locally even if their profile address is empty.
+        # Cheap .update() (no User.save() side effects) and only when a real
+        # location filter is present.
+        self._record_search_location(state, city, upazila)
         return posts
+
+    def _record_search_location(self, state, city, upazila):
+        user = self.request.user
+        if not user.is_authenticated:
+            return
+        if not (state or city or upazila):
+            return
+        try:
+            from django.utils import timezone
+
+            type(user).objects.filter(pk=user.pk).update(
+                last_search_state=state or "",
+                last_search_city=city or "",
+                last_search_upazila=upazila or "",
+                last_search_at=timezone.now(),
+            )
+        except Exception:
+            # Telemetry only — never let it break the listing.
+            pass
 
 
 @api_view(["GET"])

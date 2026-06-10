@@ -79,6 +79,45 @@ def _sub_expiring_build(s, u):
     return (title, body)
 
 
+def _bn_count(n):
+    """Bangla-numeral count, e.g. 4 -> ৪, 10 -> ১০."""
+    table = str.maketrans("0123456789", "০১২৩৪৫৬৭৮৯")
+    return str(int(n)).translate(table)
+
+
+def _area_services_build(s, u):
+    """Local service-availability message:
+    'কুষ্টিয়া সদরে এখন ৪ জন Electrician, ১০ জন পানির মিস্ত্রি সেবা দিচ্ছেন...'.
+    Counts/area come from UserState.pending (computed in aggregate_user_states)."""
+    area = (s.pending.get("area_label") or "").strip()
+    items = s.pending.get("area_services") or []
+    parts = []
+    for it in items:
+        cat = (it.get("cat") or "").strip()
+        n = it.get("n") or 0
+        if cat and n:
+            parts.append(f"{_bn_count(n)} জন {cat}")
+    if not parts or not area:
+        # Should not fire (eligibility guards it), but stay safe.
+        return (
+            "আপনার এলাকার সেবা 🛠️",
+            f"{_name(u)}, আপনার আশেপাশে নানা ধরনের সেবাদাতা পাওয়া যাচ্ছে — "
+            "‘আমার সেবা’ থেকে এক ক্লিকে যোগাযোগ করুন।",
+        )
+    if len(parts) == 1:
+        listing = parts[0]
+    elif len(parts) == 2:
+        listing = f"{parts[0]} ও {parts[1]}"
+    else:
+        listing = f"{parts[0]}, {parts[1]} ও {parts[2]}"
+    title = f"{area}-এ আপনার পাশেই সেবাদাতা 🛠️"
+    body = (
+        f"{_name(u)}, {area}-এ এখন {listing} সেবা দিচ্ছেন। দরকারে এখনই "
+        "‘আমার সেবা’ থেকে যোগাযোগ করুন — কাছের, যাচাই করা সেবাদাতা।"
+    )
+    return (title, body)
+
+
 CATALOG = [
     # 1) Money on the table — verify KYC to withdraw. Link → wallet (matches subject).
     Nudge(
@@ -169,6 +208,30 @@ CATALOG = [
             "{}, ছবি, নাম আর তথ্য যোগ করে প্রোফাইল সম্পূর্ণ করুন — অন্যরা আপনাকে সহজে খুঁজে পাবে আর বিশ্বাস করবে।".format(
                 _name(u)
             ),
+        ),
+    ),
+    # 8) Local service availability — "N electricians, M plumbers in your area".
+    #    High priority because it's concrete, personal and conversion-driving.
+    Nudge(
+        key="area_services",
+        priority=80,
+        cooldown_days=6,
+        deep_link=f"{SITE}/classified-categories",
+        eligible=lambda s, u: bool(s.pending.get("area_services")),
+        build=_area_services_build,
+    ),
+    # 9) Ask for an address so we CAN target locally (only when we have no
+    #    location at all — neither saved address nor a past service search).
+    Nudge(
+        key="save_address",
+        priority=40,
+        cooldown_days=14,
+        deep_link=f"{SITE}/my-account",
+        eligible=lambda s, u: bool(s.pending.get("no_location")),
+        build=lambda s, u: (
+            "ঠিকানা যোগ করুন 📍",
+            "{}, আপনার এলাকা যোগ করুন — তাহলে আপনার আশেপাশে কোন সেবা (ইলেকট্রিশিয়ান, "
+            "মিস্ত্রি, আরও অনেক) পাওয়া যাচ্ছে তা আমরা জানিয়ে দিতে পারব।".format(_name(u)),
         ),
     ),
 ]

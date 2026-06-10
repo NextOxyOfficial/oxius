@@ -105,6 +105,13 @@ class User(AbstractUser):
     state = models.CharField(max_length=256, blank=True, default="")
     upazila = models.CharField(max_length=256, blank=True, default="")
     zip = models.CharField(max_length=256, blank=True, default="")
+    # Last location the user browsed services/classifieds with. Used as a
+    # fallback target for local engagement (area service counts) when the
+    # profile address is empty. Updated on classified location-filtered search.
+    last_search_state = models.CharField(max_length=256, blank=True, default="")
+    last_search_city = models.CharField(max_length=256, blank=True, default="")
+    last_search_upazila = models.CharField(max_length=256, blank=True, default="")
+    last_search_at = models.DateTimeField(null=True, blank=True)
     balance = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     pending_balance = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     diamond_balance = models.IntegerField(default=0)

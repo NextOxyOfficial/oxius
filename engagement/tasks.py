@@ -130,12 +130,24 @@ def aggregate_user_states():
     except Exception:  # pragma: no cover
         logger.exception("could not load OnlineStatus presence")
 
+    # Pre-aggregate live service-post counts by area ONCE (one grouped query),
+    # so the per-user loop below is just dict lookups instead of N queries.
+    try:
+        from .services import build_area_service_index, resolve_user_area
+        area_index = build_area_service_index()
+    except Exception:  # pragma: no cover
+        logger.exception("could not build area service index")
+        area_index = {"upazila": {}, "city": {}, "state": {}}
+        resolve_user_area = None
+
     processed = 0
     states = []
     user_qs = User.objects.all().only(
         "id", "date_joined", "last_login", "is_pro", "pro_validity",
         "kyc", "kyc_pending", "balance",
         "name", "image", "phone", "gender", "date_of_birth",
+        "upazila", "city", "state",
+        "last_search_upazila", "last_search_city", "last_search_state",
     )
     for user in user_qs.iterator(chunk_size=500):
         uid = user.id
@@ -179,6 +191,22 @@ def aggregate_user_states():
             if getattr(user, "is_pro", False) and user.pro_validity:
                 if user.pro_validity <= now + timedelta(days=3):
                     pending["subscription_expiring"] = user.pro_validity.isoformat()
+
+            # Local targeting: how many live services exist in the user's area
+            # (profile address, else last-searched location). Powers the
+            # "N electricians, M plumbers near you" nudge + email; when we have
+            # no location at all, flag it so we can ask them to add an address.
+            if resolve_user_area is not None:
+                area_label, area_level, area_key = resolve_user_area(user)
+                if area_key:
+                    cats = area_index.get(area_level, {}).get(area_key, [])
+                    if cats:
+                        pending["area_label"] = area_label
+                        pending["area_services"] = [
+                            {"cat": c, "n": n} for c, n in cats[:3]
+                        ]
+                else:
+                    pending["no_location"] = True
 
             state = UserState(
                 user_id=uid,
