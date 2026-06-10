@@ -582,7 +582,7 @@ ENGAGEMENT_FEATURE_PROMOS_PER_DAY = 2
 # feature email with live eShop content. Independent email cooldown so it never
 # collides with push. OFF by default — validate with run_email_engine(dry_run=True)
 # then set True.
-ENGAGEMENT_EMAIL_ENABLED = False
+ENGAGEMENT_EMAIL_ENABLED = True
 ENGAGEMENT_EMAIL_HOURS = (10, 20)          # 10am-8pm in ENGAGEMENT_TIMEZONE
 ENGAGEMENT_EMAIL_PER_RUN_CAP = 200         # anti-burst: max emails per run
 ENGAGEMENT_EMAIL_COOLDOWN_DAYS = 3         # at most one engagement email / N days / user
