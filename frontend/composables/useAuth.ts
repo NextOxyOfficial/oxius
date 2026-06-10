@@ -4,6 +4,29 @@ export function useAuth() {
   const user = useState<any>("user", () => null);
   const notifs = useState<Array<any>>("notifs", () => []);
   const isAuthenticated = computed(() => user.value !== null);
+
+  const readableError = (value: any, fallback = "Invalid email or password.") => {
+    if (!value) return fallback;
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) {
+      const message = value.map((item) => readableError(item, "")).find(Boolean);
+      return message || fallback;
+    }
+    if (typeof value === "object") {
+      const direct =
+        value.detail ||
+        value.message ||
+        value.error ||
+        value.string ||
+        value.code;
+      if (direct && typeof direct === "string") return direct;
+      for (const item of Object.values(value)) {
+        const message = readableError(item, "");
+        if (message) return message;
+      }
+    }
+    return fallback;
+  };
   
   // Configure JWT cookie with 30 days expiration to match backend token lifetime
   const jwt = useCookie("adsyclub-jwt", {
@@ -333,13 +356,7 @@ export function useAuth() {
         const payload = error.value?.data || error.value?.response?._data || {};
         return {
           loggedIn: false,
-          message:
-            payload?.detail ||
-            payload?.non_field_errors?.[0] ||
-            payload?.email?.[0] ||
-            payload?.password?.[0] ||
-            payload?.error ||
-            "Invalid email or password.",
+          message: readableError(payload),
         };
       }      if (data.value) {
         user.value = data.value;

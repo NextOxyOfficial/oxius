@@ -410,8 +410,7 @@
               KYC Verification Required
             </h2>
             <p class="text-gray-600 mb-6 max-w-md leading-relaxed">
-              To ensure trust and safety in our marketplace, we require identity
-              verification before posting ads.
+              {{ kycMessage }}
             </p>
 
             <UButton
@@ -446,6 +445,9 @@ const categories = ref([]);
 const checkSubmit = ref(false);
 const isLoading = ref(false);
 const allOverBangladesh = ref(false);
+const kycMessage = ref(
+  "To ensure trust and safety in our marketplace, we require identity verification before posting ads."
+);
 
 const form = ref({
   price: 0,
@@ -466,6 +468,28 @@ function updateContent(p) {
 const submitValues = ref({});
 
 const router = useRoute();
+
+function getApiErrorMessage(error, fallback = "Unable to save your post right now.") {
+  const payload = error?.data || error?.response?._data || error?.response?.data || error;
+
+  const read = (value) => {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) return value.map(read).find(Boolean) || "";
+    if (typeof value === "object") {
+      const direct = value.message || value.error || value.detail || value.string;
+      if (typeof direct === "string") return direct;
+      return Object.values(value).map(read).find(Boolean) || "";
+    }
+    return "";
+  };
+
+  return read(payload) || fallback;
+}
+
+function getApiStatus(error) {
+  return error?.status || error?.response?.status || error?.statusCode || 0;
+}
 
 async function fetchServices() {
   const response = await $fetch(
@@ -545,6 +569,29 @@ async function handlePostGig() {
   if (res.data) {
     navigateTo("/my-classified-services/");
     toast.add({ title: "Classified Service Added" });
+  } else if (res.error) {
+    const status = getApiStatus(res.error);
+    const message = getApiErrorMessage(res.error);
+
+    toast.add({
+      title: message,
+      color: "red",
+      icon: status === 403 ? "i-heroicons-shield-exclamation" : "i-heroicons-exclamation-triangle",
+    });
+
+    const code =
+      res.error?.data?.code ||
+      res.error?.response?._data?.code ||
+      res.error?.response?.data?.code;
+
+    const lowerMessage = message.toLowerCase();
+
+    if (status === 401 || lowerMessage.includes("authentication credentials")) {
+      navigateTo("/auth/login");
+    } else if (status === 403 || code === "kyc_verification_required") {
+      kycMessage.value = message;
+      isOpen.value = true;
+    }
   }
   isLoading.value = false;
 }
