@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
 
+import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../services/user_search_service.dart';
+import '../../utils/mention_parser.dart';
 
 class EditPostScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -16,16 +20,21 @@ class EditPostScreen extends StatefulWidget {
 }
 
 class _EditPostScreenState extends State<EditPostScreen> {
-  late final TextEditingController _titleController;
-  late final TextEditingController _contentController;
+  final GlobalKey<FlutterMentionsState> _titleMentionKey =
+      GlobalKey<FlutterMentionsState>();
+  final GlobalKey<FlutterMentionsState> _contentMentionKey =
+      GlobalKey<FlutterMentionsState>();
+  List<Map<String, dynamic>> _mentionUserData = [];
+  late String _titleText;
+  late String _contentText;
   late final TextEditingController _tagController;
   late final List<String> _tags;
   late String _visibility;
   bool _isSaving = false;
 
   bool get _hasChanges {
-    return _titleController.text.trim() != widget.post.title.trim() ||
-        _contentController.text.trim() != widget.post.content.trim() ||
+    return _titleText.trim() != widget.post.title.trim() ||
+        _contentText.trim() != widget.post.content.trim() ||
         _visibility != widget.post.visibility ||
         !_listEquals(_tags, widget.post.tags.map((tag) => tag.tag).toList());
   }
@@ -33,8 +42,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.post.title);
-    _contentController = TextEditingController(text: widget.post.content);
+    _titleText = widget.post.title;
+    _contentText = widget.post.content;
     _tagController = TextEditingController();
     _tags = widget.post.tags
         .map((tag) => _normalizeTag(tag.tag))
@@ -44,21 +53,35 @@ class _EditPostScreenState extends State<EditPostScreen> {
     _visibility = widget.post.visibility.trim().isEmpty
         ? 'public'
         : widget.post.visibility;
-    // Re-evaluate _hasChanges (Save button state) as the user types.
-    _titleController.addListener(_onFieldChanged);
-    _contentController.addListener(_onFieldChanged);
+    _loadInitialMentionUsers();
   }
 
-  void _onFieldChanged() {
-    if (mounted) setState(() {});
+  Future<void> _loadInitialMentionUsers() async {
+    final users = await _searchUsers('');
+    if (mounted) {
+      setState(() => _mentionUserData = users);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
+    try {
+      final users = await UserSearchService.searchUsers(query);
+      return users
+          .map((user) => {
+                'id': user.id.toString(),
+                // NBSP keeps multi-word names as one mention token.
+                'display': user.name.replaceAll(' ', '\u00A0'),
+                'full_name': user.name,
+                'photo': user.image ?? user.avatar,
+              })
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   @override
   void dispose() {
-    _titleController.removeListener(_onFieldChanged);
-    _contentController.removeListener(_onFieldChanged);
-    _titleController.dispose();
-    _contentController.dispose();
     _tagController.dispose();
     super.dispose();
   }
@@ -95,8 +118,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
   }
 
   Future<void> _savePost() async {
-    final title = _titleController.text.trim();
-    final content = _contentController.text.trim();
+    final titleMarkup =
+        _titleMentionKey.currentState?.controller?.markupText ?? _titleText;
+    final contentMarkup =
+        _contentMentionKey.currentState?.controller?.markupText ??
+            _contentText;
+    final title = MentionParser.markupToDelimitedText(titleMarkup).trim();
+    final content = MentionParser.markupToDelimitedText(contentMarkup).trim();
 
     if (title.isEmpty &&
         content.isEmpty &&
@@ -145,7 +173,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
+    return Portal(
+      child: Scaffold(
       backgroundColor: const Color(0xFFF5F8FC),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -166,14 +195,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ),
         ),
       ),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([_titleController, _contentController]),
-        builder: (context, _) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 120),
-            child: _buildEditCard(),
-          );
-        },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(2, 4, 2, 120),
+        child: _buildEditCard(),
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(12, 10, 12, bottomInset + 12),
@@ -237,6 +261,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -257,11 +282,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          _buildTextField(
-            controller: _titleController,
-            hint: 'Add a short title',
+          _buildMentionField(
+            mentionKey: _titleMentionKey,
+            defaultText: widget.post.title,
+            hint: 'Add a short title (use @ to mention)',
             minLines: 1,
             maxLines: 2,
+            onChanged: (value) => setState(() => _titleText = value),
           ),
           const SizedBox(height: 14),
           const Text(
@@ -273,11 +300,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          _buildTextField(
-            controller: _contentController,
-            hint: 'What do you want to share?',
+          _buildMentionField(
+            mentionKey: _contentMentionKey,
+            defaultText: widget.post.content,
+            hint: 'What do you want to share? Use @ to mention people',
             minLines: 8,
             maxLines: 14,
+            onChanged: (value) => setState(() => _contentText = value),
           ),
           const SizedBox(height: 14),
           _buildVisibilitySelector(),
@@ -349,43 +378,114 @@ class _EditPostScreenState extends State<EditPostScreen> {
     return const Icon(Icons.person_rounded, color: Color(0xFF64748B));
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
+  Widget _buildMentionField({
+    required GlobalKey<FlutterMentionsState> mentionKey,
+    required String defaultText,
     required String hint,
     required int minLines,
     required int maxLines,
+    required ValueChanged<String> onChanged,
   }) {
-    return TextField(
-      controller: controller,
-      minLines: minLines,
-      maxLines: maxLines,
-      textInputAction:
-          maxLines > 2 ? TextInputAction.newline : TextInputAction.done,
-      style: const TextStyle(
-        fontSize: 14,
-        height: 1.45,
-        color: Color(0xFF111827),
-        letterSpacing: 0,
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade500),
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: FlutterMentions(
+        key: mentionKey,
+        defaultText: defaultText,
+        suggestionPosition: SuggestionPosition.Bottom,
+        minLines: minLines,
+        maxLines: maxLines,
+        onChanged: onChanged,
+        style: const TextStyle(
+          fontSize: 14,
+          height: 1.45,
+          color: Color(0xFF111827),
+          letterSpacing: 0,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.4),
-        ),
+        onSearchChanged: (trigger, value) async {
+          if (trigger == '@') {
+            final users = await _searchUsers(value);
+            if (mounted) {
+              setState(() => _mentionUserData = users);
+            }
+          }
+        },
+        mentions: [
+          Mention(
+            trigger: '@',
+            style: TextStyle(
+              color: Colors.blue.shade700,
+              fontWeight: FontWeight.w600,
+            ),
+            data: _mentionUserData,
+            matchAll: false,
+            disableMarkup: false,
+            suggestionBuilder: (data) {
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey.shade100,
+                      ),
+                      child: ClipOval(
+                        child: () {
+                          final avatarUrl =
+                              AppConfig.getAbsoluteUrl(data['photo']);
+                          if (avatarUrl.isNotEmpty) {
+                            return Image.network(
+                              avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.person,
+                                    color: Colors.grey.shade400, size: 18);
+                              },
+                            );
+                          }
+                          return Icon(Icons.person,
+                              color: Colors.grey.shade400, size: 18);
+                        }(),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        data['full_name'] ?? data['display'] ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
