@@ -8,12 +8,14 @@ class AppConfig {
   static const String _localHostOverride = String.fromEnvironment('LOCAL_API_HOST');
   static const bool _useLocalDevServer = bool.fromEnvironment(
     'USE_LOCAL_API',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   // ==================== DEVELOPMENT CONFIGURATION ====================
-  // Local development is the default for debug builds so local backend
-  // testing works out of the box.
+  // Debug builds talk to the PRODUCTION backend by default, so the app has real
+  // data out of the box even without a local Django server running. To point a
+  // debug build at a local backend, run with: --dart-define=USE_LOCAL_API=true
+  // (and optionally --dart-define=LOCAL_API_HOST=192.168.x.x:8000 on a device).
   
   // ==================== PRODUCTION CONFIGURATION ====================
   // These are used when building Release APK (flutter build apk --release)
