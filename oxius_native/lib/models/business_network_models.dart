@@ -21,6 +21,7 @@ class BusinessNetworkPost {
   final bool isLiked;
   final bool isSaved;
   final String createdAt;
+  final String visibility;
   final String? category;
   final List<BusinessNetworkComment> comments;
   final List<PostLike> postLikes;
@@ -37,6 +38,7 @@ class BusinessNetworkPost {
     required this.isLiked,
     required this.isSaved,
     required this.createdAt,
+    this.visibility = 'public',
     this.category,
     required this.comments,
     required this.postLikes,
@@ -68,51 +70,55 @@ class BusinessNetworkPost {
       final videosList = json['videos'];
       if (videosList is List) mergedMediaList.addAll(videosList);
 
-      final parsedMediaItems = mergedMediaList.map((e) {
-        try {
-          if (e is Map) {
-            return PostMedia.fromJson(Map<String, dynamic>.from(e));
-          }
+      final parsedMediaItems = mergedMediaList
+          .map((e) {
+            try {
+              if (e is Map) {
+                return PostMedia.fromJson(Map<String, dynamic>.from(e));
+              }
 
-          final raw = e.toString();
-          final lower = raw.toLowerCase();
-          final looksLikeVideo = lower.contains('.mp4') ||
-              lower.contains('.mov') ||
-              lower.contains('.m4v') ||
-              lower.contains('.webm') ||
-              lower.contains('.mkv') ||
-              lower.contains('.avi');
+              final raw = e.toString();
+              final lower = raw.toLowerCase();
+              final looksLikeVideo = lower.contains('.mp4') ||
+                  lower.contains('.mov') ||
+                  lower.contains('.m4v') ||
+                  lower.contains('.webm') ||
+                  lower.contains('.mkv') ||
+                  lower.contains('.avi');
 
-          if (looksLikeVideo) {
-            return PostMedia(
-              id: 0,
-              image: '',
-              type: 'video',
-              url: raw,
-              video: raw,
-              thumbnail: '',
-              post: _parseId(json['id']),
-            );
-          }
+              if (looksLikeVideo) {
+                return PostMedia(
+                  id: 0,
+                  image: '',
+                  type: 'video',
+                  url: raw,
+                  video: raw,
+                  thumbnail: '',
+                  post: _parseId(json['id']),
+                );
+              }
 
-          return PostMedia(
-            id: 0,
-            image: raw,
-            type: 'image',
-            url: raw,
-            video: null,
-            thumbnail: null,
-            post: _parseId(json['id']),
-          );
-        } catch (e) {
-          debugPrint('Error parsing media item: $e');
-          return null;
-        }
-      }).whereType<PostMedia>().toList();
+              return PostMedia(
+                id: 0,
+                image: raw,
+                type: 'image',
+                url: raw,
+                video: null,
+                thumbnail: null,
+                post: _parseId(json['id']),
+              );
+            } catch (e) {
+              debugPrint('Error parsing media item: $e');
+              return null;
+            }
+          })
+          .whereType<PostMedia>()
+          .toList();
 
       final Map<String, PostMedia> uniqueMedia = {};
       for (final m in parsedMediaItems) {
-        final key = (m.video ?? m.url ?? m.thumbnail ?? m.image).toString().trim();
+        final key =
+            (m.video ?? m.url ?? m.thumbnail ?? m.image).toString().trim();
         if (key.isEmpty) continue;
 
         final existing = uniqueMedia[key];
@@ -121,9 +127,9 @@ class BusinessNetworkPost {
           continue;
         }
 
-        final preferCandidate =
-            (existing.id == 0 && m.id != 0) ||
-            ((existing.thumbnail ?? '').isEmpty && (m.thumbnail ?? '').isNotEmpty) ||
+        final preferCandidate = (existing.id == 0 && m.id != 0) ||
+            ((existing.thumbnail ?? '').isEmpty &&
+                (m.thumbnail ?? '').isNotEmpty) ||
             (existing.type == null && m.type != null) ||
             (existing.video == null && m.video != null);
 
@@ -133,46 +139,55 @@ class BusinessNetworkPost {
       }
 
       final mediaItems = uniqueMedia.values.toList();
-      
+
       // Handle post tags - ensure it's a list
       final tagsList = json['post_tags'] ?? [];
-      final tagItems = (tagsList is List ? tagsList : []).map((e) {
-        try {
-          if (e is Map) {
-            return PostTag.fromJson(Map<String, dynamic>.from(e));
-          }
-          return PostTag(id: 0, tag: e.toString());
-        } catch (e) {
-          debugPrint('Error parsing tag item: $e');
-          return null;
-        }
-      }).whereType<PostTag>().toList();
-      
+      final tagItems = (tagsList is List ? tagsList : [])
+          .map((e) {
+            try {
+              if (e is Map) {
+                return PostTag.fromJson(Map<String, dynamic>.from(e));
+              }
+              return PostTag(id: 0, tag: e.toString());
+            } catch (e) {
+              debugPrint('Error parsing tag item: $e');
+              return null;
+            }
+          })
+          .whereType<PostTag>()
+          .toList();
+
       // Handle both 'comments' and 'post_comments' fields - ensure it's a list
       final commentsList = json['post_comments'] ?? json['comments'] ?? [];
-      
+
       // Handle post likes - ensure it's a list
       final likesData = json['post_likes'] ?? [];
-      final likesList = (likesData is List ? likesData : []).map((e) {
-        try {
-          if (e is Map) {
-            return PostLike.fromJson(Map<String, dynamic>.from(e));
-          }
-          return PostLike(id: 0, user: 0);
-        } catch (e) {
-          debugPrint('Error parsing like item: $e');
-          return null;
-        }
-      }).whereType<PostLike>().toList();
+      final likesList = (likesData is List ? likesData : [])
+          .map((e) {
+            try {
+              if (e is Map) {
+                return PostLike.fromJson(Map<String, dynamic>.from(e));
+              }
+              return PostLike(id: 0, user: 0);
+            } catch (e) {
+              debugPrint('Error parsing like item: $e');
+              return null;
+            }
+          })
+          .whereType<PostLike>()
+          .toList();
 
       final bool isLiked = parseBool(json['is_liked'] ?? json['isLiked']);
-      
+
       return BusinessNetworkPost(
-        id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+        id: json['id'] is int
+            ? json['id']
+            : int.tryParse(json['id'].toString()) ?? 0,
         title: json['title'] ?? '',
         user: userData != null
             ? BusinessNetworkUser.fromJson(userData)
-            : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false, isPro: false),
+            : BusinessNetworkUser(
+                id: 0, name: 'Unknown', isVerified: false, isPro: false),
         content: json['content'] ?? '',
         media: mediaItems,
         tags: tagItems,
@@ -181,19 +196,20 @@ class BusinessNetworkPost {
         isLiked: isLiked,
         isSaved: parseBool(json['is_saved'] ?? json['isSaved']),
         createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
+        visibility: (json['visibility'] ?? 'public').toString(),
         category: json['category'],
         comments: (commentsList is List ? commentsList : [])
-                .map((e) {
-                  try {
-                    return BusinessNetworkComment.fromJson(
-                        e is Map ? Map<String, dynamic>.from(e) : e);
-                  } catch (e) {
-                    debugPrint('Error parsing comment: $e');
-                    return null;
-                  }
-                })
-                .whereType<BusinessNetworkComment>()
-                .toList(),
+            .map((e) {
+              try {
+                return BusinessNetworkComment.fromJson(
+                    e is Map ? Map<String, dynamic>.from(e) : e);
+              } catch (e) {
+                debugPrint('Error parsing comment: $e');
+                return null;
+              }
+            })
+            .whereType<BusinessNetworkComment>()
+            .toList(),
         postLikes: likesList,
       );
     } catch (e, stackTrace) {
@@ -217,6 +233,7 @@ class BusinessNetworkPost {
       'is_liked': isLiked,
       'is_saved': isSaved,
       'created_at': createdAt,
+      'visibility': visibility,
       'category': category,
       'comments': comments.map((e) => e.toJson()).toList(),
       'post_likes': postLikes.map((e) => e.toJson()).toList(),
@@ -232,12 +249,15 @@ class BusinessNetworkPost {
     int? commentsCount,
     List<BusinessNetworkComment>? comments,
     List<PostLike>? postLikes,
+    String? title,
+    String? content,
+    String? visibility,
   }) {
     return BusinessNetworkPost(
       id: id,
-      title: title,
+      title: title ?? this.title,
       user: user ?? this.user,
-      content: content,
+      content: content ?? this.content,
       media: media ?? this.media,
       tags: tags,
       likesCount: likesCount ?? this.likesCount,
@@ -245,6 +265,7 @@ class BusinessNetworkPost {
       isLiked: isLiked ?? this.isLiked,
       isSaved: isSaved ?? this.isSaved,
       createdAt: createdAt,
+      visibility: visibility ?? this.visibility,
       category: category,
       comments: comments ?? this.comments,
       postLikes: postLikes ?? this.postLikes,
@@ -277,7 +298,8 @@ class PostMedia {
     final t = (type ?? '').toLowerCase().trim();
     if (t == 'video') return true;
 
-    final raw = '${video ?? ''} ${url ?? ''} $image ${thumbnail ?? ''}'.toLowerCase();
+    final raw =
+        '${video ?? ''} ${url ?? ''} $image ${thumbnail ?? ''}'.toLowerCase();
     if (raw.contains('.mp4') ||
         raw.contains('.mov') ||
         raw.contains('.m4v') ||
@@ -295,7 +317,8 @@ class PostMedia {
     if (isVideo) {
       return AppConfig.getAbsoluteUrl((video ?? url ?? image).toString());
     }
-    final value = (image.isNotEmpty ? image : (url ?? thumbnail ?? '')).toString();
+    final value =
+        (image.isNotEmpty ? image : (url ?? thumbnail ?? '')).toString();
     return AppConfig.getAbsoluteUrl(value);
   }
 
@@ -367,7 +390,9 @@ class PostMedia {
       url: rawUrl.isNotEmpty ? rawUrl : null,
       video: rawVideo.isNotEmpty ? rawVideo : null,
       thumbnail: rawThumb.isNotEmpty ? rawThumb : null,
-      views: rawViews is int ? rawViews : int.tryParse((rawViews ?? '').toString()) ?? 0,
+      views: rawViews is int
+          ? rawViews
+          : int.tryParse((rawViews ?? '').toString()) ?? 0,
       post: _parseId(json['post']),
     );
   }
@@ -488,18 +513,20 @@ class BusinessNetworkUser {
   factory BusinessNetworkUser.fromJson(Map<String, dynamic> json) {
     // Build full name from first_name and last_name if name is not provided
     String displayName = json['name'] ?? json['username'] ?? '';
-    if (displayName.isEmpty && (json['first_name'] != null || json['last_name'] != null)) {
-      displayName = '${json['first_name'] ?? ''} ${json['last_name'] ?? ''}'.trim();
+    if (displayName.isEmpty &&
+        (json['first_name'] != null || json['last_name'] != null)) {
+      displayName =
+          '${json['first_name'] ?? ''} ${json['last_name'] ?? ''}'.trim();
     }
     if (displayName.isEmpty) {
       displayName = 'User';
     }
-    
+
     // Handle UUID strings by using hashCode
     final idValue = json['id'];
     int parsedId;
     String? uuidString;
-    
+
     if (idValue is String) {
       uuidString = idValue; // Store original UUID
       // Try to parse as int first, if that fails use hashCode for UUID
@@ -507,13 +534,13 @@ class BusinessNetworkUser {
     } else {
       parsedId = _parseId(idValue);
     }
-    
+
     // Handle all possible profile picture field names from backend
     // Priority: image > avatar > profile_picture
     final imageValue = json['image'];
     final avatarValue = json['avatar'];
     final profilePictureValue = json['profile_picture'];
-    
+
     return BusinessNetworkUser(
       id: parsedId,
       uuid: uuidString,
@@ -572,12 +599,15 @@ class BusinessNetworkComment {
       id: _parseId(json['id']),
       user: userData != null
           ? BusinessNetworkUser.fromJson(userData)
-          : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false, isPro: false),
+          : BusinessNetworkUser(
+              id: 0, name: 'Unknown', isVerified: false, isPro: false),
       content: json['content'] ?? json['comment'] ?? '',
       createdAt: json['created_at'] ?? '',
       parentComment: _parseId(json['parent_comment']),
       isGiftComment: json['is_gift_comment'] == true,
-      diamondAmount: json['diamond_amount'] != null ? int.tryParse(json['diamond_amount'].toString()) : null,
+      diamondAmount: json['diamond_amount'] != null
+          ? int.tryParse(json['diamond_amount'].toString())
+          : null,
     );
   }
 

@@ -646,17 +646,21 @@ class BusinessNetworkService {
   /// Update a post
   static Future<BusinessNetworkPost?> updatePost({
     required int postId,
-    required String content,
+    String? title,
+    String? content,
     List<String>? images,
     String? category,
+    String? visibility,
   }) async {
     try {
       final headers = await ApiService.getHeaders();
 
       final body = {
-        'content': content,
+        if (title != null) 'title': title,
+        if (content != null) 'content': content,
         if (images != null) 'images': images,
         if (category != null) 'category': category,
+        if (visibility != null) 'visibility': visibility,
       };
 
       // PATCH (partial update) — PUT requires every writable serializer
@@ -755,7 +759,8 @@ class BusinessNetworkService {
 
       // Handle success (200 = already following, 201 = newly created)
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('Successfully followed user (status: ${response.statusCode})');
+        debugPrint(
+            'Successfully followed user (status: ${response.statusCode})');
         return true;
       }
 
@@ -887,7 +892,8 @@ class BusinessNetworkService {
         final data = json.decode(response.body);
         return data;
       } else {
-        debugPrint('ERROR: Failed to load user profile - ${response.statusCode}');
+        debugPrint(
+            'ERROR: Failed to load user profile - ${response.statusCode}');
         throw Exception('Failed to load user profile: ${response.statusCode}');
       }
     } catch (e) {
@@ -972,7 +978,8 @@ class BusinessNetworkService {
         });
       }
 
-      debugPrint('Sending request to: ${ApiService.baseUrl}/user/profile/update/');
+      debugPrint(
+          'Sending request to: ${ApiService.baseUrl}/user/profile/update/');
 
       final response = await dio.patch(
         '${ApiService.baseUrl}/user/profile/update/',
@@ -1171,7 +1178,8 @@ class BusinessNetworkService {
           response.body.toLowerCase().contains('unique')) {
         return true;
       }
-      debugPrint('Failed to block user: ${response.statusCode} ${response.body}');
+      debugPrint(
+          'Failed to block user: ${response.statusCode} ${response.body}');
       return false;
     } catch (e) {
       debugPrint('Error blocking user: $e');
@@ -1216,7 +1224,8 @@ class BusinessNetworkService {
         return true;
       }
 
-      debugPrint('Failed to unblock user: ${response.statusCode} ${response.body}');
+      debugPrint(
+          'Failed to unblock user: ${response.statusCode} ${response.body}');
       return false;
     } catch (e) {
       debugPrint('Error unblocking user: $e');
