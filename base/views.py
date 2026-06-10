@@ -3158,9 +3158,14 @@ class AllProductsListView(generics.ListAPIView):
             # Get random products from different categories
             return self.get_random_products_from_categories(limit)
 
-        # Default behavior - return products ordered by creation date
-        queryset = public_product_queryset(Product.objects.all()).prefetch_related(
-            "category", "image"
+        # Default behavior - return products ordered by creation date.
+        # select_related("owner") + the extra prefetches kill the N+1s the
+        # serializer otherwise triggers per product (owner_details, faqs,
+        # benefits) — the browse feed was paying ~3 extra queries per row.
+        queryset = (
+            public_product_queryset(Product.objects.all())
+            .select_related("owner")
+            .prefetch_related("category", "image", "faqs", "benefits")
         )
 
         # Unfiltered browse (e.g. the app's homepage eShop section, or the default

@@ -25,7 +25,7 @@ def regions(request):
     name_eng = request.GET.get('country_name_eng', None)
     name_ban = request.GET.get('country_name_ban', None)
 
-    regions = Region.objects.all()
+    regions = Region.objects.select_related("country").all()
 
     if country_id:
         regions = regions.filter(country_id=country_id)
@@ -44,7 +44,7 @@ def cities(request):
     name_eng = request.GET.get('region_name_eng', None)
     name_ban = request.GET.get('region_name_ban', None)
     zip_code = request.GET.get('zip', None)
-    cities = City.objects.all()
+    cities = City.objects.select_related("region").all()
 
     if region_id:
         cities = cities.filter(region_id=region_id)
@@ -65,7 +65,7 @@ def upazila(request):
     name_eng = request.GET.get('city_name_eng', None)
     name_ban = request.GET.get('city_name_ban', None)
 
-    upazilas = Upazila.objects.all().order_by("name_eng")
+    upazilas = Upazila.objects.select_related("city").order_by("name_eng")
 
     if city_id:
         upazilas = upazilas.filter(city_id=city_id)
