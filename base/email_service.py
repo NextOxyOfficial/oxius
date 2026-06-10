@@ -1395,9 +1395,18 @@ def send_engagement_email(user, *, subject, heading, body_html,
         return False
     name = (getattr(user, "name", None) or getattr(user, "first_name", None) or "বন্ধু")
     cards = _engagement_content_html(content_feature)
+    # The base template already shows `subject` as the big <h2> title at the
+    # top, so repeating it as an in-body heading is a duplicate. Only render
+    # the heading paragraph when it actually differs from the subject.
+    heading_html = ""
+    if heading and heading.strip() and heading.strip() != (subject or "").strip():
+        heading_html = (
+            '<p style="color:#111827;font-size:16px;line-height:1.5;'
+            f'margin:0 0 14px;font-weight:600;">{heading}</p>'
+        )
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">প্রিয় <strong>{name}</strong>,</p>
-<p style="color:#111827;font-size:16px;line-height:1.5;margin:0 0 14px;font-weight:600;">{heading}</p>
+{heading_html}
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{body_html}</p>
 {cards}
 {_button(button_text, button_url) if (button_text and button_url) else ""}
