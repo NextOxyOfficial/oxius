@@ -570,6 +570,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   color: const Color(0xFF374151),
                   lineHeight: const LineHeight(1.55),
                 ),
+                "a": Style(
+                  color: const Color(0xFF2563EB),
+                  textDecoration: TextDecoration.none,
+                ),
               },
             ),
           ),
