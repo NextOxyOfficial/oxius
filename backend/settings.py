@@ -551,6 +551,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "engagement.tasks.run_feature_promos",
         "schedule": timedelta(hours=1),  # Spread ~2 feature promos/user across 9am-9pm
     },
+    "run-email-engine": {
+        "task": "engagement.tasks.run_email_engine",
+        "schedule": timedelta(hours=6),  # helpful + activity emails, cooldown-gated per user
+    },
 }
 
 # --- Engagement / assistant-brain nudge engine ---
@@ -571,6 +575,17 @@ ENGAGEMENT_LIFECYCLE_NUDGES_ENABLED = False
 # every active user with a device. Flip ENABLED to False to pause instantly.
 ENGAGEMENT_FEATURE_PROMOS_ENABLED = True
 ENGAGEMENT_FEATURE_PROMOS_PER_DAY = 2
+
+# --- Engagement EMAIL engine (the email counterpart of the push brain) ---
+# For each user: emails the best activity nudge (verify KYC, complete profile,
+# renew Pro, withdraw balance, win-back) or, if none applies, a varied helpful
+# feature email with live eShop content. Independent email cooldown so it never
+# collides with push. OFF by default — validate with run_email_engine(dry_run=True)
+# then set True.
+ENGAGEMENT_EMAIL_ENABLED = False
+ENGAGEMENT_EMAIL_HOURS = (10, 20)          # 10am-8pm in ENGAGEMENT_TIMEZONE
+ENGAGEMENT_EMAIL_PER_RUN_CAP = 200         # anti-burst: max emails per run
+ENGAGEMENT_EMAIL_COOLDOWN_DAYS = 3         # at most one engagement email / N days / user
 
 # ShurjoPay Settings
 SP_USERNAME = "lyriczsoft"

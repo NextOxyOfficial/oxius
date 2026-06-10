@@ -1288,3 +1288,81 @@ def notify_admin_user_blocked(blocker, blocked_user, reason=""):
 
     html = _base_template(subject, body)
     return _send_email(subject, ADMIN_EMAIL, f"User block report: {blocker_name} blocked {blocked_name}", html)
+
+
+# ============================================================
+# ENGAGEMENT / BRAIN-ENGINE EMAILS
+# (helpful, personalised emails sent by engagement.tasks.run_email_engine —
+#  the email counterpart of the push nudge/promo brain)
+# ============================================================
+
+def _engagement_product_cards(limit=3):
+    """Render up to `limit` random live products as 'discover' cards so emails
+    can showcase real, dynamic content from the eShop. Returns '' on any
+    error / no products so a content hiccup never blocks the email."""
+    try:
+        from base.models import Product
+        try:
+            from base.views import public_product_queryset
+            qs = public_product_queryset(Product.objects.all())
+        except Exception:
+            qs = Product.objects.all()
+        products = list(qs.order_by("?")[:limit])
+        if not products:
+            return ""
+        cards = ""
+        for p in products:
+            name = (getattr(p, "name", "") or "পণ্য")[:60]
+            price = (getattr(p, "sale_price", None) or getattr(p, "regular_price", None)
+                     or getattr(p, "price", None))
+            url = f"{SITE_URL}/eshop"
+            img = ""
+            try:
+                main = p.image.filter(is_main=True).first() or p.image.first()
+                if main and getattr(main, "image", None):
+                    img = main.image.url
+                    if not img.startswith("http"):
+                        img = f"{SITE_URL}{img}"
+            except Exception:
+                pass
+            img_html = (
+                f'<img src="{img}" width="56" height="56" style="border-radius:8px;object-fit:cover;display:block;" />'
+                if img else ""
+            )
+            price_html = (
+                f'<div style="color:{BRAND_COLOR};font-weight:700;font-size:14px;">৳{price}</div>'
+                if price else ""
+            )
+            cards += f"""
+<a href="{url}" style="display:block;text-decoration:none;border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin:0 0 8px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td width="56" valign="top">{img_html}</td>
+    <td valign="top" style="padding-left:10px;">
+      <div style="color:#111827;font-size:14px;font-weight:600;">{name}</div>
+      {price_html}
+    </td>
+  </tr></table>
+</a>"""
+        return f'<div style="margin:14px 0;">{cards}</div>'
+    except Exception:
+        return ""
+
+
+def send_engagement_email(user, *, subject, heading, body_html,
+                          button_text="", button_url="", show_products=False):
+    """Generic brain-engine email: a personal heading + helpful body, optional
+    dynamic product cards, and a CTA. Fire-and-forget; no-op without an email."""
+    email = getattr(user, "email", None)
+    if not email:
+        return False
+    name = (getattr(user, "name", None) or getattr(user, "first_name", None) or "বন্ধু")
+    cards = _engagement_product_cards() if show_products else ""
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">প্রিয় <strong>{name}</strong>,</p>
+<p style="color:#111827;font-size:16px;line-height:1.5;margin:0 0 14px;font-weight:600;">{heading}</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{body_html}</p>
+{cards}
+{_button(button_text, button_url) if (button_text and button_url) else ""}
+"""
+    html = _base_template(subject, body, "আপনি AdsyClub-এর সদস্য বলে এই ইমেইলটি পাচ্ছেন।")
+    return _send_email(subject, email, f"{name}, {heading}", html)

@@ -109,4 +109,34 @@ CATALOG = [
             "মানুষজনকে ফলো করুন, ফিড ঘুরে দেখুন, আর আয়ের নতুন উপায় খুঁজে নিন।",
         ),
     ),
+    # 6) Verify identity (KYC) — unlock withdrawals, selling and full access.
+    #    Lower priority than kyc_withdraw (#1) so a user with money waiting gets
+    #    the stronger "money on the table" message instead.
+    Nudge(
+        key="kyc_verify",
+        priority=85,
+        cooldown_days=10,
+        deep_link=f"{SITE}/my-account",
+        eligible=lambda s, u: bool(s.pending.get("kyc")),
+        build=lambda s, u: (
+            "পরিচয় যাচাই করে নিন (KYC) ✅",
+            "{}, KYC ভেরিফাই করলে উইথড্র, বিক্রি আর সব সুবিধা আনলক হবে। এখনই ডকুমেন্ট আপলোড করুন।".format(
+                _name(u)
+            ),
+        ),
+    ),
+    # 7) Complete your profile — more reach, more trust, better matches.
+    Nudge(
+        key="profile_complete",
+        priority=50,
+        cooldown_days=12,
+        deep_link=f"{SITE}/my-account",
+        eligible=lambda s, u: bool(s.pending.get("profile_incomplete")),
+        build=lambda s, u: (
+            "প্রোফাইল সম্পূর্ণ করুন 📝",
+            "{}, ছবি, নাম আর তথ্য যোগ করে প্রোফাইল সম্পূর্ণ করুন — অন্যরা আপনাকে সহজে খুঁজে পাবে আর বিশ্বাস করবে।".format(
+                _name(u)
+            ),
+        ),
+    ),
 ]

@@ -135,6 +135,7 @@ def aggregate_user_states():
     user_qs = User.objects.all().only(
         "id", "date_joined", "last_login", "is_pro", "pro_validity",
         "kyc", "kyc_pending", "balance",
+        "name", "image", "phone", "gender", "date_of_birth",
     )
     for user in user_qs.iterator(chunk_size=500):
         uid = user.id
@@ -160,6 +161,16 @@ def aggregate_user_states():
             pending = {}
             if not getattr(user, "kyc", False):
                 pending["kyc"] = True
+            # Profile completeness — flag when key fields are missing so the brain
+            # can nudge the user to finish (better reach, trust and matches).
+            if not (
+                (getattr(user, "name", "") or "").strip()
+                and getattr(user, "image", None)
+                and (getattr(user, "phone", "") or "").strip()
+                and getattr(user, "gender", None)
+                and getattr(user, "date_of_birth", None)
+            ):
+                pending["profile_incomplete"] = True
             try:
                 if user.balance and float(user.balance) > 0:
                     pending["withdrawable_balance"] = float(user.balance)
@@ -421,3 +432,136 @@ def run_feature_promos():
 
     logger.info("run_feature_promos: sent=%s bdt_hour=%s", sent, hour)
     return {"sent": sent, "bdt_hour": hour, "runs_remaining": runs_remaining}
+
+
+@shared_task
+def run_email_engine(dry_run=False):
+    """Email counterpart of the push brain. For each eligible user, email either
+    the single best activity-based nudge (verify KYC, complete profile, renew Pro,
+    withdraw balance, win-back, ...) or — when none applies — a varied, helpful
+    feature email with live eShop content. Uses an independent email cooldown
+    (channel='email') so it never collides with push frequency, and never repeats
+    a line it already emailed the same user. OFF by default — flip
+    ENGAGEMENT_EMAIL_ENABLED on after validating with dry_run=True.
+    """
+    from .nudges import CATALOG
+    from .feature_promos import pick_promo
+    from base.email_service import send_engagement_email
+
+    if not getattr(settings, "ENGAGEMENT_EMAIL_ENABLED", False) and not dry_run:
+        return {"skipped": "disabled"}
+
+    now = timezone.now()
+    try:
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo(getattr(settings, "ENGAGEMENT_TIMEZONE", "Asia/Dhaka"))
+        local_hour = now.astimezone(tz).hour
+    except Exception:  # pragma: no cover
+        local_hour = timezone.localtime(now).hour
+    start_h, end_h = getattr(settings, "ENGAGEMENT_EMAIL_HOURS", (10, 20))
+    if not dry_run and not (start_h <= local_hour < end_h):
+        return {"skipped": f"quiet_hours (local hour {local_hour})"}
+
+    per_run_cap = getattr(settings, "ENGAGEMENT_EMAIL_PER_RUN_CAP", 200)
+    cooldown_days = getattr(settings, "ENGAGEMENT_EMAIL_COOLDOWN_DAYS", 3)
+    lifecycle_enabled = getattr(settings, "ENGAGEMENT_LIFECYCLE_NUDGES_ENABLED", False)
+    catalog = [
+        n for n in sorted(CATALOG, key=lambda n: n.priority, reverse=True)
+        if n.reliable or lifecycle_enabled
+    ]
+
+    # Recent EMAIL history only — independent of push cooldowns.
+    since = now - timedelta(days=30)
+    last_any = {}
+    last_by_key = defaultdict(dict)
+    for uid, key, sent_at in NudgeLog.objects.filter(
+        channel="email", sent_at__gte=since
+    ).values_list("user_id", "nudge_key", "sent_at"):
+        if uid not in last_any or sent_at > last_any[uid]:
+            last_any[uid] = sent_at
+        prev = last_by_key[uid].get(key)
+        if prev is None or sent_at > prev:
+            last_by_key[uid][key] = sent_at
+
+    states = (
+        UserState.objects.select_related("user").exclude(lifecycle_stage="churned")
+    )
+
+    sent = 0
+    plan = []
+    for state in states.iterator(chunk_size=500):
+        if sent >= per_run_cap:
+            break
+        user = state.user
+        if getattr(user, "is_suspended", False) or not getattr(user, "is_active", True):
+            continue
+        if not getattr(user, "email", None):
+            continue  # no address → can't email
+        # One engagement email per user within the cooldown window.
+        la = last_any.get(user.id)
+        if la and la >= now - timedelta(days=cooldown_days):
+            continue
+
+        chosen = None
+        for nudge in catalog:
+            try:
+                if not nudge.eligible(state, user):
+                    continue
+                prev = last_by_key.get(user.id, {}).get(nudge.key)
+                if prev and prev >= now - timedelta(
+                    days=max(nudge.cooldown_days, cooldown_days)
+                ):
+                    continue
+                chosen = nudge
+                break
+            except Exception:  # pragma: no cover
+                logger.exception("email nudge eligibility failed: %s", nudge.key)
+
+        if chosen:
+            try:
+                title, body = chosen.build(state, user)
+            except Exception:  # pragma: no cover
+                logger.exception("email nudge build failed: %s", chosen.key)
+                continue
+            key, deep_link, show_products = chosen.key, chosen.deep_link, False
+        else:
+            # No activity nudge applies → a fresh, helpful feature email. Exclude
+            # promo lines already emailed so two emails never look alike.
+            recent_promos = {
+                k for k in last_by_key.get(user.id, {}) if k.startswith("promo_")
+            }
+            key, title, body, deep_link = pick_promo(exclude_keys=recent_promos)
+            show_products = True
+
+        if dry_run:
+            plan.append({"user": user.id, "key": key, "title": title})
+            sent += 1
+            continue
+
+        try:
+            send_engagement_email(
+                user,
+                subject=title,
+                heading=title,
+                body_html=body,
+                button_text="এখনই দেখুন",
+                button_url=deep_link,
+                show_products=show_products,
+            )
+            NudgeLog.objects.create(
+                user=user,
+                nudge_key=key,
+                channel="email",
+                title=title,
+                deep_link=deep_link,
+            )
+            sent += 1
+        except Exception:  # pragma: no cover - never let one send kill the run
+            logger.exception("email engine send failed: %s -> %s", key, user.id)
+
+    result = {"sent": sent, "dry_run": dry_run, "timestamp": now.isoformat()}
+    if dry_run:
+        result["plan"] = plan[:50]
+        result["by_key"] = dict(Counter(p["key"] for p in plan))
+    logger.info("run_email_engine: sent=%s dry_run=%s", sent, dry_run)
+    return result
