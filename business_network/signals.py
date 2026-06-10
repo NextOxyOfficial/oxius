@@ -1,7 +1,9 @@
+import re
+
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from django.db.models import F
-from django.db.models.functions import Greatest
+from django.db.models import F, Q, Value
+from django.db.models.functions import Concat, Greatest, Trim
 from django.utils import timezone
 from .models import (
     BusinessNetworkFollowerModel,
@@ -199,6 +201,112 @@ def create_media_comment_notification(sender, instance, created, **kwargs):
                 read=False,
                 content=instance.content[:100]
             )
+
+
+# ---------------------------------------------------------------------------
+# @Mention notifications
+# ---------------------------------------------------------------------------
+# The app inserts mentions as plain text "@<display name> " with no markup or
+# id list, so we resolve them server-side: after each '@' try progressively
+# shorter word windows and match them (case-insensitive) against User.name
+# and "first_name last_name". Longest match wins, so "@Rahim Uddin Khan" is
+# preferred over a user literally named "Rahim".
+
+_MENTION_TOKEN_RE = re.compile(r"@([^\s@][^@\n]{0,80})")
+_MAX_MENTION_WORDS = 4
+
+
+def _resolve_mentions(content, *, exclude_ids=()):
+    if not content or "@" not in content:
+        return []
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    found = {}
+    for match in _MENTION_TOKEN_RE.finditer(content):
+        words = match.group(1).split()
+        for take in range(min(_MAX_MENTION_WORDS, len(words)), 0, -1):
+            candidate = " ".join(words[:take]).strip().rstrip(".,!?:;")
+            if len(candidate) < 2:
+                continue
+            user = (
+                User.objects.annotate(
+                    _full=Trim(Concat("first_name", Value(" "), "last_name"))
+                )
+                .filter(Q(name__iexact=candidate) | Q(_full__iexact=candidate))
+                .exclude(id__in=list(exclude_ids))
+                .exclude(is_superuser=True)
+                .first()
+            )
+            if user:
+                found[user.id] = user
+                break
+    return list(found.values())
+
+
+def _notify_mentions(*, content, actor, target_id, parent_id=None, skip_user_ids=()):
+    """Create a 'mention' notification (+push) for every resolved mention.
+
+    Never raises — mention delivery must not break post/comment creation.
+    """
+    try:
+        exclude = {actor.id, *skip_user_ids}
+        actor_name = (
+            actor.get_full_name()
+            or getattr(actor, "name", "")
+            or actor.email
+        )
+        preview = (content or "")[:100]
+        for user in _resolve_mentions(content, exclude_ids=exclude):
+            BusinessNetworkNotification.objects.create(
+                recipient=user,
+                actor=actor,
+                type="mention",
+                target_id=target_id,
+                parent_id=parent_id,
+                read=False,
+                content=preview,
+            )
+            tokens = FCMToken.objects.filter(user=user, is_active=True)
+            for token in tokens:
+                send_fcm_notification_async(
+                    fcm_token=token.token,
+                    title="আপনাকে mention করা হয়েছে",
+                    body=f"{actor_name} একটি পোস্টে আপনাকে উল্লেখ করেছেন",
+                    data={
+                        "type": "mention",
+                        "post_id": str(target_id),
+                        "user_id": str(actor.id),
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                    },
+                )
+    except Exception:
+        # Mention parsing is best-effort by design.
+        pass
+
+
+@receiver(post_save, sender=BusinessNetworkPost)
+def create_post_mention_notifications(sender, instance, created, **kwargs):
+    if created and instance.content and "@" in instance.content:
+        _notify_mentions(
+            content=instance.content,
+            actor=instance.author,
+            target_id=instance.id,
+        )
+
+
+@receiver(post_save, sender=BusinessNetworkPostComment)
+def create_comment_mention_notifications(sender, instance, created, **kwargs):
+    if created and instance.content and "@" in instance.content:
+        # The post author already receives a 'comment' notification for this
+        # comment — skip them here so they aren't notified twice.
+        _notify_mentions(
+            content=instance.content,
+            actor=instance.author,
+            target_id=instance.post_id,
+            parent_id=instance.post_id,
+            skip_user_ids={instance.post.author_id},
+        )
 
 
 @receiver(post_save, sender=BusinessNetworkMindforceComment)

@@ -240,33 +240,34 @@ class UserSearchView(generics.ListAPIView):
         # Build a comprehensive search query
         search_query = Q()
         
-        # Search in username, first_name, last_name, email
+        # Search in username, first_name, last_name and the standalone
+        # display-name field (registration may fill `name` without splitting
+        # it into first/last — those users must still be findable).
         search_query |= Q(username__icontains=normalized_query)
         search_query |= Q(first_name__icontains=normalized_query)
         search_query |= Q(last_name__icontains=normalized_query)
-        
+        search_query |= Q(name__icontains=normalized_query)
+
         # For multi-word queries, search in name parts
         if len(name_parts) > 1:
             for part in name_parts:
                 if len(part) > 2:  # Only search parts longer than 2 chars
                     search_query |= Q(first_name__icontains=part)
                     search_query |= Q(last_name__icontains=part)
-        
+                    search_query |= Q(name__icontains=part)
+
         # Get all matching users (excluding superusers)
         users = User.objects.filter(search_query).exclude(is_superuser=True)
 
-        # Hide users who haven't completed their mandatory profile (first & last
-        # name, phone, date of birth). A freshly-created social account found by
-        # its raw email looks unprofessional, so keep half-set-up users out of
-        # search results until they finish onboarding.
+        # Hide only accounts with no usable display name at all (nothing
+        # human-readable to show in results). New users who registered with a
+        # name are searchable immediately — the old rule also required phone
+        # and date_of_birth, which silently hid every new member until they
+        # finished full profile onboarding.
         users = users.exclude(
-            Q(first_name__isnull=True)
-            | Q(first_name="")
-            | Q(last_name__isnull=True)
-            | Q(last_name="")
-            | Q(phone__isnull=True)
-            | Q(phone="")
-            | Q(date_of_birth__isnull=True)
+            (Q(first_name__isnull=True) | Q(first_name=""))
+            & (Q(last_name__isnull=True) | Q(last_name=""))
+            & (Q(name__isnull=True) | Q(name=""))
         )
 
         # Hide blocked relationships in BOTH directions: a user I blocked must
