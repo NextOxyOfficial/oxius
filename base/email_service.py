@@ -82,16 +82,12 @@ def _base_template(title, body_content, footer_note=""):
 </td>
 </tr>
 
-<!-- Title -->
-<tr>
-<td class="ec-pad" style="padding:28px 36px 0;">
-<h2 style="margin:0;color:#0f172a;font-size:21px;font-weight:700;letter-spacing:-0.2px;">{title}</h2>
-</td>
-</tr>
-
 <!-- Body -->
+<!-- Note: the email subject is shown by the mail client itself, so we do
+     NOT repeat it as an in-body <h2> title — each email's body opens with
+     its own intro/greeting. -->
 <tr>
-<td class="ec-pad" style="padding:18px 36px 30px;">
+<td class="ec-pad" style="padding:28px 36px 30px;">
 {body_content}
 </td>
 </tr>
