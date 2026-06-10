@@ -393,7 +393,7 @@ def send_deposit_email(user, amount, transaction_id, payment_method=""):
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ডিপোজিট সফলভাবে সম্পন্ন হয়েছে এবং ওয়ালেটে যোগ হয়েছে।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ডিপোজিট সফলভাবে সম্পন্ন হয়েছে এবং টাকা ওয়ালেটে যোগ হয়েছে।</p>
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
@@ -757,7 +757,7 @@ def send_password_changed_email(user):
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">এটি একটি নিশ্চিতকরণ যে আপনার AdsyClub অ্যাকাউন্টের পাসওয়ার্ড এইমাত্র পরিবর্তন করা হয়েছে।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার AdsyClub অ্যাকাউন্টের পাসওয়ার্ড এইমাত্র পরিবর্তন করা হয়েছে।</p>
 
 {_info_table(
     _info_row("Account", user.email or "N/A") +
@@ -1315,10 +1315,11 @@ def _engagement_product_cards(limit=3):
             name = (getattr(p, "name", "") or "পণ্য")[:60]
             price = (getattr(p, "sale_price", None) or getattr(p, "regular_price", None)
                      or getattr(p, "price", None))
-            url = f"{SITE_URL}/eshop"
+            slug = (getattr(p, "slug", "") or "").strip()
+            url = f"{SITE_URL}/product-details/{slug}" if slug else f"{SITE_URL}/eshop"
             img = ""
             try:
-                main = p.image.filter(is_main=True).first() or p.image.first()
+                main = p.image.first()
                 if main and getattr(main, "image", None):
                     img = main.image.url
                     if not img.startswith("http"):
@@ -1348,15 +1349,52 @@ def _engagement_product_cards(limit=3):
         return ""
 
 
+def _engagement_area_cards(limit=6):
+    """A row of real service-area names from the geo DB — for rideshare emails, so
+    they feel local and specific. '' on any error / no areas."""
+    try:
+        from cities.models import Upazila
+        names = [
+            n for n in Upazila.objects.order_by("?").values_list("name_eng", flat=True)[:limit]
+            if n and n.strip()
+        ]
+        if not names:
+            return ""
+        chips = "".join(
+            '<span style="display:inline-block;background:#f1f5f9;color:#334155;'
+            'border-radius:14px;padding:5px 12px;margin:0 6px 6px 0;font-size:13px;">'
+            f'📍 {n.strip()}</span>'
+            for n in names
+        )
+        return (
+            '<div style="margin:14px 0;">'
+            '<div style="color:#6b7280;font-size:13px;margin:0 0 8px;">যেসব এলাকায় রাইড পাওয়া যাচ্ছে:</div>'
+            f'{chips}</div>'
+        )
+    except Exception:
+        return ""
+
+
+def _engagement_content_html(feature):
+    """Dynamic, feature-appropriate content block for an engagement email —
+    real eShop products, real rideshare service areas, etc."""
+    if feature == "eshop":
+        return _engagement_product_cards()
+    if feature == "rideshare":
+        return _engagement_area_cards()
+    return ""
+
+
 def send_engagement_email(user, *, subject, heading, body_html,
-                          button_text="", button_url="", show_products=False):
+                          button_text="", button_url="", content_feature=None):
     """Generic brain-engine email: a personal heading + helpful body, optional
-    dynamic product cards, and a CTA. Fire-and-forget; no-op without an email."""
+    dynamic feature-appropriate content (real eShop products, rideshare service
+    areas, ...), and a CTA. Fire-and-forget; no-op without an email."""
     email = getattr(user, "email", None)
     if not email:
         return False
     name = (getattr(user, "name", None) or getattr(user, "first_name", None) or "বন্ধু")
-    cards = _engagement_product_cards() if show_products else ""
+    cards = _engagement_content_html(content_feature)
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">প্রিয় <strong>{name}</strong>,</p>
 <p style="color:#111827;font-size:16px;line-height:1.5;margin:0 0 14px;font-weight:600;">{heading}</p>

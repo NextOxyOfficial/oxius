@@ -44,6 +44,41 @@ def _has_balance(state):
         return False
 
 
+BN_MONTHS = [
+    "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+    "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+]
+
+
+def _sub_expiring_build(s, u):
+    """Subscription-expiring message with a clear expiry date + days remaining,
+    so the user knows exactly when and how long is left (professional + clear)."""
+    from datetime import datetime, timezone as _tz
+    title = "আপনার Pro সাবস্ক্রিপশনের মেয়াদ শেষ হচ্ছে ⏳"
+    try:
+        exp = datetime.fromisoformat(s.pending.get("subscription_expiring"))
+        now = datetime.now(_tz.utc) if exp.tzinfo else datetime.now()
+        days = (exp - now).days
+        date_str = f"{exp.day} {BN_MONTHS[exp.month - 1]} {exp.year}"
+        if days <= 0:
+            when = "আজই মেয়াদ শেষ হচ্ছে"
+        elif days == 1:
+            when = "আর মাত্র ১ দিন বাকি"
+        else:
+            when = f"আর মাত্র {days} দিন বাকি"
+        body = (
+            f"{_name(u)}, আপনার Pro সাবস্ক্রিপশনের মেয়াদ {date_str} তারিখে শেষ হবে "
+            f"({when})। মেয়াদ শেষ হলে আপনার স্টোর ও Pro সুবিধাগুলো বন্ধ হয়ে যাবে — "
+            "এখনই রিনিউ করে চালু রাখুন।"
+        )
+    except Exception:
+        body = (
+            f"{_name(u)}, আপনার Pro সাবস্ক্রিপশনের মেয়াদ শেষ হচ্ছে। স্টোর ও Pro "
+            "সুবিধাগুলো চালু রাখতে এখনই রিনিউ করুন।"
+        )
+    return (title, body)
+
+
 CATALOG = [
     # 1) Money on the table — verify KYC to withdraw. Link → wallet (matches subject).
     Nudge(
@@ -66,10 +101,7 @@ CATALOG = [
         cooldown_days=2,
         deep_link=f"{SITE}/upgrade-to-pro",
         eligible=lambda s, u: bool(s.pending.get("subscription_expiring")),
-        build=lambda s, u: (
-            "আপনার Proসাবস্ক্রিপশন এর মেয়াদ শেষ হচ্ছে ⏳",
-            "এখনই রিনিউ করুন — আপনার স্টোর আর Pro সুবিধাগুলো চালু রাখতে।",
-        ),
+        build=_sub_expiring_build,
     ),
     # 3) Win-back dormant users (7–30 days idle). Link → feed.
     Nudge(

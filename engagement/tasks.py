@@ -523,7 +523,7 @@ def run_email_engine(dry_run=False):
             except Exception:  # pragma: no cover
                 logger.exception("email nudge build failed: %s", chosen.key)
                 continue
-            key, deep_link, show_products = chosen.key, chosen.deep_link, False
+            key, deep_link, content_feature = chosen.key, chosen.deep_link, None
         else:
             # No activity nudge applies → a fresh, helpful feature email. Exclude
             # promo lines already emailed so two emails never look alike.
@@ -531,7 +531,9 @@ def run_email_engine(dry_run=False):
                 k for k in last_by_key.get(user.id, {}) if k.startswith("promo_")
             }
             key, title, body, deep_link = pick_promo(exclude_keys=recent_promos)
-            show_products = True
+            # "promo_<feature>_<i>" → feature-appropriate dynamic content
+            # (eShop products, rideshare service areas, ...).
+            content_feature = key.split("_")[1] if key.count("_") >= 2 else None
 
         if dry_run:
             plan.append({"user": user.id, "key": key, "title": title})
@@ -546,7 +548,7 @@ def run_email_engine(dry_run=False):
                 body_html=body,
                 button_text="এখনই দেখুন",
                 button_url=deep_link,
-                show_products=show_products,
+                content_feature=content_feature,
             )
             NudgeLog.objects.create(
                 user=user,
