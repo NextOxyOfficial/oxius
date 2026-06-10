@@ -22,8 +22,13 @@ class SupportTicketListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # PRIVACY: this endpoint feeds the user-facing inbox, so it must show
+        # only the requester's own tickets. The old behaviour returned EVERY
+        # user's ticket to any is_staff account — the admin saw the whole
+        # customer base's tickets in their personal inbox. Staff can still
+        # opt in explicitly (?scope=all) for admin tooling.
         user = self.request.user
-        if user.is_staff:
+        if user.is_staff and self.request.query_params.get("scope") == "all":
             return SupportTicket.objects.all()
         return SupportTicket.objects.filter(user=user)
 
@@ -45,6 +50,8 @@ class SupportTicketDetailView(generics.RetrieveAPIView):
     serializer_class = SupportTicketSerializer
 
     def get_queryset(self):
+        # Staff may open any ticket (needed to reply to customers); regular
+        # users only their own.
         user = self.request.user
         if user.is_staff:
             return SupportTicket.objects.all()

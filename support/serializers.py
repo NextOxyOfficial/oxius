@@ -1,8 +1,27 @@
+import html
+import re
+
 from rest_framework import serializers
+from django.utils.html import strip_tags
 from .models import SupportTicket, TicketReply, PublicContact
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+
+def _plain_text(value):
+    """Render rich/HTML ticket text as clean plain text.
+
+    Some tickets were written through rich-text inputs and stored with markup
+    ("<p>...</p>"), which then leaked literally into the app and web UIs.
+    Strip tags + unescape entities on the way out (covers old rows too) and
+    on the way in for new submissions.
+    """
+    if not value:
+        return value
+    text = strip_tags(str(value))
+    text = html.unescape(text)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
 class UserMinimalSerializer(serializers.ModelSerializer):
@@ -18,6 +37,11 @@ class TicketReplySerializer(serializers.ModelSerializer):
         model = TicketReply
         fields = ["id", "user", "message", "is_from_admin", "created_at"]
         read_only_fields = ["id", "user", "is_from_admin", "created_at"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["message"] = _plain_text(data.get("message"))
+        return data
 
 
 class SupportTicketSerializer(serializers.ModelSerializer):
@@ -45,6 +69,12 @@ class SupportTicketSerializer(serializers.ModelSerializer):
             "is_unread",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["title"] = _plain_text(data.get("title"))
+        data["message"] = _plain_text(data.get("message"))
+        return data
 
     def get_reply_count(self, obj):
         return obj.replies.count()
@@ -82,11 +112,20 @@ class SupportTicketCreateSerializer(serializers.ModelSerializer):
         model = SupportTicket
         fields = ["title", "message"]
 
+    def validate_title(self, value):
+        return _plain_text(value)
+
+    def validate_message(self, value):
+        return _plain_text(value)
+
 
 class TicketReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketReply
         fields = ["message"]
+
+    def validate_message(self, value):
+        return _plain_text(value)
 
 
 class PublicContactSerializer(serializers.ModelSerializer):
