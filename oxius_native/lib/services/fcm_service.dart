@@ -366,11 +366,11 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
       final timeDifference = currentTimestamp - callTimestamp;
 
       // Ignore only genuinely stale calls. The FCM TTL is 60s and the backend
-      // keeps a call ringing for 90s, so the old 30s cap silently dropped valid
+      // keeps a call ringing for 90s, so a too-small cap silently dropped valid
       // calls that arrived a little late on a killed/Doze device (the #1 reason
-      // a pocketed phone "never rang"). Allow up to 60s and ignore small
-      // negative skew (device clock slightly behind the server).
-      if (timeDifference > 60000) {
+      // a pocketed phone "never rang"). Allow the full 90s ring window and
+      // ignore negative skew (device clock slightly behind the server).
+      if (timeDifference > 90000) {
         _log('🚫 Ignoring old call notification (${timeDifference}ms old)');
         return;
       }
@@ -665,7 +665,16 @@ class FCMService {
   static final StreamController<Map<String, dynamic>>
       _rideshareNotificationController =
       StreamController<Map<String, dynamic>>.broadcast();
-  static const int _callRecoveryMaxAgeMs = 30000;
+  // Must cover the FULL ring window, not just delivery: the backend keeps a
+  // call ringing for 90s and the CallKit UI rings for 60s. The old 30s cap
+  // silently discarded any accept that happened after 30s of ringing — the
+  // user tapped Accept and nothing opened (the #1 "call never connects" bug).
+  static const int _callRecoveryMaxAgeMs = 90000;
+  // Device clocks routinely sit a few seconds behind the server clock that
+  // stamps call payloads. With a strict `age >= 0` check, such devices saw
+  // every call as "from the future" and dropped every accept. Tolerate a
+  // bounded amount of negative skew instead.
+  static const int _callTimestampSkewToleranceMs = 120000;
   static bool _callRecoveryEnabled = false;
 
   // Track active calls to prevent duplicates
@@ -830,7 +839,8 @@ class FCMService {
   static bool _isCallTimestampFresh(int? timestamp) {
     if (timestamp == null) return false;
     final age = DateTime.now().millisecondsSinceEpoch - timestamp;
-    return age >= 0 && age <= _callRecoveryMaxAgeMs;
+    return age >= -_callTimestampSkewToleranceMs &&
+        age <= _callRecoveryMaxAgeMs;
   }
 
   static bool _isRideRequestTimestampFresh(int? timestamp, int timeoutSeconds) {
@@ -982,7 +992,9 @@ class FCMService {
     if (timestamp != null) {
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
       final timeDifference = currentTimestamp - timestamp;
-      if (timeDifference > 30000) {
+      // Match the backend's 90s ring window — a ring that reaches us late
+      // (Doze, slow FCM, cold start) is still a live, answerable call.
+      if (timeDifference > _callRecoveryMaxAgeMs) {
         _log('🚫 Ignoring old $source call (${timeDifference}ms old)');
         return false;
       }
