@@ -1016,20 +1016,24 @@ class _SaleListScreenState extends State<SaleListScreen> {
               child: Center(
                 child: OutlinedButton.icon(
                   onPressed: _loadMore,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
                   label: const Text(
                     'Load More',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.1),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF10B981),
+                    minimumSize: const Size(180, 44),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
+                        horizontal: 28, vertical: 12),
                     side: BorderSide(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                        width: 1.5),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.45),
+                        width: 1.4),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
@@ -1608,7 +1612,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 140,
+            height: 170,
             child: ListView.builder(
               controller: _recentScrollController,
               scrollDirection: Axis.horizontal,
@@ -1645,7 +1649,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     );
                   },
                   child: Container(
-                    width: 200,
+                    width: 172,
                     margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -1671,14 +1675,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               hasImage
                                   ? CachedNetworkImage(
                                       imageUrl: getImageUrl(),
-                                      height: 78,
+                                      height: 92,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
                                       memCacheHeight: 156,
                                       fadeInDuration:
                                           const Duration(milliseconds: 120),
                                       placeholder: (context, url) => Container(
-                                        height: 85,
+                                        height: 92,
                                         color: Colors.grey.shade100,
                                         child: const Center(
                                           child: AdsyLoadingIndicator(
@@ -1689,7 +1693,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       ),
                                       errorWidget: (context, url, error) =>
                                           Container(
-                                        height: 85,
+                                        height: 92,
                                         color: Colors.grey.shade100,
                                         child: Icon(
                                             Icons.image_not_supported_rounded,
@@ -1698,7 +1702,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       ),
                                     )
                                   : Container(
-                                      height: 78,
+                                      height: 92,
                                       width: double.infinity,
                                       color: Colors.grey.shade100,
                                       child: Icon(Icons.image_outlined,
@@ -1731,7 +1735,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(6),
+                          padding:
+                              const EdgeInsets.fromLTRB(8, 7, 8, 8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -1741,31 +1746,31 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 12.5,
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFF1F2937),
                                     height: 1.2,
                                     letterSpacing: -0.1),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 3),
                               Row(
                                 children: [
                                   Icon(Icons.location_on_rounded,
-                                      size: 9, color: Colors.grey.shade500),
-                                  const SizedBox(width: 2),
+                                      size: 11, color: Colors.grey.shade500),
+                                  const SizedBox(width: 3),
                                   Expanded(
                                     child: Text(
                                       _formatLocation(listing),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                          fontSize: 8,
+                                          fontSize: 10.5,
                                           color: Colors.grey.shade600),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 3),
+                              const SizedBox(height: 4),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -1774,19 +1779,20 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                     child: Text(
                                       _formatPrice(listing),
                                       style: TextStyle(
-                                          fontSize: listing.negotiable ? 9 : 11,
-                                          fontWeight: FontWeight.bold,
+                                          fontSize:
+                                              listing.negotiable ? 11.5 : 13,
+                                          fontWeight: FontWeight.w700,
                                           color: const Color(0xFF10B981),
                                           letterSpacing: -0.1),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const SizedBox(width: 3),
+                                  const SizedBox(width: 4),
                                   if (listing.createdAt != null)
                                     Text(
                                       _formatDate(listing.createdAt),
                                       style: TextStyle(
-                                          fontSize: 7,
+                                          fontSize: 9.5,
                                           color: Colors.grey.shade500,
                                           fontWeight: FontWeight.w500),
                                     ),

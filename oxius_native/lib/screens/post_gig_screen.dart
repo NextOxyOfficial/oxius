@@ -888,7 +888,6 @@ class _PostGigScreenState extends State<PostGigScreen> {
                                     style: GoogleFonts.inter(
                                       color: _emerald,
                                       fontWeight: FontWeight.w500,
-                                      decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ),
@@ -940,7 +939,6 @@ class _PostGigScreenState extends State<PostGigScreen> {
                                     'Click here to make a deposit',
                                     style: GoogleFonts.inter(
                                       color: _emerald,
-                                      decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ),

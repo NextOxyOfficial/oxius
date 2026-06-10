@@ -597,8 +597,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 Text(
                   _gig!['title'] ?? '',
                   style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                      letterSpacing: -0.2,
                       color: Colors.black87),
                 ),
                 const SizedBox(height: 10),
@@ -610,32 +612,34 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 // Description
                 const Text('About This Gig',
                     style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
                 Text(
                   _gig!['description'] ?? '',
                   style: TextStyle(
-                      color: Colors.grey[700], fontSize: 13, height: 1.5),
+                      color: Colors.grey[800], fontSize: 13.5, height: 1.55),
                 ),
                 const SizedBox(height: 14),
 
                 // What You'll Get
                 const Text("What You'll Get:",
                     style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 ..._getGigFeatures().map((feature) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.only(bottom: 7),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(Icons.check_circle,
-                              size: 16, color: Colors.green),
-                          const SizedBox(width: 8),
+                              size: 17, color: Colors.green),
+                          const SizedBox(width: 9),
                           Expanded(
                               child: Text(feature,
                                   style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 12))),
+                                      color: Colors.grey[800],
+                                      fontSize: 13,
+                                      height: 1.4))),
                         ],
                       ),
                     )),
@@ -644,7 +648,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 // Skills & Expertise
                 const Text('Skills & Expertise:',
                     style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -660,8 +664,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                             child: Text(skill,
                                 style: const TextStyle(
                                     color: Color(0xFF8B5CF6),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500)),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600)),
                           ))
                       .toList(),
                 ),
@@ -900,8 +904,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                         child: Text('($reviewsCount reviews)',
                             style: const TextStyle(
                                 color: Color(0xFF8B5CF6),
-                                fontSize: 11,
-                                decoration: TextDecoration.underline)),
+                                fontSize: 11,)),
                       ),
                     ],
                   ),

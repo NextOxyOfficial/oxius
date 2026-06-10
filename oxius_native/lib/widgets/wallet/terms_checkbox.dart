@@ -65,7 +65,6 @@ class TermsCheckbox extends StatelessWidget {
                           text: 'Terms & Conditions',
                           style: GoogleFonts.inter(
                             color: _indigo,
-                            decoration: TextDecoration.underline,
                             fontWeight: FontWeight.w700,
                           ),
                           recognizer: TapGestureRecognizer()
@@ -83,7 +82,6 @@ class TermsCheckbox extends StatelessWidget {
                           text: 'Privacy Policy',
                           style: GoogleFonts.inter(
                             color: _indigo,
-                            decoration: TextDecoration.underline,
                             fontWeight: FontWeight.w700,
                           ),
                           recognizer: TapGestureRecognizer()

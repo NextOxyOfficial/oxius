@@ -632,7 +632,11 @@ class _EshopScreenState extends State<EshopScreen>
               end: Alignment.centerRight,
             ),
           ),
+          // bottom: false — otherwise the white content sheet stops above the
+          // gesture-nav inset and the page gradient leaks through as an odd
+          // colored strip at the very bottom of the screen.
           child: SafeArea(
+            bottom: false,
             child: Stack(
               children: [
                 Column(

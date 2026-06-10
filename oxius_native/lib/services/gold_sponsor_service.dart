@@ -286,6 +286,69 @@ class GoldSponsorService {
   }
 
   // Get user's gold sponsor stats (for drawer/sidebar)
+  /// Full data of the logged-in user's sponsorships (for editing).
+  static Future<List<Map<String, dynamic>>> getMySponsors() async {
+    try {
+      final token = AuthService.accessToken;
+      if (token == null) return [];
+      final response = await http.get(
+        Uri.parse('$baseUrl/bn/gold-sponsors/my-sponsors/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final list = data is List ? data : (data['results'] ?? data['sponsors'] ?? []);
+        return List<Map<String, dynamic>>.from(
+            (list as List).map((e) => Map<String, dynamic>.from(e)));
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Error fetching my sponsors: $e');
+      return [];
+    }
+  }
+
+  static Future<bool> updateMySponsor(
+      int sponsorId, Map<String, dynamic> fields) async {
+    try {
+      final token = AuthService.accessToken;
+      if (token == null) return false;
+      final response = await http.put(
+        Uri.parse('$baseUrl/bn/gold-sponsors/update/$sponsorId/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(fields),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error updating sponsor: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> deleteMySponsor(int sponsorId) async {
+    try {
+      final token = AuthService.accessToken;
+      if (token == null) return false;
+      final response = await http.delete(
+        Uri.parse('$baseUrl/bn/gold-sponsors/delete/$sponsorId/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error deleting sponsor: $e');
+      return false;
+    }
+  }
+
   static Future<Map<String, dynamic>> getMySponsorsStats() async {
     try {
       final token = AuthService.accessToken;

@@ -4,11 +4,8 @@ import '../../services/mindforce_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/fcm_service.dart';
-import '../../widgets/business_network/business_network_header.dart';
-import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/skeleton_loader.dart';
-import '../business_network/profile_screen.dart';
 import '../business_network/notifications_screen.dart';
 import '../business_network/create_post_screen.dart';
 import 'create_problem_screen.dart';
@@ -217,31 +214,33 @@ class _MindForceScreenState extends State<MindForceScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _page,
-      appBar: BusinessNetworkHeader(
-        onMenuTap: () {
-          if (isMobile) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _scaffoldKey.currentState?.openDrawer();
-            });
-          }
-        },
-        onSearchTap: () {},
-        onProfileTap: () {
-          final user = AuthService.currentUser;
-          if (user != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileScreen(userId: user.id),
-              ),
-            );
-          }
-        },
+      // Back-style header: MindForce is a destination screen, so a simple
+      // back AppBar reads better than the full network header. The bottom
+      // navigation bar stays so the network footer is still one tap away.
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: _ink, size: 22),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        centerTitle: false,
+        titleSpacing: 0,
+        title: const Text(
+          'MindForce',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+            color: _ink,
+            letterSpacing: -0.3,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: _line),
+        ),
       ),
-      drawer: isMobile
-          ? const BusinessNetworkDrawer(
-              currentRoute: '/business-network/mindforce')
-          : null,
       body: _isLoading
           ? SkeletonLoader.listView(itemCount: 6, showAvatar: true)
           : _buildProblemsList(
@@ -361,31 +360,38 @@ class _MindForceScreenState extends State<MindForceScreen> {
   }
 
   Widget _buildTopMetric(String label, String value, Color tone) {
+    // Compact single-row chip: value + label side by side keeps the header
+    // light instead of three tall stat boxes.
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: tone,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(999),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: _muted,
-              letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w800,
               color: _ink,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: _muted,
+                letterSpacing: 0.2,
+              ),
             ),
           ),
         ],
@@ -950,6 +956,53 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                   ),
                                 ),
                               ),
+                            if (_isMyProblem(problem))
+                              SizedBox(
+                                width: 26,
+                                height: 26,
+                                child: PopupMenuButton<String>(
+                                  padding: EdgeInsets.zero,
+                                  icon: const Icon(Icons.more_vert,
+                                      size: 17, color: _muted),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  onSelected: (value) {
+                                    if (value == 'edit') {
+                                      _editProblem(problem);
+                                    } else if (value == 'delete') {
+                                      _deleteProblem(problem);
+                                    }
+                                  },
+                                  itemBuilder: (context) => const [
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.edit_outlined,
+                                              size: 18,
+                                              color: Color(0xFF3B82F6)),
+                                          SizedBox(width: 10),
+                                          Text('Edit'),
+                                        ],
+                                      ),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete_outline,
+                                              size: 18, color: Colors.red),
+                                          SizedBox(width: 10),
+                                          Text('Delete',
+                                              style: TextStyle(
+                                                  color: Colors.red)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -1186,6 +1239,205 @@ class _MindForceScreenState extends State<MindForceScreen> {
 
   bool _isUserPro(MindForceProblem problem) {
     return problem.userDetails.isPro;
+  }
+
+  bool _isMyProblem(MindForceProblem problem) {
+    final me = AuthService.currentUser;
+    if (me == null) return false;
+    return problem.userDetails.id.toString() == me.id;
+  }
+
+  Future<void> _editProblem(MindForceProblem problem) async {
+    final titleController = TextEditingController(text: problem.title);
+    final descController = TextEditingController(text: problem.description);
+    bool saving = false;
+
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const Text(
+                'Edit Problem',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _ink,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: titleController,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: descController,
+                minLines: 3,
+                maxLines: 7,
+                style: const TextStyle(fontSize: 14, height: 1.4),
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  alignLabelWithHint: true,
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: saving
+                          ? null
+                          : () => Navigator.pop(sheetContext, false),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _brand,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: saving
+                          ? null
+                          : () async {
+                              final newTitle = titleController.text.trim();
+                              final newDesc = descController.text.trim();
+                              if (newTitle.isEmpty || newDesc.isEmpty) return;
+                              setSheetState(() => saving = true);
+                              final ok = await MindForceService.updateProblem(
+                                problem.id,
+                                {
+                                  'title': newTitle,
+                                  'description': newDesc,
+                                },
+                              );
+                              if (!sheetContext.mounted) return;
+                              if (ok) {
+                                Navigator.pop(sheetContext, true);
+                              } else {
+                                setSheetState(() => saving = false);
+                                ScaffoldMessenger.of(sheetContext)
+                                    .showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Could not update the problem'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                      child: saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (saved == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Problem updated'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      await _loadData();
+    }
+  }
+
+  Future<void> _deleteProblem(MindForceProblem problem) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Problem'),
+        content: const Text(
+            'Are you sure you want to delete this problem? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final ok = await MindForceService.deleteProblem(problem.id);
+    if (!mounted) return;
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Problem deleted'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      await _loadData();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not delete the problem'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   bool _isUserVerified(MindForceProblem problem) {

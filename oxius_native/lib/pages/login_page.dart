@@ -219,7 +219,6 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       height: 1.6,
       fontWeight: FontWeight.w700,
       color: _primaryColor,
-      decoration: TextDecoration.underline,
       decorationColor: _primaryColor,
     );
 

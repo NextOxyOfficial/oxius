@@ -19,6 +19,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               // Custom AppBar

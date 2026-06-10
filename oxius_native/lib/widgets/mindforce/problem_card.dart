@@ -7,13 +7,21 @@ class MindForceProblemCard extends StatelessWidget {
   final MindForceProblem problem;
   final VoidCallback onTap;
   final String? currentUserId;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const MindForceProblemCard({
     super.key,
     required this.problem,
     required this.onTap,
     this.currentUserId,
+    this.onEdit,
+    this.onDelete,
   });
+
+  bool get _isOwner =>
+      currentUserId != null &&
+      currentUserId == problem.userDetails.id.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +123,51 @@ class MindForceProblemCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Owner actions — edit / delete my problem
+                if (_isOwner && (onEdit != null || onDelete != null))
+                  SizedBox(
+                    width: 34,
+                    height: 34,
+                    child: PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(Icons.more_vert,
+                          size: 20, color: Colors.grey.shade600),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      onSelected: (value) {
+                        if (value == 'edit') onEdit?.call();
+                        if (value == 'delete') onDelete?.call();
+                      },
+                      itemBuilder: (context) => [
+                        if (onEdit != null)
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined,
+                                    size: 18, color: Color(0xFF3B82F6)),
+                                SizedBox(width: 10),
+                                Text('Edit'),
+                              ],
+                            ),
+                          ),
+                        if (onDelete != null)
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline,
+                                    size: 18, color: Colors.red),
+                                SizedBox(width: 10),
+                                Text('Delete',
+                                    style: TextStyle(color: Colors.red)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
               ],
             ),
             

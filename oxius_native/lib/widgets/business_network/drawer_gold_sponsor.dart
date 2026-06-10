@@ -303,11 +303,258 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                   style: TextStyle(fontSize: 9, color: _getStatusColor(status), fontWeight: FontWeight.w600),
                 ),
               ),
+              // Manage my sponsorship: edit / delete
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: PopupMenuButton<String>(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(Icons.more_vert, size: 15, color: Colors.grey.shade500),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  onSelected: (value) {
+                    if (value == 'edit') _editSponsor(sponsor);
+                    if (value == 'delete') _deleteSponsor(sponsor);
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'edit',
+                      height: 40,
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 16, color: Color(0xFF3B82F6)),
+                          SizedBox(width: 8),
+                          Text('Edit', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      height: 40,
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Delete', style: TextStyle(fontSize: 13, color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         );
       }).toList(),
     );
+  }
+
+  Future<void> _editSponsor(Map<String, dynamic> sponsor) async {
+    final sponsorId = int.tryParse((sponsor['id'] ?? '').toString());
+    if (sponsorId == null) return;
+
+    // Pull the full record so description is prefilled too (the sidebar
+    // stats payload only carries name/image/status).
+    Map<String, dynamic> full = sponsor;
+    final mine = await GoldSponsorService.getMySponsors();
+    for (final m in mine) {
+      if ((m['id'] ?? '').toString() == sponsorId.toString()) {
+        full = m;
+        break;
+      }
+    }
+    if (!mounted) return;
+
+    final nameController = TextEditingController(
+        text: _plainSponsorText(full['business_name'] ?? full['name']));
+    final descController = TextEditingController(
+        text: _plainSponsorText(full['description']));
+    bool saving = false;
+
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const Text(
+                'Edit Sponsorship',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: nameController,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  labelText: 'Business name',
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: descController,
+                minLines: 2,
+                maxLines: 5,
+                style: const TextStyle(fontSize: 14, height: 1.4),
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  alignLabelWithHint: true,
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: saving
+                          ? null
+                          : () => Navigator.pop(sheetContext, false),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber.shade600,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: saving
+                          ? null
+                          : () async {
+                              final newName = nameController.text.trim();
+                              if (newName.isEmpty) return;
+                              setSheetState(() => saving = true);
+                              final ok =
+                                  await GoldSponsorService.updateMySponsor(
+                                sponsorId,
+                                {
+                                  'business_name': newName,
+                                  'description': descController.text.trim(),
+                                },
+                              );
+                              if (!sheetContext.mounted) return;
+                              if (ok) {
+                                Navigator.pop(sheetContext, true);
+                              } else {
+                                setSheetState(() => saving = false);
+                                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Could not update sponsorship'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                      child: saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (saved == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sponsorship updated'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      await _loadGoldSponsors();
+    }
+  }
+
+  Future<void> _deleteSponsor(Map<String, dynamic> sponsor) async {
+    final sponsorId = int.tryParse((sponsor['id'] ?? '').toString());
+    if (sponsorId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Sponsorship'),
+        content: const Text(
+            'Are you sure you want to delete this sponsorship? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final ok = await GoldSponsorService.deleteMySponsor(sponsorId);
+    if (!mounted) return;
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sponsorship deleted'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      await _loadGoldSponsors();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not delete sponsorship'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String _formatViews(int views) {

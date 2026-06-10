@@ -5323,11 +5323,75 @@ def ai_business_finder(request):
         # Using OpenAI
         if ai_config.provider == 'openai' and ai_config.api_key:
             try:
-                openai_url = "https://api.openai.com/v1/chat/completions"
                 headers = {
                     "Authorization": f"Bearer {ai_config.api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 }
+
+                # ------------------------------------------------------------------
+                # PRIMARY: web-search-grounded lookup via the Responses API.
+                # Model prior knowledge of small local Bangladeshi businesses is
+                # thin, which is where hallucinated names/phones came from. With
+                # the web_search tool the answer is built from live search
+                # results, so users get businesses that actually exist. Falls
+                # back to the legacy knowledge-only call below on any failure.
+                # ------------------------------------------------------------------
+                try:
+                    ws_prompt = (
+                        f"Search the web for real, currently operating "
+                        f"{business_type} businesses in {location_str}, Bangladesh. "
+                        "Use ONLY facts found in the search results — never your "
+                        "own guesses. Return ONLY a JSON array (no markdown, no "
+                        "commentary) of at most 5 objects with keys: name, "
+                        "description, address, phone, email, website. Rules: "
+                        "every business must come from an actual search result; "
+                        "set any field you did not find to null (never invent "
+                        "phone numbers, emails or websites); skip aggregator "
+                        "pages (facebook search pages, directories) as the "
+                        "business itself unless the page clearly belongs to that "
+                        "business; if nothing trustworthy is found return []."
+                    )
+                    ws_payload = {
+                        "model": "gpt-4o-mini",
+                        "tools": [{"type": "web_search_preview"}],
+                        "input": ws_prompt,
+                        "max_output_tokens": 1800,
+                    }
+                    ws_response = requests.post(
+                        "https://api.openai.com/v1/responses",
+                        headers=headers,
+                        json=ws_payload,
+                        timeout=60,
+                    )
+                    if ws_response.status_code == 200:
+                        ws_result = ws_response.json()
+                        ws_text = ""
+                        for item in ws_result.get("output", []) or []:
+                            if item.get("type") == "message":
+                                for part in item.get("content", []) or []:
+                                    if part.get("type") == "output_text":
+                                        ws_text += part.get("text", "")
+                        ws_text = (ws_text or "").strip()
+                        if ws_text.startswith("```"):
+                            ws_text = ws_text.strip("`")
+                            if ws_text.startswith("json"):
+                                ws_text = ws_text[4:]
+                            ws_text = ws_text.strip()
+                        # The model may wrap the array in prose — extract it.
+                        if not ws_text.startswith("["):
+                            start = ws_text.find("[")
+                            end = ws_text.rfind("]")
+                            if start != -1 and end > start:
+                                ws_text = ws_text[start:end + 1]
+                        ws_businesses = json.loads(ws_text) if ws_text else []
+                        if isinstance(ws_businesses, list) and ws_businesses:
+                            cleaned = _sanitize_businesses(ws_businesses)
+                            if cleaned:
+                                return Response({"businesses": cleaned})
+                except Exception as ws_err:
+                    logger.info("AI finder web-search path unavailable: %s", ws_err)
+
+                openai_url = "https://api.openai.com/v1/chat/completions"
                 
                 prompt = f"""You are a helpful assistant that finds local businesses in Bangladesh. 
 Find {business_type} businesses in {location_str}.

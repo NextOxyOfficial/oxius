@@ -801,8 +801,15 @@ class _PostCardState extends State<PostCard> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -822,7 +829,8 @@ class _PostCardState extends State<PostCard> {
           // Post Title with mention support and long press copy
           if (_post.title.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               child: GestureDetector(
                 onTap: _handleViewAllComments,
                 onLongPress: () {
@@ -841,10 +849,10 @@ class _PostCardState extends State<PostCard> {
                       context,
                       onMentionTap: _handleMentionTap,
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w600,
                         color: Color(0xFF111827),
-                        height: 1.55,
+                        height: 1.45,
                       ),
                     ),
                   ),
@@ -854,7 +862,8 @@ class _PostCardState extends State<PostCard> {
           // Post Content with long press copy
           if (plainPostContent.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -955,6 +964,7 @@ class _PostCardState extends State<PostCard> {
               ),
             ),
           // Post Actions (moved below title, content, and hashtags)
+          Divider(height: 1, thickness: 1, color: Colors.grey.shade100),
           PostActions(
             post: _post,
             onLike: _handleLike,
