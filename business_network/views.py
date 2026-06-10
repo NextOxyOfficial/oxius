@@ -21,7 +21,7 @@ from django.db.models.functions import Cast, Extract, Mod, Now, Power
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -1011,24 +1011,19 @@ class BusinessNetworkPostRetrieveUpdateDestroyView(
             return [IsAuthenticated()]
 
     def perform_update(self, serializer):
-        # Only allow the author to update the post
-        if serializer.instance.author == self.request.user:
-            serializer.save()
-        else:
-            return Response(
-                {"detail": "You do not have permission to edit this post."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # Only the author may update. NOTE: returning a Response from
+        # perform_update is silently DISCARDED by DRF — the old code skipped
+        # the save but still answered 200, so the client believed the edit
+        # succeeded. Raising is the correct contract (-> real 403).
+        if serializer.instance.author != self.request.user:
+            raise PermissionDenied("You do not have permission to edit this post.")
+        serializer.save()
 
     def perform_destroy(self, instance):
-        # Only allow the author to delete the post
-        if instance.author == self.request.user:
-            instance.delete()
-        else:
-            return Response(
-                {"detail": "You do not have permission to delete this post."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # Only the author may delete (same raising contract as above).
+        if instance.author != self.request.user:
+            raise PermissionDenied("You do not have permission to delete this post.")
+        instance.delete()
 
 
 class UserPostsListView(generics.ListAPIView):

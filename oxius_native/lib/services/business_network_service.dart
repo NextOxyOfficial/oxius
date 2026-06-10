@@ -659,7 +659,10 @@ class BusinessNetworkService {
         if (category != null) 'category': category,
       };
 
-      final response = await http.put(
+      // PATCH (partial update) — PUT requires every writable serializer
+      // field, so a content-only edit could 400 on required fields the app
+      // never sends.
+      final response = await http.patch(
         Uri.parse('$_baseUrl/posts/$postId/'),
         headers: headers,
         body: json.encode(body),

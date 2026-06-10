@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../screens/business_network/profile_screen.dart';
 
 class PostActions extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -33,8 +34,8 @@ class PostActions extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 2),
               child: Image.asset(
                 post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
-                width: 22,
-                height: 22,
+                width: 19,
+                height: 19,
                 fit: BoxFit.contain,
               ),
             ),
@@ -47,7 +48,7 @@ class PostActions extends StatelessWidget {
               child: Text(
                 '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 13.5,
                   color: Colors.grey.shade700,
                   fontWeight: FontWeight.w500,
                 ),
@@ -134,8 +135,8 @@ class _ActionButton extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 4),
               child: Image.asset(
                 iconPath,
-                width: 22,
-                height: 22,
+                width: 19,
+                height: 19,
                 fit: BoxFit.contain,
               ),
             ),
@@ -143,7 +144,7 @@ class _ActionButton extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 13.5,
                 color: Colors.grey.shade700,
                 fontWeight: FontWeight.w500,
               ),
@@ -246,6 +247,19 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
     );
   }
 
+  void _openProfile(PostLike like) {
+    if (like.userUuid.isEmpty) return;
+    // Close the likers sheet first, then open the profile on the same
+    // navigator so back returns to the post (not a stale sheet).
+    final navigator = Navigator.of(context);
+    navigator.pop();
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => ProfileScreen(userId: like.userUuid),
+      ),
+    );
+  }
+
   Widget _buildLikerRow(PostLike like) {
     final following = _isFollowing(like);
     final busy = _busy.contains(like.userUuid);
@@ -255,43 +269,52 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage: hasImage ? NetworkImage(like.userImage!) : null,
-            child: !hasImage
-                ? Text(
-                    like.userName.isNotEmpty
-                        ? like.userName[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
+          // Avatar + name open the liker's profile.
           Expanded(
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    like.userName.isNotEmpty ? like.userName : 'AdsyClub user',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+            child: InkWell(
+              onTap: like.userUuid.isEmpty ? null : () => _openProfile(like),
+              borderRadius: BorderRadius.circular(8),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage:
+                        hasImage ? NetworkImage(like.userImage!) : null,
+                    child: !hasImage
+                        ? Text(
+                            like.userName.isNotEmpty
+                                ? like.userName[0].toUpperCase()
+                                : '?',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          )
+                        : null,
                   ),
-                ),
-                if (like.isVerified) ...[
-                  const SizedBox(width: 4),
-                  const Icon(Icons.verified, size: 16, color: Color(0xFF3B82F6)),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      like.userName.isNotEmpty
+                          ? like.userName
+                          : 'AdsyClub user',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (like.isVerified) ...[
+                    const SizedBox(width: 4),
+                    const Icon(Icons.verified,
+                        size: 16, color: Color(0xFF3B82F6)),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           const SizedBox(width: 10),

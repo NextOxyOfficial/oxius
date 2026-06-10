@@ -494,14 +494,159 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
-  void _handleEditPost() {
-    // TODO: Navigate to edit post screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Edit post feature coming soon'),
-        duration: Duration(seconds: 2),
+  Future<void> _handleEditPost() async {
+    final controller = TextEditingController(text: _post.content);
+    bool saving = false;
+
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 12,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    'Edit Post',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    minLines: 3,
+                    maxLines: 8,
+                    style: const TextStyle(fontSize: 14, height: 1.4),
+                    decoration: InputDecoration(
+                      hintText: 'What do you want to share?',
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Color(0xFF3B82F6)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: saving
+                              ? null
+                              : () => Navigator.pop(sheetContext, false),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B82F6),
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: saving
+                              ? null
+                              : () async {
+                                  final newText = controller.text.trim();
+                                  if (newText.isEmpty) return;
+                                  setSheetState(() => saving = true);
+                                  final updated =
+                                      await BusinessNetworkService.updatePost(
+                                    postId: _post.id,
+                                    content: newText,
+                                  );
+                                  if (!sheetContext.mounted) return;
+                                  if (updated != null) {
+                                    Navigator.pop(sheetContext, true);
+                                  } else {
+                                    setSheetState(() => saving = false);
+                                    ScaffoldMessenger.of(sheetContext)
+                                        .showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Could not update the post'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                },
+                          child: saving
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Save'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
+
+    if (saved == true && mounted) {
+      // Re-fetch so the card shows the edited content with any server-side
+      // processing (mention formatting etc.) applied.
+      final refreshed = await BusinessNetworkService.getPost(_post.id);
+      if (!mounted) return;
+      setState(() {
+        if (refreshed != null) {
+          _post = refreshed;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Post updated'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _handleDeletePost() async {

@@ -110,8 +110,52 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
 
     if (type == 'new_message' || type == 'message_read') {
+      if (type == 'new_message') {
+        // Instant UI update from the socket payload itself; the background
+        // re-fetch below then reconciles with authoritative server data.
+        _applyIncomingMessageToList(event['message']);
+      }
       unawaited(_refreshChatsInBackground());
     }
+  }
+
+  /// Instantly reflect an incoming message on the chat list — preview, time,
+  /// unread badge and position (move to top) — without waiting for the
+  /// background page-1 re-fetch.
+  void _applyIncomingMessageToList(dynamic message) {
+    if (message is! Map) return;
+    final roomId = (message['chatroom'] ?? '').toString();
+    if (roomId.isEmpty) return;
+
+    final index = _chatConversations
+        .indexWhere((c) => (c['id'] ?? '').toString() == roomId);
+    if (index == -1) {
+      // Brand-new conversation — the background refresh inserts it.
+      return;
+    }
+
+    final preview =
+        (message['display_content'] ?? message['content'] ?? '').toString();
+    final createdAt =
+        DateTime.tryParse((message['created_at'] ?? '').toString()) ??
+            DateTime.now();
+    final senderId =
+        (message['sender'] is Map ? message['sender']['id'] : null)
+            ?.toString();
+    final isFromPeer = senderId != null &&
+        senderId == (_chatConversations[index]['userId'] ?? '').toString();
+
+    setState(() {
+      final chat = _chatConversations.removeAt(index);
+      if (preview.isNotEmpty) {
+        chat['lastMessage'] = preview;
+      }
+      chat['timestamp'] = createdAt;
+      if (isFromPeer) {
+        chat['unreadCount'] = ((chat['unreadCount'] as num?) ?? 0).toInt() + 1;
+      }
+      _chatConversations.insert(0, chat);
+    });
   }
 
   void _onChatSearchChanged() {

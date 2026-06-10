@@ -1,4 +1,6 @@
 class TimeUtils {
+  static String _plural(int n, String unit) => '$n $unit${n == 1 ? '' : 's'}';
+
   static String formatTimeAgo(String dateString) {
     try {
       final date = DateTime.parse(dateString);
@@ -6,17 +8,15 @@ class TimeUtils {
       final difference = now.difference(date);
 
       if (difference.inDays > 365) {
-        final years = (difference.inDays / 365).floor();
-        return '$years Year';
+        return _plural((difference.inDays / 365).floor(), 'Year');
       } else if (difference.inDays > 30) {
-        final months = (difference.inDays / 30).floor();
-        return '$months Month';
+        return _plural((difference.inDays / 30).floor(), 'Month');
       } else if (difference.inDays > 0) {
-        return '${difference.inDays} Day';
+        return _plural(difference.inDays, 'Day');
       } else if (difference.inHours > 0) {
-        return '${difference.inHours} Hour';
+        return _plural(difference.inHours, 'Hour');
       } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes} Minute';
+        return _plural(difference.inMinutes, 'Minute');
       } else {
         return 'Just now';
       }

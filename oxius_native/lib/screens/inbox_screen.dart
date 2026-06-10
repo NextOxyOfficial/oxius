@@ -2113,16 +2113,59 @@ class _NewChatModalState extends State<_NewChatModal> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          userName,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF1F2937),
-                                            letterSpacing: -0.2,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                userName,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF1F2937),
+                                                  letterSpacing: -0.2,
+                                                ),
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            // Verified badge — same source
+                                            // the feed uses (kyc).
+                                            if (user['kyc'] == true ||
+                                                user['is_verified'] ==
+                                                    true) ...[
+                                              const SizedBox(width: 4),
+                                              const Icon(Icons.verified,
+                                                  size: 15,
+                                                  color: Color(0xFF3B82F6)),
+                                            ],
+                                            // Pro pill — same as the feed.
+                                            if (user['is_pro'] == true) ...[
+                                              const SizedBox(width: 4),
+                                              Container(
+                                                padding: const EdgeInsets
+                                                    .symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 1.5),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      const Color(0xFF3B82F6),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8),
+                                                ),
+                                                child: const Text(
+                                                  'Pro',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight:
+                                                        FontWeight.w700,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                         if (user['profession'] != null) ...[
                                           const SizedBox(height: 2),

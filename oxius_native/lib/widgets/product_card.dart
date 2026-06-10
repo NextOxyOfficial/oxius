@@ -6,17 +6,30 @@ import '../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ProductCardLayout {
-  static double detailsHeight(double screenWidth) {
-    if (screenWidth < 360) return 112.0;
-    if (screenWidth > 600) return 128.0;
-    return 120.0;
+  static double detailsHeight(double screenWidth, {double textScale = 1.0}) {
+    final double base;
+    if (screenWidth < 360) {
+      base = 112.0;
+    } else if (screenWidth > 600) {
+      base = 128.0;
+    } else {
+      base = 120.0;
+    }
+    // ~76px of the details block is text (price, title, store row); when the
+    // device renders text larger (system font scale / different font
+    // metrics) the old fixed estimate clipped the Buy Now button with a
+    // "BOTTOM OVERFLOWED" stripe. Grow the reserve with the text scale and
+    // keep a small constant slack for per-device glyph differences.
+    final ts = textScale.clamp(1.0, 1.6);
+    return base + 6.0 + (ts - 1.0) * 76.0;
   }
 
   static double cardHeight({
     required double cardWidth,
     required double screenWidth,
+    double textScale = 1.0,
   }) {
-    return cardWidth + detailsHeight(screenWidth);
+    return cardWidth + detailsHeight(screenWidth, textScale: textScale);
   }
 
   static SliverGridDelegate buildGridDelegate({
@@ -25,6 +38,7 @@ class ProductCardLayout {
     int crossAxisCount = 2,
     double crossAxisSpacing = 8,
     double mainAxisSpacing = 8,
+    double textScale = 1.0,
   }) {
     final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
     final usableWidth =
@@ -36,8 +50,11 @@ class ProductCardLayout {
       crossAxisCount: crossAxisCount,
       crossAxisSpacing: crossAxisSpacing,
       mainAxisSpacing: mainAxisSpacing,
-      mainAxisExtent:
-          cardHeight(cardWidth: cardWidth, screenWidth: screenWidth),
+      mainAxisExtent: cardHeight(
+        cardWidth: cardWidth,
+        screenWidth: screenWidth,
+        textScale: textScale,
+      ),
     );
   }
 
@@ -47,9 +64,17 @@ class ProductCardLayout {
     return 188.0;
   }
 
-  static double horizontalCardHeight(double screenWidth, {double? cardWidth}) {
+  static double horizontalCardHeight(
+    double screenWidth, {
+    double? cardWidth,
+    double textScale = 1.0,
+  }) {
     final width = cardWidth ?? horizontalCardWidth(screenWidth);
-    return cardHeight(cardWidth: width, screenWidth: screenWidth);
+    return cardHeight(
+      cardWidth: width,
+      screenWidth: screenWidth,
+      textScale: textScale,
+    );
   }
 }
 

@@ -97,17 +97,17 @@ class PostHeader extends StatelessWidget {
           GestureDetector(
             onTap: () => _navigateToProfile(context),
             child: Container(
-              width: 40,
-              height: 40,
+              width: 46,
+              height: 46,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(23),
                 border: Border.all(
                   color: Colors.grey.shade200,
                   width: 1,
                 ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(23),
                 child: _buildUserAvatar(),
               ),
             ),

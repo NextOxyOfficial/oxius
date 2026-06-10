@@ -234,10 +234,36 @@ class AdsyConnectRealtimeService {
       ].join('|');
     }
 
-    return '$type|'
-        '${event['chatroom_id'] ?? ''}|'
-        '${event['user_id'] ?? ''}|'
-        '${event['timestamp'] ?? event['created_at'] ?? ''}';
+    // Chat events (new_message / message_sent / edits / deletes) carry their
+    // identifiers inside the nested `message` map. With only top-level fields
+    // every one of them hashed to the same fingerprint, so the dedupe filter
+    // swallowed all but the FIRST event — the chat list then sat frozen until
+    // a manual reload. Hash the message id (+ content state, so edits and
+    // soft-deletes of the same message still get through).
+    final message = event['message'];
+    if (message is Map) {
+      final mid = message['id']?.toString() ?? '';
+      if (mid.isNotEmpty) {
+        return '$type|msg:$mid'
+            '|${message['is_deleted'] ?? ''}'
+            '|${(message['content'] ?? '').hashCode}'
+            '|${message['is_read'] ?? ''}';
+      }
+    }
+
+    // Status-style events flip a boolean (typing on/off, online/offline) with
+    // no timestamp — include the state itself so the "off" event isn't treated
+    // as a duplicate of the earlier "on".
+    return [
+      type,
+      event['chatroom_id'] ?? '',
+      event['user_id'] ?? '',
+      event['message_id'] ?? '',
+      event['is_typing'] ?? '',
+      event['is_online'] ?? '',
+      event['status'] ?? '',
+      event['timestamp'] ?? event['created_at'] ?? '',
+    ].join('|');
   }
 
   void _send(Map<String, dynamic> payload) {

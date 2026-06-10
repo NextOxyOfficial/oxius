@@ -507,7 +507,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
       if (diff.inDays == 0) return 'Today';
       if (diff.inDays == 1) return 'Yesterday';
-      if (diff.inDays < 7) return '${diff.inDays} days ago';
+      if (diff.inDays < 7) return '${diff.inDays} day${diff.inDays == 1 ? '' : 's'} ago';
       if (diff.inDays < 30) {
         return '${(diff.inDays / 7).floor()} week${diff.inDays >= 14 ? 's' : ''} ago';
       }

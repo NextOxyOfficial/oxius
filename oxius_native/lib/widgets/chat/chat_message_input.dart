@@ -392,23 +392,28 @@ class ChatMessageInput extends StatelessWidget {
         if (hasReply) _buildReplyPreview(),
 
         // --- Text row ---
-        Container(
-          margin: const EdgeInsets.fromLTRB(8, 4, 8, 8),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.88),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.84)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            top: false,
+        // SafeArea must wrap the pill from OUTSIDE: with it inside, the
+        // gesture-nav bottom inset stretched the rounded pill itself,
+        // leaving a blank white band under the text field. Outside, the
+        // pill keeps its compact height and the inset shows the page
+        // gradient instead.
+        SafeArea(
+          top: false,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.88),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.84)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
             child: Row(
               children: [
                 // Attachment button

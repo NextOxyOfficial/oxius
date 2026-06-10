@@ -271,15 +271,16 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
 
         // Square image (height == width) + details section
         final detailsHeight = isMobile ? 104.0 : 118.0;
-        final childAspectRatio =
-            cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.72;
 
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          // Explicit zero padding: nested grids otherwise inherit the ambient
+          // MediaQuery insets, which rendered as phantom gaps on devices.
+          padding: EdgeInsets.zero,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            childAspectRatio: childAspectRatio,
+            mainAxisExtent: cellWidth + detailsHeight,
             crossAxisSpacing: crossAxisSpacing,
             mainAxisSpacing: mainAxisSpacing,
           ),
@@ -380,17 +381,21 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
         final cellWidth =
             (available / crossAxisCount).clamp(0.0, double.infinity);
 
-        // Square image (height == width) + fixed-ish details block
-        final childAspectRatio = cellWidth > 0
-            ? (cellWidth / (cellWidth + detailsHeight))
-            : (isMobile ? 0.72 : 0.66);
+        // Square image (height == width) + a details block that grows with
+        // the device's text scale so taller glyphs don't overflow the cell.
+        final ts =
+            MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.6);
+        final scaledDetails = detailsHeight + 4.0 + (ts - 1.0) * 56.0;
 
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          // Explicit zero padding: nested grids otherwise inherit the ambient
+          // MediaQuery insets, which rendered as phantom gaps on devices.
+          padding: EdgeInsets.zero,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            childAspectRatio: childAspectRatio,
+            mainAxisExtent: cellWidth + scaledDetails,
             crossAxisSpacing: crossAxisSpacing,
             mainAxisSpacing: mainAxisSpacing,
           ),

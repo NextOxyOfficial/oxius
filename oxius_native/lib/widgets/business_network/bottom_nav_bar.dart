@@ -199,20 +199,20 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                     child: useFavicon
                         ? Image.asset(
                             'assets/images/favicon.png',
-                            width: 22,
-                            height: 22,
+                            width: 26,
+                            height: 26,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               return Icon(
                                 icon,
-                                size: 22,
+                                size: 26,
                                 color: isActive ? color : Colors.grey.shade600,
                               );
                             },
                           )
                         : Icon(
                             icon,
-                            size: 22,
+                            size: 26,
                             color: isActive ? color : Colors.grey.shade600,
                           ),
                   ),

@@ -132,7 +132,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
             _buildEmptyContent()
           else
             SizedBox(
-              height: 100,
+              height: 128,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -151,20 +151,20 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
 
   Widget _buildLoadingContent() {
     return SizedBox(
-      height: 100,
+      height: 128,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         itemCount: 5,
         itemBuilder: (context, index) {
           return Container(
-            width: 80,
+            width: 96,
             padding: const EdgeInsets.all(8),
             child: Column(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 68,
+                  height: 68,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.amber.shade100,
@@ -205,15 +205,15 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
     return GestureDetector(
       onTap: () => _showSponsorModal(sponsor),
       child: Container(
-        width: 80,
-        padding: const EdgeInsets.all(8),
+        width: 96,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         child: Column(
           children: [
             Stack(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 68,
+                  height: 68,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -273,14 +273,17 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
               ],
             ),
             const SizedBox(height: 6),
+            // Full business name — wraps to a second line instead of
+            // truncating after a few characters.
             Text(
               sponsor.businessName,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+                fontSize: 12.5,
+                height: 1.15,
+                fontWeight: FontWeight.w600,
                 color: Color(0xFF78350F),
               ),
             ),

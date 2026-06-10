@@ -135,7 +135,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
     } else if (difference.inDays == 1) {
       return 'Yesterday';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
     } else {
       return '${lastOrder.day}/${lastOrder.month}/${lastOrder.year}';
     }

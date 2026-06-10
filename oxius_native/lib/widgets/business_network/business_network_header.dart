@@ -248,7 +248,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               ),
             );
           },
-          icon: const Icon(Icons.search, size: 22),
+          icon: const Icon(Icons.search, size: 26),
           color: Colors.grey.shade700,
           tooltip: 'Search',
         ),

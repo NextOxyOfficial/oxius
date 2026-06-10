@@ -173,17 +173,17 @@ class _PostCommentInputState extends State<PostCommentInput> {
         children: [
           // User Avatar
           Container(
-            width: 32,
-            height: 32,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(19),
               border: Border.all(
                 color: Colors.grey.shade200,
                 width: 1,
               ),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(19),
               child: () {
                 final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
 

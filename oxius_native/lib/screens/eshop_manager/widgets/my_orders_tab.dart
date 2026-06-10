@@ -1068,7 +1068,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
     } else if (difference.inDays == 1) {
       return 'Yesterday';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }

@@ -67,12 +67,18 @@ class SponsoredProductsCard extends StatelessWidget {
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
+                // Without an explicit padding, a nested GridView inherits the
+                // ambient MediaQuery padding (status bar / nav insets) which
+                // showed up as mystery gaps above and below this section on
+                // real devices (but not in Chrome where insets are zero).
+                padding: EdgeInsets.zero,
                 gridDelegate: ProductCardLayout.buildGridDelegate(
                   availableWidth: constraints.maxWidth,
                   screenWidth: screenWidth,
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: crossAxisSpacing,
                   mainAxisSpacing: mainAxisSpacing,
+                  textScale: MediaQuery.textScalerOf(context).scale(1.0),
                 ),
                 itemCount: displayProducts.length,
                 itemBuilder: (context, index) {
