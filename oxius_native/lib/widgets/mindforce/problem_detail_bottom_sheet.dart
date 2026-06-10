@@ -89,6 +89,52 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     return _problem!.userDetails.id == currentUserId;
   }
 
+  Future<void> _deleteProblem() async {
+    final problem = _problem;
+    if (problem == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Problem'),
+        content: const Text(
+            'আপনি কি নিশ্চিত এই পোস্টটি মুছে ফেলতে চান? এটি আর ফিরে পাওয়া যাবে না।'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final ok = await MindForceService.deleteProblem(problem.id);
+    if (!mounted) return;
+    if (ok) {
+      // Pop the sheet with a result so the list screen can refresh.
+      Navigator.pop(context, 'deleted');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('পোস্ট মুছে ফেলা হয়েছে'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('পোস্ট মুছে ফেলা যায়নি'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
   bool _canDeleteComment(MindForceComment comment) {
     return _isProblemOwner() || _isCommentAuthor(comment);
   }
@@ -446,6 +492,18 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                         ),
                       ),
                     ),
+                    // Owner can delete their own problem from here.
+                    if (!_isLoading && _problem != null && _isProblemOwner())
+                      IconButton(
+                        onPressed: _deleteProblem,
+                        icon: const Icon(Icons.delete_outline_rounded,
+                            color: Color(0xFFEF4444)),
+                        tooltip: 'Delete',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    if (!_isLoading && _problem != null && _isProblemOwner())
+                      const SizedBox(width: 10),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close_rounded),

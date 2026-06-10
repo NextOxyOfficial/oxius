@@ -2026,8 +2026,26 @@ class BusinessNetworkMindforceRetrieveUpdateDestroyView(
 ):
     queryset = BusinessNetworkMindforce.objects.all()
     serializer_class = BusinessNetworkMindforceSerializer
-    permission_classes = [IsAuthenticated]
     lookup_field = "id"
+
+    def get_permissions(self):
+        # Anyone can read a problem; only authenticated users may edit/delete.
+        if self.request.method == "GET":
+            return []
+        return [IsAuthenticated()]
+
+    def perform_update(self, serializer):
+        # Only the author may edit (raise -> real 403; a returned Response
+        # from perform_* is silently discarded by DRF).
+        if serializer.instance.user_id != self.request.user.id:
+            raise PermissionDenied("You can only edit your own problem.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        # Only the author may delete their problem.
+        if instance.user_id != self.request.user.id:
+            raise PermissionDenied("You can only delete your own problem.")
+        instance.delete()
 
 
 class BusinessNetworkMindforceCommentsListCreateView(generics.ListCreateAPIView):

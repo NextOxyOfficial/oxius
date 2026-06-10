@@ -827,8 +827,8 @@ class _MindForceScreenState extends State<MindForceScreen> {
     return Material(
       color: Colors.white,
       child: InkWell(
-        onTap: () {
-          showModalBottomSheet(
+        onTap: () async {
+          final result = await showModalBottomSheet<String>(
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
@@ -836,6 +836,11 @@ class _MindForceScreenState extends State<MindForceScreen> {
               problemId: problem.id,
             ),
           );
+          // The detail sheet pops 'deleted' after the owner deletes — refresh
+          // the list so the removed post disappears immediately.
+          if (result == 'deleted' && mounted) {
+            _loadData();
+          }
         },
         child: Container(
           padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
