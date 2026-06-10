@@ -19,15 +19,17 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         from base.models import FCMToken
-        from engagement.guest_promos import GUEST_PROMO_MAX
+        from engagement.guest_promos import GUEST_PROMOS
 
         guests = FCMToken.objects.filter(user__isnull=True, is_active=True)
         total = guests.count()
-        finished = guests.filter(promo_count__gte=GUEST_PROMO_MAX).count()
         fresh = guests.filter(promo_count=0).count()
+        # Series loops forever (one/day); show total pushes already sent.
+        from django.db.models import Sum
+        delivered = guests.aggregate(s=Sum("promo_count"))["s"] or 0
         self.stdout.write(
-            "GUESTS total=%d untouched=%d finished=%d series_len=%d"
-            % (total, fresh, finished, GUEST_PROMO_MAX)
+            "GUESTS total=%d untouched=%d pushes_sent=%d series_len=%d (loops daily)"
+            % (total, fresh, delivered, len(GUEST_PROMOS))
         )
         if opts["status"]:
             return

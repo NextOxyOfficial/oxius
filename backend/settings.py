@@ -597,8 +597,10 @@ ENGAGEMENT_EMAIL_COOLDOWN_DAYS = 3         # at most one engagement email / N da
 # series is done. ENABLED so it starts working as soon as guest tokens are
 # captured by the new app build.
 GUEST_NUDGES_ENABLED = True
-GUEST_NUDGE_COOLDOWN_DAYS = 3              # gap between guest pushes per device
+GUEST_NUDGE_COOLDOWN_DAYS = 1              # one guest push per device per day
 GUEST_NUDGE_PER_RUN_CAP = 500             # anti-burst: max guest pushes per run
+# Note: the series loops forever (one message/day, cycling) until the device
+# registers — it does not stop after the 6 messages.
 
 # ShurjoPay Settings
 SP_USERNAME = "lyriczsoft"

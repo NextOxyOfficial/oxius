@@ -601,26 +601,26 @@ def run_email_engine(dry_run=False):
 def run_guest_nudges(dry_run=False):
     """Registration-conversion pushes to GUEST devices (FCMToken.user is None).
 
-    Picks guest tokens that are due (cooldown elapsed, series not finished),
-    sends the next message in the rotation, and records progress on the token
-    row (last_promo_at / promo_count). Flag-gated and capped per run.
+    Sends one message per due device per run, cycling through the message list
+    forever (one per day) — it does NOT stop after the series; promo_count just
+    keeps counting and we wrap with modulo so the messages keep rotating until
+    the device registers (which removes it from the guest pool).
     """
     from django.db.models import Q
     from base.models import FCMToken
     from base.fcm_service import send_fcm_notification_multicast
-    from .guest_promos import GUEST_PROMOS, GUEST_PROMO_MAX
+    from .guest_promos import GUEST_PROMOS
 
     if not getattr(settings, "GUEST_NUDGES_ENABLED", False) and not dry_run:
         return {"skipped": "disabled"}
 
     now = timezone.now()
-    cooldown_days = getattr(settings, "GUEST_NUDGE_COOLDOWN_DAYS", 3)
+    cooldown_days = getattr(settings, "GUEST_NUDGE_COOLDOWN_DAYS", 1)
     per_run_cap = getattr(settings, "GUEST_NUDGE_PER_RUN_CAP", 500)
     cutoff = now - timedelta(days=cooldown_days)
 
     qs = (
         FCMToken.objects.filter(user__isnull=True, is_active=True)
-        .filter(promo_count__lt=GUEST_PROMO_MAX)
         .filter(Q(last_promo_at__isnull=True) | Q(last_promo_at__lt=cutoff))
         .order_by("last_promo_at")
     )
@@ -630,7 +630,8 @@ def run_guest_nudges(dry_run=False):
     for tok in qs.iterator(chunk_size=500):
         if sent >= per_run_cap:
             break
-        idx = tok.promo_count if tok.promo_count < len(GUEST_PROMOS) else 0
+        # Wrap forever so the series loops: #0,#1,...,#5,#0,#1,...
+        idx = tok.promo_count % len(GUEST_PROMOS)
         title, body, deep_link = GUEST_PROMOS[idx]
         by_index[idx] += 1
         if dry_run:
