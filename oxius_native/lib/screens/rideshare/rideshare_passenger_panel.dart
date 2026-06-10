@@ -1702,7 +1702,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       'ride complete and wallet payment confirmed.':
           'রাইড সম্পন্ন এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।',
       'you already have an active ride.':
-          'আপনার ইতোমধ্যে একটি রাইড চলমান রয়েছে।',
+          'আপনার ইতিমধ্যে একটি রাইড চলছে।',
       'ride requested successfully.': 'রাইড রিকোয়েস্ট সফলভাবে করা হয়েছে।',
       'no drivers available. ride cancelled automatically.':
           'কোনো ড্রাইভার পাওয়া যায়নি। রাইড স্বয়ংক্রিয়ভাবে বাতিল হয়েছে।',
