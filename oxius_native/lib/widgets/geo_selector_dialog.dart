@@ -374,6 +374,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               itemHeight: 52,
                               dropdownColor: Colors.white,
                               borderRadius: BorderRadius.circular(14),
+                              selectedItemBuilder: (context) => _regions
+                                  .map((region) => _buildSelectedDropdownText(
+                                      region.nameEng))
+                                  .toList(),
                               initialValue: _regions
                                       .any((r) => r.nameEng == _selectedState)
                                   ? _selectedState
@@ -385,10 +389,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 13,
+                                  vertical: 8,
                                 ),
                               ),
-                              isDense: false,
+                              isDense: true,
                               isExpanded: true,
                               icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
@@ -454,6 +458,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               itemHeight: 52,
                               dropdownColor: Colors.white,
                               borderRadius: BorderRadius.circular(14),
+                              selectedItemBuilder: (context) => _cities
+                                  .map((city) =>
+                                      _buildSelectedDropdownText(city.nameEng))
+                                  .toList(),
                               initialValue:
                                   _cities.any((c) => c.nameEng == _selectedCity)
                                       ? _selectedCity
@@ -465,10 +473,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 13,
+                                  vertical: 8,
                                 ),
                               ),
-                              isDense: false,
+                              isDense: true,
                               isExpanded: true,
                               icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
@@ -534,6 +542,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               itemHeight: 52,
                               dropdownColor: Colors.white,
                               borderRadius: BorderRadius.circular(14),
+                              selectedItemBuilder: (context) => _upazilas
+                                  .map((upazila) => _buildSelectedDropdownText(
+                                      upazila.nameEng))
+                                  .toList(),
                               initialValue: _upazilas
                                       .any((u) => u.nameEng == _selectedUpazila)
                                   ? _selectedUpazila
@@ -545,10 +557,10 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 13,
+                                  vertical: 8,
                                 ),
                               ),
-                              isDense: false,
+                              isDense: true,
                               isExpanded: true,
                               icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
@@ -692,6 +704,22 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
   double _dropdownMenuMaxHeight(BuildContext context) {
     final screenHeight = MediaQuery.sizeOf(context).height;
     return (screenHeight * 0.42).clamp(220.0, 340.0).toDouble();
+  }
+
+  Widget _buildSelectedDropdownText(String value) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        value,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF111827),
+          fontWeight: FontWeight.w500,
+          height: 1.1,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
   }
 
   Widget _buildFormField({
