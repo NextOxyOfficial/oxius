@@ -292,6 +292,12 @@ class NID(models.Model):
                     send_kyc_received_email(self.user)
                 except Exception as e:
                     print(f"Error sending KYC received email: {e}")
+                # Notify the admin that a new KYC needs review.
+                try:
+                    from .email_service import notify_admin_kyc_submission
+                    notify_admin_kyc_submission(self.user)
+                except Exception as e:
+                    print(f"Error sending KYC admin notification: {e}")
 
 
 class Logo(models.Model):
