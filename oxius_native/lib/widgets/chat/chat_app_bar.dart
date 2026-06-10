@@ -317,10 +317,13 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildNameRow() {
-    final badgeWidth = (isVerified ? 19.0 : 0.0) + (isPro ? 35.0 : 0.0);
+    final badgeWidth = (isVerified ? 21.0 : 0.0) + (isPro ? 35.0 : 0.0);
     return Row(
       children: [
-        Expanded(
+        // Flexible(loose) — with Expanded a short name still claimed the
+        // full row width, shoving the verified/PRO badges to the far right
+        // edge instead of sitting next to the name.
+        Flexible(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final textPainter = TextPainter(
@@ -366,7 +369,17 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         if (isVerified) ...[
           const SizedBox(width: 4),
-          const Icon(Icons.verified, size: 15, color: Color(0xFF3B82F6)),
+          // White ring so the blue tick stays readable on the purple
+          // gradient header instead of melting into it.
+          Container(
+            padding: const EdgeInsets.all(1.5),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.verified,
+                size: 14, color: Color(0xFF3B82F6)),
+          ),
         ],
         if (isPro) ...[
           const SizedBox(width: 4),

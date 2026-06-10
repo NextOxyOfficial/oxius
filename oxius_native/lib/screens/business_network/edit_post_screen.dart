@@ -18,13 +18,16 @@ class EditPostScreen extends StatefulWidget {
 class _EditPostScreenState extends State<EditPostScreen> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
+  late final TextEditingController _tagController;
+  late final List<String> _tags;
   late String _visibility;
   bool _isSaving = false;
 
   bool get _hasChanges {
     return _titleController.text.trim() != widget.post.title.trim() ||
         _contentController.text.trim() != widget.post.content.trim() ||
-        _visibility != widget.post.visibility;
+        _visibility != widget.post.visibility ||
+        !_listEquals(_tags, widget.post.tags.map((tag) => tag.tag).toList());
   }
 
   @override
@@ -32,16 +35,63 @@ class _EditPostScreenState extends State<EditPostScreen> {
     super.initState();
     _titleController = TextEditingController(text: widget.post.title);
     _contentController = TextEditingController(text: widget.post.content);
+    _tagController = TextEditingController();
+    _tags = widget.post.tags
+        .map((tag) => _normalizeTag(tag.tag))
+        .where((tag) => tag.isNotEmpty)
+        .toSet()
+        .toList();
     _visibility = widget.post.visibility.trim().isEmpty
         ? 'public'
         : widget.post.visibility;
+    // Re-evaluate _hasChanges (Save button state) as the user types.
+    _titleController.addListener(_onFieldChanged);
+    _contentController.addListener(_onFieldChanged);
+  }
+
+  void _onFieldChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    _titleController.removeListener(_onFieldChanged);
+    _contentController.removeListener(_onFieldChanged);
     _titleController.dispose();
     _contentController.dispose();
+    _tagController.dispose();
     super.dispose();
+  }
+
+  bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (_normalizeTag(a[i]) != _normalizeTag(b[i])) return false;
+    }
+    return true;
+  }
+
+  String _normalizeTag(String value) {
+    return value.trim().replaceFirst(RegExp(r'^#+'), '').trim();
+  }
+
+  void _addTag() {
+    final tag = _normalizeTag(_tagController.text);
+    if (tag.isEmpty) return;
+    if (_tags.any((existing) => existing.toLowerCase() == tag.toLowerCase())) {
+      _tagController.clear();
+      return;
+    }
+    setState(() {
+      _tags.add(tag);
+      _tagController.clear();
+    });
+  }
+
+  void _removeTag(String tag) {
+    setState(() {
+      _tags.remove(tag);
+    });
   }
 
   Future<void> _savePost() async {
@@ -51,7 +101,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     if (title.isEmpty &&
         content.isEmpty &&
         widget.post.media.isEmpty &&
-        widget.post.tags.isEmpty) {
+        _tags.isEmpty) {
       _showSnack('Please write something before saving.', isError: true);
       return;
     }
@@ -63,6 +113,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         title: title,
         content: content,
         visibility: _visibility,
+        tags: _tags,
       );
 
       if (!mounted) return;
@@ -120,22 +171,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         builder: (context, _) {
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 120),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildAuthorStrip(),
-                const SizedBox(height: 10),
-                _buildEditorPanel(),
-                if (widget.post.media.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  _buildMediaPanel(),
-                ],
-                if (widget.post.tags.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  _buildTagsPanel(),
-                ],
-              ],
-            ),
+            child: _buildEditCard(),
           );
         },
       ),
@@ -204,72 +240,14 @@ class _EditPostScreenState extends State<EditPostScreen> {
     );
   }
 
-  Widget _buildAuthorStrip() {
-    final avatar = widget.post.user.avatar ?? widget.post.user.image ?? '';
-
-    return _panel(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              width: 48,
-              height: 48,
-              color: const Color(0xFFEAF1F8),
-              child: avatar.isNotEmpty
-                  ? Image.network(
-                      avatar,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _avatarFallback(),
-                    )
-                  : _avatarFallback(),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.post.user.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  'Update your post details',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _buildVisibilityPill(),
-        ],
-      ),
-    );
-  }
-
-  Widget _avatarFallback() {
-    return const Icon(Icons.person_rounded, color: Color(0xFF64748B));
-  }
-
-  Widget _buildEditorPanel() {
+  Widget _buildEditCard() {
     return _panel(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildAuthorStrip(),
+          _sectionDivider(),
           const Text(
             'Post title',
             style: TextStyle(
@@ -303,9 +281,72 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ),
           const SizedBox(height: 14),
           _buildVisibilitySelector(),
+          _sectionDivider(),
+          _buildTagsEditor(),
+          if (widget.post.media.isNotEmpty) ...[
+            _sectionDivider(),
+            _buildMediaPreview(),
+          ],
         ],
       ),
     );
+  }
+
+  Widget _buildAuthorStrip() {
+    final avatar = widget.post.user.avatar ?? widget.post.user.image ?? '';
+
+    return Row(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 48,
+            height: 48,
+            color: const Color(0xFFEAF1F8),
+            child: avatar.isNotEmpty
+                ? Image.network(
+                    avatar,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _avatarFallback(),
+                  )
+                : _avatarFallback(),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.post.user.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF111827),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Update your post details',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        _buildVisibilityPill(),
+      ],
+    );
+  }
+
+  Widget _avatarFallback() {
+    return const Icon(Icons.person_rounded, color: Color(0xFF64748B));
   }
 
   Widget _buildTextField({
@@ -465,61 +506,161 @@ class _EditPostScreenState extends State<EditPostScreen> {
     );
   }
 
-  Widget _buildMediaPanel() {
-    final media = widget.post.media.take(6).toList();
+  Widget _sectionDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Container(height: 1, color: const Color(0xFFEDF2F7)),
+    );
+  }
 
-    return _panel(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.photo_library_rounded,
-                  size: 18, color: Color(0xFF2563EB)),
-              const SizedBox(width: 8),
-              const Text(
-                'Attached media',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF334155),
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '${widget.post.media.length}',
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+  Widget _buildTagsEditor() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Hashtags',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF334155),
           ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _tagController,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _addTag(),
+                style: const TextStyle(fontSize: 13.5),
+                decoration: InputDecoration(
+                  hintText: 'Add a hashtag and press +',
+                  hintStyle: TextStyle(
+                    fontSize: 12.5,
+                    color: Colors.grey.shade400,
+                  ),
+                  isDense: true,
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF2563EB)),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 38,
+              height: 38,
+              child: Material(
+                color: const Color(0xFF2563EB),
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: _addTag,
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Icon(Icons.add_rounded,
+                      color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (_tags.isNotEmpty) ...[
           const SizedBox(height: 10),
-          SizedBox(
-            height: 82,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: media.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                return _buildMediaThumb(media[index]);
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Media editing is preserved for this update.',
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _tags.map((tag) {
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '#$tag',
+                      style: const TextStyle(
+                        color: Color(0xFF2563EB),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    GestureDetector(
+                      onTap: () => _removeTag(tag),
+                      child: const Icon(Icons.close_rounded,
+                          size: 14, color: Color(0xFF2563EB)),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ],
-      ),
+      ],
+    );
+  }
+
+  Widget _buildMediaPreview() {
+    final media = widget.post.media.take(6).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.photo_library_rounded,
+                size: 18, color: Color(0xFF2563EB)),
+            const SizedBox(width: 8),
+            const Text(
+              'Attached media',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF334155),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${widget.post.media.length}',
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 82,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: media.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              return _buildMediaThumb(media[index]);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -566,34 +707,6 @@ class _EditPostScreenState extends State<EditPostScreen> {
               ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTagsPanel() {
-    return _panel(
-      padding: const EdgeInsets.all(12),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: widget.post.tags.map((tag) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFBFDBFE)),
-            ),
-            child: Text(
-              '#${tag.tag}',
-              style: const TextStyle(
-                color: Color(0xFF2563EB),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

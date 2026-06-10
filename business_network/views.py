@@ -1017,7 +1017,27 @@ class BusinessNetworkPostRetrieveUpdateDestroyView(
         # succeeded. Raising is the correct contract (-> real 403).
         if serializer.instance.author != self.request.user:
             raise PermissionDenied("You do not have permission to edit this post.")
-        serializer.save()
+        post = serializer.save()
+
+        # Tags are read-only on the serializer (created manually on POST), so
+        # the edit screen could never change them. When the client sends a
+        # `tags` list, replace the post's tag set with it.
+        raw_tags = self.request.data.get("tags", None)
+        if raw_tags is not None:
+            if isinstance(raw_tags, str):
+                raw_tags = [raw_tags]
+            if isinstance(raw_tags, (list, tuple)):
+                post.tags.clear()
+                for tag_data in raw_tags:
+                    if not isinstance(tag_data, str):
+                        continue
+                    tag_data = tag_data.strip().lstrip("#").strip()
+                    if not tag_data:
+                        continue
+                    tag, _ = BusinessNetworkPostTag.objects.get_or_create(
+                        tag=tag_data
+                    )
+                    post.tags.add(tag)
 
     def perform_destroy(self, instance):
         # Only the author may delete (same raising contract as above).

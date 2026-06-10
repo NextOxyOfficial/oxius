@@ -651,6 +651,7 @@ class BusinessNetworkService {
     List<String>? images,
     String? category,
     String? visibility,
+    List<String>? tags,
   }) async {
     try {
       final headers = await ApiService.getHeaders();
@@ -661,6 +662,8 @@ class BusinessNetworkService {
         if (images != null) 'images': images,
         if (category != null) 'category': category,
         if (visibility != null) 'visibility': visibility,
+        // Send even when empty — clearing the last tag is a valid edit.
+        if (tags != null) 'tags': tags,
       };
 
       // PATCH (partial update) — PUT requires every writable serializer

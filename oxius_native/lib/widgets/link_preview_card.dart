@@ -109,6 +109,20 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
   }
 
   Widget _buildCard(BuildContext context, LinkPreviewData data) {
+    final hasImage = data.imageUrl != null && data.imageUrl!.isNotEmpty;
+    final domain = (() {
+      final site = (data.siteName ?? '').trim();
+      if (site.isNotEmpty) return site;
+      try {
+        return Uri.parse(data.url).host.replaceFirst('www.', '');
+      } catch (_) {
+        return '';
+      }
+    })();
+
+    // Facebook-style preview: a large cover image on top, then a light
+    // strip with the domain, bold title and a short description. When the
+    // page has no OG image we fall back to a compact horizontal card.
     return InkWell(
       onTap: () {
         UrlLauncherUtils.launchExternalUrl(data.url);
@@ -116,84 +130,97 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (data.imageUrl != null && data.imageUrl!.isNotEmpty)
-              SizedBox(
-                width: 92,
-                height: 92,
+            if (hasImage)
+              AspectRatio(
+                aspectRatio: 1.91,
                 child: Image.network(
                   data.imageUrl!,
+                  width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) {
-                    return Container(
-                      color: const Color(0xFFF3F4F6),
-                      child: const Icon(Icons.link_rounded, color: Color(0xFF9CA3AF)),
-                    );
-                  },
+                  errorBuilder: (_, __, ___) => Container(
+                    color: const Color(0xFFF3F4F6),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.link_rounded,
+                        size: 28, color: Color(0xFF9CA3AF)),
+                  ),
                 ),
-              )
-            else
-              Container(
-                width: 92,
-                height: 92,
-                color: const Color(0xFFF3F4F6),
-                alignment: Alignment.center,
-                child: const Icon(Icons.link_rounded, color: Color(0xFF9CA3AF)),
               ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (data.siteName != null && data.siteName!.isNotEmpty)
-                      Text(
-                        data.siteName!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6B7280),
-                        ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 9, 12, 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (!hasImage) ...[
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEDF2F7),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    if (data.title != null && data.title!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        data.title!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          height: 1.2,
-                        ),
-                      ),
-                    ],
-                    if (data.description != null && data.description!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        data.description!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF4B5563),
-                          height: 1.2,
-                        ),
-                      ),
-                    ],
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.link_rounded,
+                          size: 22, color: Color(0xFF64748B)),
+                    ),
+                    const SizedBox(width: 10),
                   ],
-                ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (domain.isNotEmpty)
+                          Text(
+                            domain.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        if (data.title != null && data.title!.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            data.title!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                              height: 1.25,
+                            ),
+                          ),
+                        ],
+                        if (data.description != null &&
+                            data.description!.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            data.description!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF4B5563),
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -201,6 +228,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       ),
     );
   }
+
 }
 
 class _Line extends StatelessWidget {

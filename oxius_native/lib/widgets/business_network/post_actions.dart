@@ -45,12 +45,18 @@ class PostActions extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Text(
-                '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w500,
+              // Reserve stable width: "1 like" vs "2 likes" otherwise changes
+              // the label width and visibly shifts Comments/Share on every
+              // like toggle.
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 52),
+                child: Text(
+                  '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),

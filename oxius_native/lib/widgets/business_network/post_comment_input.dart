@@ -5,6 +5,7 @@ import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import 'diamond_gift_bottom_sheet.dart';
+import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -171,8 +172,19 @@ class _PostCommentInputState extends State<PostCommentInput> {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
         children: [
-          // User Avatar
-          Container(
+          // User Avatar — tap opens my own profile
+          GestureDetector(
+            onTap: () {
+              final me = AuthService.currentUser;
+              if (me == null) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(userId: me.id),
+                ),
+              );
+            },
+            child: Container(
             width: 38,
             height: 38,
             decoration: BoxDecoration(
@@ -212,6 +224,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
                   ),
                 );
               }(),
+            ),
             ),
           ),
           const SizedBox(width: 8),

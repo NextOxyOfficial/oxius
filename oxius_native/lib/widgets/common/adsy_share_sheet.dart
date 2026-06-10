@@ -437,7 +437,6 @@ class _SharePreview extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Row(
@@ -447,7 +446,10 @@ class _SharePreview extends StatelessWidget {
             child: Container(
               width: 76,
               height: 76,
-              color: const Color(0xFFF1F5F9),
+              // No backdrop behind real images — thumbnails with transparent
+              // corners were exposing this as a gray square. Keep the tint
+              // only for the no-image icon fallback.
+              color: imageUrl.isEmpty ? const Color(0xFFF1F5F9) : Colors.white,
               child: imageUrl.isEmpty
                   ? const Icon(
                       Icons.public_rounded,

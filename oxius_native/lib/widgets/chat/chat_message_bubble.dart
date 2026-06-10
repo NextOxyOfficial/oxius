@@ -492,7 +492,15 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     if (msgType == 'text' && text.startsWith('📞')) {
       return wrapWithQuote(_buildCallLogContent(message, isMe));
     }
-    // Default: text with link preview
+    // Default: text with link preview. When the whole message is just one
+    // URL, the big meta card carries the meaning — shrink the raw link to a
+    // muted one-liner under it (kept so the link survives if the preview
+    // fetch ever fails) instead of showing the bare URL in message size.
+    final urlOnly = RegExp(
+      r'^(https?:\/\/|www\.)\S+$',
+      caseSensitive: false,
+    ).hasMatch(text.trim());
+
     return wrapWithQuote(
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,13 +512,24 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           ),
           LinkifyText(
             text,
+            maxLines: urlOnly ? 1 : null,
+            overflow: urlOnly ? TextOverflow.ellipsis : null,
             style: TextStyle(
-              fontSize: 15.5,
-              color: isMe ? Colors.white : const Color(0xFF1F2937),
+              fontSize: urlOnly ? 11.5 : 15.5,
+              color: urlOnly
+                  ? (isMe
+                      ? Colors.white.withValues(alpha: 0.75)
+                      : const Color(0xFF64748B))
+                  : (isMe ? Colors.white : const Color(0xFF1F2937)),
               height: 1.38,
             ),
             linkStyle: TextStyle(
-              color: isMe ? Colors.white : const Color(0xFF2563EB),
+              fontSize: urlOnly ? 11.5 : null,
+              color: urlOnly
+                  ? (isMe
+                      ? Colors.white.withValues(alpha: 0.75)
+                      : const Color(0xFF64748B))
+                  : (isMe ? Colors.white : const Color(0xFF2563EB)),
               decoration: TextDecoration.none,
             ),
           ),

@@ -303,7 +303,9 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                   style: TextStyle(fontSize: 9, color: _getStatusColor(status), fontWeight: FontWeight.w600),
                 ),
               ),
-              // Manage my sponsorship: edit / delete
+              // Manage my sponsorship. Edit is temporarily hidden (2026-06,
+              // per request) — re-enable by adding the 'edit' item back; the
+              // _editSponsor flow below stays ready.
               SizedBox(
                 width: 24,
                 height: 24,
@@ -318,17 +320,6 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                     if (value == 'delete') _deleteSponsor(sponsor);
                   },
                   itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'edit',
-                      height: 40,
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, size: 16, color: Color(0xFF3B82F6)),
-                          SizedBox(width: 8),
-                          Text('Edit', style: TextStyle(fontSize: 13)),
-                        ],
-                      ),
-                    ),
                     PopupMenuItem(
                       value: 'delete',
                       height: 40,
