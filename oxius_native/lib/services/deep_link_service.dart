@@ -72,6 +72,11 @@ class DeepLinkService {
     'membership': '/upgrade-to-pro',
     'packages': '/upgrade-to-pro',
     'upgrade-to-pro': '/upgrade-to-pro',
+    // Account / profile / KYC — target for the "complete profile" & "verify KYC"
+    // nudges (web /my-account → the app's Settings/account screen).
+    'my-account': '/settings',
+    'account': '/settings',
+    'settings': '/settings',
   };
 
   Future<void> init() async {
