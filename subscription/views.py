@@ -380,7 +380,7 @@ class AutoRenewView(APIView):
         user = request.user
         if not self._is_pro(user):
             return Response(
-                {"message": "কোনো সক্রিয় Pro সাবস্ক্রিপশন নেই।"},
+                {"message": "কোনো চালু Pro সাবস্ক্রিপশন নেই।"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         raw = request.data.get("auto_renew")
