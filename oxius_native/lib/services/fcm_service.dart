@@ -3075,6 +3075,36 @@ class FCMService {
     }
   }
 
+  /// Register the device's FCM token as a GUEST (no auth) so unregistered
+  /// installs can receive sign-up nudges. Best-effort + deduped per token.
+  static Future<void> _registerGuestToken(String token) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      const guestKey = 'adsyclub_guest_token_uploaded';
+      if (prefs.getString(guestKey) == token) {
+        return; // already registered this exact token as guest
+      }
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/register-guest-token/'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'fcm_token': token,
+              'device_type': Platform.isIOS ? 'ios' : 'android',
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await prefs.setString(guestKey, token);
+        _log('   ✅ Guest FCM token registered');
+      } else {
+        _log('   ⚠️ Guest token register failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      _log('   ⚠️ Guest token register error: $e');
+    }
+  }
+
   /// Send FCM token to backend
   static Future<void> _sendTokenToBackend(String token) async {
     try {
@@ -3084,8 +3114,11 @@ class FCMService {
       _log('   Checking authentication...');
       final authToken = await AuthService.getValidToken();
       if (authToken == null) {
-        _log('   ⚠️ No auth token, skipping FCM token upload');
-        _log('   💡 User needs to login first');
+        // Not logged in yet → register this device as a GUEST so the backend
+        // can send registration-conversion pushes. The token is claimed for
+        // the user automatically once they log in (save-fcm-token upserts by
+        // token). No auth header here.
+        await _registerGuestToken(token);
         return;
       }
 

@@ -555,6 +555,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "engagement.tasks.run_email_engine",
         "schedule": timedelta(hours=6),  # helpful + activity emails, cooldown-gated per user
     },
+    "run-guest-nudges": {
+        "task": "engagement.tasks.run_guest_nudges",
+        "schedule": timedelta(hours=12),  # registration-conversion pushes to guest devices
+    },
 }
 
 # --- Engagement / assistant-brain nudge engine ---
@@ -586,6 +590,15 @@ ENGAGEMENT_EMAIL_ENABLED = True
 ENGAGEMENT_EMAIL_HOURS = (10, 20)          # 10am-8pm in ENGAGEMENT_TIMEZONE
 ENGAGEMENT_EMAIL_PER_RUN_CAP = 200         # anti-burst: max emails per run
 ENGAGEMENT_EMAIL_COOLDOWN_DAYS = 3         # at most one engagement email / N days / user
+
+# --- Guest registration-conversion pushes (FCMToken.user is None) ---
+# Devices that installed but didn't register get a rotating series of Bangla
+# sign-up nudges (engagement/guest_promos.py), one every N days until the
+# series is done. ENABLED so it starts working as soon as guest tokens are
+# captured by the new app build.
+GUEST_NUDGES_ENABLED = True
+GUEST_NUDGE_COOLDOWN_DAYS = 3              # gap between guest pushes per device
+GUEST_NUDGE_PER_RUN_CAP = 500             # anti-burst: max guest pushes per run
 
 # ShurjoPay Settings
 SP_USERNAME = "lyriczsoft"

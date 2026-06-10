@@ -216,6 +216,11 @@ Future<void> _bootstrap(UserStateService userState) async {
         'Agora clear', () => AgoraCallService.clearPersistedCallState());
     await _safeInit(
         'FCM auth state', () => FCMService.handleAuthenticationState(false));
+    // Register this device as a guest so it can receive registration-
+    // conversion pushes. _sendTokenToBackend falls back to the no-auth guest
+    // endpoint when there's no session; the token is claimed on login.
+    await _safeInit(
+        'FCM guest token', () => FCMService.syncTokenWithBackend());
   }
 }
 

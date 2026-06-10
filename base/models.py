@@ -1743,8 +1743,16 @@ class SearchHistory(models.Model):
 
 
 class FCMToken(models.Model):
-    """Model to store FCM tokens for push notifications"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_tokens')
+    """Model to store FCM tokens for push notifications.
+
+    `user` is nullable: a device that installed the app but hasn't registered
+    yet stores a GUEST token (user=None) so we can send registration-conversion
+    pushes. When that device logs in, the token is claimed for the user.
+    """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='fcm_tokens',
+        null=True, blank=True,
+    )
     token = models.TextField(unique=True)
     device_type = models.CharField(max_length=20, default='android')
     voip_token = models.TextField(blank=True, default='')
@@ -1752,6 +1760,9 @@ class FCMToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    # Guest-conversion campaign bookkeeping (only used while user is None).
+    last_promo_at = models.DateTimeField(null=True, blank=True)
+    promo_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         db_table = 'fcm_tokens'
@@ -1759,10 +1770,13 @@ class FCMToken(models.Model):
         indexes = [
             models.Index(fields=['user', 'is_active']),
             models.Index(fields=['token']),
+            models.Index(fields=['user', 'is_active', 'last_promo_at'],
+                         name='fcm_guest_promo_idx'),
         ]
 
     def __str__(self):
-        return f'{self.user.email} - {self.device_type}'
+        who = self.user.email if self.user else 'guest'
+        return f'{who} - {self.device_type}'
 
 
 class EmailSettings(models.Model):

@@ -6182,25 +6182,22 @@ def save_fcm_token(request):
 
         if fcm_token:
             # One physical device = one account. Detach this token from every
-            # OTHER user so a previously-logged-in account on this device stops
-            # receiving push the moment the current user registers.
-            FCMToken.objects.filter(token=fcm_token).exclude(
-                user=request.user
-            ).delete()
+            # One physical device = one account. Upsert BY TOKEN (token is
+            # unique) and set the user in defaults — this claims a guest token
+            # (user=None) on login and reassigns a token left over from another
+            # account, both without hitting the unique constraint. (The old
+            # filter().exclude(user).delete() + create-with-user pattern raised
+            # an IntegrityError when a guest/other row already held the token.)
             token_obj, created = FCMToken.objects.update_or_create(
-                user=request.user,
                 token=fcm_token,
-                defaults=defaults
+                defaults={**defaults, 'user': request.user},
             )
         else:
             synthetic_token = f"voip:{voip_token}"
-            FCMToken.objects.filter(voip_token=voip_token).exclude(
-                user=request.user
-            ).delete()
             token_obj, created = FCMToken.objects.update_or_create(
-                user=request.user,
                 voip_token=voip_token,
-                defaults={**defaults, 'token': synthetic_token}
+                defaults={**defaults, 'token': synthetic_token,
+                          'user': request.user},
             )
         
         action = 'created' if created else 'updated'
@@ -6226,3 +6223,40 @@ def save_fcm_token(request):
             {'error': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_guest_token(request):
+    """Store an FCM token for a device that has installed the app but not
+    registered yet (no auth). Lets the brain send registration-conversion
+    pushes to guests. Never overwrites a token that already belongs to a
+    real user — once the device logs in, save_fcm_token claims it."""
+    from .models import FCMToken
+
+    fcm_token = str(request.data.get('fcm_token') or '').strip()
+    device_type = request.data.get('device_type', 'android')
+    if not fcm_token:
+        return Response(
+            {'error': 'fcm_token is required'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    try:
+        existing = FCMToken.objects.filter(token=fcm_token).first()
+        if existing:
+            # Already known. If it belongs to a user, leave it alone; if it's a
+            # guest row, just keep it active/fresh.
+            if existing.user_id is None:
+                existing.is_active = True
+                existing.device_type = device_type
+                existing.save(update_fields=['is_active', 'device_type', 'updated_at'])
+            return Response({'message': 'ok', 'guest': existing.user_id is None},
+                            status=status.HTTP_200_OK)
+        FCMToken.objects.create(
+            user=None, token=fcm_token, device_type=device_type, is_active=True,
+        )
+        return Response({'message': 'guest token registered', 'guest': True},
+                        status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)

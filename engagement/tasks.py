@@ -595,3 +595,63 @@ def run_email_engine(dry_run=False):
         result["by_key"] = dict(Counter(p["key"] for p in plan))
     logger.info("run_email_engine: sent=%s dry_run=%s", sent, dry_run)
     return result
+
+
+@shared_task
+def run_guest_nudges(dry_run=False):
+    """Registration-conversion pushes to GUEST devices (FCMToken.user is None).
+
+    Picks guest tokens that are due (cooldown elapsed, series not finished),
+    sends the next message in the rotation, and records progress on the token
+    row (last_promo_at / promo_count). Flag-gated and capped per run.
+    """
+    from django.db.models import Q
+    from base.models import FCMToken
+    from base.fcm_service import send_fcm_notification_multicast
+    from .guest_promos import GUEST_PROMOS, GUEST_PROMO_MAX
+
+    if not getattr(settings, "GUEST_NUDGES_ENABLED", False) and not dry_run:
+        return {"skipped": "disabled"}
+
+    now = timezone.now()
+    cooldown_days = getattr(settings, "GUEST_NUDGE_COOLDOWN_DAYS", 3)
+    per_run_cap = getattr(settings, "GUEST_NUDGE_PER_RUN_CAP", 500)
+    cutoff = now - timedelta(days=cooldown_days)
+
+    qs = (
+        FCMToken.objects.filter(user__isnull=True, is_active=True)
+        .filter(promo_count__lt=GUEST_PROMO_MAX)
+        .filter(Q(last_promo_at__isnull=True) | Q(last_promo_at__lt=cutoff))
+        .order_by("last_promo_at")
+    )
+
+    sent = 0
+    by_index = Counter()
+    for tok in qs.iterator(chunk_size=500):
+        if sent >= per_run_cap:
+            break
+        idx = tok.promo_count if tok.promo_count < len(GUEST_PROMOS) else 0
+        title, body, deep_link = GUEST_PROMOS[idx]
+        by_index[idx] += 1
+        if dry_run:
+            sent += 1
+            continue
+        try:
+            send_fcm_notification_multicast(
+                [tok.token], title, body,
+                {
+                    "type": "guest_promo",
+                    "deep_link": deep_link,
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                },
+            )
+            FCMToken.objects.filter(pk=tok.pk).update(
+                last_promo_at=now, promo_count=tok.promo_count + 1
+            )
+            sent += 1
+        except Exception:
+            logger.exception("guest nudge send failed for token %s", tok.pk)
+
+    result = {"sent": sent, "dry_run": dry_run, "by_index": dict(by_index)}
+    logger.info("run_guest_nudges: %s", result)
+    return result
