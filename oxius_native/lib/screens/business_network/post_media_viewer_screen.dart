@@ -38,7 +38,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
           width: 54,
           height: 54,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -210,9 +210,9 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
               width: 86,
               height: 86,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.45),
+                color: Colors.black.withValues(alpha: 0.45),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.18)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
               ),
               child: const Icon(Icons.play_arrow_rounded,
                   color: Colors.white, size: 54),
@@ -241,7 +241,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
             return Center(
               child: Text(
                 'Failed to load media',
-                style: TextStyle(color: Colors.white.withOpacity(0.75)),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.75)),
               ),
             );
           },
@@ -267,7 +267,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
             ? Center(
                 child: Text(
                   'No media',
-                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
                 ),
               )
             : Stack(
@@ -318,15 +318,15 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.45),
+                              color: Colors.black.withValues(alpha: 0.45),
                               borderRadius: BorderRadius.circular(999),
                               border: Border.all(
-                                  color: Colors.white.withOpacity(0.16)),
+                                  color: Colors.white.withValues(alpha: 0.16)),
                             ),
                             child: Text(
                               '${_currentIndex + 1}/${_post.media.length}',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.92),
+                                color: Colors.white.withValues(alpha: 0.92),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 class BannerService {
   static final BannerService _instance = BannerService._internal();
@@ -34,14 +35,14 @@ class BannerService {
         _isLoading = false;
         return true;
       } else {
-        print('Error loading banners: ${response.statusCode}');
+        debugPrint('Error loading banners: ${response.statusCode}');
         // Fallback to default banners
         _setDefaultBanners();
         _isLoading = false;
         return false;
       }
     } catch (e) {
-      print('Error loading banners: $e');
+      debugPrint('Error loading banners: $e');
       // Fallback to default banners
       _setDefaultBanners();
       _isLoading = false;

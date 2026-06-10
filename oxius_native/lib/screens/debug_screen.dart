@@ -169,9 +169,8 @@ class _DebugScreenState extends State<DebugScreen> {
               if (_userToken != null) ...[
                 _buildInfoRow(
                   'Token (first 20 chars)',
-                  _userToken!.substring(0,
-                          _userToken!.length > 20 ? 20 : _userToken!.length) +
-                      '...',
+                  '${_userToken!.substring(0,
+                          _userToken!.length > 20 ? 20 : _userToken!.length)}...',
                   onTap: () => _copyToClipboard(_userToken!),
                 ),
               ],
@@ -179,10 +178,11 @@ class _DebugScreenState extends State<DebugScreen> {
               ElevatedButton.icon(
                 onPressed: () async {
                   await AuthService.logout();
+                  if (!mounted) return;
                   setState(() {
                     _userToken = null;
                   });
-                  if (mounted) {
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Logged out')),
                     );
@@ -318,7 +318,7 @@ class _DebugScreenState extends State<DebugScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
               ),

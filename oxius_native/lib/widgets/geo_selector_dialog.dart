@@ -9,10 +9,10 @@ class GeoSelectorDialog extends StatefulWidget {
   final Function(GeoLocation) onLocationSelected;
 
   const GeoSelectorDialog({
-    Key? key,
+    super.key,
     this.initialLocation,
     required this.onLocationSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<GeoSelectorDialog> createState() => _GeoSelectorDialogState();
@@ -194,7 +194,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -262,7 +262,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                           margin: const EdgeInsets.only(bottom: 14),
                           decoration: BoxDecoration(
                             color: _allOverBangladesh
-                                ? const Color(0xFF10B981).withOpacity(0.08)
+                                ? const Color(0xFF10B981).withValues(alpha: 0.08)
                                 : const Color(0xFFF9FAFB),
                             border: Border.all(
                               color: _allOverBangladesh
@@ -369,7 +369,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
-                              value: _regions
+                              initialValue: _regions
                                       .any((r) => r.nameEng == _selectedState)
                                   ? _selectedState
                                   : null,
@@ -443,7 +443,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
-                              value:
+                              initialValue:
                                   _cities.any((c) => c.nameEng == _selectedCity)
                                       ? _selectedCity
                                       : null,
@@ -517,7 +517,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
-                              value: _upazilas
+                              initialValue: _upazilas
                                       .any((u) => u.nameEng == _selectedUpazila)
                                   ? _selectedUpazila
                                   : null,

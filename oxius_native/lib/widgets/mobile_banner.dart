@@ -80,7 +80,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
           _isLoading = false;
         });
       }
-      print('Error fetching mobile banners from ${widget.endpoint}: $e');
+      debugPrint('Error fetching mobile banners from ${widget.endpoint}: $e');
     }
   }
 
@@ -216,7 +216,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -342,7 +342,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -357,7 +357,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                           decoration: BoxDecoration(
                             color: index == _currentSlide
                                 ? Colors.white
-                                : Colors.white.withOpacity(0.5),
+                                : Colors.white.withValues(alpha: 0.5),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -376,7 +376,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
               right: 0,
               child: Container(
                 height: 2,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
                   widthFactor: _progressWidth / 100,
@@ -391,13 +391,13 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
           if (widget.showSwipeHint && _banners.length > 1)
             Positioned.fill(
               child: Container(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 child: Center(
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -473,7 +473,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),

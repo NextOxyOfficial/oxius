@@ -10,7 +10,6 @@ import '../../widgets/business_network/bottom_nav_bar.dart';
 import 'notifications_screen.dart';
 import 'create_post_screen.dart';
 import 'shorts_player_screen.dart';
-import 'activity_history_screen.dart';
 import 'blocked_users_screen.dart';
 import '../inbox_screen.dart';
 import '../workspace/workspace_screen.dart';
@@ -32,7 +31,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   Map<String, dynamic>? _profileData;
-  bool _isProfileLoading = true;
   int _mediaRefreshTick = 0;
 
   @override
@@ -59,15 +57,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   Future<void> _loadProfileSummary({bool refreshAuth = false}) async {
     final user = AuthService.currentUser;
     if (user == null) {
-      if (mounted) {
-        setState(() => _isProfileLoading = false);
-      }
       return;
     }
 
-    if (mounted) {
-      setState(() => _isProfileLoading = true);
-    }
 
     try {
       if (refreshAuth) {
@@ -81,7 +73,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
 
       setState(() {
         _profileData = profile;
-        _isProfileLoading = false;
         _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch;
       });
     } catch (_) {
@@ -89,7 +80,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         return;
       }
 
-      setState(() => _isProfileLoading = false);
     }
   }
 
@@ -459,7 +449,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                       border: Border.all(color: Colors.white, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.10),
+                          color: Colors.black.withValues(alpha: 0.10),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -657,10 +647,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     );
   }
 
-  Widget _buildHeaderStat(String label, int value) {
-    return _buildStat(value, label);
-  }
-
   Widget _buildGlassButton({
     required IconData icon,
     required VoidCallback onTap,
@@ -705,148 +691,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         imageUrl: user.profilePicture,
         subject: '$name on AdsyClub',
         eyebrow: 'Business Network Profile',
-      ),
-    );
-  }
-
-  void _showQrCode(BuildContext context) {
-    final user = AuthService.currentUser;
-    if (user == null) return;
-    final profileUrl =
-        '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'My Profile QR Code',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Scan to view my profile',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF1E293B), width: 3),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.qr_code_2_rounded,
-                      size: 120,
-                      color: const Color(0xFF1E293B),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '@${user.username}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              profileUrl,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: profileUrl));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Profile link copied!'),
-                      backgroundColor: Color(0xFF10B981),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.copy_rounded, size: 20),
-                label: const Text('Copy Link'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E293B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _shareProfile(context);
-                },
-                icon: const Icon(Icons.share_outlined, size: 20),
-                label: const Text('Share Profile'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF3B82F6),
-                  side: const BorderSide(color: Color(0xFF3B82F6)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
       ),
     );
   }
@@ -1408,7 +1252,7 @@ class _FollowListSheetState extends State<_FollowListSheet> {
                   const BorderRadius.vertical(top: Radius.circular(16)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),

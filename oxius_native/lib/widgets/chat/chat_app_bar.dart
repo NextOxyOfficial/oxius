@@ -155,9 +155,9 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF3B82F6).withOpacity(0.95),
-              const Color(0xFF6366F1).withOpacity(0.95),
-              const Color(0xFF8B5CF6).withOpacity(0.95),
+              const Color(0xFF3B82F6).withValues(alpha: 0.95),
+              const Color(0xFF6366F1).withValues(alpha: 0.95),
+              const Color(0xFF8B5CF6).withValues(alpha: 0.95),
             ],
           ),
         ),
@@ -200,7 +200,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       decoration: InputDecoration(
         hintText: 'Search messages',
         hintStyle: TextStyle(
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withValues(alpha: 0.7),
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -235,7 +235,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 blurRadius: 12,
                 spreadRadius: 2,
               ),
@@ -245,13 +245,13 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border:
-                  Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                  Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withOpacity(0.2),
-                  Colors.white.withOpacity(0.1),
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.1),
                 ],
               ),
             ),
@@ -279,7 +279,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 border: Border.all(color: Colors.white, width: 2.5),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.5),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.5),
                     blurRadius: 6,
                     spreadRadius: 1,
                   ),
@@ -379,7 +379,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               borderRadius: BorderRadius.circular(4),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFF59E0B).withOpacity(0.3),
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),
@@ -412,7 +412,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             boxShadow: isOnline
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.5),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.5),
                       blurRadius: 4,
                       spreadRadius: 1,
                     ),
@@ -434,7 +434,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ? const Color(0xFF93C5FD)
                 : isOnline
                     ? const Color(0xFF10B981)
-                    : Colors.white.withOpacity(0.7),
+                    : Colors.white.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -453,7 +453,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ? '${currentMatchPosition + 1}/$searchMatchCount'
                   : '0/0',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),

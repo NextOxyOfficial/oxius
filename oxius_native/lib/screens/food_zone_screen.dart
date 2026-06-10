@@ -22,7 +22,6 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
   late FoodZoneService _foodZoneService;
   late GeoLocationService _geoService;
   List<ClassifiedPost> _posts = [];
-  List<FoodZoneCategory> _categories = [];
   GeoLocation? _location;
   bool _isLoading = true;
   bool _isLoadingMore = false;
@@ -87,7 +86,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
     final newQuery = _searchController.text.trim();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (mounted && _searchQuery != newQuery) {
-        print('🔍 Search query changed: "$_searchQuery" -> "$newQuery"');
+        debugPrint('🔍 Search query changed: "$_searchQuery" -> "$newQuery"');
         setState(() {
           _searchQuery = newQuery;
         });
@@ -124,12 +123,11 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
 
       setState(() {
         _posts = results[0] as List<ClassifiedPost>;
-        _categories = results[1] as List<FoodZoneCategory>;
         _isLoading = false;
         _hasMore = _posts.length >= 20;
       });
     } catch (e) {
-      print('Error loading food zone data: $e');
+      debugPrint('Error loading food zone data: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -155,38 +153,11 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
         _hasMore = posts.length >= 20;
       });
     } catch (e) {
-      print('Error loading more posts: $e');
+      debugPrint('Error loading more posts: $e');
       setState(() => _isLoadingMore = false);
     }
   }
 
-  Future<void> _onCategorySelected(String? categoryId) async {
-    setState(() {
-      _selectedCategoryId = categoryId;
-      _isLoading = true;
-      _currentPage = 1;
-      _hasMore = true;
-    });
-
-    try {
-      final posts = await _foodZoneService.fetchFoodZonePosts(
-        page: 1,
-        pageSize: 20,
-        categoryId: categoryId,
-        search: _searchQuery.isNotEmpty ? _searchQuery : null,
-        location: _location,
-      );
-
-      setState(() {
-        _posts = posts;
-        _isLoading = false;
-        _hasMore = posts.length >= 20;
-      });
-    } catch (e) {
-      print('Error loading posts by category: $e');
-      setState(() => _isLoading = false);
-    }
-  }
 
   void _clearSearch() {
     _searchController.clear();
@@ -262,7 +233,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                         borderRadius: BorderRadius.circular(22),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -353,7 +324,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
       location: _location!,
       onChange: _showLocationSelector,
       backgroundColor: const Color(0xFFFCE4EC),
-      borderColor: const Color(0xFFE91E63).withOpacity(0.2),
+      borderColor: const Color(0xFFE91E63).withValues(alpha: 0.2),
       iconColor: const Color(0xFFE91E63),
       textColor: const Color(0xFFC2185B),
       actionColor: const Color(0xFFE91E63),

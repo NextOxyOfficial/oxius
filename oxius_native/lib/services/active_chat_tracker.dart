@@ -1,4 +1,5 @@
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service to track which chat user is currently viewing
 /// This prevents push notifications when user is already in the chat
@@ -8,7 +9,7 @@ class ActiveChatTracker {
   /// Set the currently active chat
   static void setActiveChat(String? chatId) {
     _activeChatId = chatId;
-    print('📍 Active chat set to: $chatId');
+    debugPrint('📍 Active chat set to: $chatId');
   }
   
   /// Get the currently active chat ID
@@ -17,7 +18,7 @@ class ActiveChatTracker {
   /// Clear active chat (when leaving chat screen)
   static void clearActiveChat() {
     _activeChatId = null;
-    print('📍 Active chat cleared');
+    debugPrint('📍 Active chat cleared');
   }
   
   /// Get headers with active chat ID for API requests

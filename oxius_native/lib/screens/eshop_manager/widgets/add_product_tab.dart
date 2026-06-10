@@ -69,7 +69,7 @@ class _AddProductTabState extends State<AddProductTab> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -205,8 +205,8 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
 
   List<Map<String, dynamic>> _categories = [];
   List<String> _selectedCategories = [];
-  List<String> _keywords = [];
-  List<String> _images = [];
+  final List<String> _keywords = [];
+  final List<String> _images = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -218,7 +218,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
   Future<void> _loadCategories() async {
     try {
       final categories = await EshopManagerService.getCategories();
-      print('📦 Loaded ${categories.length} categories');
+      debugPrint('📦 Loaded ${categories.length} categories');
 
       if (mounted) {
         setState(() {
@@ -227,7 +227,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
         });
       }
     } catch (e) {
-      print('❌ Error loading categories: $e');
+      debugPrint('❌ Error loading categories: $e');
       if (mounted) {
         setState(() {
           _categories = [];
@@ -1056,18 +1056,29 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          _buildDeliveryOption(
-                            title: 'Free Delivery All Over Bangladesh',
-                            value: 'free',
-                            subtitle:
-                                'Show customers that nationwide delivery is included.',
-                          ),
-                          const SizedBox(height: 8),
-                          _buildDeliveryOption(
-                            title: 'Standard Shipping (Location Based)',
-                            value: 'standard',
-                            subtitle:
-                                'Set separate charges for Dhaka and outside Dhaka.',
+                          RadioGroup<String>(
+                            groupValue: _deliveryMethod,
+                            onChanged: (v) =>
+                                setState(() => _deliveryMethod = v ?? ''),
+                            child: Column(
+                              children: [
+                                _buildDeliveryOption(
+                                  title:
+                                      'Free Delivery All Over Bangladesh',
+                                  value: 'free',
+                                  subtitle:
+                                      'Show customers that nationwide delivery is included.',
+                                ),
+                                const SizedBox(height: 8),
+                                _buildDeliveryOption(
+                                  title:
+                                      'Standard Shipping (Location Based)',
+                                  value: 'standard',
+                                  subtitle:
+                                      'Set separate charges for Dhaka and outside Dhaka.',
+                                ),
+                              ],
+                            ),
                           ),
                           if (_deliveryMethod == 'standard') ...[
                             const SizedBox(height: 10),
@@ -1667,8 +1678,6 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
           children: [
             Radio<String>(
               value: value,
-              groupValue: _deliveryMethod,
-              onChanged: (v) => setState(() => _deliveryMethod = v ?? ''),
               activeColor: _indigo,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),

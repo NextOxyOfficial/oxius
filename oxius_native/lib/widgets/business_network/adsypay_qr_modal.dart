@@ -49,7 +49,7 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -85,7 +85,7 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
                       height: 100,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -97,7 +97,7 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
                       height: 80,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -116,7 +116,7 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -145,7 +145,7 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
                           'Digital Payment Solution',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -160,7 +160,7 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close, color: Colors.white),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
                       ),
                     ),
                   ),
@@ -194,7 +194,7 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 1),
                           ),
@@ -346,14 +346,14 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
                   end: Alignment.bottomRight,
                   colors: [
                     Colors.white,
-                    Colors.green.shade50.withOpacity(0.3),
+                    Colors.green.shade50.withValues(alpha: 0.3),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.green.shade100, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.green.shade100.withOpacity(0.5),
+                    color: Colors.green.shade100.withValues(alpha: 0.5),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

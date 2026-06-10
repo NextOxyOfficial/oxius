@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 class StoreDetails {
   final String storeName;
   final String storeUsername;
@@ -236,7 +237,7 @@ class ShopOrder {
   });
 
   factory ShopOrder.fromJson(Map<String, dynamic> json) {
-    print('📦 Parsing order JSON: $json');
+    debugPrint('📦 Parsing order JSON: $json');
     
     // Handle id as String (UUID)
     String orderId = json['id']?.toString() ?? '';

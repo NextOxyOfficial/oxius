@@ -83,7 +83,7 @@ class AppUpdateService {
       // by the catch, so the prompt never appeared). Use the root navigator's
       // own context instead.
       final dialogContext = await _navigatorContext();
-      if (dialogContext == null) return;
+      if (dialogContext == null || !dialogContext.mounted) return;
 
       _dialogShowing = true;
       await _showUpdateDialog(dialogContext, info);

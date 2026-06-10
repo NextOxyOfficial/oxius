@@ -69,7 +69,7 @@ class LinkPreviewService {
 
         if (res.statusCode < 200 || res.statusCode >= 300) {
           if (kDebugMode) {
-            print('LinkPreviewService non-2xx (${res.statusCode}) for $url via $fetchUri');
+            debugPrint('LinkPreviewService non-2xx (${res.statusCode}) for $url via $fetchUri');
           }
           continue;
         }
@@ -118,7 +118,7 @@ class LinkPreviewService {
       return null;
     } catch (e) {
       if (kDebugMode) {
-        print('LinkPreviewService failed for $url: $e');
+        debugPrint('LinkPreviewService failed for $url: $e');
       }
       _cache[url] = _CacheEntry(null, DateTime.now());
       return null;

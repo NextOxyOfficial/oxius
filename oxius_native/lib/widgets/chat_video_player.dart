@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
@@ -43,7 +45,8 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
         );
       } else {
         // For local files (not commonly used in chat, but supported)
-        _videoPlayerController = VideoPlayerController.network(widget.videoUrl);
+        _videoPlayerController =
+            VideoPlayerController.file(File(widget.videoUrl));
       }
 
       await _videoPlayerController.initialize();
@@ -85,7 +88,7 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
         });
       }
     } catch (e) {
-      print('Error initializing video player: $e');
+      debugPrint('Error initializing video player: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -137,7 +140,7 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
+          color: Colors.black.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade300, width: 1),
         ),
@@ -151,7 +154,7 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: Container(
+      child: SizedBox(
         width: widget.width,
         height: widget.height,
         child: Chewie(

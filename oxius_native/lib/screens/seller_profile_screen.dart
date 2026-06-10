@@ -18,10 +18,10 @@ class SellerProfileScreen extends StatefulWidget {
   final String? userName;
 
   const SellerProfileScreen({
-    Key? key,
+    super.key,
     this.userId,
     this.userName,
-  }) : super(key: key);
+  });
 
   @override
   State<SellerProfileScreen> createState() => _SellerProfileScreenState();
@@ -61,7 +61,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         }
       }
     } catch (e) {
-      print('Error fetching categories: $e');
+      debugPrint('Error fetching categories: $e');
     }
   }
 
@@ -88,7 +88,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         throw Exception('Failed to load seller info');
       }
     } catch (e) {
-      print('Error fetching seller info: $e');
+      debugPrint('Error fetching seller info: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -134,7 +134,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         throw Exception('Failed to load seller posts');
       }
     } catch (e) {
-      print('Error fetching seller posts: $e');
+      debugPrint('Error fetching seller posts: $e');
       if (mounted) {
         setState(() => _isLoadingPosts = false);
       }
@@ -174,7 +174,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   String _maskPhoneNumber(String? phone) {
     if (phone == null || phone.length <= 4) return phone ?? '';
-    return phone.substring(0, 3) + '****' + phone.substring(phone.length - 2);
+    return '${phone.substring(0, 3)}****${phone.substring(phone.length - 2)}';
   }
 
   String _sellerDisplayName() {
@@ -692,7 +692,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.chat_bubble_outline,
@@ -747,7 +747,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   Widget _buildAvatarFallback(String name) {
     return Container(
-      color: const Color(0xFF10B981).withOpacity(0.1),
+      color: const Color(0xFF10B981).withValues(alpha: 0.1),
       child: Center(
         child: Text(
           name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -776,7 +776,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

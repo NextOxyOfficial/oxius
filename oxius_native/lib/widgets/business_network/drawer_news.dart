@@ -55,7 +55,7 @@ class _DrawerNewsState extends State<DrawerNews> {
         }
       }
     } catch (e) {
-      print('Error loading news: $e');
+      debugPrint('Error loading news: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -209,7 +209,7 @@ class _DrawerNewsState extends State<DrawerNews> {
             border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -355,8 +355,8 @@ class _DrawerNewsState extends State<DrawerNews> {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withOpacity(0.8),
-                    Colors.black.withOpacity(0.5),
+                    Colors.black.withValues(alpha: 0.8),
+                    Colors.black.withValues(alpha: 0.5),
                     Colors.transparent,
                   ],
                 ),
@@ -389,12 +389,12 @@ class _DrawerNewsState extends State<DrawerNews> {
                       Row(
                         children: [
                           Icon(Icons.access_time,
-                              size: 12, color: Colors.white.withOpacity(0.8)),
+                              size: 12, color: Colors.white.withValues(alpha: 0.8)),
                           const SizedBox(width: 4),
                           Text(
                             _formatDate(news['created_at']),
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 10,
                             ),
                           ),

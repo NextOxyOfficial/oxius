@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/sale_post.dart';
 import '../utils/api_error.dart';
+import 'package:flutter/foundation.dart';
 
 class SalePostService {
   final String baseUrl;
@@ -21,7 +22,7 @@ class SalePostService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_tokenKey);
     } catch (e) {
-      print('Error getting auth token: $e');
+      debugPrint('Error getting auth token: $e');
       return null;
     }
   }
@@ -34,11 +35,11 @@ class SalePostService {
 
     if (needsAuth) {
       final token = await _getAuthToken();
-      print('Auth token retrieved: ${token != null ? "Yes (${token.substring(0, 20)}...)" : "No"}');
+      debugPrint('Auth token retrieved: ${token != null ? "Yes (${token.substring(0, 20)}...)" : "No"}');
       if (token != null) {
         headers['Authorization'] = 'Bearer $token';
       } else {
-        print('WARNING: Auth required but no token found!');
+        debugPrint('WARNING: Auth required but no token found!');
       }
     }
 
@@ -59,7 +60,7 @@ class SalePostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching sale categories: $e');
+      debugPrint('Error fetching sale categories: $e');
       return [];
     }
   }
@@ -122,11 +123,11 @@ class SalePostService {
       final uri =
           Uri.parse('$baseUrl/sale/posts/').replace(queryParameters: queryParams);
       
-      print('🛒 Fetching sale posts from: $uri');
+      debugPrint('🛒 Fetching sale posts from: $uri');
       
       final response = await client.get(uri, headers: await _getHeaders());
 
-      print('📡 Response status: ${response.statusCode}');
+      debugPrint('📡 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -135,7 +136,7 @@ class SalePostService {
 
       return SalePostsResponse(results: [], count: 0);
     } catch (e) {
-      print('❌ Error fetching sale posts: $e');
+      debugPrint('❌ Error fetching sale posts: $e');
       return SalePostsResponse(results: [], count: 0);
     }
   }
@@ -152,7 +153,7 @@ class SalePostService {
       }
       return null;
     } catch (e) {
-      print('Error fetching sale post by slug: $e');
+      debugPrint('Error fetching sale post by slug: $e');
       return null;
     }
   }
@@ -188,7 +189,7 @@ class SalePostService {
 
       return SalePostsResponse(results: [], count: 0);
     } catch (e) {
-      print('Error fetching my sale posts: $e');
+      debugPrint('Error fetching my sale posts: $e');
       return SalePostsResponse(results: [], count: 0);
     }
   }
@@ -209,7 +210,7 @@ class SalePostService {
       }
       return null;
     } catch (e) {
-      print('Error creating sale post: $e');
+      debugPrint('Error creating sale post: $e');
       return null;
     }
   }
@@ -231,7 +232,7 @@ class SalePostService {
       }
       return null;
     } catch (e) {
-      print('Error updating sale post: $e');
+      debugPrint('Error updating sale post: $e');
       return null;
     }
   }
@@ -248,7 +249,7 @@ class SalePostService {
 
       return response.statusCode == 204;
     } catch (e) {
-      print('Error deleting sale post: $e');
+      debugPrint('Error deleting sale post: $e');
       return false;
     }
   }
@@ -257,25 +258,25 @@ class SalePostService {
   Future<SalePost?> markAsSold(String slug) async {
     try {
       final uri = Uri.parse('$baseUrl/sale/posts/$slug/mark_as_sold/');
-      print('Marking as sold URL: $uri');
+      debugPrint('Marking as sold URL: $uri');
       
       final response = await client.post(
         uri,
         headers: await _getHeaders(needsAuth: true),
       );
 
-      print('Mark as sold response status: ${response.statusCode}');
-      print('Mark as sold response body: ${response.body}');
+      debugPrint('Mark as sold response status: ${response.statusCode}');
+      debugPrint('Mark as sold response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return SalePost.fromJson(data);
       } else {
-        print('Failed to mark as sold. Status: ${response.statusCode}, Body: ${response.body}');
+        debugPrint('Failed to mark as sold. Status: ${response.statusCode}, Body: ${response.body}');
       }
       return null;
     } catch (e) {
-      print('Error marking post as sold: $e');
+      debugPrint('Error marking post as sold: $e');
       rethrow; // Rethrow to show actual error in UI
     }
   }
@@ -294,7 +295,7 @@ class SalePostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching categories for form: $e');
+      debugPrint('Error fetching categories for form: $e');
       return [];
     }
   }
@@ -313,7 +314,7 @@ class SalePostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching child categories: $e');
+      debugPrint('Error fetching child categories: $e');
       return [];
     }
   }
@@ -347,7 +348,7 @@ class SalePostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching divisions: $e');
+      debugPrint('Error fetching divisions: $e');
       return [];
     }
   }
@@ -366,7 +367,7 @@ class SalePostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching districts: $e');
+      debugPrint('Error fetching districts: $e');
       return [];
     }
   }
@@ -385,7 +386,7 @@ class SalePostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching areas: $e');
+      debugPrint('Error fetching areas: $e');
       return [];
     }
   }
@@ -393,7 +394,7 @@ class SalePostService {
   /// Create a new sale post
   Future<Map<String, dynamic>?> createSalePost(Map<String, dynamic> postData) async {
     try {
-      print('Creating sale post with data: ${json.encode(postData)}');
+      debugPrint('Creating sale post with data: ${json.encode(postData)}');
       
       final uri = Uri.parse('$baseUrl/sale/posts/');
       final response = await client.post(
@@ -402,34 +403,34 @@ class SalePostService {
         body: json.encode(postData),
       );
 
-      print('Create post response status: ${response.statusCode}');
-      print('Create post response body: ${response.body}');
+      debugPrint('Create post response status: ${response.statusCode}');
+      debugPrint('Create post response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
         return data is Map<String, dynamic> ? data : null;
       } else if (response.statusCode == 401) {
-        print('❌ UNAUTHORIZED: User is not authenticated or token is invalid');
+        debugPrint('❌ UNAUTHORIZED: User is not authenticated or token is invalid');
         throw Exception('You must be logged in to create a post. Please login and try again.');
       } else if (response.statusCode == 400) {
         // Check if it's actually a success (known backend issue)
         try {
           final data = json.decode(response.body);
           if (data is Map && (data.containsKey('id') || data.containsKey('message'))) {
-            print('Detected success response with 400 status');
+            debugPrint('Detected success response with 400 status');
             return data as Map<String, dynamic>;
           }
         } catch (e) {
           // Parse failed, treat as error
         }
-        print('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
+        debugPrint('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
         throw ApiError.fromResponse(response.statusCode, response.body);
       } else {
-        print('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
+        debugPrint('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
         throw ApiError.fromResponse(response.statusCode, response.body);
       }
     } catch (e) {
-      print('Error creating sale post: $e');
+      debugPrint('Error creating sale post: $e');
       rethrow;
     }
   }
@@ -437,7 +438,7 @@ class SalePostService {
   /// Report a sale post
   Future<bool> reportPost(String slug, String reason, {String? details}) async {
     try {
-      print('Reporting sale post: $slug with reason: $reason');
+      debugPrint('Reporting sale post: $slug with reason: $reason');
       
       final uri = Uri.parse('$baseUrl/sale/posts/$slug/report/');
       
@@ -452,18 +453,18 @@ class SalePostService {
         body: json.encode(body),
       );
 
-      print('Report post response status: ${response.statusCode}');
-      print('Report post response body: ${response.body}');
+      debugPrint('Report post response status: ${response.statusCode}');
+      debugPrint('Report post response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        print('✅ Sale post reported successfully');
+        debugPrint('✅ Sale post reported successfully');
         return true;
       }
       
-      print('❌ Failed to report post. Status: ${response.statusCode}');
+      debugPrint('❌ Failed to report post. Status: ${response.statusCode}');
       return false;
     } catch (e) {
-      print('❌ Error reporting sale post: $e');
+      debugPrint('❌ Error reporting sale post: $e');
       return false;
     }
   }

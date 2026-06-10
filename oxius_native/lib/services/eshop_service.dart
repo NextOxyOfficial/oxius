@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 class StoreSubscriptionExpiredException implements Exception {
   final String message;
@@ -109,7 +110,7 @@ class EshopService {
   static Map<String, dynamic> _transformProduct(
       Map<String, dynamic> backendProduct) {
     try {
-      print(
+      debugPrint(
           'DEBUG _transformProduct: Input product keys: ${backendProduct.keys.toList()}');
 
       // Extract image from image_details (ProductMediaSerializer)
@@ -124,14 +125,14 @@ class EshopService {
 
       // Extract store name from owner_details (UserSerializer)
       final ownerDetails = backendProduct['owner_details'];
-      print(
+      debugPrint(
           'DEBUG _transformProduct: ownerDetails type: ${ownerDetails.runtimeType}');
-      print('DEBUG _transformProduct: ownerDetails value: $ownerDetails');
+      debugPrint('DEBUG _transformProduct: ownerDetails value: $ownerDetails');
 
       String storeName = 'Store'; // Default fallback
       String storeUsername = '';
       if (ownerDetails is Map<String, dynamic>) {
-        print(
+        debugPrint(
             'DEBUG _transformProduct: ownerDetails keys: ${ownerDetails.keys.toList()}');
         // Prioritize store_name first, then other fields
         storeName = ownerDetails['store_name']?.toString() ??
@@ -143,7 +144,7 @@ class EshopService {
             ownerDetails['username']?.toString() ??
             '';
 
-        print('DEBUG _transformProduct: Extracted storeName: "$storeName"');
+        debugPrint('DEBUG _transformProduct: Extracted storeName: "$storeName"');
 
         // Add last name if available and we're using first_name
         if (ownerDetails['first_name'] != null &&
@@ -151,7 +152,7 @@ class EshopService {
             storeName == ownerDetails['first_name']?.toString() &&
             ownerDetails['last_name'].toString().isNotEmpty) {
           storeName += ' ${ownerDetails['last_name']}';
-          print(
+          debugPrint(
               'DEBUG _transformProduct: storeName with last name: "$storeName"');
         }
       }
@@ -242,11 +243,11 @@ class EshopService {
             backendProduct['delivery_fee_outside_dhaka'] ?? 0.0,
       };
 
-      print(
+      debugPrint(
           'DEBUG _transformProduct: Final transformed owner_details: ${transformed['owner_details']}');
       return transformed;
     } catch (e) {
-      print('EshopService: Error transforming product: $e');
+      debugPrint('EshopService: Error transforming product: $e');
       // Return minimal safe product structure
       return {
         'id': backendProduct['id']?.toString() ?? '',
@@ -297,7 +298,7 @@ class EshopService {
       //       /api/all-products/ is AllProductsListView (AllowAny, supports category/search/price filters)
       final uri = Uri.parse('$baseUrl/all-products/')
           .replace(queryParameters: queryParams);
-      print('EshopService: Fetching products from: $uri');
+      debugPrint('EshopService: Fetching products from: $uri');
 
       final response = await http.get(
         uri,
@@ -307,37 +308,37 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('EshopService: Response status: ${response.statusCode}');
+      debugPrint('EshopService: Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         if (data is Map && data['results'] is List) {
           final products = _extractProductList(data);
-          print(
+          debugPrint(
               'EshopService: Successfully fetched ${products.length} products (paginated)');
           return products;
         } else if (data is List) {
           final products = _extractProductList(data);
-          print(
+          debugPrint(
               'EshopService: Successfully fetched ${products.length} products (direct array)');
           return products;
         } else if (data is Map<String, dynamic>) {
           // Single product object
           final product = _transformProduct(data);
-          print('EshopService: Successfully fetched 1 product (single object)');
+          debugPrint('EshopService: Successfully fetched 1 product (single object)');
           return [product];
         }
       }
 
-      print(
+      debugPrint(
           'EshopService: Failed to fetch products. Status: ${response.statusCode}');
-      print('EshopService: Response body: ${response.body}');
+      debugPrint('EshopService: Response body: ${response.body}');
 
       return [];
     } catch (e, stackTrace) {
-      print('EshopService: Error fetching products: $e');
-      print('EshopService: Stack trace: $stackTrace');
+      debugPrint('EshopService: Error fetching products: $e');
+      debugPrint('EshopService: Stack trace: $stackTrace');
       return [];
     }
   }
@@ -438,7 +439,7 @@ class EshopService {
     } on StoreSubscriptionExpiredException {
       rethrow;
     } catch (e) {
-      print('EshopService: Error fetching store details: $e');
+      debugPrint('EshopService: Error fetching store details: $e');
       return null;
     }
   }
@@ -483,7 +484,7 @@ class EshopService {
         'hasMore': hasMore,
       };
     } catch (e) {
-      print('EshopService: Error fetching store products: $e');
+      debugPrint('EshopService: Error fetching store products: $e');
       rethrow;
     }
   }
@@ -491,7 +492,7 @@ class EshopService {
   static Future<List<Map<String, dynamic>>> fetchEshopCategories() async {
     try {
       final uri = Uri.parse('$baseUrl/product-categories/');
-      print('EshopService: Fetching categories from: $uri');
+      debugPrint('EshopService: Fetching categories from: $uri');
 
       final response = await http.get(
         uri,
@@ -501,30 +502,30 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('EshopService: Categories response status: ${response.statusCode}');
+      debugPrint('EshopService: Categories response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         if (data is Map && data['results'] is List) {
           final categories = List<Map<String, dynamic>>.from(data['results']);
-          print(
+          debugPrint(
               'EshopService: Successfully fetched ${categories.length} categories');
           return categories;
         } else if (data is List) {
           final categories = List<Map<String, dynamic>>.from(data);
-          print(
+          debugPrint(
               'EshopService: Successfully fetched ${categories.length} categories (direct array)');
           return categories;
         }
       }
 
-      print(
+      debugPrint(
           'EshopService: Failed to fetch categories. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
-      print('EshopService: Error fetching categories: $e');
-      print('EshopService: Stack trace: $stackTrace');
+      debugPrint('EshopService: Error fetching categories: $e');
+      debugPrint('EshopService: Stack trace: $stackTrace');
       return [];
     }
   }
@@ -545,7 +546,7 @@ class EshopService {
 
       final uri = Uri.parse('$baseUrl/product-categories/').replace(
           queryParameters: queryParams.isNotEmpty ? queryParams : null);
-      print('EshopService: Fetching product categories from: $uri');
+      debugPrint('EshopService: Fetching product categories from: $uri');
 
       final response = await http.get(
         uri,
@@ -555,7 +556,7 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print(
+      debugPrint(
           'EshopService: Product categories response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
@@ -576,17 +577,17 @@ class EshopService {
           }
         }
 
-        print(
+        debugPrint(
             'EshopService: Successfully fetched ${categories.length} product categories');
         return categories;
       }
 
-      print(
+      debugPrint(
           'EshopService: Failed to fetch product categories. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
-      print('EshopService: Error fetching product categories: $e');
-      print('EshopService: Stack trace: $stackTrace');
+      debugPrint('EshopService: Error fetching product categories: $e');
+      debugPrint('EshopService: Stack trace: $stackTrace');
       return [];
     }
   }
@@ -595,7 +596,7 @@ class EshopService {
       {String endpoint = '/eshop-banner/'}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      print('EshopService: Fetching banners from: $uri');
+      debugPrint('EshopService: Fetching banners from: $uri');
 
       final response = await http.get(
         uri,
@@ -605,7 +606,7 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('EshopService: Banners response status: ${response.statusCode}');
+      debugPrint('EshopService: Banners response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -628,16 +629,16 @@ class EshopService {
           }
         }
 
-        print('EshopService: Successfully fetched ${banners.length} banners');
+        debugPrint('EshopService: Successfully fetched ${banners.length} banners');
         return banners;
       }
 
-      print(
+      debugPrint(
           'EshopService: Failed to fetch banners. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
-      print('EshopService: Error fetching banners: $e');
-      print('EshopService: Stack trace: $stackTrace');
+      debugPrint('EshopService: Error fetching banners: $e');
+      debugPrint('EshopService: Stack trace: $stackTrace');
       return [];
     }
   }
@@ -653,8 +654,8 @@ class EshopService {
         'ordering': '-created_at',
       });
 
-      print('EshopService: Searching products with query: $query');
-      print('EshopService: Search URL: $uri');
+      debugPrint('EshopService: Searching products with query: $query');
+      debugPrint('EshopService: Search URL: $uri');
 
       final response = await http.get(
         uri,
@@ -664,7 +665,7 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('EshopService: Search response status: ${response.statusCode}');
+      debugPrint('EshopService: Search response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -679,7 +680,7 @@ class EshopService {
                 try {
                   products.add(_transformProduct(item));
                 } catch (e) {
-                  print('EshopService: Error transforming search result: $e');
+                  debugPrint('EshopService: Error transforming search result: $e');
                 }
               }
             }
@@ -691,13 +692,13 @@ class EshopService {
               try {
                 products.add(_transformProduct(item));
               } catch (e) {
-                print('EshopService: Error transforming search result: $e');
+                debugPrint('EshopService: Error transforming search result: $e');
               }
             }
           }
         }
 
-        print(
+        debugPrint(
             'EshopService: Successfully searched ${products.length} products for query: "$query"');
 
         // NOTE: Search history is saved explicitly from the UI layer on user
@@ -708,12 +709,12 @@ class EshopService {
         return products;
       }
 
-      print('EshopService: Search failed. Status: ${response.statusCode}');
-      print('EshopService: Response body: ${response.body}');
+      debugPrint('EshopService: Search failed. Status: ${response.statusCode}');
+      debugPrint('EshopService: Response body: ${response.body}');
       return [];
     } catch (e, stackTrace) {
-      print('EshopService: Error searching products: $e');
-      print('EshopService: Stack trace: $stackTrace');
+      debugPrint('EshopService: Error searching products: $e');
+      debugPrint('EshopService: Stack trace: $stackTrace');
       return [];
     }
   }
@@ -722,7 +723,7 @@ class EshopService {
   static Future<List<String>> getSearchHistory() async {
     try {
       final uri = Uri.parse('$baseUrl/search-history/');
-      print('EshopService: Fetching search history from: $uri');
+      debugPrint('EshopService: Fetching search history from: $uri');
       final headers = await _jsonHeaders();
 
       final response = await http
@@ -732,7 +733,7 @@ class EshopService {
           )
           .timeout(const Duration(seconds: 10));
 
-      print(
+      debugPrint(
           'EshopService: Search history response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
@@ -748,17 +749,17 @@ class EshopService {
         }
 
         final deduped = _dedupeSearchHistory(searches);
-        print(
+        debugPrint(
             'EshopService: Successfully fetched ${deduped.length} search history items');
         return deduped;
       }
 
-      print(
+      debugPrint(
           'EshopService: Failed to fetch search history. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
-      print('EshopService: Error fetching search history: $e');
-      print('EshopService: Stack trace: $stackTrace');
+      debugPrint('EshopService: Error fetching search history: $e');
+      debugPrint('EshopService: Stack trace: $stackTrace');
       return [];
     }
   }
@@ -786,20 +787,20 @@ class EshopService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
         if (data is Map && data['saved'] == false) {
-          print(
+          debugPrint(
               'EshopService: Search history was not saved for anonymous user');
           return false;
         }
-        print(
+        debugPrint(
             'EshopService: Search history saved for query: "$normalizedQuery"');
         return true;
       } else {
-        print(
+        debugPrint(
             'EshopService: Failed to save search history. Status: ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('EshopService: Error saving search history: $e');
+      debugPrint('EshopService: Error saving search history: $e');
       return false;
     }
   }
@@ -822,15 +823,15 @@ class EshopService {
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        print('EshopService: Search item deleted: $normalizedQuery');
+        debugPrint('EshopService: Search item deleted: $normalizedQuery');
         return true;
       }
 
-      print(
+      debugPrint(
           'EshopService: Failed to delete search item. Status: ${response.statusCode}');
       return false;
     } catch (e) {
-      print('EshopService: Error deleting search item: $e');
+      debugPrint('EshopService: Error deleting search item: $e');
       return false;
     }
   }
@@ -849,15 +850,15 @@ class EshopService {
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        print('EshopService: Search history cleared');
+        debugPrint('EshopService: Search history cleared');
         return true;
       }
 
-      print(
+      debugPrint(
           'EshopService: Failed to clear search history. Status: ${response.statusCode}');
       return false;
     } catch (e) {
-      print('EshopService: Error clearing search history: $e');
+      debugPrint('EshopService: Error clearing search history: $e');
       return false;
     }
   }
@@ -866,7 +867,7 @@ class EshopService {
   static Future<String?> getEshopLogo() async {
     try {
       final uri = Uri.parse('$baseUrl/eshop-logo/');
-      print('EshopService: Fetching eShop logo from: $uri');
+      debugPrint('EshopService: Fetching eShop logo from: $uri');
 
       final response = await http.get(
         uri,
@@ -876,26 +877,26 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 5));
 
-      print('EshopService: Logo response status: ${response.statusCode}');
-      print('EshopService: Logo response body: ${response.body}');
+      debugPrint('EshopService: Logo response status: ${response.statusCode}');
+      debugPrint('EshopService: Logo response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final logoUrl = data['image']?.toString();
-        print('EshopService: Raw logo URL from backend: $logoUrl');
+        debugPrint('EshopService: Raw logo URL from backend: $logoUrl');
         if (logoUrl != null && logoUrl.isNotEmpty) {
           final absoluteUrl = _abs(logoUrl);
-          print('EshopService: Absolute logo URL: $absoluteUrl');
+          debugPrint('EshopService: Absolute logo URL: $absoluteUrl');
           return absoluteUrl;
         } else {
-          print('EshopService: Logo URL is null or empty');
+          debugPrint('EshopService: Logo URL is null or empty');
         }
       }
 
-      print('EshopService: Returning null for logo');
+      debugPrint('EshopService: Returning null for logo');
       return null;
     } catch (e) {
-      print('EshopService: Error fetching eshop logo: $e');
+      debugPrint('EshopService: Error fetching eshop logo: $e');
       return null;
     }
   }

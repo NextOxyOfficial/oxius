@@ -30,16 +30,13 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
   String? _referralLink;
 
   String? _commissionError;
-  String? _usersError;
 
   // Referral Reward Program
   MyClaimsResponse? _claimsData;
-  CheckConditionsResponse? _conditionsData;
   bool _isLoadingClaims = false;
   bool _isClaimingReward = false;
 
   late TabController _tabController;
-  int _activeTab = 0;
   bool _isLoggedIn = false;
 
   @override
@@ -47,11 +44,6 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     super.initState();
     _isLoggedIn = AuthService.isAuthenticated;
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() => _activeTab = _tabController.index);
-      }
-    });
     _loadData();
   }
 
@@ -96,7 +88,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         });
       }
     } catch (e) {
-      print('Error loading referral info: $e');
+      debugPrint('Error loading referral info: $e');
     }
   }
 
@@ -127,7 +119,6 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
   Future<void> _loadReferredUsers() async {
     setState(() {
       _isLoadingUsers = true;
-      _usersError = null;
     });
 
     try {
@@ -141,7 +132,6 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     } catch (e) {
       if (mounted) {
         setState(() {
-          _usersError = 'Failed to load referred users';
           _isLoadingUsers = false;
         });
       }
@@ -151,12 +141,6 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
   Future<void> _loadRewardClaims() async {
     setState(() => _isLoadingClaims = true);
     try {
-      final conditions = await ReferralService.checkConditions();
-      if (mounted) {
-        setState(() {
-          _conditionsData = conditions;
-        });
-      }
       final data = await ReferralService.getMyClaims();
       if (mounted) {
         setState(() {
@@ -374,7 +358,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -402,7 +386,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -413,7 +397,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   style: AppFonts.roboto(
                     fontSize: 12,
                     height: 1.4,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -559,7 +543,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
               border: Border.all(color: Colors.grey.shade200),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),
@@ -582,7 +566,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: const Color(0xFF10B981).withOpacity(0.3),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.3),
                         width: 2),
                   ),
                   child: Text(
@@ -804,7 +788,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Center(
@@ -885,9 +869,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -922,9 +906,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.06),
+        color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.18)),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
@@ -1162,7 +1146,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(Icons.card_giftcard_rounded,
@@ -1222,7 +1206,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6)),
                     child: Text('+${referrerClaims.length - 3} more',
                         style:
@@ -1233,7 +1217,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           else
             Text('Refer friends to earn rewards!',
                 style: AppFonts.roboto(
-                    fontSize: 10, color: Colors.white.withOpacity(0.9))),
+                    fontSize: 10, color: Colors.white.withValues(alpha: 0.9))),
         ],
       ),
     );
@@ -1365,7 +1349,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withOpacity(0.1),
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Center(
@@ -1386,8 +1370,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: user.isActive
-                ? Colors.green.withOpacity(0.1)
-                : Colors.grey.withOpacity(0.1),
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.grey.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -1405,7 +1389,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8)),
                   child: Text('Claimed',
                       style: AppFonts.roboto(
@@ -1438,7 +1422,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.1),
+                          color: Colors.amber.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8)),
                       child: Text('Incompleted',
                           style: AppFonts.roboto(

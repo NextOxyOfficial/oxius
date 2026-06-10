@@ -103,7 +103,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
         });
       }
     } catch (e) {
-      print('Error loading user posts: $e');
+      debugPrint('Error loading user posts: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -132,7 +132,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
         });
       }
     } catch (e) {
-      print('Error loading more posts: $e');
+      debugPrint('Error loading more posts: $e');
       if (mounted) {
         setState(() => _isLoadingMore = false);
       }
@@ -201,7 +201,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
       if (!mounted) return;
       Navigator.pop(context);
 
-      if (chatroom != null && chatroom['id'] != null) {
+      if (chatroom['id'] != null) {
         AdsyConnectChatInterface.open(
           context,
           chatroomId: chatroom['id'].toString(),
@@ -275,7 +275,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
               height: 36,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
               ),
               child: () {
                 final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
@@ -342,7 +342,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
@@ -359,7 +359,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
@@ -471,7 +471,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

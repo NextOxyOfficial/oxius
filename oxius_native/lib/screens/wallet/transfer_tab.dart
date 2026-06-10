@@ -15,7 +15,6 @@ const _slate50 = Color(0xFFF8FAFC);
 const _slate200 = Color(0xFFE2E8F0);
 const _slate400 = Color(0xFF94A3B8);
 const _slate500 = Color(0xFF64748B);
-const _slate700 = Color(0xFF334155);
 const _slate800 = Color(0xFF1E293B);
 
 class TransferTab extends StatefulWidget {
@@ -111,7 +110,7 @@ class _TransferTabState extends State<TransferTab> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -149,7 +148,7 @@ class _TransferTabState extends State<TransferTab> {
                 border: Border.all(color: const Color(0xFF10B981), width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -637,7 +636,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.symmetric(horizontal: 32),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(

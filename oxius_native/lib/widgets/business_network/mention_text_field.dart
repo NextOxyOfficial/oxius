@@ -30,8 +30,6 @@ class _MentionTextFieldState extends State<MentionTextField> {
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
   List<BusinessNetworkUser> _suggestions = [];
-  bool _isSearching = false;
-  String _currentMention = '';
   int _cursorPosition = 0;
 
   @override
@@ -60,9 +58,8 @@ class _MentionTextFieldState extends State<MentionTextField> {
     if (lastAtIndex != -1) {
       // Check if there's a space between @ and cursor
       final afterAt = beforeCursor.substring(lastAtIndex + 1);
-      if (!afterAt.contains(' ') && afterAt.length > 0) {
+      if (!afterAt.contains(' ') && afterAt.isNotEmpty) {
         // We're typing a mention
-        _currentMention = afterAt;
         _cursorPosition = cursorPos;
         _searchUsers(afterAt);
         return;
@@ -79,8 +76,6 @@ class _MentionTextFieldState extends State<MentionTextField> {
       return;
     }
 
-    setState(() => _isSearching = true);
-
     // Search users via API
     final users = await BusinessNetworkService.searchUsers(query);
     
@@ -93,7 +88,8 @@ class _MentionTextFieldState extends State<MentionTextField> {
     
     _suggestions = users.take(10).toList(); // Limit to 10 suggestions
 
-    setState(() => _isSearching = false);
+    // Publish the freshly fetched _suggestions to the UI.
+    setState(() {});
 
     if (_suggestions.isNotEmpty) {
       _showOverlay();

@@ -213,7 +213,7 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -252,7 +252,7 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE53E3E).withOpacity(0.9),
+                          color: const Color(0xFFE53E3E).withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(

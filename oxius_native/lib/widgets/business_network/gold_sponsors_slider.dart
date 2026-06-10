@@ -221,7 +221,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.amber.withOpacity(0.3),
+                        color: Colors.amber.withValues(alpha: 0.3),
                         blurRadius: 8,
                         spreadRadius: 2,
                       ),
@@ -527,7 +527,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
         border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -628,7 +628,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.18),
+                      Colors.black.withValues(alpha: 0.18),
                     ],
                   ),
                 ),
@@ -652,7 +652,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                         borderRadius: BorderRadius.circular(999),
                         color: _currentBannerIndex == index
                             ? Colors.white
-                            : Colors.white.withOpacity(0.55),
+                            : Colors.white.withValues(alpha: 0.55),
                       ),
                     ),
                   ),
@@ -763,7 +763,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
         border: Border.all(color: const Color(0xFFF59E0B), width: 1.4),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF59E0B).withOpacity(0.12),
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -887,7 +887,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                             end: Alignment.bottomCenter,
                                             colors: [
                                               Colors.transparent,
-                                              Colors.black.withOpacity(0.45),
+                                              Colors.black.withValues(alpha: 0.45),
                                             ],
                                           ),
                                         ),
@@ -906,7 +906,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                           padding: const EdgeInsets.all(5),
                                           decoration: BoxDecoration(
                                             color:
-                                                Colors.black.withOpacity(0.4),
+                                                Colors.black.withValues(alpha: 0.4),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(Icons.close_rounded,
@@ -937,7 +937,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                                     _currentBannerIndex == index
                                                         ? Colors.white
                                                         : Colors.white
-                                                            .withOpacity(0.45),
+                                                            .withValues(alpha: 0.45),
                                               ),
                                             ),
                                           ),
@@ -959,7 +959,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.15),
+                                        color: Colors.black.withValues(alpha: 0.15),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -1080,7 +1080,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                   borderRadius: BorderRadius.circular(14),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.orange.withOpacity(0.3),
+                                      color: Colors.orange.withValues(alpha: 0.3),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),
@@ -1126,7 +1126,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1166,7 +1166,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
       ),
       child: Center(
         child: Icon(Icons.workspace_premium_rounded,
-            size: 54, color: Colors.white.withOpacity(0.85)),
+            size: 54, color: Colors.white.withValues(alpha: 0.85)),
       ),
     );
   }
@@ -1179,7 +1179,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

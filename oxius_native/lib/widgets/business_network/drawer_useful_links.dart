@@ -61,9 +61,9 @@ class DrawerUsefulLinks extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.07),
+            color: color.withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color.withOpacity(0.18)),
+            border: Border.all(color: color.withValues(alpha: 0.18)),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

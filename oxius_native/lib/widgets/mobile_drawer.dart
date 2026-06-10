@@ -114,7 +114,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                           Navigator.pop(context);
                         },
                       ))
-                  .toList(),
+                  ,
               const SizedBox(height: 20),
             ],
           ),
@@ -181,11 +181,11 @@ class _MobileDrawerState extends State<MobileDrawer> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withOpacity(0.1),
+                                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color:
-                                      const Color(0xFF10B981).withOpacity(0.3),
+                                      const Color(0xFF10B981).withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
@@ -454,7 +454,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -482,7 +482,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [iconColor, iconColor.withOpacity(0.7)],
+                      colors: [iconColor, iconColor.withValues(alpha: 0.7)],
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -500,7 +500,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
           ),
           trailing: Icon(
             Icons.chevron_right,
-            color: iconColor.withOpacity(0.5),
+            color: iconColor.withValues(alpha: 0.5),
             size: 16,
           ),
           onTap: onTap,

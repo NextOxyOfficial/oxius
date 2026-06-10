@@ -130,7 +130,7 @@ class _AppDownloadWizardButtonState extends State<AppDownloadWizardButton> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.12),
+                color: Colors.black.withValues(alpha: 0.12),
                 blurRadius: 18,
                 offset: const Offset(0, 6),
               ),
@@ -146,7 +146,7 @@ class _AppDownloadWizardButtonState extends State<AppDownloadWizardButton> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.12),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -276,8 +276,8 @@ class _AppDownloadWizardButtonState extends State<AppDownloadWizardButton> {
         height: 36,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: const Color(0xFF10B981).withOpacity(0.08),
-          border: Border.all(color: const Color(0xFF10B981).withOpacity(0.25)),
+          color: const Color(0xFF10B981).withValues(alpha: 0.08),
+          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
         ),
         child: Center(
           child: Icon(

@@ -21,20 +21,20 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.white.withOpacity(0.95),
-            Colors.grey.shade50.withOpacity(0.95),
-            Colors.white.withOpacity(0.95),
+            Colors.white.withValues(alpha: 0.95),
+            Colors.grey.shade50.withValues(alpha: 0.95),
+            Colors.white.withValues(alpha: 0.95),
           ],
         ),
         border: Border(
           top: BorderSide(
-            color: Colors.grey.shade200.withOpacity(0.4),
+            color: Colors.grey.shade200.withValues(alpha: 0.4),
             width: 1,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -189,7 +189,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                       gradient: isActive
                           ? RadialGradient(
                               colors: [
-                                color.withOpacity(0.15),
+                                color.withValues(alpha: 0.15),
                                 Colors.transparent,
                               ],
                             )
@@ -256,7 +256,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: color.withOpacity(0.1 * (1.2 - value)),
+                                color: color.withValues(alpha: 0.1 * (1.2 - value)),
                               ),
                             ),
                           );
@@ -320,19 +320,19 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                         )
                       : null,
                   color:
-                      enabled ? null : const Color(0xFFCBD5E1).withOpacity(0.3),
+                      enabled ? null : const Color(0xFFCBD5E1).withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                   boxShadow: enabled
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF3B82F6).withOpacity(0.4),
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ]
                       : [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 1),
                           ),

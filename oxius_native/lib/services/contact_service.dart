@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class ContactInfo {
   final String email;
@@ -45,7 +46,7 @@ class ContactService {
         );
       }
     } catch (e) {
-      print('Error fetching contact info: $e');
+      debugPrint('Error fetching contact info: $e');
       // Return default values on error
       return ContactInfo(
         email: 'support@adsyclub.com',
@@ -105,7 +106,7 @@ class ContactService {
         };
       }
     } catch (e) {
-      print('Error submitting contact form: $e');
+      debugPrint('Error submitting contact form: $e');
       return {
         'success': false,
         'message': 'Network error. Please check your connection and try again.',

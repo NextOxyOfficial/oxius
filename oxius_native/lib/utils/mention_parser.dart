@@ -144,12 +144,12 @@ class MentionParser {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.blue.shade50.withOpacity(0.8),
-                  Colors.purple.shade50.withOpacity(0.8),
+                  Colors.blue.shade50.withValues(alpha: 0.8),
+                  Colors.purple.shade50.withValues(alpha: 0.8),
                 ],
               ),
               border: Border.all(
-                color: Colors.blue.shade200.withOpacity(0.6),
+                color: Colors.blue.shade200.withValues(alpha: 0.6),
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -195,12 +195,12 @@ class MentionParser {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blue.shade50.withOpacity(0.8),
-                    Colors.purple.shade50.withOpacity(0.8),
+                    Colors.blue.shade50.withValues(alpha: 0.8),
+                    Colors.purple.shade50.withValues(alpha: 0.8),
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.blue.shade200.withOpacity(0.6),
+                  color: Colors.blue.shade200.withValues(alpha: 0.6),
                   width: 1,
                 ),
                 borderRadius: BorderRadius.circular(12),
@@ -282,12 +282,12 @@ class MentionParser {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blue.shade50.withOpacity(0.8),
-                    Colors.purple.shade50.withOpacity(0.8),
+                    Colors.blue.shade50.withValues(alpha: 0.8),
+                    Colors.purple.shade50.withValues(alpha: 0.8),
                   ],
                 ),
                 border: Border.all(
-                  color: Colors.blue.shade200.withOpacity(0.6),
+                  color: Colors.blue.shade200.withValues(alpha: 0.6),
                   width: 1,
                 ),
                 borderRadius: BorderRadius.circular(12),

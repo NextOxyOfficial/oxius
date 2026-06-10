@@ -8,7 +8,7 @@ import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class CreateSalePostScreen extends StatefulWidget {
-  const CreateSalePostScreen({Key? key}) : super(key: key);
+  const CreateSalePostScreen({super.key});
 
   @override
   State<CreateSalePostScreen> createState() => _CreateSalePostScreenState();
@@ -40,8 +40,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
   bool _termsAccepted = false;
 
   // Images
-  List<String?> _imageBase64List = List.filled(8, null);
-  List<Uint8List?> _imageBytesList = List.filled(8, null);
+  final List<String?> _imageBase64List = List.filled(8, null);
+  final List<Uint8List?> _imageBytesList = List.filled(8, null);
 
   // Loading states
   bool _isLoading = false;
@@ -84,7 +84,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         _loadDivisions(),
       ]);
     } catch (e) {
-      print('Error loading initial data: $e');
+      debugPrint('Error loading initial data: $e');
       _showErrorSnackBar('Failed to load form data');
     } finally {
       setState(() => _isLoading = false);
@@ -96,7 +96,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       final categories = await _salePostService.fetchCategoriesForForm();
       setState(() => _categories = categories);
     } catch (e) {
-      print('Error loading categories: $e');
+      debugPrint('Error loading categories: $e');
     }
   }
 
@@ -118,7 +118,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       final divisions = await _salePostService.fetchDivisions();
       setState(() => _divisions = divisions);
     } catch (e) {
-      print('Error loading divisions: $e');
+      debugPrint('Error loading divisions: $e');
     }
   }
 
@@ -131,7 +131,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         _selectedChildCategory = null;
       });
     } catch (e) {
-      print('Error loading child categories: $e');
+      debugPrint('Error loading child categories: $e');
     }
   }
 
@@ -144,7 +144,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         _selectedArea = null;
       });
     } catch (e) {
-      print('Error loading districts: $e');
+      debugPrint('Error loading districts: $e');
     }
   }
 
@@ -156,7 +156,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         _selectedArea = null;
       });
     } catch (e) {
-      print('Error loading areas: $e');
+      debugPrint('Error loading areas: $e');
     }
   }
 
@@ -167,18 +167,18 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
     }
 
     try {
-      print('Attempting to pick image...');
+      debugPrint('Attempting to pick image...');
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 100,
       );
 
-      print('Image picked: ${image?.path}');
+      debugPrint('Image picked: ${image?.path}');
 
       if (image != null) {
         setState(() => _isUploadingImage = true);
 
-        print('Starting image compression...');
+        debugPrint('Starting image compression...');
         // Compress image using the utility class (target 80KB to match backend requirements)
         final String? compressedBase64 = await ImageCompressor.compressToBase64(
           image,
@@ -186,13 +186,13 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           verbose: true, // Enable logging
         );
 
-        print(
+        debugPrint(
             'Compression result: ${compressedBase64 != null ? "Success (${compressedBase64.length} chars)" : "Failed"}');
 
         if (compressedBase64 != null) {
           final int emptyIndex =
               _imageBase64List.indexWhere((img) => img == null);
-          print('Empty index found: $emptyIndex');
+          debugPrint('Empty index found: $emptyIndex');
 
           if (emptyIndex != -1) {
             try {
@@ -204,31 +204,31 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                   _imageBase64List[emptyIndex] = compressedBase64;
                   _imageBytesList[emptyIndex] = bytes;
                 });
-                print('Image added successfully at index $emptyIndex');
+                debugPrint('Image added successfully at index $emptyIndex');
                 _showSuccessSnackBar('Image uploaded successfully!');
               } else {
-                print('Failed to decode base64 bytes');
+                debugPrint('Failed to decode base64 bytes');
                 _showErrorSnackBar('Failed to process image');
               }
             } catch (decodeError) {
-              print('Error decoding base64: $decodeError');
+              debugPrint('Error decoding base64: $decodeError');
               _showErrorSnackBar('Failed to process image');
             }
           } else {
-            print('No empty slot found for image');
+            debugPrint('No empty slot found for image');
           }
         } else {
-          print('Image compression returned null');
+          debugPrint('Image compression returned null');
           _showErrorSnackBar('Failed to compress image');
         }
 
         setState(() => _isUploadingImage = false);
       } else {
-        print('No image selected');
+        debugPrint('No image selected');
       }
     } catch (e) {
-      print('Error picking image: $e');
-      print('Stack trace: ${StackTrace.current}');
+      debugPrint('Error picking image: $e');
+      debugPrint('Stack trace: ${StackTrace.current}');
       setState(() => _isUploadingImage = false);
       _showErrorSnackBar('Failed to upload image: ${e.toString()}');
     }
@@ -339,7 +339,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         _showErrorSnackBar('Failed to create post');
       }
     } catch (e) {
-      print('Error submitting form: $e');
+      debugPrint('Error submitting form: $e');
       // Show the real backend reason (KYC / validation / limits) instead of a
       // generic "Failed to create post".
       if (mounted) ApiErrorUI.fromError(context, e);
@@ -526,7 +526,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -560,7 +560,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
 
   Widget _buildCategoryDropdown() {
     return DropdownButtonFormField<int>(
-      value: _selectedCategory,
+      initialValue: _selectedCategory,
       decoration: InputDecoration(
         labelText: 'Category *',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -588,7 +588,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
 
   Widget _buildChildCategoryDropdown() {
     return DropdownButtonFormField<int>(
-      value: _selectedChildCategory,
+      initialValue: _selectedChildCategory,
       decoration: InputDecoration(
         labelText: 'Sub Category',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -664,7 +664,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                     _selectedCondition = selected ? condition['value'] : null);
               },
               backgroundColor: Colors.grey.shade50,
-              selectedColor: const Color(0xFF10B981).withOpacity(0.1),
+              selectedColor: const Color(0xFF10B981).withValues(alpha: 0.1),
               checkmarkColor: const Color(0xFF10B981),
               labelStyle: TextStyle(
                 color:
@@ -701,8 +701,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             enabled: !_isNegotiable,
             validator: (value) {
               if (_isNegotiable) return null;
-              if (_checkSubmit && (value == null || value.isEmpty))
+              if (_checkSubmit && (value == null || value.isEmpty)) {
                 return 'Required';
+              }
               final parsedValue = double.tryParse(value ?? '');
               if (_checkSubmit && parsedValue == null) return 'Invalid';
               if (_checkSubmit && parsedValue! <= 0) return 'Must be > 0';
@@ -843,7 +844,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               color: const Color(0xFF10B981),
               width: 2,
               style: BorderStyle.solid),
-          color: const Color(0xFF10B981).withOpacity(0.05),
+          color: const Color(0xFF10B981).withValues(alpha: 0.05),
         ),
         child: _isUploadingImage
             ? const Center(
@@ -898,7 +899,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         if (!_allOverBangladesh) ...[
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _selectedDivision,
+            initialValue: _selectedDivision,
             decoration: InputDecoration(
               labelText: 'Division *',
               border:
@@ -928,7 +929,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _selectedDistrict,
+            initialValue: _selectedDistrict,
             decoration: InputDecoration(
               labelText: 'District *',
               border:
@@ -957,7 +958,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _selectedArea,
+            initialValue: _selectedArea,
             decoration: InputDecoration(
               labelText: 'Area *',
               border:
@@ -1010,8 +1011,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       keyboardType: TextInputType.phone,
       maxLength: 11,
       validator: (value) {
-        if (_checkSubmit && (value == null || value.trim().isEmpty))
+        if (_checkSubmit && (value == null || value.trim().isEmpty)) {
           return 'Required';
+        }
         if (_checkSubmit && value!.length != 11) return 'Must be 11 digits';
         return null;
       },

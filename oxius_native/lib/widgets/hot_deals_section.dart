@@ -48,7 +48,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
         });
       }
     } catch (e) {
-      print('Error fetching special deals: $e');
+      debugPrint('Error fetching special deals: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -145,7 +145,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -195,7 +195,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       onTap: () {
         if (deal['id'] == null) return;
         final categoryId = deal['id'].toString();
-        print('🔥 Hot deal tapped - ID: ${deal['id']}, Name: ${deal['name']}');
+        debugPrint('🔥 Hot deal tapped - ID: ${deal['id']}, Name: ${deal['name']}');
 
         // If host supplied a callback (e.g. eShop screen), filter in place.
         if (widget.onCategorySelected != null) {
@@ -228,10 +228,10 @@ class _HotDealsSectionState extends State<HotDealsSection> {
             maxWidth: 85,
           ),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               width: 1,
             ),
           ),
@@ -248,7 +248,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      badgeColor.withOpacity(0.1),
+                      badgeColor.withValues(alpha: 0.1),
                     ],
                   ),
                 ),

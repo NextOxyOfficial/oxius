@@ -47,13 +47,13 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
 
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
-      print('📦 Tab changed to index: ${_tabController.index}');
+      debugPrint('📦 Tab changed to index: ${_tabController.index}');
       // Refresh data when switching to Orders or Products tab
       if (_tabController.index == 0) {
-        print('📦 Refreshing orders on tab switch');
+        debugPrint('📦 Refreshing orders on tab switch');
         _loadOrders();
       } else if (_tabController.index == 1) {
-        print('📦 Refreshing products on tab switch');
+        debugPrint('📦 Refreshing products on tab switch');
         _loadProducts();
       }
     }
@@ -74,17 +74,17 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
       return;
     }
 
-    print('🏪 User isPro: ${user.isPro}');
-    print('🏪 User storeUsername: ${user.storeUsername}');
-    print('🏪 User storeName: ${user.storeName}');
-    print('🏪 User productLimit: ${user.productLimit}');
+    debugPrint('🏪 User isPro: ${user.isPro}');
+    debugPrint('🏪 User storeUsername: ${user.storeUsername}');
+    debugPrint('🏪 User storeName: ${user.storeName}');
+    debugPrint('🏪 User productLimit: ${user.productLimit}');
 
     _isPro = user.isPro;
     _hasStore = user.storeUsername != null && user.storeUsername!.isNotEmpty;
     _productLimit = user.productLimit ?? 10;
 
-    print('🏪 Computed _isPro: $_isPro');
-    print('🏪 Computed _hasStore: $_hasStore');
+    debugPrint('🏪 Computed _isPro: $_isPro');
+    debugPrint('🏪 Computed _hasStore: $_hasStore');
 
     if (_isPro && _hasStore) {
       await _loadData();
@@ -100,13 +100,13 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
     // Load data with error handling for each future
     await Future.wait([
       _loadStoreDetails().catchError((e) {
-        print('❌ Error loading store details: $e');
+        debugPrint('❌ Error loading store details: $e');
       }),
       _loadProducts().catchError((e) {
-        print('❌ Error loading products: $e');
+        debugPrint('❌ Error loading products: $e');
       }),
       _loadOrders().catchError((e) {
-        print('❌ Error loading orders: $e');
+        debugPrint('❌ Error loading orders: $e');
       }),
     ]);
   }
@@ -122,7 +122,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
         setState(() => _storeDetails = store);
       }
     } catch (e) {
-      print('❌ Error loading store details: $e');
+      debugPrint('❌ Error loading store details: $e');
       // Don't rethrow - let other loads continue
     }
   }
@@ -130,11 +130,11 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
   Future<void> _loadProducts({bool loadMore = false}) async {
     try {
       final page = loadMore ? _currentPage + 1 : 1;
-      print('📦 Loading products - page: $page, loadMore: $loadMore');
+      debugPrint('📦 Loading products - page: $page, loadMore: $loadMore');
 
       final result = await EshopManagerService.getMyProducts(page: page);
 
-      print(
+      debugPrint(
           '📦 Products loaded: ${(result['products'] as List).length}, total: ${result['total']}, hasMore: ${result['hasMore']}');
 
       if (mounted) {
@@ -149,46 +149,46 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
           _hasMoreProducts = result['hasMore'] as bool;
           _totalProducts = result['total'] as int;
         });
-        print(
+        debugPrint(
             '📦 State updated - _products.length: ${_products.length}, _totalProducts: $_totalProducts');
       }
     } catch (e) {
-      print('❌ Error loading products: $e');
+      debugPrint('❌ Error loading products: $e');
       // Don't rethrow - let other loads continue
     }
   }
 
   Future<void> _loadOrders() async {
     try {
-      print('📦 Loading seller orders...');
-      print('📦 Current user: ${AuthService.currentUser?.email}');
+      debugPrint('📦 Loading seller orders...');
+      debugPrint('📦 Current user: ${AuthService.currentUser?.email}');
       final orders = await EshopManagerService.getSellerOrders();
-      print('📦 Orders loaded: ${orders.length}');
+      debugPrint('📦 Orders loaded: ${orders.length}');
 
       if (orders.isEmpty) {
-        print('⚠️ No orders returned from API');
+        debugPrint('⚠️ No orders returned from API');
       } else {
-        print(
+        debugPrint(
             '📦 First order: ID=${orders.first.id}, Status=${orders.first.orderStatus}, Total=${orders.first.total}');
       }
 
       if (mounted) {
         setState(() => _orders = orders);
-        print('📦 State updated - _orders.length: ${_orders.length}');
+        debugPrint('📦 State updated - _orders.length: ${_orders.length}');
       }
     } catch (e) {
-      print('❌ Error loading orders: $e');
+      debugPrint('❌ Error loading orders: $e');
       // Don't rethrow - let other loads continue
     }
   }
 
   Future<void> _refreshData() async {
-    print('🔄 Pull to refresh triggered');
+    debugPrint('🔄 Pull to refresh triggered');
     try {
       await _loadData();
-      print('✅ Refresh completed successfully');
+      debugPrint('✅ Refresh completed successfully');
     } catch (e) {
-      print('❌ Refresh error: $e');
+      debugPrint('❌ Refresh error: $e');
       // Show error message to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -218,18 +218,18 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
   }
 
   void _handleProductAdded() {
-    print('📦 Product added - refreshing products list');
+    debugPrint('📦 Product added - refreshing products list');
     _loadProducts();
     _tabController.animateTo(1); // Switch to Products tab
   }
 
   void _handleProductUpdated() {
-    print('📦 Product updated - refreshing products list');
+    debugPrint('📦 Product updated - refreshing products list');
     _loadProducts();
   }
 
   void _handleProductDeleted() {
-    print('📦 Product deleted - refreshing products list');
+    debugPrint('📦 Product deleted - refreshing products list');
     _loadProducts();
   }
 
@@ -303,7 +303,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
             border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -337,7 +337,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -461,7 +461,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(

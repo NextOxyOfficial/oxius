@@ -180,7 +180,7 @@ class DrawerMenu extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
           decoration: BoxDecoration(
-            color: isActive ? color.withOpacity(0.08) : Colors.transparent,
+            color: isActive ? color.withValues(alpha: 0.08) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -189,7 +189,7 @@ class DrawerMenu extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: isActive ? color : color.withOpacity(0.1),
+                  color: isActive ? color : color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(7),
                 ),
                 child: Icon(icon,

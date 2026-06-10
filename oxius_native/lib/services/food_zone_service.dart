@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/classified_post.dart';
 import '../models/geo_location.dart';
+import 'package:flutter/foundation.dart';
 
 class FoodZoneCategory {
   final String id;
@@ -80,14 +81,14 @@ class FoodZoneService {
         queryParameters: queryParams,
       );
 
-      print('🍔 Fetching Food Zone posts from: $uri');
+      debugPrint('🍔 Fetching Food Zone posts from: $uri');
 
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('📡 Response status: ${response.statusCode}');
+      debugPrint('📡 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -107,7 +108,7 @@ class FoodZoneService {
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching Food Zone posts: $e');
+      debugPrint('❌ Error fetching Food Zone posts: $e');
       return [];
     }
   }
@@ -117,14 +118,14 @@ class FoodZoneService {
     try {
       final uri = Uri.parse('$baseUrl/food-zone/categories/');
 
-      print('🍔 Fetching Food Zone categories from: $uri');
+      debugPrint('🍔 Fetching Food Zone categories from: $uri');
 
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('📡 Response status: ${response.statusCode}');
+      debugPrint('📡 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -144,7 +145,7 @@ class FoodZoneService {
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching Food Zone categories: $e');
+      debugPrint('❌ Error fetching Food Zone categories: $e');
       return [];
     }
   }

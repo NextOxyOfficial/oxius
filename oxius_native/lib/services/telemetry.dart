@@ -88,7 +88,7 @@ class TelemetrySpan {
     _stopped = true;
     final ms = DateTime.now().difference(_started).inMilliseconds;
     final tags = <String, Object?>{
-      if (_tags != null) ..._tags!,
+      if (_tags != null) ..._tags,
       if (extra != null) ...extra,
       'success': success,
     };

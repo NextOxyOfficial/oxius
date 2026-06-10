@@ -19,10 +19,10 @@ class SaleDetailScreen extends StatefulWidget {
   final String? id;
 
   const SaleDetailScreen({
-    Key? key,
+    super.key,
     this.slug,
     this.id,
-  }) : super(key: key);
+  });
 
   @override
   State<SaleDetailScreen> createState() => _SaleDetailScreenState();
@@ -72,7 +72,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         }
       }
     } catch (e) {
-      print('Error fetching post details: $e');
+      debugPrint('Error fetching post details: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -82,24 +82,24 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   Future<void> _fetchSimilarPosts(String categoryId) async {
     setState(() => _isLoadingSimilar = true);
     try {
-      print('Fetching similar posts for category: $categoryId');
+      debugPrint('Fetching similar posts for category: $categoryId');
       final response = await _postService.fetchPosts(
         categoryId: categoryId,
         pageSize:
             8, // Fetch more to ensure we have 4 after filtering current post
       );
-      print('Fetched ${response.results.length} posts');
+      debugPrint('Fetched ${response.results.length} posts');
       if (mounted) {
         final filtered =
             response.results.where((p) => p.id != _post?.id).take(4).toList();
-        print('After filtering current post: ${filtered.length} similar posts');
+        debugPrint('After filtering current post: ${filtered.length} similar posts');
         setState(() {
           _similarPosts = filtered;
           _isLoadingSimilar = false;
         });
       }
     } catch (e) {
-      print('Error fetching similar posts: $e');
+      debugPrint('Error fetching similar posts: $e');
       if (mounted) {
         setState(() => _isLoadingSimilar = false);
       }
@@ -251,7 +251,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -300,7 +300,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         icon: const Icon(Icons.chevron_left, size: 32),
                         color: Colors.white,
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.black.withOpacity(0.42),
+                          backgroundColor: Colors.black.withValues(alpha: 0.42),
                           fixedSize: const Size(42, 42),
                         ),
                         onPressed: () {
@@ -323,7 +323,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         icon: const Icon(Icons.chevron_right, size: 32),
                         color: Colors.white,
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.black.withOpacity(0.42),
+                          backgroundColor: Colors.black.withValues(alpha: 0.42),
                           fixedSize: const Size(42, 42),
                         ),
                         onPressed: () {
@@ -345,7 +345,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
@@ -582,88 +582,15 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     );
   }
 
-  Widget _buildCard(
-      {required Widget child,
-      EdgeInsetsGeometry padding = const EdgeInsets.all(18),
-      bool flat = false}) {
-    if (flat) return Padding(padding: padding, child: child);
-    return Container(
-      width: double.infinity,
-      padding: padding,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildSectionHeader(IconData icon, String title, Color color) {
-    return Row(
-      children: [
-        Container(
-          height: 36,
-          width: 36,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetaPill(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 15, color: const Color(0xFF6B7280)),
-          const SizedBox(width: 6),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF4B5563))),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSpecTile(
       IconData icon, String label, String value, Color color) {
     return Container(
       margin: const EdgeInsets.only(right: 8, bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.07),
+        color: color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.18)),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -678,7 +605,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: color.withOpacity(0.75)),
+                    color: color.withValues(alpha: 0.75)),
               ),
               Text(
                 value,
@@ -691,42 +618,6 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSecondaryAction(
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: const Color(0xFF4B5563)),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151)),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -760,90 +651,6 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     // Remove extra whitespace
     text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
     return text;
-  }
-
-  Widget _buildFinancingBanner(double price) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF047857), Color(0xFF0F766E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF047857).withOpacity(0.22),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                height: 46,
-                width: 46,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.account_balance_wallet_rounded,
-                    size: 24, color: Colors.white),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Need financial support to this item?',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          height: 1.25),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Talk with support for financing or purchase guidance.',
-                      style: TextStyle(
-                          color: Color(0xFFD1FAE5), fontSize: 14, height: 1.35),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/contact-us'),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Text(
-                  'Contact Support',
-                  style: TextStyle(
-                      color: Color(0xFF047857),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildDescriptionSection() {
@@ -1133,7 +940,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
 
   Widget _buildAvatarFallback(String name) {
     return Container(
-      color: const Color(0xFF10B981).withOpacity(0.1),
+      color: const Color(0xFF10B981).withValues(alpha: 0.1),
       child: Center(
         child: Text(
           name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -1148,34 +955,13 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
 
   String _maskPhoneNumber(String phone) {
     if (phone.length <= 4) return phone;
-    return phone.substring(0, 3) + '****' + phone.substring(phone.length - 2);
-  }
-
-  String _formatMemberSince(DateTime date) {
-    return '${_monthName(date.month)} ${date.year}';
-  }
-
-  String _monthName(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return months[month - 1];
+    return '${phone.substring(0, 3)}****${phone.substring(phone.length - 2)}';
   }
 
   Widget _buildSimilarListings() {
-    if (_similarPosts.isEmpty && !_isLoadingSimilar)
+    if (_similarPosts.isEmpty && !_isLoadingSimilar) {
       return const SizedBox.shrink();
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 12, 2, 12),
       child: Column(
@@ -1339,34 +1125,6 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     );
   }
 
-  Widget _buildNoImagePlaceholder() {
-    return Container(
-      height: 280,
-      margin: const EdgeInsets.fromLTRB(2, 8, 2, 0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.image_rounded, size: 72, color: Colors.grey.shade300),
-            const SizedBox(height: 10),
-            const Text(
-              'No image available',
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF6B7280)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildBottomBar() {
     final post = _post!;
     final user = post.user;
@@ -1379,7 +1137,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 6,
               offset: const Offset(0, -1),
             ),
@@ -1550,7 +1308,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(

@@ -22,10 +22,10 @@ class ClassifiedCategoryListScreen extends StatefulWidget {
   final String categorySlug;
 
   const ClassifiedCategoryListScreen({
-    Key? key,
+    super.key,
     required this.categoryId,
     required this.categorySlug,
-  }) : super(key: key);
+  });
 
   @override
   State<ClassifiedCategoryListScreen> createState() =>
@@ -202,8 +202,9 @@ class _ClassifiedCategoryListScreenState
     final compact = value.replaceAll(RegExp(r'[\s\-()]'), '');
     if (compact.isEmpty) return false;
     if (compact.toLowerCase().contains('x')) return false;
-    if (compact.contains('1234567') || compact.contains('12345678'))
+    if (compact.contains('1234567') || compact.contains('12345678')) {
       return false;
+    }
 
     final mobileIntl = RegExp(r'^\+8801\d{9}$');
     final mobileLocal = RegExp(r'^01\d{9}$');
@@ -265,8 +266,9 @@ class _ClassifiedCategoryListScreenState
     if (text.isEmpty) return false;
     if (text.contains(' ')) return false;
     final lower = text.toLowerCase();
-    if (lower.contains('example.com') || lower.contains('test.com'))
+    if (lower.contains('example.com') || lower.contains('test.com')) {
       return false;
+    }
     return lower.contains('.') &&
         (lower.startsWith('http://') ||
             lower.startsWith('https://') ||
@@ -275,8 +277,9 @@ class _ClassifiedCategoryListScreenState
 
   String _normalizeUrlForLaunch(String url) {
     final trimmed = url.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://'))
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return trimmed;
+    }
     return 'https://$trimmed';
   }
 
@@ -541,11 +544,6 @@ class _ClassifiedCategoryListScreenState
     );
   }
 
-  void _clearLocation() async {
-    await _geoService.clearLocation();
-    setState(() => _location = null);
-    _showLocationSelector();
-  }
 
   Future<void> _handleRefresh() async {
     // Refresh all data
@@ -821,7 +819,7 @@ class _ClassifiedCategoryListScreenState
       location: _location!,
       onChange: _showLocationSelector,
       backgroundColor: const Color(0xFFECFDF5),
-      borderColor: const Color(0xFF10B981).withOpacity(0.2),
+      borderColor: const Color(0xFF10B981).withValues(alpha: 0.2),
       iconColor: const Color(0xFF10B981),
       textColor: const Color(0xFF065F46),
       actionColor: const Color(0xFF10B981),
@@ -835,7 +833,7 @@ class _ClassifiedCategoryListScreenState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -850,7 +848,7 @@ class _ClassifiedCategoryListScreenState
                 color: const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -910,7 +908,7 @@ class _ClassifiedCategoryListScreenState
                 ),
                 elevation: 0,
                 disabledBackgroundColor:
-                    const Color(0xFF10B981).withOpacity(0.5),
+                    const Color(0xFF10B981).withValues(alpha: 0.5),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -982,7 +980,7 @@ class _ClassifiedCategoryListScreenState
                       ? Builder(
                           builder: (context) {
                             final imageUrl = post.medias!.first.image ?? '';
-                            print('🖼️ Classified List - Image URL: $imageUrl');
+                            debugPrint('🖼️ Classified List - Image URL: $imageUrl');
                             return CachedNetworkImage(
                               imageUrl: imageUrl,
                               fit: BoxFit.cover,
@@ -1339,7 +1337,7 @@ class _ClassifiedCategoryListScreenState
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF10B981).withOpacity(0.3),
+          color: const Color(0xFF10B981).withValues(alpha: 0.3),
           width: 2,
           style: BorderStyle.solid,
         ),
@@ -1358,7 +1356,7 @@ class _ClassifiedCategoryListScreenState
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.2),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -1639,7 +1637,7 @@ class _ClassifiedCategoryListScreenState
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
 
           // No results
@@ -1709,12 +1707,6 @@ class _ClassifiedCategoryListScreenState
       _aiResults = [];
       _aiErrorMessage = null;
     });
-
-    // TODO: Replace with actual API call to your AI service
-    // Example:
-    // final response = await http.get(Uri.parse('$aiLink&country=${_location?.country}&city=${_location?.city}&state=${_location?.state}&business_type=${_categoryDetails?.businessType}'));
-    // final data = json.decode(response.body);
-    // _aiResults = data['data'] or data['data']['businesses'];
 
     try {
       final uri = Uri.parse('${ApiService.baseUrl}/ai-business-finder/');
@@ -1904,7 +1896,7 @@ class _ClassifiedCategoryListScreenState
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFF59E0B).withOpacity(0.2),
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),

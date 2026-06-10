@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 class GeoService {
   /// Remove rows that share the same `name_eng`. The geo dataset occasionally
@@ -37,7 +38,7 @@ class GeoService {
         throw Exception('Failed to load regions');
       }
     } catch (e) {
-      print('Error loading regions: $e');
+      debugPrint('Error loading regions: $e');
       return [];
     }
   }
@@ -60,7 +61,7 @@ class GeoService {
         throw Exception('Failed to load cities');
       }
     } catch (e) {
-      print('Error loading cities: $e');
+      debugPrint('Error loading cities: $e');
       return [];
     }
   }
@@ -83,7 +84,7 @@ class GeoService {
         throw Exception('Failed to load upazilas');
       }
     } catch (e) {
-      print('Error loading upazilas: $e');
+      debugPrint('Error loading upazilas: $e');
       return [];
     }
   }

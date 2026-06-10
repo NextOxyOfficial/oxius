@@ -12,9 +12,9 @@ class MySalePostsScreen extends StatefulWidget {
   final String? initialTab; // 'my-posts' or 'post-sale'
 
   const MySalePostsScreen({
-    Key? key,
+    super.key,
     this.initialTab,
-  }) : super(key: key);
+  });
 
   @override
   State<MySalePostsScreen> createState() => _MySalePostsScreenState();
@@ -33,7 +33,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   int _totalCount = 0;
   bool _hasMore = true;
   String? _currentStatusFilter;
-  Map<String, int> _stats = {
+  final Map<String, int> _stats = {
     'total': 0,
     'active': 0,
     'sold': 0,
@@ -72,7 +72,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   }
 
   void _onTabChanged(int index) {
-    print('Tab changed to index: $index');
+    debugPrint('Tab changed to index: $index');
     // Set the status filter based on tab index
     String? newFilter;
     switch (index) {
@@ -95,7 +95,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       setState(() {
         _currentStatusFilter = newFilter;
       });
-      print('Fetching posts with filter: $_currentStatusFilter');
+      debugPrint('Fetching posts with filter: $_currentStatusFilter');
       _fetchMyPosts(refresh: true);
     }
   }
@@ -142,7 +142,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         }
       }
     } catch (e) {
-      print('Error fetching my posts: $e');
+      debugPrint('Error fetching my posts: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -173,7 +173,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         });
       }
     } catch (e) {
-      print('Error loading more posts: $e');
+      debugPrint('Error loading more posts: $e');
       if (mounted) {
         setState(() => _isLoadingMore = false);
       }
@@ -227,7 +227,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         });
       }
     } catch (e) {
-      print('Error fetching stats: $e');
+      debugPrint('Error fetching stats: $e');
     }
   }
 
@@ -311,7 +311,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             icon: const Icon(Icons.storefront_outlined, size: 20),
             tooltip: 'Marketplace',
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
+              backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.1),
               foregroundColor: const Color(0xFF10B981),
             ),
           ),
@@ -343,7 +343,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 3,
                       offset: const Offset(0, 1),
                     ),
@@ -440,14 +440,14 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Icon(
                     Icons.add_shopping_cart_outlined,
                     size: 50,
-                    color: const Color(0xFF10B981).withOpacity(0.7),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -516,7 +516,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -753,7 +753,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                                 horizontal: 7, vertical: 4),
                             decoration: BoxDecoration(
                               color:
-                                  _getStatusColor(post.status).withOpacity(0.1),
+                                  _getStatusColor(post.status).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(5),
                               border: Border.all(
                                 color: _getStatusColor(post.status),
@@ -793,215 +793,6 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
     );
   }
 
-  Widget _buildPostSaleTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Center(
-            child: Column(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF10B981).withOpacity(0.2),
-                        const Color(0xFF10B981).withOpacity(0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 40,
-                      color: const Color(0xFF10B981),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Create New Post',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Share what you want to sell',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Features List
-          _buildFeatureItem(
-            icon: Icons.camera_alt_outlined,
-            title: 'Upload Photos',
-            description: 'Add clear images of your product',
-            color: const Color(0xFF3B82F6),
-          ),
-          const SizedBox(height: 10),
-          _buildFeatureItem(
-            icon: Icons.description_outlined,
-            title: 'Product Details',
-            description: 'Describe your item in detail',
-            color: const Color(0xFF10B981),
-          ),
-          const SizedBox(height: 10),
-          _buildFeatureItem(
-            icon: Icons.attach_money,
-            title: 'Set Price',
-            description: 'Choose your selling price',
-            color: const Color(0xFF8B5CF6),
-          ),
-          const SizedBox(height: 10),
-          _buildFeatureItem(
-            icon: Icons.location_on_outlined,
-            title: 'Add Location',
-            description: 'Let buyers know where you are',
-            color: const Color(0xFFF59E0B),
-          ),
-          const SizedBox(height: 20),
-
-          // Coming Soon Notice
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.blue.shade50,
-                  Colors.blue.shade50.withOpacity(0.5),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.blue.shade200,
-                width: 1.5,
-              ),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.schedule,
-                  size: 32,
-                  color: Colors.blue.shade700,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Coming Soon',
-                  style: TextStyle(
-                    color: Colors.blue.shade900,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'We\'re working on this feature',
-                  style: TextStyle(
-                    color: Colors.blue.shade700,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem({
-    required IconData icon,
-    required String title,
-    required String description,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPostSaleModal() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: _buildPostSaleTab(),
-    );
-  }
 
   void _editPost(SalePost post) {
     // TODO: Navigate to edit screen
@@ -1010,119 +801,9 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
     );
   }
 
-  void _togglePostStatus(SalePost post) async {
-    // Toggle between 'active' and 'pending' status
-    // If post is 'active', set to 'pending' (deactivate)
-    // If post is 'pending', set to 'active' (activate)
-    final newStatus = post.status == 'active' ? 'pending' : 'active';
-    final isActivating = newStatus == 'active';
-
-    // Show loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: AdsyLoadingIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(isActivating ? 'Activating...' : 'Deactivating...'),
-          ],
-        ),
-        duration: const Duration(seconds: 30),
-      ),
-    );
-
-    try {
-      final updatedPost = await _postService.updatePost(
-        post.slug,
-        {'status': newStatus},
-      );
-
-      if (updatedPost != null && mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white, size: 18),
-                const SizedBox(width: 12),
-                Text(
-                  isActivating
-                      ? 'Post activated successfully'
-                      : 'Post deactivated successfully',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-
-        // Refresh the list
-        _fetchMyPosts(refresh: true);
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: const [
-                Icon(Icons.error_outline, color: Colors.white, size: 18),
-                SizedBox(width: 12),
-                Text(
-                  'Failed to update post status',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white, size: 18),
-                const SizedBox(width: 12),
-                Text(
-                  'Error: ${e.toString()}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
-  }
 
   void _markAsSold(SalePost post) async {
-    print(
+    debugPrint(
         'Attempting to mark post as sold. Slug: ${post.slug}, Status: ${post.status}');
 
     // Show loading indicator
@@ -1148,7 +829,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
     try {
       final updatedPost = await _postService.markAsSold(post.slug);
-      print(
+      debugPrint(
           'Mark as sold result: ${updatedPost != null ? "Success" : "Failed"}');
 
       if (updatedPost != null && mounted) {

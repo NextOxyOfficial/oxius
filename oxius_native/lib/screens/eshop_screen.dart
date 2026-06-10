@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/eshop_service.dart';
-import '../services/translation_service.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
@@ -20,7 +19,6 @@ class EshopScreen extends StatefulWidget {
 
 class _EshopScreenState extends State<EshopScreen>
     with TickerProviderStateMixin {
-  final TranslationService _translationService = TranslationService();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -29,14 +27,12 @@ class _EshopScreenState extends State<EshopScreen>
   bool _isSearching = false;
   bool _isLoadingMore = false;
   bool _hasMoreResults = true;
-  bool _showSuggestions = false;
-  bool _showCategoryFilter = false;
 
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _searchResults = [];
   List<String> _recentSearches = [];
   List<String> _searchSuggestions = [];
-  List<String> _trendingSearches = [
+  final List<String> _trendingSearches = [
     'Electronics',
     'Fashion',
     'Home & Garden',
@@ -48,13 +44,11 @@ class _EshopScreenState extends State<EshopScreen>
   String? _selectedCategorySlug;
 
   String? _eshopLogoUrl;
-  String _lastSearchQuery = '';
   int _currentPage = 1;
   Timer? _debounceTimer;
   Timer? _saveSearchTimer;
-  Completer<void> _categoriesCompleter = Completer<void>();
+  final Completer<void> _categoriesCompleter = Completer<void>();
   late AnimationController _searchAnimationController;
-  late Animation<double> _searchAnimation;
 
   @override
   void initState() {
@@ -63,7 +57,7 @@ class _EshopScreenState extends State<EshopScreen>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _searchAnimation = CurvedAnimation(
+    CurvedAnimation(
       parent: _searchAnimationController,
       curve: Curves.easeInOut,
     );
@@ -121,10 +115,10 @@ class _EshopScreenState extends State<EshopScreen>
         _selectedCategoryName = category['name']?.toString();
         _selectedCategorySlug = category['slug']?.toString();
       });
-      print(
+      debugPrint(
           '🏷️ Category resolved: $_selectedCategoryName (slug: $_selectedCategorySlug)');
     } else {
-      print('⚠️ Category $categoryId not found in loaded category list');
+      debugPrint('⚠️ Category $categoryId not found in loaded category list');
     }
   }
 
@@ -162,23 +156,23 @@ class _EshopScreenState extends State<EshopScreen>
 
   Future<void> _loadEshopLogo() async {
     try {
-      print('EshopScreen: Loading dynamic eShop logo...');
+      debugPrint('EshopScreen: Loading dynamic eShop logo...');
       final logoUrl = await EshopService.getEshopLogo();
-      print('EshopScreen: Received logo URL: $logoUrl');
+      debugPrint('EshopScreen: Received logo URL: $logoUrl');
       if (mounted) {
         setState(() {
           _eshopLogoUrl = logoUrl;
         });
-        print('EshopScreen: Logo URL set in state: $_eshopLogoUrl');
+        debugPrint('EshopScreen: Logo URL set in state: $_eshopLogoUrl');
       }
     } catch (e) {
-      print('EshopScreen: Error loading eshop logo: $e');
+      debugPrint('EshopScreen: Error loading eshop logo: $e');
     }
   }
 
   void _navigateToCheckout(Map<String, dynamic> product) {
     try {
-      print('🛒 Starting checkout navigation for product: ${product['id']}');
+      debugPrint('🛒 Starting checkout navigation for product: ${product['id']}');
 
       // Validate required fields
       if (product['id'] == null) {
@@ -209,7 +203,7 @@ class _EshopScreenState extends State<EshopScreen>
         imageDetails: _parseImageDetails(product['image_details']),
       );
 
-      print('✅ Product created successfully: ${cartProduct.name}');
+      debugPrint('✅ Product created successfully: ${cartProduct.name}');
 
       // Create cart item with quantity 1
       final cartItem = CartItem(
@@ -217,7 +211,7 @@ class _EshopScreenState extends State<EshopScreen>
         quantity: 1,
       );
 
-      print('✅ Cart item created successfully');
+      debugPrint('✅ Cart item created successfully');
 
       // Navigate to checkout
       Navigator.pushNamed(
@@ -228,11 +222,11 @@ class _EshopScreenState extends State<EshopScreen>
         },
       );
 
-      print('✅ Navigation to checkout completed');
+      debugPrint('✅ Navigation to checkout completed');
     } catch (e, stackTrace) {
-      print('❌ Error in checkout navigation: $e');
-      print('❌ Stack trace: $stackTrace');
-      print('❌ Product data: $product');
+      debugPrint('❌ Error in checkout navigation: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+      debugPrint('❌ Product data: $product');
 
       // Show user-friendly error message
       if (mounted) {
@@ -274,11 +268,11 @@ class _EshopScreenState extends State<EshopScreen>
       if (imageDetails is! List) return null;
 
       return imageDetails
-          .where((img) => img is Map<String, dynamic>)
-          .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+          .whereType<Map<String, dynamic>>()
+          .map((img) => ProductImage.fromJson(img))
           .toList();
     } catch (e) {
-      print('Error parsing image details: $e');
+      debugPrint('Error parsing image details: $e');
       return null;
     }
   }
@@ -325,20 +319,20 @@ class _EshopScreenState extends State<EshopScreen>
 
   Future<void> _loadSearchHistory() async {
     try {
-      print('EshopScreen: Loading search history...');
+      debugPrint('EshopScreen: Loading search history...');
       final history = await EshopService.getSearchHistory();
-      print(
+      debugPrint(
           'EshopScreen: Received ${history.length} search history items: $history');
 
       if (mounted) {
         setState(() {
           _recentSearches = _dedupeRecentSearches(history);
         });
-        print(
+        debugPrint(
             'EshopScreen: Updated state with ${_recentSearches.length} recent searches');
       }
     } catch (e) {
-      print('EshopScreen: Error loading search history: $e');
+      debugPrint('EshopScreen: Error loading search history: $e');
     }
   }
 
@@ -365,7 +359,7 @@ class _EshopScreenState extends State<EshopScreen>
         }
       }
     } catch (e) {
-      print('Error loading categories: $e');
+      debugPrint('Error loading categories: $e');
     } finally {
       // Unblock any waiter (e.g. _findCategoryDetails) regardless of success/failure
       if (!_categoriesCompleter.isCompleted) _categoriesCompleter.complete();
@@ -392,7 +386,7 @@ class _EshopScreenState extends State<EshopScreen>
         resolvedSlug = cat['slug']?.toString();
       }
 
-      print(
+      debugPrint(
           '🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"}, slug: $resolvedSlug)');
       final products = await EshopService.fetchEshopProducts(
         page: 1,
@@ -401,14 +395,14 @@ class _EshopScreenState extends State<EshopScreen>
         categorySlug: resolvedSlug,
       );
 
-      print('✅ Loaded ${products.length} products');
+      debugPrint('✅ Loaded ${products.length} products');
       setState(() {
         _products = products;
         _isLoading = false;
         _hasMoreResults = products.length == 12;
       });
     } catch (e) {
-      print('❌ Error loading products: $e');
+      debugPrint('❌ Error loading products: $e');
       setState(() => _isLoading = false);
       if (mounted) {
         NetworkErrorHandler.showErrorSnackbar(context, e);
@@ -419,7 +413,7 @@ class _EshopScreenState extends State<EshopScreen>
   Future<void> _loadMoreProducts() async {
     if (_isLoadingMore || !_hasMoreResults) return;
 
-    print(
+    debugPrint(
         '📄 Loading more products - Page: ${_currentPage + 1}, Category: $_selectedCategoryId (slug: $_selectedCategorySlug)');
     setState(() => _isLoadingMore = true);
 
@@ -432,7 +426,7 @@ class _EshopScreenState extends State<EshopScreen>
         categorySlug: _selectedCategorySlug, // Pass category slug for filtering
       );
 
-      print('✅ Loaded ${products.length} more products');
+      debugPrint('✅ Loaded ${products.length} more products');
       setState(() {
         _products.addAll(products);
         _currentPage = nextPage;
@@ -441,12 +435,12 @@ class _EshopScreenState extends State<EshopScreen>
       });
     } catch (e) {
       setState(() => _isLoadingMore = false);
-      print('❌ Error loading more products: $e');
+      debugPrint('❌ Error loading more products: $e');
     }
   }
 
   void _activateSearch() async {
-    print(
+    debugPrint(
         'EshopScreen: Activating search. Recent searches count: ${_recentSearches.length}');
     setState(() {
       _isSearchActive = true;
@@ -461,39 +455,39 @@ class _EshopScreenState extends State<EshopScreen>
       if (_recentSearches.isNotEmpty) {
         // If there's recent search history, load products based on most recent search
         final recentKeyword = _recentSearches.first;
-        print(
+        debugPrint(
             'EshopScreen: Loading products based on recent search: "$recentKeyword"');
         productsToShow = await EshopService.searchProducts(recentKeyword);
-        print('EshopScreen: Search returned ${productsToShow.length} products');
+        debugPrint('EshopScreen: Search returned ${productsToShow.length} products');
       } else {
         // No search history, load random products
-        print('EshopScreen: No search history, loading random products');
+        debugPrint('EshopScreen: No search history, loading random products');
         productsToShow =
             await EshopService.fetchEshopProducts(page: 1, pageSize: 10);
-        print('EshopScreen: Fetch returned ${productsToShow.length} products');
+        debugPrint('EshopScreen: Fetch returned ${productsToShow.length} products');
       }
 
       if (mounted) {
         final finalProducts = productsToShow.take(10).toList();
-        print(
+        debugPrint(
             'EshopScreen: Setting ${finalProducts.length} products to display');
         setState(() {
           _searchResults = finalProducts;
           _isSearching = false;
         });
-        print(
+        debugPrint(
             'EshopScreen: State updated. _searchResults.length = ${_searchResults.length}');
       }
     } catch (e, stackTrace) {
-      print('EshopScreen: Error loading products: $e');
-      print('EshopScreen: Stack trace: $stackTrace');
+      debugPrint('EshopScreen: Error loading products: $e');
+      debugPrint('EshopScreen: Stack trace: $stackTrace');
       if (mounted) {
         setState(() {
           _isSearching = false;
           // Try to load any available products as fallback
           _searchResults = _products.take(10).toList();
         });
-        print(
+        debugPrint(
             'EshopScreen: Fallback - using ${_searchResults.length} products from main list');
       }
     }
@@ -504,15 +498,6 @@ class _EshopScreenState extends State<EshopScreen>
     });
   }
 
-  void _deactivateSearch() {
-    setState(() {
-      _isSearchActive = false;
-      _searchController.clear();
-      _searchResults.clear();
-    });
-    _searchAnimationController.reverse();
-    FocusScope.of(context).unfocus();
-  }
 
   void _onSearchChanged(String query) {
     // Cancel previous timers
@@ -521,7 +506,6 @@ class _EshopScreenState extends State<EshopScreen>
 
     if (query.trim().isEmpty) {
       setState(() {
-        _showSuggestions = false;
         _searchSuggestions.clear();
         _searchResults.clear();
         _isSearching = false;
@@ -535,7 +519,6 @@ class _EshopScreenState extends State<EshopScreen>
       setState(() {
         _searchResults.clear();
         _isSearching = false;
-        _showSuggestions = false;
         _searchSuggestions.clear();
       });
       return;
@@ -571,7 +554,6 @@ class _EshopScreenState extends State<EshopScreen>
 
     setState(() {
       _searchSuggestions = suggestions;
-      _showSuggestions = suggestions.isNotEmpty;
     });
   }
 
@@ -580,14 +562,12 @@ class _EshopScreenState extends State<EshopScreen>
       setState(() {
         _searchResults.clear();
         _isSearching = false;
-        _showSuggestions = false;
       });
       return;
     }
 
     setState(() {
       _isSearching = true;
-      _showSuggestions = false;
     });
 
     try {
@@ -598,7 +578,6 @@ class _EshopScreenState extends State<EshopScreen>
           _searchResults = results;
           _isSearching = false;
           _hasMoreResults = results.length >= 20;
-          _lastSearchQuery = query;
         });
       }
     } catch (e) {
@@ -627,7 +606,7 @@ class _EshopScreenState extends State<EshopScreen>
         _recentSearches = _dedupeRecentSearches([query, ..._recentSearches]);
       });
     } catch (e) {
-      print('EshopScreen: Failed to commit search history: $e');
+      debugPrint('EshopScreen: Failed to commit search history: $e');
     }
   }
 
@@ -635,7 +614,7 @@ class _EshopScreenState extends State<EshopScreen>
   Widget build(BuildContext context) {
     return PopScope(
       canPop: _selectedCategoryId == null,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         // Category filter active: first back press clears the filter
         // (returns to All Products); a subsequent back press pops the
@@ -760,7 +739,7 @@ class _EshopScreenState extends State<EshopScreen>
                     decoration: InputDecoration(
                       hintText: 'Search products...',
                       hintStyle: TextStyle(
-                          color: Colors.white.withOpacity(0.7), fontSize: 14),
+                          color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
                       border: InputBorder.none,
                       isDense: true,
                     ),
@@ -815,7 +794,6 @@ class _EshopScreenState extends State<EshopScreen>
                   _searchController.clear();
                   _searchResults.clear();
                   _searchSuggestions.clear();
-                  _showSuggestions = false;
                   _isSearching = false;
                 });
                 _searchAnimationController.reverse();
@@ -913,16 +891,12 @@ class _EshopScreenState extends State<EshopScreen>
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ];
               },
               onSelected: (value) {
-                if (value == null) {
-                  _clearCategoryFilter();
-                } else {
-                  _applyCategoryFilterInPlace(value);
-                }
-              },
+                _applyCategoryFilterInPlace(value);
+                            },
             ),
         ],
       ),
@@ -995,7 +969,7 @@ class _EshopScreenState extends State<EshopScreen>
           _recentSearches = previousSearches;
         });
       }
-      print('EshopScreen: Failed to delete search item: $e');
+      debugPrint('EshopScreen: Failed to delete search item: $e');
     }
   }
 
@@ -1018,12 +992,12 @@ class _EshopScreenState extends State<EshopScreen>
           _recentSearches = previousSearches;
         });
       }
-      print('EshopScreen: Failed to clear search history: $e');
+      debugPrint('EshopScreen: Failed to clear search history: $e');
     }
   }
 
   Widget _buildSearchDefault() {
-    print(
+    debugPrint(
         'EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}, isSearching: $_isSearching');
 
     if (_isSearching) {

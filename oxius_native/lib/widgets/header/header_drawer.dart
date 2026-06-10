@@ -213,7 +213,7 @@ class HeaderDrawer extends StatelessWidget {
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 20, color: color),
@@ -229,7 +229,7 @@ class HeaderDrawer extends StatelessWidget {
       trailing: Icon(
         Icons.chevron_right,
         size: 20,
-        color: color.withOpacity(0.5),
+        color: color.withValues(alpha: 0.5),
       ),
       onTap: () {
         Navigator.pop(context);

@@ -397,9 +397,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
         }
 
         _preloadedControllers[mediaId] = controller;
-        print('Preloaded video at index $nextIndex (mediaId: $mediaId)');
+        debugPrint('Preloaded video at index $nextIndex (mediaId: $mediaId)');
       } catch (e) {
-        print('Failed to preload video at index $nextIndex: $e');
+        debugPrint('Failed to preload video at index $nextIndex: $e');
       }
     }
 
@@ -521,7 +521,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
                                 boxShadow: [
                                   BoxShadow(
                                     color: const Color(0xFF667eea)
-                                        .withOpacity(0.4),
+                                        .withValues(alpha: 0.4),
                                     blurRadius: 30,
                                     spreadRadius: 5,
                                   ),
@@ -550,7 +550,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
                             Text(
                               "You've watched all the latest shorts.\nCheck back later for more amazing content!",
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 fontSize: 15,
                                 height: 1.5,
                               ),
@@ -577,7 +577,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(0xFF667eea)
-                                          .withOpacity(0.3),
+                                          .withValues(alpha: 0.3),
                                       blurRadius: 20,
                                       offset: const Offset(0, 8),
                                     ),
@@ -608,14 +608,14 @@ class _ShortsViewerState extends State<ShortsViewer> {
                               children: [
                                 Icon(
                                   Icons.swipe_down_rounded,
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withValues(alpha: 0.5),
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Swipe down to go back',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.white.withValues(alpha: 0.5),
                                     fontSize: 13,
                                   ),
                                 ),
@@ -812,7 +812,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   Future<void> _init() async {
     try {
       final url = widget.media.bestUrl;
-      print(
+      debugPrint(
           'ShortsViewer: initializing video url=$url mediaId=${widget.media.id}');
       if (url.isEmpty) {
         setState(() {
@@ -827,7 +827,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
 
       // Use preloaded controller if available
       if (widget.preloadedController != null) {
-        print(
+        debugPrint(
             'ShortsViewer: using preloaded controller for mediaId=${widget.media.id}');
         _controller = widget.preloadedController;
         widget.onControllerCreated?.call(widget.preloadedController!);
@@ -874,9 +874,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         _maybeScheduleViewCount();
       }
     } catch (e, stackTrace) {
-      print(
+      debugPrint(
           'ShortsViewer: failed to initialize video url=${widget.media.bestUrl} mediaId=${widget.media.id} error=$e');
-      print('ShortsViewer: stackTrace=$stackTrace');
+      debugPrint('ShortsViewer: stackTrace=$stackTrace');
       if (!mounted) return;
       setState(() {
         _hasError = true;
@@ -965,8 +965,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
 
     final postUser = _post.user;
     final postUsername = (postUser.username ?? '').trim();
-    if (postUsername.isNotEmpty && postUsername == currentUser.username)
+    if (postUsername.isNotEmpty && postUsername == currentUser.username) {
       return true;
+    }
 
     final postUuid = (postUser.uuid ?? '').trim();
     if (postUuid.isNotEmpty && postUuid == currentUser.id) return true;

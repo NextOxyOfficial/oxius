@@ -48,7 +48,6 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   late BusinessNetworkPost _post;
   bool _isAddingComment = false;
-  BusinessNetworkComment? _replyingTo;
   bool _showFullContent = false;
   bool _isLiking = false; // Prevent double-clicking
 
@@ -81,15 +80,6 @@ class _PostCardState extends State<PostCard> {
         _post.user.id.toString() == currentUser.id;
   }
 
-  bool _shouldShowFollowButton() {
-    // Don't show if user is not logged in
-    if (AuthService.currentUser == null) return false;
-
-    // Don't show on own posts
-    if (_isSelfPost()) return false;
-
-    return true;
-  }
 
   Future<void> _handleMentionTap(String mentionName) async {
     // Search for user by name and navigate to their profile
@@ -106,7 +96,7 @@ class _PostCardState extends State<PostCard> {
         );
       }
     } catch (e) {
-      print('Error navigating to mentioned user: $e');
+      debugPrint('Error navigating to mentioned user: $e');
     }
   }
 
@@ -342,44 +332,6 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
-  Future<void> _handleFollowToggle() async {
-    // Check if we have the user UUID
-    if (_post.user.uuid == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to follow user'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    final success = await BusinessNetworkService.toggleFollow(
-      _post.user.uuid!,
-      _post.user.isFollowing,
-    );
-
-    if (success && mounted) {
-      setState(() {
-        // Create updated user with toggled follow status
-        final updatedUser = BusinessNetworkUser(
-          id: _post.user.id,
-          uuid: _post.user.uuid,
-          name: _post.user.name,
-          avatar: _post.user.avatar,
-          image: _post.user.image,
-          isVerified: _post.user.isVerified,
-          bio: _post.user.bio,
-          username: _post.user.username,
-          firstName: _post.user.firstName,
-          lastName: _post.user.lastName,
-          isFollowing: !_post.user.isFollowing,
-        );
-
-        _post = _post.copyWith(user: updatedUser);
-      });
-    }
-  }
 
   void _showPostOptions() {
     final isSelf = _isSelfPost();
@@ -892,13 +844,13 @@ class _PostCardState extends State<PostCard> {
               if (newComment != null && mounted) {
                 // Just add the new comment to existing list instead of reloading
                 // This prevents losing parent comments when API returns incomplete data
-                print('=== Adding Reply to Post ===');
-                print('Current comments count: ${_post.comments.length}');
-                print('Parent comment ID: ${comment.id}');
-                print('New reply ID: ${newComment.id}');
-                print('Comments before add:');
+                debugPrint('=== Adding Reply to Post ===');
+                debugPrint('Current comments count: ${_post.comments.length}');
+                debugPrint('Parent comment ID: ${comment.id}');
+                debugPrint('New reply ID: ${newComment.id}');
+                debugPrint('Comments before add:');
                 for (var c in _post.comments) {
-                  print(
+                  debugPrint(
                       '  - Comment ${c.id}: parentComment=${c.parentComment}');
                 }
 
@@ -915,14 +867,14 @@ class _PostCardState extends State<PostCard> {
                   _isAddingComment = false;
                 });
 
-                print('Comments after add:');
+                debugPrint('Comments after add:');
                 for (var c in _post.comments) {
-                  print(
+                  debugPrint(
                       '  - Comment ${c.id}: parentComment=${c.parentComment}');
                 }
-                print(
+                debugPrint(
                     'Post comments list identity: ${_post.comments.hashCode}');
-                print('Post object identity: ${_post.hashCode}');
+                debugPrint('Post object identity: ${_post.hashCode}');
 
                 widget.onCommentAdded?.call(newComment);
               } else if (mounted) {

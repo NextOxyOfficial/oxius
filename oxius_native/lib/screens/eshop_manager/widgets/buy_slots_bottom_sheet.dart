@@ -51,7 +51,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
         });
       }
     } catch (e) {
-      print('❌ Error loading buy slots data: $e');
+      debugPrint('❌ Error loading buy slots data: $e');
       if (mounted) {
         setState(() {
           _packages = [];
@@ -153,7 +153,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -501,7 +501,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
                             // Warning
                             if (_selectedPackage != null &&
                                 _userBalance <

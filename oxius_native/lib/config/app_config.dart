@@ -28,7 +28,7 @@ class AppConfig {
     }
 
     if (_shouldUseLocalDevServer) {
-      return '${_localDevHost}/api';
+      return '$_localDevHost/api';
     }
 
     return _prodApiBaseUrl;
@@ -128,17 +128,17 @@ class AppConfig {
   /// Print current configuration (for debugging)
   static void printConfig() {
     if (kDebugMode) {
-      print('╔═══════════════════════════════════════════════════════════════╗');
-      print('║               APP CONFIGURATION                               ║');
-      print('╠═══════════════════════════════════════════════════════════════╣');
-      print('║ Environment: $environment');
-      print('║ API URL:     $apiBaseUrl');
-      print('║ Media URL:   $mediaBaseUrl');
-      print('║ Debug Mode:  $isDevelopment');
+      debugPrint('╔═══════════════════════════════════════════════════════════════╗');
+      debugPrint('║               APP CONFIGURATION                               ║');
+      debugPrint('╠═══════════════════════════════════════════════════════════════╣');
+      debugPrint('║ Environment: $environment');
+      debugPrint('║ API URL:     $apiBaseUrl');
+      debugPrint('║ Media URL:   $mediaBaseUrl');
+      debugPrint('║ Debug Mode:  $isDevelopment');
       if (_shouldUseLocalDevServer) {
-        print('║ Local Host:  $_localDevHost');
+        debugPrint('║ Local Host:  $_localDevHost');
       }
-      print('╚═══════════════════════════════════════════════════════════════╝');
+      debugPrint('╚═══════════════════════════════════════════════════════════════╝');
     }
   }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../models/notification_models.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
   static Future<Map<String, dynamic>> getNotifications({int page = 1}) async {
@@ -20,30 +21,30 @@ class NotificationService {
         },
       );
 
-      print('🔔 Notification API Status: ${response.statusCode}');
-      print('🔔 Notification API Response: ${response.body}');
+      debugPrint('🔔 Notification API Status: ${response.statusCode}');
+      debugPrint('🔔 Notification API Response: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('🔔 Decoded data type: ${data.runtimeType}');
-        print('🔔 Has results key: ${data.containsKey('results')}');
+        debugPrint('🔔 Decoded data type: ${data.runtimeType}');
+        debugPrint('🔔 Has results key: ${data.containsKey('results')}');
         
         final List<NotificationModel> notifications = [];
         
         if (data['results'] != null && data['results'] is List) {
-          print('🔔 Results list length: ${data['results'].length}');
+          debugPrint('🔔 Results list length: ${data['results'].length}');
           for (var item in data['results']) {
             try {
               notifications.add(NotificationModel.fromJson(item));
-              print('✅ Parsed notification: ${item['type']} from ${item['actor']?['name']}');
+              debugPrint('✅ Parsed notification: ${item['type']} from ${item['actor']?['name']}');
             } catch (e) {
-              print('❌ Error parsing notification: $e');
-              print('❌ Notification data: $item');
+              debugPrint('❌ Error parsing notification: $e');
+              debugPrint('❌ Notification data: $item');
             }
           }
         } else {
-          print('❌ No results in response or results is not a list');
-          print('❌ Response data: $data');
+          debugPrint('❌ No results in response or results is not a list');
+          debugPrint('❌ Response data: $data');
         }
 
         // Count unread notifications
@@ -54,8 +55,8 @@ class NotificationService {
           }
         }
 
-        print('🔔 Parsed ${notifications.length} notifications, $unreadCount unread');
-        print('🔔 Returning: notifications list type = ${notifications.runtimeType}');
+        debugPrint('🔔 Parsed ${notifications.length} notifications, $unreadCount unread');
+        debugPrint('🔔 Returning: notifications list type = ${notifications.runtimeType}');
         
         final result = {
           'notifications': notifications,
@@ -63,17 +64,17 @@ class NotificationService {
           'unreadCount': unreadCount,
         };
         
-        print('🔔 Result map: $result');
+        debugPrint('🔔 Result map: $result');
         return result;
       } else {
-        print('❌ Notification API Error: ${response.statusCode}');
-        print('❌ Response body: ${response.body}');
+        debugPrint('❌ Notification API Error: ${response.statusCode}');
+        debugPrint('❌ Response body: ${response.body}');
       }
 
       return {'notifications': [], 'hasMore': false, 'unreadCount': 0};
     } catch (e) {
-      print('Error fetching notifications: $e');
-      print('Stack trace: ${StackTrace.current}');
+      debugPrint('Error fetching notifications: $e');
+      debugPrint('Stack trace: ${StackTrace.current}');
       return {'notifications': [], 'hasMore': false, 'unreadCount': 0};
     }
   }
@@ -94,7 +95,7 @@ class NotificationService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error marking notification as read: $e');
+      debugPrint('Error marking notification as read: $e');
       return false;
     }
   }
@@ -114,7 +115,7 @@ class NotificationService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error marking all notifications as read: $e');
+      debugPrint('Error marking all notifications as read: $e');
       return false;
     }
   }
@@ -139,7 +140,7 @@ class NotificationService {
 
       return 0;
     } catch (e) {
-      print('Error fetching unread count: $e');
+      debugPrint('Error fetching unread count: $e');
       return 0;
     }
   }

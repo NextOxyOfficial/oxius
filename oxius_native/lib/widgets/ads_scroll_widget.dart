@@ -13,10 +13,10 @@ class AdsScrollWidget extends StatefulWidget {
   final String sectionTitle;
 
   const AdsScrollWidget({
-    Key? key,
+    super.key,
     this.ads,
     this.sectionTitle = 'Recent Posts',
-  }) : super(key: key);
+  });
 
   @override
   State<AdsScrollWidget> createState() => _AdsScrollWidgetState();
@@ -28,9 +28,6 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
   bool _isPaused = false;
   double _scrollSpeed = 1.0;
 
-  // Card dimensions
-  double _cardWidth = 180.0;
-  final double _cardGap = 12.0;
 
   @override
   void initState() {
@@ -56,15 +53,15 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
       setState(() {
         if (screenWidth < 600) {
           // Mobile: ~42% of screen width minus padding for 2 cards visible
-          _cardWidth = (screenWidth - 48) * 0.42;
+          (screenWidth - 48) * 0.42;
           _scrollSpeed = 0.6;
         } else if (screenWidth < 1024) {
           // Tablet: ~28% of screen width for 3 cards visible
-          _cardWidth = (screenWidth - 48) * 0.28;
+          (screenWidth - 48) * 0.28;
           _scrollSpeed = 0.8;
         } else {
           // Desktop: ~19% of screen width for 4-5 cards visible
-          _cardWidth = (screenWidth - 48) * 0.19;
+          (screenWidth - 48) * 0.19;
           _scrollSpeed = 1.0;
         }
       });
@@ -136,7 +133,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
         }
       }
     } catch (e) {
-      print('Error getting image URL: $e');
+      debugPrint('Error getting image URL: $e');
     }
     return 'https://via.placeholder.com/300x200?text=No+Image';
   }
@@ -199,7 +196,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -251,8 +248,8 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
         },
       );
     } catch (e, stackTrace) {
-      print('Error building AdsScrollWidget: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error building AdsScrollWidget: $e');
+      debugPrint('Stack trace: $stackTrace');
       return const SizedBox.shrink();
     }
   }
@@ -285,7 +282,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
             border: Border.all(color: Colors.grey.shade200, width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -341,7 +338,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                         borderRadius: BorderRadius.circular(6),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -411,7 +408,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                         const SizedBox(width: 3),
                         Expanded(
                           child: Text(
-                            '${ad.city ?? ''}',
+                            ad.city ?? '',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(

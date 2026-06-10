@@ -45,6 +45,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   String t(String key, {required String fallback}) =>
       _ts.t(key, fallback: fallback);
 
+  /// setState relay for the part-file extensions (_RsBookingFormExtension
+  /// etc.) — calling the protected setState directly from an extension
+  /// violates @protected even within the same library.
+  void _rebuild(VoidCallback fn) => setState(fn);
+
   // Controllers
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _dropController = TextEditingController();
@@ -212,14 +217,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     return int.tryParse(value?.toString() ?? '') ?? fallback;
   }
 
-  String _formatDuration(int totalSeconds) {
-    final safeSeconds = totalSeconds < 0 ? 0 : totalSeconds;
-    final minutes = safeSeconds ~/ 60;
-    final seconds = safeSeconds % 60;
-    final mm = minutes.toString().padLeft(2, '0');
-    final ss = seconds.toString().padLeft(2, '0');
-    return '$mm:$ss';
-  }
 
   int _targetedRemainingSeconds(Ride ride, {DateTime? now}) {
     if (_currentTargetedDriverName(ride).isEmpty) return 0;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
-import 'package:flutter_portal/flutter_portal.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:video_player/video_player.dart';
@@ -33,13 +32,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final ImagePicker _picker = ImagePicker();
   List<Map<String, dynamic>> _mentionUserData = [];
 
-  List<String> _selectedImages = [];
-  List<Map<String, dynamic>> _selectedVideos = []; // {path, name}
-  List<String> _hashtags = [];
+  final List<String> _selectedImages = [];
+  final List<Map<String, dynamic>> _selectedVideos = []; // {path, name}
+  final List<String> _hashtags = [];
   String _visibility = 'public'; // public or private
   bool _isLoading = false;
   bool _isCompressing = false;
-  int _compressionProgress = 0;
   String _compressionStatus = '';
 
   static const int _maxPhotos = 12;
@@ -73,7 +71,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               })
           .toList();
     } catch (e) {
-      print('Error searching users: $e');
+      debugPrint('Error searching users: $e');
       return [];
     }
   }
@@ -118,7 +116,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
         setState(() {
           _isCompressing = true;
-          _compressionProgress = 0;
           _compressionStatus = 'Compressing images...';
         });
 
@@ -127,7 +124,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           final image = imagesToAdd[i];
 
           setState(() {
-            _compressionProgress = ((i + 1) / imagesToAdd.length * 100).round();
+            ((i + 1) / imagesToAdd.length * 100).round();
             _compressionStatus = 'Processing ${i + 1}/${imagesToAdd.length}';
           });
 
@@ -968,10 +965,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withOpacity(0.1),
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: const Color(0xFF3B82F6).withOpacity(0.2),
+                              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                               width: 1,
                             ),
                           ),
@@ -1001,7 +998,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   padding: const EdgeInsets.all(2),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF3B82F6)
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -1082,7 +1079,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.1),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -1146,7 +1143,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.7),
+                                      color: Colors.black.withValues(alpha: 0.7),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -1186,7 +1183,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.purple.withOpacity(0.9),
+                                    color: Colors.purple.withValues(alpha: 0.9),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Row(
@@ -1215,7 +1212,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.7),
+                                      color: Colors.black.withValues(alpha: 0.7),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(

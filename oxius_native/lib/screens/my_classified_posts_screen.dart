@@ -8,7 +8,7 @@ import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MyClassifiedPostsScreen extends StatefulWidget {
-  const MyClassifiedPostsScreen({Key? key}) : super(key: key);
+  const MyClassifiedPostsScreen({super.key});
 
   @override
   State<MyClassifiedPostsScreen> createState() =>
@@ -117,9 +117,10 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
           // For editing, we need to pass both: use slug for fetching (GET), but keep ID for updating (PUT)
           // The form screen needs the slug to fetch data, but will use the ID from the fetched data for updates
           final postIdentifier = post.slug ?? post.id;
-          print(
+          debugPrint(
               'Editing post: ID=${post.id}, Slug=${post.slug}, Using slug for fetch=$postIdentifier');
 
+          if (!mounted) return;
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -134,6 +135,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
           }
           return;
         case 'view':
+          if (!mounted) return;
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -647,9 +649,9 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.1),
+        color: badgeColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: badgeColor.withOpacity(0.3)),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
       ),
       child: Text(
         badgeText,

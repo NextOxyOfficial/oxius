@@ -116,10 +116,10 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             icon: Icons.location_on_rounded,
             iconColor: const Color(0xFFEF4444),
             onChanged: (v) {
-              setState(() => _hideDropSuggestionsUntilEdit = false);
+              _rebuild(() => _hideDropSuggestionsUntilEdit = false);
               _onDropSearch(v);
             },
-            onTap: () => setState(() {
+            onTap: () => _rebuild(() {
               _activeInput = 'drop';
               _hideDropSuggestionsUntilEdit = false;
             }),
@@ -159,7 +159,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             Align(
               alignment: Alignment.centerRight,
               child: GestureDetector(
-                onTap: () => setState(() {
+                onTap: () => _rebuild(() {
                   _bookingStep = 1;
                   _activeInput = 'pickup';
                 }),
@@ -219,7 +219,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         _pickupSuggestions.isEmpty && pickupSuggestions.isNotEmpty;
 
     return _buildStepSheetContainer(
-      onBack: () => setState(() {
+      onBack: () => _rebuild(() {
         _bookingStep = 0;
         _activeInput = 'drop';
       }),
@@ -249,7 +249,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             icon: Icons.trip_origin_rounded,
             iconColor: _kPurple,
             onChanged: _onPickupSearch,
-            onTap: () => setState(() => _activeInput = 'pickup'),
+            onTap: () => _rebuild(() => _activeInput = 'pickup'),
             trailing: _buildCurrentLocationButton(),
             isSearching: _isSearchingPickup,
           ),
@@ -270,7 +270,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             Align(
               alignment: Alignment.centerRight,
               child: GestureDetector(
-                onTap: () => setState(() => _bookingStep = 2),
+                onTap: () => _rebuild(() => _bookingStep = 2),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
@@ -319,7 +319,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
 
   Widget _buildConfirmStepPanel() {
     return _buildStepSheetContainer(
-      onBack: () => setState(() {
+      onBack: () => _rebuild(() {
         _bookingStep = 1;
         _activeInput = 'pickup';
       }),
@@ -533,7 +533,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             nearbyDrivers: const [],
             activeSelection: '',
             vehicleType: 'bike',
-            onMapTap: (_a, _b) {},
+            onMapTap: (a, b) {},
             onCenterChanged: (_, __) {},
           ),
         ),
@@ -638,7 +638,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
           children: [
             Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => _selectedPaymentMethod = 'wallet'),
+                onTap: () => _rebuild(() => _selectedPaymentMethod = 'wallet'),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   padding:
@@ -713,7 +713,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             const SizedBox(width: 8),
             Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => _selectedPaymentMethod = 'cash'),
+                onTap: () => _rebuild(() => _selectedPaymentMethod = 'cash'),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   padding:
@@ -858,7 +858,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                             fallback: 'Search pickup...')
                         .toString(),
                     isActive: _activeInput == 'pickup',
-                    onTap: () => setState(() => _activeInput = 'pickup'),
+                    onTap: () => _rebuild(() => _activeInput = 'pickup'),
                     onChanged: _onPickupSearch,
                     trailing: _buildCurrentLocationButton(),
                   ),
@@ -870,7 +870,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     hint: t('rideshare_search_drop', fallback: 'Search drop...')
                         .toString(),
                     isActive: _activeInput == 'drop',
-                    onTap: () => setState(() {
+                    onTap: () => _rebuild(() {
                       _activeInput = 'drop';
                       _hideDropSuggestionsUntilEdit = false;
                     }),
@@ -1218,7 +1218,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          setState(() => _selectedVehicleType = type);
+          _rebuild(() => _selectedVehicleType = type);
           _loadNearbyDrivers();
           _requestEstimate();
         },

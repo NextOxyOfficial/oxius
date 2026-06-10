@@ -161,7 +161,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.12),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
@@ -264,7 +264,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.insights_outlined,
@@ -440,8 +440,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   }
 
   void _applyFilter() {
-    print('🔍 Applying filter: $_selectedFilter');
-    print('📊 Total gigs: ${_userGigs.length}');
+    debugPrint('🔍 Applying filter: $_selectedFilter');
+    debugPrint('📊 Total gigs: ${_userGigs.length}');
 
     List<Map<String, dynamic>> filtered;
 
@@ -452,7 +452,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         final gigStatus = _getGigStatus(gig);
         final isActive = _isGigActive(gig);
 
-        print('Gig: ${gig['title']}, Status: $gigStatus, Active: $isActive');
+        debugPrint('Gig: ${gig['title']}, Status: $gigStatus, Active: $isActive');
 
         switch (_selectedFilter) {
           case 'live':
@@ -471,7 +471,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       }).toList();
     }
 
-    print('✅ Filtered gigs: ${filtered.length}');
+    debugPrint('✅ Filtered gigs: ${filtered.length}');
     _filteredGigs = filtered;
   }
 
@@ -605,7 +605,9 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   final success = await _updateGigQuantity(
                       gigId, additionalQuantity, price);
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    // The dialog context was popped above — use the State's
+                    // context for the snackbar.
+                    ScaffoldMessenger.of(this.context).showSnackBar(
                       SnackBar(
                         content: Text(success
                             ? 'Gig quantity increased successfully'
@@ -758,8 +760,10 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 );
 
                 if (mounted) {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  // The dialog was dismissed before the await — use the
+                  // State's context for the snackbars.
+                  ScaffoldMessenger.of(this.context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(this.context).showSnackBar(
                     SnackBar(
                       content: Text(success
                           ? 'Gig resubmitted successfully! Waiting for approval.'
@@ -1072,7 +1076,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(
+    debugPrint(
         '🔨 Building MyGigsScreen - Filter: $_selectedFilter, Filtered: ${_filteredGigs.length}, Total: ${_userGigs.length}');
     final bool isMobile = MediaQuery.of(context).size.width < 768;
 
@@ -1091,7 +1095,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
@@ -1251,7 +1255,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1271,7 +1275,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Icon(
@@ -1317,7 +1321,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     ],
                     onChanged: (String? newValue) {
                       if (newValue != null) {
-                        print('🔄 Dropdown changed to: $newValue');
+                        debugPrint('🔄 Dropdown changed to: $newValue');
                         setState(() {
                           _selectedFilter = newValue;
 
@@ -1346,7 +1350,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                             }).toList();
                           }
 
-                          print(
+                          debugPrint(
                               '✅ Filter applied. Showing ${_filteredGigs.length} gigs');
                         });
                       }
@@ -1392,7 +1396,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50.withOpacity(0.7),
+        color: Colors.grey.shade50.withValues(alpha: 0.7),
       ),
       child: Column(
         children: [

@@ -34,7 +34,7 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
         });
       }
     } catch (e) {
-      print('Error loading trending hashtags: $e');
+      debugPrint('Error loading trending hashtags: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -72,7 +72,7 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -299,7 +299,7 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
         });
       }
     } catch (e) {
-      print('Error loading all hashtags: $e');
+      debugPrint('Error loading all hashtags: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -477,7 +477,7 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                     height: 32,
                                     decoration: BoxDecoration(
                                       color: _getRankBadgeColor(index)
-                                          .withOpacity(0.15),
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(

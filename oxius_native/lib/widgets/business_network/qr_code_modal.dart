@@ -194,7 +194,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -230,7 +230,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
                       height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -242,7 +242,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
                       height: 80,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -261,7 +261,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -293,7 +293,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
                           'Scan to view Business Network profile',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -308,7 +308,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close, color: Colors.white),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
                       ),
                     ),
                   ),
@@ -327,14 +327,14 @@ class _QrCodeModalState extends State<QrCodeModal> {
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.white,
-                      Colors.blue.shade50.withOpacity(0.3),
+                      Colors.blue.shade50.withValues(alpha: 0.3),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.blue.shade100, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.shade100.withOpacity(0.5),
+                      color: Colors.blue.shade100.withValues(alpha: 0.5),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),
@@ -350,7 +350,14 @@ class _QrCodeModalState extends State<QrCodeModal> {
                         version: QrVersions.auto,
                         size: 220,
                         backgroundColor: Colors.transparent,
-                        foregroundColor: selectedQrColor,
+                        eyeStyle: QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: selectedQrColor,
+                        ),
+                        dataModuleStyle: QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: selectedQrColor,
+                        ),
                         padding: const EdgeInsets.all(10),
                       ),
                       // Center logo overlay

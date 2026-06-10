@@ -81,7 +81,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
         });
       }
     } catch (e) {
-      print('Error loading notification count: $e');
+      debugPrint('Error loading notification count: $e');
     }
   }
 
@@ -107,7 +107,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -482,8 +482,8 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             boxShadow: [
               BoxShadow(
                 color: isPro
-                    ? Colors.indigo.shade200.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.1),
+                    ? Colors.indigo.shade200.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
               ),
             ],

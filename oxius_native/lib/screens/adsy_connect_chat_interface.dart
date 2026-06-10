@@ -9,16 +9,12 @@ import 'package:just_audio/just_audio.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'dart:async';
 import 'dart:io';
-import 'dart:convert';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
-import '../widgets/chat_video_player.dart';
-import '../widgets/link_preview_card.dart';
-import '../widgets/linkify_text.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
 import '../services/agora_call_service.dart';
@@ -30,6 +26,7 @@ import 'business_network/profile_screen.dart';
 import 'call_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_report_sheet.dart';
+import '../utils/url_launcher_utils.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -262,11 +259,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   bool _hasMoreMessages = true;
   Timer? _recordTimer;
   Timer? _messagePollingTimer;
-  String? _recordingPath;
   List<Map<String, dynamic>> _messages = [];
-  String? _lastMessageId;
-  List<XFile> _selectedImages = [];
-  List<String> _compressedImages = [];
+  final List<XFile> _selectedImages = [];
+  final List<String> _compressedImages = [];
   String? _playingVoiceMessageId;
   Duration _voicePosition = Duration.zero;
   Duration _voiceDuration = Duration.zero;
@@ -417,14 +412,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     try {
       final nextPage = _currentPage + 1;
-      print('ðŸ”µ Loading older messages, page: $nextPage');
+      debugPrint('ðŸ”µ Loading older messages, page: $nextPage');
 
       final messages = await AdsyConnectService.getMessages(
         widget.chatroomId,
         page: nextPage,
       );
 
-      print('ðŸŸ¢ Loaded ${messages.length} older messages');
+      debugPrint('ðŸŸ¢ Loaded ${messages.length} older messages');
 
       if (mounted && messages.isNotEmpty) {
         // Backend returns oldest-to-newest (ascending by created_at)
@@ -457,7 +452,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
       }
     } catch (e) {
-      print('ðŸ”´ Error loading older messages: $e');
+      debugPrint('ðŸ”´ Error loading older messages: $e');
       if (mounted) {
         setState(() => _isLoadingMoreMessages = false);
       }
@@ -562,7 +557,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       });
     } catch (e) {
-      print('Error playing voice message: $e');
+      debugPrint('Error playing voice message: $e');
       setState(() => _playingVoiceMessageId = null);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -659,7 +654,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _recomputeSearchMatches(keepCurrent: true);
         }
         if (isIncoming) {
-          _lastMessageId = parsed['id'];
           _isOtherUserTyping = false;
         }
       });
@@ -998,9 +992,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
 
-      // Get the latest message ID from server
-      final latestServerMessageId = parsedMessages.last['id'];
-
       // Find new messages that we don't have yet
       final newMessages = parsedMessages.where((msg) {
         final msgId = msg['id']?.toString() ?? '';
@@ -1016,7 +1007,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         if (_searchQuery.trim().isNotEmpty) {
           _recomputeSearchMatches(keepCurrent: true);
         }
-        _lastMessageId = newMessages.last['id'];
 
         // Auto-scroll to bottom if user is near bottom
         if (_isUserNearBottom) {
@@ -1030,7 +1020,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       }
     } catch (e) {
       // Silently fail for polling errors to avoid spamming user
-      print('ðŸ”´ Error polling messages: $e');
+      debugPrint('ðŸ”´ Error polling messages: $e');
     }
   }
 
@@ -1043,7 +1033,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
 
     try {
-      print(
+      debugPrint(
           'ðŸ”µ Loading messages for chatroom: ${widget.chatroomId}, page: $_currentPage');
 
       final messages = await AdsyConnectService.getMessages(
@@ -1051,7 +1041,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         page: _currentPage,
       );
 
-      print('ðŸŸ¢ Loaded ${messages.length} messages');
+      debugPrint('ðŸŸ¢ Loaded ${messages.length} messages');
 
       if (mounted) {
         // Backend returns oldest-to-newest (ascending by created_at)
@@ -1063,7 +1053,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             _messages = parsedMessages;
             // Set last message ID for polling
             if (parsedMessages.isNotEmpty) {
-              _lastMessageId = parsedMessages.last['id'];
             }
           }
 
@@ -1082,7 +1071,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
     } catch (e) {
-      print('ðŸ”´ Error loading messages: $e');
+      debugPrint('ðŸ”´ Error loading messages: $e');
       if (mounted) {
         setState(() => _isLoadingMessages = false);
         NetworkErrorHandler.showErrorSnackbar(
@@ -1097,7 +1086,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   List<Map<String, dynamic>> _parseMessages(List<dynamic> messages) {
     final parsedMessages = messages.map((msg) {
       final sender = msg['sender'] ?? {};
-      final receiver = msg['receiver'] ?? {};
       final senderId = sender['id']?.toString() ?? '';
       final currentUserId = AuthService.currentUser?.id;
       final isMe = currentUserId != null && senderId == currentUserId;
@@ -1185,7 +1173,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       // Update local state immediately - mark all received messages as read
       _markLocalIncomingMessagesAsRead();
     } catch (e) {
-      print('ðŸ”´ Error marking messages as read: $e');
+      debugPrint('ðŸ”´ Error marking messages as read: $e');
       // Don't show error to user - this is a background operation
     }
   }
@@ -1357,7 +1345,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _scrollToBottom();
 
     try {
-      print('ðŸ”µ Sending message: $messageText');
+      debugPrint('ðŸ”µ Sending message: $messageText');
 
       String contentToSend = messageText;
       if (replyTo != null) {
@@ -1375,7 +1363,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         content: contentToSend,
       );
 
-      print('ðŸŸ¢ Message sent: ${sentMessage['id']}');
+      debugPrint('ðŸŸ¢ Message sent: ${sentMessage['id']}');
 
       if (mounted) {
         setState(() {
@@ -1387,7 +1375,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _scrollToBottom();
       }
     } catch (e) {
-      print('ðŸ”´ Error sending message: $e');
+      debugPrint('ðŸ”´ Error sending message: $e');
       if (mounted) {
         setState(() {
           // Roll back the optimistic message on failure.
@@ -1567,7 +1555,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
       }
     } catch (e) {
-      print('Error starting recording: $e');
+      debugPrint('Error starting recording: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1592,7 +1580,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
         // Send voice message to backend
         try {
-          print(
+          debugPrint(
               'ðŸ”µ Sending voice message: $path, duration: $_recordDuration seconds');
 
           final sentMessage = await AdsyConnectService.sendMediaMessage(
@@ -1603,7 +1591,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             voiceDuration: _recordDuration,
           );
 
-          print('ðŸŸ¢ Voice message sent: ${sentMessage['id']}');
+          debugPrint('ðŸŸ¢ Voice message sent: ${sentMessage['id']}');
 
           if (mounted) {
             setState(() {
@@ -1620,7 +1608,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             _scrollToBottom();
           }
         } catch (e) {
-          print('ðŸ”´ Error sending voice message: $e');
+          debugPrint('ðŸ”´ Error sending voice message: $e');
           if (mounted) {
             setState(() {
               _isSendingMessage = false;
@@ -1636,7 +1624,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
     } catch (e) {
-      print('Error stopping recording: $e');
+      debugPrint('Error stopping recording: $e');
       setState(() {
         _isRecording = false;
         _recordDuration = 0;
@@ -1654,14 +1642,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _recordDuration = 0;
       });
     } catch (e) {
-      print('Error canceling recording: $e');
+      debugPrint('Error canceling recording: $e');
     }
-  }
-
-  String _formatDuration(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   // Helper method to safely check if message is deleted
@@ -1693,12 +1675,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       builder: (sheetContext) => Container(
         margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.94),
+          color: Colors.white.withValues(alpha: 0.94),
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: Colors.white.withOpacity(0.82)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.82)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.09),
+              color: Colors.black.withValues(alpha: 0.09),
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
@@ -1783,7 +1765,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       child: ListTile(
         minVerticalPadding: 12,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        tileColor: Colors.white.withOpacity(0.78),
+        tileColor: Colors.white.withValues(alpha: 0.78),
         leading: SizedBox(
           width: 42,
           height: 42,
@@ -1835,7 +1817,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -1943,7 +1925,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                             newText,
                           );
 
-                          if (mounted) {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Message edited'),
@@ -1953,7 +1935,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                             );
                           }
                         } catch (e) {
-                          print('Error editing message: $e');
+                          debugPrint('Error editing message: $e');
                           // Revert on error
                           if (mounted) {
                             setState(() {
@@ -1971,6 +1953,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                     List.from(_addSmartTimestamps(_messages));
                               }
                             });
+                          }
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Failed to edit message'),
@@ -2027,7 +2011,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withOpacity(0.1),
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -2112,12 +2096,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
                         // Then call backend to soft delete
                         try {
-                          print('ðŸ”µ Deleting message ID: ${message['id']}');
+                          debugPrint('ðŸ”µ Deleting message ID: ${message['id']}');
                           await AdsyConnectService.deleteMessage(
                               message['id'].toString());
-                          print('ðŸŸ¢ Message deleted successfully');
+                          debugPrint('ðŸŸ¢ Message deleted successfully');
 
-                          if (mounted) {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Message deleted'),
@@ -2127,7 +2111,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                             );
                           }
                         } catch (e) {
-                          print('ðŸ”´ Error deleting message: $e');
+                          debugPrint('ðŸ”´ Error deleting message: $e');
                           // Message already marked as deleted in UI, so just log the error
                           // Don't show error to user since UI is already updated
                         }
@@ -2268,7 +2252,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 26),
@@ -2334,7 +2318,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
       }
     } catch (e) {
-      print('Error picking images: $e');
+      debugPrint('Error picking images: $e');
       setState(() => _isCompressingImages = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2391,7 +2375,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         setState(() => _isCompressingImages = false);
       }
     } catch (e) {
-      print('Error taking photo: $e');
+      debugPrint('Error taking photo: $e');
       setState(() => _isCompressingImages = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2414,7 +2398,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _sendMediaMessage(video.path, 'video');
       }
     } catch (e) {
-      print('Error picking video: $e');
+      debugPrint('Error picking video: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -2492,7 +2476,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         if (result.files.single.path != null) {
           _sendMediaMessage(result.files.single.path!, 'document',
               fileName: result.files.single.name);
-        } else if (result.files.single.bytes != null) {
+        } else if (result.files.single.bytes != null && mounted) {
           // Handle web/desktop file selection
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -2503,7 +2487,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
     } catch (e) {
-      print('Error picking document: $e');
+      debugPrint('Error picking document: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -2524,7 +2508,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     });
 
     try {
-      print('ðŸ”µ Sending $type message: $filePath');
+      debugPrint('ðŸ”µ Sending $type message: $filePath');
 
       final sentMessage = await AdsyConnectService.sendMediaMessage(
         chatroomId: widget.chatroomId,
@@ -2534,9 +2518,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         fileName: fileName,
       );
 
-      print('ðŸŸ¢ Media message sent: ${sentMessage['id']}');
-      print('ðŸŸ¢ Media URL: ${sentMessage['media_url']}');
-      print('ðŸŸ¢ Full response: $sentMessage');
+      debugPrint('ðŸŸ¢ Media message sent: ${sentMessage['id']}');
+      debugPrint('ðŸŸ¢ Media URL: ${sentMessage['media_url']}');
+      debugPrint('ðŸŸ¢ Full response: $sentMessage');
 
       if (mounted) {
         setState(() {
@@ -2547,7 +2531,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _scrollToBottom();
       }
     } catch (e) {
-      print('ðŸ”´ Error sending media: $e');
+      debugPrint('ðŸ”´ Error sending media: $e');
       if (mounted) {
         setState(() {
           _isSendingMessage = false;
@@ -2571,67 +2555,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           customMessage:
               'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
           onRetry: () => _sendMediaMessage(filePath, type, fileName: fileName),
-        );
-      }
-    }
-  }
-
-  Future<void> _sendMediaMessageWeb(List<int> bytes, String type,
-      {String? fileName}) async {
-    if (_isChatBlocked) return;
-    setState(() {
-      _isSendingMessage = true;
-      _isUploadingAttachment = true;
-    });
-
-    try {
-      print('ðŸ”µ Sending $type message from web: ${bytes.length} bytes');
-
-      final sentMessage = await AdsyConnectService.sendMediaMessage(
-        chatroomId: widget.chatroomId,
-        receiverId: widget.userId,
-        messageType: type,
-        mediaBytes: bytes,
-        fileName: fileName,
-      );
-
-      print('ðŸŸ¢ Media message sent (web): ${sentMessage['id']}');
-      print('ðŸŸ¢ Media URL (web): ${sentMessage['media_url']}');
-      print('ðŸŸ¢ Full response (web): $sentMessage');
-
-      if (mounted) {
-        setState(() {
-          _upsertMessage(_parseSingleMessage(sentMessage));
-          _isSendingMessage = false;
-          _isUploadingAttachment = false;
-        });
-        _scrollToBottom();
-      }
-    } catch (e) {
-      print('ðŸ”´ Error sending media: $e');
-      if (mounted) {
-        setState(() {
-          _isSendingMessage = false;
-          _isUploadingAttachment = false;
-        });
-
-        final errorStr = e.toString().toLowerCase();
-        if (errorStr.contains('403') ||
-            errorStr.contains('permission denied') ||
-            errorStr.contains('blocked')) {
-          setState(() {
-            _isChatBlocked = true;
-            _blockedByMe = false;
-          });
-        }
-
-        // Show professional error message
-        NetworkErrorHandler.showErrorSnackbar(
-          context,
-          e,
-          customMessage:
-              'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
-          onRetry: () => _sendMediaMessageWeb(bytes, type, fileName: fileName),
         );
       }
     }
@@ -3139,7 +3062,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF10B981).withOpacity(0.3),
+                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -3225,7 +3148,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.1),
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -3469,7 +3392,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                     ],
                   ),
                 );
-                if (confirm == true && mounted) {
+                if (confirm == true && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Delete functionality coming soon'),
@@ -3514,7 +3437,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
-  void _downloadDocument(String? filePath, String fileName) {
+  Future<void> _downloadDocument(String? filePath, String fileName) async {
     if (filePath == null || filePath.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -3524,14 +3447,20 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Downloading $fileName...'),
-        backgroundColor: const Color(0xFF10B981),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-    // TODO: Implement actual download functionality
+    // Open the document through the system handler (browser / viewer), which
+    // lets the OS download or preview it. Relative paths are resolved against
+    // the media host first.
+    final url = AppConfig.getAbsoluteUrl(filePath);
+    final opened = await UrlLauncherUtils.launchExternalUrl(url);
+    if (!mounted) return;
+    if (!opened) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open $fileName'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
   }
 
   Widget _buildMessageBubble(Map<String, dynamic> message, bool showAvatar) {

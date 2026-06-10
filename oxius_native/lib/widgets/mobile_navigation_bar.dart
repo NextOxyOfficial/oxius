@@ -69,8 +69,9 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
   }
 
   void _onScrollDirectionChanged() {
-    if (_disposed || _scrollService == null || _scrollService!.isDisposed)
+    if (_disposed || _scrollService == null || _scrollService!.isDisposed) {
       return;
+    }
 
     try {
       if (mounted) {
@@ -101,7 +102,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -223,7 +224,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF10B981).withOpacity(0.3),
+                                color: const Color(0xFF10B981).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),

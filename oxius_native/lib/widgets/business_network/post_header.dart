@@ -36,10 +36,10 @@ class PostHeader extends StatelessWidget {
 
     // Debug logging
     if (avatarUrl.isEmpty) {
-      print(
+      debugPrint(
           '⚠️ No avatar for ${post.user.name} - image: ${post.user.image}, avatar: ${post.user.avatar}');
     } else {
-      print('✅ Avatar URL for ${post.user.name}: $avatarUrl');
+      debugPrint('✅ Avatar URL for ${post.user.name}: $avatarUrl');
     }
 
     if (avatarUrl.isNotEmpty) {
@@ -67,7 +67,7 @@ class PostHeader extends StatelessWidget {
           );
         },
         errorBuilder: (context, error, stackTrace) {
-          print('Error loading avatar for ${post.user.name}: $error');
+          debugPrint('Error loading avatar for ${post.user.name}: $error');
           return _buildDefaultAvatar();
         },
       );
@@ -154,7 +154,7 @@ class PostHeader extends StatelessWidget {
                                 color: Colors.indigo.shade600,
                                 borderRadius: BorderRadius.circular(999),
                                 border: Border.all(
-                                    color: Colors.white.withOpacity(0.18)),
+                                    color: Colors.white.withValues(alpha: 0.18)),
                               ),
                               child: const Text(
                                 'Pro',

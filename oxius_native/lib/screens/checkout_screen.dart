@@ -10,9 +10,9 @@ class CheckoutScreen extends StatefulWidget {
   final List<CartItem> cartItems;
 
   const CheckoutScreen({
-    Key? key,
+    super.key,
     required this.cartItems,
-  }) : super(key: key);
+  });
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -210,16 +210,20 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error processing order: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error processing order: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -347,7 +351,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     'Review and complete your order',
                     style: AppFonts.roboto(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -382,7 +386,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.white.withOpacity(0.25),
+            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.25),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -409,7 +413,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       width: 16,
       height: 1.5,
       margin: const EdgeInsets.symmetric(horizontal: 6),
-      color: Colors.white.withOpacity(0.3),
+      color: Colors.white.withValues(alpha: 0.3),
     );
   }
 
@@ -429,7 +433,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
@@ -451,7 +455,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -538,7 +542,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     Text(
-                      '${price.toStringAsFixed(0)}',
+                      price.toStringAsFixed(0),
                       style: AppFonts.roboto(
                         color: const Color(0xFF3B82F6),
                         fontWeight: FontWeight.w700,
@@ -642,7 +646,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
@@ -793,7 +797,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
@@ -862,7 +866,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             ),
             borderRadius: BorderRadius.circular(6),
             color: isSelected
-                ? const Color(0xFF3B82F6).withOpacity(0.05)
+                ? const Color(0xFF3B82F6).withValues(alpha: 0.05)
                 : Colors.transparent,
           ),
           child: Row(
@@ -947,7 +951,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
@@ -1014,7 +1018,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             ),
             borderRadius: BorderRadius.circular(6),
             color: isSelected
-                ? const Color(0xFF3B82F6).withOpacity(0.05)
+                ? const Color(0xFF3B82F6).withValues(alpha: 0.05)
                 : Colors.transparent,
           ),
           child: Row(
@@ -1117,9 +1121,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(0),
-                  Colors.white.withOpacity(0.3),
-                  Colors.white.withOpacity(0),
+                  Colors.white.withValues(alpha: 0),
+                  Colors.white.withValues(alpha: 0.3),
+                  Colors.white.withValues(alpha: 0),
                 ],
               ),
             ),
@@ -1172,7 +1176,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           label,
           style: AppFonts.roboto(
             fontSize: 13,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -1253,7 +1257,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -1402,7 +1406,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
   Widget _buildSuccessModal() {
     return Container(
-      color: Colors.black.withOpacity(0.6),
+      color: Colors.black.withValues(alpha: 0.6),
       child: Center(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -1412,7 +1416,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -1451,7 +1455,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1490,10 +1494,10 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.08),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFF10B981).withOpacity(0.2),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
                           width: 1,
                         ),
                       ),

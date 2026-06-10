@@ -1093,9 +1093,9 @@ class _CallScreenState extends State<CallScreen>
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.black
-                                  .withOpacity(hasRemoteVideo ? 0.16 : 0.02),
+                                  .withValues(alpha: hasRemoteVideo ? 0.16 : 0.02),
                               Colors.transparent,
-                              Colors.black.withOpacity(0.38),
+                              Colors.black.withValues(alpha: 0.38),
                             ],
                           ),
                         ),
@@ -1160,7 +1160,7 @@ class _CallScreenState extends State<CallScreen>
                     _primaryStatusText,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.76),
+                      color: Colors.white.withValues(alpha: 0.76),
                       fontSize: compact ? 14 : 16,
                       height: 1.4,
                     ),
@@ -1221,7 +1221,7 @@ class _CallScreenState extends State<CallScreen>
                 Text(
                   'Incoming ${_callModeLabel.toLowerCase()}',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.72),
+                    color: Colors.white.withValues(alpha: 0.72),
                     fontSize: compact ? 14 : 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1284,9 +1284,9 @@ class _CallScreenState extends State<CallScreen>
           padding: EdgeInsets.symmetric(
               horizontal: hPad, vertical: compact ? 8 : 10),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.42),
+            color: Colors.black.withValues(alpha: 0.42),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.white.withOpacity(0.10)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1356,8 +1356,8 @@ class _CallScreenState extends State<CallScreen>
     required VoidCallback onTap,
   }) {
     final bg = isActive
-        ? (activeBg ?? Colors.white).withOpacity(activeBg != null ? 1 : 0.22)
-        : Colors.white.withOpacity(0.14);
+        ? (activeBg ?? Colors.white).withValues(alpha: activeBg != null ? 1 : 0.22)
+        : Colors.white.withValues(alpha: 0.14);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1370,7 +1370,7 @@ class _CallScreenState extends State<CallScreen>
             shape: BoxShape.circle,
             color: bg,
             border: Border.all(
-              color: Colors.white.withOpacity(isActive ? 0.0 : 0.14),
+              color: Colors.white.withValues(alpha: isActive ? 0.0 : 0.14),
               width: 1,
             ),
           ),
@@ -1455,9 +1455,9 @@ class _CallScreenState extends State<CallScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.28),
+                  Colors.black.withValues(alpha: 0.28),
                   Colors.transparent,
-                  Colors.black.withOpacity(0.45),
+                  Colors.black.withValues(alpha: 0.45),
                 ],
               ),
             ),
@@ -1490,7 +1490,7 @@ class _CallScreenState extends State<CallScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.38),
+                  color: Colors.black.withValues(alpha: 0.38),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Row(
@@ -1512,13 +1512,13 @@ class _CallScreenState extends State<CallScreen>
                     Container(
                       width: 1,
                       height: 12,
-                      color: Colors.white.withOpacity(0.25),
+                      color: Colors.white.withValues(alpha: 0.25),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1556,7 +1556,7 @@ class _CallScreenState extends State<CallScreen>
                     height: compact ? 40 : 46,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.18)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: _buildAvatarImage(iconSize: 22),
@@ -1583,7 +1583,7 @@ class _CallScreenState extends State<CallScreen>
                               ? '${_callModeLabel.toUpperCase()} • ${_formatDuration(_callDuration)}'
                               : _primaryStatusText.toUpperCase(),
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.62),
+                            color: Colors.white.withValues(alpha: 0.62),
                             fontSize: compact ? 10 : 11,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.1,
@@ -1622,7 +1622,7 @@ class _CallScreenState extends State<CallScreen>
               height: compact ? 128 : 150,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withOpacity(0.12)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               ),
               clipBehavior: Clip.antiAlias,
               child: Stack(
@@ -1642,7 +1642,7 @@ class _CallScreenState extends State<CallScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.46),
+                        color: Colors.black.withValues(alpha: 0.46),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
@@ -1682,7 +1682,7 @@ class _CallScreenState extends State<CallScreen>
                   children: [
                     Icon(
                       Icons.info_outline_rounded,
-                      color: Colors.white.withOpacity(0.92),
+                      color: Colors.white.withValues(alpha: 0.92),
                       size: 18,
                     ),
                     const SizedBox(width: 10),
@@ -1708,9 +1708,9 @@ class _CallScreenState extends State<CallScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.14)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1756,7 +1756,7 @@ class _CallScreenState extends State<CallScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                        color: _accentColor.withOpacity(0.7), width: 1.6),
+                        color: _accentColor.withValues(alpha: 0.7), width: 1.6),
                   ),
                 ),
               ),
@@ -1769,15 +1769,15 @@ class _CallScreenState extends State<CallScreen>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.18),
-                      Colors.white.withOpacity(0.08),
+                      Colors.white.withValues(alpha: 0.18),
+                      Colors.white.withValues(alpha: 0.08),
                     ],
                   ),
                   border: Border.all(
-                      color: Colors.white.withOpacity(0.2), width: 1.5),
+                      color: Colors.white.withValues(alpha: 0.2), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.18),
+                      color: Colors.black.withValues(alpha: 0.18),
                       blurRadius: 20,
                       spreadRadius: 4,
                     ),
@@ -1801,7 +1801,7 @@ class _CallScreenState extends State<CallScreen>
         errorBuilder: (_, __, ___) => Icon(
           Icons.person_rounded,
           size: iconSize,
-          color: Colors.white.withOpacity(0.72),
+          color: Colors.white.withValues(alpha: 0.72),
         ),
       );
     }
@@ -1809,7 +1809,7 @@ class _CallScreenState extends State<CallScreen>
     return Icon(
       Icons.person_rounded,
       size: iconSize,
-      color: Colors.white.withOpacity(0.72),
+      color: Colors.white.withValues(alpha: 0.72),
     );
   }
 
@@ -1820,9 +1820,9 @@ class _CallScreenState extends State<CallScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1891,8 +1891,8 @@ class _CallScreenState extends State<CallScreen>
       padding: padding,
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        color: const Color(0xFF0F172A).withOpacity(0.72),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        color: const Color(0xFF0F172A).withValues(alpha: 0.72),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: child,
     );
@@ -1912,8 +1912,8 @@ class _CallScreenState extends State<CallScreen>
           height: 50,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            color: const Color(0xFF0F172A).withOpacity(0.72),
-            border: Border.all(color: Colors.white.withOpacity(0.12)),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.72),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: Icon(icon, color: Colors.white, size: 24),
         ),

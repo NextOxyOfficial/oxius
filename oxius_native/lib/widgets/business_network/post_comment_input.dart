@@ -36,7 +36,6 @@ class _PostCommentInputState extends State<PostCommentInput> {
 
   bool _isSubmitting = false;
   bool _hasText = false;
-  String _commentText = '';
   List<Map<String, dynamic>> _userData = [];
 
   @override
@@ -76,7 +75,6 @@ class _PostCommentInputState extends State<PostCommentInput> {
       await widget.onSubmit(formattedText);
       _mentionKey.currentState?.controller?.clear();
       setState(() {
-        _commentText = '';
         _hasText = false;
       });
     } finally {
@@ -99,7 +97,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
               })
           .toList();
     } catch (e) {
-      print('Error searching users: $e');
+      debugPrint('Error searching users: $e');
       return [];
     }
   }
@@ -122,13 +120,13 @@ class _PostCommentInputState extends State<PostCommentInput> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF10B981).withOpacity(0.08),
-                  const Color(0xFF059669).withOpacity(0.05),
+                  const Color(0xFF10B981).withValues(alpha: 0.08),
+                  const Color(0xFF059669).withValues(alpha: 0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: const Color(0xFF10B981).withOpacity(0.3),
+                color: const Color(0xFF10B981).withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -138,7 +136,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.15),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -283,7 +281,6 @@ class _PostCommentInputState extends State<PostCommentInput> {
               onChanged: (value) async {
                 setState(() {
                   _hasText = value.trim().isNotEmpty;
-                  _commentText = value;
                 });
 
                 // Check if user is typing a mention
@@ -303,7 +300,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
                 }
               },
               onMentionAdd: (Map<String, dynamic> mention) {
-                print('✅ Mention added: $mention');
+                debugPrint('✅ Mention added: $mention');
                 setState(() {
                   _hasText = true;
                 });

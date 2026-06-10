@@ -31,10 +31,10 @@ class ClassifiedPostFormScreen extends StatefulWidget {
   final String? categoryId;
 
   const ClassifiedPostFormScreen({
-    Key? key,
+    super.key,
     this.postId,
     this.categoryId,
-  }) : super(key: key);
+  });
 
   @override
   State<ClassifiedPostFormScreen> createState() =>
@@ -99,19 +99,19 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
   Future<void> _loadPostData() async {
     try {
-      print('Loading post data for ID: ${widget.postId}');
+      debugPrint('Loading post data for ID: ${widget.postId}');
       final postData = await _postService.fetchPostForEdit(widget.postId!);
 
       if (postData == null) {
-        print('ERROR: Post data is null!');
+        debugPrint('ERROR: Post data is null!');
         _showError('Failed to load post data');
         return;
       }
 
-      print('Post data loaded: ${postData.title}');
-      print('Post ID (UUID): ${postData.id}');
-      print('Category ID: ${postData.categoryId}');
-      print('Images count: ${postData.medias.length}');
+      debugPrint('Post data loaded: ${postData.title}');
+      debugPrint('Post ID (UUID): ${postData.id}');
+      debugPrint('Category ID: ${postData.categoryId}');
+      debugPrint('Images count: ${postData.medias.length}');
 
       if (mounted) {
         setState(() {
@@ -217,13 +217,15 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           // Get file extension
           final extension = image.path.split('.').last.toLowerCase();
           String mimeType = 'image/jpeg';
-          if (extension == 'png')
+          if (extension == 'png') {
             mimeType = 'image/png';
-          else if (extension == 'jpg' || extension == 'jpeg')
+          } else if (extension == 'jpg' || extension == 'jpeg') {
             mimeType = 'image/jpeg';
-          else if (extension == 'gif')
+          } else if (extension == 'gif') {
             mimeType = 'image/gif';
-          else if (extension == 'webp') mimeType = 'image/webp';
+          } else if (extension == 'webp') {
+            mimeType = 'image/webp';
+          }
 
           // Format as data URL
           final dataUrl = 'data:$mimeType;base64,$base64String';
@@ -237,20 +239,22 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           // Get file extension
           final extension = image.path.split('.').last.toLowerCase();
           String mimeType = 'image/jpeg';
-          if (extension == 'png')
+          if (extension == 'png') {
             mimeType = 'image/png';
-          else if (extension == 'jpg' || extension == 'jpeg')
+          } else if (extension == 'jpg' || extension == 'jpeg') {
             mimeType = 'image/jpeg';
-          else if (extension == 'gif')
+          } else if (extension == 'gif') {
             mimeType = 'image/gif';
-          else if (extension == 'webp') mimeType = 'image/webp';
+          } else if (extension == 'webp') {
+            mimeType = 'image/webp';
+          }
 
           // Format as data URL
           final dataUrl = 'data:$mimeType;base64,$base64String';
           base64Images.add(dataUrl);
         }
       } catch (e) {
-        print('Error converting image to base64: $e');
+        debugPrint('Error converting image to base64: $e');
       }
     }
 
@@ -304,9 +308,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
     try {
       // Convert images to base64 before submission
-      print('Converting ${_selectedImages.length} images to base64...');
+      debugPrint('Converting ${_selectedImages.length} images to base64...');
       final base64Images = await _convertImagesToBase64();
-      print('Converted ${base64Images.length} images successfully');
+      debugPrint('Converted ${base64Images.length} images successfully');
 
       // Build location string from geo data
       String locationString = '';
@@ -343,13 +347,13 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         acceptedPrivacy: _acceptedPrivacy,
       );
 
-      print('Form created, submitting to API...');
+      debugPrint('Form created, submitting to API...');
       Map<String, dynamic>? response;
 
       if (_isEditMode) {
         // Use actual UUID for update API call
         final postIdForUpdate = _actualPostId ?? widget.postId!;
-        print('Updating post with UUID: $postIdForUpdate');
+        debugPrint('Updating post with UUID: $postIdForUpdate');
         response = await _postService.updatePost(postIdForUpdate, form);
       } else {
         response = await _postService.createPost(form);

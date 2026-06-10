@@ -36,9 +36,7 @@ class _InboxScreenState extends State<InboxScreen>
   String _activeTab = 'updates';
   String _ticketStatusFilter = 'all';
   String _updatesFilter = 'all';
-  int _newMessageCount = 0;
-  int _newTicketCount = 0;
-  int _newChatCount = 0;
+  final int _newChatCount = 0;
   bool _isLoadingUpdates = true;
   bool _isLoadingTickets = true;
 
@@ -102,14 +100,14 @@ class _InboxScreenState extends State<InboxScreen>
   void _handleDeepLink() {
     // If we have an initial chat ID, navigate to that chat
     if (widget.initialChatId != null && widget.initialChatId!.isNotEmpty) {
-      print('📱 Deep linking to chat: ${widget.initialChatId}');
+      debugPrint('📱 Deep linking to chat: ${widget.initialChatId}');
       // The AdsyConnectScreen will handle opening the specific chat
       // We just need to make sure we're on the chat tab
     }
 
     // If we have an initial ticket ID, navigate to that ticket
     if (widget.initialTicketId != null && widget.initialTicketId!.isNotEmpty) {
-      print('📱 Deep linking to ticket: ${widget.initialTicketId}');
+      debugPrint('📱 Deep linking to ticket: ${widget.initialTicketId}');
       // Navigate to ticket detail
       Navigator.push(
         context,
@@ -207,7 +205,7 @@ class _InboxScreenState extends State<InboxScreen>
           });
         }
       } catch (e) {
-        print('Error loading push notifications: $e');
+        debugPrint('Error loading push notifications: $e');
       }
 
       // Newest first across both sources.
@@ -225,7 +223,7 @@ class _InboxScreenState extends State<InboxScreen>
         _markPushUpdatesSeen();
       }
     } catch (e) {
-      print('Error loading updates: $e');
+      debugPrint('Error loading updates: $e');
       if (mounted) {
         setState(() => _isLoadingUpdates = false);
       }
@@ -246,7 +244,7 @@ class _InboxScreenState extends State<InboxScreen>
         });
       }
     } catch (e) {
-      print('Error marking push updates seen: $e');
+      debugPrint('Error marking push updates seen: $e');
     }
   }
 
@@ -265,8 +263,8 @@ class _InboxScreenState extends State<InboxScreen>
         headers: headers,
       );
 
-      print('=== Load More Updates Page $_updatesPage ===');
-      print('Status: ${response.statusCode}');
+      debugPrint('=== Load More Updates Page $_updatesPage ===');
+      debugPrint('Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -299,7 +297,7 @@ class _InboxScreenState extends State<InboxScreen>
         }
       }
     } catch (e) {
-      print('Error loading more updates: $e');
+      debugPrint('Error loading more updates: $e');
       if (mounted) {
         setState(() => _isLoadingMoreUpdates = false);
       }
@@ -320,8 +318,8 @@ class _InboxScreenState extends State<InboxScreen>
         headers: headers,
       );
 
-      print('=== Load Tickets Page $_ticketsPage ===');
-      print('Status: ${response.statusCode}');
+      debugPrint('=== Load Tickets Page $_ticketsPage ===');
+      debugPrint('Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -353,7 +351,7 @@ class _InboxScreenState extends State<InboxScreen>
         }
       }
     } catch (e) {
-      print('Error loading tickets: $e');
+      debugPrint('Error loading tickets: $e');
       if (mounted) {
         setState(() => _isLoadingTickets = false);
       }
@@ -375,8 +373,8 @@ class _InboxScreenState extends State<InboxScreen>
         headers: headers,
       );
 
-      print('=== Load More Tickets Page $_ticketsPage ===');
-      print('Status: ${response.statusCode}');
+      debugPrint('=== Load More Tickets Page $_ticketsPage ===');
+      debugPrint('Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -408,7 +406,7 @@ class _InboxScreenState extends State<InboxScreen>
         }
       }
     } catch (e) {
-      print('Error loading more tickets: $e');
+      debugPrint('Error loading more tickets: $e');
       if (mounted) {
         setState(() => _isLoadingMoreTickets = false);
       }
@@ -451,18 +449,6 @@ class _InboxScreenState extends State<InboxScreen>
     }).toList();
   }
 
-  void _setActiveTab(String tab) {
-    setState(() {
-      _activeTab = tab;
-      int index = 0;
-      if (tab == 'chat')
-        index = 0;
-      else if (tab == 'updates')
-        index = 1;
-      else if (tab == 'support') index = 2;
-      _tabController.animateTo(index);
-    });
-  }
 
   void _setTicketStatusFilter(String filter) {
     setState(() {
@@ -545,7 +531,7 @@ class _InboxScreenState extends State<InboxScreen>
           );
         }
       } catch (e) {
-        print('Error marking updates as read: $e');
+        debugPrint('Error marking updates as read: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -565,17 +551,9 @@ class _InboxScreenState extends State<InboxScreen>
     }
   }
 
-  void _clearNotifications() {
-    setState(() {
-      _newMessageCount = 0;
-      _newTicketCount = 0;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    final bool isMobile = MediaQuery.of(context).size.width < 768;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -587,12 +565,12 @@ class _InboxScreenState extends State<InboxScreen>
               end: Alignment.bottomRight,
               colors: [
                 Colors.white,
-                const Color(0xFF3B82F6).withOpacity(0.02),
+                const Color(0xFF3B82F6).withValues(alpha: 0.02),
               ],
             ),
             border: Border(
               bottom: BorderSide(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 width: 1,
               ),
             ),
@@ -606,7 +584,7 @@ class _InboxScreenState extends State<InboxScreen>
                   Container(
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.08),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: IconButton(
@@ -629,7 +607,7 @@ class _InboxScreenState extends State<InboxScreen>
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF3B82F6).withOpacity(0.3),
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -1006,59 +984,6 @@ class _InboxScreenState extends State<InboxScreen>
     );
   }
 
-  Widget _buildQuickBadge(IconData icon, int count, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 3),
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        backgroundColor: const Color(0xFFF9FAFB),
-        selectedColor: const Color(0xFF059669),
-        labelStyle: TextStyle(
-          color: isSelected ? Colors.white : const Color(0xFF6B7280),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color:
-                isSelected ? const Color(0xFF059669) : const Color(0xFFE5E7EB),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildUpdatesList() {
     if (_isLoadingUpdates) {
@@ -1261,11 +1186,11 @@ class _InboxScreenState extends State<InboxScreen>
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: isUnread
-              ? const Color(0xFFF0FDF4).withOpacity(0.5)
+              ? const Color(0xFFF0FDF4).withValues(alpha: 0.5)
               : Colors.white,
           border: Border(
             bottom: BorderSide(
-              color: const Color(0xFFE5E7EB).withOpacity(0.4),
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.4),
               width: 0.5,
             ),
           ),
@@ -1279,11 +1204,11 @@ class _InboxScreenState extends State<InboxScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isUnread
-                    ? const Color(0xFF059669).withOpacity(0.1)
+                    ? const Color(0xFF059669).withValues(alpha: 0.1)
                     : const Color(0xFFF3F4F6),
                 border: Border.all(
                   color: isUnread
-                      ? const Color(0xFF059669).withOpacity(0.25)
+                      ? const Color(0xFF059669).withValues(alpha: 0.25)
                       : Colors.transparent,
                   width: 1.5,
                 ),
@@ -1411,11 +1336,11 @@ class _InboxScreenState extends State<InboxScreen>
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: isUnread
-              ? const Color(0xFFF0FDF4).withOpacity(0.5)
+              ? const Color(0xFFF0FDF4).withValues(alpha: 0.5)
               : Colors.white,
           border: Border(
             bottom: BorderSide(
-              color: const Color(0xFFE5E7EB).withOpacity(0.4),
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.4),
               width: 0.5,
             ),
           ),
@@ -1428,9 +1353,9 @@ class _InboxScreenState extends State<InboxScreen>
               height: 42,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: statusColor.withOpacity(0.1),
+                color: statusColor.withValues(alpha: 0.1),
                 border: Border.all(
-                  color: statusColor.withOpacity(0.25),
+                  color: statusColor.withValues(alpha: 0.25),
                   width: 1.5,
                 ),
               ),
@@ -1466,7 +1391,7 @@ class _InboxScreenState extends State<InboxScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -1618,7 +1543,7 @@ class _InboxScreenState extends State<InboxScreen>
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF059669).withOpacity(0.1),
+                      color: const Color(0xFF059669).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1837,7 +1762,7 @@ class _InboxScreenState extends State<InboxScreen>
         headers: headers,
       );
     } catch (e) {
-      print('Error marking update as read: $e');
+      debugPrint('Error marking update as read: $e');
     }
   }
 }
@@ -1931,7 +1856,7 @@ class _NewChatModalState extends State<_NewChatModal> {
         });
       }
     } catch (e) {
-      print('Error searching people: $e');
+      debugPrint('Error searching people: $e');
       if (mounted) {
         setState(() => _isSearching = false);
       }
@@ -2165,7 +2090,7 @@ class _NewChatModalState extends State<_NewChatModal> {
                                   CircleAvatar(
                                     radius: 22,
                                     backgroundColor: const Color(0xFF3B82F6)
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     backgroundImage: _getUserImageUrl(user) !=
                                             null
                                         ? NetworkImage(_getUserImageUrl(user)!)
@@ -2219,7 +2144,7 @@ class _NewChatModalState extends State<_NewChatModal> {
                                     padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF3B82F6)
-                                          .withOpacity(0.08),
+                                          .withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Image.asset(

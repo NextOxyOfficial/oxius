@@ -14,7 +14,6 @@ import '../screens/eshop_screen.dart';
 import '../screens/elearning_screen.dart';
 import '../screens/news_screen.dart';
 import '../screens/news_detail_screen.dart';
-import '../screens/rideshare/rideshare_screen.dart';
 import 'ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -38,17 +37,6 @@ class _HeroBannerState extends State<HeroBanner> {
   final TranslationService _translationService = TranslationService();
   final UserStateService _userStateService = UserStateService();
   int _unreadNotificationCount = 0;
-
-  // Build absolute URL for static assets
-  String _absStatic(String path) {
-    return AppConfig.getAbsoluteUrl(path);
-  }
-
-  // Provide candidate URLs for static assets
-  List<String> _absStaticCandidates(String path) {
-    final absUrl = AppConfig.getAbsoluteUrl(path);
-    return [absUrl];
-  }
 
   // Mobile service buttons data with local asset icons
   List<Map<String, dynamic>> get mobileServices => [
@@ -194,7 +182,7 @@ class _HeroBannerState extends State<HeroBanner> {
         });
       }
     } catch (e) {
-      print('❌ Hero Banner: Error loading notification count: $e');
+      debugPrint('❌ Hero Banner: Error loading notification count: $e');
     }
   }
 
@@ -233,7 +221,7 @@ class _HeroBannerState extends State<HeroBanner> {
       setState(() {
         isLoading = false;
       });
-      print('Error loading banner images: $e');
+      debugPrint('Error loading banner images: $e');
     }
   }
 
@@ -299,7 +287,7 @@ class _HeroBannerState extends State<HeroBanner> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -330,7 +318,7 @@ class _HeroBannerState extends State<HeroBanner> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFFF59E0B).withOpacity(0.70),
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.70),
             width: 1,
           ),
         ),
@@ -358,7 +346,7 @@ class _HeroBannerState extends State<HeroBanner> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF59E0B).withOpacity(_newsGlow ? 0.10 : 0.05),
+            color: const Color(0xFFF59E0B).withValues(alpha: _newsGlow ? 0.10 : 0.05),
             blurRadius: _newsGlow ? 8 : 5,
             offset: const Offset(0, 1),
           ),
@@ -411,7 +399,7 @@ class _HeroBannerState extends State<HeroBanner> {
         borderRadius: BorderRadius.circular(999),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFEF4444).withOpacity(_newsGlow ? 0.20 : 0.10),
+            color: const Color(0xFFEF4444).withValues(alpha: _newsGlow ? 0.20 : 0.10),
             blurRadius: _newsGlow ? 6 : 3,
             offset: const Offset(0, 1),
           ),
@@ -507,7 +495,7 @@ class _HeroBannerState extends State<HeroBanner> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -560,45 +548,6 @@ class _HeroBannerState extends State<HeroBanner> {
     );
   }
 
-  Widget _buildPremiumArea({required double height, required bool isMobile}) {
-    return Container(
-      height: height,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey.shade50.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: isMobile ? 8 : 12, horizontal: 8),
-              child: Text(
-                _translationService.t('bangladesh_first_title',
-                    fallback: 'Bangladesh’s first'),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey.shade800,
-                          fontWeight: FontWeight.w600,
-                        ) ??
-                    TextStyle(
-                      fontSize: isMobile ? 14 : 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade800,
-                    ),
-              ),
-            ),
-            // You can extend with more premium content blocks here later
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeroSlider(double height) {
     if (isLoading) {
       return Container(
@@ -628,7 +577,7 @@ class _HeroBannerState extends State<HeroBanner> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -654,14 +603,14 @@ class _HeroBannerState extends State<HeroBanner> {
                 final target = _bannerTarget(banner);
                 final linkType = _bannerLinkType(banner);
 
-                print('🖼️ Loading banner image: $imageUrl');
+                debugPrint('🖼️ Loading banner image: $imageUrl');
 
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: target == null
                       ? null
                       : () => _openBannerTarget(target, linkType: linkType),
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
                     child: AppImage.network(
                       imageUrl,
@@ -710,7 +659,7 @@ class _HeroBannerState extends State<HeroBanner> {
                         shape: BoxShape.circle,
                         color: _currentHeroIndex == index
                             ? Colors.white
-                            : Colors.white.withOpacity(0.4),
+                            : Colors.white.withValues(alpha: 0.4),
                       ),
                     ),
                   ),
@@ -1124,8 +1073,8 @@ class _ServiceTileState extends State<_ServiceTile>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        widget.color.withOpacity(0.12),
-                        widget.color.withOpacity(0.0),
+                        widget.color.withValues(alpha: 0.12),
+                        widget.color.withValues(alpha: 0.0),
                       ],
                       radius: 0.85,
                     ),
@@ -1154,7 +1103,7 @@ class _ServiceTileState extends State<_ServiceTile>
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: widget.color.withOpacity(0.08),
+                          color: widget.color.withValues(alpha: 0.08),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -1223,7 +1172,7 @@ class _ServiceTileState extends State<_ServiceTile>
                         border: Border.all(color: Colors.white, width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFEF4444).withOpacity(0.4),
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.4),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),

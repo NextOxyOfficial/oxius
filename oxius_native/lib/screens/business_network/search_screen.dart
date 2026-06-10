@@ -7,7 +7,6 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
-import '../../widgets/ios_web_redirect_screen.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -142,7 +141,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
       if (response.statusCode == 200 && mounted) {
         final data = json.decode(response.body);
-        print(
+        debugPrint(
             'Search API returned ${data['results']?.length ?? 0} results for query: $query');
 
         final List<BusinessNetworkPost> newPosts = [];
@@ -151,9 +150,9 @@ class _SearchScreenState extends State<SearchScreen> {
         if (data['results'] != null && data['results'] is List) {
           for (var item in data['results']) {
             final post = BusinessNetworkPost.fromJson(item);
-            print(
+            debugPrint(
                 'Post: ${post.title} - ${post.content.substring(0, post.content.length > 50 ? 50 : post.content.length)}');
-            print('Author: ${post.user.name} (@${post.user.username})');
+            debugPrint('Author: ${post.user.name} (@${post.user.username})');
             newPosts.add(post);
 
             // Extract hashtags from posts
@@ -180,7 +179,7 @@ class _SearchScreenState extends State<SearchScreen> {
         setState(() => _isLoading = false);
       }
     } catch (e) {
-      print('Error searching: $e');
+      debugPrint('Error searching: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -229,7 +228,7 @@ class _SearchScreenState extends State<SearchScreen> {
         });
       }
     } catch (e) {
-      print('Error searching people: $e');
+      debugPrint('Error searching people: $e');
     }
   }
 
@@ -241,10 +240,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-    final isHashtagSearch = _currentQuery.startsWith('#');
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF5F5F5),

@@ -49,7 +49,7 @@ class _HeaderLogoState extends State<HeaderLogo> {
         setState(() => isLoading = false);
       }
     } catch (e) {
-      print('Logo load error: $e');
+      debugPrint('Logo load error: $e');
       setState(() => isLoading = false);
     }
   }

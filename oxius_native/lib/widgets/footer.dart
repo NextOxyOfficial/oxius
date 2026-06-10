@@ -109,7 +109,7 @@ class _AppFooterState extends State<AppFooter>
         }
       }
     } catch (e) {
-      print('Error loading footer banners: $e');
+      debugPrint('Error loading footer banners: $e');
       if (!_disposed && mounted) {
         setState(() {
           isLoadingBanners = false;
@@ -148,7 +148,7 @@ class _AppFooterState extends State<AppFooter>
         }
       }
     } catch (e) {
-      print('Error loading logo: $e');
+      debugPrint('Error loading logo: $e');
       if (!_disposed && mounted) {
         setState(() {
           isLoading = false;
@@ -266,7 +266,7 @@ class _AppFooterState extends State<AppFooter>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(color: Colors.grey.shade200, width: 0.5),
                 ),
@@ -433,7 +433,7 @@ class _AppFooterState extends State<AppFooter>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -584,160 +584,6 @@ class _AppFooterState extends State<AppFooter>
     );
   }
 
-  Widget _buildMobileNavigationBar(BuildContext context) {
-    // Mock user data - replace with actual user state management
-    final bool isLoggedIn = true; // Replace with actual user state
-
-    return Positioned(
-      left: 24,
-      right: 24,
-      bottom: 8,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 500),
-        transform: Matrix4.translationValues(0, isScrollingDown ? 80 : 0, 0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF34D399).withOpacity(0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              color: Colors.white.withOpacity(0.9),
-              child: isLoggedIn
-                  ? _buildLoggedInNavigation(context)
-                  : _buildGuestNavigation(context),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoggedInNavigation(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildNavItem(
-          icon: Icons.home,
-          onTap: () => _handleNavigation(context, 'Home'),
-          hasNotification: false,
-        ),
-        _buildNavItem(
-          icon: Icons.account_balance_wallet,
-          onTap: () => _handleNavigation(context, 'AdsyPay'),
-          hasNotification: false,
-        ),
-        _buildNavItem(
-          icon: Icons.phone_android,
-          onTap: () => _handleNavigation(context, 'Mobile Recharge'),
-          hasNotification: false,
-        ),
-        _buildNavItem(
-          icon: Icons.network_check,
-          onTap: () => _handleNavigation(context, 'Business Network'),
-          hasNotification: unreadCount > 0,
-          notificationCount: unreadCount,
-        ),
-        _buildNavItem(
-          icon: Icons.newspaper,
-          onTap: () => _handleNavigation(context, 'News'),
-          hasNotification: false,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGuestNavigation(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildNavItem(
-          icon: Icons.home,
-          onTap: () => _handleNavigation(context, 'Home'),
-          hasNotification: false,
-        ),
-        _buildNavItem(
-          icon: Icons.work,
-          onTap: () => _handleNavigation(context, 'Microgigs'),
-          hasNotification: false,
-        ),
-        _buildNavItem(
-          icon: Icons.shopping_bag,
-          onTap: () => _handleNavigation(context, 'eShop'),
-          hasNotification: false,
-        ),
-        _buildNavItem(
-          icon: Icons.network_check,
-          onTap: () => _handleNavigation(context, 'Business Network'),
-          hasNotification: false,
-        ),
-        _buildNavItem(
-          icon: Icons.newspaper,
-          onTap: () => _handleNavigation(context, 'News'),
-          hasNotification: false,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required VoidCallback onTap,
-    required bool hasNotification,
-    int notificationCount = 0,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        child: Stack(
-          children: [
-            Icon(
-              icon,
-              size: 28,
-              color: const Color(0xFF34D399),
-            ),
-            if (hasNotification && notificationCount > 0)
-              Positioned(
-                right: -2,
-                top: -2,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    notificationCount > 99
-                        ? '99+'
-                        : notificationCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // Helper methods
   void _handleNavigation(BuildContext context, String destination) {
@@ -804,7 +650,6 @@ class _AppFooterState extends State<AppFooter>
         route = '/micro-gigs';
         break;
       case 'recharge':
-      case '/mobile-recharge':
         route = '/mobile-recharge';
         break;
       case 'pro':
@@ -860,24 +705,5 @@ class _AppFooterState extends State<AppFooter>
     Navigator.pushNamed(context, route);
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature - ${t('coming_soon')}'),
-        backgroundColor: const Color(0xFF3B82F6),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 
-  void _downloadAndroidApp(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content:
-            Text('Download Started - AdsyClub Android app is downloading...'),
-        backgroundColor: Color(0xFF10B981),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
 }

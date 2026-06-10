@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import '../utils/payment_policy.dart';
-import 'ios_web_redirect_screen.dart';
 
 class UserDropdownMenu extends StatefulWidget {
   final User? user;
@@ -141,7 +140,7 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -327,8 +326,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                         gradient: LinearGradient(
                           colors: isPro 
                             ? [
-                                const Color(0xFF6366F1).withOpacity(0.1),
-                                const Color(0xFF2563EB).withOpacity(0.1),
+                                const Color(0xFF6366F1).withValues(alpha: 0.1),
+                                const Color(0xFF2563EB).withValues(alpha: 0.1),
                               ]
                             : [
                                 const Color(0xFFEEF2FF),
@@ -338,8 +337,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isPro 
-                            ? const Color(0xFF6366F1).withOpacity(0.3)
-                            : const Color(0xFFC7D2FE).withOpacity(0.8),
+                            ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+                            : const Color(0xFFC7D2FE).withValues(alpha: 0.8),
                         ),
                       ),
                       child: Icon(
@@ -513,10 +512,10 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (item['color'] as Color).withOpacity(0.1),
+                color: (item['color'] as Color).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: (item['color'] as Color).withOpacity(0.2),
+                  color: (item['color'] as Color).withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),

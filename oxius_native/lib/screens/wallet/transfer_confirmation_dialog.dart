@@ -45,7 +45,7 @@ class _TransferConfirmationDialogState
 
   Future<void> _fetchRecipientName() async {
     try {
-      print('🔍 Fetching recipient for contact: ${widget.contact}');
+      debugPrint('🔍 Fetching recipient for contact: ${widget.contact}');
 
       // Use the proper /user/{contact}/ endpoint
       final headers = await ApiService.getHeaders();
@@ -54,8 +54,8 @@ class _TransferConfirmationDialogState
         headers: headers,
       );
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      debugPrint('📡 Response status: ${response.statusCode}');
+      debugPrint('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -78,11 +78,11 @@ class _TransferConfirmationDialogState
             _recipientName = displayName.isNotEmpty ? displayName : null;
             _isLoadingRecipient = false;
 
-            print('✅ Recipient name set to: $_recipientName');
+            debugPrint('✅ Recipient name set to: $_recipientName');
           });
         }
       } else {
-        print('❌ User not found: ${response.statusCode}');
+        debugPrint('❌ User not found: ${response.statusCode}');
         // User not found, keep name as null
         if (mounted) {
           setState(() {
@@ -92,7 +92,7 @@ class _TransferConfirmationDialogState
         }
       }
     } catch (e) {
-      print('❌ Error fetching recipient: $e');
+      debugPrint('❌ Error fetching recipient: $e');
       if (mounted) {
         setState(() {
           _recipientName = null;
@@ -192,7 +192,7 @@ class _TransferConfirmationDialogState
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -216,7 +216,7 @@ class _TransferConfirmationDialogState
                       'Your money has been transferred',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -393,7 +393,7 @@ class _TransferConfirmationDialogState
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -537,7 +537,7 @@ class _TransferConfirmationDialogState
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text(

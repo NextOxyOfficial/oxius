@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 class MindForceProblem {
   final String id;
   final String title;
@@ -107,9 +108,9 @@ class MindForceUser {
 
   factory MindForceUser.fromJson(Map<String, dynamic> json) {
     // Debug: print raw JSON to see what the backend sends
-    print('=== MindForceUser JSON ===');
-    print('Keys available: ${json.keys.toList()}');
-    print('Full JSON: $json');
+    debugPrint('=== MindForceUser JSON ===');
+    debugPrint('Keys available: ${json.keys.toList()}');
+    debugPrint('Full JSON: $json');
     
     // Get user ID first as fallback
     final userId = json['id']?.toString() ?? '0';
@@ -144,8 +145,8 @@ class MindForceUser {
       userName = 'User $userId';
     }
     
-    print('Final userName: $userName');
-    print('Final image: ${json['image'] ?? json['avatar'] ?? json['profile_picture']}');
+    debugPrint('Final userName: $userName');
+    debugPrint('Final image: ${json['image'] ?? json['avatar'] ?? json['profile_picture']}');
     
     return MindForceUser(
       id: userId,

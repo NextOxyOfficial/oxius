@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class MobileRechargeService {
   static String get baseUrl => ApiService.baseUrl;
@@ -26,7 +27,7 @@ class MobileRechargeService {
         queryParameters: queryParams,
       );
 
-      print('📱 Fetching packages: $uri');
+      debugPrint('📱 Fetching packages: $uri');
 
       final response = await http.get(
         uri,
@@ -36,13 +37,13 @@ class MobileRechargeService {
         },
       );
 
-      print('📱 Packages response status: ${response.statusCode}');
-      print('📱 Packages response body: ${response.body}');
+      debugPrint('📱 Packages response status: ${response.statusCode}');
+      debugPrint('📱 Packages response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('📱 Decoded data type: ${data.runtimeType}');
-        print(
+        debugPrint('📱 Decoded data type: ${data.runtimeType}');
+        debugPrint(
             '📱 Data keys: ${data is Map ? data.keys.toList() : 'Not a Map'}');
 
         // Handle both paginated and non-paginated responses
@@ -55,9 +56,9 @@ class MobileRechargeService {
           results = [];
         }
 
-        print('📱 Total results found: ${results.length}');
+        debugPrint('📱 Total results found: ${results.length}');
         if (results.isNotEmpty) {
-          print('📱 Sample package: ${results.first}');
+          debugPrint('📱 Sample package: ${results.first}');
         }
 
         return {
@@ -69,12 +70,12 @@ class MobileRechargeService {
           'previous': data is Map ? data['previous'] : null,
         };
       } else {
-        print(
+        debugPrint(
             '❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
         throw Exception('Failed to load packages: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error fetching packages: $e');
+      debugPrint('❌ Error fetching packages: $e');
       return {
         'success': false,
         'message': 'Failed to load packages: $e',
@@ -86,7 +87,7 @@ class MobileRechargeService {
   /// Get available operators
   static Future<List<Map<String, dynamic>>> getOperators() async {
     try {
-      print('📱 Fetching operators from: $baseUrl/mobile-recharge/operators/');
+      debugPrint('📱 Fetching operators from: $baseUrl/mobile-recharge/operators/');
 
       final response = await http.get(
         Uri.parse('$baseUrl/mobile-recharge/operators/'),
@@ -96,8 +97,8 @@ class MobileRechargeService {
         },
       );
 
-      print('📱 Operators response status: ${response.statusCode}');
-      print('📱 Operators response body: ${response.body}');
+      debugPrint('📱 Operators response status: ${response.statusCode}');
+      debugPrint('📱 Operators response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -111,7 +112,7 @@ class MobileRechargeService {
           operators = [];
         }
 
-        print('📱 Total operators found: ${operators.length}');
+        debugPrint('📱 Total operators found: ${operators.length}');
 
         // Process operators to ensure icon URLs are absolute
         final processedOperators = operators.map((op) {
@@ -126,7 +127,7 @@ class MobileRechargeService {
               final cleanPath =
                   iconUrl.startsWith('/') ? iconUrl.substring(1) : iconUrl;
               operator['icon'] = '$baseUrl/$cleanPath';
-              print(
+              debugPrint(
                   '📱 Converted operator icon: ${operator['name']} -> ${operator['icon']}');
             }
           }
@@ -134,14 +135,14 @@ class MobileRechargeService {
           return operator;
         }).toList();
 
-        print(
+        debugPrint(
             '📱 Processed operators: ${processedOperators.map((o) => '${o['name']} (${o['icon']})').join(', ')}');
 
         return List<Map<String, dynamic>>.from(processedOperators);
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching operators: $e');
+      debugPrint('❌ Error fetching operators: $e');
       return [];
     }
   }
@@ -161,7 +162,7 @@ class MobileRechargeService {
         throw Exception('Not authenticated');
       }
 
-      print(
+      debugPrint(
           '📱 Submitting recharge: packageId=$packageId, operator=$operator, phone=$phoneNumber, amount=$amount');
 
       final response = await http.post(
@@ -178,8 +179,8 @@ class MobileRechargeService {
         }),
       );
 
-      print('📱 Recharge response: ${response.statusCode}');
-      print('📱 Response body: ${response.body}');
+      debugPrint('📱 Recharge response: ${response.statusCode}');
+      debugPrint('📱 Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
@@ -197,7 +198,7 @@ class MobileRechargeService {
         };
       }
     } catch (e) {
-      print('❌ Error submitting recharge: $e');
+      debugPrint('❌ Error submitting recharge: $e');
       return {
         'success': false,
         'message': 'Failed to process recharge: $e',
@@ -210,12 +211,12 @@ class MobileRechargeService {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) {
-        print('❌ Recharge history: No auth token');
+        debugPrint('❌ Recharge history: No auth token');
         throw Exception('Not authenticated');
       }
 
       final uri = Uri.parse('$baseUrl/mobile-recharge/recharges/?page=$page');
-      print('📱 Fetching recharge history: $uri');
+      debugPrint('📱 Fetching recharge history: $uri');
 
       final response = await http.get(
         uri,
@@ -225,12 +226,12 @@ class MobileRechargeService {
         },
       );
 
-      print('📱 Recharge history response status: ${response.statusCode}');
-      print('📱 Recharge history response body: ${response.body}');
+      debugPrint('📱 Recharge history response status: ${response.statusCode}');
+      debugPrint('📱 Recharge history response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('📱 Recharge history data type: ${data.runtimeType}');
+        debugPrint('📱 Recharge history data type: ${data.runtimeType}');
 
         // Handle both paginated and non-paginated responses
         List<dynamic> results;
@@ -242,7 +243,7 @@ class MobileRechargeService {
           results = [];
         }
 
-        print('📱 Total recharge records found: ${results.length}');
+        debugPrint('📱 Total recharge records found: ${results.length}');
 
         return {
           'success': true,
@@ -251,12 +252,12 @@ class MobileRechargeService {
               data is Map ? (data['count'] ?? results.length) : results.length,
         };
       } else {
-        print(
+        debugPrint(
             '❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
         throw Exception('Failed to load history: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error fetching recharge history: $e');
+      debugPrint('❌ Error fetching recharge history: $e');
       return {
         'success': false,
         'message': 'Failed to load history: $e',

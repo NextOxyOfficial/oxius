@@ -65,7 +65,7 @@ class ImageCompressor {
       
       return null;
     } catch (e) {
-      if (verbose) print('Error compressing to base64: $e');
+      if (verbose) debugPrint('Error compressing to base64: $e');
       return null;
     }
   }
@@ -90,7 +90,7 @@ class ImageCompressor {
       final int originalSize = bytes.length;
       
       if (verbose) {
-        print('Original image size: ${formatFileSize(originalSize)}');
+        debugPrint('Original image size: ${formatFileSize(originalSize)}');
       }
       
       int quality = initialQuality;
@@ -103,14 +103,14 @@ class ImageCompressor {
       }
       
       if (verbose) {
-        print('Compressing image with quality: $quality, maxDimension: $currentMaxDimension');
+        debugPrint('Compressing image with quality: $quality, maxDimension: $currentMaxDimension');
       }
       
       Uint8List? compressedBytes;
       
       if (kIsWeb) {
         // Web-specific compression using Canvas API
-        if (verbose) print('Using web-based compression');
+        if (verbose) debugPrint('Using web-based compression');
         compressedBytes = await _compressImageWeb(
           bytes,
           quality,
@@ -125,7 +125,7 @@ class ImageCompressor {
           quality -= 5;
           
           if (verbose) {
-            print('Current size: ${formatFileSize(compressedBytes.length)}, recompressing with quality: $quality');
+            debugPrint('Current size: ${formatFileSize(compressedBytes.length)}, recompressing with quality: $quality');
           }
           
           compressedBytes = await _compressImageWeb(
@@ -142,7 +142,7 @@ class ImageCompressor {
           quality = 60;
           
           if (verbose) {
-            print('Still too large, reducing dimensions to $currentMaxDimension with quality: $quality');
+            debugPrint('Still too large, reducing dimensions to $currentMaxDimension with quality: $quality');
           }
           
           compressedBytes = await _compressImageWeb(
@@ -154,7 +154,7 @@ class ImageCompressor {
         }
       } else {
         // Use flutter_image_compress for mobile platforms
-        if (verbose) print('Using native compression');
+        if (verbose) debugPrint('Using native compression');
         compressedBytes = await FlutterImageCompress.compressWithList(
           bytes,
           minWidth: currentMaxDimension,
@@ -170,7 +170,7 @@ class ImageCompressor {
           quality -= 5;
           
           if (verbose) {
-            print('Current size: ${formatFileSize(compressedBytes.length)}, recompressing with quality: $quality');
+            debugPrint('Current size: ${formatFileSize(compressedBytes.length)}, recompressing with quality: $quality');
           }
           
           compressedBytes = await FlutterImageCompress.compressWithList(
@@ -188,7 +188,7 @@ class ImageCompressor {
           quality = 60;
           
           if (verbose) {
-            print('Still too large, reducing dimensions to $currentMaxDimension with quality: $quality');
+            debugPrint('Still too large, reducing dimensions to $currentMaxDimension with quality: $quality');
           }
           
           compressedBytes = await FlutterImageCompress.compressWithList(
@@ -202,14 +202,14 @@ class ImageCompressor {
       }
       
       if (compressedBytes != null && verbose) {
-        print('Image compressed successfully: ${formatFileSize(originalSize)} → ${formatFileSize(compressedBytes.length)}');
+        debugPrint('Image compressed successfully: ${formatFileSize(originalSize)} → ${formatFileSize(compressedBytes.length)}');
       }
       
       return compressedBytes;
     } catch (e) {
       if (verbose) {
-        print('Error compressing image: $e');
-        print('Stack trace: ${StackTrace.current}');
+        debugPrint('Error compressing image: $e');
+        debugPrint('Stack trace: ${StackTrace.current}');
       }
       return null;
     }
@@ -262,7 +262,7 @@ class ImageCompressor {
       final int originalSize = bytes.length;
       
       if (verbose) {
-        print('Original image size: ${formatFileSize(originalSize)}');
+        debugPrint('Original image size: ${formatFileSize(originalSize)}');
       }
       
       int quality = initialQuality;
@@ -348,12 +348,12 @@ class ImageCompressor {
       }
       
       if (compressedBytes != null && verbose) {
-        print('Image compressed: ${formatFileSize(originalSize)} → ${formatFileSize(compressedBytes.length)}');
+        debugPrint('Image compressed: ${formatFileSize(originalSize)} → ${formatFileSize(compressedBytes.length)}');
       }
       
       return compressedBytes;
     } catch (e) {
-      if (verbose) print('Error compressing from bytes: $e');
+      if (verbose) debugPrint('Error compressing from bytes: $e');
       return null;
     }
   }
@@ -376,7 +376,7 @@ class ImageCompressor {
       
       return base64Decode(base64Data);
     } catch (e) {
-      print('Error decoding base64: $e');
+      debugPrint('Error decoding base64: $e');
       return null;
     }
   }
@@ -385,8 +385,8 @@ class ImageCompressor {
   /// 
   /// Example:
   /// ```dart
-  /// print(ImageCompressor.formatFileSize(1024)); // "1.0 KB"
-  /// print(ImageCompressor.formatFileSize(1048576)); // "1.0 MB"
+  /// debugPrint(ImageCompressor.formatFileSize(1024)); // "1.0 KB"
+  /// debugPrint(ImageCompressor.formatFileSize(1048576)); // "1.0 MB"
   /// ```
   static String formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
@@ -440,7 +440,7 @@ class ImageCompressor {
       final ui.Image image = frameInfo.image;
       
       if (verbose) {
-        print('Original dimensions: ${image.width}x${image.height}');
+        debugPrint('Original dimensions: ${image.width}x${image.height}');
       }
       
       // Calculate new dimensions while maintaining aspect ratio
@@ -457,7 +457,7 @@ class ImageCompressor {
         }
         
         if (verbose) {
-          print('Resizing to: ${width}x${height}');
+          debugPrint('Resizing to: ${width}x$height');
         }
       }
       
@@ -485,19 +485,19 @@ class ImageCompressor {
       );
       
       if (byteData == null) {
-        if (verbose) print('Failed to convert image to byte data');
+        if (verbose) debugPrint('Failed to convert image to byte data');
         return null;
       }
       
       final Uint8List compressedBytes = byteData.buffer.asUint8List();
       
       if (verbose) {
-        print('Compressed to: ${formatFileSize(compressedBytes.length)}');
+        debugPrint('Compressed to: ${formatFileSize(compressedBytes.length)}');
       }
       
       return compressedBytes;
     } catch (e) {
-      if (verbose) print('Error in web compression: $e');
+      if (verbose) debugPrint('Error in web compression: $e');
       return null;
     }
   }

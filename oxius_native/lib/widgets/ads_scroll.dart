@@ -27,7 +27,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
 
   // Responsive card dimensions
   double _cardWidth = 180;
-  double _cardGap = 12;
+  final double _cardGap = 12;
   double _animationSpeed = 0.8;
 
   // Touch interaction
@@ -110,15 +110,18 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
 
-    if (!_scrollController.hasClients || _displayedAds.isEmpty || !mounted)
+    if (!_scrollController.hasClients || _displayedAds.isEmpty || !mounted) {
       return;
+    }
 
     _autoScrollTimer =
         Timer.periodic(const Duration(milliseconds: 40), (timer) {
       if (_isPaused ||
           _isUserInteracting ||
           !mounted ||
-          !_scrollController.hasClients) return;
+          !_scrollController.hasClients) {
+        return;
+      }
 
       final currentPosition = _scrollController.offset;
       final maxScroll = _scrollController.position.maxScrollExtent;
@@ -262,7 +265,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
             border: Border.all(color: Colors.grey.shade100),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -446,7 +449,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
             border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -493,7 +496,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         borderRadius: BorderRadius.circular(4),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 4,
                             offset: const Offset(0, 1),
                           ),

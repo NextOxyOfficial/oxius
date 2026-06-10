@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiService {
   static String get baseUrl => AppConfig.apiBaseUrl;
@@ -39,7 +40,7 @@ class ApiService {
         headers['Authorization'] = 'Bearer $token';
       }
     } catch (e) {
-      print('Error getting auth token: $e');
+      debugPrint('Error getting auth token: $e');
     }
     
     return headers;
@@ -62,7 +63,7 @@ class ApiService {
         throw Exception('Failed to load banner images: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error loading banner images: $e');
+      debugPrint('Error loading banner images: $e');
       rethrow;
     }
   }
@@ -78,7 +79,7 @@ class ApiService {
         'success': true,
       };
     } catch (e) {
-      print('Error loading home data: $e');
+      debugPrint('Error loading home data: $e');
       return {
         'banners': [],
         'success': false,
@@ -92,34 +93,34 @@ class ApiService {
   // Adjust the path strings to match the backend once confirmed.
 
   static Future<List<Map<String, dynamic>>> fetchClassifiedCategories() async {
-    print('DEBUG: fetchClassifiedCategories called, baseUrl: $baseUrl');
+    debugPrint('DEBUG: fetchClassifiedCategories called, baseUrl: $baseUrl');
     // Use the non-paginated endpoint to get ALL categories
     final uri = Uri.parse('$baseUrl/classified-categories-all/');
 
     try {
-      print('DEBUG: Making request to: $uri');
+      debugPrint('DEBUG: Making request to: $uri');
       final resp = await http.get(uri);
-      print('DEBUG: Response status: ${resp.statusCode}');
+      debugPrint('DEBUG: Response status: ${resp.statusCode}');
       if (resp.statusCode != 200) {
-        print('DEBUG: Non-200 response from ${uri.path} -> ${resp.statusCode}');
+        debugPrint('DEBUG: Non-200 response from ${uri.path} -> ${resp.statusCode}');
         log('fetchClassifiedCategories ${uri.path} -> ${resp.statusCode}');
         return [];
       }
       final data = json.decode(resp.body);
-      print('DEBUG: Raw response data type: ${data.runtimeType}');
+      debugPrint('DEBUG: Raw response data type: ${data.runtimeType}');
       if (data is Map) {
-        print('DEBUG: Response is Map with keys: ${data.keys}');
+        debugPrint('DEBUG: Response is Map with keys: ${data.keys}');
       }
       final raw = (data is List) ? data : (data['results'] ?? []);
-      print('DEBUG: Extracted ${raw.length} items from response');
+      debugPrint('DEBUG: Extracted ${raw.length} items from response');
       final result = raw
           .whereType<Map>()
           .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e))
           .toList(growable: false);
-      print('DEBUG: Returning ${result.length} processed categories');
+      debugPrint('DEBUG: Returning ${result.length} processed categories');
       return result;
     } catch (e, st) {
-      print('DEBUG: Exception in fetchClassifiedCategories: $e');
+      debugPrint('DEBUG: Exception in fetchClassifiedCategories: $e');
       log('fetchClassifiedCategories error: $e', stackTrace: st);
       return [];
     }

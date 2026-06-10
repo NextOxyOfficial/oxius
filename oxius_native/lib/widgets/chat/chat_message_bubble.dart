@@ -46,17 +46,17 @@ class ChatReplyQuoteCard extends StatelessWidget {
     final replyToId = message['replyToId']?.toString() ?? '';
 
     final accent =
-        isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF3B82F6);
+        isMe ? Colors.white.withValues(alpha: 0.95) : const Color(0xFF3B82F6);
     final bg = isMe
-        ? Colors.white.withOpacity(0.18)
-        : const Color(0xFF3B82F6).withOpacity(0.08);
+        ? Colors.white.withValues(alpha: 0.18)
+        : const Color(0xFF3B82F6).withValues(alpha: 0.08);
     final border = isMe
-        ? Colors.white.withOpacity(0.22)
-        : const Color(0xFF3B82F6).withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.22)
+        : const Color(0xFF3B82F6).withValues(alpha: 0.18);
     final titleColor =
-        isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF111827);
+        isMe ? Colors.white.withValues(alpha: 0.95) : const Color(0xFF111827);
     final previewColor =
-        isMe ? Colors.white.withOpacity(0.85) : const Color(0xFF4B5563);
+        isMe ? Colors.white.withValues(alpha: 0.85) : const Color(0xFF4B5563);
 
     return GestureDetector(
       onTap: replyToId.isNotEmpty ? () => onTapReply(replyToId) : null,
@@ -255,7 +255,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     decoration: BoxDecoration(
                       color: swipeProgress >= 1.0
                           ? const Color(0xFF10B981)
-                          : const Color(0xFF10B981).withOpacity(0.2),
+                          : const Color(0xFF10B981).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -349,8 +349,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF3B82F6).withOpacity(0.1),
-            const Color(0xFF6366F1).withOpacity(0.1),
+            const Color(0xFF3B82F6).withValues(alpha: 0.1),
+            const Color(0xFF6366F1).withValues(alpha: 0.1),
           ],
         ),
       ),
@@ -402,18 +402,18 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 ],
               )
             : null,
-        color: isMe ? null : Colors.white.withOpacity(0.78),
+        color: isMe ? null : Colors.white.withValues(alpha: 0.78),
         border: widget.isSearchHit
             ? Border.all(
                 color: widget.isCurrentSearchHit
                     ? const Color(0xFFF59E0B)
-                    : const Color(0xFFFBBF24).withOpacity(0.65),
+                    : const Color(0xFFFBBF24).withValues(alpha: 0.65),
                 width: widget.isCurrentSearchHit ? 2 : 1,
               )
             : Border.all(
                 color: isMe
-                    ? Colors.white.withOpacity(0.18)
-                    : Colors.white.withOpacity(0.86),
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : Colors.white.withValues(alpha: 0.86),
               ),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(22),
@@ -424,8 +424,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         boxShadow: [
           BoxShadow(
             color: isMe
-                ? const Color(0xFF6366F1).withOpacity(0.10)
-                : Colors.black.withOpacity(0.035),
+                ? const Color(0xFF6366F1).withValues(alpha: 0.10)
+                : Colors.black.withValues(alpha: 0.035),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -522,7 +522,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 fontSize: 10.5,
                 fontWeight: FontWeight.w600,
                 color: isMe
-                    ? Colors.white.withOpacity(0.72)
+                    ? Colors.white.withValues(alpha: 0.72)
                     : const Color(0xFF64748B),
               ),
             ),
@@ -551,8 +551,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isMe
-                    ? Colors.white.withOpacity(0.2)
-                    : const Color(0xFF3B82F6).withOpacity(0.1),
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -574,8 +574,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
                         color: isMe
-                            ? Colors.white.withOpacity(0.85)
-                            : const Color(0xFF3B82F6).withOpacity(0.65),
+                            ? Colors.white.withValues(alpha: 0.85)
+                            : const Color(0xFF3B82F6).withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -590,7 +590,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: isMe
-                        ? Colors.white.withOpacity(0.9)
+                        ? Colors.white.withValues(alpha: 0.9)
                         : const Color(0xFF6B7280),
                   ),
                 ),
@@ -647,8 +647,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           height: 34,
           decoration: BoxDecoration(
             color: isMe
-                ? Colors.white.withOpacity(0.18)
-                : accent.withOpacity(0.12),
+                ? Colors.white.withValues(alpha: 0.18)
+                : accent.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 18, color: isMe ? Colors.white : accent),
@@ -677,13 +677,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isMe
-                        ? Colors.white.withOpacity(0.18)
-                        : accent.withOpacity(0.10),
+                        ? Colors.white.withValues(alpha: 0.18)
+                        : accent.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
                       color: isMe
-                          ? Colors.white.withOpacity(0.20)
-                          : accent.withOpacity(0.25),
+                          ? Colors.white.withValues(alpha: 0.20)
+                          : accent.withValues(alpha: 0.25),
                     ),
                   ),
                   child: Text(
@@ -693,7 +693,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isMe ? Colors.white.withOpacity(0.95) : accent,
+                      color: isMe ? Colors.white.withValues(alpha: 0.95) : accent,
                     ),
                   ),
                 ),
@@ -804,8 +804,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               color: Colors.transparent,
               border: Border.all(
                 color: isMe
-                    ? Colors.white.withOpacity(0.3)
-                    : const Color(0xFF10B981).withOpacity(0.3),
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : const Color(0xFF10B981).withValues(alpha: 0.3),
                 width: 1.5,
               ),
               borderRadius: BorderRadius.circular(8),
@@ -842,7 +842,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: isMe
-                          ? Colors.white.withOpacity(0.7)
+                          ? Colors.white.withValues(alpha: 0.7)
                           : const Color(0xFF6B7280),
                     ),
                   ),
@@ -851,7 +851,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     Icons.download_rounded,
                     size: 12,
                     color: isMe
-                        ? Colors.white.withOpacity(0.7)
+                        ? Colors.white.withValues(alpha: 0.7)
                         : const Color(0xFF6B7280),
                   ),
                 ],

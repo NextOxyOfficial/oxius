@@ -65,7 +65,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
         });
       }
     } catch (e) {
-      print('Error checking username: $e');
+      debugPrint('Error checking username: $e');
       if (mounted) {
         setState(() {
           _usernameChecked = false;
@@ -130,7 +130,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -218,7 +218,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -262,7 +262,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   border: Border.all(color: Colors.grey.shade200),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -416,8 +416,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: _usernameAvailable
-                                ? const Color(0xFF10B981).withOpacity(0.1)
-                                : const Color(0xFFEF4444).withOpacity(0.1),
+                                ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                                : const Color(0xFFEF4444).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(

@@ -1,9 +1,8 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../services/fcm_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/rideshare_drawer.dart';

@@ -75,8 +75,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       final result = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
-        builder: (dialogCtx) => WillPopScope(
-          onWillPop: () async => false,
+        builder: (dialogCtx) => PopScope(
+          canPop: false,
           child: Dialog(
             insetPadding:
                 const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
@@ -89,7 +89,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.16),
+                      color: Colors.black.withValues(alpha: 0.16),
                       blurRadius: 30,
                       offset: const Offset(0, 18),
                     ),
@@ -283,7 +283,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         });
       }
     } catch (e) {
-      print('Error loading sponsored products: $e');
+      debugPrint('Error loading sponsored products: $e');
     }
   }
 
@@ -298,7 +298,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         });
       }
     } catch (e) {
-      print('Error loading notification count: $e');
+      debugPrint('Error loading notification count: $e');
     }
   }
 

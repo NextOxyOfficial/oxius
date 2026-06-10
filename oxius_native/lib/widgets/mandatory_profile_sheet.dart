@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../services/auth_service.dart';
 import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
 

@@ -18,7 +18,6 @@ class MyOrdersTab extends StatefulWidget {
 
 class _MyOrdersTabState extends State<MyOrdersTab> {
   String _selectedFilter = 'all';
-  bool _isUpdating = false;
 
   List<ShopOrder> get _filteredOrders {
     if (_selectedFilter == 'all') return widget.orders;
@@ -30,16 +29,12 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
   int get _deliveredCount => widget.orders.where((o) => o.orderStatus == 'delivered').length;
 
   Future<void> _updateOrderStatus(String orderId, String newStatus) async {
-    setState(() => _isUpdating = true);
-
-    print('📦 Updating order $orderId to status: $newStatus');
+    debugPrint('📦 Updating order $orderId to status: $newStatus');
 
     final result = await EshopManagerService.updateOrderStatus(
       orderId: orderId,
       status: newStatus,
     );
-
-    setState(() => _isUpdating = false);
 
     if (result['success'] == true) {
       // Update local state immediately for instant feedback
@@ -165,7 +160,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withOpacity(0.3) : Colors.grey.shade300,
+                color: isSelected ? Colors.white.withValues(alpha: 0.3) : Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -232,7 +227,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -495,28 +490,6 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, Color color, VoidCallback onPressed) {
-    return ElevatedButton.icon(
-      onPressed: _isUpdating ? null : onPressed,
-      icon: Icon(icon, size: 14),
-      label: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-        ),
-        elevation: 0,
-      ),
-    );
-  }
 
   void _showOrderDetails(ShopOrder order) {
     showModalBottomSheet(
@@ -555,7 +528,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.1),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -655,7 +628,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                       Icons.shopping_bag_rounded,
                       [
                         if (order.items != null && order.items!.isNotEmpty)
-                          ...order.items!.map((item) => _buildOrderItem(item)).toList(),
+                          ...order.items!.map((item) => _buildOrderItem(item)),
                       ],
                     ),
 
@@ -797,7 +770,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(
@@ -893,7 +866,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -1010,7 +983,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isCurrentStatus ? color.withOpacity(0.1) : Colors.grey.shade50,
+          color: isCurrentStatus ? color.withValues(alpha: 0.1) : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isCurrentStatus ? color : Colors.grey.shade200,
@@ -1022,7 +995,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color, size: 20),
@@ -1085,47 +1058,6 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
     );
   }
 
-  void _showCancelDialog(ShopOrder order) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_rounded, color: Color(0xFFEF4444), size: 24),
-            SizedBox(width: 8),
-            Text(
-              'Cancel Order',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to cancel order #${order.orderNumber ?? order.id.substring(0, 8)}?',
-          style: const TextStyle(fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('No, Keep It'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _updateOrderStatus(order.id, 'cancelled');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-              elevation: 0,
-            ),
-            child: const Text('Yes, Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();

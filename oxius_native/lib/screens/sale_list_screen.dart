@@ -19,10 +19,10 @@ class SaleListScreen extends StatefulWidget {
   final String? categoryName;
 
   const SaleListScreen({
-    Key? key,
+    super.key,
     this.categoryId,
     this.categoryName,
-  }) : super(key: key);
+  });
 
   @override
   State<SaleListScreen> createState() => _SaleListScreenState();
@@ -68,7 +68,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   // Recent listings
   List<SalePost> _recentListings = [];
-  bool _isLoadingRecentListings = false;
   int _recentListingsPage = 1;
   int _recentListingsTotalCount = 0;
   bool _isLoadingMoreRecent = false;
@@ -108,19 +107,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
     super.dispose();
   }
 
-  void _onSearchChanged(String value) {
-    // Cancel previous timer
-    _debounceTimer?.cancel();
-
-    // Start new timer for 300ms debounce
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      setState(() {
-        _searchQuery = value.trim().isEmpty ? null : value.trim();
-      });
-      _fetchPosts(refresh: true);
-    });
-  }
-
   Future<void> _fetchCategories() async {
     try {
       final categories = await _postService.fetchCategories();
@@ -128,7 +114,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         setState(() => _categories = categories);
       }
     } catch (e) {
-      print('Error fetching categories: $e');
+      debugPrint('Error fetching categories: $e');
     }
   }
 
@@ -146,7 +132,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         }
       }
     } catch (e) {
-      print('Error fetching regions: $e');
+      debugPrint('Error fetching regions: $e');
     }
   }
 
@@ -168,7 +154,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         }
       }
     } catch (e) {
-      print('Error fetching cities: $e');
+      debugPrint('Error fetching cities: $e');
     }
   }
 
@@ -188,7 +174,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         }
       }
     } catch (e) {
-      print('Error fetching upazilas: $e');
+      debugPrint('Error fetching upazilas: $e');
     }
   }
 
@@ -217,8 +203,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
         _recentListings = [];
       });
     }
-
-    setState(() => _isLoadingRecentListings = true);
     try {
       final response = await _postService.fetchPosts(
         sortBy: 'newest',
@@ -229,14 +213,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
         setState(() {
           _recentListings = response.results;
           _recentListingsTotalCount = response.count;
-          _isLoadingRecentListings = false;
         });
       }
     } catch (e) {
-      print('Error fetching recent listings: $e');
-      if (mounted) {
-        setState(() => _isLoadingRecentListings = false);
-      }
+      debugPrint('Error fetching recent listings: $e');
     }
   }
 
@@ -259,7 +239,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         });
       }
     } catch (e) {
-      print('Error loading more recent listings: $e');
+      debugPrint('Error loading more recent listings: $e');
       if (mounted) {
         setState(() => _isLoadingMoreRecent = false);
       }
@@ -305,7 +285,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         });
       }
     } catch (e) {
-      print('❌ Error fetching posts: $e');
+      debugPrint('❌ Error fetching posts: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -380,21 +360,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
       return _categories.firstWhere((cat) => cat.id == categoryId).name;
     } catch (e) {
       return categoryId;
-    }
-  }
-
-  String _getSortLabel(String sortBy) {
-    switch (sortBy) {
-      case 'newest':
-        return 'Newest';
-      case 'price_low':
-        return 'Price: Low';
-      case 'price_high':
-        return 'Price: High';
-      case 'most_viewed':
-        return 'Most Viewed';
-      default:
-        return 'Sort';
     }
   }
 
@@ -561,9 +526,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: chipColor.withOpacity(0.1),
+        color: chipColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: chipColor.withOpacity(0.3), width: 1),
+        border: Border.all(color: chipColor.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -598,7 +563,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search products...',
                   hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.7), fontSize: 16),
+                      color: Colors.white.withValues(alpha: 0.7), fontSize: 16),
                   border: InputBorder.none,
                 ),
                 onChanged: (value) {
@@ -733,7 +698,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(Icons.location_on_rounded,
@@ -779,7 +744,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
             child: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: const Icon(Icons.close_rounded,
@@ -787,55 +752,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
-      child: TextField(
-        controller: _searchController,
-        style: const TextStyle(fontSize: 13),
-        decoration: InputDecoration(
-          hintText: 'Search products...',
-          hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-          prefixIcon:
-              Icon(Icons.search_rounded, color: Colors.grey.shade600, size: 20),
-          suffixIcon: _searchQuery != null
-              ? IconButton(
-                  icon: Icon(Icons.clear_rounded,
-                      size: 18, color: Colors.grey.shade600),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = null);
-                    _applyFilters();
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-          ),
-        ),
-        onChanged: _onSearchChanged,
-        onSubmitted: (value) {
-          setState(() => _searchQuery = value.isEmpty ? null : value);
-          _applyFilters();
-        },
       ),
     );
   }
@@ -872,10 +788,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: const Color(0xFF10B981).withOpacity(0.3)),
+                              color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1110,7 +1026,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 10),
                     side: BorderSide(
-                        color: const Color(0xFF10B981).withOpacity(0.4),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.4),
                         width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -1131,7 +1047,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.check_circle,
@@ -1280,11 +1196,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                     horizontal: 5, vertical: 2),
                                 decoration: BoxDecoration(
                                   color:
-                                      const Color(0xFF10B981).withOpacity(0.1),
+                                      const Color(0xFF10B981).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
                                       color: const Color(0xFF10B981)
-                                          .withOpacity(0.3)),
+                                          .withValues(alpha: 0.3)),
                                 ),
                                 child: Text(
                                   post.condition.toUpperCase(),
@@ -1355,7 +1271,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
     String getImageUrl() {
       if (!hasImage) return '';
       final imageUrl = post.images![0].image;
-      print('🖼️ Sale List - Image URL: $imageUrl');
+      debugPrint('🖼️ Sale List - Image URL: $imageUrl');
       return imageUrl; // Use directly - backend returns absolute URLs
     }
 
@@ -1374,7 +1290,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -1452,7 +1368,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -1667,7 +1583,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.shade50.withOpacity(0.4),
+        color: Colors.amber.shade50.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
             color: Colors.amber.shade200, style: BorderStyle.solid, width: 1),
@@ -1716,7 +1632,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 String getImageUrl() {
                   if (!hasImage) return '';
                   final imageUrl = listing.images![0].image;
-                  print('🖼️ Recent Sale - Image URL: $imageUrl');
+                  debugPrint('🖼️ Recent Sale - Image URL: $imageUrl');
                   return imageUrl; // Use directly - backend returns absolute URLs
                 }
 
@@ -1737,7 +1653,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       border: Border.all(color: Colors.grey.shade200),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
+                          color: Colors.black.withValues(alpha: 0.03),
                           blurRadius: 4,
                           offset: const Offset(0, 1),
                         ),
@@ -1797,7 +1713,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.95),
+                                      color: Colors.white.withValues(alpha: 0.95),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -1891,128 +1807,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
     );
   }
 
-  Widget _buildTipsAndSafety() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-      child: Column(
-        children: [
-          // Security & Safety
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade50, Colors.green.shade100],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.green.shade200.withOpacity(0.5)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.green.shade500,
-                            Colors.green.shade600
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.shield_rounded,
-                          color: Colors.white, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Security & Safety',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF065F46),
-                                letterSpacing: -0.1),
-                          ),
-                          Text(
-                            'Stay protected while shopping',
-                            style: TextStyle(
-                                fontSize: 11, color: Color(0xFF10B981)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _buildTipItem(Icons.lock, 'Protect Personal Info',
-                    'Never share banking details', Colors.green.shade500),
-                _buildTipItem(Icons.warning_amber, 'Spot Red Flags',
-                    'Be cautious of unrealistic deals', Colors.green.shade500),
-                _buildTipItem(
-                    Icons.chat_bubble_outline,
-                    'Use Platform Messaging',
-                    'Keep communications secure',
-                    Colors.green.shade500),
-                _buildTipItem(
-                    Icons.group,
-                    'Trust Your Instincts',
-                    'Walk away if something feels wrong',
-                    Colors.green.shade500),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTipItem(
-      IconData icon, String title, String description, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 13),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937)),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  description,
-                  style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showFilters() {
     showModalBottomSheet(
       context: context,
@@ -2088,7 +1882,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
                         // Division Dropdown
                         DropdownButtonFormField<String>(
-                          value: _regions
+                          initialValue: _regions
                                   .any((r) => r.nameEng == _selectedDivision)
                               ? _selectedDivision
                               : null,
@@ -2127,7 +1921,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
                         // District Dropdown
                         DropdownButtonFormField<String>(
-                          value:
+                          initialValue:
                               _cities.any((c) => c.nameEng == _selectedDistrict)
                                   ? _selectedDistrict
                                   : null,
@@ -2166,7 +1960,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
                         // Area Dropdown
                         DropdownButtonFormField<String>(
-                          value:
+                          initialValue:
                               _upazilas.any((u) => u.nameEng == _selectedArea)
                                   ? _selectedArea
                                   : null,
@@ -2233,7 +2027,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       : null,
                                   selected: _selectedCategoryId == null,
                                   selectedTileColor:
-                                      const Color(0xFF10B981).withOpacity(0.1),
+                                      const Color(0xFF10B981).withValues(alpha: 0.1),
                                   onTap: () {
                                     setModalState(() {
                                       setState(() {
@@ -2266,7 +2060,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                                 decoration: BoxDecoration(
                                                   color: isSelected
                                                       ? const Color(0xFF10B981)
-                                                          .withOpacity(0.1)
+                                                          .withValues(alpha: 0.1)
                                                       : Colors.grey.shade100,
                                                   borderRadius:
                                                       BorderRadius.circular(6),
@@ -2341,7 +2135,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                         selected: isSelected,
                                         selectedTileColor:
                                             const Color(0xFF10B981)
-                                                .withOpacity(0.1),
+                                                .withValues(alpha: 0.1),
                                         onTap: () {
                                           if (hasSubcategories) {
                                             setModalState(() {
@@ -2405,7 +2199,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                                 selected: isSubSelected,
                                                 selectedTileColor:
                                                     const Color(0xFF10B981)
-                                                        .withOpacity(0.15),
+                                                        .withValues(alpha: 0.15),
                                                 onTap: () {
                                                   setModalState(() {
                                                     setState(() {
@@ -2423,7 +2217,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       const Divider(height: 1),
                                     ],
                                   );
-                                }).toList(),
+                                }),
                               ],
                             ),
                           ),

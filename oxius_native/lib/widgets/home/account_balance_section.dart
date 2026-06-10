@@ -75,7 +75,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
         });
       }
     } catch (e) {
-      print('Error fetching unread count: $e');
+      debugPrint('Error fetching unread count: $e');
     }
   }
 
@@ -149,12 +149,12 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF34D399).withOpacity(0.7),
+          color: const Color(0xFF34D399).withValues(alpha: 0.7),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -170,7 +170,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
               width: isSmallMobile ? 80 : 128,
               height: isSmallMobile ? 80 : 128,
               decoration: BoxDecoration(
-                color: const Color(0xFFD1FAE5).withOpacity(0.2),
+                color: const Color(0xFFD1FAE5).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
             ),
@@ -182,7 +182,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
               width: isSmallMobile ? 100 : 160,
               height: isSmallMobile ? 100 : 160,
               decoration: BoxDecoration(
-                color: const Color(0xFF99F6E4).withOpacity(0.1),
+                color: const Color(0xFF99F6E4).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -294,7 +294,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
             color: Colors.white,
             shape: BoxShape.circle,
             border: Border.all(
-              color: const Color(0xFF34D399).withOpacity(0.5),
+              color: const Color(0xFF34D399).withValues(alpha: 0.5),
               width: 2,
             ),
           ),
@@ -325,8 +325,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.white.withOpacity(0.5),
-            const Color(0xFFD1FAE5).withOpacity(0.5),
+            Colors.white.withValues(alpha: 0.5),
+            const Color(0xFFD1FAE5).withValues(alpha: 0.5),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -362,7 +362,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: const Color(0xFF34D399).withOpacity(0.5),
+                color: const Color(0xFF34D399).withValues(alpha: 0.5),
                 width: 1,
               ),
             ),
@@ -437,7 +437,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -502,12 +502,12 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -526,7 +526,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color: color.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -545,7 +545,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
                       style: TextStyle(
                         fontSize: isSmallMobile ? 11 : 12,
                         fontWeight: FontWeight.w500,
-                        color: color.withOpacity(0.8),
+                        color: color.withValues(alpha: 0.8),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -591,12 +591,12 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFFBBF24).withOpacity(0.3),
+          color: const Color(0xFFFBBF24).withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -620,7 +620,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFBBF24).withOpacity(0.3),
+                      color: const Color(0xFFFBBF24).withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -684,7 +684,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFBBF24).withOpacity(0.1),
+                    color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
@@ -792,7 +792,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
       child: Container(
         padding: EdgeInsets.symmetric(vertical: isSmallMobile ? 8 : 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
@@ -880,7 +880,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
       child: Container(
         padding: EdgeInsets.symmetric(vertical: isSmallMobile ? 8 : 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(

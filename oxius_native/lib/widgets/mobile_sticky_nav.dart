@@ -69,19 +69,19 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
 
   Future<void> _loadUnreadNotificationCount() async {
     try {
-      print('📱 Mobile Sticky Nav: Fetching notification count...');
+      debugPrint('📱 Mobile Sticky Nav: Fetching notification count...');
       final result = await NotificationService.getNotifications(page: 1);
       final count = result['unreadCount'] ?? 0;
-      print('📱 Mobile Sticky Nav: Got notification count: $count');
+      debugPrint('📱 Mobile Sticky Nav: Got notification count: $count');
 
       if (mounted) {
         setState(() {
           unreadCount = count;
         });
-        print('📱 Mobile Sticky Nav: Updated state with count: $unreadCount');
+        debugPrint('📱 Mobile Sticky Nav: Updated state with count: $unreadCount');
       }
     } catch (e) {
-      print('❌ Mobile Sticky Nav: Error loading notification count: $e');
+      debugPrint('❌ Mobile Sticky Nav: Error loading notification count: $e');
     }
   }
 
@@ -132,10 +132,10 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: const Color(0xFF34D399).withOpacity(0.15), width: 1),
+              color: const Color(0xFF34D399).withValues(alpha: 0.15), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, -2),
             ),

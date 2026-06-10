@@ -167,7 +167,7 @@ class _EshopSectionState extends State<EshopSection> {
         _displayProducts = _pickRandom(products, 10);
         _loadingProducts = false;
       });
-    } catch (e, stackTrace) {
+    } catch (e) {
       // Leave products empty on error
       if (!mounted) return;
       setState(() {
@@ -293,7 +293,7 @@ class _EshopSectionState extends State<EshopSection> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withOpacity(0.25),
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -463,7 +463,6 @@ class _EshopProductCard extends StatefulWidget {
   final Map<String, dynamic> product;
   final bool isLoading;
   final VoidCallback onBuyNow;
-  final VoidCallback? onTap;
   final double width;
   final double height;
 
@@ -473,7 +472,6 @@ class _EshopProductCard extends StatefulWidget {
     required this.onBuyNow,
     required this.width,
     required this.height,
-    this.onTap,
   });
 
   @override
@@ -511,7 +509,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
 
       return '';
     } catch (e) {
-      print('Error getting image: $e');
+      debugPrint('Error getting image: $e');
       return '';
     }
   }
@@ -544,28 +542,28 @@ class _EshopProductCardState extends State<_EshopProductCard> {
 
   String _getStoreName(Map<String, dynamic> p) {
     try {
-      print('DEBUG _getStoreName: Product keys: ${p.keys.toList()}');
+      debugPrint('DEBUG _getStoreName: Product keys: ${p.keys.toList()}');
 
       // Since the data is already transformed in the service, use the simplified structure
       final ownerDetails = p['owner_details'];
-      print(
+      debugPrint(
           'DEBUG _getStoreName: owner_details type: ${ownerDetails.runtimeType}');
-      print('DEBUG _getStoreName: owner_details value: $ownerDetails');
+      debugPrint('DEBUG _getStoreName: owner_details value: $ownerDetails');
 
       if (ownerDetails is Map<String, dynamic>) {
-        print(
+        debugPrint(
             'DEBUG _getStoreName: owner_details keys: ${ownerDetails.keys.toList()}');
         final storeName = ownerDetails['store_name']?.toString() ??
             ownerDetails['name']?.toString() ??
             'Store';
-        print('DEBUG _getStoreName: Final storeName: "$storeName"');
+        debugPrint('DEBUG _getStoreName: Final storeName: "$storeName"');
         return storeName.trim().isNotEmpty ? storeName.trim() : 'Store';
       }
 
-      print('DEBUG _getStoreName: owner_details is not a Map, returning Store');
+      debugPrint('DEBUG _getStoreName: owner_details is not a Map, returning Store');
       return 'Store';
     } catch (e) {
-      print('DEBUG _getStoreName: Error getting store name: $e');
+      debugPrint('DEBUG _getStoreName: Error getting store name: $e');
       return 'Store';
     }
   }
@@ -633,16 +631,15 @@ class _EshopProductCardState extends State<_EshopProductCard> {
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: widget.onTap ??
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ProductDetailsScreen(product: widget.product),
-                  ),
-                );
-              },
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ProductDetailsScreen(product: widget.product),
+              ),
+            );
+          },
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -718,7 +715,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.green.shade600.withOpacity(0.9),
+                              color: Colors.green.shade600.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -746,7 +743,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                           duration: const Duration(milliseconds: 150),
                           opacity: _hovered ? 1 : 0,
                           child: Container(
-                            color: Colors.black.withOpacity(0.0),
+                            color: Colors.black.withValues(alpha: 0.0),
                             child: Center(
                               child: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(

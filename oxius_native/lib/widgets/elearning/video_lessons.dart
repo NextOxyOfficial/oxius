@@ -18,8 +18,6 @@ class VideoLessons extends StatefulWidget {
 
 class _VideoLessonsState extends State<VideoLessons> {
   static const _slate200 = Color(0xFFE2E8F0);
-  static const _slate500 = Color(0xFF64748B);
-  static const _slate800 = Color(0xFF1E293B);
   static const _indigo = Color(0xFF6366F1);
 
   List<VideoLesson> _videos = [];
@@ -268,7 +266,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                   const SizedBox(height: 12),
                   // Lesson filter
                   DropdownButtonFormField<String>(
-                    value: _selectedLesson,
+                    initialValue: _selectedLesson,
                     decoration: InputDecoration(
                       labelText: 'Filter by Lesson',
                       labelStyle: const TextStyle(fontSize: 14),
@@ -465,7 +463,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Colors.black.withOpacity(0.3),
+                              Colors.black.withValues(alpha: 0.3),
                               Colors.transparent,
                             ],
                             begin: Alignment.bottomCenter,
@@ -477,7 +475,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.9),
+                            color: Colors.red.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -494,7 +492,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 4, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.8),
+                            color: Colors.black.withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(

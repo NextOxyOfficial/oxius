@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/support_ticket_models.dart';
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 class SupportTicketService {
   /// Get all support tickets for the current user
@@ -13,8 +14,8 @@ class SupportTicketService {
         headers: headers,
       );
 
-      print('=== Get Support Tickets ===');
-      print('Status: ${response.statusCode}');
+      debugPrint('=== Get Support Tickets ===');
+      debugPrint('Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -27,7 +28,7 @@ class SupportTicketService {
 
       return [];
     } catch (e) {
-      print('Error getting support tickets: $e');
+      debugPrint('Error getting support tickets: $e');
       return [];
     }
   }
@@ -41,9 +42,9 @@ class SupportTicketService {
         headers: headers,
       );
 
-      print('=== Get Ticket Detail ===');
-      print('Ticket ID: $ticketId');
-      print('Status: ${response.statusCode}');
+      debugPrint('=== Get Ticket Detail ===');
+      debugPrint('Ticket ID: $ticketId');
+      debugPrint('Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -52,7 +53,7 @@ class SupportTicketService {
 
       return null;
     } catch (e) {
-      print('Error getting ticket detail: $e');
+      debugPrint('Error getting ticket detail: $e');
       return null;
     }
   }
@@ -73,10 +74,10 @@ class SupportTicketService {
         }),
       );
 
-      print('=== Create Support Ticket ===');
-      print('Title: $title');
-      print('Status: ${response.statusCode}');
-      print('Response: ${response.body}');
+      debugPrint('=== Create Support Ticket ===');
+      debugPrint('Title: $title');
+      debugPrint('Status: ${response.statusCode}');
+      debugPrint('Response: ${response.body}');
 
       if (response.statusCode == 201) {
         final data = json.decode(response.body);
@@ -85,7 +86,7 @@ class SupportTicketService {
 
       return null;
     } catch (e) {
-      print('Error creating support ticket: $e');
+      debugPrint('Error creating support ticket: $e');
       return null;
     }
   }
@@ -105,10 +106,10 @@ class SupportTicketService {
         }),
       );
 
-      print('=== Add Ticket Reply ===');
-      print('Ticket ID: $ticketId');
-      print('Status: ${response.statusCode}');
-      print('Response: ${response.body}');
+      debugPrint('=== Add Ticket Reply ===');
+      debugPrint('Ticket ID: $ticketId');
+      debugPrint('Status: ${response.statusCode}');
+      debugPrint('Response: ${response.body}');
 
       if (response.statusCode == 201) {
         final data = json.decode(response.body);
@@ -117,7 +118,7 @@ class SupportTicketService {
 
       return null;
     } catch (e) {
-      print('Error adding ticket reply: $e');
+      debugPrint('Error adding ticket reply: $e');
       return null;
     }
   }
@@ -137,14 +138,14 @@ class SupportTicketService {
         }),
       );
 
-      print('=== Update Ticket Status ===');
-      print('Ticket ID: $ticketId');
-      print('New Status: $status');
-      print('Response Status: ${response.statusCode}');
+      debugPrint('=== Update Ticket Status ===');
+      debugPrint('Ticket ID: $ticketId');
+      debugPrint('New Status: $status');
+      debugPrint('Response Status: ${response.statusCode}');
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error updating ticket status: $e');
+      debugPrint('Error updating ticket status: $e');
       return false;
     }
   }
@@ -158,13 +159,13 @@ class SupportTicketService {
         headers: headers,
       );
 
-      print('=== Mark Ticket as Read ===');
-      print('Ticket ID: $ticketId');
-      print('Status: ${response.statusCode}');
+      debugPrint('=== Mark Ticket as Read ===');
+      debugPrint('Ticket ID: $ticketId');
+      debugPrint('Status: ${response.statusCode}');
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error marking ticket as read: $e');
+      debugPrint('Error marking ticket as read: $e');
       return false;
     }
   }

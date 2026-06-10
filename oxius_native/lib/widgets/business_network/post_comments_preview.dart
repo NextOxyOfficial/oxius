@@ -21,7 +21,7 @@ class PostCommentsPreview extends StatefulWidget {
   final bool showAll;
   final bool showHeader;
 
-  PostCommentsPreview({
+  const PostCommentsPreview({
     super.key,
     required this.post,
     required this.onViewAll,
@@ -51,7 +51,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
     // If comments were removed (IDs in old but not in new)
     final removedIds = oldIds.difference(newIds);
     if (removedIds.isNotEmpty) {
-      print('=== Comments Removed: $removedIds ===');
+      debugPrint('=== Comments Removed: $removedIds ===');
       // Remove these IDs from deleted set since they're already gone from the list
       _deletedCommentIds.removeAll(removedIds);
     }
@@ -59,7 +59,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
     // If new comments were added
     final addedIds = newIds.difference(oldIds);
     if (addedIds.isNotEmpty) {
-      print('=== New Comments Added: $addedIds ===');
+      debugPrint('=== New Comments Added: $addedIds ===');
       _replyingTo = null;
     }
   }
@@ -84,29 +84,29 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
 
   @override
   Widget build(BuildContext context) {
-    print('=== BUILD START ===');
-    print('Post ID: ${widget.post.id}');
-    print('Total comments received: ${widget.post.comments.length}');
-    print('Deleted IDs in state: $_deletedCommentIds');
+    debugPrint('=== BUILD START ===');
+    debugPrint('Post ID: ${widget.post.id}');
+    debugPrint('Total comments received: ${widget.post.comments.length}');
+    debugPrint('Deleted IDs in state: $_deletedCommentIds');
 
     if (widget.post.comments.isEmpty) return const SizedBox.shrink();
 
     // Debug: Check what we're getting
-    print('=== Comment Structure Debug ===');
+    debugPrint('=== Comment Structure Debug ===');
     for (var c in widget.post.comments) {
-      print(
+      debugPrint(
           'Comment ${c.id}: parentComment=${c.parentComment}, isGift=${c.isGiftComment}');
     }
 
     // Separate parent comments and replies (filter out deleted)
-    print('=== Filtering Comments ===');
-    print('Total comments: ${widget.post.comments.length}');
-    print('Deleted IDs: $_deletedCommentIds');
+    debugPrint('=== Filtering Comments ===');
+    debugPrint('Total comments: ${widget.post.comments.length}');
+    debugPrint('Deleted IDs: $_deletedCommentIds');
 
     final parentComments = widget.post.comments.where((c) {
       final isDeleted = _deletedCommentIds.contains(c.id);
       final isParent = c.parentComment == null || c.parentComment == 0;
-      print(
+      debugPrint(
           'Comment ${c.id}: isDeleted=$isDeleted, isParent=$isParent, parentComment=${c.parentComment}');
       return !isDeleted && isParent;
     }).toList();
@@ -117,12 +117,12 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
             (c.parentComment != null && c.parentComment != 0))
         .toList();
 
-    print(
+    debugPrint(
         'Found ${parentComments.length} parent comments and ${replies.length} replies');
 
     // Only show parent comments (never show replies as standalone)
     if (parentComments.isEmpty) {
-      print('WARNING: No parent comments found! Returning empty widget.');
+      debugPrint('WARNING: No parent comments found! Returning empty widget.');
       return const SizedBox.shrink(); // No parent comments to show
     }
 
@@ -133,11 +133,11 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
       giftComments.sort(
           (a, b) => (b.diamondAmount ?? 0).compareTo(a.diamondAmount ?? 0));
       highestGiftComment = giftComments.first;
-      print('=== Gift Comment Found ===');
-      print('Gift comment ID: ${highestGiftComment.id}');
-      print(
+      debugPrint('=== Gift Comment Found ===');
+      debugPrint('Gift comment ID: ${highestGiftComment.id}');
+      debugPrint(
           'Is in deleted IDs: ${_deletedCommentIds.contains(highestGiftComment.id)}');
-      print('Replying to ID: ${_replyingTo?.id}');
+      debugPrint('Replying to ID: ${_replyingTo?.id}');
     }
 
     // Filter out the highest gift comment from regular comments to avoid duplication
@@ -238,12 +238,12 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                   .where((r) => r.parentComment == highestGiftComment!.id)
                   .toList()
                 ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-              print('=== Gift Replies ===');
-              print('Total replies: ${replies.length}');
-              print('Gift comment ID: ${highestGiftComment!.id}');
-              print('Matching replies: ${giftReplies.length}');
+              debugPrint('=== Gift Replies ===');
+              debugPrint('Total replies: ${replies.length}');
+              debugPrint('Gift comment ID: ${highestGiftComment!.id}');
+              debugPrint('Matching replies: ${giftReplies.length}');
               for (var r in replies) {
-                print('Reply ${r.id}: parentComment=${r.parentComment}');
+                debugPrint('Reply ${r.id}: parentComment=${r.parentComment}');
               }
               return giftReplies.map((reply) => _CommentItem(
                     comment: reply,
@@ -281,7 +281,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
             final index = entry.key;
             final comment = entry.value;
             final commentReplies = replies.where((r) {
-              print(
+              debugPrint(
                   'Checking if reply ${r.id} (parent=${r.parentComment}) matches comment ${comment.id}');
               return r.parentComment == comment.id;
             }).toList()
@@ -296,7 +296,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                 : commentReplies.take(3).toList();
 
             if (commentReplies.isNotEmpty) {
-              print(
+              debugPrint(
                   'Comment ${comment.id} has ${commentReplies.length} replies');
             }
 
@@ -489,7 +489,7 @@ class _ReplyInputState extends State<_ReplyInput> {
               })
           .toList();
     } catch (e) {
-      print('Error searching users: $e');
+      debugPrint('Error searching users: $e');
       return [];
     }
   }
@@ -712,16 +712,6 @@ class _CommentItemState extends State<_CommentItem> {
   void _loadCurrentUser() {
     final user = AuthService.currentUser;
     _currentUserId = user?.id;
-    print('=== Edit/Delete Check ===');
-    print('Current user: $user');
-    print(
-        'Current user ID: $_currentUserId (type: ${_currentUserId.runtimeType})');
-    print('Comment author: ${widget.comment.user.name}');
-    print(
-        'Comment author ID: ${widget.comment.user.id} (type: ${widget.comment.user.id.runtimeType})');
-    print('Comment author UUID: ${widget.comment.user.uuid}');
-    print('IDs match: ${widget.comment.user.id == _currentUserId}');
-    print('Can edit/delete: $_canEditDelete');
 
     // Force rebuild to show the menu
     if (mounted) {
@@ -746,7 +736,7 @@ class _CommentItemState extends State<_CommentItem> {
               })
           .toList();
     } catch (e) {
-      print('Error searching users: $e');
+      debugPrint('Error searching users: $e');
       return [];
     }
   }
@@ -814,10 +804,10 @@ class _CommentItemState extends State<_CommentItem> {
     return InkWell(
       onLongPress: _canEditDelete
           ? () {
-              print('=== Long Press Detected ===');
-              print('Can edit/delete: $_canEditDelete');
-              print('Current user ID: $_currentUserId');
-              print('Comment user ID: ${widget.comment.user.id}');
+              debugPrint('=== Long Press Detected ===');
+              debugPrint('Can edit/delete: $_canEditDelete');
+              debugPrint('Current user ID: $_currentUserId');
+              debugPrint('Comment user ID: ${widget.comment.user.id}');
               _showEditDeleteOptions();
             }
           : null,
@@ -946,7 +936,7 @@ class _CommentItemState extends State<_CommentItem> {
                                             BorderRadius.circular(999),
                                         border: Border.all(
                                             color:
-                                                Colors.white.withOpacity(0.18)),
+                                                Colors.white.withValues(alpha: 0.18)),
                                       ),
                                       child: const Text(
                                         'Pro',
@@ -1011,8 +1001,8 @@ class _CommentItemState extends State<_CommentItem> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.pink.shade50.withOpacity(0.7),
-                            Colors.purple.shade50.withOpacity(0.7),
+                            Colors.pink.shade50.withValues(alpha: 0.7),
+                            Colors.purple.shade50.withValues(alpha: 0.7),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(10),
@@ -1247,7 +1237,7 @@ class _CommentItemState extends State<_CommentItem> {
                                     );
                                   }
                                 } catch (e) {
-                                  print('Error finding user: $e');
+                                  debugPrint('Error finding user: $e');
                                 }
                               },
                             ),

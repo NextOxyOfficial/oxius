@@ -46,7 +46,6 @@ class DiamondGiftBottomSheet extends StatefulWidget {
 class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
   int? _giftAmount;
   int? _selectedPreset;
-  String _giftMessage = '';
   bool _isSending = false;
 
   late int _currentDiamondBalance;
@@ -172,7 +171,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.18),
+                      color: Colors.white.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Center(
@@ -197,7 +196,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                         Text(
                           'to ${widget.postAuthorName}',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 13,
                             fontWeight: FontWeight.w400,
                           ),
@@ -214,7 +213,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.close,
@@ -521,7 +520,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                             ? [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFF7C3AED).withOpacity(0.35),
+                                      const Color(0xFF7C3AED).withValues(alpha: 0.35),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),

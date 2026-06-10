@@ -60,7 +60,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
 
   final TextEditingController _customAmountController = TextEditingController();
 
-  bool _hasPurchased = false;
 
   // Local balance state for immediate updates
   late int _currentDiamondBalance;
@@ -205,7 +204,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
         widget.onPurchaseSuccess?.call();
 
         // Mark that purchase happened
-        _hasPurchased = true;
 
         // Refresh user data in background
         AuthService.refreshUserData();
@@ -236,7 +234,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    final user = AuthService.currentUser;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
@@ -264,7 +261,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -276,7 +273,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(Icons.diamond,

@@ -51,7 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   bool _followLoading = false;
   bool _isBlockedProfile = false;
   bool _isBlocking = false;
-  int _currentNavIndex = 3; // Profile tab is index 3
+  final int _currentNavIndex = 3; // Profile tab is index 3
   int _unreadNotificationCount = 0;
   bool _isLoadingSaved = false;
   bool _isLoadingGigs = false;
@@ -101,8 +101,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (profileUuid.isNotEmpty && profileUuid == currentUser.id) return true;
 
     final profileUsername = (userData['username'] ?? '').toString();
-    if (profileUsername.isNotEmpty && profileUsername == currentUser.username)
+    if (profileUsername.isNotEmpty && profileUsername == currentUser.username) {
       return true;
+    }
 
     return false;
   }
@@ -170,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         });
       }
     } catch (e) {
-      print('Error loading notification count: $e');
+      debugPrint('Error loading notification count: $e');
     }
   }
 
@@ -325,15 +326,15 @@ class _ProfileScreenState extends State<ProfileScreen>
     try {
       final wasFollowing = _isFollowing; // Store original state
 
-      print('=== Toggle Follow ===');
-      print('User ID: ${widget.userId}');
-      print('Was Following: $wasFollowing');
+      debugPrint('=== Toggle Follow ===');
+      debugPrint('User ID: ${widget.userId}');
+      debugPrint('Was Following: $wasFollowing');
 
       final success = wasFollowing
           ? await BusinessNetworkService.unfollowUser(widget.userId)
           : await BusinessNetworkService.followUser(widget.userId);
 
-      print('Success: $success');
+      debugPrint('Success: $success');
 
       if (success && mounted) {
         setState(() {
@@ -1711,7 +1712,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -1872,7 +1873,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 media.isVideo
                                     ? Icons.play_circle_outline
                                     : Icons.image_outlined,
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 size: 40,
                               ),
                             ),
@@ -1887,7 +1888,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             media.isVideo
                                 ? Icons.play_circle_outline
                                 : Icons.image_outlined,
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             size: 40,
                           ),
                         ),
@@ -1898,7 +1899,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           width: 34,
                           height: 34,
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.35),
+                            color: Colors.black.withValues(alpha: 0.35),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -1945,65 +1946,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     return idx == -1 ? 0 : idx;
   }
 
-  void _showMediaViewer(List<PostMedia> mediaList, int initialIndex) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.black,
-        insetPadding: EdgeInsets.zero,
-        child: Stack(
-          children: [
-            PageView.builder(
-              controller: PageController(initialPage: initialIndex),
-              itemCount: mediaList.length,
-              itemBuilder: (context, index) {
-                return Center(
-                  child: InteractiveViewer(
-                    child: Image.network(
-                      mediaList[index].image,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            color: Colors.white,
-                            size: 64,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
-            Positioned(
-              top: 16,
-              right: 16,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, color: Colors.white, size: 32),
-              ),
-            ),
-            Positioned(
-              bottom: 16,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Text(
-                  '${initialIndex + 1} / ${mediaList.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildWorkspaceTab() {
     if (_isLoadingGigs) {
@@ -2098,7 +2040,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -2470,117 +2412,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildSocialLinks() {
-    if (_userData == null) return const SizedBox.shrink();
 
-    if (!_isFieldVisible('website_public')) {
-      return const SizedBox.shrink();
-    }
-
-    // Only show website link
-    if (_userData!['website'] == null ||
-        _userData!['website'].toString().isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Divider(color: Colors.grey.shade200, height: 1),
-        const SizedBox(height: 12),
-        // Website - Show full URL with visit icon
-        _buildWebsiteLink(
-          _userData!['website'],
-          Colors.blue.shade600,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWebsiteLink(String url, Color color) {
-    // Format URL for display (remove http/https and trailing slash)
-    String displayUrl = url
-        .replaceAll(RegExp(r'^https?://'), '')
-        .replaceAll(RegExp(r'^www\.'), '')
-        .replaceAll(RegExp(r'/$'), '');
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: () {
-          // TODO: Open website URL
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.shade200.withOpacity(0.5)),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.link, size: 16, color: color),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  displayUrl,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: color,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.open_in_new, size: 16, color: color),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton(
-    IconData icon,
-    String label,
-    Color color,
-    Color bgColor,
-    VoidCallback onTap,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color.withOpacity(0.3)),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   String _formatTimeAgo(String dateString) {
     try {
@@ -2708,7 +2540,7 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                   const BorderRadius.vertical(top: Radius.circular(16)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),

@@ -28,7 +28,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _hasMore = false;
   int _currentPage = 1;
   int _unreadCount = 0;
-  bool _isRefreshing = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -49,41 +48,40 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _loadNotifications({bool isInitial = false}) async {
-    print('📱 Loading notifications... isInitial: $isInitial');
+    debugPrint('📱 Loading notifications... isInitial: $isInitial');
 
     // Only show loading indicator on initial load
     if (isInitial) {
       setState(() => _isLoading = true);
     } else {
-      _isRefreshing = true;
     }
 
     try {
       final result = await NotificationService.getNotifications(page: 1);
-      print(
+      debugPrint(
           '📱 Got result from service: ${result['notifications']?.length} notifications');
 
       if (mounted) {
         final notifications = result['notifications'];
-        print('📱 Notifications type: ${notifications.runtimeType}');
-        print('📱 Notifications value: $notifications');
+        debugPrint('📱 Notifications type: ${notifications.runtimeType}');
+        debugPrint('📱 Notifications value: $notifications');
 
-        print('📱 Raw notifications from result: $notifications');
-        print(
+        debugPrint('📱 Raw notifications from result: $notifications');
+        debugPrint(
             '📱 Notifications is List<NotificationModel>: ${notifications is List<NotificationModel>}');
-        print('📱 Notifications is List: ${notifications is List}');
+        debugPrint('📱 Notifications is List: ${notifications is List}');
 
         setState(() {
           if (notifications is List<NotificationModel>) {
-            print('📱 Case 1: Direct assignment');
+            debugPrint('📱 Case 1: Direct assignment');
             _notifications = notifications;
           } else if (notifications is List) {
-            print(
+            debugPrint(
                 '📱 Case 2: Converting list - length: ${notifications.length}');
             _notifications = List<NotificationModel>.from(notifications);
-            print('📱 After conversion: ${_notifications.length}');
+            debugPrint('📱 After conversion: ${_notifications.length}');
           } else {
-            print(
+            debugPrint(
                 '📱 Case 3: Empty - notifications is: ${notifications.runtimeType}');
             _notifications = [];
           }
@@ -94,15 +92,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           _isLoading = false;
         });
 
-        print(
+        debugPrint(
             '📱 State updated: ${_notifications.length} notifications, $_unreadCount unread, loading: $_isLoading');
-        print(
+        debugPrint(
             '📱 First notification: ${_notifications.isNotEmpty ? _notifications.first : 'none'}');
-
-        _isRefreshing = false;
       }
     } catch (e) {
-      print('Error loading notifications: $e');
+      debugPrint('Error loading notifications: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -129,7 +125,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           );
         }
-        _isRefreshing = false;
       }
     }
   }
@@ -357,7 +352,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         }
       }
     } catch (e) {
-      print('Error fetching post: $e');
+      debugPrint('Error fetching post: $e');
 
       // Close loading indicator
       if (mounted) {
@@ -523,7 +518,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               color: const Color(0xFFF9FAFB),
               child: Builder(
                 builder: (context) {
-                  print(
+                  debugPrint(
                       '📱 Building content: isLoading=$_isLoading, count=${_notifications.length}, isEmpty=${_notifications.isEmpty}');
 
                   if (_isLoading) {
@@ -651,8 +646,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFF3B82F6).withOpacity(0.1),
-                          const Color(0xFF6366F1).withOpacity(0.15),
+                          const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                          const Color(0xFF6366F1).withValues(alpha: 0.15),
                         ],
                       ),
                       shape: BoxShape.circle,
@@ -757,8 +752,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF3B82F6).withOpacity(0.1),
-                      const Color(0xFF6366F1).withOpacity(0.1)
+                      const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      const Color(0xFF6366F1).withValues(alpha: 0.1)
                     ],
                   ),
                   shape: BoxShape.circle,

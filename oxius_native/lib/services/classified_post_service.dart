@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/classified_post.dart';
 import '../models/geo_location.dart';
 import '../models/classified_post_form.dart';
+import 'package:flutter/foundation.dart';
 
 class ClassifiedPostServiceException implements Exception {
   final String message;
@@ -31,7 +32,7 @@ class ClassifiedPostService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_tokenKey);
     } catch (e) {
-      print('Error getting auth token: $e');
+      debugPrint('Error getting auth token: $e');
       return null;
     }
   }
@@ -39,7 +40,7 @@ class ClassifiedPostService {
   /// Get authenticated headers
   Future<Map<String, String>> _getAuthHeaders() async {
     final token = await _getAuthToken();
-    print(
+    debugPrint(
         'Auth token retrieved: ${token != null ? "Yes (${token.substring(0, 10)}...)" : "No"}');
     return {
       'Content-Type': 'application/json',
@@ -138,7 +139,7 @@ class ClassifiedPostService {
       }
       return null;
     } catch (e) {
-      print('Error fetching post by ID: $e');
+      debugPrint('Error fetching post by ID: $e');
       return null;
     }
   }
@@ -170,7 +171,7 @@ class ClassifiedPostService {
         'Failed to report service. Please try again.',
       );
     } catch (e) {
-      print('Error reporting classified post: $e');
+      debugPrint('Error reporting classified post: $e');
       if (e is ClassifiedPostServiceException) rethrow;
       throw ClassifiedPostServiceException(
         'Failed to report service. Please try again.',
@@ -186,30 +187,30 @@ class ClassifiedPostService {
         queryParameters: {'limit': limit.toString()},
       );
 
-      print('🌐 Fetching recent posts from: $uri');
+      debugPrint('🌐 Fetching recent posts from: $uri');
 
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('📡 Response status: ${response.statusCode}');
+      debugPrint('📡 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('📦 Response data type: ${data.runtimeType}');
+        debugPrint('📦 Response data type: ${data.runtimeType}');
 
         List<dynamic> postsData;
 
         // Handle both paginated and direct array responses
         if (data is Map && data.containsKey('results')) {
           postsData = data['results'] as List;
-          print('✅ Found ${postsData.length} posts in paginated response');
+          debugPrint('✅ Found ${postsData.length} posts in paginated response');
         } else if (data is List) {
           postsData = data;
-          print('✅ Found ${postsData.length} posts in direct array response');
+          debugPrint('✅ Found ${postsData.length} posts in direct array response');
         } else {
-          print('⚠️ Unexpected response format');
+          debugPrint('⚠️ Unexpected response format');
           return [];
         }
 
@@ -218,16 +219,16 @@ class ClassifiedPostService {
                 (item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
             .toList();
 
-        print('🎯 Successfully parsed ${posts.length} posts');
+        debugPrint('🎯 Successfully parsed ${posts.length} posts');
         return posts;
       } else {
-        print('❌ Failed to fetch posts: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        debugPrint('❌ Failed to fetch posts: ${response.statusCode}');
+        debugPrint('Response body: ${response.body}');
         return [];
       }
     } catch (e, stackTrace) {
-      print('❌ Error fetching recent posts: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('❌ Error fetching recent posts: $e');
+      debugPrint('Stack trace: $stackTrace');
       return [];
     }
   }
@@ -328,7 +329,7 @@ class ClassifiedPostService {
 
       return ClassifiedPostsResponse(results: [], count: 0, pageSize: pageSize);
     } catch (e) {
-      print('Error fetching posts: $e');
+      debugPrint('Error fetching posts: $e');
       return ClassifiedPostsResponse(results: [], count: 0, pageSize: pageSize);
     }
   }
@@ -387,7 +388,7 @@ class ClassifiedPostService {
 
       return [];
     } catch (e) {
-      print('Error fetching nearby posts: $e');
+      debugPrint('Error fetching nearby posts: $e');
       return [];
     }
   }
@@ -489,7 +490,7 @@ class ClassifiedPostService {
 
       return [];
     } catch (e) {
-      print('Error searching by description: $e');
+      debugPrint('Error searching by description: $e');
       return [];
     }
   }
@@ -510,7 +511,7 @@ class ClassifiedPostService {
       }
       return null;
     } catch (e) {
-      print('Error fetching category details: $e');
+      debugPrint('Error fetching category details: $e');
       return null;
     }
   }
@@ -535,7 +536,7 @@ class ClassifiedPostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching all categories: $e');
+      debugPrint('Error fetching all categories: $e');
       return [];
     }
   }
@@ -546,13 +547,13 @@ class ClassifiedPostService {
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/classified-categories-post/');
 
-      print('Preparing to create post...');
+      debugPrint('Preparing to create post...');
       final jsonData = form.toJson();
-      print('Form data prepared: ${jsonData.keys}');
-      print('Medias count: ${jsonData['medias']?.length ?? 0}');
+      debugPrint('Form data prepared: ${jsonData.keys}');
+      debugPrint('Medias count: ${jsonData['medias']?.length ?? 0}');
 
       final jsonString = json.encode(jsonData);
-      print('JSON encoded successfully, length: ${jsonString.length}');
+      debugPrint('JSON encoded successfully, length: ${jsonString.length}');
 
       final response = await client.post(
         uri,
@@ -564,14 +565,14 @@ class ClassifiedPostService {
         return json.decode(response.body) as Map<String, dynamic>;
       }
 
-      print('Create post failed: ${response.statusCode} - ${response.body}');
+      debugPrint('Create post failed: ${response.statusCode} - ${response.body}');
       _throwForFailedResponse(
         response,
         'Failed to create post. Please try again.',
       );
     } catch (e, stackTrace) {
-      print('Error creating post: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error creating post: $e');
+      debugPrint('Stack trace: $stackTrace');
       if (e is ClassifiedPostServiceException) rethrow;
       throw ClassifiedPostServiceException(
         'Failed to create post. Please try again.',
@@ -596,13 +597,13 @@ class ClassifiedPostService {
         return json.decode(response.body) as Map<String, dynamic>;
       }
 
-      print('Update post failed: ${response.statusCode} - ${response.body}');
+      debugPrint('Update post failed: ${response.statusCode} - ${response.body}');
       _throwForFailedResponse(
         response,
         'Failed to update post. Please try again.',
       );
     } catch (e) {
-      print('Error updating post: $e');
+      debugPrint('Error updating post: $e');
       if (e is ClassifiedPostServiceException) rethrow;
       throw ClassifiedPostServiceException(
         'Failed to update post. Please try again.',
@@ -632,7 +633,7 @@ class ClassifiedPostService {
       }
       return [];
     } catch (e) {
-      print('Error fetching user posts: $e');
+      debugPrint('Error fetching user posts: $e');
       return [];
     }
   }
@@ -661,13 +662,13 @@ class ClassifiedPostService {
         return json.decode(response.body) as Map<String, dynamic>;
       }
 
-      print('Update status failed: ${response.statusCode} - ${response.body}');
+      debugPrint('Update status failed: ${response.statusCode} - ${response.body}');
       _throwForFailedResponse(
         response,
         'Failed to update post status. Please try again.',
       );
     } catch (e) {
-      print('Error updating post status: $e');
+      debugPrint('Error updating post status: $e');
       if (e is ClassifiedPostServiceException) rethrow;
       throw ClassifiedPostServiceException(
         'Failed to update post status. Please try again.',
@@ -678,38 +679,38 @@ class ClassifiedPostService {
   /// Fetch post for editing
   Future<ClassifiedPostForm?> fetchPostForEdit(String idOrSlug) async {
     try {
-      print('Fetching post for edit: $idOrSlug');
+      debugPrint('Fetching post for edit: $idOrSlug');
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/classified-categories/post/$idOrSlug/');
 
-      print('Request URL: $uri');
+      debugPrint('Request URL: $uri');
       final response = await client.get(
         uri,
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
+      debugPrint('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('✅ Post data received successfully!');
-        print('Title: ${data['title']}');
-        print('Category: ${data['category']}');
-        print('Medias count: ${data['medias']?.length ?? 0}');
-        print('Price: ${data['price']}');
-        print('Instructions length: ${data['instructions']?.length ?? 0}');
+        debugPrint('✅ Post data received successfully!');
+        debugPrint('Title: ${data['title']}');
+        debugPrint('Category: ${data['category']}');
+        debugPrint('Medias count: ${data['medias']?.length ?? 0}');
+        debugPrint('Price: ${data['price']}');
+        debugPrint('Instructions length: ${data['instructions']?.length ?? 0}');
         return ClassifiedPostForm.fromPost(data as Map<String, dynamic>);
       } else if (response.statusCode == 404) {
-        print('❌ Post not found (404)');
-        print('Response: ${response.body}');
+        debugPrint('❌ Post not found (404)');
+        debugPrint('Response: ${response.body}');
       } else {
-        print('❌ Failed to fetch post: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        debugPrint('❌ Failed to fetch post: ${response.statusCode}');
+        debugPrint('Response body: ${response.body}');
       }
       return null;
     } catch (e, stackTrace) {
-      print('Error fetching post for edit: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error fetching post for edit: $e');
+      debugPrint('Stack trace: $stackTrace');
       return null;
     }
   }
@@ -736,14 +737,14 @@ class ClassifiedPostService {
         queryParameters: queryParams,
       );
 
-      print('👤 Fetching posts by user $userId from: $uri');
+      debugPrint('👤 Fetching posts by user $userId from: $uri');
 
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('📡 Response status: ${response.statusCode}');
+      debugPrint('📡 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -763,13 +764,13 @@ class ClassifiedPostService {
             .where((post) => post.serviceStatus.toLowerCase() == 'approved')
             .toList();
 
-        print('✅ Fetched ${posts.length} posts by user');
+        debugPrint('✅ Fetched ${posts.length} posts by user');
         return posts;
       }
 
       return [];
     } catch (e) {
-      print('❌ Error fetching posts by user: $e');
+      debugPrint('❌ Error fetching posts by user: $e');
       return [];
     }
   }

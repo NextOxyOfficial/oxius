@@ -125,7 +125,7 @@ class TranslationService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _currentLanguage = prefs.getString('selected_language') ?? 'bn';
     } catch (e) {
-      print('Error loading saved language: $e');
+      debugPrint('Error loading saved language: $e');
       _currentLanguage = 'bn';
     }
   }
@@ -136,7 +136,7 @@ class TranslationService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('selected_language', languageCode);
     } catch (e) {
-      print('Error saving language: $e');
+      debugPrint('Error saving language: $e');
     }
   }
 
@@ -159,7 +159,7 @@ class TranslationService extends ChangeNotifier {
         ];
       }
     } catch (e) {
-      print('Error loading available languages: $e');
+      debugPrint('Error loading available languages: $e');
       // Fallback languages
       _availableLanguages = [
         {'code': 'bn', 'name': 'Bengali', 'native_name': 'বাংলা', 'flag': '🇧🇩'},
@@ -204,12 +204,12 @@ class TranslationService extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        print('Error loading translations: ${response.statusCode}');
+        debugPrint('Error loading translations: ${response.statusCode}');
         _isLoading = false;
         return false;
       }
     } catch (e) {
-      print('Error loading translations: $e');
+      debugPrint('Error loading translations: $e');
       _isLoading = false;
       return false;
     }
@@ -225,7 +225,7 @@ class TranslationService extends ChangeNotifier {
       // Store cache timestamp
       await prefs.setInt('${cacheKey}_timestamp', DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error caching translations: $e');
+      debugPrint('Error caching translations: $e');
     }
   }
 
@@ -250,7 +250,7 @@ class TranslationService extends ChangeNotifier {
         return Map<String, dynamic>.from(json.decode(cachedString));
       }
     } catch (e) {
-      print('Error loading cached translations: $e');
+      debugPrint('Error loading cached translations: $e');
     }
     return null;
   }
@@ -339,7 +339,7 @@ class TranslationService extends ChangeNotifier {
         await prefs.remove('${key}_timestamp');
       }
     } catch (e) {
-      print('Error clearing cache: $e');
+      debugPrint('Error clearing cache: $e');
     }
   }
 

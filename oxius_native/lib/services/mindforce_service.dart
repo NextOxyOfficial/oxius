@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../models/mindforce_models.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class MindForceService {
   // Fetch all problems
@@ -28,7 +29,7 @@ class MindForceService {
 
       return [];
     } catch (e) {
-      print('Error fetching problems: $e');
+      debugPrint('Error fetching problems: $e');
       return [];
     }
   }
@@ -56,7 +57,7 @@ class MindForceService {
 
       return [];
     } catch (e) {
-      print('Error fetching categories: $e');
+      debugPrint('Error fetching categories: $e');
       return [];
     }
   }
@@ -104,20 +105,20 @@ class MindForceService {
         body: json.encode(body),
       );
 
-      print('Create problem response status: ${response.statusCode}');
-      print('Create problem response body: ${response.body}');
+      debugPrint('Create problem response status: ${response.statusCode}');
+      debugPrint('Create problem response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
         return MindForceProblem.fromJson(data);
       } else {
-        print('Failed to create problem. Status: ${response.statusCode}');
-        print('Error response: ${response.body}');
+        debugPrint('Failed to create problem. Status: ${response.statusCode}');
+        debugPrint('Error response: ${response.body}');
       }
 
       return null;
     } catch (e) {
-      print('Error creating problem: $e');
+      debugPrint('Error creating problem: $e');
       return null;
     }
   }
@@ -139,7 +140,7 @@ class MindForceService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error updating problem: $e');
+      debugPrint('Error updating problem: $e');
       return false;
     }
   }
@@ -160,7 +161,7 @@ class MindForceService {
 
       return response.statusCode == 204 || response.statusCode == 200;
     } catch (e) {
-      print('Error deleting problem: $e');
+      debugPrint('Error deleting problem: $e');
       return false;
     }
   }
@@ -182,16 +183,16 @@ class MindForceService {
       );
 
       if (response.statusCode == 200) {
-        print('=== MindForce Comments Response ===');
-        print('Status: ${response.statusCode}');
-        print('Body: ${response.body}');
+        debugPrint('=== MindForce Comments Response ===');
+        debugPrint('Status: ${response.statusCode}');
+        debugPrint('Body: ${response.body}');
         
         final List<dynamic> data = json.decode(response.body);
-        print('Number of comments: ${data.length}');
+        debugPrint('Number of comments: ${data.length}');
         
         if (data.isNotEmpty) {
-          print('First comment raw JSON:');
-          print(data[0]);
+          debugPrint('First comment raw JSON:');
+          debugPrint(data[0]);
         }
         
         return data.map((item) => MindForceComment.fromJson(item)).toList();
@@ -199,7 +200,7 @@ class MindForceService {
 
       return [];
     } catch (e) {
-      print('Error fetching comments: $e');
+      debugPrint('Error fetching comments: $e');
       return [];
     }
   }
@@ -233,7 +234,7 @@ class MindForceService {
 
       return null;
     } catch (e) {
-      print('Error adding comment: $e');
+      debugPrint('Error adding comment: $e');
       return null;
     }
   }
@@ -255,7 +256,7 @@ class MindForceService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error marking comment as solution: $e');
+      debugPrint('Error marking comment as solution: $e');
       return false;
     }
   }
@@ -284,7 +285,7 @@ class MindForceService {
 
       return null;
     } catch (e) {
-      print('Error updating comment: $e');
+      debugPrint('Error updating comment: $e');
       return null;
     }
   }
@@ -304,7 +305,7 @@ class MindForceService {
 
       return response.statusCode == 204 || response.statusCode == 200;
     } catch (e) {
-      print('Error deleting comment: $e');
+      debugPrint('Error deleting comment: $e');
       return false;
     }
   }

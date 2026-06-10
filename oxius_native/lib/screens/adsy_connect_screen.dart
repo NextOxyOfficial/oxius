@@ -231,7 +231,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         });
       }
     } catch (e) {
-      print('🔴 Error refreshing chats in background: $e');
+      debugPrint('🔴 Error refreshing chats in background: $e');
       // Silent fail - don't show error to user
     }
   }
@@ -279,10 +279,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
     try {
       final pageToLoad = loadMore ? _currentPage + 1 : 1;
-      print('🔵 Loading chat rooms, page: $pageToLoad');
+      debugPrint('🔵 Loading chat rooms, page: $pageToLoad');
       final chatRooms = await AdsyConnectService.getChatRooms(
           page: pageToLoad, pageSize: _pageSize);
-      print('🟢 Loaded ${chatRooms.length} chat rooms');
+      debugPrint('🟢 Loaded ${chatRooms.length} chat rooms');
 
       if (mounted) {
         final newChats = _parseChatRooms(chatRooms);
@@ -297,7 +297,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                 .where((chat) => !existingIds.contains(chat['id']))
                 .toList();
 
-            print(
+            debugPrint(
                 '📊 Adding ${uniqueNewChats.length} unique chats (filtered ${newChats.length - uniqueNewChats.length} duplicates)');
             _chatConversations.addAll(uniqueNewChats);
 
@@ -319,7 +319,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         }
       }
     } catch (e) {
-      print('🔴 Error loading chats: $e');
+      debugPrint('🔴 Error loading chats: $e');
       if (mounted) {
         setState(() {
           _isLoadingChats = false;
@@ -471,7 +471,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     // Mark as read in the background — never block the tap on a network call.
     unawaited(
       AdsyConnectService.markChatroomAsRead(chatroomId).catchError((e) {
-        print('Error marking chatroom as read: $e');
+        debugPrint('Error marking chatroom as read: $e');
       }),
     );
   }
@@ -639,7 +639,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Image.asset(
@@ -752,7 +752,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF3B82F6)
-                                              .withOpacity(0.1),
+                                              .withValues(alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
@@ -818,11 +818,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: hasUnread
-              ? const Color(0xFF3B82F6).withOpacity(0.02)
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.02)
               : Colors.white,
           border: Border(
             bottom: BorderSide(
-              color: const Color(0xFFE5E7EB).withOpacity(0.4),
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.4),
               width: 0.5,
             ),
           ),
@@ -840,13 +840,13 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF3B82F6).withOpacity(0.08),
-                        const Color(0xFF6366F1).withOpacity(0.08),
+                        const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                        const Color(0xFF6366F1).withValues(alpha: 0.08),
                       ],
                     ),
                     border: Border.all(
                       color: hasUnread
-                          ? const Color(0xFF3B82F6).withOpacity(0.25)
+                          ? const Color(0xFF3B82F6).withValues(alpha: 0.25)
                           : Colors.transparent,
                       width: 1.5,
                     ),
@@ -898,7 +898,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       boxShadow: isOnline
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF10B981).withOpacity(0.4),
+                                color: const Color(0xFF10B981).withValues(alpha: 0.4),
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -941,7 +941,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                     horizontal: 4, vertical: 1),
                                 decoration: BoxDecoration(
                                   color:
-                                      const Color(0xFF10B981).withOpacity(0.1),
+                                      const Color(0xFF10B981).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(

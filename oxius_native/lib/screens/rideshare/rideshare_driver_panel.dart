@@ -867,12 +867,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       _isAuthError = false;
     });
     if (!AuthService.isAuthenticated) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isLoading = false;
           _isAuthError = true;
           _driverProfile = null;
         });
+      }
       return;
     }
     final results = await Future.wait([
@@ -2104,8 +2105,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading)
+    if (_isLoading) {
       return const Center(child: AdsyLoadingIndicator(color: _indigo));
+    }
     if (_isAuthError) return _buildLoginRequired();
     return AdsyRefreshIndicator(
       color: _indigo,

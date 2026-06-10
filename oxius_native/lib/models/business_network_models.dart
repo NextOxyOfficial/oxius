@@ -1,4 +1,5 @@
 import '../config/app_config.dart';
+import 'package:flutter/foundation.dart';
 
 // Helper function to parse IDs that can be strings or integers
 int _parseId(dynamic value) {
@@ -104,7 +105,7 @@ class BusinessNetworkPost {
             post: _parseId(json['id']),
           );
         } catch (e) {
-          print('Error parsing media item: $e');
+          debugPrint('Error parsing media item: $e');
           return null;
         }
       }).whereType<PostMedia>().toList();
@@ -142,7 +143,7 @@ class BusinessNetworkPost {
           }
           return PostTag(id: 0, tag: e.toString());
         } catch (e) {
-          print('Error parsing tag item: $e');
+          debugPrint('Error parsing tag item: $e');
           return null;
         }
       }).whereType<PostTag>().toList();
@@ -159,7 +160,7 @@ class BusinessNetworkPost {
           }
           return PostLike(id: 0, user: 0);
         } catch (e) {
-          print('Error parsing like item: $e');
+          debugPrint('Error parsing like item: $e');
           return null;
         }
       }).whereType<PostLike>().toList();
@@ -187,7 +188,7 @@ class BusinessNetworkPost {
                     return BusinessNetworkComment.fromJson(
                         e is Map ? Map<String, dynamic>.from(e) : e);
                   } catch (e) {
-                    print('Error parsing comment: $e');
+                    debugPrint('Error parsing comment: $e');
                     return null;
                   }
                 })
@@ -196,9 +197,9 @@ class BusinessNetworkPost {
         postLikes: likesList,
       );
     } catch (e, stackTrace) {
-      print('Error parsing BusinessNetworkPost: $e');
-      print('Stack trace: $stackTrace');
-      print('JSON data: $json');
+      debugPrint('Error parsing BusinessNetworkPost: $e');
+      debugPrint('Stack trace: $stackTrace');
+      debugPrint('JSON data: $json');
       rethrow;
     }
   }
@@ -276,7 +277,7 @@ class PostMedia {
     final t = (type ?? '').toLowerCase().trim();
     if (t == 'video') return true;
 
-    final raw = '${video ?? ''} ${url ?? ''} ${image} ${thumbnail ?? ''}'.toLowerCase();
+    final raw = '${video ?? ''} ${url ?? ''} $image ${thumbnail ?? ''}'.toLowerCase();
     if (raw.contains('.mp4') ||
         raw.contains('.mov') ||
         raw.contains('.m4v') ||

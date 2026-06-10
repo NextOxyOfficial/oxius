@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/geo_location.dart';
+import 'package:flutter/foundation.dart';
 
 class GeoLocationService {
   final String baseUrl;
@@ -20,30 +21,30 @@ class GeoLocationService {
         queryParameters: {'country_name_eng': country},
       );
       
-      print('🌍 GeoLocationService: Fetching regions from: $uri');
+      debugPrint('🌍 GeoLocationService: Fetching regions from: $uri');
       
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('🌍 GeoLocationService: Response status: ${response.statusCode}');
-      print('🌍 GeoLocationService: Response body: ${response.body}');
+      debugPrint('🌍 GeoLocationService: Response status: ${response.statusCode}');
+      debugPrint('🌍 GeoLocationService: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         // Backend returns array directly, not wrapped in 'data'
         final results = data is List ? data : [];
-        print('🌍 GeoLocationService: Parsed ${results.length} regions');
+        debugPrint('🌍 GeoLocationService: Parsed ${results.length} regions');
         return results
             .map((item) => Region.fromJson(item as Map<String, dynamic>))
             .toList();
       } else {
-        print('❌ GeoLocationService: Failed with status ${response.statusCode}: ${response.body}');
+        debugPrint('❌ GeoLocationService: Failed with status ${response.statusCode}: ${response.body}');
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching regions: $e');
+      debugPrint('❌ Error fetching regions: $e');
       return [];
     }
   }
@@ -55,30 +56,30 @@ class GeoLocationService {
         queryParameters: {'region_name_eng': regionName},
       );
       
-      print('🏙️ GeoLocationService: Fetching cities from: $uri');
+      debugPrint('🏙️ GeoLocationService: Fetching cities from: $uri');
       
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('🏙️ GeoLocationService: Response status: ${response.statusCode}');
-      print('🏙️ GeoLocationService: Response body: ${response.body}');
+      debugPrint('🏙️ GeoLocationService: Response status: ${response.statusCode}');
+      debugPrint('🏙️ GeoLocationService: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         // Backend returns array directly, not wrapped in 'data'
         final results = data is List ? data : [];
-        print('🏙️ GeoLocationService: Parsed ${results.length} cities');
+        debugPrint('🏙️ GeoLocationService: Parsed ${results.length} cities');
         return results
             .map((item) => City.fromJson(item as Map<String, dynamic>))
             .toList();
       } else {
-        print('❌ GeoLocationService: Failed with status ${response.statusCode}: ${response.body}');
+        debugPrint('❌ GeoLocationService: Failed with status ${response.statusCode}: ${response.body}');
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching cities: $e');
+      debugPrint('❌ Error fetching cities: $e');
       return [];
     }
   }
@@ -90,30 +91,30 @@ class GeoLocationService {
         queryParameters: {'city_name_eng': cityName},
       );
       
-      print('🏘️ GeoLocationService: Fetching upazilas from: $uri');
+      debugPrint('🏘️ GeoLocationService: Fetching upazilas from: $uri');
       
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('🏘️ GeoLocationService: Response status: ${response.statusCode}');
-      print('🏘️ GeoLocationService: Response body: ${response.body}');
+      debugPrint('🏘️ GeoLocationService: Response status: ${response.statusCode}');
+      debugPrint('🏘️ GeoLocationService: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         // Backend returns array directly, not wrapped in 'data'
         final results = data is List ? data : [];
-        print('🏘️ GeoLocationService: Parsed ${results.length} upazilas');
+        debugPrint('🏘️ GeoLocationService: Parsed ${results.length} upazilas');
         return results
             .map((item) => Upazila.fromJson(item as Map<String, dynamic>))
             .toList();
       } else {
-        print('❌ GeoLocationService: Failed with status ${response.statusCode}: ${response.body}');
+        debugPrint('❌ GeoLocationService: Failed with status ${response.statusCode}: ${response.body}');
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching upazilas: $e');
+      debugPrint('❌ Error fetching upazilas: $e');
       return [];
     }
   }
@@ -125,7 +126,7 @@ class GeoLocationService {
       final jsonString = json.encode(location.toJson());
       return await prefs.setString(_locationKey, jsonString);
     } catch (e) {
-      print('Error saving location: $e');
+      debugPrint('Error saving location: $e');
       return false;
     }
   }
@@ -142,7 +143,7 @@ class GeoLocationService {
       }
       return null;
     } catch (e) {
-      print('Error getting saved location: $e');
+      debugPrint('Error getting saved location: $e');
       return null;
     }
   }
@@ -153,7 +154,7 @@ class GeoLocationService {
       final prefs = await SharedPreferences.getInstance();
       return await prefs.remove(_locationKey);
     } catch (e) {
-      print('Error clearing location: $e');
+      debugPrint('Error clearing location: $e');
       return false;
     }
   }

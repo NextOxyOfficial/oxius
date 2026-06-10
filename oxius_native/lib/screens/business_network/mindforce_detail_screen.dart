@@ -106,7 +106,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         }
       }
     } catch (e) {
-      print('Error picking image: $e');
+      debugPrint('Error picking image: $e');
     } finally {
       setState(() => _isCompressing = false);
     }
@@ -159,7 +159,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         );
       }
     } catch (e) {
-      print('Error submitting comment: $e');
+      debugPrint('Error submitting comment: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -218,6 +218,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     final success = await MindForceService.markCommentAsSolution(commentId);
     if (success && mounted) {
       await _loadProblemDetails();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Comment marked as solution!'),
@@ -1018,7 +1019,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -2))
         ],

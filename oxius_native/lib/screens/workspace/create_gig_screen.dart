@@ -13,7 +13,6 @@ const _emerald = Color(0xFF10B981);
 const _slate50 = Color(0xFFF8FAFC);
 const _slate100 = Color(0xFFF1F5F9);
 const _slate200 = Color(0xFFE2E8F0);
-const _slate300 = Color(0xFFCBD5E1);
 const _slate400 = Color(0xFF94A3B8);
 const _slate500 = Color(0xFF64748B);
 const _slate700 = Color(0xFF334155);
@@ -1333,7 +1332,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
         ),
         const SizedBox(height: 5),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           isExpanded: true,
           items: items,
           onChanged: onChanged,

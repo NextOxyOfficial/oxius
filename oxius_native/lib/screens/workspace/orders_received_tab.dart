@@ -152,7 +152,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                   const SizedBox(height: 14),
                   // Reason dropdown
                   DropdownButtonFormField<String>(
-                    value: selectedReason,
+                    initialValue: selectedReason,
                     isDense: true,
                     style: const TextStyle(fontSize: 13, color: Colors.black87),
                     decoration: InputDecoration(

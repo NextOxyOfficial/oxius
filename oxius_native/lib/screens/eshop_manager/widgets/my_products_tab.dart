@@ -130,7 +130,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -297,14 +297,14 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
                                       setState(() => _isProcessing = true);
 
-                                      print(
+                                      debugPrint(
                                           '📝 Updating product: ${product.id}');
-                                      print('📝 New status: $selectedStatus');
-                                      print(
+                                      debugPrint('📝 New status: $selectedStatus');
+                                      debugPrint(
                                           '📝 New name: ${nameController.text.trim()}');
-                                      print(
+                                      debugPrint(
                                           '📝 New price: ${priceController.text}');
-                                      print(
+                                      debugPrint(
                                           '📝 New stock: ${stockController.text}');
 
                                       final result = await EshopManagerService
@@ -319,9 +319,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                         status: selectedStatus,
                                       );
 
-                                      print(
+                                      debugPrint(
                                           '📝 Update result: ${result['success']}');
-                                      print(
+                                      debugPrint(
                                           '📝 Update message: ${result['message']}');
 
                                       setState(() => _isProcessing = false);
@@ -486,7 +486,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
             color: bgColor,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? borderColor : borderColor.withOpacity(0.3),
+              color: isSelected ? borderColor : borderColor.withValues(alpha: 0.3),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -686,7 +686,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.3)
+                    ? Colors.white.withValues(alpha: 0.3)
                     : Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -760,7 +760,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 3,
             offset: const Offset(0, 1),
           ),
@@ -953,183 +953,6 @@ class _MyProductsTabState extends State<MyProductsTab> {
     );
   }
 
-  Widget _buildProductCard(ShopProduct product) {
-    final imageUrl = product.featuredImage ??
-        (product.imageDetails?.isNotEmpty == true
-            ? product.imageDetails!.first.image
-            : product.image);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-            ),
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: imageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Center(
-                          child: AdsyLoadingIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation(Color(0xFF10B981)),
-                          ),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Icon(Icons.image_not_supported_rounded,
-                            size: 32),
-                      ),
-                    )
-                  : Container(
-                      color: Colors.grey.shade100,
-                      child: const Icon(Icons.image_outlined, size: 32),
-                    ),
-            ),
-          ),
-
-          // Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Status Badge
-                  _buildStatusBadge(product.status),
-                  const SizedBox(height: 2),
-
-                  // Name
-                  Flexible(
-                    child: Text(
-                      product.name,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                        height: 1.1,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-
-                  // Price & Stock
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          '৳${product.price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF10B981),
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        'Stock: ${product.stock}',
-                        style: const TextStyle(
-                          fontSize: 8,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Actions
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _showEditDialog(product),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.edit_rounded,
-                              size: 14, color: Colors.white),
-                          SizedBox(width: 4),
-                          Text(
-                            'Edit',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                InkWell(
-                  onTap: () => _showDeleteDialog(product),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Icon(
-                      Icons.delete_rounded,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildStatusBadge(String status) {
     Color bgColor;

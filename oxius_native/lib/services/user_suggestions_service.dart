@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class UserSuggestionsService {
   /// Fetch user suggestions with social connectivity algorithm
@@ -28,11 +29,11 @@ class UserSuggestionsService {
         }
         return [];
       } else {
-        print('Error fetching user suggestions: ${response.statusCode}');
+        debugPrint('Error fetching user suggestions: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('Error in getUserSuggestions: $e');
+      debugPrint('Error in getUserSuggestions: $e');
       return [];
     }
   }
@@ -53,7 +54,7 @@ class UserSuggestionsService {
 
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print('Error following user: $e');
+      debugPrint('Error following user: $e');
       return false;
     }
   }
@@ -74,7 +75,7 @@ class UserSuggestionsService {
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      print('Error unfollowing user: $e');
+      debugPrint('Error unfollowing user: $e');
       return false;
     }
   }
@@ -93,11 +94,11 @@ class UserSuggestionsService {
         }
         return [];
       } else {
-        print('Error fetching sponsored products: ${response.statusCode}');
+        debugPrint('Error fetching sponsored products: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('Error in getSponsoredProducts: $e');
+      debugPrint('Error in getSponsoredProducts: $e');
       return [];
     }
   }

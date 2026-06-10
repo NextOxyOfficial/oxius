@@ -9,6 +9,7 @@ import 'api_service.dart';
 import 'api_cache.dart';
 import '../utils/api_error.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class BusinessNetworkService {
   static String get _baseUrl => '${ApiService.baseUrl}/bn';
@@ -105,7 +106,7 @@ class BusinessNetworkService {
       }
       return null;
     } catch (e) {
-      print('Error fetching business network logo: $e');
+      debugPrint('Error fetching business network logo: $e');
       return null;
     }
   }
@@ -203,8 +204,8 @@ class BusinessNetworkService {
         'count': data['count'] ?? 0,
       };
     } catch (e, stackTrace) {
-      print('Error fetching posts: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error fetching posts: $e');
+      debugPrint('Stack trace: $stackTrace');
       return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
     }
   }
@@ -334,9 +335,9 @@ class BusinessNetworkService {
           ),
         );
 
-        print('=== Create Post Debug ===');
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.data}');
+        debugPrint('=== Create Post Debug ===');
+        debugPrint('Response status: ${response.statusCode}');
+        debugPrint('Response body: ${response.data}');
 
         if (response.statusCode == 201 || response.statusCode == 200) {
           final data = response.data is Map
@@ -368,10 +369,10 @@ class BusinessNetworkService {
         body: json.encode(body),
       );
 
-      print('=== Create Post Debug ===');
-      print('Request body: ${json.encode(body)}');
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('=== Create Post Debug ===');
+      debugPrint('Request body: ${json.encode(body)}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -381,8 +382,8 @@ class BusinessNetworkService {
 
       throw ApiError.fromResponse(response.statusCode, response.body);
     } catch (e, stackTrace) {
-      print('Error creating post: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error creating post: $e');
+      debugPrint('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -490,7 +491,7 @@ class BusinessNetworkService {
               BusinessNetworkComment.fromJson(Map<String, dynamic>.from(e)))
           .toList();
     } catch (e) {
-      print('Error fetching comments: $e');
+      debugPrint('Error fetching comments: $e');
       return <BusinessNetworkComment>[];
     }
   }
@@ -514,10 +515,10 @@ class BusinessNetworkService {
           'diamond_amount': diamondAmount,
       };
 
-      print('=== Add Comment Debug ===');
-      print('URL: $_baseUrl/posts/$postId/comments/');
-      print('Content: $content');
-      print('Parent Comment ID: $parentCommentId');
+      debugPrint('=== Add Comment Debug ===');
+      debugPrint('URL: $_baseUrl/posts/$postId/comments/');
+      debugPrint('Content: $content');
+      debugPrint('Parent Comment ID: $parentCommentId');
 
       final response = await http.post(
         Uri.parse('$_baseUrl/posts/$postId/comments/'),
@@ -525,8 +526,8 @@ class BusinessNetworkService {
         body: json.encode(body),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -534,7 +535,7 @@ class BusinessNetworkService {
       }
       return null;
     } catch (e) {
-      print('Error adding comment: $e');
+      debugPrint('Error adding comment: $e');
       return null;
     }
   }
@@ -551,9 +552,9 @@ class BusinessNetworkService {
         'content': content,
       };
 
-      print('=== Update Comment Debug ===');
-      print('URL: $_baseUrl/comments/$commentId/');
-      print('Content: $content');
+      debugPrint('=== Update Comment Debug ===');
+      debugPrint('URL: $_baseUrl/comments/$commentId/');
+      debugPrint('Content: $content');
 
       // Use PATCH for partial update instead of PUT
       final response = await http.patch(
@@ -562,8 +563,8 @@ class BusinessNetworkService {
         body: json.encode(body),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -571,7 +572,7 @@ class BusinessNetworkService {
       }
       return null;
     } catch (e) {
-      print('Error updating comment: $e');
+      debugPrint('Error updating comment: $e');
       return null;
     }
   }
@@ -581,19 +582,19 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Delete Comment Debug ===');
-      print('URL: $_baseUrl/comments/$commentId/');
+      debugPrint('=== Delete Comment Debug ===');
+      debugPrint('URL: $_baseUrl/comments/$commentId/');
 
       final response = await http.delete(
         Uri.parse('$_baseUrl/comments/$commentId/'),
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
+      debugPrint('Response status: ${response.statusCode}');
 
       return response.statusCode == 204 || response.statusCode == 200;
     } catch (e) {
-      print('Error deleting comment: $e');
+      debugPrint('Error deleting comment: $e');
       return false;
     }
   }
@@ -620,7 +621,7 @@ class BusinessNetworkService {
       }
       return null;
     } catch (e) {
-      print('Error fetching post: $e');
+      debugPrint('Error fetching post: $e');
       return null;
     }
   }
@@ -637,7 +638,7 @@ class BusinessNetworkService {
 
       return response.statusCode == 204 || response.statusCode == 200;
     } catch (e) {
-      print('Error deleting post: $e');
+      debugPrint('Error deleting post: $e');
       return false;
     }
   }
@@ -670,7 +671,7 @@ class BusinessNetworkService {
       }
       return null;
     } catch (e) {
-      print('Error updating post: $e');
+      debugPrint('Error updating post: $e');
       return null;
     }
   }
@@ -680,9 +681,9 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Save Post Debug ===');
-      print('URL: $_baseUrl/posts/save/');
-      print('Post ID: $postId');
+      debugPrint('=== Save Post Debug ===');
+      debugPrint('URL: $_baseUrl/posts/save/');
+      debugPrint('Post ID: $postId');
 
       final response = await http.post(
         Uri.parse('$_baseUrl/posts/save/'),
@@ -690,12 +691,12 @@ class BusinessNetworkService {
         body: json.encode({'post': postId}),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print('Error saving post: $e');
+      debugPrint('Error saving post: $e');
       return false;
     }
   }
@@ -705,20 +706,20 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Unsave Post Debug ===');
-      print('URL: $_baseUrl/saved-posts/delete/$postId/');
+      debugPrint('=== Unsave Post Debug ===');
+      debugPrint('URL: $_baseUrl/saved-posts/delete/$postId/');
 
       final response = await http.delete(
         Uri.parse('$_baseUrl/saved-posts/delete/$postId/'),
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      print('Error unsaving post: $e');
+      debugPrint('Error unsaving post: $e');
       return false;
     }
   }
@@ -737,21 +738,21 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Follow User Debug ===');
-      print('URL: $_baseUrl/users/$userId/follow/');
-      print('Headers: $headers');
+      debugPrint('=== Follow User Debug ===');
+      debugPrint('URL: $_baseUrl/users/$userId/follow/');
+      debugPrint('Headers: $headers');
 
       final response = await http.post(
         Uri.parse('$_baseUrl/users/$userId/follow/'),
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       // Handle success (200 = already following, 201 = newly created)
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Successfully followed user (status: ${response.statusCode})');
+        debugPrint('Successfully followed user (status: ${response.statusCode})');
         return true;
       }
 
@@ -764,22 +765,22 @@ class BusinessNetworkService {
             // Check for unique constraint error - means already following
             if (bodyLower.contains('unique') ||
                 bodyLower.contains('follower')) {
-              print('User already following (unique constraint)');
+              debugPrint('User already following (unique constraint)');
               // Return false so UI reloads and syncs with backend
               return false;
             }
           }
         } catch (e) {
-          print('Error parsing response body: $e');
+          debugPrint('Error parsing response body: $e');
         }
-        print('ERROR 400: ${response.body}');
+        debugPrint('ERROR 400: ${response.body}');
         return false;
       }
 
-      print('Unexpected status code: ${response.statusCode}');
+      debugPrint('Unexpected status code: ${response.statusCode}');
       return false;
     } catch (e) {
-      print('Error following user: $e');
+      debugPrint('Error following user: $e');
       return false;
     }
   }
@@ -789,20 +790,20 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Unfollow User Debug ===');
-      print('URL: $_baseUrl/users/$userId/unfollow/');
+      debugPrint('=== Unfollow User Debug ===');
+      debugPrint('URL: $_baseUrl/users/$userId/unfollow/');
 
       final response = await http.delete(
         Uri.parse('$_baseUrl/users/$userId/unfollow/'),
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      print('Error unfollowing user: $e');
+      debugPrint('Error unfollowing user: $e');
       return false;
     }
   }
@@ -810,10 +811,10 @@ class BusinessNetworkService {
   /// Toggle follow/unfollow a user
   static Future<bool> toggleFollow(
       String userId, bool isCurrentlyFollowing) async {
-    print('=== Toggle Follow Debug ===');
-    print('User ID: $userId');
-    print('Currently Following: $isCurrentlyFollowing');
-    print('Action: ${isCurrentlyFollowing ? "UNFOLLOW" : "FOLLOW"}');
+    debugPrint('=== Toggle Follow Debug ===');
+    debugPrint('User ID: $userId');
+    debugPrint('Currently Following: $isCurrentlyFollowing');
+    debugPrint('Action: ${isCurrentlyFollowing ? "UNFOLLOW" : "FOLLOW"}');
 
     if (isCurrentlyFollowing) {
       return await unfollowUser(userId);
@@ -837,7 +838,7 @@ class BusinessNetworkService {
       }
       return {'results': [], 'count': 0};
     } catch (e) {
-      print('Error fetching followers: $e');
+      debugPrint('Error fetching followers: $e');
       return {'results': [], 'count': 0};
     }
   }
@@ -857,7 +858,7 @@ class BusinessNetworkService {
       }
       return {'results': [], 'count': 0};
     } catch (e) {
-      print('Error fetching following: $e');
+      debugPrint('Error fetching following: $e');
       return {'results': [], 'count': 0};
     }
   }
@@ -867,27 +868,27 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Get User Profile Debug ===');
-      print('User ID: $userId');
-      print('URL: ${ApiService.baseUrl}/user/$userId/');
+      debugPrint('=== Get User Profile Debug ===');
+      debugPrint('User ID: $userId');
+      debugPrint('URL: ${ApiService.baseUrl}/user/$userId/');
 
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/user/$userId/'),
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data;
       } else {
-        print('ERROR: Failed to load user profile - ${response.statusCode}');
+        debugPrint('ERROR: Failed to load user profile - ${response.statusCode}');
         throw Exception('Failed to load user profile: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching user profile: $e');
+      debugPrint('Error fetching user profile: $e');
       rethrow;
     }
   }
@@ -898,9 +899,9 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Get User Posts Debug ===');
-      print('User ID: $userId');
-      print(
+      debugPrint('=== Get User Posts Debug ===');
+      debugPrint('User ID: $userId');
+      debugPrint(
           'URL: $_baseUrl/user/$userId/posts/?page=$page&page_size=$pageSize');
 
       final response = await http.get(
@@ -909,11 +910,11 @@ class BusinessNetworkService {
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
+      debugPrint('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('Posts data received: ${data['count']} posts');
+        debugPrint('Posts data received: ${data['count']} posts');
 
         final posts = (data['results'] as List)
             .map((json) => BusinessNetworkPost.fromJson(json))
@@ -925,11 +926,11 @@ class BusinessNetworkService {
           'count': data['count'] ?? 0,
         };
       } else {
-        print('ERROR: Failed to load user posts - ${response.statusCode}');
+        debugPrint('ERROR: Failed to load user posts - ${response.statusCode}');
         return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
       }
     } catch (e) {
-      print('Error fetching user posts: $e');
+      debugPrint('Error fetching user posts: $e');
       return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
     }
   }
@@ -939,8 +940,8 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Upload Profile Picture Debug ===');
-      print('Image file type: ${imageFile.runtimeType}');
+      debugPrint('=== Upload Profile Picture Debug ===');
+      debugPrint('Image file type: ${imageFile.runtimeType}');
 
       final dio = Dio();
 
@@ -949,7 +950,7 @@ class BusinessNetworkService {
 
       if (imageFile is File) {
         // For mobile (Android/iOS)
-        print('Using File path: ${imageFile.path}');
+        debugPrint('Using File path: ${imageFile.path}');
         formData = FormData.fromMap({
           'image': await MultipartFile.fromFile(
             imageFile.path,
@@ -958,7 +959,7 @@ class BusinessNetworkService {
         });
       } else {
         // For web (XFile)
-        print('Using XFile/bytes');
+        debugPrint('Using XFile/bytes');
         final bytes = await imageFile.readAsBytes();
         formData = FormData.fromMap({
           'image': MultipartFile.fromBytes(
@@ -968,7 +969,7 @@ class BusinessNetworkService {
         });
       }
 
-      print('Sending request to: ${ApiService.baseUrl}/user/profile/update/');
+      debugPrint('Sending request to: ${ApiService.baseUrl}/user/profile/update/');
 
       final response = await dio.patch(
         '${ApiService.baseUrl}/user/profile/update/',
@@ -979,8 +980,8 @@ class BusinessNetworkService {
         ),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response data: ${response.data}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response data: ${response.data}');
 
       if (response.statusCode == 200) {
         return true;
@@ -988,7 +989,7 @@ class BusinessNetworkService {
 
       return false;
     } catch (e) {
-      print('Error uploading profile picture: $e');
+      debugPrint('Error uploading profile picture: $e');
       return false;
     }
   }
@@ -998,15 +999,15 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Get Saved Posts Debug ===');
-      print('URL: $_baseUrl/posts/save/');
+      debugPrint('=== Get Saved Posts Debug ===');
+      debugPrint('URL: $_baseUrl/posts/save/');
 
       final response = await http.get(
         Uri.parse('$_baseUrl/posts/save/'),
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
+      debugPrint('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -1026,7 +1027,7 @@ class BusinessNetworkService {
 
       return [];
     } catch (e) {
-      print('Error fetching saved posts: $e');
+      debugPrint('Error fetching saved posts: $e');
       return [];
     }
   }
@@ -1049,7 +1050,7 @@ class BusinessNetworkService {
       }
       return null;
     } catch (e) {
-      print('Error fetching user by contact: $e');
+      debugPrint('Error fetching user by contact: $e');
       return null;
     }
   }
@@ -1059,15 +1060,15 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      print('=== Search Users Debug ===');
-      print('Query: $query');
+      debugPrint('=== Search Users Debug ===');
+      debugPrint('Query: $query');
 
       final response = await http.get(
         Uri.parse('$_baseUrl/users/search/?q=$query'),
         headers: headers,
       );
 
-      print('Response status: ${response.statusCode}');
+      debugPrint('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -1080,7 +1081,7 @@ class BusinessNetworkService {
 
       return [];
     } catch (e) {
-      print('Error searching users: $e');
+      debugPrint('Error searching users: $e');
       return [];
     }
   }
@@ -1096,14 +1097,14 @@ class BusinessNetworkService {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        print('Post hidden successfully');
+        debugPrint('Post hidden successfully');
         return true;
       }
 
-      print('Failed to hide post: ${response.statusCode}');
+      debugPrint('Failed to hide post: ${response.statusCode}');
       return false;
     } catch (e) {
-      print('Error hiding post: $e');
+      debugPrint('Error hiding post: $e');
       return false;
     }
   }
@@ -1136,14 +1137,14 @@ class BusinessNetworkService {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        print('Post reported successfully');
+        debugPrint('Post reported successfully');
         return true;
       }
 
-      print('Failed to report post: ${response.statusCode}');
+      debugPrint('Failed to report post: ${response.statusCode}');
       return false;
     } catch (e) {
-      print('Error reporting post: $e');
+      debugPrint('Error reporting post: $e');
       return false;
     }
   }
@@ -1167,10 +1168,10 @@ class BusinessNetworkService {
           response.body.toLowerCase().contains('unique')) {
         return true;
       }
-      print('Failed to block user: ${response.statusCode} ${response.body}');
+      debugPrint('Failed to block user: ${response.statusCode} ${response.body}');
       return false;
     } catch (e) {
-      print('Error blocking user: $e');
+      debugPrint('Error blocking user: $e');
       return false;
     }
   }
@@ -1191,10 +1192,10 @@ class BusinessNetworkService {
         );
       }
 
-      print('Failed to load blocked users: ${response.statusCode}');
+      debugPrint('Failed to load blocked users: ${response.statusCode}');
       return [];
     } catch (e) {
-      print('Error loading blocked users: $e');
+      debugPrint('Error loading blocked users: $e');
       return [];
     }
   }
@@ -1212,10 +1213,10 @@ class BusinessNetworkService {
         return true;
       }
 
-      print('Failed to unblock user: ${response.statusCode} ${response.body}');
+      debugPrint('Failed to unblock user: ${response.statusCode} ${response.body}');
       return false;
     } catch (e) {
-      print('Error unblocking user: $e');
+      debugPrint('Error unblocking user: $e');
       return false;
     }
   }
@@ -1237,7 +1238,7 @@ class BusinessNetworkService {
 
       return [];
     } catch (e) {
-      print('Error fetching trending tags: $e');
+      debugPrint('Error fetching trending tags: $e');
       return [];
     }
   }
@@ -1258,7 +1259,7 @@ class BusinessNetworkService {
 
       return [];
     } catch (e) {
-      print('Error fetching top tags: $e');
+      debugPrint('Error fetching top tags: $e');
       return [];
     }
   }

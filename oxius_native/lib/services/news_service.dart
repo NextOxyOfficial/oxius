@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/news_models.dart';
 import '../config/app_config.dart';
+import 'package:flutter/foundation.dart';
 
 class NewsService {
   static String get baseUrl => AppConfig.mediaBaseUrl;
@@ -234,7 +235,7 @@ class NewsService {
       }
       throw Exception('Failed to load breaking news: ${response.statusCode}');
     } catch (e) {
-      print('Error fetching breaking news: $e');
+      debugPrint('Error fetching breaking news: $e');
       return [];
     }
   }
@@ -277,7 +278,7 @@ class NewsService {
       }
       return null;
     } catch (e) {
-      print('Error fetching news logo: $e');
+      debugPrint('Error fetching news logo: $e');
       return null;
     }
   }

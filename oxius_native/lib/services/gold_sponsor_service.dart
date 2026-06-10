@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/gold_sponsor_models.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 class GoldSponsorService {
   // Use centralized API service base URL
@@ -27,7 +28,7 @@ class GoldSponsorService {
         };
       }
     } catch (e) {
-      print('getPricingConfig error: $e');
+      debugPrint('getPricingConfig error: $e');
     }
     return {'discount': 0, 'maxLocations': 10};
   }
@@ -41,26 +42,26 @@ class GoldSponsorService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-      print('Fetching packages from: $baseUrl/bn/gold-sponsors/packages/');
+      debugPrint('Fetching packages from: $baseUrl/bn/gold-sponsors/packages/');
       final response = await http.get(
         Uri.parse('$baseUrl/bn/gold-sponsors/packages/'),
         headers: headers,
       );
 
-      print('Packages response status: ${response.statusCode}');
+      debugPrint('Packages response status: ${response.statusCode}');
       if (response.statusCode == 200) {
-        print('Packages response body: ${response.body}');
+        debugPrint('Packages response body: ${response.body}');
         final List<dynamic> data = json.decode(response.body);
         final packages = data.map((json) => SponsorshipPackage.fromJson(json)).toList();
-        print('Parsed ${packages.length} packages');
+        debugPrint('Parsed ${packages.length} packages');
         return packages;
       } else {
-        print('Failed to load packages: ${response.statusCode} - ${response.body}');
+        debugPrint('Failed to load packages: ${response.statusCode} - ${response.body}');
         return [];
       }
     } catch (e, stackTrace) {
-      print('Error fetching packages: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error fetching packages: $e');
+      debugPrint('Stack trace: $stackTrace');
       return [];
     }
   }
@@ -75,26 +76,26 @@ class GoldSponsorService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-      print('Fetching sponsors from: $baseUrl/bn/gold-sponsors/list/');
+      debugPrint('Fetching sponsors from: $baseUrl/bn/gold-sponsors/list/');
       final response = await http.get(
         Uri.parse('$baseUrl/bn/gold-sponsors/list/'),
         headers: headers,
       );
 
-      print('Sponsors response status: ${response.statusCode}');
+      debugPrint('Sponsors response status: ${response.statusCode}');
       if (response.statusCode == 200) {
-        print('Sponsors response body: ${response.body}');
+        debugPrint('Sponsors response body: ${response.body}');
         final List<dynamic> data = json.decode(response.body);
         final sponsors = data.map((json) => GoldSponsor.fromJson(json)).toList();
-        print('Parsed ${sponsors.length} sponsors');
+        debugPrint('Parsed ${sponsors.length} sponsors');
         return sponsors;
       } else {
-        print('Failed to load gold sponsors: ${response.statusCode} - ${response.body}');
+        debugPrint('Failed to load gold sponsors: ${response.statusCode} - ${response.body}');
         return [];
       }
     } catch (e, stackTrace) {
-      print('Error fetching gold sponsors: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error fetching gold sponsors: $e');
+      debugPrint('Stack trace: $stackTrace');
       return [];
     }
   }
@@ -123,11 +124,11 @@ class GoldSponsorService {
           ..sort((a, b) => a.order.compareTo(b.order));
         return banners;
       } else {
-        print('Failed to load sponsor banners: ${response.statusCode}');
+        debugPrint('Failed to load sponsor banners: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('Error fetching sponsor banners: $e');
+      debugPrint('Error fetching sponsor banners: $e');
       return [];
     }
   }
@@ -150,7 +151,7 @@ class GoldSponsorService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error incrementing sponsor views: $e');
+      debugPrint('Error incrementing sponsor views: $e');
       return false;
     }
   }
@@ -245,12 +246,12 @@ class GoldSponsorService {
         }
       }
 
-      print('Submitting gold sponsor application to: ${request.url}');
+      debugPrint('Submitting gold sponsor application to: ${request.url}');
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      print('Application response status: ${response.statusCode}');
-      print('Application response body: ${response.body}');
+      debugPrint('Application response status: ${response.statusCode}');
+      debugPrint('Application response body: ${response.body}');
 
       if (response.statusCode == 201) {
         final data = json.decode(response.body);
@@ -278,8 +279,8 @@ class GoldSponsorService {
         }
       }
     } catch (e, stackTrace) {
-      print('Error submitting application: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error submitting application: $e');
+      debugPrint('Stack trace: $stackTrace');
       return {'success': false, 'error': 'Failed to submit application: $e'};
     }
   }
@@ -301,19 +302,19 @@ class GoldSponsorService {
         'Authorization': 'Bearer $token',
       };
 
-      print('Fetching my sponsors stats from: $baseUrl/bn/gold-sponsors/stats/');
+      debugPrint('Fetching my sponsors stats from: $baseUrl/bn/gold-sponsors/stats/');
       final response = await http.get(
         Uri.parse('$baseUrl/bn/gold-sponsors/stats/'),
         headers: headers,
       );
 
-      print('Stats response status: ${response.statusCode}');
+      debugPrint('Stats response status: ${response.statusCode}');
       if (response.statusCode == 200) {
-        print('Stats response body: ${response.body}');
+        debugPrint('Stats response body: ${response.body}');
         final data = json.decode(response.body);
         return data;
       } else {
-        print('Failed to load stats: ${response.statusCode} - ${response.body}');
+        debugPrint('Failed to load stats: ${response.statusCode} - ${response.body}');
         return {
           'active_count': 0,
           'total_views': 0,
@@ -321,8 +322,8 @@ class GoldSponsorService {
         };
       }
     } catch (e, stackTrace) {
-      print('Error fetching sponsor stats: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error fetching sponsor stats: $e');
+      debugPrint('Stack trace: $stackTrace');
       return {
         'active_count': 0,
         'total_views': 0,

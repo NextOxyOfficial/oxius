@@ -13,7 +13,6 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
 const _slate50 = Color(0xFFF8FAFC);
-const _slate100 = Color(0xFFF1F5F9);
 const _slate200 = Color(0xFFE2E8F0);
 const _slate500 = Color(0xFF64748B);
 const _slate800 = Color(0xFF1E293B);

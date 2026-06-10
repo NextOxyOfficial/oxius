@@ -81,7 +81,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
         }
       }
     } catch (e) {
-      print('Error picking image: $e');
+      debugPrint('Error picking image: $e');
       if (mounted) {
         NetworkErrorHandler.showErrorSnackbar(context, e);
       }
@@ -127,7 +127,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -156,7 +156,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -321,7 +321,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                               ),
                             )
                           : DropdownButtonFormField<int>(
-                              value: _selectedCategoryId,
+                              initialValue: _selectedCategoryId,
                               decoration: _inputDecoration(
                                   'Select a category (optional)'),
                               items: widget.categories.map((cat) {
@@ -616,7 +616,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.white,
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
           border: Border.all(
             color: isSelected ? color : Colors.grey.shade300,
             width: 2,

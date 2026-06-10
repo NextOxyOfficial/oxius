@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class SubscriptionService {
 
@@ -38,7 +39,7 @@ class SubscriptionService {
         throw Exception(errorData['message'] ?? 'Failed to create subscription');
       }
     } catch (e) {
-      print('Error creating subscription: $e');
+      debugPrint('Error creating subscription: $e');
       return {
         'success': false,
         'message': e.toString(),
@@ -56,7 +57,7 @@ class SubscriptionService {
         return json.decode(response.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      print('getProPricing error: $e');
+      debugPrint('getProPricing error: $e');
     }
     return null;
   }
@@ -74,7 +75,7 @@ class SubscriptionService {
         return json.decode(response.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      print('getAutoRenew error: $e');
+      debugPrint('getAutoRenew error: $e');
     }
     return null;
   }
@@ -98,7 +99,7 @@ class SubscriptionService {
         return null;
       }
     } catch (e) {
-      print('setAutoRenew error: $e');
+      debugPrint('setAutoRenew error: $e');
       return null;
     }
   }
@@ -126,7 +127,7 @@ class SubscriptionService {
       
       return null;
     } catch (e) {
-      print('Error fetching subscription details: $e');
+      debugPrint('Error fetching subscription details: $e');
       return null;
     }
   }
@@ -150,7 +151,7 @@ class SubscriptionService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error canceling subscription: $e');
+      debugPrint('Error canceling subscription: $e');
       return false;
     }
   }
@@ -161,7 +162,7 @@ class SubscriptionService {
       final details = await getSubscriptionDetails();
       return details != null && details['is_active'] == true;
     } catch (e) {
-      print('Error checking subscription status: $e');
+      debugPrint('Error checking subscription status: $e');
       return false;
     }
   }

@@ -309,15 +309,15 @@ class _SaleCategoryState extends State<SaleCategory> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF10B981).withOpacity(0.05),
-            const Color(0xFF06B6D4).withOpacity(0.05),
+            const Color(0xFF10B981).withValues(alpha: 0.05),
+            const Color(0xFF06B6D4).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF10B981).withOpacity(0.2),
+          color: const Color(0xFF10B981).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -459,7 +459,7 @@ class _SaleCategoryState extends State<SaleCategory> {
       ),
       decoration: BoxDecoration(
         color: isHighlighted 
-            ? const Color(0xFF10B981).withOpacity(0.1)
+            ? const Color(0xFF10B981).withValues(alpha: 0.1)
             : Colors.white,
         border: Border.all(
           color: isHighlighted 
@@ -534,7 +534,7 @@ class _SaleCategoryState extends State<SaleCategory> {
     }
     if (banners.isEmpty || index >= banners.length) {
       final colors = [0xFF3B82F6, 0xFF4F46E5];
-      return Container(color: Color(colors[index % colors.length]).withOpacity(0.1));
+      return Container(color: Color(colors[index % colors.length]).withValues(alpha: 0.1));
     }
     final b = banners[index];
     final img = b['image'] as String?;
@@ -704,7 +704,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                 border: Border.all(color: Colors.grey.shade200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -747,7 +747,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                             borderRadius: BorderRadius.circular(4),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
+                                color: Colors.black.withValues(alpha: 0.15),
                                 blurRadius: 4,
                                 offset: const Offset(0, 1),
                               ),

@@ -18,9 +18,9 @@ class BottomSafePadding extends StatelessWidget {
   final double extraPadding;
 
   const BottomSafePadding({
-    Key? key,
+    super.key,
     this.extraPadding = 16,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

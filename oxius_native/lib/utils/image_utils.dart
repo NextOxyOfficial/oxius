@@ -80,7 +80,7 @@ class AppImage {
           // Don't print CORS errors to reduce console noise
           // Return a fallback widget instead
         } else {
-          print('Image load error: $error');
+          debugPrint('Image load error: $error');
         }
         return errorWidget ?? _buildErrorWidget(width, height, null);
       },
@@ -151,7 +151,7 @@ class AppImage {
         if (!error.toString().contains('CORS') &&
             !error.toString().contains('XMLHttpRequest') &&
             !error.toString().contains('ERR_FAILED')) {
-          print('Background image error: $error');
+          debugPrint('Background image error: $error');
         }
       },
     );

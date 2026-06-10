@@ -12,10 +12,10 @@ class ClassifiedCategoriesWidget extends StatefulWidget {
   final EdgeInsets? padding;
 
   const ClassifiedCategoriesWidget({
-    Key? key,
+    super.key,
     this.maxCategories,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   State<ClassifiedCategoriesWidget> createState() =>
@@ -178,7 +178,7 @@ class _ClassifiedCategoriesWidgetState
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ClipRRect(
@@ -247,9 +247,9 @@ class ClassifiedCategoriesHorizontalList extends StatefulWidget {
   final int maxCategories;
 
   const ClassifiedCategoriesHorizontalList({
-    Key? key,
+    super.key,
     this.maxCategories = 6,
-  }) : super(key: key);
+  });
 
   @override
   State<ClassifiedCategoriesHorizontalList> createState() =>
@@ -344,7 +344,7 @@ class _ClassifiedCategoriesHorizontalListState
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: category.image != null

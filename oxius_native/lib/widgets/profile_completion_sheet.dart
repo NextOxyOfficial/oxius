@@ -97,7 +97,7 @@ class ProfileCompletionSheet {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: _primaryColor.withOpacity(0.1),
+                            color: _primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(Icons.account_circle_rounded,

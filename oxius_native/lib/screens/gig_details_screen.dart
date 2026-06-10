@@ -631,9 +631,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
             children: medias.map((media) {
               if (media['image'] != null) {
                 return GestureDetector(
-                  onTap: () {
-                    // TODO: Open media viewer
-                  },
+                  onTap: () => _openImageViewer(media['image']),
                   child: Hero(
                     tag: media['image'],
                     child: Container(
@@ -668,9 +666,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 );
               } else if (media['video'] != null) {
                 return GestureDetector(
-                  onTap: () {
-                    // TODO: Open video viewer
-                  },
+                  onTap: () =>
+                      UrlLauncherUtils.launchExternalUrl(media['video']),
                   child: Container(
                     width: 70,
                     height: 70,
@@ -694,6 +691,47 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
             }).toList(),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openImageViewer(String imageUrl) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black,
+      builder: (ctx) => Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            Center(
+              child: Hero(
+                tag: imageUrl,
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 4,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.broken_image_outlined,
+                      size: 64,
+                      color: Colors.white38,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(ctx).padding.top + 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close_rounded,
+                    color: Colors.white, size: 28),
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

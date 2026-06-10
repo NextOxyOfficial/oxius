@@ -143,7 +143,7 @@ class CommissionTransaction {
     if (value is String) {
       final v = value.trim();
       if (v.isEmpty) return '5%';
-      return v.contains('%') ? v : '${v}%';
+      return v.contains('%') ? v : '$v%';
     }
     if (value is num) {
       final d = value.toDouble();

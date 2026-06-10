@@ -27,7 +27,7 @@ class SafeScaffold extends StatelessWidget {
   final double extraBottomPadding;
 
   const SafeScaffold({
-    Key? key,
+    super.key,
     this.appBar,
     this.body,
     this.floatingActionButton,
@@ -42,7 +42,7 @@ class SafeScaffold extends StatelessWidget {
     this.safeBottomBar = true,
     this.addBottomPadding = false,
     this.extraBottomPadding = 0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +50,8 @@ class SafeScaffold extends StatelessWidget {
       appBar: appBar,
       body: addBottomPadding && body != null
           ? _BodyWithPadding(
-              child: body!,
               extraPadding: extraBottomPadding,
+              child: body!,
             )
           : body,
       floatingActionButton: floatingActionButton,

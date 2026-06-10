@@ -1,4 +1,5 @@
 /// Models for the Referral Reward Program (New Year offer, etc.)
+library;
 
 class ReferralRewardProgram {
   final int id;

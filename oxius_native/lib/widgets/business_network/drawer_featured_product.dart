@@ -34,7 +34,7 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
             '${ApiService.baseUrl}/all-products/?limit=20&is_featured=true'),
       );
 
-      print('Featured products response status: ${response.statusCode}');
+      debugPrint('Featured products response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -51,13 +51,13 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
             });
           }
 
-          print('Loaded ${products.length} featured products');
+          debugPrint('Loaded ${products.length} featured products');
         }
       } else {
-        print('Failed to load products: ${response.statusCode}');
+        debugPrint('Failed to load products: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error loading featured products: $e');
+      debugPrint('Error loading featured products: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -95,8 +95,9 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
     final regularPrice =
         double.tryParse(product['regular_price']?.toString() ?? '0') ?? 0;
 
-    if (regularPrice <= 0 || salePrice <= 0 || salePrice >= regularPrice)
+    if (regularPrice <= 0 || salePrice <= 0 || salePrice >= regularPrice) {
       return 0;
+    }
 
     return ((regularPrice - salePrice) / regularPrice * 100).round();
   }
@@ -143,7 +144,7 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
         return product['image'].toString();
       }
     } catch (e) {
-      print('Error getting product image: $e');
+      debugPrint('Error getting product image: $e');
     }
 
     return '';
@@ -244,7 +245,7 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -287,8 +288,8 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        Colors.black.withOpacity(0.8),
-                        Colors.black.withOpacity(0.5),
+                        Colors.black.withValues(alpha: 0.8),
+                        Colors.black.withValues(alpha: 0.5),
                         Colors.transparent,
                       ],
                     ),

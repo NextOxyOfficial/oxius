@@ -44,7 +44,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
         });
       }
     } catch (e) {
-      print('Error loading suggestions: $e');
+      debugPrint('Error loading suggestions: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -125,7 +125,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
         });
       }
     } catch (e) {
-      print('Error toggling follow: $e');
+      debugPrint('Error toggling follow: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -160,14 +160,14 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
           end: Alignment.bottomRight,
           colors: [
             Colors.white,
-            Colors.blue.shade50.withOpacity(0.3),
+            Colors.blue.shade50.withValues(alpha: 0.3),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.blue.shade100, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.08),
+            color: Colors.blue.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
             spreadRadius: 0,
@@ -198,7 +198,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.people,
@@ -421,9 +421,9 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
 
     // Debug logging
     if (rawImageUrl != null && rawImageUrl.isNotEmpty) {
-      print('📸 User: ${user['first_name']} ${user['last_name']}');
-      print('🔗 Raw URL: $rawImageUrl');
-      print('🌐 Absolute URL: $imageUrl');
+      debugPrint('📸 User: ${user['first_name']} ${user['last_name']}');
+      debugPrint('🔗 Raw URL: $rawImageUrl');
+      debugPrint('🌐 Absolute URL: $imageUrl');
     }
 
     return Material(
@@ -447,7 +447,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             border: Border.all(color: Colors.blue.shade50, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.blue.withOpacity(0.06),
+                color: Colors.blue.withValues(alpha: 0.06),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -557,7 +557,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                     ),
                     shadowColor: isFollowing
                         ? Colors.transparent
-                        : Colors.blue.withOpacity(0.3),
+                        : Colors.blue.withValues(alpha: 0.3),
                   ),
                   child: isPending
                       ? SizedBox(

@@ -106,7 +106,7 @@ Widget buildCategoryDropdown({
               ],
             ),
           );
-        }).toList(),
+        }),
       ];
     },
     onSelected: (value) {

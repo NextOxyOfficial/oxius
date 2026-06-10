@@ -73,7 +73,7 @@ class PostMediaGallery extends StatelessWidget {
             child: Icon(
               item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
               size: errorIconSize,
-              color: item.isVideo ? Colors.white.withOpacity(0.9) : Colors.grey,
+              color: item.isVideo ? Colors.white.withValues(alpha: 0.9) : Colors.grey,
             ),
           ),
           if (item.isVideo)
@@ -83,9 +83,9 @@ class PostMediaGallery extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.55),
+                  color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                 ),
                 child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
               ),
@@ -124,9 +124,9 @@ class PostMediaGallery extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
+                color: Colors.black.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white.withOpacity(0.15)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
               ),
               child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
             ),
@@ -137,7 +137,7 @@ class PostMediaGallery extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.45),
+                color: Colors.black.withValues(alpha: 0.45),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -445,7 +445,7 @@ class PostMediaGallery extends StatelessWidget {
                         ),
                         if (media.length > 4)
                           Container(
-                            color: Colors.black.withOpacity(0.6),
+                            color: Colors.black.withValues(alpha: 0.6),
                             child: Center(
                               child: Text(
                                 '+${media.length - 4}',
@@ -682,7 +682,7 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
           child: Icon(
             Icons.play_circle_fill_rounded,
             size: 48,
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
           ),
         ),
       );
@@ -718,7 +718,7 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
               child: Icon(
                 Icons.play_circle_fill_rounded,
                 size: 48,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             )
           else if (!_isInitialized || c == null)
@@ -734,7 +734,7 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
                       height: 10,
                       width: 160,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -743,7 +743,7 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
                       height: 10,
                       width: 92,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: Colors.white.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -764,9 +764,9 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
+                color: Colors.black.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white.withOpacity(0.15)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
               ),
               child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
             ),

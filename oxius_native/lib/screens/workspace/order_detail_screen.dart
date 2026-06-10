@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -14,7 +13,6 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  final WorkspaceService _workspaceService = WorkspaceService();
 
   Map<String, dynamic>? _order;
   bool _isLoading = true;
@@ -90,8 +88,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _buildContent() {
     final status = (_order?['status'] ?? 'pending').toString().toLowerCase();
     final gig = _order?['gig'] as Map<String, dynamic>?;
-    final buyer = _order?['buyer'] as Map<String, dynamic>?;
-    final seller = _order?['seller'] as Map<String, dynamic>?;
     final price = _order?['price']?.toString() ?? '0';
 
     return SingleChildScrollView(

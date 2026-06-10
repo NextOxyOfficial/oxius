@@ -110,17 +110,6 @@ class _ProductCardState extends State<ProductCard> {
         : isLargeScreen
             ? 18.0
             : 15.0;
-    final storeIconSize = isSmallScreen
-        ? 14.0
-        : isLargeScreen
-            ? 18.0
-            : 16.0;
-    final storeTextSize = isSmallScreen
-        ? 9.0
-        : isLargeScreen
-            ? 12.0
-            : 10.0;
-
     final navigationCallback = widget.onTap ??
         () {
           Navigator.push(
@@ -228,7 +217,7 @@ class _ProductCardState extends State<ProductCard> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.green.shade600.withOpacity(0.9),
+                              color: Colors.green.shade600.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -256,7 +245,7 @@ class _ProductCardState extends State<ProductCard> {
                           duration: const Duration(milliseconds: 150),
                           opacity: _hovered ? 1 : 0,
                           child: Container(
-                            color: Colors.black.withOpacity(0.0),
+                            color: Colors.black.withValues(alpha: 0.0),
                             child: Center(
                               child: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
@@ -553,12 +542,12 @@ class _ProductCardState extends State<ProductCard> {
 
     // Use AppConfig to get the correct base URL (localhost in debug, production in release)
     final baseUrl = AppConfig.mediaBaseUrl;
-    print('ProductCard: Making absolute URL from "$url" using base: $baseUrl');
+    debugPrint('ProductCard: Making absolute URL from "$url" using base: $baseUrl');
 
     // Handle Django media URLs
     if (url.startsWith('/media/') || url.startsWith('media/')) {
       final finalUrl = '$baseUrl${url.startsWith('/') ? url : '/$url'}';
-      print('ProductCard: Media URL result: $finalUrl');
+      debugPrint('ProductCard: Media URL result: $finalUrl');
       return finalUrl;
     }
     if (url.startsWith('/')) {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'adsyconnect_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service to manage user's online status via periodic heartbeats
 class OnlineStatusService {
@@ -14,7 +15,7 @@ class OnlineStatusService {
     if (!AuthService.isAuthenticated) return;
     
     _isRunning = true;
-    print('💚 OnlineStatusService started');
+    debugPrint('💚 OnlineStatusService started');
 
     unawaited(AdsyConnectService.updateOnlineStatus(true));
     
@@ -38,7 +39,7 @@ class OnlineStatusService {
       unawaited(AdsyConnectService.updateOnlineStatus(false));
     }
 
-    print('💔 OnlineStatusService stopped');
+    debugPrint('💔 OnlineStatusService stopped');
   }
   
   /// Send a single heartbeat
@@ -51,7 +52,7 @@ class OnlineStatusService {
     try {
       await AdsyConnectService.sendHeartbeat();
     } catch (e) {
-      print('Error sending heartbeat: $e');
+      debugPrint('Error sending heartbeat: $e');
     }
   }
   

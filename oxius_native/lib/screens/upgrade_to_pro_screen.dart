@@ -330,7 +330,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
           else
             Switch.adaptive(
               value: _autoRenew,
-              activeColor: _mint,
+              activeThumbColor: _mint,
               onChanged: _autoRenewLoaded ? _toggleAutoRenew : null,
             ),
         ],

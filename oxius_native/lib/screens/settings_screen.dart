@@ -2262,7 +2262,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Danger zone
             Container(
               decoration: BoxDecoration(
-                border: Border.all(color: _dangerColor.withOpacity(0.4)),
+                border: Border.all(color: _dangerColor.withValues(alpha: 0.4)),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -2272,7 +2272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: _dangerColor.withOpacity(0.06),
+                      color: _dangerColor.withValues(alpha: 0.06),
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(15)),
                     ),

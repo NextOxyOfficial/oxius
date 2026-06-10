@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import '../utils/api_error.dart';
+import 'package:flutter/foundation.dart';
 
 class WorkspaceService {
   static String get baseUrl => ApiService.baseUrl;
@@ -131,7 +132,7 @@ class WorkspaceService {
         return {'results': [], 'count': 0};
       }
     } catch (e) {
-      print('Error fetching user gigs: $e');
+      debugPrint('Error fetching user gigs: $e');
       return {'results': [], 'count': 0};
     }
   }

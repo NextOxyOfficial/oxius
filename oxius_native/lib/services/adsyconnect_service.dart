@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'active_chat_tracker.dart';
@@ -15,7 +15,7 @@ class AdsyConnectService {
       throw Exception('Invalid chat room response');
     }
 
-    final map = Map<String, dynamic>.from(payload as Map);
+    final map = Map<String, dynamic>.from(payload);
     final data = map['data'];
     if (data is Map && data['id'] != null) {
       return Map<String, dynamic>.from(data);
@@ -34,7 +34,7 @@ class AdsyConnectService {
   ) {
     for (final room in rooms) {
       if (room is! Map) continue;
-      final map = Map<String, dynamic>.from(room as Map);
+      final map = Map<String, dynamic>.from(room);
       final otherUser = map['other_user'];
       if (otherUser is Map && otherUser['id']?.toString() == userId) {
         return map;
@@ -53,7 +53,7 @@ class AdsyConnectService {
       final rooms = await getChatRooms(pageSize: 100);
       return _matchChatRoomForUser(rooms, userId);
     } catch (e) {
-      print('Error finding existing chat room: $e');
+      debugPrint('Error finding existing chat room: $e');
       return null;
     }
   }
@@ -89,7 +89,7 @@ class AdsyConnectService {
             'Failed to get or create chat room: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Error getting or creating chat room: $e');
+      debugPrint('Error getting or creating chat room: $e');
       final existingChatroom = await findExistingChatRoom(userId);
       if (existingChatroom != null && existingChatroom['id'] != null) {
         return existingChatroom;
@@ -119,7 +119,7 @@ class AdsyConnectService {
 
       return null;
     } catch (e) {
-      print('Error fetching chatroom details: $e');
+      debugPrint('Error fetching chatroom details: $e');
       return null;
     }
   }
@@ -184,7 +184,7 @@ class AdsyConnectService {
   }) async {
     try {
       final headers = await _getHeaders();
-      print(
+      debugPrint(
           '🔵 Fetching messages from: $baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize');
 
       final response = await http.get(
@@ -193,8 +193,8 @@ class AdsyConnectService {
         headers: headers,
       );
 
-      print('🔵 Messages response status: ${response.statusCode}');
-      print('🔵 Messages response body: ${response.body}');
+      debugPrint('🔵 Messages response status: ${response.statusCode}');
+      debugPrint('🔵 Messages response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -224,7 +224,7 @@ class AdsyConnectService {
             'Failed to load messages: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('🔴 Error loading messages: $e');
+      debugPrint('🔴 Error loading messages: $e');
       rethrow;
     }
   }
@@ -239,12 +239,12 @@ class AdsyConnectService {
       );
 
       if (response.statusCode == 200) {
-        print('🟢 Messages marked as read for chatroom: $chatroomId');
+        debugPrint('🟢 Messages marked as read for chatroom: $chatroomId');
       } else {
-        print('⚠️ Failed to mark messages as read: ${response.statusCode}');
+        debugPrint('⚠️ Failed to mark messages as read: ${response.statusCode}');
       }
     } catch (e) {
-      print('🔴 Error marking messages as read: $e');
+      debugPrint('🔴 Error marking messages as read: $e');
       // Don't rethrow - this is a non-critical operation
     }
   }
@@ -299,7 +299,7 @@ class AdsyConnectService {
       if (errorStr.contains('socket') || errorStr.contains('network')) {
         throw Exception('No internet connection');
       }
-      print('Error sending message: $e');
+      debugPrint('Error sending message: $e');
       rethrow;
     }
   }
@@ -388,7 +388,7 @@ class AdsyConnectService {
       if (errorStr.contains('socket') || errorStr.contains('network')) {
         throw Exception('No internet connection');
       }
-      print('Error sending media: $e');
+      debugPrint('Error sending media: $e');
       rethrow;
     }
   }
@@ -417,7 +417,7 @@ class AdsyConnectService {
         headers: headers,
       );
     } catch (e) {
-      print('Error marking message as read: $e');
+      debugPrint('Error marking message as read: $e');
     }
   }
 
@@ -437,7 +437,7 @@ class AdsyConnectService {
         throw Exception('Failed to delete message: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error deleting message: $e');
+      debugPrint('Error deleting message: $e');
       rethrow;
     }
   }
@@ -459,7 +459,7 @@ class AdsyConnectService {
         throw Exception('Failed to edit message: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error editing message: $e');
+      debugPrint('Error editing message: $e');
       rethrow;
     }
   }
@@ -478,7 +478,7 @@ class AdsyConnectService {
         );
       }
     } catch (e) {
-      print('Error blocking user: $e');
+      debugPrint('Error blocking user: $e');
       rethrow;
     }
   }
@@ -497,7 +497,7 @@ class AdsyConnectService {
         );
       }
     } catch (e) {
-      print('Error unblocking user: $e');
+      debugPrint('Error unblocking user: $e');
       rethrow;
     }
   }
@@ -533,7 +533,7 @@ class AdsyConnectService {
         throw Exception('Failed to report user: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error reporting user: $e');
+      debugPrint('Error reporting user: $e');
       rethrow;
     }
   }
@@ -548,7 +548,7 @@ class AdsyConnectService {
         body: jsonEncode({'is_online': isOnline}),
       );
     } catch (e) {
-      print('Error updating online status: $e');
+      debugPrint('Error updating online status: $e');
     }
   }
 
@@ -568,7 +568,7 @@ class AdsyConnectService {
         return [];
       }
     } catch (e) {
-      print('Error getting online status: $e');
+      debugPrint('Error getting online status: $e');
       return [];
     }
   }
@@ -582,7 +582,7 @@ class AdsyConnectService {
       }
       return null;
     } catch (e) {
-      print('Error getting online status for user $userId: $e');
+      debugPrint('Error getting online status for user $userId: $e');
       return null;
     }
   }
@@ -601,7 +601,7 @@ class AdsyConnectService {
         }),
       );
     } catch (e) {
-      print('Error updating typing status: $e');
+      debugPrint('Error updating typing status: $e');
     }
   }
 
@@ -620,7 +620,7 @@ class AdsyConnectService {
         return [];
       }
     } catch (e) {
-      print('Error getting typing status: $e');
+      debugPrint('Error getting typing status: $e');
       return [];
     }
   }
@@ -633,9 +633,9 @@ class AdsyConnectService {
         headers: headers,
         body: jsonEncode({'chatroom_id': chatroomId}),
       );
-      print('📍 Active chat set on server: $chatroomId');
+      debugPrint('📍 Active chat set on server: $chatroomId');
     } catch (e) {
-      print('Error setting active chat: $e');
+      debugPrint('Error setting active chat: $e');
     }
   }
 
@@ -646,9 +646,9 @@ class AdsyConnectService {
         Uri.parse('$baseUrl/clear-active-chat/'),
         headers: headers,
       );
-      print('📍 Active chat cleared on server');
+      debugPrint('📍 Active chat cleared on server');
     } catch (e) {
-      print('Error clearing active chat: $e');
+      debugPrint('Error clearing active chat: $e');
     }
   }
 
@@ -660,7 +660,7 @@ class AdsyConnectService {
         headers: headers,
       );
     } catch (e) {
-      print('Error sending heartbeat: $e');
+      debugPrint('Error sending heartbeat: $e');
     }
   }
 }

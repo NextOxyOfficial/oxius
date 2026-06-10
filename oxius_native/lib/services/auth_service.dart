@@ -8,6 +8,7 @@ import 'rideshare_driver_presence_service.dart';
 import 'social_auth_service.dart';
 import 'fcm_service.dart';
 import '../screens/suspended_account_screen.dart';
+import 'package:flutter/foundation.dart';
 
 class User {
   final String id; // Changed from int to String to handle UUID
@@ -296,7 +297,7 @@ class AuthService {
   // Login function matching the Vue implementation
   static Future<AuthResponse?> login(String email, String password) async {
     try {
-      print('Attempting login with email: $email'); // Debug log
+      debugPrint('Attempting login with email: $email'); // Debug log
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/auth/login/'),
         headers: {
@@ -308,8 +309,8 @@ class AuthService {
         }),
       );
 
-      print('Response status: ${response.statusCode}'); // Debug log
-      print('Response body: ${response.body}'); // Debug log
+      debugPrint('Response status: ${response.statusCode}'); // Debug log
+      debugPrint('Response body: ${response.body}'); // Debug log
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -331,7 +332,7 @@ class AuthService {
         }
       }
     } catch (e) {
-      print('Login error details: $e'); // Debug log
+      debugPrint('Login error details: $e'); // Debug log
       throw Exception('Login error: $e');
     }
   }
@@ -420,11 +421,11 @@ class AuthService {
 
   // Logout function
   static Future<void> logout() async {
-    print('🚀🚀🚀 NEW LOGOUT CODE IS RUNNING! 🚀🚀🚀');
+    debugPrint('🚀🚀🚀 NEW LOGOUT CODE IS RUNNING! 🚀🚀🚀');
     try {
       // Call backend logout endpoint if we have a token
       if (_accessToken != null) {
-        print('📡 Calling backend logout endpoint...');
+        debugPrint('📡 Calling backend logout endpoint...');
         await http.post(
           Uri.parse('${ApiService.baseUrl}/auth/logout/'),
           headers: {
@@ -435,27 +436,27 @@ class AuthService {
             'refresh': _refreshToken,
           }),
         );
-        print('✅ Backend logout call completed');
+        debugPrint('✅ Backend logout call completed');
       } else {
-        print('⚠️ No access token, skipping backend call');
+        debugPrint('⚠️ No access token, skipping backend call');
       }
     } catch (e) {
       // Continue with local logout even if backend call fails
-      print('❌ Logout API call failed: $e');
+      debugPrint('❌ Logout API call failed: $e');
     } finally {
       // Detach this device's push token from the account while creds are still
       // valid, so it stops receiving this account's notifications immediately.
       await FCMService.removeBackendToken(_accessToken);
       // Clear local auth data
-      print('🧹 About to call clearAuthData()...');
+      debugPrint('🧹 About to call clearAuthData()...');
       await clearAuthData();
-      print('✅ clearAuthData() completed');
+      debugPrint('✅ clearAuthData() completed');
     }
   }
 
   // Clear all authentication data
   static Future<void> clearAuthData() async {
-    print('🔴 Clearing all auth data...');
+    debugPrint('🔴 Clearing all auth data...');
 
     await AdsyConnectRealtimeService.instance.disconnect();
     OnlineStatusService.stop();
@@ -470,7 +471,7 @@ class AuthService {
 
     // Set a logout flag to prevent session restoration
     await prefs.setBool('adsyclub_logged_out', true);
-    print('🚩 Set logout flag to prevent session restoration');
+    debugPrint('🚩 Set logout flag to prevent session restoration');
 
     // Remove all auth-related keys
     await prefs.remove(_userKey);
@@ -484,10 +485,10 @@ class AuthService {
 
     // List all remaining keys for debugging
     final remainingKeys = prefs.getKeys();
-    print(
+    debugPrint(
         '📋 Remaining keys after clear: ${remainingKeys.where((k) => k.contains('adsy') || k.contains('token') || k.contains('user'))}');
 
-    print('✅ All auth data cleared from SharedPreferences');
+    debugPrint('✅ All auth data cleared from SharedPreferences');
   }
 
   // Refresh access token using refresh token
@@ -522,7 +523,7 @@ class AuthService {
         return false;
       }
     } catch (e) {
-      print('Token refresh error: $e');
+      debugPrint('Token refresh error: $e');
       await clearAuthData();
       return false;
     }
@@ -560,7 +561,7 @@ class AuthService {
 
           // If token expires in less than 5 minutes, refresh it
           if (expiryTime.difference(now).inMinutes < 5) {
-            print('Token expires soon, refreshing...');
+            debugPrint('Token expires soon, refreshing...');
             final refreshSuccess = await refreshTokens();
             if (!refreshSuccess) {
               return null;
@@ -569,7 +570,7 @@ class AuthService {
         }
       }
     } catch (e) {
-      print('Could not decode JWT token: $e');
+      debugPrint('Could not decode JWT token: $e');
       // If we can't decode it, try to refresh
       if (_refreshToken != null) {
         final refreshSuccess = await refreshTokens();
@@ -629,7 +630,7 @@ class AuthService {
         return true;
       } else {
         // Token validation failed, try to refresh
-        print('Token validation failed, attempting refresh');
+        debugPrint('Token validation failed, attempting refresh');
         final refreshSuccess = await refreshTokens();
 
         if (refreshSuccess) {
@@ -640,7 +641,7 @@ class AuthService {
         return false;
       }
     } catch (e) {
-      print('Token validation error: $e');
+      debugPrint('Token validation error: $e');
       return false;
     }
   }
@@ -669,7 +670,7 @@ class AuthService {
 
     // Clear logout flag on successful login
     await prefs.remove('adsyclub_logged_out');
-    print('🔓 Cleared logout flag - user is now logged in');
+    debugPrint('🔓 Cleared logout flag - user is now logged in');
 
     // Store user data
     await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
@@ -688,20 +689,20 @@ class AuthService {
     };
 
     await prefs.setString('adsyclub_auth', jsonEncode(authData));
-    print('💾 Auth data persisted to storage');
+    debugPrint('💾 Auth data persisted to storage');
   }
 
   // Private method to restore authentication data from storage
   static Future<void> _restoreAuthFromStorage() async {
     try {
-      print('🔍 Attempting to restore auth from storage...');
+      debugPrint('🔍 Attempting to restore auth from storage...');
       final prefs = await SharedPreferences.getInstance();
 
       // Check if user explicitly logged out
       final loggedOut = prefs.getBool('adsyclub_logged_out') ?? false;
       if (loggedOut) {
-        print('🚫 User previously logged out - skipping session restoration');
-        print('🧹 Clearing logout flag for next login...');
+        debugPrint('🚫 User previously logged out - skipping session restoration');
+        debugPrint('🧹 Clearing logout flag for next login...');
         await prefs.remove('adsyclub_logged_out');
         return;
       }
@@ -709,7 +710,7 @@ class AuthService {
       // Try to restore from comprehensive auth data first
       final authDataString = prefs.getString('adsyclub_auth');
       if (authDataString != null) {
-        print('📦 Found adsyclub_auth in storage');
+        debugPrint('📦 Found adsyclub_auth in storage');
         final authData = jsonDecode(authDataString);
         final timestamp = authData['timestamp'] ?? 0;
         final now = DateTime.now().millisecondsSinceEpoch;
@@ -719,10 +720,10 @@ class AuthService {
           _currentUser = User.fromJson(authData['user']);
           _accessToken = authData['token'];
           _refreshToken = authData['refreshToken'];
-          print('✅ Auth data restored from comprehensive storage');
+          debugPrint('✅ Auth data restored from comprehensive storage');
           return;
         } else {
-          print('⏰ Auth data expired (older than 30 days)');
+          debugPrint('⏰ Auth data expired (older than 30 days)');
         }
       }
 
@@ -732,16 +733,16 @@ class AuthService {
       final refreshToken = prefs.getString(_refreshTokenKey);
 
       if (userString != null && token != null && refreshToken != null) {
-        print('📦 Found individual auth items');
+        debugPrint('📦 Found individual auth items');
         _currentUser = User.fromJson(jsonDecode(userString));
         _accessToken = token;
         _refreshToken = refreshToken;
-        print('✅ Auth data restored from individual storage items');
+        debugPrint('✅ Auth data restored from individual storage items');
       } else {
-        print('❌ No auth data found in storage');
+        debugPrint('❌ No auth data found in storage');
       }
     } catch (e) {
-      print('❌ Failed to restore auth data: $e');
+      debugPrint('❌ Failed to restore auth data: $e');
       // Clear corrupted data
       await clearAuthData();
     }
@@ -821,7 +822,7 @@ class AuthService {
       }
       return false;
     } catch (e) {
-      print('Error refreshing user data: $e');
+      debugPrint('Error refreshing user data: $e');
       return false;
     }
   }

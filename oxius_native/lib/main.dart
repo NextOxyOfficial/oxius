@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,9 +30,6 @@ import 'screens/upgrade_to_pro_screen.dart';
 import 'screens/checkout_screen.dart';
 import 'screens/wallet/wallet_screen.dart';
 import 'screens/mobile_recharge/mobile_recharge_screen.dart';
-import 'widgets/ios_web_redirect_screen.dart';
-import 'utils/payment_policy.dart';
-import 'widgets/ios_payment_blocked_widget.dart';
 import 'screens/eshop_screen.dart';
 import 'screens/eshop_manager/eshop_manager_screen.dart';
 import 'screens/news_screen.dart';
@@ -196,7 +192,7 @@ Future<void> _bootstrap(UserStateService userState) async {
   await _safeInit('DeepLink', () => DeepLinkService.instance.init());
 
   if (userState.isAuthenticated) {
-    print('Session restored: ${userState.userName}');
+    debugPrint('Session restored: ${userState.userName}');
     // Post-auth inits — independent, run in parallel.
     await Future.wait([
       _safeInit(
@@ -212,10 +208,10 @@ Future<void> _bootstrap(UserStateService userState) async {
     try {
       OnlineStatusService.start();
     } catch (e) {
-      print('[init] OnlineStatusService FAILED (non-fatal): $e');
+      debugPrint('[init] OnlineStatusService FAILED (non-fatal): $e');
     }
   } else {
-    print('No existing session');
+    debugPrint('No existing session');
     await _safeInit(
         'Agora clear', () => AgoraCallService.clearPersistedCallState());
     await _safeInit(

@@ -25,13 +25,13 @@ class SafeBottomActionBar extends StatelessWidget {
   final double? elevation;
 
   const SafeBottomActionBar({
-    Key? key,
+    super.key,
     required this.child,
     this.padding = const EdgeInsets.all(12),
     this.backgroundColor = Colors.white,
     this.decoration,
     this.elevation,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +44,14 @@ class SafeBottomActionBar extends StatelessWidget {
               boxShadow: elevation != null
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: elevation!,
                         offset: const Offset(0, -2),
                       ),
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 6,
                         offset: const Offset(0, -1),
                       ),
@@ -75,7 +75,7 @@ class SafeBottomTwoActionBar extends StatelessWidget {
   final bool secondButtonOutlined;
 
   const SafeBottomTwoActionBar({
-    Key? key,
+    super.key,
     required this.onFirstAction,
     required this.onSecondAction,
     required this.firstButtonChild,
@@ -84,7 +84,7 @@ class SafeBottomTwoActionBar extends StatelessWidget {
     this.secondButtonColor = const Color(0xFF10B981),
     this.firstButtonOutlined = false,
     this.secondButtonOutlined = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

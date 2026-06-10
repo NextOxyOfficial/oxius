@@ -197,23 +197,31 @@ class _AdsyReportSheetContentState extends State<_AdsyReportSheetContent> {
                 ),
               ),
               const SizedBox(height: 10),
-              ...widget.options.map(
-                (option) => RadioListTile<AdsyReportOption>(
-                  value: option,
-                  groupValue: _selectedOption,
-                  onChanged: _isSubmitting
-                      ? null
-                      : (value) => setState(() => _selectedOption = value),
-                  title: Text(
-                    option.label,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  activeColor: const Color(0xFFF97316),
+              RadioGroup<AdsyReportOption>(
+                groupValue: _selectedOption,
+                onChanged: (value) {
+                  if (_isSubmitting) return;
+                  setState(() => _selectedOption = value);
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final option in widget.options)
+                      RadioListTile<AdsyReportOption>(
+                        value: option,
+                        enabled: !_isSubmitting,
+                        title: Text(
+                          option.label,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        activeColor: const Color(0xFFF97316),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 8),

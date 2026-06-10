@@ -1046,8 +1046,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
   Widget _buildImageGallery(Map<String, dynamic> product) {
     final headerHeight = MediaQuery.of(context).padding.top + kToolbarHeight;
     final topInset = headerHeight + 14;
-    final discount = _calcDiscount(
-        product['sale_price'], product['regular_price'] ?? product['price']);
     final isFreeDelivery = product['is_free_delivery'] == true;
 
     return Stack(

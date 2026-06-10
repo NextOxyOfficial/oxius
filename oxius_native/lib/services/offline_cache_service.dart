@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service for managing offline cache data
 class OfflineCacheService {
@@ -7,7 +8,6 @@ class OfflineCacheService {
   static const String _productsKey = 'cached_products';
   static const String _salePostsKey = 'cached_sale_posts';
   static const String _bannersKey = 'cached_banners';
-  static const String _lastUpdateKey = 'cache_last_update';
   
   /// Cache duration - 24 hours
   static const Duration _cacheDuration = Duration(hours: 24);
@@ -19,9 +19,9 @@ class OfflineCacheService {
       final jsonString = jsonEncode(posts);
       await prefs.setString(_newsKey, jsonString);
       await prefs.setString('${_newsKey}_timestamp', DateTime.now().toIso8601String());
-      print('✅ Cached ${posts.length} news posts');
+      debugPrint('✅ Cached ${posts.length} news posts');
     } catch (e) {
-      print('❌ Error caching news posts: $e');
+      debugPrint('❌ Error caching news posts: $e');
     }
   }
   
@@ -46,7 +46,7 @@ class OfflineCacheService {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       return jsonList.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('❌ Error getting cached news posts: $e');
+      debugPrint('❌ Error getting cached news posts: $e');
       return null;
     }
   }
@@ -58,9 +58,9 @@ class OfflineCacheService {
       final jsonString = jsonEncode(products);
       await prefs.setString(_productsKey, jsonString);
       await prefs.setString('${_productsKey}_timestamp', DateTime.now().toIso8601String());
-      print('✅ Cached ${products.length} products');
+      debugPrint('✅ Cached ${products.length} products');
     } catch (e) {
-      print('❌ Error caching products: $e');
+      debugPrint('❌ Error caching products: $e');
     }
   }
   
@@ -85,7 +85,7 @@ class OfflineCacheService {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       return jsonList.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('❌ Error getting cached products: $e');
+      debugPrint('❌ Error getting cached products: $e');
       return null;
     }
   }
@@ -97,9 +97,9 @@ class OfflineCacheService {
       final jsonString = jsonEncode(posts);
       await prefs.setString(_salePostsKey, jsonString);
       await prefs.setString('${_salePostsKey}_timestamp', DateTime.now().toIso8601String());
-      print('✅ Cached ${posts.length} sale posts');
+      debugPrint('✅ Cached ${posts.length} sale posts');
     } catch (e) {
-      print('❌ Error caching sale posts: $e');
+      debugPrint('❌ Error caching sale posts: $e');
     }
   }
   
@@ -124,7 +124,7 @@ class OfflineCacheService {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       return jsonList.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('❌ Error getting cached sale posts: $e');
+      debugPrint('❌ Error getting cached sale posts: $e');
       return null;
     }
   }
@@ -136,9 +136,9 @@ class OfflineCacheService {
       final jsonString = jsonEncode(banners);
       await prefs.setString(_bannersKey, jsonString);
       await prefs.setString('${_bannersKey}_timestamp', DateTime.now().toIso8601String());
-      print('✅ Cached ${banners.length} banners');
+      debugPrint('✅ Cached ${banners.length} banners');
     } catch (e) {
-      print('❌ Error caching banners: $e');
+      debugPrint('❌ Error caching banners: $e');
     }
   }
   
@@ -163,7 +163,7 @@ class OfflineCacheService {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       return jsonList.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('❌ Error getting cached banners: $e');
+      debugPrint('❌ Error getting cached banners: $e');
       return null;
     }
   }
@@ -193,9 +193,9 @@ class OfflineCacheService {
       await prefs.remove('${_salePostsKey}_timestamp');
       await prefs.remove(_bannersKey);
       await prefs.remove('${_bannersKey}_timestamp');
-      print('✅ Cleared all cache');
+      debugPrint('✅ Cleared all cache');
     } catch (e) {
-      print('❌ Error clearing cache: $e');
+      debugPrint('❌ Error clearing cache: $e');
     }
   }
   

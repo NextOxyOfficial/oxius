@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/order_model.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class OrderService {
   static String get _baseUrl => ApiService.baseUrl;
@@ -20,18 +21,18 @@ class OrderService {
         body: json.encode(orderData.toJson()),
       );
 
-      print('Order creation response status: ${response.statusCode}');
-      print('Order creation response body: ${response.body}');
+      debugPrint('Order creation response status: ${response.statusCode}');
+      debugPrint('Order creation response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = json.decode(response.body);
         return OrderResponse.fromJson(responseData);
       } else {
-        print('Failed to create order: ${response.statusCode} - ${response.body}');
+        debugPrint('Failed to create order: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to create order: ${response.body}');
       }
     } catch (e) {
-      print('Error creating order: $e');
+      debugPrint('Error creating order: $e');
       rethrow;
     }
   }
@@ -54,7 +55,7 @@ class OrderService {
         throw Exception('Failed to load orders');
       }
     } catch (e) {
-      print('Error fetching orders: $e');
+      debugPrint('Error fetching orders: $e');
       rethrow;
     }
   }
@@ -77,7 +78,7 @@ class OrderService {
         throw Exception('Failed to load order details');
       }
     } catch (e) {
-      print('Error fetching order details: $e');
+      debugPrint('Error fetching order details: $e');
       rethrow;
     }
   }

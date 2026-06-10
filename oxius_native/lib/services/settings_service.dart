@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/user_profile.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class SettingsService {
   static String get baseUrl => ApiService.baseUrl;
@@ -30,7 +31,7 @@ class SettingsService {
         throw Exception('Failed to load profile: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching user profile: $e');
+      debugPrint('Error fetching user profile: $e');
       return null;
     }
   }
@@ -71,7 +72,7 @@ class SettingsService {
         };
       }
     } catch (e) {
-      print('Error updating profile: $e');
+      debugPrint('Error updating profile: $e');
       return {
         'success': false,
         'message': 'Profile update failed. Check your internet connection.',
@@ -116,7 +117,7 @@ class SettingsService {
         };
       }
     } catch (e) {
-      print('Error changing password: $e');
+      debugPrint('Error changing password: $e');
       return {
         'success': false,
         'message': 'Failed to change password. Please try again.',
@@ -157,7 +158,7 @@ class SettingsService {
         };
       }
     } catch (e) {
-      print('Error deleting account: $e');
+      debugPrint('Error deleting account: $e');
       return {
         'success': false,
         'message': 'Failed to delete account. Please try again.',
@@ -183,7 +184,7 @@ class SettingsService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error deleting profile image: $e');
+      debugPrint('Error deleting profile image: $e');
       return false;
     }
   }
@@ -211,7 +212,7 @@ class SettingsService {
         throw Exception('Failed to load countries');
       }
     } catch (e) {
-      print('Error fetching countries: $e');
+      debugPrint('Error fetching countries: $e');
       return [];
     }
   }

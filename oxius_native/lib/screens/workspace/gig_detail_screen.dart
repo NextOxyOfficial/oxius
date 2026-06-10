@@ -47,7 +47,6 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   // Fee settings from backend
   double _buyerFeePercent = 2.5; // Default 2.5%
-  double _sellerFeePercent = 2.5; // Default 2.5%
   bool _feesEnabled = true;
 
   @override
@@ -108,8 +107,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           _buyerFeePercent =
               double.tryParse(fees['buyer_fee_percent']?.toString() ?? '') ??
                   2.5;
-          _sellerFeePercent =
-              double.tryParse(fees['seller_fee_percent']?.toString() ?? '') ??
+          double.tryParse(fees['seller_fee_percent']?.toString() ?? '') ??
                   2.5;
           _feesEnabled = fees['fees_enabled'] ?? true;
         });
@@ -224,9 +222,11 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     if (_gig == null) return [];
     final images = <String>[];
 
-    if (_gig!['image_url'] != null)
+    if (_gig!['image_url'] != null) {
       images.add(_getImageUrl(_gig!['image_url']));
-    else if (_gig!['image'] != null) images.add(_getImageUrl(_gig!['image']));
+    } else if (_gig!['image'] != null) {
+      images.add(_getImageUrl(_gig!['image']));
+    }
 
     if (_gig!['gallery'] != null && _gig!['gallery'] is List) {
       for (var img in _gig!['gallery']) {
@@ -244,8 +244,6 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   double get _serviceFee =>
       _feesEnabled ? _gigPrice * (_buyerFeePercent / 100) : 0;
   double get _totalToPay => _gigPrice + _serviceFee;
-  double get _sellerEarnings =>
-      _feesEnabled ? _gigPrice * (1 - (_sellerFeePercent / 100)) : _gigPrice;
   bool get _hasSufficientBalance => _userBalance >= _totalToPay;
   double get _balanceShortfall => _totalToPay - _userBalance;
   double get _balanceAfterPayment => _userBalance - _totalToPay;
@@ -510,10 +508,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       if (diff.inDays == 0) return 'Today';
       if (diff.inDays == 1) return 'Yesterday';
       if (diff.inDays < 7) return '${diff.inDays} days ago';
-      if (diff.inDays < 30)
+      if (diff.inDays < 30) {
         return '${(diff.inDays / 7).floor()} week${diff.inDays >= 14 ? 's' : ''} ago';
-      if (diff.inDays < 365)
+      }
+      if (diff.inDays < 365) {
         return '${(diff.inDays / 30).floor()} month${diff.inDays >= 60 ? 's' : ''} ago';
+      }
       return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
       return '';
@@ -654,7 +654,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(skill,
@@ -736,7 +736,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         shape: BoxShape.circle),
                     child: const Icon(Icons.chevron_left, size: 20),
                   ),
@@ -764,7 +764,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         shape: BoxShape.circle),
                     child: const Icon(Icons.chevron_right, size: 20),
                   ),
@@ -794,7 +794,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                         borderRadius: BorderRadius.circular(3),
                         color: _currentImageIndex == index
                             ? const Color(0xFF8B5CF6)
-                            : Colors.white.withOpacity(0.5),
+                            : Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   );
@@ -1012,7 +1012,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8)),
               child: Row(
                 children: [
@@ -1181,7 +1181,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 children: [
                   Text('Your Balance',
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.9), fontSize: 11)),
+                          color: Colors.white.withValues(alpha: 0.9), fontSize: 11)),
                   const SizedBox(height: 2),
                   Text('৳${_userBalance.toStringAsFixed(2)}',
                       style: const TextStyle(
@@ -1196,7 +1196,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle),
                   child: _isRefreshingBalance
                       ? const Padding(
@@ -1828,7 +1828,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 6,
               offset: const Offset(0, -1))
         ],

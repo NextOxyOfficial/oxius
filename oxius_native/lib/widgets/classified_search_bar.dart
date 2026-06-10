@@ -773,14 +773,6 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       'classified_search_placeholder',
       fallback: 'Search services, categories...',
     );
-    final helperText = _ts.t(
-      'classified_search_helper',
-      fallback: 'Find services by title or category',
-    );
-    final liveSearchLabel = _ts.t(
-      'classified_live_search',
-      fallback: 'Live search',
-    );
     final clearLabel = _ts.t('clear_search', fallback: 'Clear');
     final hasQuery = _controller.text.trim().isNotEmpty;
     final highlightBorder = _focusNode.hasFocus || hasQuery;

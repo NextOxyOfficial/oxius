@@ -8,9 +8,9 @@ class NotificationPermissionGate extends StatefulWidget {
   final Widget child;
 
   const NotificationPermissionGate({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   State<NotificationPermissionGate> createState() =>
@@ -89,7 +89,7 @@ class _NotificationPermissionGateState
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
@@ -225,7 +225,7 @@ class _NotificationPermissionGateState
                             child: Container(
                               padding: EdgeInsets.all(iconPadding),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(

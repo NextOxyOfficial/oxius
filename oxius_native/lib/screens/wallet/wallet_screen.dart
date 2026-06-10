@@ -15,11 +15,8 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
-const _emerald = Color(0xFF10B981);
 const _slate50 = Color(0xFFF8FAFC);
-const _slate100 = Color(0xFFF1F5F9);
 const _slate200 = Color(0xFFE2E8F0);
-const _slate400 = Color(0xFF94A3B8);
 const _slate500 = Color(0xFF64748B);
 const _slate800 = Color(0xFF1E293B);
 
@@ -34,7 +31,6 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   WalletBalance? _balance;
-  bool _isLoadingBalance = true;
   int _currentTab = 0;
   String _transactionTab = 'sent'; // 'sent' or 'received'
   List<Transaction> _sentTransactions = [];
@@ -164,8 +160,6 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> _loadBalance() async {
-    setState(() => _isLoadingBalance = true);
-
     // Always refresh user data first to get latest balance
     await AuthService.refreshUserData();
 
@@ -173,7 +167,6 @@ class _WalletScreenState extends State<WalletScreen> {
     if (mounted) {
       setState(() {
         _balance = balance;
-        _isLoadingBalance = false;
       });
       // Also refresh the AccountBalanceSection
       _balanceKey.currentState?.loadBalance();
@@ -205,7 +198,7 @@ class _WalletScreenState extends State<WalletScreen> {
         });
       }
     } catch (e) {
-      print('Error loading transactions: $e');
+      debugPrint('Error loading transactions: $e');
       if (mounted) {
         setState(() {
           _sentTransactions = [];
@@ -506,91 +499,6 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  void _showPendingTransactions() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) {
-          return Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange[50],
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Pending Transactions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _balance?.pendingTransactions.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final txn = _balance!.pendingTransactions[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.orange[100],
-                          child: Icon(
-                            _getTransactionIcon(txn.transactionType),
-                            color: Colors.orange,
-                          ),
-                        ),
-                        title: Text(
-                          txn.transactionType.toUpperCase(),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Text(
-                          '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year}',
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 12),
-                        ),
-                        trailing: Text(
-                          '৳${txn.amount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   IconData _getTransactionIcon(String type) {
     switch (type.toLowerCase()) {
       case 'deposit':
@@ -692,7 +600,7 @@ class _WalletScreenState extends State<WalletScreen> {
               Icon(Icons.receipt_long, size: 40, color: Colors.grey[300]),
               const SizedBox(height: 8),
               Text(
-                'No ${_transactionTab} transactions',
+                'No $_transactionTab transactions',
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: _slate500,
@@ -1007,7 +915,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 24),

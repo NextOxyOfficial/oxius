@@ -51,7 +51,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
         });
       }
     } catch (e) {
-      print('Error fetching hot arrivals: $e');
+      debugPrint('Error fetching hot arrivals: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -169,7 +169,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.08),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -237,7 +237,6 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
     final name = arrival['name']?.toString() ?? 'Unnamed Category';
     final badge = arrival['badge']?.toString();
     final badgeColorStr = arrival['badge_color']?.toString();
-    final description = arrival['description']?.toString();
     final productCount = arrival['product_count'];
 
     // Only show badge if it exists in the data
@@ -291,7 +290,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -351,7 +350,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                             borderRadius: BorderRadius.circular(6),
                             boxShadow: [
                               BoxShadow(
-                                color: badgeColor.withOpacity(0.3),
+                                color: badgeColor.withValues(alpha: 0.3),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -378,7 +377,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
+                            color: Colors.black.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

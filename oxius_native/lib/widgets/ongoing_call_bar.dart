@@ -140,10 +140,10 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                   end: Alignment.bottomRight,
                   colors: [Color(0xFF06223B), Color(0xFF0F3A63)],
                 ),
-                border: Border.all(color: const Color(0xFF60A5FA).withOpacity(0.24)),
+                border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.24)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
+                    color: Colors.black.withValues(alpha: 0.18),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
@@ -156,8 +156,8 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                     height: 38,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.08),
-                      border: Border.all(color: Colors.white.withOpacity(0.12)),
+                      color: Colors.white.withValues(alpha: 0.08),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: peerAvatar != null && peerAvatar.isNotEmpty
@@ -212,7 +212,7 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                         Text(
                           subtitle,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.76),
+                            color: Colors.white.withValues(alpha: 0.76),
                             fontSize: 11.5,
                             fontWeight: FontWeight.w500,
                             decoration: TextDecoration.none,
@@ -225,9 +225,9 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,

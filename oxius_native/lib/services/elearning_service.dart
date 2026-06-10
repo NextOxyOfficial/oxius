@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/elearning_models.dart';
 
 import '../config/app_config.dart';
+import 'package:flutter/foundation.dart';
 
 class ElearningService {
   // Use AppConfig for base URL
@@ -77,7 +78,7 @@ class ElearningService {
         throw Exception('Failed to load batches: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching batches: $e');
+      debugPrint('Error fetching batches: $e');
       throw Exception('Failed to load batches: $e');
     }
   }
@@ -111,7 +112,7 @@ class ElearningService {
         throw Exception('Failed to load divisions: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching divisions for batch $batchCode: $e');
+      debugPrint('Error fetching divisions for batch $batchCode: $e');
       throw Exception('Failed to load divisions: $e');
     }
   }
@@ -145,7 +146,7 @@ class ElearningService {
         throw Exception('Failed to load subjects: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching subjects for division $divisionCode: $e');
+      debugPrint('Error fetching subjects for division $divisionCode: $e');
       throw Exception('Failed to load subjects: $e');
     }
   }
@@ -179,7 +180,7 @@ class ElearningService {
         throw Exception('Failed to load videos: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching videos for subject $subjectCode: $e');
+      debugPrint('Error fetching videos for subject $subjectCode: $e');
       throw Exception('Failed to load videos: $e');
     }
   }
@@ -204,7 +205,7 @@ class ElearningService {
       }
       return false;
     } catch (e) {
-      print('Error incrementing video views: $e');
+      debugPrint('Error incrementing video views: $e');
       return false;
     }
   }
@@ -238,7 +239,7 @@ class ElearningService {
         throw Exception('Failed to load batch products: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching batch products: $e');
+      debugPrint('Error fetching batch products: $e');
       return [];
     }
   }
@@ -272,7 +273,7 @@ class ElearningService {
         throw Exception('Failed to load division products: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching division products: $e');
+      debugPrint('Error fetching division products: $e');
       return [];
     }
   }

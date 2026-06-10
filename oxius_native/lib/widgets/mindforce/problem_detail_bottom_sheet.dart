@@ -426,7 +426,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.1),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -756,7 +756,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
             ),
           )
         else
-          ..._comments.map((comment) => _buildCommentCard(comment)).toList(),
+          ..._comments.map((comment) => _buildCommentCard(comment)),
       ],
     );
   }
@@ -852,7 +852,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
           color: comment.isSolved
-              ? Colors.green.shade50.withOpacity(0.3)
+              ? Colors.green.shade50.withValues(alpha: 0.3)
               : Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

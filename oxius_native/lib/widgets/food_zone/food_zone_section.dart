@@ -19,9 +19,6 @@ class FoodZoneSection extends StatefulWidget {
 class _FoodZoneSectionState extends State<FoodZoneSection> {
   late FoodZoneService _foodZoneService;
   List<ClassifiedPost> _posts = [];
-  List<FoodZoneCategory> _categories = [];
-  bool _isLoading = true;
-  String? _selectedCategoryId;
 
   @override
   void initState() {
@@ -31,7 +28,6 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
     
     try {
       final results = await Future.wait([
@@ -41,34 +37,9 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
       
       setState(() {
         _posts = results[0] as List<ClassifiedPost>;
-        _categories = results[1] as List<FoodZoneCategory>;
-        _isLoading = false;
       });
     } catch (e) {
-      print('Error loading food zone data: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loadPostsByCategory(String? categoryId) async {
-    setState(() {
-      _selectedCategoryId = categoryId;
-      _isLoading = true;
-    });
-    
-    try {
-      final posts = await _foodZoneService.fetchFoodZonePosts(
-        pageSize: 10,
-        categoryId: categoryId,
-      );
-      
-      setState(() {
-        _posts = posts;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading food zone posts: $e');
-      setState(() => _isLoading = false);
+      debugPrint('Error loading food zone data: $e');
     }
   }
 
@@ -101,14 +72,14 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
         gradient: LinearGradient(
           colors: [
             const Color(0xFFFCE4EC),
-            const Color(0xFFFCE4EC).withOpacity(0.5),
+            const Color(0xFFFCE4EC).withValues(alpha: 0.5),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFE91E63).withOpacity(0.2),
+          color: const Color(0xFFE91E63).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -134,7 +105,7 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFE91E63).withOpacity(0.3),
+                            color: const Color(0xFFE91E63).withValues(alpha: 0.3),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -179,7 +150,7 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFE91E63).withOpacity(0.3),
+                          color: const Color(0xFFE91E63).withValues(alpha: 0.3),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),

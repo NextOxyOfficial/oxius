@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/microgig_models.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 
 class MicrogigService {
   static String get baseUrl => ApiService.baseUrl;
@@ -52,7 +53,7 @@ class MicrogigService {
         throw Exception('Failed to load pending tasks: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting pending tasks: $e');
+      debugPrint('Error getting pending tasks: $e');
       return {
         'tasks': <MicroGigTask>[],
         'count': 0,
@@ -101,7 +102,7 @@ class MicrogigService {
         throw Exception('Failed to load micro gigs: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting micro gigs: $e');
+      debugPrint('Error getting micro gigs: $e');
       return [];
     }
   }

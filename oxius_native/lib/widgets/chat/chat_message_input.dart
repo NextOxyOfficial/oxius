@@ -99,7 +99,7 @@ class ChatMessageInput extends StatelessWidget {
         color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: const Color(0xFFE5E7EB).withOpacity(0.5),
+            color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -114,7 +114,7 @@ class ChatMessageInput extends StatelessWidget {
                 color: (blockedByMe
                         ? const Color(0xFFF59E0B)
                         : const Color(0xFFEF4444))
-                    .withOpacity(0.08),
+                    .withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -334,7 +334,7 @@ class ChatMessageInput extends StatelessWidget {
         if (isCompressingImages)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
             child: Row(
               children: [
                 const SizedBox(
@@ -363,7 +363,7 @@ class ChatMessageInput extends StatelessWidget {
         if (isUploadingAttachment && !isCompressingImages)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: const Color(0xFF3B82F6).withOpacity(0.1),
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
             child: Row(
               children: [
                 const SizedBox(
@@ -396,12 +396,12 @@ class ChatMessageInput extends StatelessWidget {
           margin: const EdgeInsets.fromLTRB(8, 4, 8, 8),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.88),
+            color: Colors.white.withValues(alpha: 0.88),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withOpacity(0.84)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.84)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -416,7 +416,7 @@ class ChatMessageInput extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.08),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: IconButton(
@@ -487,7 +487,7 @@ class ChatMessageInput extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: const Icon(
@@ -608,7 +608,7 @@ class ChatMessageInput extends StatelessWidget {
         color: const Color(0xFFF3F4F6),
         border: Border(
           top: BorderSide(
-            color: const Color(0xFFE5E7EB).withOpacity(0.5),
+            color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
             width: 1,
           ),
           left: const BorderSide(color: Color(0xFF3B82F6), width: 3),

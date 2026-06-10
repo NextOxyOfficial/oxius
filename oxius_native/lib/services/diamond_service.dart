@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/diamond_models.dart';
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 class DiamondService {
   static String get _baseUrl => ApiService.baseUrl;
@@ -24,7 +25,7 @@ class DiamondService {
       }
       return [];
     } catch (e) {
-      print('Error loading diamond packages: $e');
+      debugPrint('Error loading diamond packages: $e');
       return [];
     }
   }
@@ -53,7 +54,7 @@ class DiamondService {
         throw Exception(error['error'] ?? 'Failed to purchase diamonds');
       }
     } catch (e) {
-      print('Error purchasing diamonds: $e');
+      debugPrint('Error purchasing diamonds: $e');
       rethrow;
     }
   }
@@ -76,7 +77,7 @@ class DiamondService {
       }
       return null;
     } catch (e) {
-      print('Error loading transaction history: $e');
+      debugPrint('Error loading transaction history: $e');
       return null;
     }
   }
@@ -119,7 +120,7 @@ class DiamondService {
         throw Exception(error['error'] ?? 'Failed to send gift');
       }
     } catch (e) {
-      print('Error sending gift: $e');
+      debugPrint('Error sending gift: $e');
       rethrow;
     }
   }

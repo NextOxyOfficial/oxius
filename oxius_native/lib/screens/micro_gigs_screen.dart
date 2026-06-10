@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/micro_gigs_section.dart';
 
 class MicroGigsScreen extends StatelessWidget {
-  const MicroGigsScreen({Key? key}) : super(key: key);
+  const MicroGigsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

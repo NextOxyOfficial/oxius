@@ -98,11 +98,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         _startResendCooldown();
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _errorMessage = e.toString().replaceFirst('Exception: ', '');
           _isLoading = false;
         });
+      }
     }
   }
 
@@ -118,36 +119,39 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           method: 'phone',
           phone: _phoneController.text.trim(),
           otp: _otpController.text);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _resetToken = result['token'] ?? '';
           _successMessage = result['message'] ?? 'Code verified successfully';
           _currentStep = 3;
           _isLoading = false;
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _errorMessage = e.toString().replaceFirst('Exception: ', '');
           _isLoading = false;
         });
+      }
     }
   }
 
   Future<void> _handleResetPassword() async {
     _clearMessages();
     if (!_isPasswordValid) {
-      if (_newPasswordController.text.length < 8)
+      if (_newPasswordController.text.length < 8) {
         setState(() =>
             _errorMessage = 'Password must be at least 8 characters long.');
-      else if (!RegExp(r'[A-Z]').hasMatch(_newPasswordController.text))
+      } else if (!RegExp(r'[A-Z]').hasMatch(_newPasswordController.text)) {
         setState(() => _errorMessage =
             'Password must contain at least one uppercase letter.');
-      else if (!RegExp(r'[0-9]').hasMatch(_newPasswordController.text))
+      } else if (!RegExp(r'[0-9]').hasMatch(_newPasswordController.text)) {
         setState(
             () => _errorMessage = 'Password must contain at least one number.');
-      else if (_newPasswordController.text != _confirmPasswordController.text)
+      } else if (_newPasswordController.text != _confirmPasswordController.text) {
         setState(() => _errorMessage = 'Passwords do not match.');
+      }
       return;
     }
     setState(() => _isLoading = true);
@@ -175,9 +179,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8))));
           await Future.delayed(const Duration(milliseconds: 500));
-          if (mounted)
+          if (mounted) {
             Navigator.of(context)
                 .pushNamedAndRemoveUntil('/', (route) => false);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Row(children: [
@@ -197,11 +202,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         }
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _errorMessage = e.toString().replaceFirst('Exception: ', '');
           _isLoading = false;
         });
+      }
     }
   }
 
@@ -319,7 +325,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4))
           ]),

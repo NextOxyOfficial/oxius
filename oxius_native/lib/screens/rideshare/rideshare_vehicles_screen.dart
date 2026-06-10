@@ -20,7 +20,6 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   static const Color _primary = Color(0xFF6366F1);
-  static const Color _primaryDark = Color(0xFF4F46E5);
   static const Color _secondary = Color(0xFF8B5CF6);
   static const Color _surface = Color(0xFFF8FAFC);
   static const Color _surfaceSoft = Color(0xFFF1F5F9);
@@ -30,7 +29,6 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   static const Color _textMuted = Color(0xFF94A3B8);
   static const Color _line = Color(0xFFE2E8F0);
   static const Color _success = Color(0xFF10B981);
-  static const Color _successSoft = Color(0xFFECFDF5);
   static const Color _danger = Color(0xFFEF4444);
   static const Color _dangerSoft = Color(0xFFFEF2F2);
   static const Color _warning = Color(0xFFF59E0B);
@@ -367,7 +365,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       isDefault: isDefault,
                     );
 
-              if (!mounted) return;
+              if (!mounted || !context.mounted) return;
 
               setSheetState(() => isSaving = false);
               if (result.success) {
@@ -394,7 +392,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                           const BorderRadius.vertical(top: Radius.circular(22)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
+                          color: Colors.black.withValues(alpha: 0.06),
                           blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),
@@ -447,7 +445,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                               _buildSectionLabel('Vehicle type'),
                               const SizedBox(height: 6),
                               DropdownButtonFormField<String>(
-                                value: selectedType,
+                                initialValue: selectedType,
                                 decoration: _inputDecoration(),
                                 style: GoogleFonts.inter(
                                   color: _textPrimary,
@@ -705,7 +703,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
           const SizedBox(width: 10),
           Switch.adaptive(
             value: value,
-            activeColor: _primary,
+            activeThumbColor: _primary,
             onChanged: onChanged,
           ),
         ],
@@ -967,10 +965,10 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         color: _card,
         borderRadius: BorderRadius.circular(16),
         border:
-            Border.all(color: isDefault ? _primary.withOpacity(0.18) : _line),
+            Border.all(color: isDefault ? _primary.withValues(alpha: 0.18) : _line),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -1000,7 +998,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   height: 42,
                   decoration: BoxDecoration(
                     color: isDefault
-                        ? Colors.white.withOpacity(0.16)
+                        ? Colors.white.withValues(alpha: 0.16)
                         : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1042,7 +1040,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
+                      color: Colors.white.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
@@ -1494,7 +1492,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   border: Border.all(color: _line),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),

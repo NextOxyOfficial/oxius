@@ -284,7 +284,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: _getStatusColor(_ticket!.status)
-                                      .withOpacity(0.1),
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -443,12 +443,12 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isFromAdmin
-                  ? const Color(0xFF3B82F6).withOpacity(0.1)
-                  : const Color(0xFF10B981).withOpacity(0.1),
+                  ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                  : const Color(0xFF10B981).withValues(alpha: 0.1),
               border: Border.all(
                 color: isFromAdmin
-                    ? const Color(0xFF3B82F6).withOpacity(0.3)
-                    : const Color(0xFF10B981).withOpacity(0.3),
+                    ? const Color(0xFF3B82F6).withValues(alpha: 0.3)
+                    : const Color(0xFF10B981).withValues(alpha: 0.3),
                 width: 2,
               ),
             ),

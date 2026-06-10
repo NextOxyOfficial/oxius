@@ -63,7 +63,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     try {
       await ElearningService.incrementVideoViews(widget.video.id);
     } catch (e) {
-      print('Error incrementing view count: $e');
+      debugPrint('Error incrementing view count: $e');
     }
   }
 

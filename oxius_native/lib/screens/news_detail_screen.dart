@@ -5,6 +5,7 @@ import '../models/news_models.dart';
 import '../services/news_service.dart';
 import '../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_share_sheet.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final String slug;
@@ -49,6 +50,23 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     }
   }
 
+  Future<void> _sharePost() async {
+    final post = _post;
+    if (post == null) return;
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: post.title,
+        description: post.summary,
+        url: 'https://adsyclub.com/adsy-news/${post.slug}',
+        imageUrl: post.image,
+        subject: post.title,
+        eyebrow: 'AdsyNews',
+        hashtags: post.tags,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,9 +94,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
           IconButton(
             icon: const Icon(Icons.share_rounded,
                 color: Color(0xFF1F2937), size: 20),
-            onPressed: () {
-              // TODO: Implement share
-            },
+            onPressed: _post == null ? null : _sharePost,
           ),
           const SizedBox(width: 4),
         ],

@@ -160,10 +160,10 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
           });
         }
       } else {
-        print('Token validation failed');
+        debugPrint('Token validation failed');
       }
     } catch (e) {
-      print('Error loading balance: $e');
+      debugPrint('Error loading balance: $e');
     } finally {
       setState(() => _isLoadingBalance = false);
     }
@@ -182,7 +182,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         });
       }
     } catch (e) {
-      print('Error loading packages: $e');
+      debugPrint('Error loading packages: $e');
       if (mounted) {
         setState(() {
           _error = 'Failed to load packages. Please try again.';
@@ -292,13 +292,15 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
           });
 
           // Show success and go back
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Success! Your new balance is ৳${_userBalance.toStringAsFixed(0)}'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'Success! Your new balance is ৳${_userBalance.toStringAsFixed(0)}'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
 
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) Navigator.pop(context);
@@ -617,8 +619,18 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   ),
                 )
               else
-                ...List.generate(_packages.length,
-                    (index) => _buildPackageCard(_packages[index])),
+                RadioGroup<int>(
+                  groupValue: _selectedPackageId,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedPackageId = value);
+                    }
+                  },
+                  child: Column(
+                    children: List.generate(_packages.length,
+                        (index) => _buildPackageCard(_packages[index])),
+                  ),
+                ),
 
               const SizedBox(height: 24),
 
@@ -1053,7 +1065,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: c, width: w));
     return DropdownButtonFormField<String>(
-      value: safeValue,
+      initialValue: safeValue,
       isExpanded: true,
       icon: const Icon(Icons.keyboard_arrow_down_rounded,
           size: 20, color: Color(0xFF9CA3AF)),
@@ -1174,10 +1186,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
           children: [
             Radio<int>(
               value: package.id,
-              groupValue: _selectedPackageId,
-              onChanged: hasEnoughBalance
-                  ? (value) => setState(() => _selectedPackageId = value!)
-                  : null,
+              enabled: hasEnoughBalance,
               activeColor: Colors.amber.shade600,
             ),
             Expanded(

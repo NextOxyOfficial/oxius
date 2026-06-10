@@ -4,6 +4,7 @@ import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import '../models/referral_models.dart';
 import '../models/referral_reward_models.dart';
+import 'package:flutter/foundation.dart';
 
 class ReferralService {
   static final String baseUrl = AppConfig.apiBaseUrl;
@@ -32,7 +33,7 @@ class ReferralService {
         );
       }
     } catch (e) {
-      print('Error fetching platform stats: $e');
+      debugPrint('Error fetching platform stats: $e');
       return PlatformStats(
         activeReferrers: 500,
         topEarnerAmount: 10000,
@@ -64,7 +65,7 @@ class ReferralService {
 
       throw Exception('No referral code found');
     } catch (e) {
-      print('Error getting referral info: $e');
+      debugPrint('Error getting referral info: $e');
       rethrow;
     }
   }
@@ -92,7 +93,7 @@ class ReferralService {
         throw Exception('Failed to load commission history');
       }
     } catch (e) {
-      print('Error fetching commission history: $e');
+      debugPrint('Error fetching commission history: $e');
       rethrow;
     }
   }
@@ -129,7 +130,7 @@ class ReferralService {
         throw Exception('Failed to load referred users');
       }
     } catch (e) {
-      print('Error fetching referred users: $e');
+      debugPrint('Error fetching referred users: $e');
       rethrow;
     }
   }
@@ -150,7 +151,7 @@ class ReferralService {
         return ReferralRewardProgramResponse(active: false);
       }
     } catch (e) {
-      print('Error fetching reward program: $e');
+      debugPrint('Error fetching reward program: $e');
       return ReferralRewardProgramResponse(active: false);
     }
   }
@@ -178,7 +179,7 @@ class ReferralService {
         return null;
       }
     } catch (e) {
-      print('Error fetching reward claims: $e');
+      debugPrint('Error fetching reward claims: $e');
       return null;
     }
   }
@@ -206,7 +207,7 @@ class ReferralService {
         return null;
       }
     } catch (e) {
-      print('Error checking conditions: $e');
+      debugPrint('Error checking conditions: $e');
       return null;
     }
   }
@@ -230,7 +231,7 @@ class ReferralService {
       final data = json.decode(response.body);
       return ClaimRewardResponse.fromJson(data);
     } catch (e) {
-      print('Error claiming reward: $e');
+      debugPrint('Error claiming reward: $e');
       return ClaimRewardResponse(
         success: false,
         message: 'Failed to claim reward. Please try again.',

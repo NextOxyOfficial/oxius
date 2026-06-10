@@ -29,7 +29,6 @@ import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/ios_web_redirect_screen.dart';
 import 'inbox_screen.dart';
-import 'eshop_screen.dart';
 import 'news_screen.dart';
 import 'verification_screen.dart';
 import '../widgets/business_network/adsypay_qr_modal.dart';
@@ -216,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _updateAppBadge(totalUnread);
       }
     } catch (e) {
-      print('Error fetching unread count: $e');
+      debugPrint('Error fetching unread count: $e');
     }
   }
 
@@ -241,14 +240,14 @@ class _HomeScreenState extends State<HomeScreen> {
     } on MissingPluginException {
       return;
     } catch (e) {
-      print('Error updating app badge: $e');
+      debugPrint('Error updating app badge: $e');
     }
   }
 
   Future<void> _fetchRecentPosts({bool forceRefresh = false}) async {
     if (_isLoadingPosts && !forceRefresh) return;
 
-    print('🔍 HomeScreen: Fetching recent posts...');
+    debugPrint('🔍 HomeScreen: Fetching recent posts...');
 
     if (mounted && !_disposed) {
       setState(() => _isLoadingPosts = true);
@@ -257,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final posts = await _postService.fetchRecentPosts(limit: 10);
 
-      print('✅ HomeScreen: Fetched ${posts.length} recent posts');
+      debugPrint('✅ HomeScreen: Fetched ${posts.length} recent posts');
 
       // Cache the posts for offline viewing
       final postsJson = posts.map((post) => post.toJson()).toList();
@@ -267,12 +266,12 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _recentPosts = posts;
           _isLoadingPosts = false;
-          print(
+          debugPrint(
               '📊 HomeScreen: _recentPosts now has ${_recentPosts?.length ?? 0} items');
         });
       }
     } catch (e) {
-      print('❌ Error fetching recent posts: $e');
+      debugPrint('❌ Error fetching recent posts: $e');
 
       // Try to load from cache when network fails
       final cachedPosts = await OfflineCacheService.getCachedSalePosts();
@@ -326,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleRefresh() async {
-    print('🔄 HomeScreen: Pull to refresh triggered');
+    debugPrint('🔄 HomeScreen: Pull to refresh triggered');
 
     if (mounted && !_disposed) {
       setState(() {
@@ -344,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await _maybeShowHomePopup(force: true);
 
-    print('✅ HomeScreen: Refresh completed');
+    debugPrint('✅ HomeScreen: Refresh completed');
   }
 
   Future<void> _refreshFromHomeNav() async {
@@ -481,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
         final shouldPop = await _onWillPop();
         if (shouldPop && mounted) {
@@ -640,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   curve: Curves.easeInOut,
                   child: Material(
                     elevation: 4,
-                    shadowColor: Colors.black.withOpacity(0.15),
+                    shadowColor: Colors.black.withValues(alpha: 0.15),
                     color: Colors.white,
                     child: SafeArea(
                       bottom: false,
@@ -660,7 +659,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       });
                     },
                     child: Container(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -708,16 +707,16 @@ class _HomeScreenState extends State<HomeScreen> {
         constraints:
             BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
+          color: Colors.white.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(12), // rounded-xl
           border: Border.all(
             color:
-                const Color(0xFFCBD5E1).withOpacity(0.5), // border-slate-200/50
+                const Color(0xFFCBD5E1).withValues(alpha: 0.5), // border-slate-200/50
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               offset: const Offset(0, 4),
               blurRadius: 16,
             ),
@@ -998,7 +997,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: const Color(0xFFC4B5FD).withOpacity(0.8),
+                            color: const Color(0xFFC4B5FD).withValues(alpha: 0.8),
                           ),
                         ),
                         child: const Center(
@@ -1082,7 +1081,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 2,
                                   offset: const Offset(0, 1),
                                 ),
@@ -1121,7 +1120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const BorderRadius.vertical(top: Radius.circular(12)),
                 border: Border(
                   bottom: BorderSide(
-                      color: const Color(0xFFE0E7FF).withOpacity(0.3)),
+                      color: const Color(0xFFE0E7FF).withValues(alpha: 0.3)),
                 ),
               ),
               child: Row(
@@ -1188,15 +1187,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF6366F1).withOpacity(0.1),
-                            const Color(0xFF2563EB).withOpacity(0.1),
+                            const Color(0xFF6366F1).withValues(alpha: 0.1),
+                            const Color(0xFF2563EB).withValues(alpha: 0.1),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: const Color(0xFFC7D2FE).withOpacity(0.5)),
+                            color: const Color(0xFFC7D2FE).withValues(alpha: 0.5)),
                       ),
                       child: const Icon(
                         Icons.shield_outlined,
@@ -1250,7 +1249,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 2,
                                 offset: const Offset(0, 1),
                               ),
@@ -1273,7 +1272,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Color color, bool hasBadge, String? badgeText) {
     return InkWell(
       onTap: () {
-        print('🔵 Navigation tapped: $key');
+        debugPrint('🔵 Navigation tapped: $key');
         setState(() {
           _isDropdownOpen = false;
         });
@@ -1282,7 +1281,7 @@ class _HomeScreenState extends State<HomeScreen> {
         switch (key) {
           case 'adsypay':
           case 'deposit_withdraw':
-            print('✅ Navigating to WalletScreen');
+            debugPrint('✅ Navigating to WalletScreen');
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -1292,30 +1291,30 @@ class _HomeScreenState extends State<HomeScreen> {
             break;
           case 'shop_manager':
           case 'eshop':
-            print('✅ Navigating to /shop-manager');
+            debugPrint('✅ Navigating to /shop-manager');
             Navigator.pushNamed(context, '/shop-manager');
             break;
           case 'ad':
-            print('✅ Navigating to /my-classified-posts');
+            debugPrint('✅ Navigating to /my-classified-posts');
             Navigator.pushNamed(context, '/my-classified-posts');
             break;
           case 'business_network':
-            print('✅ Navigating to /business-network');
+            debugPrint('✅ Navigating to /business-network');
             Navigator.pushNamed(context, '/business-network');
             break;
           case 'adsy_news':
-            print('✅ Navigating to NewsScreen');
+            debugPrint('✅ Navigating to NewsScreen');
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const NewsScreen()),
             );
             break;
           case 'mobile_recharge':
-            print('✅ Navigating to /mobile-recharge');
+            debugPrint('✅ Navigating to /mobile-recharge');
             Navigator.pushNamed(context, '/mobile-recharge');
             break;
           default:
-            print('❌ Unknown navigation key: $key');
+            debugPrint('❌ Unknown navigation key: $key');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('${t('navigate_to')} ${t(key)}'),
@@ -1336,15 +1335,15 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  color.withOpacity(0.08),
-                  color.withOpacity(0.04),
+                  color.withValues(alpha: 0.08),
+                  color.withValues(alpha: 0.04),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 width: 1,
               ),
             ),
@@ -1356,7 +1355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
+                    color: color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 20),
@@ -1487,25 +1486,25 @@ class _HomeScreenState extends State<HomeScreen> {
     return InkWell(
       onTap: () async {
         try {
-          print('🔵 LOGOUT BUTTON TAPPED');
+          debugPrint('🔵 LOGOUT BUTTON TAPPED');
 
           // Close dropdown first
           if (mounted) {
             setState(() {
               _isDropdownOpen = false;
             });
-            print('🔵 Dropdown closed');
+            debugPrint('🔵 Dropdown closed');
           }
 
           // Wait for dropdown animation to complete and ensure widget is mounted
           await Future.delayed(const Duration(milliseconds: 250));
 
-          if (!mounted) {
-            print('⚠️ Widget not mounted, cancelling logout');
+          if (!mounted || !context.mounted) {
+            debugPrint('⚠️ Widget not mounted, cancelling logout');
             return;
           }
 
-          print('🔵 Showing confirmation dialog...');
+          debugPrint('🔵 Showing confirmation dialog...');
 
           // Show clean professional confirmation dialog
           final bool? confirmed = await showDialog<bool>(
@@ -1618,11 +1617,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // If user confirmed logout
           if (confirmed == true) {
-            print('🔴 USER CONFIRMED LOGOUT');
+            debugPrint('🔴 USER CONFIRMED LOGOUT');
 
             // Check if widget is still mounted before showing snackbar
-            if (!mounted) {
-              print('⚠️ Widget not mounted after dialog, cancelling logout');
+            if (!mounted || !context.mounted) {
+              debugPrint('⚠️ Widget not mounted after dialog, cancelling logout');
               return;
             }
 
@@ -1637,7 +1636,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Padding(
@@ -1669,7 +1668,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               'Please wait a moment',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -1691,12 +1690,12 @@ class _HomeScreenState extends State<HomeScreen> {
             );
 
             try {
-              print('🔄 EMERGENCY LOGOUT - Clearing all data manually...');
+              debugPrint('🔄 EMERGENCY LOGOUT - Clearing all data manually...');
 
               // Clear SharedPreferences directly
               final prefs = await SharedPreferences.getInstance();
               final keys = prefs.getKeys();
-              print('📦 Found ${keys.length} keys in SharedPreferences');
+              debugPrint('📦 Found ${keys.length} keys in SharedPreferences');
 
               // Remove ALL auth-related keys
               for (final key in keys) {
@@ -1704,30 +1703,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     key.contains('token') ||
                     key.contains('user') ||
                     key.contains('auth')) {
-                  print('🗑️ Removing key: $key');
+                  debugPrint('🗑️ Removing key: $key');
                   await prefs.remove(key);
                 }
               }
 
-              print('🔄 Calling AuthService.logout()...');
+              debugPrint('🔄 Calling AuthService.logout()...');
               await AuthService.logout();
-              print('✅ AuthService.logout() completed');
+              debugPrint('✅ AuthService.logout() completed');
 
-              print('🔄 Calling userState.clearUser()...');
+              debugPrint('🔄 Calling userState.clearUser()...');
               await userState.clearUser();
-              print('✅ userState.clearUser() completed');
+              debugPrint('✅ userState.clearUser() completed');
 
               // Force a small delay to ensure everything is cleared
               await Future.delayed(const Duration(milliseconds: 500));
 
-              if (mounted) {
-                print('🔄 Navigating to home and clearing stack...');
+              if (mounted && context.mounted) {
+                debugPrint('🔄 Navigating to home and clearing stack...');
                 // Navigate to home and clear entire navigation stack
                 Navigator.of(context).pushNamedAndRemoveUntil(
                   '/',
                   (route) => false,
                 );
-                print('✅ Navigation completed');
+                debugPrint('✅ Navigation completed');
 
                 // Show professional success message
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1740,7 +1739,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -1769,7 +1768,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'See you again soon!',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
@@ -1791,10 +1790,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }
             } catch (e) {
-              print('❌ LOGOUT ERROR: $e');
-              print('Stack trace: ${StackTrace.current}');
+              debugPrint('❌ LOGOUT ERROR: $e');
+              debugPrint('Stack trace: ${StackTrace.current}');
               // Show professional error message if logout fails
-              if (mounted) {
+              if (mounted && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Container(
@@ -1805,7 +1804,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -1834,7 +1833,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   'Please try again',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontWeight: FontWeight.w400,
                                   ),
                                   maxLines: 1,
@@ -1859,16 +1858,16 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             }
           } else if (confirmed == false) {
-            print('❌ USER CANCELLED LOGOUT');
+            debugPrint('❌ USER CANCELLED LOGOUT');
           } else {
-            print('⚠️ LOGOUT DIALOG RETURNED NULL');
+            debugPrint('⚠️ LOGOUT DIALOG RETURNED NULL');
           }
         } catch (e, stackTrace) {
-          print('❌ LOGOUT BUTTON ERROR: $e');
-          print('Stack trace: $stackTrace');
+          debugPrint('❌ LOGOUT BUTTON ERROR: $e');
+          debugPrint('Stack trace: $stackTrace');
 
           // Try to show error message if context is still valid
-          if (mounted) {
+          if (mounted && context.mounted) {
             try {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -1878,7 +1877,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             } catch (snackbarError) {
-              print('❌ Could not show error snackbar: $snackbarError');
+              debugPrint('❌ Could not show error snackbar: $snackbarError');
             }
           }
         }
@@ -2158,7 +2157,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _isDropdownOpen = !_isDropdownOpen;
         });
       },
-      child: Container(
+      child: SizedBox(
         width: 40,
         height: 40,
         child: Stack(
@@ -2177,12 +2176,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 boxShadow: [
                   if (isPro)
                     BoxShadow(
-                      color: Color(0xFF6366F1).withOpacity(0.3),
+                      color: Color(0xFF6366F1).withValues(alpha: 0.3),
                       blurRadius: 8,
                       spreadRadius: 1,
                     ),
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 4,
                     offset: Offset(0, 2),
                   ),
@@ -2241,7 +2240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF6366F1).withOpacity(0.4),
+                        color: Color(0xFF6366F1).withValues(alpha: 0.4),
                         blurRadius: 4,
                       ),
                     ],
@@ -2281,7 +2280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 2,
                       ),
                     ],
@@ -2299,263 +2298,5 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _handleNavigation(BuildContext context, String destination) {
-    if (destination == 'eshop') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const EshopScreen()),
-      );
-    } else if (destination == 'AdsyPay' || destination == 'Deposit/Withdraw') {
-      Navigator.pushNamed(context, '/deposit-withdraw');
-    } else if (destination == 'Mobile Recharge') {
-      Navigator.pushNamed(context, '/mobile-recharge');
-    } else if (destination == 'Business Network') {
-      Navigator.pushNamed(context, '/business-network');
-    } else if (destination == 'News') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const NewsScreen()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Navigate to $destination'),
-          backgroundColor: const Color(0xFF10B981),
-          duration: const Duration(seconds: 1),
-        ),
-      );
-    }
-  }
 
-  Widget _buildStickyMobileNav(BuildContext context) {
-    // Mock user data - replace with actual user state management
-    final bool isLoggedIn = DateTime.now().millisecondsSinceEpoch % 2 == 0;
-    final Set<String> loadingButtons = <String>{};
-    int unreadCount = 0;
-
-    return Positioned(
-      left: 24, // mx-6 = 24px
-      right: 24,
-      bottom: 8 +
-          MediaQuery.of(context)
-              .viewPadding
-              .bottom, // account for iOS home indicator
-      child: Container(
-        width:
-            MediaQuery.of(context).size.width - 48, // Full width minus margins
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9), // bg-white/90
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color:
-                const Color(0xFF34D399).withOpacity(0.1), // border-emerald-100
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-                vertical: 8), // py-2 for better touch targets
-            child: isLoggedIn
-                ? _buildLoggedInNavigation(loadingButtons, unreadCount)
-                : _buildGuestNavigation(loadingButtons),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoggedInNavigation(Set<String> loadingButtons, int unreadCount) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildMobileNavItem(
-          child: Image.asset(
-            'assets/images/favicon.png',
-            width: 26,
-            height: 26,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(
-                Icons.home,
-                size: 26,
-                color: Color(0xFF34D399),
-              );
-            },
-          ),
-          onTap: () =>
-              _handleButtonClick('mobile_home', 'Home', loadingButtons),
-          buttonId: 'mobile_home',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child: const Icon(Icons.account_balance_wallet,
-              size: 26, color: Color(0xFF34D399)),
-          onTap: () =>
-              _handleButtonClick('mobile_deposit', 'AdsyPay', loadingButtons),
-          buttonId: 'mobile_deposit',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child: const Icon(Icons.phone_android,
-              size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick(
-              'mobile_recharge', 'Mobile Recharge', loadingButtons),
-          buttonId: 'mobile_recharge',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child: Stack(
-            children: [
-              const Icon(Icons.network_check,
-                  size: 26, color: Color(0xFF34D399)),
-              if (unreadCount > 0)
-                Positioned(
-                  right: -2,
-                  top: -2,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
-                    ),
-                    child: Text(
-                      unreadCount > 99 ? '99+' : unreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          onTap: () => _handleButtonClick(
-              'mobile_business', 'Business Network', loadingButtons),
-          buttonId: 'mobile_business',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child:
-              const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
-          onTap: () =>
-              _handleButtonClick('mobile_news', 'News', loadingButtons),
-          buttonId: 'mobile_news',
-          loadingButtons: loadingButtons,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGuestNavigation(Set<String> loadingButtons) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildMobileNavItem(
-          child: Image.asset(
-            'assets/images/favicon.png',
-            width: 26,
-            height: 26,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(
-                Icons.home,
-                size: 26,
-                color: Color(0xFF34D399),
-              );
-            },
-          ),
-          onTap: () => _handleButtonClick('guest_home', 'Home', loadingButtons),
-          buttonId: 'guest_home',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child: const Icon(Icons.work, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick(
-              'guest_microgigs', 'Microgigs', loadingButtons),
-          buttonId: 'guest_microgigs',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child: const Icon(Icons.shopping_bag,
-              size: 26, color: Color(0xFF34D399)),
-          onTap: () =>
-              _handleButtonClick('guest_eshop', 'eShop', loadingButtons),
-          buttonId: 'guest_eshop',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child: const Icon(Icons.network_check,
-              size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick(
-              'guest_business', 'Business Network', loadingButtons),
-          buttonId: 'guest_business',
-          loadingButtons: loadingButtons,
-        ),
-        _buildMobileNavItem(
-          child:
-              const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('guest_news', 'News', loadingButtons),
-          buttonId: 'guest_news',
-          loadingButtons: loadingButtons,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileNavItem({
-    required Widget child,
-    required VoidCallback onTap,
-    required String buttonId,
-    required Set<String> loadingButtons,
-  }) {
-    final isLoading = loadingButtons.contains(buttonId);
-
-    return InkWell(
-      onTap: isLoading ? null : onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        child: isLoading
-            ? const SizedBox(
-                width: 26,
-                height: 26,
-                child: AdsyLoadingIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF34D399)),
-                ),
-              )
-            : child,
-      ),
-    );
-  }
-
-  void _handleButtonClick(
-      String buttonId, String destination, Set<String> loadingButtons) {
-    setState(() {
-      loadingButtons.add(buttonId);
-    });
-
-    // Simulate navigation delay
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        setState(() {
-          loadingButtons.remove(buttonId);
-        });
-        _handleNavigation(context, destination);
-      }
-    });
-  }
 }

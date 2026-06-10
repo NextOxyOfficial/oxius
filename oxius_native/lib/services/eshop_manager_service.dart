@@ -4,6 +4,7 @@ import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/eshop_manager_models.dart';
 import '../utils/api_error.dart';
+import 'package:flutter/foundation.dart';
 
 class EshopManagerService {
   static String get baseUrl => ApiService.baseUrl;
@@ -22,7 +23,7 @@ class EshopManagerService {
         },
       );
 
-      print('📦 Product slot packages response: ${response.statusCode}');
+      debugPrint('📦 Product slot packages response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -32,7 +33,7 @@ class EshopManagerService {
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching product slot packages: $e');
+      debugPrint('❌ Error fetching product slot packages: $e');
       return [];
     }
   }
@@ -47,7 +48,7 @@ class EshopManagerService {
       final token = await AuthService.getValidToken();
       if (token == null) throw Exception('Not authenticated');
 
-      print('📦 Purchasing slots - Package ID: $packageId, Slots: $slotCount, Cost: $cost');
+      debugPrint('📦 Purchasing slots - Package ID: $packageId, Slots: $slotCount, Cost: $cost');
 
       final response = await http.post(
         Uri.parse('$baseUrl/purchase-product-slots/'),
@@ -62,8 +63,8 @@ class EshopManagerService {
         }),
       );
 
-      print('📦 Purchase slots response: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      debugPrint('📦 Purchase slots response: ${response.statusCode}');
+      debugPrint('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
@@ -73,7 +74,7 @@ class EshopManagerService {
         };
       } else {
         final errorBody = response.body;
-        print('❌ Purchase failed with body: $errorBody');
+        debugPrint('❌ Purchase failed with body: $errorBody');
         try {
           final error = json.decode(errorBody);
           return {
@@ -88,7 +89,7 @@ class EshopManagerService {
         }
       }
     } catch (e) {
-      print('❌ Error purchasing slots: $e');
+      debugPrint('❌ Error purchasing slots: $e');
       return {
         'success': false,
         'message': 'Failed to purchase slots: $e',
@@ -110,7 +111,7 @@ class EshopManagerService {
         },
       );
 
-      print('📦 Categories response: ${response.statusCode}');
+      debugPrint('📦 Categories response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -120,7 +121,7 @@ class EshopManagerService {
       }
       return [];
     } catch (e) {
-      print('❌ Error fetching categories: $e');
+      debugPrint('❌ Error fetching categories: $e');
       return [];
     }
   }
@@ -139,7 +140,7 @@ class EshopManagerService {
         },
       );
 
-      print('📦 Store details response: ${response.statusCode}');
+      debugPrint('📦 Store details response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -147,7 +148,7 @@ class EshopManagerService {
       }
       return null;
     } catch (e) {
-      print('❌ Error fetching store details: $e');
+      debugPrint('❌ Error fetching store details: $e');
       return null;
     }
   }
@@ -176,7 +177,7 @@ class EshopManagerService {
         }),
       );
 
-      print('📦 Update store response: ${response.statusCode}');
+      debugPrint('📦 Update store response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -192,7 +193,7 @@ class EshopManagerService {
         };
       }
     } catch (e) {
-      print('❌ Error updating store: $e');
+      debugPrint('❌ Error updating store: $e');
       return {
         'success': false,
         'message': 'Failed to update store: $e',
@@ -205,11 +206,11 @@ class EshopManagerService {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) {
-        print('❌ No token for products');
+        debugPrint('❌ No token for products');
         return {'products': [], 'hasMore': false, 'total': 0};
       }
 
-      print('🔍 Fetching products (page $page)...');
+      debugPrint('🔍 Fetching products (page $page)...');
       final response = await http.get(
         Uri.parse('$baseUrl/my-products/?page=$page'),
         headers: {
@@ -218,11 +219,11 @@ class EshopManagerService {
         },
       );
 
-      print('✅ Products response: ${response.statusCode}');
+      debugPrint('✅ Products response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('📦 Data type: ${data.runtimeType}');
+        debugPrint('📦 Data type: ${data.runtimeType}');
         
         List<dynamic> productsList;
         bool hasMore = false;
@@ -232,12 +233,12 @@ class EshopManagerService {
           productsList = data['results'];
           hasMore = data['next'] != null;
           total = data['count'] ?? 0;
-          print('📦 Found ${productsList.length} products on page $page (total: $total, hasMore: $hasMore)');
+          debugPrint('📦 Found ${productsList.length} products on page $page (total: $total, hasMore: $hasMore)');
         } else if (data is List) {
           productsList = data;
-          print('📦 Found ${productsList.length} products (list)');
+          debugPrint('📦 Found ${productsList.length} products (list)');
         } else {
-          print('❌ Unexpected data structure');
+          debugPrint('❌ Unexpected data structure');
           return {'products': [], 'hasMore': false, 'total': 0};
         }
 
@@ -246,12 +247,12 @@ class EshopManagerService {
             final product = ShopProduct.fromJson(item);
             return product;
           } catch (e) {
-            print('❌ Error parsing product: $e');
+            debugPrint('❌ Error parsing product: $e');
             return null;
           }
         }).whereType<ShopProduct>().toList();
         
-        print('✅ Parsed ${products.length} products successfully');
+        debugPrint('✅ Parsed ${products.length} products successfully');
         return {
           'products': products,
           'hasMore': hasMore,
@@ -259,10 +260,10 @@ class EshopManagerService {
         };
       }
       
-      print('❌ Bad response: ${response.statusCode}');
+      debugPrint('❌ Bad response: ${response.statusCode}');
       return {'products': [], 'hasMore': false, 'total': 0};
     } catch (e) {
-      print('❌ Exception: $e');
+      debugPrint('❌ Exception: $e');
       return {'products': [], 'hasMore': false, 'total': 0};
     }
   }
@@ -272,11 +273,11 @@ class EshopManagerService {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) {
-        print('❌ No token for seller orders');
+        debugPrint('❌ No token for seller orders');
         throw Exception('Not authenticated');
       }
 
-      print('📦 Fetching seller orders from: $baseUrl/seller-orders/');
+      debugPrint('📦 Fetching seller orders from: $baseUrl/seller-orders/');
       
       final response = await http.get(
         Uri.parse('$baseUrl/seller-orders/'),
@@ -286,52 +287,52 @@ class EshopManagerService {
         },
       );
 
-      print('📦 Seller orders response: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      debugPrint('📦 Seller orders response: ${response.statusCode}');
+      debugPrint('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('📦 Data type: ${data.runtimeType}');
+        debugPrint('📦 Data type: ${data.runtimeType}');
         
         List<dynamic> ordersList;
         if (data is Map && data['results'] != null) {
           ordersList = data['results'];
-          print('📦 Found ${ordersList.length} orders in paginated response');
+          debugPrint('📦 Found ${ordersList.length} orders in paginated response');
           if (data['count'] != null) {
-            print('📦 Total orders count: ${data['count']}');
+            debugPrint('📦 Total orders count: ${data['count']}');
           }
         } else if (data is List) {
           ordersList = data;
-          print('📦 Found ${ordersList.length} orders in list response');
+          debugPrint('📦 Found ${ordersList.length} orders in list response');
         } else {
-          print('❌ Unexpected data structure: $data');
+          debugPrint('❌ Unexpected data structure: $data');
           ordersList = [];
         }
 
         if (ordersList.isNotEmpty) {
-          print('📦 First order raw data: ${ordersList.first}');
+          debugPrint('📦 First order raw data: ${ordersList.first}');
         }
 
         final orders = ordersList.map((json) {
           try {
             return ShopOrder.fromJson(json);
           } catch (e) {
-            print('❌ Error parsing order: $e');
-            print('❌ Order data: $json');
+            debugPrint('❌ Error parsing order: $e');
+            debugPrint('❌ Order data: $json');
             return null;
           }
         }).whereType<ShopOrder>().toList();
         
-        print('✅ Parsed ${orders.length} orders successfully');
+        debugPrint('✅ Parsed ${orders.length} orders successfully');
         return orders;
       } else {
-        print('❌ Bad response: ${response.statusCode}');
-        print('❌ Response body: ${response.body}');
+        debugPrint('❌ Bad response: ${response.statusCode}');
+        debugPrint('❌ Response body: ${response.body}');
       }
       return [];
     } catch (e, stackTrace) {
-      print('❌ Error fetching orders: $e');
-      print('❌ Stack trace: $stackTrace');
+      debugPrint('❌ Error fetching orders: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
       return [];
     }
   }
@@ -350,7 +351,7 @@ class EshopManagerService {
         },
       );
 
-      print('📦 Order stats response: ${response.statusCode}');
+      debugPrint('📦 Order stats response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -358,7 +359,7 @@ class EshopManagerService {
       }
       return null;
     } catch (e) {
-      print('❌ Error fetching order stats: $e');
+      debugPrint('❌ Error fetching order stats: $e');
       return null;
     }
   }
@@ -369,7 +370,7 @@ class EshopManagerService {
       final token = await AuthService.getValidToken();
       if (token == null) throw Exception('Not authenticated');
 
-      print('📦 Creating product with data: $productData');
+      debugPrint('📦 Creating product with data: $productData');
 
       final response = await http.post(
         Uri.parse('$baseUrl/products/'),
@@ -380,8 +381,8 @@ class EshopManagerService {
         body: json.encode(productData),
       );
 
-      print('📦 Create product response: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      debugPrint('📦 Create product response: ${response.statusCode}');
+      debugPrint('📦 Response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -392,7 +393,7 @@ class EshopManagerService {
       } else {
         final apiErr =
             ApiError.fromResponse(response.statusCode, response.body);
-        print('❌ Error response: ${response.body}');
+        debugPrint('❌ Error response: ${response.body}');
         return {
           'success': false,
           'message': apiErr.message,
@@ -400,7 +401,7 @@ class EshopManagerService {
         };
       }
     } catch (e) {
-      print('❌ Error creating product: $e');
+      debugPrint('❌ Error creating product: $e');
       return {
         'success': false,
         'message': 'Failed to create product: $e',
@@ -456,7 +457,7 @@ class EshopManagerService {
         body: json.encode(productData),
       );
 
-      print('📦 Create product response: ${response.statusCode}');
+      debugPrint('📦 Create product response: ${response.statusCode}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -474,7 +475,7 @@ class EshopManagerService {
         };
       }
     } catch (e) {
-      print('❌ Error creating product: $e');
+      debugPrint('❌ Error creating product: $e');
       return {
         'success': false,
         'message': 'Failed to create product: $e',
@@ -517,9 +518,9 @@ class EshopManagerService {
         }
       }
 
-      print('📦 Updating product ID: $productId');
-      print('📦 Update body: $body');
-      print('📦 Endpoint: $baseUrl/products/$productId/');
+      debugPrint('📦 Updating product ID: $productId');
+      debugPrint('📦 Update body: $body');
+      debugPrint('📦 Endpoint: $baseUrl/products/$productId/');
 
       final response = await http.patch(
         Uri.parse('$baseUrl/products/$productId/'),
@@ -530,8 +531,8 @@ class EshopManagerService {
         body: json.encode(body),
       );
 
-      print('📦 Update product response: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      debugPrint('📦 Update product response: ${response.statusCode}');
+      debugPrint('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -555,7 +556,7 @@ class EshopManagerService {
         }
       }
     } catch (e) {
-      print('❌ Error updating product: $e');
+      debugPrint('❌ Error updating product: $e');
       return {
         'success': false,
         'message': 'Failed to update product: $e',
@@ -577,11 +578,11 @@ class EshopManagerService {
         },
       );
 
-      print('📦 Delete product response: ${response.statusCode}');
+      debugPrint('📦 Delete product response: ${response.statusCode}');
 
       return response.statusCode == 204 || response.statusCode == 200;
     } catch (e) {
-      print('❌ Error deleting product: $e');
+      debugPrint('❌ Error deleting product: $e');
       return false;
     }
   }
@@ -606,7 +607,7 @@ class EshopManagerService {
         }),
       );
 
-      print('📦 Update order status response: ${response.statusCode}');
+      debugPrint('📦 Update order status response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -621,7 +622,7 @@ class EshopManagerService {
         };
       }
     } catch (e) {
-      print('❌ Error updating order status: $e');
+      debugPrint('❌ Error updating order status: $e');
       return {
         'success': false,
         'message': 'Failed to update order status: $e',
@@ -643,7 +644,7 @@ class EshopManagerService {
         },
       );
 
-      print('📦 Check username response: ${response.statusCode}');
+      debugPrint('📦 Check username response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -658,7 +659,7 @@ class EshopManagerService {
         };
       }
     } catch (e) {
-      print('❌ Error checking username: $e');
+      debugPrint('❌ Error checking username: $e');
       return {
         'available': false,
         'suggestions': [],
@@ -690,8 +691,8 @@ class EshopManagerService {
         }),
       );
 
-      print('📦 Create store response: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      debugPrint('📦 Create store response: ${response.statusCode}');
+      debugPrint('📦 Response body: ${response.body}');
 
       if (response.statusCode != 200) {
         final errorBody = response.body;
@@ -703,7 +704,7 @@ class EshopManagerService {
         }
       }
     } catch (e) {
-      print('❌ Error creating store: $e');
+      debugPrint('❌ Error creating store: $e');
       rethrow;
     }
   }

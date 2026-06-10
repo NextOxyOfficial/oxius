@@ -13,7 +13,6 @@ class AppHeader extends StatefulWidget {
 }
 
 class _AppHeaderState extends State<AppHeader> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +22,11 @@ class _AppHeaderState extends State<AppHeader> {
     return Container(
       decoration: BoxDecoration(
         color: isMobile 
-            ? const Color(0xFFE2E8F0).withOpacity(0.7) 
+            ? const Color(0xFFE2E8F0).withValues(alpha: 0.7) 
             : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

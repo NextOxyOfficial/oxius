@@ -52,7 +52,7 @@ class _ChatListSkeletonState extends State<ChatListSkeleton>
         color: Colors.white,
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFFE5E7EB).withOpacity(0.4),
+            color: const Color(0xFFE5E7EB).withValues(alpha: 0.4),
             width: 0.5,
           ),
         ),

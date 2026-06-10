@@ -14,7 +14,6 @@ class SponsoredProductsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final isSmallScreen = screenWidth < 360;
     final displayProducts = isMobile ? products.take(2).toList() : products.take(3).toList();
 
     if (displayProducts.isEmpty) {

@@ -80,7 +80,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
           width: double.infinity,
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.amber.shade50.withOpacity(0.6),
+            color: Colors.amber.shade50.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.amber.shade100),
           ),
@@ -295,7 +295,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(status).withOpacity(0.1),
+                  color: _getStatusColor(status).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
