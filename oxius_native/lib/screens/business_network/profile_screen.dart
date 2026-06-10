@@ -63,11 +63,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   late TabController _tabController;
   int _currentTabIndex = 0;
 
-  final List<Tab> _tabs = const [
-    Tab(text: 'Posts'),
-    Tab(text: 'My Workspace'),
-    Tab(text: 'Media'),
-    Tab(text: 'Saved'),
+  final List<String> _tabLabels = const [
+    'Posts',
+    'My Workspace',
+    'Media',
+    'Saved',
   ];
 
   /// Mask phone number based on privacy setting
@@ -154,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: _tabLabels.length, vsync: this);
     _tabController.addListener(_handleTabChange);
     _loadProfileData();
     _loadUnreadNotificationCount();
@@ -1706,35 +1706,68 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildTabs() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE8EEF7)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 8,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
-      child: TabBar(
-        controller: _tabController,
-        tabs: _tabs,
-        isScrollable: true,
-        tabAlignment: TabAlignment.start,
-        labelColor: const Color(0xFF3B82F6),
-        unselectedLabelColor: Colors.grey.shade600,
-        indicatorColor: const Color(0xFF3B82F6),
-        indicatorWeight: 3,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-        labelStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+      child: Row(
+        children: List.generate(_tabLabels.length, (index) {
+          return Expanded(
+            child: _buildProfileTabButton(
+              label: _tabLabels[index],
+              index: index,
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildProfileTabButton({
+    required String label,
+    required int index,
+  }) {
+    final isActive = _currentTabIndex == index;
+
+    return InkWell(
+      onTap: () => _tabController.animateTo(index),
+      borderRadius: BorderRadius.circular(11),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        height: 38,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFEFF6FF) : Colors.transparent,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(
+            color: isActive ? const Color(0xFFBFDBFE) : Colors.transparent,
+          ),
         ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            maxLines: 1,
+            style: TextStyle(
+              color:
+                  isActive ? const Color(0xFF2563EB) : const Color(0xFF6B7280),
+              fontSize: 13,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              letterSpacing: 0,
+            ),
+          ),
         ),
       ),
     );
@@ -1945,7 +1978,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     final idx = post.media.indexWhere((m) => m.bestUrl == target);
     return idx == -1 ? 0 : idx;
   }
-
 
   Widget _buildWorkspaceTab() {
     if (_isLoadingGigs) {
@@ -2411,8 +2443,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-
-
 
   String _formatTimeAgo(String dateString) {
     try {
