@@ -5,6 +5,7 @@ All transactional emails for users and admin notifications.
 """
 import logging
 from email.utils import formataddr, parseaddr
+from smtplib import SMTPRecipientsRefused
 from django.core.mail import send_mail, EmailMultiAlternatives, get_connection
 from django.conf import settings
 from django.utils import timezone
@@ -181,6 +182,62 @@ def _get_email_settings():
     }
 
 
+_UNSUB_SALT = "email-unsub-v1"
+
+
+def _norm_email(e):
+    return (e or "").strip().lower()
+
+
+def is_email_suppressed(email):
+    """True if this address has unsubscribed or keeps bouncing."""
+    e = _norm_email(email)
+    if not e:
+        return True
+    try:
+        from .models import EmailSuppression
+        return EmailSuppression.objects.filter(email=e).exists()
+    except Exception:
+        return False
+
+
+def suppress_email(email, reason="bounced", note=""):
+    e = _norm_email(email)
+    if not e:
+        return
+    try:
+        from .models import EmailSuppression
+        EmailSuppression.objects.get_or_create(
+            email=e, defaults={"reason": reason, "note": note[:255]}
+        )
+        logger.info(f"Email suppressed ({reason}): {e}")
+    except Exception as exc:  # never let suppression break a send path
+        logger.warning(f"suppress_email failed for {e}: {exc}")
+
+
+def unsubscribe_token(email):
+    from django.core import signing
+    return signing.dumps(_norm_email(email), salt=_UNSUB_SALT)
+
+
+def email_from_unsub_token(token, max_age=60 * 60 * 24 * 365):
+    from django.core import signing
+    try:
+        return _norm_email(signing.loads(token, salt=_UNSUB_SALT, max_age=max_age))
+    except Exception:
+        return None
+
+
+def _valid_email_syntax(email):
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+    try:
+        validate_email((email or "").strip())
+        return True
+    except ValidationError:
+        return False
+
+
 def _send_email(subject, to_email, text_content, html_content):
     """Send email with HTML and plain text fallback"""
     try:
@@ -202,23 +259,43 @@ def _send_email(subject, to_email, text_content, html_content):
 
         # Accept a single address or a list of addresses.
         recipients = to_email if isinstance(to_email, (list, tuple)) else [to_email]
-        recipients = [r for r in recipients if r]
-        if not recipients:
+        # Drop blanks + syntactically invalid addresses (and remember the bad
+        # ones so we never retry them).
+        clean = []
+        for r in recipients:
+            if not r:
+                continue
+            if not _valid_email_syntax(r):
+                suppress_email(r, reason="invalid", note="bad address format")
+                continue
+            clean.append(r)
+        if not clean:
             return False
 
         msg = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
             from_email=from_email,
-            to=list(recipients),
+            to=list(clean),
             connection=connection,
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
-        
-        logger.info(f"Email sent: '{subject}' to {to_email}")
+
+        logger.info(f"Email sent: '{subject}' to {clean}")
         return True
+    except SMTPRecipientsRefused as e:
+        # The server rejected these recipients outright (wrong/nonexistent
+        # address) — stop sending to them forever.
+        try:
+            for bad in (e.recipients or {}).keys():
+                suppress_email(bad, reason="bounced", note="SMTP recipient refused")
+        except Exception:
+            pass
+        logger.error(f"Email refused: '{subject}' to {to_email} - {e}")
+        return False
     except Exception as e:
+        # Connection/transient errors — NOT the recipient's fault, don't suppress.
         logger.error(f"Email failed: '{subject}' to {to_email} - {e}")
         return False
 
@@ -1420,6 +1497,10 @@ def send_engagement_email(user, *, subject, heading, body_html,
     email = getattr(user, "email", None)
     if not email:
         return False
+    # Respect unsubscribes + skip bounced/invalid addresses (engagement mail
+    # only — transactional mail does not call this function).
+    if is_email_suppressed(email):
+        return False
     name = (getattr(user, "name", None) or getattr(user, "first_name", None) or "বন্ধু")
     cards = _engagement_content_html(content_feature)
     # The base template already shows `subject` as the big <h2> title at the
@@ -1438,5 +1519,12 @@ def send_engagement_email(user, *, subject, heading, body_html,
 {cards}
 {_button(button_text, button_url) if (button_text and button_url) else ""}
 """
-    html = _base_template(subject, body, "আপনি AdsyClub-এর সদস্য বলে এই ইমেইলটি পাচ্ছেন।")
+    # One-click unsubscribe link in the footer (signed token, no login).
+    unsub_url = f"{SITE_URL}/api/email/unsubscribe/?t={unsubscribe_token(email)}"
+    footer_note = (
+        "আপনি AdsyClub-এর সদস্য বলে এই ইমেইলটি পাচ্ছেন। "
+        f'এই ধরনের ইমেইল আর পেতে না চাইলে <a href="{unsub_url}" '
+        'style="color:#64748b;text-decoration:underline;">এখানে আনসাবস্ক্রাইব করুন</a>।'
+    )
+    html = _base_template(subject, body, footer_note)
     return _send_email(subject, email, f"{name}, {heading}", html)

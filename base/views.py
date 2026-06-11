@@ -6260,3 +6260,66 @@ def register_guest_token(request):
     except Exception as e:
         return Response({'error': str(e)},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ---------------------------------------------------------------------------
+# Email unsubscribe (one-click link in engagement emails)
+# ---------------------------------------------------------------------------
+
+def _unsub_page(title, message, extra_html=""):
+    from django.http import HttpResponse
+    return HttpResponse(f"""<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} | AdsyClub</title></head>
+<body style="margin:0;background:#f1f5f9;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
+<div style="max-width:420px;margin:60px auto;background:#fff;border-radius:16px;
+box-shadow:0 4px 24px rgba(15,23,42,.08);padding:36px 28px;text-align:center;">
+<div style="font-size:40px;margin-bottom:12px;">📭</div>
+<h2 style="margin:0 0 10px;color:#0f172a;font-size:20px;">{title}</h2>
+<p style="margin:0 0 18px;color:#475569;font-size:15px;line-height:1.6;">{message}</p>
+{extra_html}
+<p style="margin:22px 0 0;color:#94a3b8;font-size:12px;">AdsyClub — Bangladesh's Social Business Network</p>
+</div></body></html>""")
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def email_unsubscribe(request):
+    """One-click unsubscribe from engagement emails (signed token, no login)."""
+    from .email_service import email_from_unsub_token, suppress_email, unsubscribe_token
+
+    email = email_from_unsub_token(request.query_params.get("t", ""))
+    if not email:
+        return _unsub_page(
+            "লিংকটি সঠিক নয়",
+            "এই আনসাবস্ক্রাইব লিংকটির মেয়াদ শেষ হয়েছে বা লিংকটি ভুল। "
+            "সর্বশেষ ইমেইলের নিচের লিংকটি ব্যবহার করুন।",
+        )
+    suppress_email(email, reason="unsubscribed", note="user clicked unsubscribe")
+    resub = f"/api/email/resubscribe/?t={unsubscribe_token(email)}"
+    return _unsub_page(
+        "আনসাবস্ক্রাইব হয়ে গেছে ✅",
+        f"<strong>{email}</strong> ঠিকানায় আর কোনো প্রোমোশনাল/আপডেট ইমেইল যাবে না। "
+        "অ্যাকাউন্ট-সংক্রান্ত জরুরি ইমেইল (যেমন পাসওয়ার্ড রিসেট) আগের মতোই পাবেন।",
+        f'<a href="{resub}" style="display:inline-block;background:#10b981;color:#fff;'
+        'text-decoration:none;font-size:14px;font-weight:600;padding:10px 22px;'
+        'border-radius:10px;">ভুল করে করেছি — আবার চালু করুন</a>',
+    )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def email_resubscribe(request):
+    """Undo an unsubscribe (same signed token)."""
+    from .email_service import email_from_unsub_token
+    from .models import EmailSuppression
+
+    email = email_from_unsub_token(request.query_params.get("t", ""))
+    if not email:
+        return _unsub_page("লিংকটি সঠিক নয়", "লিংকটির মেয়াদ শেষ বা ভুল লিংক।")
+    EmailSuppression.objects.filter(email=email, reason="unsubscribed").delete()
+    return _unsub_page(
+        "আবার সাবস্ক্রাইব হয়েছেন ✅",
+        f"<strong>{email}</strong> ঠিকানায় AdsyClub-এর আপডেট ইমেইল আবার চালু হলো।",
+    )

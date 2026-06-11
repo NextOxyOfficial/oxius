@@ -235,3 +235,15 @@ class AdminEmailRecipientAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
     search_fields = ('email', 'label')
     ordering = ('email',)
+
+
+from .models import EmailSuppression
+
+
+@admin.register(EmailSuppression)
+class EmailSuppressionAdmin(admin.ModelAdmin):
+    """Addresses excluded from engagement/marketing email — user unsubscribes
+    and auto-detected bounced/invalid addresses. Delete a row to re-allow."""
+    list_display = ("email", "reason", "note", "created_at")
+    list_filter = ("reason",)
+    search_fields = ("email", "note")

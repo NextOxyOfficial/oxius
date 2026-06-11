@@ -1834,6 +1834,36 @@ class AdminEmailRecipient(models.Model):
         return f"{self.email} ({self.label})" if self.label else self.email
 
 
+class EmailSuppression(models.Model):
+    """Addresses we must NOT send marketing/engagement email to.
+
+    - unsubscribed: user clicked the unsubscribe link.
+    - bounced / invalid: SMTP refused the address (wrong email at signup), so we
+      stop retrying it forever.
+    Transactional/security mail (OTP, KYC, withdraw, password reset) ignores
+    this list — only engagement/marketing email is suppressed.
+    """
+    REASONS = [
+        ("unsubscribed", "Unsubscribed (user choice)"),
+        ("bounced", "Bounced / undeliverable"),
+        ("invalid", "Invalid address"),
+        ("complaint", "Spam complaint"),
+    ]
+    email = models.EmailField(unique=True)
+    reason = models.CharField(max_length=20, choices=REASONS, default="unsubscribed")
+    note = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Email Suppression"
+        verbose_name_plural = "Email Suppressions (unsub / bounced)"
+        indexes = [models.Index(fields=["email"])]
+
+    def __str__(self):
+        return f"{self.email} ({self.reason})"
+
+
 class EmailSettings(models.Model):
     """Store email configuration settings"""
     email_host = models.CharField(max_length=255, default='smtp.gmail.com')

@@ -151,6 +151,8 @@ urlpatterns = [
     path("add-user-balance/", postBalance),
     path("save-fcm-token/", save_fcm_token, name="save-fcm-token"),
     path("register-guest-token/", register_guest_token, name="register-guest-token"),
+    path("email/unsubscribe/", email_unsubscribe, name="email-unsubscribe"),
+    path("email/resubscribe/", email_resubscribe, name="email-resubscribe"),
     path("remove-fcm-token/", remove_fcm_token, name="remove-fcm-token"),
     path("get-user-nid/", get_nid),
     path("add-user-nid/", add_nid),
