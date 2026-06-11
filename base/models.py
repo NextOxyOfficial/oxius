@@ -308,8 +308,8 @@ class NID(models.Model):
                 AdminNotice.objects.create(
                     user=self.user,
                     notification_type="kyc_approved",
-                    title="পরিচয়পত্র যাচাই সম্পন্ন ✅",
-                    message="আপনার পরিচয়পত্র approve হয়েছে — এখন উইথড্র, বিক্রি, পোস্ট সব আনলক হয়ে গেছে।",
+                    title="KYC ভেরিফিকেশন অ্যাপ্রুভ হয়েছে ✅",
+                    message="আপনার KYC অ্যাপ্রুভ হয়েছে — এখন উইথড্র, বিক্রি, পোস্ট সব আনলক হয়ে গেছে।",
                 )
             except Exception as e:
                 print(f"Error creating KYC approved notice: {e}")
@@ -319,8 +319,8 @@ class NID(models.Model):
                 AdminNotice.objects.create(
                     user=self.user,
                     notification_type="kyc_rejected",
-                    title="পরিচয়পত্র যাচাই হয়নি",
-                    message="দুঃখিত, আপনার পরিচয়পত্রটি যাচাই করা যায়নি। সঠিক তথ্য দিয়ে আবার চেষ্টা করুন।",
+                    title="KYC ভেরিফিকেশন অ্যাপ্রুভ হয়নি",
+                    message="দুঃখিত, আপনার KYC অ্যাপ্রুভ করা যায়নি। সঠিক তথ্য দিয়ে আবার সাবমিট করুন।",
                 )
             except Exception as e:
                 print(f"Error creating KYC rejected notice: {e}")
