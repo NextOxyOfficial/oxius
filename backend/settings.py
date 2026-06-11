@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     "support",  # Support ticket system
     "reviews",  # Reviews system
     "adsyconnect",  # AdsyConnect chat system
+    "zonal",  # Zonal office dashboard (per-city agents)
     "workspace",  # Workspace gigs system
     "referral_rewards",  # New Year referral reward program
     "raise_up",  # Raise Up crowdfunding system
