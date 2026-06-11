@@ -203,6 +203,7 @@ def zonal_dashboard(request):
             "commissions": commissions,
             "area_manager_split": mgr_detail,
             "subscriptions": _subscription_analysis(city),
+            "service_categories": metrics.service_category_breakdown(city),
             "days": days,
         }
     )
@@ -516,6 +517,9 @@ def zonal_manager_report(request, manager_id):
             },
             "commissions": commissions,
             "subscriptions": _subscription_analysis(office.city, upazila=manager.area),
+            "service_categories": metrics.service_category_breakdown(
+                office.city, upazila=manager.area
+            ),
         }
     )
 

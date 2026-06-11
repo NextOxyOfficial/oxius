@@ -273,6 +273,27 @@ def zone_net_commission(office, start, end):
     return net_rows, net_total, gross_total, deduction_total, managers_detail
 
 
+def service_category_breakdown(city, upazila=None, limit=60):
+    """'আমার সেবা' (classified) live posts grouped by category for the scope —
+    how many active, approved service posts exist in each category."""
+    from base.models import ClassifiedCategoryPost
+
+    qs = ClassifiedCategoryPost.objects.filter(
+        city__iexact=city, service_status="approved", active_service=True
+    )
+    if upazila:
+        qs = qs.filter(upazila__iexact=upazila)
+    rows = (
+        qs.values("category__title")
+        .annotate(n=Count("id"))
+        .order_by("-n")[:limit]
+    )
+    return [
+        {"category": (r["category__title"] or "অন্যান্য"), "n": r["n"]}
+        for r in rows if r["n"]
+    ]
+
+
 def subscription_analysis(city, upazila=None, lapsed_limit=30):
     """Pro-subscription snapshot of NOW: active / lapsed (not renewed) /
     expiring-soon + a short follow-up list of lapsed users."""

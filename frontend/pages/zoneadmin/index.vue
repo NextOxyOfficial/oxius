@@ -352,6 +352,23 @@
               <div class="mx-5 mb-4 border border-slate-200 rounded-xl overflow-hidden">
                 <ZoneSalesList :rows="mgrSales" />
               </div>
+
+              <!-- আমার সেবা: category-wise post count in this area -->
+              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">আমার সেবা — ক্যাটাগরি অনুযায়ী পোস্ট</h3></div>
+              <div class="mx-5 mb-5">
+                <div v-if="!managerReport.service_categories || !managerReport.service_categories.length" class="text-sm text-slate-400 py-2 px-1">এই এলাকায় এখনো কোনো লাইভ সেবা পোস্ট নেই।</div>
+                <div v-else class="border border-slate-200 rounded-xl overflow-hidden">
+                  <table class="w-full text-sm">
+                    <tbody>
+                      <tr v-for="(s, i) in managerReport.service_categories" :key="s.category"
+                        :class="i % 2 ? 'bg-slate-50/40' : ''" class="border-b border-slate-50 last:border-0">
+                        <td class="py-2 px-4 text-slate-700">{{ s.category }}</td>
+                        <td class="py-2 px-4 text-right font-semibold text-slate-800">{{ s.n }} টি</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
               <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">কমিশন ব্রেকডাউন ({{ managerReport.range.from }} → {{ managerReport.range.to }})</h3></div>
               <div class="px-5 pb-6 overflow-x-auto">
                 <table class="w-full text-sm whitespace-nowrap">
