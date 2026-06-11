@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "reviews",  # Reviews system
     "adsyconnect",  # AdsyConnect chat system
     "zonal",  # Zonal office dashboard (per-city agents)
+    "ads",  # Server-controlled ad monetization (AppLovin MAX)
     "workspace",  # Workspace gigs system
     "referral_rewards",  # New Year referral reward program
     "raise_up",  # Raise Up crowdfunding system
