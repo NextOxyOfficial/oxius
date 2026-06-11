@@ -95,6 +95,38 @@
         <main class="p-3 sm:p-6 max-w-5xl">
           <!-- ======== DASHBOARD ======== -->
           <template v-if="section === 'dashboard'">
+            <!-- Promotional offer banner (static) -->
+            <div class="relative overflow-hidden rounded-2xl mb-5 shadow-sm bg-gradient-to-br from-fuchsia-600 via-purple-600 to-indigo-600 text-white">
+              <div class="absolute -right-6 -top-8 h-32 w-32 rounded-full bg-white/10"></div>
+              <div class="absolute -right-10 bottom-0 h-24 w-24 rounded-full bg-white/10"></div>
+              <div class="relative p-5 sm:p-6">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-2xl leading-none">🎉</span>
+                  <h2 class="text-lg sm:text-xl font-extrabold tracking-tight">বিশেষ প্রোমোশনাল অফার</h2>
+                  <span class="ml-auto text-[11px] font-bold bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap">৩১ জুলাই পর্যন্ত</span>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-3">
+                  <div class="flex items-start gap-2.5 bg-white/10 rounded-xl px-3.5 py-3">
+                    <span class="text-xl leading-none mt-0.5">⭐</span>
+                    <div>
+                      <p class="text-sm font-bold">নতুন ইউজার Pro সাবস্ক্রিপশন করলে</p>
+                      <p class="text-[13px] text-fuchsia-100">অতিরিক্ত <span class="font-extrabold text-white">৫০% কমিশন</span></p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2.5 bg-white/10 rounded-xl px-3.5 py-3">
+                    <span class="text-xl leading-none mt-0.5">🥇</span>
+                    <div>
+                      <p class="text-sm font-bold">নতুন ইউজার Sponsor করলে</p>
+                      <p class="text-[13px] text-fuchsia-100">অতিরিক্ত <span class="font-extrabold text-white">৫০% কমিশন</span></p>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-[13px] text-fuchsia-100 mt-3.5 flex items-center gap-1.5">
+                  <span>📞</span> বিস্তারিত জানতে আপনার অ্যাকাউন্ট ম্যানেজারের সাথে যোগাযোগ করুন।
+                </p>
+              </div>
+            </div>
+
             <!-- Notices -->
             <div v-if="notices.length" class="space-y-3 mb-5">
               <div v-for="n in notices" :key="n.id" class="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
