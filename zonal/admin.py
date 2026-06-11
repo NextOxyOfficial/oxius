@@ -18,7 +18,8 @@ class ZonalOfficeAdmin(admin.ModelAdmin):
     list_display = ("name", "city", "officer_email", "is_active", "created_at")
     list_filter = ("is_active", "city")
     search_fields = ("name", "city", "user__email", "user__name")
-    raw_id_fields = ("user",)
+    # Search-as-you-type by email/name — no raw UUID entry needed.
+    autocomplete_fields = ("user",)
     inlines = [ZoneFeatureCommissionInline]
 
     @admin.display(description="Officer")
