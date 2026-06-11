@@ -214,6 +214,40 @@ def send_fcm_data_message_async(fcm_token, data, ttl_seconds=60):
     return _enqueue_fcm_send(send_fcm_data_message, fcm_token, data, ttl_seconds)
 
 
+def _deactivate_dead_tokens(tokens, responses):
+    """Deactivate FCM tokens FCM reports as permanently invalid.
+
+    `tokens` and `responses` are positionally aligned (send_each preserves
+    order). A token is dead only for permanent errors — the app was
+    uninstalled (UNREGISTERED / registration-token-not-registered / NOT_FOUND)
+    or the token is malformed (INVALID_ARGUMENT). Transient failures
+    (UNAVAILABLE, INTERNAL, quota) are left untouched.
+    """
+    PERMANENT = (
+        'UNREGISTERED', 'NOT_FOUND', 'INVALID_ARGUMENT',
+        'REGISTRATION-TOKEN-NOT-REGISTERED', 'REGISTRATION_TOKEN_NOT_REGISTERED',
+    )
+    dead = []
+    for tok, resp in zip(tokens, responses):
+        if resp.success:
+            continue
+        exc = getattr(resp, 'exception', None)
+        if exc is None:
+            continue
+        code = str(getattr(exc, 'code', '') or '').upper()
+        text = f"{code} {type(exc).__name__} {exc}".upper()
+        if any(p in text for p in PERMANENT):
+            dead.append(tok)
+    if not dead:
+        return
+    try:
+        from .models import FCMToken
+        n = FCMToken.objects.filter(token__in=dead, is_active=True).update(is_active=False)
+        _safe_print(f'[cleanup] Deactivated {n} dead FCM token(s)')
+    except Exception as e:  # never let cleanup break a send
+        _safe_print(f'[cleanup] token deactivation failed: {e}')
+
+
 def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
     """
     Send FCM notification to multiple devices
@@ -293,7 +327,12 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
             for idx, resp in enumerate(response.responses[:3]):
                 if not resp.success:
                     _safe_print(f'Failure {idx+1}: {resp.exception}')
-        
+            # Prune permanently-dead tokens (app uninstalled / token expired) so
+            # they stop bloating the DB and wasting FCM quota on every send.
+            # Only deactivate on PERMANENT errors — never on transient ones
+            # (UNAVAILABLE/INTERNAL/quota), which would wrongly kill live tokens.
+            _deactivate_dead_tokens(valid_tokens, response.responses)
+
         # Create a compatible response object
         class CompatibleResponse:
             def __init__(self, responses):
