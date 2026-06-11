@@ -51,6 +51,7 @@ import 'services/agora_call_service.dart';
 import 'services/app_update_service.dart';
 import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
+import 'services/ads_service.dart';
 import 'services/auth_service.dart';
 import 'services/translation_service.dart';
 import 'services/online_status_service.dart';
@@ -190,6 +191,8 @@ Future<void> _bootstrap(UserStateService userState) async {
       timeout: const Duration(seconds: 12));
 
   await _safeInit('DeepLink', () => DeepLinkService.instance.init());
+  // Ads (AppLovin MAX) — server-config driven; no-op when disabled.
+  _safeInit('Ads', () => AdsService.init());
 
   if (userState.isAuthenticated) {
     debugPrint('Session restored: ${userState.userName}');

@@ -4,10 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../services/ads_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/fcm_service.dart';
+import '../../widgets/ads/feed_native_ad_card.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/business_network_header.dart';
@@ -330,6 +332,28 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return _posts;
   }
 
+  // Server-config driven: insert a MAX native ad after every N posts, at
+  // slots that don't collide with suggestions (every 10th) or sponsored
+  // products (every 5th).
+  bool get _feedAdsActive => AdsService.placementActive('bn_feed_native');
+  int get _feedAdFrequency => AdsService.feedFrequency('bn_feed_native');
+
+  bool _isAdSlot(int i) =>
+      _feedAdsActive &&
+      i > 0 &&
+      i % _feedAdFrequency == 0 &&
+      i % 5 != 0 &&
+      i % 10 != 0;
+
+  int _countAdSlots(int postCount) {
+    if (!_feedAdsActive) return 0;
+    int n = 0;
+    for (int i = 1; i <= postCount; i++) {
+      if (_isAdSlot(i)) n++;
+    }
+    return n;
+  }
+
   int _calculateTotalItems(List<BusinessNetworkPost> visiblePosts) {
     int total = visiblePosts.length + 1; // +1 for gold sponsors at top
 
@@ -342,6 +366,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     // Add sponsored product cards (every 5th post)
     final productsCount = (visiblePosts.length / 5).floor();
     total += productsCount;
+
+    // Add MAX native ad slots (server-controlled frequency)
+    total += _countAdSlots(visiblePosts.length);
 
     // +1 for loading/end indicator
     total += 1;
@@ -733,6 +760,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           );
         }
         sponsoredSlotIndex++;
+        currentIndex++;
+      }
+
+      // MAX native ad slot (server-controlled: every N posts)
+      if (_isAdSlot(i)) {
+        if (currentIndex == index) {
+          return FeedNativeAdCard(key: ValueKey('feed_ad_$i'));
+        }
         currentIndex++;
       }
 
