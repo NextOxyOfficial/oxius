@@ -86,7 +86,7 @@
           </div>
           <button class="text-xs text-red-300 font-semibold" @click="doLogout">লগআউট</button>
         </div>
-        <div class="md:hidden bg-white border-b border-slate-200 px-2 py-2 flex gap-1 overflow-x-auto sticky top-[52px] z-10">
+        <div class="md:hidden bg-white border-b border-slate-200 px-2 py-2 flex gap-1 overflow-x-auto sticky top-[52px] z-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <button v-for="m in menu" :key="m.key" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border"
             :class="section === m.key ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200'"
             @click="goSection(m.key)">{{ m.icon }} {{ m.label }}</button>
@@ -318,8 +318,8 @@
                   <button class="text-xs font-semibold text-red-500 hover:underline" @click="deleteManager(managerReport.manager)">ডিলিট</button>
                 </div>
               </div>
-              <!-- Tabs -->
-              <div class="px-5 pt-3 pb-0 border-b border-slate-100 flex gap-1 overflow-x-auto">
+              <!-- Tabs (scrollable on small screens, scrollbar hidden) -->
+              <div class="px-5 pt-3 pb-0 border-b border-slate-100 flex gap-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <button v-for="t in mgrTabs" :key="t.key"
                   class="shrink-0 px-4 py-2.5 text-[13px] font-semibold border-b-2 -mb-px transition"
                   :class="mgrTab === t.key ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'"
@@ -410,8 +410,8 @@
                       <tbody>
                         <tr v-for="(s, i) in managerReport.service_categories" :key="s.category"
                           :class="i % 2 ? 'bg-slate-50/40' : ''" class="border-b border-slate-50 last:border-0">
-                          <td class="py-2 px-4 text-slate-700">{{ s.category }}</td>
-                          <td class="py-2 px-4 text-right font-semibold text-slate-800">{{ s.n }} টি</td>
+                          <td class="py-2 px-4" :class="s.n ? 'text-slate-700' : 'text-slate-400'">{{ s.category }}</td>
+                          <td class="py-2 px-4 text-right" :class="s.n ? 'font-semibold text-slate-800' : 'text-slate-300'">{{ s.n }} টি</td>
                         </tr>
                       </tbody>
                     </table>
@@ -510,15 +510,24 @@
                   </select>
                 </div>
                 <div>
-                  <p class="text-sm font-bold text-slate-700 mb-2">কমিশন স্ট্রাকচার</p>
+                  <p class="text-sm font-bold text-slate-700 mb-1">কমিশন স্ট্রাকচার</p>
+                  <p class="text-[12px] text-slate-400 mb-2">ম্যানেজারের কমিশন আপনার জোন কমিশন থেকে কাটা যায় — তাই আপনার রেটের বেশি দেওয়া যায় না।</p>
                   <div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
                     <div v-for="row in managerForm.commissions" :key="row.feature" class="flex items-center gap-2 px-3 py-2.5">
-                      <span class="flex-1 text-sm text-slate-700">{{ featureBn(row.feature) }}</span>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm text-slate-700">{{ featureBn(row.feature) }}</p>
+                        <p class="text-[11px]" :class="zoneMax(row.feature).value > 0 ? 'text-emerald-600' : 'text-slate-400'">
+                          সর্বোচ্চ: {{ zoneMaxText(row.feature) }}
+                        </p>
+                      </div>
                       <select v-model="row.type" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white">
                         <option value="percent">% (পার্সেন্ট)</option>
                         <option value="flat">৳ ফ্ল্যাট/টা</option>
                       </select>
-                      <input v-model.number="row.value" type="number" min="0" step="0.01" class="w-24 text-right text-sm border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0" />
+                      <input v-model.number="row.value" type="number" min="0" :max="row.type === zoneMax(row.feature).type ? zoneMax(row.feature).value : undefined" step="0.01"
+                        class="w-24 text-right text-sm border rounded-lg px-2 py-1.5"
+                        :class="rowOverLimit(row) ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200'"
+                        placeholder="0" />
                     </div>
                   </div>
                 </div>
@@ -965,6 +974,29 @@ const mgrTabs = [
 
 const emptyCommissions = () =>
   Object.keys(featureLabels).map((f) => ({ feature: f, type: "percent", value: 0 }));
+
+// The zone's own rate per feature — the manager's hard ceiling (their cut is
+// carved out of the zone's commission).
+const zoneRateMap = computed(() => {
+  const map = {};
+  (office.value?.commissions || []).forEach((c) => {
+    map[c.feature] = { type: c.type, value: Number(c.value || 0) };
+  });
+  return map;
+});
+const zoneMax = (feature) => zoneRateMap.value[feature] || { type: "percent", value: 0 };
+const zoneMaxText = (feature) => {
+  const z = zoneMax(feature);
+  if (!z.value) return "আপনার জোন রেট ০ — দেওয়া যাবে না";
+  return z.type === "flat" ? `৳${money(z.value)}/টা (আপনার জোন রেট)` : `${z.value}% (আপনার জোন রেট)`;
+};
+const rowOverLimit = (row) => {
+  if (!row.value || row.value <= 0) return false;
+  const z = zoneMax(row.feature);
+  if (!z.value) return true;             // zone earns nothing here
+  if (row.type !== z.type) return true;  // type must match the zone's
+  return Number(row.value) > z.value;    // can't exceed the zone's rate
+};
 const blankPayout = () => ({
   payout_method: "", payout_account_name: "", payout_account_number: "",
   payout_bank_name: "", payout_bank_branch: "",
@@ -1017,6 +1049,15 @@ function startEditManager(m) {
 
 async function saveManager() {
   managerError.value = "";
+  // Client-side ceiling check (server enforces the same rule).
+  const bad = managerForm.commissions.find((r) => rowOverLimit(r));
+  if (bad) {
+    const z = zoneMax(bad.feature);
+    managerError.value = z.value
+      ? `${featureBn(bad.feature)}-এ সর্বোচ্চ ${z.type === "flat" ? "৳" + money(z.value) + "/টা" : z.value + "%"} দেওয়া যাবে (আপনার জোন রেট${bad.type !== z.type ? ", একই ধরন বেছে নিন" : ""})।`
+      : `${featureBn(bad.feature)}-এ আপনার জোন রেট ০ — ম্যানেজারকে কমিশন দেওয়া যাবে না।`;
+    return;
+  }
   savingManager.value = true;
   try {
     const payload = {

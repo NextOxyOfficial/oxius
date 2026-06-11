@@ -273,25 +273,28 @@ def zone_net_commission(office, start, end):
     return net_rows, net_total, gross_total, deduction_total, managers_detail
 
 
-def service_category_breakdown(city, upazila=None, limit=60):
-    """'আমার সেবা' (classified) live posts grouped by category for the scope —
-    how many active, approved service posts exist in each category."""
-    from base.models import ClassifiedCategoryPost
+def service_category_breakdown(city, upazila=None):
+    """'আমার সেবা' (classified) live-post count for EVERY category in the
+    scope — categories with no posts show 0, so the officer/manager sees the
+    full coverage picture (which categories still need providers)."""
+    from base.models import ClassifiedCategory, ClassifiedCategoryPost
 
     qs = ClassifiedCategoryPost.objects.filter(
         city__iexact=city, service_status="approved", active_service=True
     )
     if upazila:
         qs = qs.filter(upazila__iexact=upazila)
-    rows = (
-        qs.values("category__title")
-        .annotate(n=Count("id"))
-        .order_by("-n")[:limit]
+    counts = dict(
+        qs.values_list("category_id").annotate(n=Count("id")).values_list("category_id", "n")
     )
-    return [
-        {"category": (r["category__title"] or "অন্যান্য"), "n": r["n"]}
-        for r in rows if r["n"]
+    rows = [
+        {"category": title, "n": counts.get(cid, 0)}
+        for cid, title in ClassifiedCategory.objects.order_by("title").values_list("id", "title")
+        if (title or "").strip()
     ]
+    # Most active first, then alphabetical — zeros sink to the bottom.
+    rows.sort(key=lambda r: (-r["n"], r["category"]))
+    return rows
 
 
 def subscription_analysis(city, upazila=None, lapsed_limit=30):

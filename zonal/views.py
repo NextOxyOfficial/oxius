@@ -348,6 +348,40 @@ def _parse_commissions(raw):
     return out
 
 
+def _validate_manager_rates(office, parsed):
+    """A manager's cut comes out of the ZONE's commission, so it can never
+    exceed the zone's own rate for that feature (otherwise the company would
+    pay more than the zone earns). Same commission type required so the
+    comparison is meaningful. Returns a Bangla error string, or None if OK."""
+    zone_rates = {
+        c.feature: (c.commission_type, c.value)
+        for c in office.commissions.all()
+    }
+    labels = dict(ZoneFeatureCommission.FEATURES)
+    for feature, (ctype, value) in parsed.items():
+        if value <= 0:
+            continue
+        z = zone_rates.get(feature)
+        z_type, z_value = (z if z else ("percent", Decimal(0)))
+        unit = "%" if z_type == "percent" else "৳"
+        if z_value <= 0:
+            return (
+                f"{labels.get(feature, feature)}-এ আপনার জোন রেট ০ — "
+                "তাই এরিয়া ম্যানেজারকে এই ফিচারে কমিশন দেওয়া যাবে না।"
+            )
+        if ctype != z_type:
+            return (
+                f"{labels.get(feature, feature)}-এ আপনার জোন রেট {z_value}{unit} "
+                f"({'পার্সেন্ট' if z_type == 'percent' else 'ফ্ল্যাট'}) — ম্যানেজারের রেটও একই ধরনের দিতে হবে।"
+            )
+        if value > z_value:
+            return (
+                f"{labels.get(feature, feature)}-এ সর্বোচ্চ {z_value}{unit} দেওয়া যাবে "
+                f"(আপনার জোন রেট) — {value}{unit} দেওয়া যাবে না।"
+            )
+    return None
+
+
 MANAGER_PAYOUT_FIELDS = (
     "payout_method", "payout_account_name", "payout_account_number",
     "payout_bank_name", "payout_bank_branch",
@@ -420,12 +454,14 @@ def zonal_managers(request):
             return Response(
                 {"detail": "এই এলাকায় একই নামের ম্যানেজার ইতিমধ্যে আছে।"}, status=400
             )
+        parsed = _parse_commissions(request.data.get("commissions"))
+        rate_error = _validate_manager_rates(office, parsed)
+        if rate_error:
+            return Response({"detail": rate_error}, status=400)
         manager = AreaManager.objects.create(
             office=office, name=name, area=area, phone=phone
         )
-        _save_manager_commissions(
-            manager, _parse_commissions(request.data.get("commissions"))
-        )
+        _save_manager_commissions(manager, parsed)
         _save_manager_payout(manager, request.data)
         return Response(_manager_payload(manager), status=201)
 
@@ -449,6 +485,12 @@ def zonal_manager_detail(request, manager_id):
         return Response(status=204)
 
     if request.method == "PATCH":
+        parsed = None
+        if request.data.get("commissions") is not None:
+            parsed = _parse_commissions(request.data.get("commissions"))
+            rate_error = _validate_manager_rates(office, parsed)
+            if rate_error:
+                return Response({"detail": rate_error}, status=400)
         for field in ("name", "phone", "area"):
             val = request.data.get(field)
             if val is not None and str(val).strip():
@@ -456,10 +498,8 @@ def zonal_manager_detail(request, manager_id):
         if request.data.get("is_active") is not None:
             manager.is_active = bool(request.data.get("is_active"))
         manager.save()
-        if request.data.get("commissions") is not None:
-            _save_manager_commissions(
-                manager, _parse_commissions(request.data.get("commissions"))
-            )
+        if parsed is not None:
+            _save_manager_commissions(manager, parsed)
         _save_manager_payout(manager, request.data)
         return Response(_manager_payload(manager))
 
