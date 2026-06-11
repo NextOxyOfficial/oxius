@@ -124,6 +124,7 @@
                     <span class="text-[11px] text-slate-500">{{ h.label }}</span>
                   </div>
                   <p class="text-2xl font-extrabold tracking-tight" :class="toneText(h.tone)">{{ h.value }}</p>
+                  <p v-if="h.sub" class="text-[10px] text-slate-400 mt-1">{{ h.sub }}</p>
                 </div>
               </div>
 
@@ -177,32 +178,6 @@
                   <ZoneSubHealth :s="report.subscriptions" />
                 </div>
 
-                <div class="px-5 pt-1 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">কমিশন হিসাব</h3></div>
-                <div class="px-5 pb-5 overflow-x-auto">
-                  <table class="w-full text-sm">
-                    <thead>
-                      <tr class="text-[11px] text-slate-400 border-b border-slate-100">
-                        <th class="text-left py-2 font-medium">ফিচার</th>
-                        <th class="text-right py-2 font-medium">রেট</th>
-                        <th class="text-right py-2 font-medium">সেলস (৳) / সংখ্যা</th>
-                        <th class="text-right py-2 font-medium">কমিশন (৳)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="c in report.commissions" :key="c.feature" class="border-b border-slate-50">
-                        <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
-                        <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
-                        <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? `${c.count} টা` : money(c.base_amount) }}</td>
-                        <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
-                      </tr>
-                      <tr>
-                        <td colspan="3" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
-                        <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(report.totals.commission) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
                 <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">এলাকা অনুযায়ী রেজিস্ট্রেশন</h3></div>
                 <div class="px-5 pb-5">
                   <div v-if="!report.by_area.length" class="text-sm text-slate-400 py-3">এই সময়ে কোনো নতুন রেজিস্ট্রেশন নেই।</div>
@@ -212,6 +187,34 @@
                       <span class="font-semibold text-slate-800">{{ a.n }} জন</span>
                     </div>
                   </div>
+                </div>
+
+                <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">কমিশন হিসাব</h3></div>
+                <div class="px-5 pb-5 overflow-x-auto">
+                  <table class="w-full text-sm whitespace-nowrap">
+                    <thead>
+                      <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                        <th class="text-left py-2 font-medium">ফিচার</th>
+                        <th class="text-right py-2 font-medium">সংখ্যা</th>
+                        <th class="text-right py-2 font-medium">সেলস (৳)</th>
+                        <th class="text-right py-2 font-medium">রেট</th>
+                        <th class="text-right py-2 font-medium">কমিশন (৳)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="c in report.commissions" :key="c.feature" class="border-b border-slate-50">
+                        <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
+                        <td class="py-2 text-right text-slate-700 font-medium">{{ c.count }} {{ countUnit(c.feature) }}</td>
+                        <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? '—' : money(c.base_amount) }}</td>
+                        <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
+                        <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
+                        <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(report.totals.commission) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
                 <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">দৈনিক অ্যাক্টিভিটি</h3></div>
@@ -283,6 +286,7 @@
                     <span class="text-[11px] text-slate-500">{{ h.label }}</span>
                   </div>
                   <p class="text-xl font-extrabold" :class="toneText(h.tone)">{{ h.value }}</p>
+                  <p v-if="h.sub" class="text-[10px] text-slate-400 mt-1">{{ h.sub }}</p>
                 </div>
               </div>
               <!-- Pro subscription health (this area) -->
@@ -297,24 +301,26 @@
               </div>
               <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">কমিশন ব্রেকডাউন ({{ managerReport.range.from }} → {{ managerReport.range.to }})</h3></div>
               <div class="px-5 pb-6 overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-sm whitespace-nowrap">
                   <thead>
                     <tr class="text-[11px] text-slate-400 border-b border-slate-100">
                       <th class="text-left py-2 font-medium">ফিচার</th>
+                      <th class="text-right py-2 font-medium">সংখ্যা</th>
+                      <th class="text-right py-2 font-medium">সেলস (৳)</th>
                       <th class="text-right py-2 font-medium">রেট</th>
-                      <th class="text-right py-2 font-medium">সেলস (৳) / সংখ্যা</th>
                       <th class="text-right py-2 font-medium">কমিশন (৳)</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="c in managerReport.commissions" :key="c.feature" class="border-b border-slate-50">
                       <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
+                      <td class="py-2 text-right text-slate-700 font-medium">{{ c.count }} {{ countUnit(c.feature) }}</td>
+                      <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? '—' : money(c.base_amount) }}</td>
                       <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
-                      <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? `${c.count} টা` : money(c.base_amount) }}</td>
                       <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
                     </tr>
                     <tr>
-                      <td colspan="3" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
+                      <td colspan="4" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
                       <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(managerReport.totals.commission) }}</td>
                     </tr>
                   </tbody>
@@ -479,38 +485,46 @@
             </div>
           </template>
 
-          <!-- ======== PRIMARY NOTES ======== -->
+          <!-- ======== PRIMARY NOTES (sticky-note board) ======== -->
           <template v-else-if="section === 'notes'">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <div class="px-5 py-4 border-b border-slate-100">
-                <h2 class="text-base font-bold text-slate-800">প্রাইমারি নোট</h2>
-                <p class="text-xs text-slate-500 mt-0.5">জোনের প্রয়োজনীয় নোট লিখে রাখুন — অ্যাডমিনও দেখতে পারবেন</p>
+            <!-- Composer -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-5">
+              <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+                <span class="text-lg">📝</span>
+                <div>
+                  <h2 class="text-base font-bold text-slate-800">{{ noteForm.id ? 'নোট এডিট করুন' : 'নতুন নোট' }}</h2>
+                  <p class="text-xs text-slate-500 mt-0.5">জোনের প্রয়োজনীয় নোট লিখে রাখুন — অ্যাডমিনও দেখতে পারবেন</p>
+                </div>
               </div>
-              <form class="px-5 py-4 border-b border-slate-100 space-y-2.5" @submit.prevent="saveNote">
-                <input v-model="noteForm.title" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="নোটের শিরোনাম *" />
-                <textarea v-model="noteForm.body" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="বিস্তারিত (ঐচ্ছিক)"></textarea>
+              <form class="p-5 space-y-3" @submit.prevent="saveNote">
+                <input v-model="noteForm.title" required class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="নোটের শিরোনাম *" />
+                <textarea v-model="noteForm.body" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="বিস্তারিত (ঐচ্ছিক)"></textarea>
                 <div class="flex items-center gap-3">
-                  <button type="submit" :disabled="savingNote" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold rounded-lg px-4 py-2">
-                    {{ noteForm.id ? 'আপডেট করুন' : 'নোট সেভ করুন' }}
+                  <button type="submit" :disabled="savingNote" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg px-5 py-2.5">
+                    {{ noteForm.id ? 'আপডেট করুন' : '+ নোট যোগ করুন' }}
                   </button>
-                  <button v-if="noteForm.id" type="button" class="text-xs text-slate-400 hover:text-slate-600" @click="resetNoteForm">বাতিল</button>
+                  <button v-if="noteForm.id" type="button" class="text-sm text-slate-400 hover:text-slate-600" @click="resetNoteForm">বাতিল</button>
                 </div>
               </form>
-              <div v-if="!notes.length" class="p-8 text-center text-sm text-slate-400">এখনো কোনো নোট নেই।</div>
-              <div v-else class="divide-y divide-slate-100">
-                <div v-for="n in notes" :key="n.id" class="px-5 py-3.5">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="text-sm font-semibold text-slate-800">{{ n.title }}</p>
-                      <p v-if="n.body" class="text-sm text-slate-600 mt-0.5 whitespace-pre-line">{{ n.body }}</p>
-                      <p class="text-[11px] text-slate-400 mt-1">{{ n.updated_at }}</p>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                      <button class="text-xs font-semibold text-blue-600 hover:underline" @click="editNote(n)">এডিট</button>
-                      <button class="text-xs font-semibold text-red-500 hover:underline" @click="deleteNote(n)">ডিলিট</button>
-                    </div>
+            </div>
+
+            <!-- Sticky-note grid -->
+            <div v-if="!notes.length" class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+              এখনো কোনো নোট নেই — উপরে লিখে প্রথম নোটটি যোগ করুন।
+            </div>
+            <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div v-for="(n, i) in notes" :key="n.id"
+                class="group relative rounded-xl p-4 shadow-sm border transition hover:shadow-md hover:-translate-y-0.5"
+                :class="noteColors[i % noteColors.length]">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-sm font-bold text-slate-800 break-words pr-1">{{ n.title }}</h3>
+                  <div class="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition">
+                    <button class="text-slate-400 hover:text-blue-600" title="এডিট" @click="editNote(n)">✏️</button>
+                    <button class="text-slate-400 hover:text-red-500" title="ডিলিট" @click="deleteNote(n)">🗑️</button>
                   </div>
                 </div>
+                <p v-if="n.body" class="text-sm text-slate-700 mt-2 whitespace-pre-line break-words leading-relaxed">{{ n.body }}</p>
+                <p class="text-[11px] text-slate-500/80 mt-3 pt-2 border-t border-black/5">{{ n.updated_at }}</p>
               </div>
             </div>
           </template>
@@ -715,15 +729,28 @@ const featureLabels = {
   rideshare_driver: "রাইডশেয়ার ড্রাইভার কমিশন",
 };
 const featureBn = (f) => featureLabels[f] || f;
+// Unit word for the count column — "জন" for people-based features, "টি" otherwise.
+const countUnits = {
+  registration: "জন",
+  pro_subscription: "জন",
+  rideshare_driver: "টি",
+  microgig_post: "টি",
+  eshop_order: "টি",
+  mobile_recharge: "টি",
+  gold_sponsor: "টি",
+};
+const countUnit = (f) => countUnits[f] || "";
 const money = (v) => Number(v || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
 const rateText = (c) => (c.type === "flat" ? `৳${money(c.value)}/টা` : `${c.value}%`);
 
 // Four headline cards — the numbers that matter most, big and colour-coded.
-const heroCards = (t, usersLabel, usersValue) => [
-  { label: usersLabel, value: (usersValue ?? 0).toLocaleString(), icon: "👥", tone: "slate" },
-  { label: "নতুন লিড", value: (t.registrations ?? 0).toLocaleString(), icon: "📥", tone: "blue" },
-  { label: "মোট সেলস", value: `৳${money(t.revenue)}`, icon: "💰", tone: "slate" },
-  { label: "মোট কমিশন", value: `৳${money(t.commission)}`, icon: "🏆", tone: "emerald" },
+// `sub` clarifies the scope: total users are all-time, the rest are for the
+// selected date range.
+const heroCards = (t, usersLabel, usersValue, usersSub) => [
+  { label: usersLabel, value: (usersValue ?? 0).toLocaleString(), sub: usersSub, icon: "👥", tone: "slate" },
+  { label: "নতুন রেজিস্ট্রেশন", value: (t.registrations ?? 0).toLocaleString(), sub: "এই সময়ে নতুন যোগ দিয়েছেন", icon: "📥", tone: "blue" },
+  { label: "মোট সেলস", value: `৳${money(t.revenue)}`, sub: "এই সময়ের", icon: "💰", tone: "slate" },
+  { label: "মোট কমিশন", value: `৳${money(t.commission)}`, sub: "এই সময়ের", icon: "🏆", tone: "emerald" },
 ];
 const toneText = (tone) =>
   ({ slate: "text-slate-800", blue: "text-blue-600", emerald: "text-emerald-600" }[tone] || "text-slate-800");
@@ -739,7 +766,9 @@ const salesRows = (t) => [
 ];
 
 const dashHero = computed(() =>
-  report.value ? heroCards(report.value.totals, "জোনের মোট ইউজার", report.value.totals.zone_users) : []
+  report.value
+    ? heroCards(report.value.totals, "জোনের মোট ইউজার", report.value.totals.zone_users, "জোনে সর্বমোট (সব সময়)")
+    : []
 );
 const dashSales = computed(() => (report.value ? salesRows(report.value.totals) : []));
 
@@ -958,7 +987,7 @@ async function loadManagerReportCustom(id) {
 
 const mgrHero = computed(() =>
   managerReport.value
-    ? heroCards(managerReport.value.totals, "এলাকার মোট ইউজার", managerReport.value.totals.area_users)
+    ? heroCards(managerReport.value.totals, "এলাকার মোট ইউজার", managerReport.value.totals.area_users, "এলাকায় সর্বমোট (সব সময়)")
     : []
 );
 const mgrSales = computed(() => (managerReport.value ? salesRows(managerReport.value.totals) : []));
@@ -978,6 +1007,15 @@ const notes = ref([]);
 const notesLoaded = ref(false);
 const savingNote = ref(false);
 const noteForm = reactive({ id: null, title: "", body: "" });
+// Soft sticky-note palettes, cycled across the grid.
+const noteColors = [
+  "bg-amber-50 border-amber-200",
+  "bg-emerald-50 border-emerald-200",
+  "bg-sky-50 border-sky-200",
+  "bg-rose-50 border-rose-200",
+  "bg-violet-50 border-violet-200",
+  "bg-lime-50 border-lime-200",
+];
 
 async function loadNotes() {
   const { data } = await get("/zonal/notes/");
