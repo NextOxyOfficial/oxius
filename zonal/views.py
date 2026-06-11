@@ -124,10 +124,12 @@ def zonal_dashboard(request):
     )
     no_area = reg_count - sum(a["n"] for a in by_area)
 
-    # Rate-history aware: each sale credited at the rate effective when it
-    # happened, so a later rate change never re-prices past sales.
-    commissions, total_commission = metrics.commission_for_office(office, start, end)
-    total_commission = float(total_commission)
+    # Rate-history aware AND net of area-manager cuts (each manager's share is
+    # carved out of the zone's commission, not paid on top).
+    commissions, net_total, gross_total, ded_total, mgr_detail = (
+        metrics.zone_net_commission(office, start, end)
+    )
+    total_commission = float(net_total)
 
     # Daily series
     def _daily(qs, dt_field, amount_field):
@@ -192,11 +194,14 @@ def zonal_dashboard(request):
                 "gold": data["gold_sponsor"],
                 "rides": data["rideshare_driver"],
                 "revenue": revenue,
-                "commission": total_commission,
+                "commission": total_commission,                 # NET (what zone gets)
+                "commission_gross": float(gross_total),         # before manager cuts
+                "commission_area_managers": float(ded_total),   # paid to area managers
             },
             "by_area": by_area
             + ([{"upazila": "(এলাকা দেওয়া নেই)", "n": no_area}] if no_area > 0 else []),
             "commissions": commissions,
+            "area_manager_split": mgr_detail,
             "subscriptions": _subscription_analysis(city),
             "days": days,
         }
@@ -657,8 +662,8 @@ def zonal_balance(request):
     if not office:
         return Response(NOT_OFFICER, status=403)
     start, end = _current_month_bounds()
-    rows, total = metrics.commission_for_office(office, start, end)
-    return Response(_balance_summary(office.invoices.all(), rows, total))
+    rows, net_total, _g, _d, _m = metrics.zone_net_commission(office, start, end)
+    return Response(_balance_summary(office.invoices.all(), rows, net_total))
 
 
 @api_view(["GET"])

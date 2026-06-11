@@ -16,8 +16,8 @@ from django.utils import timezone
 from zonal.metrics import (
     DHAKA,
     commission_for_manager,
-    commission_for_office,
     month_range,
+    zone_net_commission,
 )
 from zonal.models import AreaManager, AreaManagerInvoice, ZonalInvoice, ZonalOffice
 
@@ -48,9 +48,9 @@ class Command(BaseCommand):
         zones = made = 0
 
         for office in ZonalOffice.objects.filter(is_active=True):
-            # Rate-history aware: each sale priced at the rate effective when
-            # it happened.
-            rows, total = commission_for_office(office, start, end)
+            # Rate-history aware AND net of area-manager cuts — the zone is
+            # invoiced for what it actually keeps.
+            rows, total, _g, _d, _m = zone_net_commission(office, start, end)
             inv = ZonalInvoice.objects.filter(
                 office=office, period_year=year, period_month=month
             ).first()

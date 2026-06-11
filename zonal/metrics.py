@@ -218,6 +218,61 @@ def commission_for_manager(office, manager, start, end):
     )
 
 
+def zone_net_commission(office, start, end):
+    """Zone officer's NET commission: the zone's gross commission MINUS each
+    area manager's share (the manager's cut is carved OUT of the zone's, not
+    paid on top). Per area the deduction is capped at what the zone earned from
+    THAT area, so a high manager rate in one area can't eat the zone's
+    earnings elsewhere.
+
+    Returns (rows, net_total, gross_total, deduction_total, managers_detail).
+    Each row carries gross / area_manager_deduction / earned(=net) per feature.
+    """
+    zone_changes = _changes_by_feature(office.rate_changes.all())
+    gross_rows, gross_total = commission_from_changes(office.city, zone_changes, start, end)
+    gross_by_feature = {r["feature"]: Decimal(str(r["earned"])) for r in gross_rows}
+
+    deduction_by_feature = {f: Decimal(0) for f, _ in FEATURE_ORDER}
+    managers_detail = []
+    for mgr in office.area_managers.filter(is_active=True):
+        mgr_rows, mgr_total = commission_for_manager(office, mgr, start, end)
+        # What the zone earns from this manager's area at the ZONE's own rate —
+        # the manager's cut can't exceed this.
+        zone_area_rows, _zt = commission_from_changes(
+            office.city, zone_changes, start, end, upazila=mgr.area
+        )
+        zone_area_by_feature = {
+            r["feature"]: Decimal(str(r["earned"])) for r in zone_area_rows
+        }
+        mgr_from_zone = Decimal(0)
+        for r in mgr_rows:
+            f = r["feature"]
+            ded = min(Decimal(str(r["earned"])), zone_area_by_feature.get(f, Decimal(0)))
+            deduction_by_feature[f] += ded
+            mgr_from_zone += ded
+        managers_detail.append({
+            "name": mgr.name, "area": mgr.area,
+            "earned": float(mgr_total), "from_zone": float(mgr_from_zone),
+        })
+
+    net_rows, net_total, deduction_total = [], Decimal(0), Decimal(0)
+    for r in gross_rows:
+        f = r["feature"]
+        gross = gross_by_feature[f]
+        ded = deduction_by_feature.get(f, Decimal(0))
+        net = gross - ded
+        if net < 0:
+            net = Decimal(0)
+        net_total += net
+        deduction_total += ded
+        nr = dict(r)
+        nr["gross"] = float(gross)
+        nr["area_manager_deduction"] = float(ded)
+        nr["earned"] = float(net)
+        net_rows.append(nr)
+    return net_rows, net_total, gross_total, deduction_total, managers_detail
+
+
 def subscription_analysis(city, upazila=None, lapsed_limit=30):
     """Pro-subscription snapshot of NOW: active / lapsed (not renewed) /
     expiring-soon + a short follow-up list of lapsed users."""

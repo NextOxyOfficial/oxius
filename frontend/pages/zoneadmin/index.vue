@@ -241,14 +241,33 @@
                         <td class="py-2 text-right text-slate-700 font-medium">{{ c.count }} {{ countUnit(c.feature) }}</td>
                         <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? '—' : money(c.base_amount) }}</td>
                         <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
-                        <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
+                        <td class="py-2 text-right font-semibold text-slate-700">{{ money(c.gross ?? c.earned) }}</td>
+                      </tr>
+                      <tr class="border-t border-slate-100">
+                        <td colspan="4" class="py-2 text-right text-sm text-slate-600">মোট কমিশন (গ্রস)</td>
+                        <td class="py-2 text-right text-sm font-semibold text-slate-700">৳{{ money(report.totals.commission_gross) }}</td>
+                      </tr>
+                      <tr v-if="report.totals.commission_area_managers > 0">
+                        <td colspan="4" class="py-2 text-right text-sm text-slate-600">— এরিয়া ম্যানেজারদের অংশ</td>
+                        <td class="py-2 text-right text-sm font-semibold text-red-500">−৳{{ money(report.totals.commission_area_managers) }}</td>
                       </tr>
                       <tr>
-                        <td colspan="4" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
+                        <td colspan="4" class="py-2.5 text-right text-sm font-bold text-slate-800">আপনার নিট কমিশন</td>
                         <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(report.totals.commission) }}</td>
                       </tr>
                     </tbody>
                   </table>
+                </div>
+
+                <!-- Area manager split (who took what out of the zone's cut) -->
+                <div v-if="report.area_manager_split && report.area_manager_split.length" class="px-5 pb-5">
+                  <p class="text-xs font-semibold text-slate-500 mb-2">এরিয়া ম্যানেজারদের কমিশন (আপনার অংশ থেকে)</p>
+                  <div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
+                    <div v-for="m in report.area_manager_split" :key="m.name + m.area" class="flex items-center justify-between px-4 py-2.5 text-sm">
+                      <span class="text-slate-700">{{ m.name }} <span class="text-slate-400 text-xs">📍 {{ m.area }}</span></span>
+                      <span class="font-semibold text-slate-700">৳{{ money(m.from_zone) }}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">দৈনিক অ্যাক্টিভিটি</h3></div>
