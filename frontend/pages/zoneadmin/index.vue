@@ -1,14 +1,16 @@
 <template>
-  <div class="min-h-screen bg-slate-100 py-6 px-3 sm:px-6">
-    <div class="max-w-5xl mx-auto">
-      <!-- ============ LOADING ============ -->
-      <div v-if="phase === 'loading'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center">
+  <div class="min-h-screen bg-slate-100">
+    <!-- ============ LOADING ============ -->
+    <div v-if="phase === 'loading'" class="min-h-screen flex items-center justify-center">
+      <div class="text-center">
         <div class="animate-spin h-8 w-8 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto mb-3"></div>
         <p class="text-slate-500 text-sm">লোড হচ্ছে...</p>
       </div>
+    </div>
 
-      <!-- ============ LOGIN ============ -->
-      <div v-else-if="phase === 'login'" class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <!-- ============ LOGIN ============ -->
+    <div v-else-if="phase === 'login'" class="min-h-screen flex items-center justify-center px-3">
+      <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="px-6 pt-8 pb-6 text-center border-b border-slate-100">
           <img src="/images/logo.png" alt="AdsyClub" class="h-10 mx-auto mb-3" onerror="this.style.display='none'" />
           <h1 class="text-xl font-bold text-slate-800">জোনাল অফিস প্যানেল</h1>
@@ -32,129 +34,346 @@
           </button>
         </form>
       </div>
+    </div>
 
-      <!-- ============ NOT AN OFFICER ============ -->
-      <div v-else-if="phase === 'denied'" class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+    <!-- ============ NOT AN OFFICER ============ -->
+    <div v-else-if="phase === 'denied'" class="min-h-screen flex items-center justify-center px-3">
+      <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
         <div class="text-4xl mb-3">🔒</div>
         <h1 class="text-lg font-bold text-slate-800 mb-2">প্রবেশাধিকার নেই</h1>
         <p class="text-sm text-slate-500 mb-5">এই অ্যাকাউন্টটি কোনো জোনাল অফিসের সাথে যুক্ত নয়। অফিসার হিসেবে যুক্ত হতে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
         <button class="text-sm font-semibold text-emerald-700 hover:underline" @click="doLogout">অন্য অ্যাকাউন্টে লগইন করুন</button>
       </div>
+    </div>
 
-      <!-- ============ DASHBOARD ============ -->
-      <div v-else-if="phase === 'dash' && report" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <!-- Header -->
-        <div class="px-5 py-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100">
+    <!-- ============ PANEL (sidebar + content) ============ -->
+    <div v-else-if="phase === 'dash'" class="flex min-h-screen">
+      <!-- Sidebar (desktop) -->
+      <aside class="hidden md:flex flex-col w-60 shrink-0 bg-slate-900 text-slate-200 min-h-screen sticky top-0 max-h-screen">
+        <div class="px-5 py-5 border-b border-slate-800">
+          <p class="text-[11px] uppercase tracking-wider text-emerald-400 font-bold mb-1">Zonal Office</p>
+          <h1 class="text-sm font-bold text-white leading-snug">{{ office?.name }}</h1>
+          <p class="text-xs text-slate-400 mt-1">জোন: {{ office?.city }}</p>
+        </div>
+        <nav class="flex-1 px-3 py-4 space-y-1">
+          <button v-for="m in menu" :key="m.key" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition"
+            :class="section === m.key ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800'"
+            @click="goSection(m.key)">
+            <span class="text-base leading-none">{{ m.icon }}</span>
+            <span>{{ m.label }}</span>
+          </button>
+        </nav>
+        <div class="px-5 py-4 border-t border-slate-800">
+          <p class="text-xs text-slate-400 truncate mb-2">{{ office?.officer }}</p>
+          <button class="text-xs font-semibold text-red-400 hover:text-red-300" @click="doLogout">লগআউট</button>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <div class="flex-1 min-w-0">
+        <!-- Mobile top bar -->
+        <div class="md:hidden sticky top-0 z-20 bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
           <div>
-            <h1 class="text-lg font-bold text-slate-800">{{ report.office.name }}</h1>
-            <p class="text-xs text-slate-500 mt-0.5">জোন: {{ report.office.city }} &bull; অফিসার: {{ report.office.officer }}</p>
+            <p class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">Zonal Office</p>
+            <h1 class="text-sm font-bold leading-tight">{{ office?.city }}</h1>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-1 rounded-full">Zonal Office</span>
-            <button class="text-xs text-slate-400 hover:text-red-500 font-medium" @click="doLogout">লগআউট</button>
-          </div>
+          <button class="text-xs text-red-300 font-semibold" @click="doLogout">লগআউট</button>
+        </div>
+        <div class="md:hidden bg-white border-b border-slate-200 px-2 py-2 flex gap-1 overflow-x-auto sticky top-[52px] z-10">
+          <button v-for="m in menu" :key="m.key" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border"
+            :class="section === m.key ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200'"
+            @click="goSection(m.key)">{{ m.icon }} {{ m.label }}</button>
         </div>
 
-        <!-- Date range -->
-        <div class="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
-          <button v-for="r in quickRanges" :key="r.days"
-            class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
-            :class="activeQuick === r.days ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400'"
-            @click="setQuickRange(r.days)">{{ r.label }}</button>
-          <div class="flex items-center gap-1.5 ml-auto">
-            <input v-model="range.from" type="date" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5" />
-            <span class="text-slate-400 text-xs">—</span>
-            <input v-model="range.to" type="date" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5" />
-            <button class="text-xs font-semibold bg-slate-800 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700" @click="applyCustomRange">দেখুন</button>
-          </div>
-        </div>
-
-        <div v-if="loadingReport" class="p-10 text-center">
-          <div class="animate-spin h-7 w-7 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
-        </div>
-
-        <template v-else>
-          <!-- Summary tiles -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100 border-b border-slate-100">
-            <div v-for="t in summaryTiles" :key="t.label" class="p-4">
-              <p class="text-[11px] text-slate-500 mb-1">{{ t.label }}</p>
-              <p class="text-lg font-bold" :class="t.accent || 'text-slate-800'">{{ t.value }}</p>
-              <p v-if="t.sub" class="text-[11px] text-slate-400 mt-0.5">{{ t.sub }}</p>
-            </div>
-          </div>
-
-          <!-- Commission breakdown -->
-          <div class="px-5 pt-5 pb-2">
-            <h2 class="text-sm font-bold text-slate-700">কমিশন হিসাব <span class="font-normal text-slate-400">({{ report.range.from }} → {{ report.range.to }})</span></h2>
-          </div>
-          <div class="px-5 pb-5 overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-[11px] text-slate-400 border-b border-slate-100">
-                  <th class="text-left py-2 font-medium">ফিচার</th>
-                  <th class="text-right py-2 font-medium">রেট</th>
-                  <th class="text-right py-2 font-medium">সেলস (৳)</th>
-                  <th class="text-right py-2 font-medium">কমিশন (৳)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="c in report.commissions" :key="c.feature" class="border-b border-slate-50">
-                  <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
-                  <td class="py-2 text-right text-slate-600">{{ c.percent }}%</td>
-                  <td class="py-2 text-right text-slate-600">{{ money(c.base_amount) }}</td>
-                  <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
-                </tr>
-                <tr>
-                  <td colspan="3" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
-                  <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(report.totals.commission) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Area-wise registrations -->
-          <div class="px-5 pt-4 pb-2 border-t border-slate-100">
-            <h2 class="text-sm font-bold text-slate-700">এলাকা অনুযায়ী নতুন রেজিস্ট্রেশন</h2>
-          </div>
-          <div class="px-5 pb-5">
-            <div v-if="!report.by_area.length" class="text-sm text-slate-400 py-3">এই সময়ে কোনো নতুন রেজিস্ট্রেশন নেই।</div>
-            <div v-else class="grid sm:grid-cols-2 gap-x-8">
-              <div v-for="a in report.by_area" :key="a.upazila" class="flex items-center justify-between py-1.5 border-b border-slate-50 text-sm">
-                <span class="text-slate-700">{{ a.upazila }}</span>
-                <span class="font-semibold text-slate-800">{{ a.n }} জন</span>
+        <main class="p-3 sm:p-6 max-w-5xl">
+          <!-- ======== DASHBOARD ======== -->
+          <template v-if="section === 'dashboard'">
+            <!-- Notices -->
+            <div v-if="notices.length" class="space-y-3 mb-5">
+              <div v-for="n in notices" :key="n.id" class="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
+                <img v-if="n.image" :src="n.image" class="w-full max-h-56 object-cover" alt="" />
+                <div class="px-4 py-3 flex gap-3">
+                  <span class="text-lg leading-none mt-0.5">📢</span>
+                  <div class="min-w-0">
+                    <p class="text-sm font-bold text-slate-800">{{ n.title }}</p>
+                    <p v-if="n.body" class="text-sm text-slate-600 mt-0.5 whitespace-pre-line">{{ n.body }}</p>
+                    <p class="text-[11px] text-slate-400 mt-1">{{ n.created_at }}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Daily activity -->
-          <div class="px-5 pt-4 pb-2 border-t border-slate-100">
-            <h2 class="text-sm font-bold text-slate-700">দৈনিক অ্যাক্টিভিটি</h2>
-          </div>
-          <div class="px-5 pb-6 overflow-x-auto">
-            <table class="w-full text-xs sm:text-sm whitespace-nowrap">
-              <thead>
-                <tr class="text-[11px] text-slate-400 border-b border-slate-100">
-                  <th class="text-left py-2 font-medium">তারিখ</th>
-                  <th class="text-right py-2 font-medium">রেজিস্ট্রেশন</th>
-                  <th class="text-right py-2 font-medium">Pro (৳)</th>
-                  <th class="text-right py-2 font-medium">গিগ (৳)</th>
-                  <th class="text-right py-2 font-medium">অর্ডার (৳)</th>
-                  <th class="text-right py-2 font-medium">রিচার্জ (৳)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="d in report.days" :key="d.date" class="border-b border-slate-50">
-                  <td class="py-1.5 text-slate-600">{{ d.date }}</td>
-                  <td class="py-1.5 text-right" :class="d.registrations ? 'font-semibold text-slate-800' : 'text-slate-300'">{{ d.registrations }}</td>
-                  <td class="py-1.5 text-right" :class="d.pro.n ? 'text-slate-700' : 'text-slate-300'">{{ d.pro.n }} / {{ money(d.pro.s) }}</td>
-                  <td class="py-1.5 text-right" :class="d.gigs.n ? 'text-slate-700' : 'text-slate-300'">{{ d.gigs.n }} / {{ money(d.gigs.s) }}</td>
-                  <td class="py-1.5 text-right" :class="d.orders.n ? 'text-slate-700' : 'text-slate-300'">{{ d.orders.n }} / {{ money(d.orders.s) }}</td>
-                  <td class="py-1.5 text-right" :class="d.recharges.n ? 'text-slate-700' : 'text-slate-300'">{{ d.recharges.n }} / {{ money(d.recharges.s) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </template>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h2 class="text-base font-bold text-slate-800">এক নজরে ({{ report?.range?.from }} → {{ report?.range?.to }})</h2>
+                <button class="text-xs font-semibold text-emerald-700 hover:underline" @click="goSection('sales')">বিস্তারিত রিপোর্ট →</button>
+              </div>
+              <div v-if="loadingReport" class="p-10 text-center">
+                <div class="animate-spin h-7 w-7 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
+              </div>
+              <div v-else class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100">
+                <div v-for="t in summaryTiles" :key="t.label" class="p-4">
+                  <p class="text-[11px] text-slate-500 mb-1">{{ t.label }}</p>
+                  <p class="text-lg font-bold" :class="t.accent || 'text-slate-800'">{{ t.value }}</p>
+                  <p v-if="t.sub" class="text-[11px] text-slate-400 mt-0.5">{{ t.sub }}</p>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ======== SALES REPORT ======== -->
+          <template v-else-if="section === 'sales'">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100">
+                <h2 class="text-base font-bold text-slate-800">সেলস ও কমিশন রিপোর্ট</h2>
+              </div>
+              <div class="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
+                <button v-for="r in quickRanges" :key="r.days"
+                  class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+                  :class="activeQuick === r.days ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400'"
+                  @click="setQuickRange(r.days)">{{ r.label }}</button>
+                <div class="flex items-center gap-1.5 ml-auto">
+                  <input v-model="range.from" type="date" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5" />
+                  <span class="text-slate-400 text-xs">—</span>
+                  <input v-model="range.to" type="date" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5" />
+                  <button class="text-xs font-semibold bg-slate-800 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700" @click="applyCustomRange">দেখুন</button>
+                </div>
+              </div>
+
+              <div v-if="loadingReport" class="p-10 text-center">
+                <div class="animate-spin h-7 w-7 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
+              </div>
+              <template v-else-if="report">
+                <div class="px-5 pt-5 pb-2"><h3 class="text-sm font-bold text-slate-700">কমিশন হিসাব</h3></div>
+                <div class="px-5 pb-5 overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                        <th class="text-left py-2 font-medium">ফিচার</th>
+                        <th class="text-right py-2 font-medium">রেট</th>
+                        <th class="text-right py-2 font-medium">সেলস (৳) / সংখ্যা</th>
+                        <th class="text-right py-2 font-medium">কমিশন (৳)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="c in report.commissions" :key="c.feature" class="border-b border-slate-50">
+                        <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
+                        <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
+                        <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? `${c.count} টা` : money(c.base_amount) }}</td>
+                        <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="3" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
+                        <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(report.totals.commission) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">এলাকা অনুযায়ী নতুন রেজিস্ট্রেশন</h3></div>
+                <div class="px-5 pb-5">
+                  <div v-if="!report.by_area.length" class="text-sm text-slate-400 py-3">এই সময়ে কোনো নতুন রেজিস্ট্রেশন নেই।</div>
+                  <div v-else class="grid sm:grid-cols-2 gap-x-8">
+                    <div v-for="a in report.by_area" :key="a.upazila" class="flex items-center justify-between py-1.5 border-b border-slate-50 text-sm">
+                      <span class="text-slate-700">{{ a.upazila }}</span>
+                      <span class="font-semibold text-slate-800">{{ a.n }} জন</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">দৈনিক অ্যাক্টিভিটি</h3></div>
+                <div class="px-5 pb-6 overflow-x-auto">
+                  <table class="w-full text-xs sm:text-sm whitespace-nowrap">
+                    <thead>
+                      <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                        <th class="text-left py-2 font-medium">তারিখ</th>
+                        <th class="text-right py-2 font-medium">রেজি.</th>
+                        <th class="text-right py-2 font-medium">Pro (৳)</th>
+                        <th class="text-right py-2 font-medium">গিগ (৳)</th>
+                        <th class="text-right py-2 font-medium">অর্ডার (৳)</th>
+                        <th class="text-right py-2 font-medium">রিচার্জ (৳)</th>
+                        <th class="text-right py-2 font-medium">গোল্ড (৳)</th>
+                        <th class="text-right py-2 font-medium">রাইড (৳)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="d in report.days" :key="d.date" class="border-b border-slate-50">
+                        <td class="py-1.5 text-slate-600">{{ d.date }}</td>
+                        <td class="py-1.5 text-right" :class="d.registrations ? 'font-semibold text-slate-800' : 'text-slate-300'">{{ d.registrations }}</td>
+                        <td class="py-1.5 text-right" :class="d.pro.n ? 'text-slate-700' : 'text-slate-300'">{{ d.pro.n }} / {{ money(d.pro.s) }}</td>
+                        <td class="py-1.5 text-right" :class="d.gigs.n ? 'text-slate-700' : 'text-slate-300'">{{ d.gigs.n }} / {{ money(d.gigs.s) }}</td>
+                        <td class="py-1.5 text-right" :class="d.orders.n ? 'text-slate-700' : 'text-slate-300'">{{ d.orders.n }} / {{ money(d.orders.s) }}</td>
+                        <td class="py-1.5 text-right" :class="d.recharges.n ? 'text-slate-700' : 'text-slate-300'">{{ d.recharges.n }} / {{ money(d.recharges.s) }}</td>
+                        <td class="py-1.5 text-right" :class="d.gold && d.gold.n ? 'text-slate-700' : 'text-slate-300'">{{ d.gold ? d.gold.n : 0 }} / {{ money(d.gold && d.gold.s) }}</td>
+                        <td class="py-1.5 text-right" :class="d.rides && d.rides.n ? 'text-slate-700' : 'text-slate-300'">{{ d.rides ? d.rides.n : 0 }} / {{ money(d.rides && d.rides.s) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- ======== AREA MANAGERS ======== -->
+          <template v-else-if="section === 'managers'">
+            <!-- Manager profile -->
+            <div v-if="managerView === 'profile' && managerReport" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <button class="text-xs text-slate-400 hover:text-slate-600 mb-1" @click="managerView = 'list'">← সব ম্যানেজার</button>
+                  <h2 class="text-base font-bold text-slate-800">{{ managerReport.manager.name }}</h2>
+                  <p class="text-xs text-slate-500">এলাকা: {{ managerReport.manager.area }} <span v-if="managerReport.manager.phone">&bull; {{ managerReport.manager.phone }}</span></p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="text-xs font-semibold text-blue-600 hover:underline" @click="startEditManager(managerReport.manager)">এডিট</button>
+                  <button class="text-xs font-semibold text-red-500 hover:underline" @click="deleteManager(managerReport.manager)">ডিলিট</button>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-b border-slate-100 flex flex-wrap gap-2">
+                <button v-for="r in quickRanges" :key="r.days"
+                  class="text-xs font-semibold px-3 py-1.5 rounded-full border"
+                  :class="mgrQuick === r.days ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200'"
+                  @click="loadManagerReport(managerReport.manager.id, r.days)">{{ r.label }}</button>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100 border-b border-slate-100">
+                <div v-for="t in managerTiles" :key="t.label" class="p-4">
+                  <p class="text-[11px] text-slate-500 mb-1">{{ t.label }}</p>
+                  <p class="text-lg font-bold" :class="t.accent || 'text-slate-800'">{{ t.value }}</p>
+                  <p v-if="t.sub" class="text-[11px] text-slate-400 mt-0.5">{{ t.sub }}</p>
+                </div>
+              </div>
+              <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">কমিশন ব্রেকডাউন ({{ managerReport.range.from }} → {{ managerReport.range.to }})</h3></div>
+              <div class="px-5 pb-6 overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                      <th class="text-left py-2 font-medium">ফিচার</th>
+                      <th class="text-right py-2 font-medium">রেট</th>
+                      <th class="text-right py-2 font-medium">সেলস (৳) / সংখ্যা</th>
+                      <th class="text-right py-2 font-medium">কমিশন (৳)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="c in managerReport.commissions" :key="c.feature" class="border-b border-slate-50">
+                      <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
+                      <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
+                      <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? `${c.count} টা` : money(c.base_amount) }}</td>
+                      <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="3" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
+                      <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(managerReport.totals.commission) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Manager create/edit form -->
+            <div v-else-if="managerView === 'form'" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100">
+                <button class="text-xs text-slate-400 hover:text-slate-600 mb-1" @click="managerView = 'list'">← সব ম্যানেজার</button>
+                <h2 class="text-base font-bold text-slate-800">{{ managerForm.id ? 'ম্যানেজার এডিট করুন' : 'নতুন এরিয়া ম্যানেজার' }}</h2>
+              </div>
+              <form class="p-5 space-y-4" @submit.prevent="saveManager">
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">নাম *</label>
+                    <input v-model="managerForm.name" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="ম্যানেজারের নাম" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ফোন</label>
+                    <input v-model="managerForm.phone" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="01XXXXXXXXX" />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">এলাকা (উপজেলা) *</label>
+                  <select v-model="managerForm.area" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
+                    <option value="">— এলাকা বাছাই করুন —</option>
+                    <option v-for="a in areas" :key="a" :value="a">{{ a }}</option>
+                  </select>
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-slate-700 mb-2">কমিশন স্ট্রাকচার</p>
+                  <div class="border border-slate-200 rounded-xl divide-y divide-slate-100">
+                    <div v-for="row in managerForm.commissions" :key="row.feature" class="flex items-center gap-2 px-3 py-2.5">
+                      <span class="flex-1 text-sm text-slate-700">{{ featureBn(row.feature) }}</span>
+                      <select v-model="row.type" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white">
+                        <option value="percent">% (পার্সেন্ট)</option>
+                        <option value="flat">৳ ফ্ল্যাট/টা</option>
+                      </select>
+                      <input v-model.number="row.value" type="number" min="0" step="0.01" class="w-24 text-right text-sm border border-slate-200 rounded-lg px-2 py-1.5" placeholder="0" />
+                    </div>
+                  </div>
+                </div>
+                <p v-if="managerError" class="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{{ managerError }}</p>
+                <button type="submit" :disabled="savingManager" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg px-5 py-2.5">
+                  {{ savingManager ? 'সেভ হচ্ছে...' : 'সেভ করুন' }}
+                </button>
+              </form>
+            </div>
+
+            <!-- Manager list -->
+            <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h2 class="text-base font-bold text-slate-800">এরিয়া ম্যানেজার</h2>
+                  <p class="text-xs text-slate-500 mt-0.5">এলাকা ধরে এজেন্ট নিয়োগ দিন — তাদের কমিশন আপনাআপনি হিসাব হবে</p>
+                </div>
+                <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg px-4 py-2" @click="startNewManager">+ নতুন ম্যানেজার</button>
+              </div>
+              <div v-if="!managers.length" class="p-8 text-center text-sm text-slate-400">এখনো কোনো এরিয়া ম্যানেজার নেই — উপরের বাটন দিয়ে প্রথমজনকে যোগ করুন।</div>
+              <div v-else class="divide-y divide-slate-100">
+                <button v-for="m in managers" :key="m.id" class="w-full text-left px-5 py-3.5 hover:bg-slate-50 transition flex items-center gap-3" @click="openManager(m)">
+                  <div class="h-10 w-10 rounded-full bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-sm shrink-0">{{ m.name.charAt(0) }}</div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-slate-800 truncate">{{ m.name }}
+                      <span v-if="!m.is_active" class="text-[10px] font-semibold text-red-500 ml-1">(নিষ্ক্রিয়)</span>
+                    </p>
+                    <p class="text-xs text-slate-500 truncate">📍 {{ m.area }} <span v-if="m.phone">&bull; {{ m.phone }}</span></p>
+                  </div>
+                  <span class="text-xs text-slate-400">প্রোফাইল →</span>
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- ======== PRIMARY NOTES ======== -->
+          <template v-else-if="section === 'notes'">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100">
+                <h2 class="text-base font-bold text-slate-800">প্রাইমারি নোট</h2>
+                <p class="text-xs text-slate-500 mt-0.5">জোনের প্রয়োজনীয় নোট লিখে রাখুন — অ্যাডমিনও দেখতে পারবেন</p>
+              </div>
+              <form class="px-5 py-4 border-b border-slate-100 space-y-2.5" @submit.prevent="saveNote">
+                <input v-model="noteForm.title" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="নোটের শিরোনাম *" />
+                <textarea v-model="noteForm.body" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="বিস্তারিত (ঐচ্ছিক)"></textarea>
+                <div class="flex items-center gap-3">
+                  <button type="submit" :disabled="savingNote" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold rounded-lg px-4 py-2">
+                    {{ noteForm.id ? 'আপডেট করুন' : 'নোট সেভ করুন' }}
+                  </button>
+                  <button v-if="noteForm.id" type="button" class="text-xs text-slate-400 hover:text-slate-600" @click="resetNoteForm">বাতিল</button>
+                </div>
+              </form>
+              <div v-if="!notes.length" class="p-8 text-center text-sm text-slate-400">এখনো কোনো নোট নেই।</div>
+              <div v-else class="divide-y divide-slate-100">
+                <div v-for="n in notes" :key="n.id" class="px-5 py-3.5">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-slate-800">{{ n.title }}</p>
+                      <p v-if="n.body" class="text-sm text-slate-600 mt-0.5 whitespace-pre-line">{{ n.body }}</p>
+                      <p class="text-[11px] text-slate-400 mt-1">{{ n.updated_at }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <button class="text-xs font-semibold text-blue-600 hover:underline" @click="editNote(n)">এডিট</button>
+                      <button class="text-xs font-semibold text-red-500 hover:underline" @click="deleteNote(n)">ডিলিট</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </main>
       </div>
     </div>
   </div>
@@ -164,12 +383,24 @@
 definePageMeta({ layout: false });
 useHead({ title: "জোনাল অফিস প্যানেল | AdsyClub" });
 
-const { get } = useApi();
+const { get, post } = useApi();
 const auth = useAuth();
+const apiBase = useRuntimeConfig().public.baseURL + "/api";
 
 const phase = ref("loading"); // loading | login | denied | dash
+const section = ref("dashboard"); // dashboard | sales | managers | notes
+const menu = [
+  { key: "dashboard", label: "ড্যাশবোর্ড", icon: "📊" },
+  { key: "sales", label: "সেলস রিপোর্ট", icon: "📈" },
+  { key: "managers", label: "এরিয়া ম্যানেজার", icon: "👥" },
+  { key: "notes", label: "প্রাইমারি নোট", icon: "📝" },
+];
+
+const office = ref(null);
 const report = ref(null);
+const notices = ref([]);
 const loadingReport = ref(false);
+
 const loggingIn = ref(false);
 const loginError = ref("");
 const loginForm = reactive({ email: "", password: "" });
@@ -192,24 +423,44 @@ const featureLabels = {
   microgig_post: "মাইক্রোগিগ পোস্ট",
   eshop_order: "eShop অর্ডার",
   mobile_recharge: "মোবাইল রিচার্জ",
+  gold_sponsor: "গোল্ড স্পনসর",
+  rideshare_driver: "রাইডশেয়ার ড্রাইভার কমিশন",
 };
 const featureBn = (f) => featureLabels[f] || f;
 const money = (v) => Number(v || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
+const rateText = (c) => (c.type === "flat" ? `৳${money(c.value)}/টা` : `${c.value}%`);
 
-const summaryTiles = computed(() => {
-  const t = report.value?.totals;
-  if (!t) return [];
-  return [
-    { label: "জোনের মোট ইউজার", value: t.zone_users.toLocaleString() },
-    { label: "নতুন রেজিস্ট্রেশন (লিড)", value: t.registrations.toLocaleString(), accent: "text-blue-600" },
-    { label: "Pro আপগ্রেড", value: t.pro.count, sub: `৳${money(t.pro.amount)}` },
-    { label: "মাইক্রোগিগ পোস্ট", value: t.gigs.count, sub: `৳${money(t.gigs.amount)}` },
-    { label: "eShop অর্ডার", value: t.orders.count, sub: `৳${money(t.orders.amount)}` },
-    { label: "মোবাইল রিচার্জ", value: t.recharges.count, sub: `৳${money(t.recharges.amount)}` },
-    { label: "মোট সেলস", value: `৳${money(t.revenue)}`, accent: "text-slate-800" },
-    { label: "মোট কমিশন", value: `৳${money(t.commission)}`, accent: "text-emerald-600" },
-  ];
-});
+const tilesFromTotals = (t, usersLabel, usersValue) => [
+  { label: usersLabel, value: (usersValue ?? 0).toLocaleString() },
+  { label: "নতুন রেজিস্ট্রেশন (লিড)", value: (t.registrations ?? 0).toLocaleString(), accent: "text-blue-600" },
+  { label: "Pro আপগ্রেড", value: t.pro.count, sub: `৳${money(t.pro.amount)}` },
+  { label: "মাইক্রোগিগ পোস্ট", value: t.gigs.count, sub: `৳${money(t.gigs.amount)}` },
+  { label: "eShop অর্ডার", value: t.orders.count, sub: `৳${money(t.orders.amount)}` },
+  { label: "মোবাইল রিচার্জ", value: t.recharges.count, sub: `৳${money(t.recharges.amount)}` },
+  { label: "গোল্ড স্পনসর", value: t.gold?.count ?? 0, sub: `৳${money(t.gold?.amount)}` },
+  { label: "রাইডশেয়ার (ফি)", value: t.rides?.count ?? 0, sub: `৳${money(t.rides?.amount)}` },
+  { label: "মোট সেলস", value: `৳${money(t.revenue)}`, accent: "text-slate-800" },
+  { label: "মোট কমিশন", value: `৳${money(t.commission)}`, accent: "text-emerald-600" },
+];
+
+const summaryTiles = computed(() =>
+  report.value ? tilesFromTotals(report.value.totals, "জোনের মোট ইউজার", report.value.totals.zone_users) : []
+);
+
+// ---------------- auth + bootstrap ----------------
+async function authedFetch(path, options = {}) {
+  // For methods useApi doesn't wrap (PATCH/DELETE) — manual $fetch with token.
+  const { getValidToken } = useAuth();
+  const token = await getValidToken();
+  return await $fetch(apiBase + path, {
+    ...options,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+}
 
 async function loadReport() {
   loadingReport.value = true;
@@ -217,15 +468,20 @@ async function loadReport() {
     const { data, error } = await get(`/zonal/dashboard/?from=${range.from}&to=${range.to}`);
     if (data && !error) {
       report.value = data;
+      office.value = data.office;
       phase.value = "dash";
     } else {
-      const status =
-        error?.response?.status || error?.statusCode || error?.status;
+      const status = error?.response?.status || error?.statusCode || error?.status;
       phase.value = status === 403 ? "denied" : "login";
     }
   } finally {
     loadingReport.value = false;
   }
+}
+
+async function loadNotices() {
+  const { data } = await get("/zonal/notices/");
+  if (Array.isArray(data)) notices.value = data;
 }
 
 function setQuickRange(days) {
@@ -234,23 +490,28 @@ function setQuickRange(days) {
   range.to = today();
   loadReport();
 }
-
 function applyCustomRange() {
   activeQuick.value = 0;
   if (range.from && range.to) loadReport();
+}
+
+function goSection(key) {
+  section.value = key;
+  if (key === "managers" && !managersLoaded.value) loadManagers();
+  if (key === "notes" && !notesLoaded.value) loadNotes();
 }
 
 async function doLogin() {
   loginError.value = "";
   loggingIn.value = true;
   try {
-    // useAuth().login returns { loggedIn, message? }
     const res = await auth.login(loginForm.email, loginForm.password);
     if (!res?.loggedIn) {
       loginError.value = res?.message || "ইমেইল বা পাসওয়ার্ড সঠিক নয়।";
       return;
     }
-    await loadReport(); // sets phase to dash/denied based on /zonal/ access
+    await loadReport();
+    if (phase.value === "dash") loadNotices();
   } catch (e) {
     loginError.value = "লগইন করা যায়নি, আবার চেষ্টা করুন।";
   } finally {
@@ -263,18 +524,167 @@ async function doLogout() {
     if (typeof auth.logout === "function") await auth.logout();
   } catch (e) { /* ignore */ }
   report.value = null;
+  office.value = null;
   phase.value = "login";
 }
 
+// ---------------- area managers ----------------
+const managers = ref([]);
+const managersLoaded = ref(false);
+const areas = ref([]);
+const managerView = ref("list"); // list | form | profile
+const managerError = ref("");
+const savingManager = ref(false);
+const managerReport = ref(null);
+const mgrQuick = ref(30);
+
+const emptyCommissions = () =>
+  Object.keys(featureLabels).map((f) => ({ feature: f, type: "percent", value: 0 }));
+const managerForm = reactive({ id: null, name: "", phone: "", area: "", commissions: emptyCommissions() });
+
+async function loadManagers() {
+  const { data } = await get("/zonal/managers/");
+  if (Array.isArray(data)) {
+    managers.value = data;
+    managersLoaded.value = true;
+  }
+  if (!areas.value.length) {
+    const { data: a } = await get("/zonal/areas/");
+    if (Array.isArray(a)) areas.value = a;
+  }
+}
+
+function startNewManager() {
+  Object.assign(managerForm, { id: null, name: "", phone: "", area: "", commissions: emptyCommissions() });
+  managerError.value = "";
+  managerView.value = "form";
+}
+
+function startEditManager(m) {
+  const rows = emptyCommissions();
+  (m.commissions || []).forEach((c) => {
+    const row = rows.find((r) => r.feature === c.feature);
+    if (row) { row.type = c.type; row.value = c.value; }
+  });
+  Object.assign(managerForm, { id: m.id, name: m.name, phone: m.phone, area: m.area, commissions: rows });
+  managerError.value = "";
+  managerView.value = "form";
+}
+
+async function saveManager() {
+  managerError.value = "";
+  savingManager.value = true;
+  try {
+    const payload = {
+      name: managerForm.name,
+      phone: managerForm.phone,
+      area: managerForm.area,
+      commissions: managerForm.commissions.map((r) => ({ feature: r.feature, type: r.type, value: r.value || 0 })),
+    };
+    if (managerForm.id) {
+      await authedFetch(`/zonal/managers/${managerForm.id}/`, { method: "PATCH", body: payload });
+    } else {
+      const { data, error } = await post("/zonal/managers/", payload);
+      if (error || !data) {
+        managerError.value = error?.response?._data?.detail || error?.data?.detail || "সেভ করা যায়নি, আবার চেষ্টা করুন।";
+        return;
+      }
+    }
+    managersLoaded.value = false;
+    await loadManagers();
+    managerView.value = "list";
+  } catch (e) {
+    managerError.value = e?.response?._data?.detail || e?.data?.detail || "সেভ করা যায়নি, আবার চেষ্টা করুন।";
+  } finally {
+    savingManager.value = false;
+  }
+}
+
+async function openManager(m) {
+  managerView.value = "profile";
+  managerReport.value = null;
+  await loadManagerReport(m.id, 30);
+}
+
+async function loadManagerReport(id, days) {
+  mgrQuick.value = days;
+  const from = daysAgo(days - 1);
+  const to = today();
+  const { data } = await get(`/zonal/managers/${id}/report/?from=${from}&to=${to}`);
+  if (data) managerReport.value = data;
+}
+
+const managerTiles = computed(() =>
+  managerReport.value
+    ? tilesFromTotals(managerReport.value.totals, "এলাকার মোট ইউজার", managerReport.value.totals.area_users)
+    : []
+);
+
+async function deleteManager(m) {
+  if (!confirm(`"${m.name}" ম্যানেজারকে ডিলিট করবেন?`)) return;
+  try {
+    await authedFetch(`/zonal/managers/${m.id}/`, { method: "DELETE" });
+    managersLoaded.value = false;
+    await loadManagers();
+    managerView.value = "list";
+  } catch (e) { /* keep view */ }
+}
+
+// ---------------- primary notes ----------------
+const notes = ref([]);
+const notesLoaded = ref(false);
+const savingNote = ref(false);
+const noteForm = reactive({ id: null, title: "", body: "" });
+
+async function loadNotes() {
+  const { data } = await get("/zonal/notes/");
+  if (Array.isArray(data)) {
+    notes.value = data;
+    notesLoaded.value = true;
+  }
+}
+function resetNoteForm() {
+  Object.assign(noteForm, { id: null, title: "", body: "" });
+}
+function editNote(n) {
+  Object.assign(noteForm, { id: n.id, title: n.title, body: n.body });
+}
+async function saveNote() {
+  if (!noteForm.title.trim()) return;
+  savingNote.value = true;
+  try {
+    if (noteForm.id) {
+      await authedFetch(`/zonal/notes/${noteForm.id}/`, {
+        method: "PATCH",
+        body: { title: noteForm.title, body: noteForm.body },
+      });
+    } else {
+      await post("/zonal/notes/", { title: noteForm.title, body: noteForm.body });
+    }
+    resetNoteForm();
+    await loadNotes();
+  } finally {
+    savingNote.value = false;
+  }
+}
+async function deleteNote(n) {
+  if (!confirm(`"${n.title}" নোটটি ডিলিট করবেন?`)) return;
+  try {
+    await authedFetch(`/zonal/notes/${n.id}/`, { method: "DELETE" });
+    await loadNotes();
+  } catch (e) { /* ignore */ }
+}
+
+// ---------------- mount ----------------
 onMounted(async () => {
   const { data, error } = await get("/zonal/me/");
   if (data && !error) {
+    office.value = data;
     await loadReport();
+    loadNotices();
   } else {
-    const status =
-      error?.response?.status || error?.statusCode || error?.status;
-    if (status === 403) phase.value = "denied";
-    else phase.value = "login";
+    const status = error?.response?.status || error?.statusCode || error?.status;
+    phase.value = status === 403 ? "denied" : "login";
   }
 });
 </script>

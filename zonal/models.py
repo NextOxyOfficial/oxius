@@ -37,7 +37,12 @@ class ZonalOffice(models.Model):
 
 
 class ZoneFeatureCommission(models.Model):
-    """Commission % a zone earns on a feature's revenue inside its city."""
+    """Commission a zone earns on a feature inside its city.
+
+    Either a PERCENT of the feature's sales amount, or a FLAT taka amount per
+    transaction/lead — picked per feature from the office admin page. Every
+    office automatically gets one row per feature (value 0 = no commission).
+    """
 
     FEATURES = [
         ("registration", "User Registration (leads)"),
@@ -45,15 +50,25 @@ class ZoneFeatureCommission(models.Model):
         ("microgig_post", "MicroGig Post"),
         ("eshop_order", "eShop Order"),
         ("mobile_recharge", "Mobile Recharge"),
+        ("gold_sponsor", "Gold Sponsor"),
+        ("rideshare_driver", "Rideshare Driver Commission"),
+    ]
+
+    COMMISSION_TYPES = [
+        ("percent", "Percent (%)"),
+        ("flat", "Flat amount (৳ per item)"),
     ]
 
     office = models.ForeignKey(
         ZonalOffice, on_delete=models.CASCADE, related_name="commissions"
     )
     feature = models.CharField(max_length=32, choices=FEATURES)
-    percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0,
-        help_text="Commission % on this feature's revenue in the zone.",
+    commission_type = models.CharField(
+        max_length=10, choices=COMMISSION_TYPES, default="percent"
+    )
+    value = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Percent (e.g. 10 = 10%) or flat ৳ per item, per the type.",
     )
 
     class Meta:
@@ -62,4 +77,102 @@ class ZoneFeatureCommission(models.Model):
         verbose_name_plural = "Zone Feature Commissions"
 
     def __str__(self):
-        return f"{self.office.city}: {self.get_feature_display()} {self.percent}%"
+        unit = "%" if self.commission_type == "percent" else "৳/item"
+        return f"{self.office.city}: {self.get_feature_display()} {self.value}{unit}"
+
+
+class ZonalNotice(models.Model):
+    """Notice posted from the main django admin, shown on officers' dashboards.
+
+    Leave `office` empty to broadcast to ALL zones, or pick one office to
+    target just that zone. Image is optional (stored on the default media
+    storage — R2/CDN in production).
+    """
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True, default="")
+    image = models.ImageField(upload_to="zonal/notices/", blank=True, null=True)
+    office = models.ForeignKey(
+        ZonalOffice, on_delete=models.CASCADE, related_name="notices",
+        blank=True, null=True,
+        help_text="Empty = every zone sees it; set = only that zone.",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Zonal Notice"
+        verbose_name_plural = "Zonal Notices"
+
+    def __str__(self):
+        target = self.office.city if self.office_id else "All zones"
+        return f"{self.title} ({target})"
+
+
+class ZonalNote(models.Model):
+    """Officer's own notebook ("Primary Note") — created from /zoneadmin,
+    fully visible in the main django admin."""
+    office = models.ForeignKey(
+        ZonalOffice, on_delete=models.CASCADE, related_name="notes"
+    )
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        verbose_name = "Zonal Note"
+        verbose_name_plural = "Zonal Notes"
+
+    def __str__(self):
+        return f"{self.office.city}: {self.title}"
+
+
+class AreaManager(models.Model):
+    """An agent the zonal OFFICER appoints for one area (upazila) of their
+    city, with their own commission structure. Managed entirely from
+    /zoneadmin (no separate login/panel); visible in django admin."""
+    office = models.ForeignKey(
+        ZonalOffice, on_delete=models.CASCADE, related_name="area_managers"
+    )
+    name = models.CharField(max_length=120)
+    phone = models.CharField(max_length=30, blank=True, default="")
+    area = models.CharField(
+        max_length=120,
+        help_text="Upazila/area name — must match users' Upazila value.",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["area"]
+        unique_together = ("office", "area", "name")
+        verbose_name = "Area Manager"
+        verbose_name_plural = "Area Managers"
+
+    def __str__(self):
+        return f"{self.name} — {self.area} ({self.office.city})"
+
+
+class AreaManagerCommission(models.Model):
+    """Per-feature commission for an area manager (same scheme as the zone:
+    percent of sales or flat ৳ per item)."""
+    manager = models.ForeignKey(
+        AreaManager, on_delete=models.CASCADE, related_name="commissions"
+    )
+    feature = models.CharField(max_length=32, choices=ZoneFeatureCommission.FEATURES)
+    commission_type = models.CharField(
+        max_length=10, choices=ZoneFeatureCommission.COMMISSION_TYPES,
+        default="percent",
+    )
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    class Meta:
+        unique_together = ("manager", "feature")
+        verbose_name = "Area Manager Commission"
+        verbose_name_plural = "Area Manager Commissions"
+
+    def __str__(self):
+        unit = "%" if self.commission_type == "percent" else "TK/item"
+        return f"{self.manager.name}: {self.feature} {self.value}{unit}"
