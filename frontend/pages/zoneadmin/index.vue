@@ -96,32 +96,32 @@
           <!-- ======== DASHBOARD ======== -->
           <template v-if="section === 'dashboard'">
             <!-- Promotional offer banner (static) -->
-            <div class="relative overflow-hidden rounded-2xl mb-5 shadow-sm bg-gradient-to-br from-fuchsia-600 via-purple-600 to-indigo-600 text-white">
-              <div class="absolute -right-6 -top-8 h-32 w-32 rounded-full bg-white/10"></div>
-              <div class="absolute -right-10 bottom-0 h-24 w-24 rounded-full bg-white/10"></div>
-              <div class="relative p-5 sm:p-6">
-                <div class="flex items-center gap-2 mb-3">
-                  <span class="text-2xl leading-none">🎉</span>
-                  <h2 class="text-lg sm:text-xl font-extrabold tracking-tight">বিশেষ প্রোমোশনাল অফার</h2>
-                  <span class="ml-auto text-[11px] font-bold bg-white/20 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap">৩১ জুলাই পর্যন্ত</span>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-5">
+              <div class="flex items-center justify-between gap-2 px-5 py-3 border-b border-slate-100 bg-emerald-50/60">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">🎁</span>
+                  <h2 class="text-sm font-bold text-slate-800">বিশেষ প্রোমোশনাল অফার</h2>
                 </div>
+                <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full whitespace-nowrap">৩১ জুলাই পর্যন্ত</span>
+              </div>
+              <div class="p-5">
                 <div class="grid sm:grid-cols-2 gap-3">
-                  <div class="flex items-start gap-2.5 bg-white/10 rounded-xl px-3.5 py-3">
-                    <span class="text-xl leading-none mt-0.5">⭐</span>
+                  <div class="flex items-start gap-3 rounded-xl border border-slate-200 px-4 py-3">
+                    <span class="h-9 w-9 rounded-lg bg-emerald-50 flex items-center justify-center text-base shrink-0">⭐</span>
                     <div>
-                      <p class="text-sm font-bold">নতুন ইউজার Pro সাবস্ক্রিপশন করলে</p>
-                      <p class="text-[13px] text-fuchsia-100">অতিরিক্ত <span class="font-extrabold text-white">৫০% কমিশন</span></p>
+                      <p class="text-sm font-semibold text-slate-800">নতুন ইউজার Pro সাবস্ক্রিপশন করলে</p>
+                      <p class="text-[13px] text-slate-500 mt-0.5">অতিরিক্ত <span class="font-bold text-emerald-700">৫০% কমিশন</span></p>
                     </div>
                   </div>
-                  <div class="flex items-start gap-2.5 bg-white/10 rounded-xl px-3.5 py-3">
-                    <span class="text-xl leading-none mt-0.5">🥇</span>
+                  <div class="flex items-start gap-3 rounded-xl border border-slate-200 px-4 py-3">
+                    <span class="h-9 w-9 rounded-lg bg-amber-50 flex items-center justify-center text-base shrink-0">🥇</span>
                     <div>
-                      <p class="text-sm font-bold">নতুন ইউজার Sponsor করলে</p>
-                      <p class="text-[13px] text-fuchsia-100">অতিরিক্ত <span class="font-extrabold text-white">৫০% কমিশন</span></p>
+                      <p class="text-sm font-semibold text-slate-800">নতুন ইউজার Sponsor করলে</p>
+                      <p class="text-[13px] text-slate-500 mt-0.5">অতিরিক্ত <span class="font-bold text-emerald-700">৫০% কমিশন</span></p>
                     </div>
                   </div>
                 </div>
-                <p class="text-[13px] text-fuchsia-100 mt-3.5 flex items-center gap-1.5">
+                <p class="text-[13px] text-slate-500 mt-3 flex items-center gap-1.5">
                   <span>📞</span> বিস্তারিত জানতে আপনার অ্যাকাউন্ট ম্যানেজারের সাথে যোগাযোগ করুন।
                 </p>
               </div>
