@@ -318,7 +318,16 @@
                   <button class="text-xs font-semibold text-red-500 hover:underline" @click="deleteManager(managerReport.manager)">ডিলিট</button>
                 </div>
               </div>
-              <div class="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
+              <!-- Tabs -->
+              <div class="px-5 pt-3 pb-0 border-b border-slate-100 flex gap-1 overflow-x-auto">
+                <button v-for="t in mgrTabs" :key="t.key"
+                  class="shrink-0 px-4 py-2.5 text-[13px] font-semibold border-b-2 -mb-px transition"
+                  :class="mgrTab === t.key ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                  @click="mgrTab = t.key">{{ t.icon }} {{ t.label }}</button>
+              </div>
+
+              <!-- Date range (only where it matters) -->
+              <div v-if="mgrTab === 'overview' || mgrTab === 'commission'" class="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
                 <button v-for="r in quickRanges" :key="r.days"
                   class="text-xs font-semibold px-3 py-1.5 rounded-full border"
                   :class="mgrQuick === r.days ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200'"
@@ -331,138 +340,149 @@
                     @click="loadManagerReportCustom(managerReport.manager.id)">দেখুন</button>
                 </div>
               </div>
-              <!-- Hero stats -->
-              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 p-5 border-b border-slate-100">
-                <div v-for="h in mgrHero" :key="h.label" class="rounded-xl border border-slate-200 p-3.5">
-                  <div class="flex items-center gap-1.5 mb-1.5">
-                    <span class="text-base leading-none">{{ h.icon }}</span>
-                    <span class="text-[11px] text-slate-500">{{ h.label }}</span>
-                  </div>
-                  <p class="text-xl font-extrabold" :class="toneText(h.tone)">{{ h.value }}</p>
-                  <p v-if="h.sub" class="text-[10px] text-slate-400 mt-1">{{ h.sub }}</p>
-                </div>
-              </div>
-              <!-- Pro subscription health (this area) -->
-              <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">Pro সাবস্ক্রিপশন (এই এলাকা)</h3></div>
-              <div class="mx-5 mb-4 border border-slate-200 rounded-xl overflow-hidden">
-                <ZoneSubHealth :s="managerReport.subscriptions" />
-              </div>
-              <!-- Sales breakdown -->
-              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">সেলস ব্রেকডাউন</h3></div>
-              <div class="mx-5 mb-4 border border-slate-200 rounded-xl overflow-hidden">
-                <ZoneSalesList :rows="mgrSales" />
-              </div>
 
-              <!-- আমার সেবা: category-wise post count in this area -->
-              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">আমার সেবা — ক্যাটাগরি অনুযায়ী পোস্ট</h3></div>
-              <div class="mx-5 mb-5">
-                <div v-if="!managerReport.service_categories || !managerReport.service_categories.length" class="text-sm text-slate-400 py-2 px-1">এই এলাকায় এখনো কোনো লাইভ সেবা পোস্ট নেই।</div>
-                <div v-else class="border border-slate-200 rounded-xl overflow-hidden">
-                  <table class="w-full text-sm">
+              <!-- ===== TAB: overview ===== -->
+              <template v-if="mgrTab === 'overview'">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 p-5 border-b border-slate-100">
+                  <div v-for="h in mgrHero" :key="h.label" class="rounded-xl border border-slate-200 p-3.5">
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                      <span class="text-base leading-none">{{ h.icon }}</span>
+                      <span class="text-[11px] text-slate-500">{{ h.label }}</span>
+                    </div>
+                    <p class="text-xl font-extrabold" :class="toneText(h.tone)">{{ h.value }}</p>
+                    <p v-if="h.sub" class="text-[10px] text-slate-400 mt-1">{{ h.sub }}</p>
+                  </div>
+                </div>
+                <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">Pro সাবস্ক্রিপশন (এই এলাকা)</h3></div>
+                <div class="mx-5 mb-4 border border-slate-200 rounded-xl overflow-hidden">
+                  <ZoneSubHealth :s="managerReport.subscriptions" />
+                </div>
+                <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">সেলস ব্রেকডাউন</h3></div>
+                <div class="mx-5 mb-5 border border-slate-200 rounded-xl overflow-hidden">
+                  <ZoneSalesList :rows="mgrSales" />
+                </div>
+              </template>
+
+              <!-- ===== TAB: commission ===== -->
+              <template v-else-if="mgrTab === 'commission'">
+                <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">কমিশন ব্রেকডাউন ({{ managerReport.range.from }} → {{ managerReport.range.to }})</h3></div>
+                <div class="px-5 pb-6 overflow-x-auto">
+                  <table class="w-full text-sm whitespace-nowrap">
+                    <thead>
+                      <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                        <th class="text-left py-2 font-medium">ফিচার</th>
+                        <th class="text-right py-2 font-medium">সংখ্যা</th>
+                        <th class="text-right py-2 font-medium">সেলস (৳)</th>
+                        <th class="text-right py-2 font-medium">রেট</th>
+                        <th class="text-right py-2 font-medium">কমিশন (৳)</th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      <tr v-for="(s, i) in managerReport.service_categories" :key="s.category"
-                        :class="i % 2 ? 'bg-slate-50/40' : ''" class="border-b border-slate-50 last:border-0">
-                        <td class="py-2 px-4 text-slate-700">{{ s.category }}</td>
-                        <td class="py-2 px-4 text-right font-semibold text-slate-800">{{ s.n }} টি</td>
+                      <tr v-for="c in managerReport.commissions" :key="c.feature" class="border-b border-slate-50">
+                        <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
+                        <td class="py-2 text-right text-slate-700 font-medium">{{ c.count }} {{ countUnit(c.feature) }}</td>
+                        <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? '—' : money(c.base_amount) }}</td>
+                        <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
+                        <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
+                        <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(managerReport.totals.commission) }}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-              </div>
-              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">কমিশন ব্রেকডাউন ({{ managerReport.range.from }} → {{ managerReport.range.to }})</h3></div>
-              <div class="px-5 pb-6 overflow-x-auto">
-                <table class="w-full text-sm whitespace-nowrap">
-                  <thead>
-                    <tr class="text-[11px] text-slate-400 border-b border-slate-100">
-                      <th class="text-left py-2 font-medium">ফিচার</th>
-                      <th class="text-right py-2 font-medium">সংখ্যা</th>
-                      <th class="text-right py-2 font-medium">সেলস (৳)</th>
-                      <th class="text-right py-2 font-medium">রেট</th>
-                      <th class="text-right py-2 font-medium">কমিশন (৳)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="c in managerReport.commissions" :key="c.feature" class="border-b border-slate-50">
-                      <td class="py-2 text-slate-700">{{ featureBn(c.feature) }}</td>
-                      <td class="py-2 text-right text-slate-700 font-medium">{{ c.count }} {{ countUnit(c.feature) }}</td>
-                      <td class="py-2 text-right text-slate-600">{{ c.type === 'flat' ? '—' : money(c.base_amount) }}</td>
-                      <td class="py-2 text-right text-slate-600">{{ rateText(c) }}</td>
-                      <td class="py-2 text-right font-semibold text-emerald-700">{{ money(c.earned) }}</td>
-                    </tr>
-                    <tr>
-                      <td colspan="4" class="py-2.5 text-right text-sm font-bold text-slate-700">মোট কমিশন</td>
-                      <td class="py-2.5 text-right text-base font-bold text-emerald-700">৳{{ money(managerReport.totals.commission) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              </template>
 
-              <!-- Earnings (balance) -->
-              <div class="px-5 pt-3 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">আয় ও পেআউট</h3></div>
-              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 pb-4">
-                <div class="rounded-xl border border-slate-200 p-3">
-                  <p class="text-[11px] text-slate-500 mb-0.5">পাওনা (এখন)</p>
-                  <p class="text-lg font-extrabold text-emerald-600">৳{{ money(mgrBalance?.payable_now) }}</p>
+              <!-- ===== TAB: services (আমার সেবা) ===== -->
+              <template v-else-if="mgrTab === 'services'">
+                <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">আমার সেবা — ক্যাটাগরি অনুযায়ী লাইভ পোস্ট</h3></div>
+                <div class="mx-5 mb-6">
+                  <div v-if="!managerReport.service_categories || !managerReport.service_categories.length" class="text-sm text-slate-400 py-2 px-1">এই এলাকায় এখনো কোনো লাইভ সেবা পোস্ট নেই।</div>
+                  <div v-else class="border border-slate-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-sm">
+                      <thead>
+                        <tr class="text-[11px] text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                          <th class="text-left py-2 px-4 font-medium">ক্যাটাগরি</th>
+                          <th class="text-right py-2 px-4 font-medium">লাইভ পোস্ট</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(s, i) in managerReport.service_categories" :key="s.category"
+                          :class="i % 2 ? 'bg-slate-50/40' : ''" class="border-b border-slate-50 last:border-0">
+                          <td class="py-2 px-4 text-slate-700">{{ s.category }}</td>
+                          <td class="py-2 px-4 text-right font-semibold text-slate-800">{{ s.n }} টি</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div class="rounded-xl border border-slate-200 p-3">
-                  <p class="text-[11px] text-slate-500 mb-0.5">চলতি মাসে জমছে</p>
-                  <p class="text-lg font-extrabold text-amber-500">৳{{ money(mgrBalance?.this_month) }}</p>
-                </div>
-                <div class="rounded-xl border border-slate-200 p-3">
-                  <p class="text-[11px] text-slate-500 mb-0.5">লাইফটাইম আয়</p>
-                  <p class="text-lg font-extrabold text-slate-800">৳{{ money(mgrBalance?.lifetime_earned) }}</p>
-                </div>
-                <div class="rounded-xl border border-slate-200 p-3">
-                  <p class="text-[11px] text-slate-500 mb-0.5">মোট পরিশোধিত</p>
-                  <p class="text-lg font-extrabold text-blue-600">৳{{ money(mgrBalance?.total_paid) }}</p>
-                </div>
-              </div>
+              </template>
 
-              <!-- Payout info -->
-              <div class="px-5 pb-4">
-                <div class="rounded-xl bg-slate-50 px-4 py-3">
-                  <p class="text-[11px] text-slate-500 mb-1">পেআউট তথ্য</p>
-                  <p v-if="managerReport.manager.payout_account_number" class="text-sm text-slate-700">
-                    {{ payMethodBn(managerReport.manager.payout_method) }} — {{ managerReport.manager.payout_account_number }}
-                    <span v-if="managerReport.manager.payout_account_name" class="text-slate-500">({{ managerReport.manager.payout_account_name }})</span>
-                  </p>
-                  <p v-else class="text-sm text-slate-400">পেআউট তথ্য দেওয়া হয়নি — “এডিট” থেকে যোগ করুন।</p>
-                  <p v-if="managerReport.manager.payout_bank_name" class="text-[11px] text-slate-500 mt-0.5">
-                    {{ managerReport.manager.payout_bank_name }}<span v-if="managerReport.manager.payout_bank_branch">, {{ managerReport.manager.payout_bank_branch }}</span>
-                  </p>
+              <!-- ===== TAB: payouts ===== -->
+              <template v-else-if="mgrTab === 'payouts'">
+                <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">আয় ও পেআউট</h3></div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 pb-4">
+                  <div class="rounded-xl border border-slate-200 p-3">
+                    <p class="text-[11px] text-slate-500 mb-0.5">পাওনা (এখন)</p>
+                    <p class="text-lg font-extrabold text-emerald-600">৳{{ money(mgrBalance?.payable_now) }}</p>
+                  </div>
+                  <div class="rounded-xl border border-slate-200 p-3">
+                    <p class="text-[11px] text-slate-500 mb-0.5">চলতি মাসে জমছে</p>
+                    <p class="text-lg font-extrabold text-amber-500">৳{{ money(mgrBalance?.this_month) }}</p>
+                  </div>
+                  <div class="rounded-xl border border-slate-200 p-3">
+                    <p class="text-[11px] text-slate-500 mb-0.5">লাইফটাইম আয়</p>
+                    <p class="text-lg font-extrabold text-slate-800">৳{{ money(mgrBalance?.lifetime_earned) }}</p>
+                  </div>
+                  <div class="rounded-xl border border-slate-200 p-3">
+                    <p class="text-[11px] text-slate-500 mb-0.5">মোট পরিশোধিত</p>
+                    <p class="text-lg font-extrabold text-blue-600">৳{{ money(mgrBalance?.total_paid) }}</p>
+                  </div>
                 </div>
-              </div>
-
-              <!-- Payout history (monthly invoices) -->
-              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">পেআউট হিস্টোরি (মাসিক ইনভয়েস)</h3></div>
-              <div class="px-5 pb-6 overflow-x-auto">
-                <div v-if="!mgrInvoices.length" class="text-sm text-slate-400 py-2">এখনো কোনো ইনভয়েস নেই (মাস শেষে স্বয়ংক্রিয়ভাবে তৈরি হবে)।</div>
-                <table v-else class="w-full text-xs sm:text-sm whitespace-nowrap">
-                  <thead>
-                    <tr class="text-[11px] text-slate-400 border-b border-slate-100">
-                      <th class="text-left py-2 font-medium">মাস</th>
-                      <th class="text-right py-2 font-medium">কমিশন (৳)</th>
-                      <th class="text-left py-2 font-medium pl-4">স্ট্যাটাস</th>
-                      <th class="text-left py-2 font-medium">পরিশোধ</th>
-                      <th class="text-left py-2 font-medium">Trx ID</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="inv in mgrInvoices" :key="inv.id" class="border-b border-slate-50">
-                      <td class="py-2 font-semibold text-slate-700">{{ inv.period }}</td>
-                      <td class="py-2 text-right font-bold text-slate-800">{{ money(inv.amount) }}</td>
-                      <td class="py-2 pl-4">
-                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                          :class="inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'">
-                          {{ inv.status === 'paid' ? 'পরিশোধিত' : 'বকেয়া' }}
-                        </span>
-                      </td>
-                      <td class="py-2 text-slate-500">{{ inv.paid_at || '—' }}</td>
-                      <td class="py-2 text-slate-500">{{ inv.pay_trx_id || '—' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                <div class="px-5 pb-4">
+                  <div class="rounded-xl bg-slate-50 px-4 py-3">
+                    <p class="text-[11px] text-slate-500 mb-1">পেআউট তথ্য</p>
+                    <p v-if="managerReport.manager.payout_account_number" class="text-sm text-slate-700">
+                      {{ payMethodBn(managerReport.manager.payout_method) }} — {{ managerReport.manager.payout_account_number }}
+                      <span v-if="managerReport.manager.payout_account_name" class="text-slate-500">({{ managerReport.manager.payout_account_name }})</span>
+                    </p>
+                    <p v-else class="text-sm text-slate-400">পেআউট তথ্য দেওয়া হয়নি — “এডিট” থেকে যোগ করুন।</p>
+                    <p v-if="managerReport.manager.payout_bank_name" class="text-[11px] text-slate-500 mt-0.5">
+                      {{ managerReport.manager.payout_bank_name }}<span v-if="managerReport.manager.payout_bank_branch">, {{ managerReport.manager.payout_bank_branch }}</span>
+                    </p>
+                  </div>
+                </div>
+                <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">পেআউট হিস্টোরি (মাসিক ইনভয়েস)</h3></div>
+                <div class="px-5 pb-6 overflow-x-auto">
+                  <div v-if="!mgrInvoices.length" class="text-sm text-slate-400 py-2">এখনো কোনো ইনভয়েস নেই (মাস শেষে স্বয়ংক্রিয়ভাবে তৈরি হবে)।</div>
+                  <table v-else class="w-full text-xs sm:text-sm whitespace-nowrap">
+                    <thead>
+                      <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                        <th class="text-left py-2 font-medium">মাস</th>
+                        <th class="text-right py-2 font-medium">কমিশন (৳)</th>
+                        <th class="text-left py-2 font-medium pl-4">স্ট্যাটাস</th>
+                        <th class="text-left py-2 font-medium">পরিশোধ</th>
+                        <th class="text-left py-2 font-medium">Trx ID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="inv in mgrInvoices" :key="inv.id" class="border-b border-slate-50">
+                        <td class="py-2 font-semibold text-slate-700">{{ inv.period }}</td>
+                        <td class="py-2 text-right font-bold text-slate-800">{{ money(inv.amount) }}</td>
+                        <td class="py-2 pl-4">
+                          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                            :class="inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'">
+                            {{ inv.status === 'paid' ? 'পরিশোধিত' : 'বকেয়া' }}
+                          </span>
+                        </td>
+                        <td class="py-2 text-slate-500">{{ inv.paid_at || '—' }}</td>
+                        <td class="py-2 text-slate-500">{{ inv.pay_trx_id || '—' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
             </div>
 
             <!-- Manager create/edit form -->
@@ -934,6 +954,14 @@ const managerError = ref("");
 const savingManager = ref(false);
 const managerReport = ref(null);
 const mgrQuick = ref(30);
+// Manager-profile tabs — everything used to stack on one long page.
+const mgrTab = ref("overview");
+const mgrTabs = [
+  { key: "overview", label: "ওভারভিউ", icon: "📊" },
+  { key: "commission", label: "কমিশন", icon: "💰" },
+  { key: "services", label: "আমার সেবা", icon: "🛠️" },
+  { key: "payouts", label: "পেআউট", icon: "💳" },
+];
 
 const emptyCommissions = () =>
   Object.keys(featureLabels).map((f) => ({ feature: f, type: "percent", value: 0 }));
@@ -1023,6 +1051,7 @@ async function saveManager() {
 
 async function openManager(m) {
   managerView.value = "profile";
+  mgrTab.value = "overview";
   managerReport.value = null;
   mgrBalance.value = null;
   mgrInvoices.value = [];
