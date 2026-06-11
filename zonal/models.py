@@ -299,3 +299,49 @@ class AreaManagerInvoice(_InvoiceBase):
 
     def __str__(self):
         return f"{self.manager.name} {self.period_label}: ৳{self.amount} ({self.status})"
+
+
+# --- Effective-dated commission rate history -------------------------------
+# A rate change applies only to sales generated AFTER the change. We keep an
+# append-only log of (feature, type, value, effective_from); commission for any
+# window is computed per rate-segment. A baseline row at EPOCH (backfilled for
+# existing data) makes the very first rate cover all historical sales.
+
+class _RateChangeBase(models.Model):
+    feature = models.CharField(max_length=32, choices=ZoneFeatureCommission.FEATURES)
+    commission_type = models.CharField(
+        max_length=10, choices=ZoneFeatureCommission.COMMISSION_TYPES, default="percent"
+    )
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    effective_from = models.DateTimeField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["effective_from"]
+
+
+class ZoneRateChange(_RateChangeBase):
+    office = models.ForeignKey(
+        ZonalOffice, on_delete=models.CASCADE, related_name="rate_changes"
+    )
+
+    class Meta(_RateChangeBase.Meta):
+        verbose_name = "Zone Rate Change"
+        verbose_name_plural = "Zone Rate Changes (history)"
+
+    def __str__(self):
+        return f"{self.office.city} {self.feature} -> {self.value} @ {self.effective_from:%Y-%m-%d}"
+
+
+class AreaManagerRateChange(_RateChangeBase):
+    manager = models.ForeignKey(
+        AreaManager, on_delete=models.CASCADE, related_name="rate_changes"
+    )
+
+    class Meta(_RateChangeBase.Meta):
+        verbose_name = "Area Manager Rate Change"
+        verbose_name_plural = "Area Manager Rate Changes (history)"
+
+    def __str__(self):
+        return f"{self.manager.name} {self.feature} -> {self.value} @ {self.effective_from:%Y-%m-%d}"

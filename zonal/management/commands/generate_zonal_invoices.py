@@ -13,7 +13,12 @@ from datetime import date
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from zonal.metrics import DHAKA, commission_for, month_range
+from zonal.metrics import (
+    DHAKA,
+    commission_for_manager,
+    commission_for_office,
+    month_range,
+)
 from zonal.models import AreaManager, AreaManagerInvoice, ZonalInvoice, ZonalOffice
 
 
@@ -43,11 +48,9 @@ class Command(BaseCommand):
         zones = made = 0
 
         for office in ZonalOffice.objects.filter(is_active=True):
-            rates = {
-                c.feature: (c.commission_type, c.value)
-                for c in office.commissions.all()
-            }
-            rows, total = commission_for(office.city, rates, start, end)
+            # Rate-history aware: each sale priced at the rate effective when
+            # it happened.
+            rows, total = commission_for_office(office, start, end)
             inv = ZonalInvoice.objects.filter(
                 office=office, period_year=year, period_month=month
             ).first()
@@ -60,13 +63,7 @@ class Command(BaseCommand):
             zones += 1
 
             for mgr in office.area_managers.filter(is_active=True):
-                mrates = {
-                    c.feature: (c.commission_type, c.value)
-                    for c in mgr.commissions.all()
-                }
-                mrows, mtotal = commission_for(
-                    office.city, mrates, start, end, upazila=mgr.area
-                )
+                mrows, mtotal = commission_for_manager(office, mgr, start, end)
                 minv = AreaManagerInvoice.objects.filter(
                     manager=mgr, period_year=year, period_month=month
                 ).first()

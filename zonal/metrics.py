@@ -125,9 +125,97 @@ def calc_commissions(rates, data):
 
 
 def commission_for(city, rates, start, end, upazila=None):
-    """Convenience: rows + Decimal total for a scope & window."""
+    """Convenience: rows + Decimal total for a scope & window (flat current
+    rate — kept for callers that don't need rate history)."""
     data = feature_data(metric_querysets(city, start, end, upazila=upazila))
     return calc_commissions(rates, data)
+
+
+# ---- effective-dated (rate-history aware) commission --------------------
+
+def _feature_count_amount(feature, city, start, end, upazila=None):
+    """(count, amount) for ONE feature within a sub-window."""
+    qs, field = metric_querysets(city, start, end, upazila=upazila)[feature]
+    return qs.count(), (_sum(qs, field) if field else 0.0)
+
+
+def _rate_at(changes, t):
+    """The change effective at time t = latest change with effective_from<=t."""
+    eff = None
+    for c in changes:  # changes sorted ascending by effective_from
+        if c.effective_from <= t:
+            eff = c
+        else:
+            break
+    return eff
+
+
+def _segments(changes, start, end):
+    """Split [start,end) at rate-change points inside it -> [(s,e,change)]."""
+    pts = sorted({start, end} | {
+        c.effective_from for c in changes if start < c.effective_from < end
+    })
+    segs = []
+    for i in range(len(pts) - 1):
+        s, e = pts[i], pts[i + 1]
+        segs.append((s, e, _rate_at(changes, s)))
+    return segs
+
+
+def commission_from_changes(city, changes_by_feature, start, end, upazila=None):
+    """Commission where each sale is credited at the rate effective WHEN it
+    happened — so raising a rate today never re-prices past sales.
+
+    changes_by_feature: {feature: [ZoneRateChange-like sorted by effective_from]}
+    """
+    rows = []
+    total = Decimal(0)
+    for feature, label in FEATURE_ORDER:
+        changes = changes_by_feature.get(feature, [])
+        segs = _segments(changes, start, end) if changes else [(start, end, None)]
+        cnt_total, amt_total = 0, 0.0
+        earned = Decimal(0)
+        for s, e, eff in segs:
+            cnt, amt = _feature_count_amount(feature, city, s, e, upazila)
+            cnt_total += cnt
+            amt_total += amt
+            if eff is None:
+                continue
+            if eff.commission_type == "flat":
+                earned += Decimal(eff.value) * cnt
+            else:
+                earned += Decimal(str(amt)) * Decimal(eff.value) / Decimal(100)
+        earned = earned.quantize(Decimal("0.01"))
+        total += earned
+        # Display "current rate" = rate effective at the window end.
+        cur = _rate_at(changes, end) if changes else None
+        ctype = cur.commission_type if cur else "percent"
+        cval = float(cur.value) if cur else 0.0
+        rows.append({
+            "feature": feature, "label": label, "type": ctype, "value": cval,
+            "count": cnt_total, "base_amount": amt_total, "earned": float(earned),
+        })
+    return rows, total
+
+
+def _changes_by_feature(change_qs):
+    out = {}
+    for c in change_qs.order_by("effective_from"):
+        out.setdefault(c.feature, []).append(c)
+    return out
+
+
+def commission_for_office(office, start, end):
+    return commission_from_changes(
+        office.city, _changes_by_feature(office.rate_changes.all()), start, end
+    )
+
+
+def commission_for_manager(office, manager, start, end):
+    return commission_from_changes(
+        office.city, _changes_by_feature(manager.rate_changes.all()),
+        start, end, upazila=manager.area,
+    )
 
 
 def subscription_analysis(city, upazila=None, lapsed_limit=30):

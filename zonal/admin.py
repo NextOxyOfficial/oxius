@@ -162,3 +162,30 @@ class AreaManagerInvoiceAdmin(admin.ModelAdmin):
     search_fields = ("manager__name", "manager__area", "pay_trx_id")
     readonly_fields = ("amount", "breakdown", "generated_at", "updated_at")
     actions = [_mark_paid]
+
+
+from .models import AreaManagerRateChange, ZoneRateChange
+
+
+class _RateChangeAdmin(admin.ModelAdmin):
+    """Read-only audit of commission-rate changes (auto-logged on every edit)."""
+    list_display = ("feature", "commission_type", "value", "effective_from")
+    list_filter = ("feature", "commission_type")
+    readonly_fields = ("feature", "commission_type", "value", "effective_from", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(ZoneRateChange)
+class ZoneRateChangeAdmin(_RateChangeAdmin):
+    list_display = ("office",) + _RateChangeAdmin.list_display
+    list_filter = ("office",) + _RateChangeAdmin.list_filter
+    search_fields = ("office__city", "office__name")
+
+
+@admin.register(AreaManagerRateChange)
+class AreaManagerRateChangeAdmin(_RateChangeAdmin):
+    list_display = ("manager",) + _RateChangeAdmin.list_display
+    list_filter = _RateChangeAdmin.list_filter
+    search_fields = ("manager__name", "manager__area")

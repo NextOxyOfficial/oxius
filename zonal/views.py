@@ -26,7 +26,6 @@ from . import metrics
 from .metrics import (
     DHAKA,
     FEATURE_ORDER,
-    calc_commissions as _calc_commissions_raw,
     feature_data as _feature_data,
     metric_querysets as _metric_querysets,
     subscription_analysis as _subscription_analysis,
@@ -89,15 +88,6 @@ def _parse_range(request):
     return d_from, d_to, start, end
 
 
-# ---------------------------------------------------------------- metrics --
-# Pure engine lives in zonal/metrics.py; thin wrapper keeps the float total
-# the API responses have always returned.
-
-def _calc_commissions(rates, data):
-    rows, total = _calc_commissions_raw(rates, data)
-    return rows, float(total)
-
-
 # ------------------------------------------------------------------ views --
 
 @api_view(["GET"])
@@ -134,11 +124,10 @@ def zonal_dashboard(request):
     )
     no_area = reg_count - sum(a["n"] for a in by_area)
 
-    rates = {
-        c.feature: (c.commission_type, c.value)
-        for c in office.commissions.all()
-    }
-    commissions, total_commission = _calc_commissions(rates, data)
+    # Rate-history aware: each sale credited at the rate effective when it
+    # happened, so a later rate change never re-prices past sales.
+    commissions, total_commission = metrics.commission_for_office(office, start, end)
+    total_commission = float(total_commission)
 
     # Daily series
     def _daily(qs, dt_field, amount_field):
@@ -488,11 +477,11 @@ def zonal_manager_report(request, manager_id):
     querysets = _metric_querysets(office.city, start, end, upazila=manager.area)
     data = _feature_data(querysets)
 
-    rates = {
-        c.feature: (c.commission_type, c.value)
-        for c in manager.commissions.all()
-    }
-    commissions, total_commission = _calc_commissions(rates, data)
+    # Rate-history aware (scoped to the manager's area).
+    commissions, total_commission = metrics.commission_for_manager(
+        office, manager, start, end
+    )
+    total_commission = float(total_commission)
 
     revenue = round(
         sum(data[f]["amount"] for f in (
@@ -667,9 +656,8 @@ def zonal_balance(request):
     office = _get_office(request)
     if not office:
         return Response(NOT_OFFICER, status=403)
-    rates = {c.feature: (c.commission_type, c.value) for c in office.commissions.all()}
     start, end = _current_month_bounds()
-    rows, total = metrics.commission_for(office.city, rates, start, end)
+    rows, total = metrics.commission_for_office(office, start, end)
     return Response(_balance_summary(office.invoices.all(), rows, total))
 
 
@@ -691,11 +679,8 @@ def zonal_manager_balance(request, manager_id):
     manager = office.area_managers.filter(id=manager_id).first()
     if not manager:
         return Response({"detail": "ম্যানেজার পাওয়া যায়নি।"}, status=404)
-    rates = {c.feature: (c.commission_type, c.value) for c in manager.commissions.all()}
     start, end = _current_month_bounds()
-    rows, total = metrics.commission_for(
-        office.city, rates, start, end, upazila=manager.area
-    )
+    rows, total = metrics.commission_for_manager(office, manager, start, end)
     return Response(
         {
             "balance": _balance_summary(manager.invoices.all(), rows, total),
