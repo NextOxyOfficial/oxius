@@ -217,3 +217,21 @@ class EmailTemplatePreviewAdmin(admin.ModelAdmin):
         # page — Django defaults X-Frame-Options to DENY, which blocks the iframe.
         resp["X-Frame-Options"] = "SAMEORIGIN"
         return resp
+
+
+from .models import AdminEmailRecipient
+
+
+@admin.register(AdminEmailRecipient)
+class AdminEmailRecipientAdmin(admin.ModelAdmin):
+    """Extra admin-notification recipients (managers, assistant managers...).
+
+    Every admin notification (new user, recharge, withdrawal, KYC, moderation
+    approval requests, block reports) is sent to the primary admin email in
+    Email Settings PLUS all active addresses listed here."""
+
+    list_display = ('email', 'label', 'is_active', 'created_at')
+    list_editable = ('is_active',)
+    list_filter = ('is_active',)
+    search_fields = ('email', 'label')
+    ordering = ('email',)

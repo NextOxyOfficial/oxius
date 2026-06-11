@@ -197,11 +197,17 @@ def _send_email(subject, to_email, text_content, html_content):
         from_addr = parseaddr(raw_from)[1] or raw_from
         from_email = formataddr((SITE_NAME, from_addr))
 
+        # Accept a single address or a list of addresses.
+        recipients = to_email if isinstance(to_email, (list, tuple)) else [to_email]
+        recipients = [r for r in recipients if r]
+        if not recipients:
+            return False
+
         msg = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
             from_email=from_email,
-            to=[to_email],
+            to=list(recipients),
             connection=connection,
         )
         msg.attach_alternative(html_content, "text/html")
@@ -212,6 +218,31 @@ def _send_email(subject, to_email, text_content, html_content):
     except Exception as e:
         logger.error(f"Email failed: '{subject}' to {to_email} - {e}")
         return False
+
+
+def _admin_recipients():
+    """All admin-notification addresses: the primary EmailSettings.admin_email
+    plus every active AdminEmailRecipient row (managers/assistants added from
+    Django admin), deduplicated case-insensitively."""
+    emails = []
+    primary = _get_email_settings().get('admin_email') or ADMIN_EMAIL
+    if primary:
+        emails.append(primary)
+    try:
+        from .models import AdminEmailRecipient
+        extras = AdminEmailRecipient.objects.filter(
+            is_active=True
+        ).values_list('email', flat=True)
+        emails.extend(extras)
+    except Exception as e:  # table missing / db hiccup — never block the email
+        logger.warning(f"Could not load extra admin recipients: {e}")
+    seen, unique = set(), []
+    for e in emails:
+        key = e.strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            unique.append(e.strip())
+    return unique
 
 
 def _dispatch_async(target, *args, **kwargs):
@@ -288,9 +319,8 @@ def send_admin_moderation_email(*, subject, label, intro, rows, model_key=None,
 {review}
 """
     html = _base_template(subject, body)
-    email_settings = _get_email_settings()
-    to_email = email_settings.get("admin_email") or ADMIN_EMAIL
-    return _send_email(subject, to_email, text_summary or subject, html)
+    # Primary admin + every active AdminEmailRecipient (managers, assistants).
+    return _send_email(subject, _admin_recipients(), text_summary or subject, html)
 
 
 # ============================================================
@@ -1176,8 +1206,7 @@ def notify_admin_new_registration(user):
 """
 
     html = _base_template(subject, body)
-    email_settings = _get_email_settings()
-    return _send_email(subject, email_settings['admin_email'], f"New user registered: {name} ({user.email})", html)
+    return _send_email(subject, _admin_recipients(), f"New user registered: {name} ({user.email})", html)
 
 
 def notify_admin_new_recharge(recharge):
@@ -1204,10 +1233,9 @@ def notify_admin_new_recharge(recharge):
 """
 
     html = _base_template(subject, body)
-    email_settings = _get_email_settings()
     return _send_email(
         subject,
-        email_settings['admin_email'],
+        _admin_recipients(),
         f"New recharge request: {recharge.phone_number} (৳{recharge.amount})",
         html,
     )
@@ -1234,7 +1262,7 @@ def notify_admin_withdrawal_request(user, amount, payment_method, payment_number
 """
 
     html = _base_template(subject, body, "Please review and approve/reject this withdrawal request.")
-    return _send_email(subject, ADMIN_EMAIL, f"Withdrawal request: ৳{amount} by {name}", html)
+    return _send_email(subject, _admin_recipients(), f"Withdrawal request: ৳{amount} by {name}", html)
 
 
 def notify_admin_kyc_submission(user):
@@ -1256,7 +1284,7 @@ def notify_admin_kyc_submission(user):
 """
 
     html = _base_template(subject, body)
-    return _send_email(subject, ADMIN_EMAIL, f"KYC submission from {name}", html)
+    return _send_email(subject, _admin_recipients(), f"KYC submission from {name}", html)
 
 
 def notify_admin_user_blocked(blocker, blocked_user, reason=""):
@@ -1283,7 +1311,7 @@ def notify_admin_user_blocked(blocker, blocked_user, reason=""):
 """
 
     html = _base_template(subject, body)
-    return _send_email(subject, ADMIN_EMAIL, f"User block report: {blocker_name} blocked {blocked_name}", html)
+    return _send_email(subject, _admin_recipients(), f"User block report: {blocker_name} blocked {blocked_name}", html)
 
 
 # ============================================================

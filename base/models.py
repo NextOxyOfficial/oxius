@@ -1779,6 +1779,30 @@ class FCMToken(models.Model):
         return f'{who} - {self.device_type}'
 
 
+class AdminEmailRecipient(models.Model):
+    """Extra admin-notification recipients (managers, assistants, ...).
+
+    Every admin notification email (new user, recharge, moderation/approval
+    requests, etc.) goes to the primary EmailSettings.admin_email PLUS all
+    active rows here. Add/remove rows from Django admin at any time.
+    """
+    email = models.EmailField(unique=True)
+    label = models.CharField(
+        max_length=100, blank=True, default='',
+        help_text='Who this is, e.g. "Manager", "Assistant Manager"',
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['email']
+        verbose_name = 'Admin Email Recipient'
+        verbose_name_plural = 'Admin Email Recipients'
+
+    def __str__(self):
+        return f"{self.email} ({self.label})" if self.label else self.email
+
+
 class EmailSettings(models.Model):
     """Store email configuration settings"""
     email_host = models.CharField(max_length=255, default='smtp.gmail.com')
