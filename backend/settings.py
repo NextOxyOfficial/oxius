@@ -556,6 +556,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "engagement.tasks.run_email_engine",
         "schedule": timedelta(hours=6),  # helpful + activity emails, cooldown-gated per user
     },
+    "generate-zonal-invoices": {
+        "task": "zonal.tasks.generate_monthly_zonal_invoices",
+        "schedule": crontab(day_of_month=1, hour=2, minute=0),  # 1st of month, 2am UTC = 8am BDT
+    },
     "run-guest-nudges": {
         "task": "engagement.tasks.run_guest_nudges",
         "schedule": timedelta(hours=12),  # registration-conversion pushes to guest devices

@@ -12,6 +12,9 @@ from .views import (
     zonal_notices,
     zonal_payments,
     zonal_settings,
+    zonal_balance,
+    zonal_invoices,
+    zonal_manager_balance,
 )
 
 urlpatterns = [
@@ -20,10 +23,13 @@ urlpatterns = [
     path("notices/", zonal_notices, name="zonal-notices"),
     path("settings/", zonal_settings, name="zonal-settings"),
     path("payments/", zonal_payments, name="zonal-payments"),
+    path("balance/", zonal_balance, name="zonal-balance"),
+    path("invoices/", zonal_invoices, name="zonal-invoices"),
     path("areas/", zonal_areas, name="zonal-areas"),
     path("notes/", zonal_notes, name="zonal-notes"),
     path("notes/<int:note_id>/", zonal_note_detail, name="zonal-note-detail"),
     path("managers/", zonal_managers, name="zonal-managers"),
     path("managers/<int:manager_id>/", zonal_manager_detail, name="zonal-manager-detail"),
     path("managers/<int:manager_id>/report/", zonal_manager_report, name="zonal-manager-report"),
+    path("managers/<int:manager_id>/balance/", zonal_manager_balance, name="zonal-manager-balance"),
 ]

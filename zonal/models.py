@@ -163,6 +163,15 @@ class AreaManager(models.Model):
         max_length=120,
         help_text="Upazila/area name — must match users' Upazila value.",
     )
+    payout_method = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=[("bkash", "bKash"), ("nagad", "Nagad"),
+                 ("rocket", "Rocket"), ("bank", "Bank")],
+    )
+    payout_account_name = models.CharField(max_length=120, blank=True, default="")
+    payout_account_number = models.CharField(max_length=60, blank=True, default="")
+    payout_bank_name = models.CharField(max_length=120, blank=True, default="")
+    payout_bank_branch = models.CharField(max_length=120, blank=True, default="")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -225,3 +234,68 @@ class ZonalPayment(models.Model):
 
     def __str__(self):
         return f"{self.office.city}: ৳{self.amount} ({self.status})"
+
+
+class _InvoiceBase(models.Model):
+    """Monthly commission statement. `amount` is the commission earned that
+    calendar month, SNAPSHOTTED at generation time (so later rate changes don't
+    rewrite history). `breakdown` keeps the per-feature rows. The owner marks it
+    paid in django admin (status + payment fields) — that is the payout."""
+
+    STATUS = [("unpaid", "Unpaid"), ("paid", "Paid")]
+
+    period_year = models.PositiveIntegerField()
+    period_month = models.PositiveSmallIntegerField()  # 1-12
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    breakdown = models.JSONField(default=list, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS, default="unpaid")
+    # Payment details (filled by the owner when paying)
+    pay_method = models.CharField(max_length=30, blank=True, default="")
+    pay_trx_id = models.CharField("Transaction ID", max_length=80, blank=True, default="")
+    pay_note = models.CharField(max_length=255, blank=True, default="")
+    paid_at = models.DateTimeField(null=True, blank=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["-period_year", "-period_month"]
+
+    @property
+    def period_label(self):
+        return "%04d-%02d" % (self.period_year, self.period_month)
+
+    def mark_paid(self):
+        if self.status != "paid":
+            self.status = "paid"
+            if not self.paid_at:
+                self.paid_at = timezone_now()
+            self.save(update_fields=["status", "paid_at", "updated_at"])
+
+
+class ZonalInvoice(_InvoiceBase):
+    office = models.ForeignKey(
+        ZonalOffice, on_delete=models.CASCADE, related_name="invoices"
+    )
+
+    class Meta(_InvoiceBase.Meta):
+        unique_together = ("office", "period_year", "period_month")
+        verbose_name = "Zonal Invoice"
+        verbose_name_plural = "Zonal Invoices"
+
+    def __str__(self):
+        return f"{self.office.city} {self.period_label}: ৳{self.amount} ({self.status})"
+
+
+class AreaManagerInvoice(_InvoiceBase):
+    manager = models.ForeignKey(
+        AreaManager, on_delete=models.CASCADE, related_name="invoices"
+    )
+
+    class Meta(_InvoiceBase.Meta):
+        unique_together = ("manager", "period_year", "period_month")
+        verbose_name = "Area Manager Invoice"
+        verbose_name_plural = "Area Manager Invoices"
+
+    def __str__(self):
+        return f"{self.manager.name} {self.period_label}: ৳{self.amount} ({self.status})"

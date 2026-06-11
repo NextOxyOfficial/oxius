@@ -55,6 +55,13 @@
           <h1 class="text-sm font-bold text-white leading-snug">{{ office?.name }}</h1>
           <p class="text-xs text-slate-400 mt-1">জোন: {{ office?.city }}</p>
         </div>
+        <!-- Account balance -->
+        <button class="mx-3 mt-3 mb-1 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 px-4 py-3 text-left hover:from-emerald-500 hover:to-emerald-600 transition"
+          @click="goSection('payouts')">
+          <p class="text-[11px] text-emerald-100 mb-0.5">অ্যাকাউন্ট ব্যালেন্স (পাওনা)</p>
+          <p class="text-2xl font-extrabold text-white leading-tight">৳{{ money(balance ? balance.payable_now : 0) }}</p>
+          <p class="text-[11px] text-emerald-100 mt-1">চলতি মাসে জমছে: ৳{{ money(balance ? balance.this_month : 0) }}</p>
+        </button>
         <nav class="flex-1 px-3 py-4 space-y-1">
           <button v-for="m in menu" :key="m.key" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition"
             :class="section === m.key ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800'"
@@ -196,7 +203,7 @@
                   </table>
                 </div>
 
-                <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">এলাকা অনুযায়ী নতুন রেজিস্ট্রেশন</h3></div>
+                <div class="px-5 pt-4 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">এলাকা অনুযায়ী রেজিস্ট্রেশন</h3></div>
                 <div class="px-5 pb-5">
                   <div v-if="!report.by_area.length" class="text-sm text-slate-400 py-3">এই সময়ে কোনো নতুন রেজিস্ট্রেশন নেই।</div>
                   <div v-else class="grid sm:grid-cols-2 gap-x-8">
@@ -313,6 +320,73 @@
                   </tbody>
                 </table>
               </div>
+
+              <!-- Earnings (balance) -->
+              <div class="px-5 pt-3 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">আয় ও পেআউট</h3></div>
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 pb-4">
+                <div class="rounded-xl border border-slate-200 p-3">
+                  <p class="text-[11px] text-slate-500 mb-0.5">পাওনা (এখন)</p>
+                  <p class="text-lg font-extrabold text-emerald-600">৳{{ money(mgrBalance?.payable_now) }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 p-3">
+                  <p class="text-[11px] text-slate-500 mb-0.5">চলতি মাসে জমছে</p>
+                  <p class="text-lg font-extrabold text-amber-500">৳{{ money(mgrBalance?.this_month) }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 p-3">
+                  <p class="text-[11px] text-slate-500 mb-0.5">লাইফটাইম আয়</p>
+                  <p class="text-lg font-extrabold text-slate-800">৳{{ money(mgrBalance?.lifetime_earned) }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 p-3">
+                  <p class="text-[11px] text-slate-500 mb-0.5">মোট পরিশোধিত</p>
+                  <p class="text-lg font-extrabold text-blue-600">৳{{ money(mgrBalance?.total_paid) }}</p>
+                </div>
+              </div>
+
+              <!-- Payout info -->
+              <div class="px-5 pb-4">
+                <div class="rounded-xl bg-slate-50 px-4 py-3">
+                  <p class="text-[11px] text-slate-500 mb-1">পেআউট তথ্য</p>
+                  <p v-if="managerReport.manager.payout_account_number" class="text-sm text-slate-700">
+                    {{ payMethodBn(managerReport.manager.payout_method) }} — {{ managerReport.manager.payout_account_number }}
+                    <span v-if="managerReport.manager.payout_account_name" class="text-slate-500">({{ managerReport.manager.payout_account_name }})</span>
+                  </p>
+                  <p v-else class="text-sm text-slate-400">পেআউট তথ্য দেওয়া হয়নি — “এডিট” থেকে যোগ করুন।</p>
+                  <p v-if="managerReport.manager.payout_bank_name" class="text-[11px] text-slate-500 mt-0.5">
+                    {{ managerReport.manager.payout_bank_name }}<span v-if="managerReport.manager.payout_bank_branch">, {{ managerReport.manager.payout_bank_branch }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Payout history (monthly invoices) -->
+              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">পেআউট হিস্টোরি (মাসিক ইনভয়েস)</h3></div>
+              <div class="px-5 pb-6 overflow-x-auto">
+                <div v-if="!mgrInvoices.length" class="text-sm text-slate-400 py-2">এখনো কোনো ইনভয়েস নেই (মাস শেষে স্বয়ংক্রিয়ভাবে তৈরি হবে)।</div>
+                <table v-else class="w-full text-xs sm:text-sm whitespace-nowrap">
+                  <thead>
+                    <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                      <th class="text-left py-2 font-medium">মাস</th>
+                      <th class="text-right py-2 font-medium">কমিশন (৳)</th>
+                      <th class="text-left py-2 font-medium pl-4">স্ট্যাটাস</th>
+                      <th class="text-left py-2 font-medium">পরিশোধ</th>
+                      <th class="text-left py-2 font-medium">Trx ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="inv in mgrInvoices" :key="inv.id" class="border-b border-slate-50">
+                      <td class="py-2 font-semibold text-slate-700">{{ inv.period }}</td>
+                      <td class="py-2 text-right font-bold text-slate-800">{{ money(inv.amount) }}</td>
+                      <td class="py-2 pl-4">
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                          :class="inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'">
+                          {{ inv.status === 'paid' ? 'পরিশোধিত' : 'বকেয়া' }}
+                        </span>
+                      </td>
+                      <td class="py-2 text-slate-500">{{ inv.paid_at || '—' }}</td>
+                      <td class="py-2 text-slate-500">{{ inv.pay_trx_id || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <!-- Manager create/edit form -->
@@ -352,6 +426,27 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Payout information -->
+                <div class="pt-2 border-t border-slate-100">
+                  <p class="text-sm font-bold text-slate-700 mb-2">পেআউট তথ্য (ঐচ্ছিক)</p>
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <select v-model="managerForm.payout_method" class="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
+                      <option value="">— পেমেন্ট মাধ্যম —</option>
+                      <option value="bkash">bKash</option>
+                      <option value="nagad">Nagad</option>
+                      <option value="rocket">Rocket</option>
+                      <option value="bank">Bank</option>
+                    </select>
+                    <input v-model="managerForm.payout_account_name" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="অ্যাকাউন্টের নাম" />
+                    <input v-model="managerForm.payout_account_number" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="অ্যাকাউন্ট নম্বর" />
+                    <template v-if="managerForm.payout_method === 'bank'">
+                      <input v-model="managerForm.payout_bank_name" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="ব্যাংকের নাম" />
+                      <input v-model="managerForm.payout_bank_branch" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="ব্রাঞ্চ" />
+                    </template>
+                  </div>
+                </div>
+
                 <p v-if="managerError" class="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{{ managerError }}</p>
                 <button type="submit" :disabled="savingManager" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg px-5 py-2.5">
                   {{ savingManager ? 'সেভ হচ্ছে...' : 'সেভ করুন' }}
@@ -420,51 +515,59 @@
             </div>
           </template>
 
-          <!-- ======== PAYMENT HISTORY ======== -->
-          <template v-else-if="section === 'payments'">
+          <!-- ======== PAYOUT REPORT (balance + monthly invoices) ======== -->
+          <template v-else-if="section === 'payouts'">
+            <!-- Balance summary -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                <p class="text-[11px] text-slate-500 mb-1">পাওনা (এখন)</p>
+                <p class="text-2xl font-extrabold text-emerald-600">৳{{ money(balance?.payable_now) }}</p>
+              </div>
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                <p class="text-[11px] text-slate-500 mb-1">চলতি মাসে জমছে</p>
+                <p class="text-2xl font-extrabold text-amber-500">৳{{ money(balance?.this_month) }}</p>
+              </div>
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                <p class="text-[11px] text-slate-500 mb-1">মোট আয় (লাইফটাইম)</p>
+                <p class="text-2xl font-extrabold text-slate-800">৳{{ money(balance?.lifetime_earned) }}</p>
+              </div>
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                <p class="text-[11px] text-slate-500 mb-1">মোট পরিশোধিত</p>
+                <p class="text-2xl font-extrabold text-blue-600">৳{{ money(balance?.total_paid) }}</p>
+              </div>
+            </div>
+
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div class="px-5 py-4 border-b border-slate-100">
-                <h2 class="text-base font-bold text-slate-800">পেমেন্ট হিস্টোরি</h2>
-                <p class="text-xs text-slate-500 mt-0.5">অ্যাডমিন থেকে আপনার জোনে পাঠানো কমিশন পেমেন্টের রেকর্ড</p>
+                <h2 class="text-base font-bold text-slate-800">মাসিক ইনভয়েস ও পেআউট</h2>
+                <p class="text-xs text-slate-500 mt-0.5">প্রতি মাসের কমিশন থেকে ইনভয়েস তৈরি হয়; অ্যাডমিন পরিশোধ করলে এখানে স্ট্যাটাস আপডেট হয়</p>
               </div>
-              <div v-if="paymentsData" class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100">
-                <div class="p-4">
-                  <p class="text-[11px] text-slate-500 mb-1">মোট পরিশোধিত</p>
-                  <p class="text-lg font-bold text-emerald-600">৳{{ money(paymentsData.totals.paid) }}</p>
-                </div>
-                <div class="p-4">
-                  <p class="text-[11px] text-slate-500 mb-1">প্রসেসিং-এ আছে</p>
-                  <p class="text-lg font-bold text-amber-600">৳{{ money(paymentsData.totals.pending) }}</p>
-                </div>
-              </div>
-              <div v-if="!paymentsData || !paymentsData.payments.length" class="p-8 text-center text-sm text-slate-400">এখনো কোনো পেমেন্ট রেকর্ড নেই।</div>
-              <div v-else class="px-5 py-4 overflow-x-auto">
+              <div v-if="!invoices.length" class="p-8 text-center text-sm text-slate-400">এখনো কোনো ইনভয়েস তৈরি হয়নি (মাস শেষে স্বয়ংক্রিয়ভাবে তৈরি হবে)।</div>
+              <div v-else class="px-5 py-3 overflow-x-auto">
                 <table class="w-full text-xs sm:text-sm whitespace-nowrap">
                   <thead>
                     <tr class="text-[11px] text-slate-400 border-b border-slate-100">
-                      <th class="text-left py-2 font-medium">তারিখ</th>
-                      <th class="text-right py-2 font-medium">পরিমাণ (৳)</th>
-                      <th class="text-left py-2 font-medium pl-4">মাধ্যম</th>
+                      <th class="text-left py-2 font-medium">মাস</th>
+                      <th class="text-right py-2 font-medium">কমিশন (৳)</th>
+                      <th class="text-left py-2 font-medium pl-4">স্ট্যাটাস</th>
+                      <th class="text-left py-2 font-medium">পরিশোধের তারিখ</th>
+                      <th class="text-left py-2 font-medium">মাধ্যম</th>
                       <th class="text-left py-2 font-medium">Trx ID</th>
-                      <th class="text-left py-2 font-medium">সময়কাল</th>
-                      <th class="text-left py-2 font-medium">স্ট্যাটাস</th>
-                      <th class="text-left py-2 font-medium">নোট</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="p in paymentsData.payments" :key="p.id" class="border-b border-slate-50">
-                      <td class="py-2 text-slate-600">{{ p.paid_at }}</td>
-                      <td class="py-2 text-right font-semibold text-slate-800">{{ money(p.amount) }}</td>
-                      <td class="py-2 pl-4 text-slate-600 capitalize">{{ p.method || '—' }}</td>
-                      <td class="py-2 text-slate-600">{{ p.trx_id || '—' }}</td>
-                      <td class="py-2 text-slate-500">{{ p.period_from && p.period_to ? `${p.period_from} → ${p.period_to}` : '—' }}</td>
-                      <td class="py-2">
+                    <tr v-for="inv in invoices" :key="inv.id" class="border-b border-slate-50">
+                      <td class="py-2.5 font-semibold text-slate-700">{{ inv.period }}</td>
+                      <td class="py-2.5 text-right font-bold text-slate-800">{{ money(inv.amount) }}</td>
+                      <td class="py-2.5 pl-4">
                         <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                          :class="p.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'">
-                          {{ p.status === 'paid' ? 'পরিশোধিত' : 'প্রসেসিং' }}
+                          :class="inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'">
+                          {{ inv.status === 'paid' ? 'পরিশোধিত' : 'বকেয়া' }}
                         </span>
                       </td>
-                      <td class="py-2 text-slate-500">{{ p.note || '—' }}</td>
+                      <td class="py-2.5 text-slate-500">{{ inv.paid_at || '—' }}</td>
+                      <td class="py-2.5 text-slate-600">{{ payMethodBn(inv.pay_method) }}</td>
+                      <td class="py-2.5 text-slate-500">{{ inv.pay_trx_id || '—' }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -576,8 +679,8 @@ const menu = [
   { key: "dashboard", label: "ড্যাশবোর্ড", icon: "📊" },
   { key: "sales", label: "সেলস রিপোর্ট", icon: "📈" },
   { key: "managers", label: "এরিয়া ম্যানেজার", icon: "👥" },
+  { key: "payouts", label: "পেআউট রিপোর্ট", icon: "💳" },
   { key: "notes", label: "প্রাইমারি নোট", icon: "📝" },
-  { key: "payments", label: "পেমেন্ট হিস্টোরি", icon: "💳" },
   { key: "settings", label: "জোন সেটিংস", icon: "⚙️" },
 ];
 
@@ -692,7 +795,7 @@ function goSection(key) {
   section.value = key;
   if (key === "managers" && !managersLoaded.value) loadManagers();
   if (key === "notes" && !notesLoaded.value) loadNotes();
-  if (key === "payments" && !paymentsLoaded.value) loadPayments();
+  if (key === "payouts" && !payoutsLoaded.value) loadPayouts();
   if (key === "settings" && !settingsLoaded.value) loadSettings();
 }
 
@@ -735,7 +838,16 @@ const mgrQuick = ref(30);
 
 const emptyCommissions = () =>
   Object.keys(featureLabels).map((f) => ({ feature: f, type: "percent", value: 0 }));
-const managerForm = reactive({ id: null, name: "", phone: "", area: "", commissions: emptyCommissions() });
+const blankPayout = () => ({
+  payout_method: "", payout_account_name: "", payout_account_number: "",
+  payout_bank_name: "", payout_bank_branch: "",
+});
+const managerForm = reactive({
+  id: null, name: "", phone: "", area: "",
+  commissions: emptyCommissions(), ...blankPayout(),
+});
+const mgrBalance = ref(null);
+const mgrInvoices = ref([]);
 
 async function loadManagers() {
   const { data } = await get("/zonal/managers/");
@@ -750,7 +862,10 @@ async function loadManagers() {
 }
 
 function startNewManager() {
-  Object.assign(managerForm, { id: null, name: "", phone: "", area: "", commissions: emptyCommissions() });
+  Object.assign(managerForm, {
+    id: null, name: "", phone: "", area: "",
+    commissions: emptyCommissions(), ...blankPayout(),
+  });
   managerError.value = "";
   managerView.value = "form";
 }
@@ -761,7 +876,14 @@ function startEditManager(m) {
     const row = rows.find((r) => r.feature === c.feature);
     if (row) { row.type = c.type; row.value = c.value; }
   });
-  Object.assign(managerForm, { id: m.id, name: m.name, phone: m.phone, area: m.area, commissions: rows });
+  Object.assign(managerForm, {
+    id: m.id, name: m.name, phone: m.phone, area: m.area, commissions: rows,
+    payout_method: m.payout_method || "",
+    payout_account_name: m.payout_account_name || "",
+    payout_account_number: m.payout_account_number || "",
+    payout_bank_name: m.payout_bank_name || "",
+    payout_bank_branch: m.payout_bank_branch || "",
+  });
   managerError.value = "";
   managerView.value = "form";
 }
@@ -775,6 +897,11 @@ async function saveManager() {
       phone: managerForm.phone,
       area: managerForm.area,
       commissions: managerForm.commissions.map((r) => ({ feature: r.feature, type: r.type, value: r.value || 0 })),
+      payout_method: managerForm.payout_method,
+      payout_account_name: managerForm.payout_account_name,
+      payout_account_number: managerForm.payout_account_number,
+      payout_bank_name: managerForm.payout_bank_name,
+      payout_bank_branch: managerForm.payout_bank_branch,
     };
     if (managerForm.id) {
       await authedFetch(`/zonal/managers/${managerForm.id}/`, { method: "PATCH", body: payload });
@@ -798,7 +925,14 @@ async function saveManager() {
 async function openManager(m) {
   managerView.value = "profile";
   managerReport.value = null;
+  mgrBalance.value = null;
+  mgrInvoices.value = [];
   await loadManagerReport(m.id, 30);
+  const { data } = await get(`/zonal/managers/${m.id}/balance/`);
+  if (data) {
+    mgrBalance.value = data.balance;
+    mgrInvoices.value = data.invoices || [];
+  }
 }
 
 const mgrRange = reactive({ from: daysAgo(29), to: today() });
@@ -884,17 +1018,23 @@ async function deleteNote(n) {
   } catch (e) { /* ignore */ }
 }
 
-// ---------------- payments ----------------
-const paymentsData = ref(null);
-const paymentsLoaded = ref(false);
+// ---------------- balance & payouts (invoices) ----------------
+const balance = ref(null);
+const invoices = ref([]);
+const payoutsLoaded = ref(false);
 
-async function loadPayments() {
-  const { data } = await get("/zonal/payments/");
-  if (data) {
-    paymentsData.value = data;
-    paymentsLoaded.value = true;
-  }
+async function loadBalance() {
+  const { data } = await get("/zonal/balance/");
+  if (data) balance.value = data;
 }
+async function loadPayouts() {
+  await loadBalance();
+  const { data } = await get("/zonal/invoices/");
+  if (Array.isArray(data)) invoices.value = data;
+  payoutsLoaded.value = true;
+}
+const payMethodBn = (m) =>
+  ({ bkash: "bKash", nagad: "Nagad", rocket: "Rocket", bank: "Bank" }[m] || m || "—");
 
 // ---------------- zone settings ----------------
 const settingsData = ref(null);
@@ -944,6 +1084,7 @@ onMounted(async () => {
     office.value = data;
     await loadReport();
     loadNotices();
+    loadBalance(); // sidebar balance card
   } else {
     const status = error?.response?.status || error?.statusCode || error?.status;
     phase.value = status === 403 ? "denied" : "login";

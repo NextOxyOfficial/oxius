@@ -124,3 +124,41 @@ class ZonalPaymentAdmin(admin.ModelAdmin):
     list_filter = ("status", "method", "office")
     search_fields = ("trx_id", "note", "office__name", "office__city")
     date_hierarchy = "paid_at"
+
+
+from django.utils import timezone as _tz
+from .models import AreaManagerInvoice, ZonalInvoice
+
+
+def _mark_paid(modeladmin, request, queryset):
+    n = 0
+    for inv in queryset.exclude(status="paid"):
+        inv.status = "paid"
+        if not inv.paid_at:
+            inv.paid_at = _tz.now()
+        inv.save(update_fields=["status", "paid_at", "updated_at"])
+        n += 1
+    modeladmin.message_user(request, f"{n} invoice(s) marked paid.")
+
+
+_mark_paid.short_description = "Mark selected invoices as PAID"
+
+
+@admin.register(ZonalInvoice)
+class ZonalInvoiceAdmin(admin.ModelAdmin):
+    """The owner's payout worklist: filter by Unpaid, fill payment details,
+    then run 'Mark as PAID' (or set status=paid). Amounts are auto-generated."""
+    list_display = ("office", "period_label", "amount", "status", "pay_method", "pay_trx_id", "paid_at")
+    list_filter = ("status", "period_year", "period_month", "office")
+    search_fields = ("office__name", "office__city", "pay_trx_id")
+    readonly_fields = ("amount", "breakdown", "generated_at", "updated_at")
+    actions = [_mark_paid]
+
+
+@admin.register(AreaManagerInvoice)
+class AreaManagerInvoiceAdmin(admin.ModelAdmin):
+    list_display = ("manager", "period_label", "amount", "status", "pay_method", "pay_trx_id", "paid_at")
+    list_filter = ("status", "period_year", "period_month")
+    search_fields = ("manager__name", "manager__area", "pay_trx_id")
+    readonly_fields = ("amount", "breakdown", "generated_at", "updated_at")
+    actions = [_mark_paid]
