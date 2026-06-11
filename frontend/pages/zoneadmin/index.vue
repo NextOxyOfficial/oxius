@@ -97,32 +97,38 @@
           <template v-if="section === 'dashboard'">
             <!-- Promotional offer banner (static) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-5">
-              <div class="flex items-center justify-between gap-2 px-5 py-3 border-b border-slate-100 bg-emerald-50/60">
-                <div class="flex items-center gap-2">
-                  <span class="text-base">🎁</span>
-                  <h2 class="text-sm font-bold text-slate-800">বিশেষ প্রোমোশনাল অফার</h2>
-                </div>
-                <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full whitespace-nowrap">৩১ জুলাই পর্যন্ত</span>
-              </div>
+              <div class="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500"></div>
               <div class="p-5">
-                <div class="grid sm:grid-cols-2 gap-3">
-                  <div class="flex items-start gap-3 rounded-xl border border-slate-200 px-4 py-3">
-                    <span class="h-9 w-9 rounded-lg bg-emerald-50 flex items-center justify-center text-base shrink-0">⭐</span>
-                    <div>
-                      <p class="text-sm font-semibold text-slate-800">নতুন ইউজার Pro সাবস্ক্রিপশন করলে</p>
-                      <p class="text-[13px] text-slate-500 mt-0.5">অতিরিক্ত <span class="font-bold text-emerald-700">৫০% কমিশন</span></p>
-                    </div>
+                <div class="flex items-center gap-2.5 mb-4">
+                  <span class="h-9 w-9 rounded-xl bg-emerald-50 flex items-center justify-center text-lg shrink-0">🎁</span>
+                  <div class="min-w-0">
+                    <h2 class="text-[15px] font-bold text-slate-800 leading-tight">বিশেষ প্রোমোশনাল অফার</h2>
+                    <p class="text-[12px] text-slate-400">সীমিত সময়ের জন্য — বাড়তি আয়ের সুযোগ</p>
                   </div>
-                  <div class="flex items-start gap-3 rounded-xl border border-slate-200 px-4 py-3">
-                    <span class="h-9 w-9 rounded-lg bg-amber-50 flex items-center justify-center text-base shrink-0">🥇</span>
-                    <div>
-                      <p class="text-sm font-semibold text-slate-800">নতুন ইউজার Sponsor করলে</p>
-                      <p class="text-[13px] text-slate-500 mt-0.5">অতিরিক্ত <span class="font-bold text-emerald-700">৫০% কমিশন</span></p>
+                  <span class="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>৩১ জুলাই পর্যন্ত
+                  </span>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-3">
+                  <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 hover:border-emerald-200 transition">
+                    <span class="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-lg shrink-0">⭐</span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[13px] font-semibold text-slate-800 leading-snug">নতুন ইউজার Pro সাবস্ক্রিপশন</p>
+                      <p class="text-[12px] text-slate-400 mt-0.5">করলে আপনি পাবেন</p>
                     </div>
+                    <span class="text-sm font-extrabold text-emerald-600 whitespace-nowrap">+৫০%</span>
+                  </div>
+                  <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 hover:border-emerald-200 transition">
+                    <span class="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-lg shrink-0">🥇</span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[13px] font-semibold text-slate-800 leading-snug">নতুন ইউজার Sponsor</p>
+                      <p class="text-[12px] text-slate-400 mt-0.5">করলে আপনি পাবেন</p>
+                    </div>
+                    <span class="text-sm font-extrabold text-emerald-600 whitespace-nowrap">+৫০%</span>
                   </div>
                 </div>
-                <p class="text-[13px] text-slate-500 mt-3 flex items-center gap-1.5">
-                  <span>📞</span> বিস্তারিত জানতে আপনার অ্যাকাউন্ট ম্যানেজারের সাথে যোগাযোগ করুন।
+                <p class="text-[12.5px] text-slate-500 mt-3.5 flex items-center gap-1.5 border-t border-slate-100 pt-3">
+                  <span class="text-emerald-600">📞</span> বিস্তারিত জানতে আপনার অ্যাকাউন্ট ম্যানেজারের সাথে যোগাযোগ করুন।
                 </p>
               </div>
             </div>
