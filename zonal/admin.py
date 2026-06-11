@@ -27,7 +27,17 @@ class ZoneFeatureCommissionInline(admin.TabularInline):
 @admin.register(ZonalOffice)
 class ZonalOfficeAdmin(admin.ModelAdmin):
     form = ZonalOfficeAdminForm
-    fields = ("user", "name", "division", "city", "is_active")
+    fieldsets = (
+        (None, {"fields": ("user", "name", "division", "city", "is_active")}),
+        ("Officer payout & contact (filled from /zoneadmin Zone Settings)", {
+            "classes": ("collapse",),
+            "fields": (
+                "contact_phone", "office_address", "nid_number",
+                "payout_method", "payout_account_name", "payout_account_number",
+                "payout_bank_name", "payout_bank_branch", "payout_routing_number",
+            ),
+        }),
+    )
     list_display = ("name", "city", "officer_email", "is_active", "created_at")
     list_filter = ("is_active", "city")
     search_fields = ("name", "city", "user__email", "user__name")
@@ -101,3 +111,16 @@ class AreaManagerAdmin(admin.ModelAdmin):
     list_filter = ("office", "is_active")
     search_fields = ("name", "area", "phone")
     inlines = [AreaManagerCommissionInline]
+
+
+from .models import ZonalPayment
+
+
+@admin.register(ZonalPayment)
+class ZonalPaymentAdmin(admin.ModelAdmin):
+    """Record commission payouts here — officers see them (read-only) in the
+    panel's Payment History."""
+    list_display = ("office", "amount", "method", "trx_id", "status", "paid_at")
+    list_filter = ("status", "method", "office")
+    search_fields = ("trx_id", "note", "office__name", "office__city")
+    date_hierarchy = "paid_at"

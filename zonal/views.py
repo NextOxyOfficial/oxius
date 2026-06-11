@@ -168,6 +168,42 @@ def _feature_data(querysets):
     return data
 
 
+def _subscription_analysis(city, upazila=None, lapsed_limit=30):
+    """Pro-subscription health for the scope (independent of the date range —
+    it's a snapshot of NOW). pro_validity in the future = active; in the past =
+    expired / NOT renewed; within 7 days = expiring soon (renewal opportunity).
+    Returns counts + a short list of recently-lapsed users for follow-up."""
+    now = timezone.now()
+    soon = now + timedelta(days=7)
+
+    base = User.objects.filter(city__iexact=city, pro_validity__isnull=False)
+    if upazila:
+        base = base.filter(upazila__iexact=upazila)
+
+    active = base.filter(pro_validity__gte=now)
+    lapsed = base.filter(pro_validity__lt=now)
+    expiring = active.filter(pro_validity__lte=soon)
+
+    lapsed_users = [
+        {
+            "name": (u.name or u.first_name or u.email or "—"),
+            "phone": getattr(u, "phone", "") or "",
+            "area": u.upazila or "",
+            "expired_on": u.pro_validity.astimezone(DHAKA).strftime("%Y-%m-%d"),
+            "auto_renew": bool(getattr(u, "auto_renew", False)),
+        }
+        for u in lapsed.order_by("-pro_validity")[:lapsed_limit]
+    ]
+    return {
+        "ever_pro": base.count(),
+        "active": active.count(),
+        "lapsed": lapsed.count(),          # had Pro, did NOT renew
+        "expiring_soon": expiring.count(),  # active but expires within 7 days
+        "auto_renew_on": active.filter(auto_renew=True).count(),
+        "lapsed_users": lapsed_users,
+    }
+
+
 def _calc_commissions(rates, feature_data):
     """rates: {feature: (type, value)} -> (rows, total).
     percent -> value% of the feature's sales amount;
@@ -308,6 +344,7 @@ def zonal_dashboard(request):
             "by_area": by_area
             + ([{"upazila": "(এলাকা দেওয়া নেই)", "n": no_area}] if no_area > 0 else []),
             "commissions": commissions,
+            "subscriptions": _subscription_analysis(city),
             "days": days,
         }
     )
@@ -595,5 +632,97 @@ def zonal_manager_report(request, manager_id):
                 "commission": total_commission,
             },
             "commissions": commissions,
+            "subscriptions": _subscription_analysis(office.city, upazila=manager.area),
+        }
+    )
+
+
+# -------------------------------------------------------------- settings --
+
+PAYOUT_FIELDS = (
+    "contact_phone", "office_address", "nid_number", "payout_method",
+    "payout_account_name", "payout_account_number", "payout_bank_name",
+    "payout_bank_branch", "payout_routing_number",
+)
+
+
+def _settings_payload(office):
+    user = office.user
+    photo = None
+    try:
+        if getattr(user, "image", None):
+            photo = user.image.url
+    except Exception:
+        photo = None
+    data = {
+        "office_name": office.name,
+        "city": office.city,
+        "officer_name": getattr(user, "name", "") or f"{user.first_name} {user.last_name}".strip(),
+        "officer_email": user.email,
+        "officer_phone": getattr(user, "phone", "") or "",
+        "officer_photo": photo,
+        "joined": office.created_at.astimezone(DHAKA).strftime("%Y-%m-%d"),
+    }
+    for f in PAYOUT_FIELDS:
+        data[f] = getattr(office, f, "") or ""
+    return data
+
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated])
+def zonal_settings(request):
+    office = _get_office(request)
+    if not office:
+        return Response(NOT_OFFICER, status=403)
+
+    if request.method == "PATCH":
+        valid_methods = {"", "bkash", "nagad", "rocket", "bank"}
+        changed = []
+        for f in PAYOUT_FIELDS:
+            if f in request.data:
+                value = str(request.data.get(f) or "").strip()
+                if f == "payout_method" and value not in valid_methods:
+                    continue
+                setattr(office, f, value[:255])
+                changed.append(f)
+        if changed:
+            office.save(update_fields=changed)
+    return Response(_settings_payload(office))
+
+
+# -------------------------------------------------------------- payments --
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def zonal_payments(request):
+    office = _get_office(request)
+    if not office:
+        return Response(NOT_OFFICER, status=403)
+
+    payments = office.payments.all()[:200]
+    from django.db.models import Sum as _S
+    paid_total = float(
+        office.payments.filter(status="paid").aggregate(s=_S("amount"))["s"] or 0
+    )
+    pending_total = float(
+        office.payments.filter(status="pending").aggregate(s=_S("amount"))["s"] or 0
+    )
+    return Response(
+        {
+            "totals": {"paid": paid_total, "pending": pending_total},
+            "payments": [
+                {
+                    "id": p.id,
+                    "amount": float(p.amount),
+                    "method": p.method,
+                    "trx_id": p.trx_id,
+                    "status": p.status,
+                    "note": p.note,
+                    "period_from": p.period_from.isoformat() if p.period_from else None,
+                    "period_to": p.period_to.isoformat() if p.period_to else None,
+                    "paid_at": p.paid_at.astimezone(DHAKA).strftime("%Y-%m-%d"),
+                }
+                for p in payments
+            ],
         }
     )

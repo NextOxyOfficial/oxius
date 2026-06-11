@@ -10,12 +10,16 @@ from .views import (
     zonal_note_detail,
     zonal_notes,
     zonal_notices,
+    zonal_payments,
+    zonal_settings,
 )
 
 urlpatterns = [
     path("me/", zonal_me, name="zonal-me"),
     path("dashboard/", zonal_dashboard, name="zonal-dashboard"),
     path("notices/", zonal_notices, name="zonal-notices"),
+    path("settings/", zonal_settings, name="zonal-settings"),
+    path("payments/", zonal_payments, name="zonal-payments"),
     path("areas/", zonal_areas, name="zonal-areas"),
     path("notes/", zonal_notes, name="zonal-notes"),
     path("notes/<int:note_id>/", zonal_note_detail, name="zonal-note-detail"),

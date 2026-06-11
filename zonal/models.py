@@ -7,6 +7,7 @@ in at adsyclub.com/zoneadmin and sees the sales/leads dashboard for their zone.
 """
 from django.conf import settings
 from django.db import models
+from django.utils.timezone import now as timezone_now
 
 
 class ZonalOffice(models.Model):
@@ -24,6 +25,26 @@ class ZonalOffice(models.Model):
         max_length=120,
         help_text="Zone city — must match users' City value (e.g. Dhaka).",
     )
+
+    # --- Zone settings (edited by the officer at /zoneadmin) ---
+    contact_phone = models.CharField(max_length=30, blank=True, default="")
+    office_address = models.CharField(max_length=255, blank=True, default="")
+    nid_number = models.CharField(max_length=40, blank=True, default="")
+    payout_method = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=[
+            ("bkash", "bKash"),
+            ("nagad", "Nagad"),
+            ("rocket", "Rocket"),
+            ("bank", "Bank"),
+        ],
+    )
+    payout_account_name = models.CharField(max_length=120, blank=True, default="")
+    payout_account_number = models.CharField(max_length=60, blank=True, default="")
+    payout_bank_name = models.CharField(max_length=120, blank=True, default="")
+    payout_bank_branch = models.CharField(max_length=120, blank=True, default="")
+    payout_routing_number = models.CharField(max_length=40, blank=True, default="")
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -176,3 +197,31 @@ class AreaManagerCommission(models.Model):
     def __str__(self):
         unit = "%" if self.commission_type == "percent" else "TK/item"
         return f"{self.manager.name}: {self.feature} {self.value}{unit}"
+
+
+class ZonalPayment(models.Model):
+    """A commission payout made to a zonal office — recorded by the owner in
+    django admin; the officer sees the history (read-only) in /zoneadmin."""
+
+    STATUS = [("paid", "Paid"), ("pending", "Pending")]
+
+    office = models.ForeignKey(
+        ZonalOffice, on_delete=models.CASCADE, related_name="payments"
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    method = models.CharField(max_length=30, blank=True, default="")
+    trx_id = models.CharField("Transaction ID", max_length=80, blank=True, default="")
+    period_from = models.DateField(null=True, blank=True)
+    period_to = models.DateField(null=True, blank=True)
+    note = models.CharField(max_length=255, blank=True, default="")
+    status = models.CharField(max_length=10, choices=STATUS, default="paid")
+    paid_at = models.DateTimeField(default=timezone_now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-paid_at"]
+        verbose_name = "Zonal Payment"
+        verbose_name_plural = "Zonal Payments"
+
+    def __str__(self):
+        return f"{self.office.city}: ৳{self.amount} ({self.status})"

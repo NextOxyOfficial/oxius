@@ -103,22 +103,42 @@
               </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h2 class="text-base font-bold text-slate-800">এক নজরে ({{ report?.range?.from }} → {{ report?.range?.to }})</h2>
-                <button class="text-xs font-semibold text-emerald-700 hover:underline" @click="goSection('sales')">বিস্তারিত রিপোর্ট →</button>
-              </div>
-              <div v-if="loadingReport" class="p-10 text-center">
-                <div class="animate-spin h-7 w-7 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
-              </div>
-              <div v-else class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100">
-                <div v-for="t in summaryTiles" :key="t.label" class="p-4">
-                  <p class="text-[11px] text-slate-500 mb-1">{{ t.label }}</p>
-                  <p class="text-lg font-bold" :class="t.accent || 'text-slate-800'">{{ t.value }}</p>
-                  <p v-if="t.sub" class="text-[11px] text-slate-400 mt-0.5">{{ t.sub }}</p>
+            <div v-if="loadingReport" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center">
+              <div class="animate-spin h-7 w-7 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
+            </div>
+            <template v-else-if="report">
+              <p class="text-xs text-slate-400 mb-3">রিপোর্টের সময়কাল: {{ report.range.from }} → {{ report.range.to }}</p>
+
+              <!-- Hero stat cards -->
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                <div v-for="h in dashHero" :key="h.label" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-lg leading-none">{{ h.icon }}</span>
+                    <span class="text-[11px] text-slate-500">{{ h.label }}</span>
+                  </div>
+                  <p class="text-2xl font-extrabold tracking-tight" :class="toneText(h.tone)">{{ h.value }}</p>
                 </div>
               </div>
-            </div>
+
+              <div class="grid lg:grid-cols-2 gap-5">
+                <!-- Pro subscription health -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div class="px-5 py-3.5 border-b border-slate-100">
+                    <h2 class="text-sm font-bold text-slate-800">Pro সাবস্ক্রিপশন (এখনকার অবস্থা)</h2>
+                  </div>
+                  <ZoneSubHealth :s="report.subscriptions" />
+                </div>
+
+                <!-- Sales breakdown -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-slate-800">সেলস ব্রেকডাউন</h2>
+                    <button class="text-xs font-semibold text-emerald-700 hover:underline" @click="goSection('sales')">কমিশন রিপোর্ট →</button>
+                  </div>
+                  <ZoneSalesList :rows="dashSales" />
+                </div>
+              </div>
+            </template>
           </template>
 
           <!-- ======== SALES REPORT ======== -->
@@ -144,7 +164,13 @@
                 <div class="animate-spin h-7 w-7 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
               </div>
               <template v-else-if="report">
-                <div class="px-5 pt-5 pb-2"><h3 class="text-sm font-bold text-slate-700">কমিশন হিসাব</h3></div>
+                <!-- Pro subscription / renewal analysis -->
+                <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">Pro সাবস্ক্রিপশন বিশ্লেষণ</h3></div>
+                <div class="mx-5 mb-5 border border-slate-200 rounded-xl overflow-hidden">
+                  <ZoneSubHealth :s="report.subscriptions" />
+                </div>
+
+                <div class="px-5 pt-1 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">কমিশন হিসাব</h3></div>
                 <div class="px-5 pb-5 overflow-x-auto">
                   <table class="w-full text-sm">
                     <thead>
@@ -229,20 +255,40 @@
                   <button class="text-xs font-semibold text-red-500 hover:underline" @click="deleteManager(managerReport.manager)">ডিলিট</button>
                 </div>
               </div>
-              <div class="px-5 py-3 border-b border-slate-100 flex flex-wrap gap-2">
+              <div class="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
                 <button v-for="r in quickRanges" :key="r.days"
                   class="text-xs font-semibold px-3 py-1.5 rounded-full border"
                   :class="mgrQuick === r.days ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200'"
                   @click="loadManagerReport(managerReport.manager.id, r.days)">{{ r.label }}</button>
-              </div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100 border-b border-slate-100">
-                <div v-for="t in managerTiles" :key="t.label" class="p-4">
-                  <p class="text-[11px] text-slate-500 mb-1">{{ t.label }}</p>
-                  <p class="text-lg font-bold" :class="t.accent || 'text-slate-800'">{{ t.value }}</p>
-                  <p v-if="t.sub" class="text-[11px] text-slate-400 mt-0.5">{{ t.sub }}</p>
+                <div class="flex items-center gap-1.5 ml-auto">
+                  <input v-model="mgrRange.from" type="date" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5" />
+                  <span class="text-slate-400 text-xs">—</span>
+                  <input v-model="mgrRange.to" type="date" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5" />
+                  <button class="text-xs font-semibold bg-slate-800 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700"
+                    @click="loadManagerReportCustom(managerReport.manager.id)">দেখুন</button>
                 </div>
               </div>
-              <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">কমিশন ব্রেকডাউন ({{ managerReport.range.from }} → {{ managerReport.range.to }})</h3></div>
+              <!-- Hero stats -->
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 p-5 border-b border-slate-100">
+                <div v-for="h in mgrHero" :key="h.label" class="rounded-xl border border-slate-200 p-3.5">
+                  <div class="flex items-center gap-1.5 mb-1.5">
+                    <span class="text-base leading-none">{{ h.icon }}</span>
+                    <span class="text-[11px] text-slate-500">{{ h.label }}</span>
+                  </div>
+                  <p class="text-xl font-extrabold" :class="toneText(h.tone)">{{ h.value }}</p>
+                </div>
+              </div>
+              <!-- Pro subscription health (this area) -->
+              <div class="px-5 pt-4 pb-2"><h3 class="text-sm font-bold text-slate-700">Pro সাবস্ক্রিপশন (এই এলাকা)</h3></div>
+              <div class="mx-5 mb-4 border border-slate-200 rounded-xl overflow-hidden">
+                <ZoneSubHealth :s="managerReport.subscriptions" />
+              </div>
+              <!-- Sales breakdown -->
+              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">সেলস ব্রেকডাউন</h3></div>
+              <div class="mx-5 mb-4 border border-slate-200 rounded-xl overflow-hidden">
+                <ZoneSalesList :rows="mgrSales" />
+              </div>
+              <div class="px-5 pt-2 pb-2 border-t border-slate-100"><h3 class="text-sm font-bold text-slate-700">কমিশন ব্রেকডাউন ({{ managerReport.range.from }} → {{ managerReport.range.to }})</h3></div>
               <div class="px-5 pb-6 overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
@@ -373,6 +419,143 @@
               </div>
             </div>
           </template>
+
+          <!-- ======== PAYMENT HISTORY ======== -->
+          <template v-else-if="section === 'payments'">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100">
+                <h2 class="text-base font-bold text-slate-800">পেমেন্ট হিস্টোরি</h2>
+                <p class="text-xs text-slate-500 mt-0.5">অ্যাডমিন থেকে আপনার জোনে পাঠানো কমিশন পেমেন্টের রেকর্ড</p>
+              </div>
+              <div v-if="paymentsData" class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100">
+                <div class="p-4">
+                  <p class="text-[11px] text-slate-500 mb-1">মোট পরিশোধিত</p>
+                  <p class="text-lg font-bold text-emerald-600">৳{{ money(paymentsData.totals.paid) }}</p>
+                </div>
+                <div class="p-4">
+                  <p class="text-[11px] text-slate-500 mb-1">প্রসেসিং-এ আছে</p>
+                  <p class="text-lg font-bold text-amber-600">৳{{ money(paymentsData.totals.pending) }}</p>
+                </div>
+              </div>
+              <div v-if="!paymentsData || !paymentsData.payments.length" class="p-8 text-center text-sm text-slate-400">এখনো কোনো পেমেন্ট রেকর্ড নেই।</div>
+              <div v-else class="px-5 py-4 overflow-x-auto">
+                <table class="w-full text-xs sm:text-sm whitespace-nowrap">
+                  <thead>
+                    <tr class="text-[11px] text-slate-400 border-b border-slate-100">
+                      <th class="text-left py-2 font-medium">তারিখ</th>
+                      <th class="text-right py-2 font-medium">পরিমাণ (৳)</th>
+                      <th class="text-left py-2 font-medium pl-4">মাধ্যম</th>
+                      <th class="text-left py-2 font-medium">Trx ID</th>
+                      <th class="text-left py-2 font-medium">সময়কাল</th>
+                      <th class="text-left py-2 font-medium">স্ট্যাটাস</th>
+                      <th class="text-left py-2 font-medium">নোট</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="p in paymentsData.payments" :key="p.id" class="border-b border-slate-50">
+                      <td class="py-2 text-slate-600">{{ p.paid_at }}</td>
+                      <td class="py-2 text-right font-semibold text-slate-800">{{ money(p.amount) }}</td>
+                      <td class="py-2 pl-4 text-slate-600 capitalize">{{ p.method || '—' }}</td>
+                      <td class="py-2 text-slate-600">{{ p.trx_id || '—' }}</td>
+                      <td class="py-2 text-slate-500">{{ p.period_from && p.period_to ? `${p.period_from} → ${p.period_to}` : '—' }}</td>
+                      <td class="py-2">
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                          :class="p.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'">
+                          {{ p.status === 'paid' ? 'পরিশোধিত' : 'প্রসেসিং' }}
+                        </span>
+                      </td>
+                      <td class="py-2 text-slate-500">{{ p.note || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </template>
+
+          <!-- ======== ZONE SETTINGS ======== -->
+          <template v-else-if="section === 'settings'">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100">
+                <h2 class="text-base font-bold text-slate-800">জোন সেটিংস</h2>
+                <p class="text-xs text-slate-500 mt-0.5">আপনার প্রোফাইল ও পেআউট তথ্য — কমিশন পাঠাতে অ্যাডমিন এগুলো ব্যবহার করবেন</p>
+              </div>
+              <div v-if="!settingsData" class="p-10 text-center">
+                <div class="animate-spin h-7 w-7 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
+              </div>
+              <template v-else>
+                <!-- Officer profile -->
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-4">
+                  <img v-if="settingsData.officer_photo" :src="settingsData.officer_photo" class="h-16 w-16 rounded-full object-cover border border-slate-200" alt="" />
+                  <div v-else class="h-16 w-16 rounded-full bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-xl">{{ (settingsData.officer_name || 'A').charAt(0) }}</div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-bold text-slate-800">{{ settingsData.officer_name }}</p>
+                    <p class="text-xs text-slate-500">{{ settingsData.officer_email }} <span v-if="settingsData.officer_phone">&bull; {{ settingsData.officer_phone }}</span></p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ settingsData.office_name }} &bull; জোন: {{ settingsData.city }} &bull; যুক্ত: {{ settingsData.joined }}</p>
+                  </div>
+                </div>
+                <!-- Payout form -->
+                <form class="p-5 space-y-4" @submit.prevent="saveSettings">
+                  <div class="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-1">যোগাযোগের ফোন</label>
+                      <input v-model="settingsForm.contact_phone" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="01XXXXXXXXX" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-1">NID নম্বর</label>
+                      <input v-model="settingsForm.nid_number" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="জাতীয় পরিচয়পত্র নম্বর" />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">অফিসের ঠিকানা</label>
+                    <input v-model="settingsForm.office_address" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="অফিস/বাসার ঠিকানা" />
+                  </div>
+                  <div class="pt-2 border-t border-slate-100">
+                    <p class="text-sm font-bold text-slate-700 mb-3">পেআউট অ্যাকাউন্ট</p>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">পেমেন্ট মাধ্যম</label>
+                        <select v-model="settingsForm.payout_method" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
+                          <option value="">— বাছাই করুন —</option>
+                          <option value="bkash">bKash</option>
+                          <option value="nagad">Nagad</option>
+                          <option value="rocket">Rocket</option>
+                          <option value="bank">Bank</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">অ্যাকাউন্টের নাম</label>
+                        <input v-model="settingsForm.payout_account_name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="অ্যাকাউন্ট হোল্ডারের নাম" />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">অ্যাকাউন্ট নম্বর</label>
+                        <input v-model="settingsForm.payout_account_number" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="নম্বর" />
+                      </div>
+                      <template v-if="settingsForm.payout_method === 'bank'">
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">ব্যাংকের নাম</label>
+                          <input v-model="settingsForm.payout_bank_name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">ব্রাঞ্চ</label>
+                          <input v-model="settingsForm.payout_bank_branch" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1">রাউটিং নম্বর</label>
+                          <input v-model="settingsForm.payout_routing_number" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button type="submit" :disabled="savingSettings" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-semibold rounded-lg px-5 py-2.5">
+                      {{ savingSettings ? 'সেভ হচ্ছে...' : 'সেভ করুন' }}
+                    </button>
+                    <span v-if="settingsSaved" class="text-xs font-semibold text-emerald-600">✓ সেভ হয়েছে</span>
+                  </div>
+                </form>
+              </template>
+            </div>
+          </template>
         </main>
       </div>
     </div>
@@ -394,6 +577,8 @@ const menu = [
   { key: "sales", label: "সেলস রিপোর্ট", icon: "📈" },
   { key: "managers", label: "এরিয়া ম্যানেজার", icon: "👥" },
   { key: "notes", label: "প্রাইমারি নোট", icon: "📝" },
+  { key: "payments", label: "পেমেন্ট হিস্টোরি", icon: "💳" },
+  { key: "settings", label: "জোন সেটিংস", icon: "⚙️" },
 ];
 
 const office = ref(null);
@@ -430,22 +615,30 @@ const featureBn = (f) => featureLabels[f] || f;
 const money = (v) => Number(v || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
 const rateText = (c) => (c.type === "flat" ? `৳${money(c.value)}/টা` : `${c.value}%`);
 
-const tilesFromTotals = (t, usersLabel, usersValue) => [
-  { label: usersLabel, value: (usersValue ?? 0).toLocaleString() },
-  { label: "নতুন রেজিস্ট্রেশন (লিড)", value: (t.registrations ?? 0).toLocaleString(), accent: "text-blue-600" },
-  { label: "Pro আপগ্রেড", value: t.pro.count, sub: `৳${money(t.pro.amount)}` },
-  { label: "মাইক্রোগিগ পোস্ট", value: t.gigs.count, sub: `৳${money(t.gigs.amount)}` },
-  { label: "eShop অর্ডার", value: t.orders.count, sub: `৳${money(t.orders.amount)}` },
-  { label: "মোবাইল রিচার্জ", value: t.recharges.count, sub: `৳${money(t.recharges.amount)}` },
-  { label: "গোল্ড স্পনসর", value: t.gold?.count ?? 0, sub: `৳${money(t.gold?.amount)}` },
-  { label: "রাইডশেয়ার (ফি)", value: t.rides?.count ?? 0, sub: `৳${money(t.rides?.amount)}` },
-  { label: "মোট সেলস", value: `৳${money(t.revenue)}`, accent: "text-slate-800" },
-  { label: "মোট কমিশন", value: `৳${money(t.commission)}`, accent: "text-emerald-600" },
+// Four headline cards — the numbers that matter most, big and colour-coded.
+const heroCards = (t, usersLabel, usersValue) => [
+  { label: usersLabel, value: (usersValue ?? 0).toLocaleString(), icon: "👥", tone: "slate" },
+  { label: "নতুন লিড", value: (t.registrations ?? 0).toLocaleString(), icon: "📥", tone: "blue" },
+  { label: "মোট সেলস", value: `৳${money(t.revenue)}`, icon: "💰", tone: "slate" },
+  { label: "মোট কমিশন", value: `৳${money(t.commission)}`, icon: "🏆", tone: "emerald" },
+];
+const toneText = (tone) =>
+  ({ slate: "text-slate-800", blue: "text-blue-600", emerald: "text-emerald-600" }[tone] || "text-slate-800");
+
+// Per-feature sales — one clean row each (icon + label + count + amount).
+const salesRows = (t) => [
+  { label: "Pro সাবস্ক্রিপশন", icon: "⭐", count: t.pro.count, amount: t.pro.amount },
+  { label: "মাইক্রোগিগ পোস্ট", icon: "🧩", count: t.gigs.count, amount: t.gigs.amount },
+  { label: "eShop অর্ডার", icon: "🛒", count: t.orders.count, amount: t.orders.amount },
+  { label: "মোবাইল রিচার্জ", icon: "📱", count: t.recharges.count, amount: t.recharges.amount },
+  { label: "গোল্ড স্পনসর", icon: "🥇", count: t.gold?.count ?? 0, amount: t.gold?.amount ?? 0 },
+  { label: "রাইডশেয়ার ফি", icon: "🚗", count: t.rides?.count ?? 0, amount: t.rides?.amount ?? 0 },
 ];
 
-const summaryTiles = computed(() =>
-  report.value ? tilesFromTotals(report.value.totals, "জোনের মোট ইউজার", report.value.totals.zone_users) : []
+const dashHero = computed(() =>
+  report.value ? heroCards(report.value.totals, "জোনের মোট ইউজার", report.value.totals.zone_users) : []
 );
+const dashSales = computed(() => (report.value ? salesRows(report.value.totals) : []));
 
 // ---------------- auth + bootstrap ----------------
 async function authedFetch(path, options = {}) {
@@ -499,6 +692,8 @@ function goSection(key) {
   section.value = key;
   if (key === "managers" && !managersLoaded.value) loadManagers();
   if (key === "notes" && !notesLoaded.value) loadNotes();
+  if (key === "payments" && !paymentsLoaded.value) loadPayments();
+  if (key === "settings" && !settingsLoaded.value) loadSettings();
 }
 
 async function doLogin() {
@@ -606,19 +801,33 @@ async function openManager(m) {
   await loadManagerReport(m.id, 30);
 }
 
+const mgrRange = reactive({ from: daysAgo(29), to: today() });
+
 async function loadManagerReport(id, days) {
   mgrQuick.value = days;
   const from = daysAgo(days - 1);
   const to = today();
+  mgrRange.from = from;
+  mgrRange.to = to;
   const { data } = await get(`/zonal/managers/${id}/report/?from=${from}&to=${to}`);
   if (data) managerReport.value = data;
 }
 
-const managerTiles = computed(() =>
+async function loadManagerReportCustom(id) {
+  if (!mgrRange.from || !mgrRange.to) return;
+  mgrQuick.value = 0; // custom range active — unhighlight quick chips
+  const { data } = await get(
+    `/zonal/managers/${id}/report/?from=${mgrRange.from}&to=${mgrRange.to}`
+  );
+  if (data) managerReport.value = data;
+}
+
+const mgrHero = computed(() =>
   managerReport.value
-    ? tilesFromTotals(managerReport.value.totals, "এলাকার মোট ইউজার", managerReport.value.totals.area_users)
+    ? heroCards(managerReport.value.totals, "এলাকার মোট ইউজার", managerReport.value.totals.area_users)
     : []
 );
+const mgrSales = computed(() => (managerReport.value ? salesRows(managerReport.value.totals) : []));
 
 async function deleteManager(m) {
   if (!confirm(`"${m.name}" ম্যানেজারকে ডিলিট করবেন?`)) return;
@@ -673,6 +882,59 @@ async function deleteNote(n) {
     await authedFetch(`/zonal/notes/${n.id}/`, { method: "DELETE" });
     await loadNotes();
   } catch (e) { /* ignore */ }
+}
+
+// ---------------- payments ----------------
+const paymentsData = ref(null);
+const paymentsLoaded = ref(false);
+
+async function loadPayments() {
+  const { data } = await get("/zonal/payments/");
+  if (data) {
+    paymentsData.value = data;
+    paymentsLoaded.value = true;
+  }
+}
+
+// ---------------- zone settings ----------------
+const settingsData = ref(null);
+const settingsLoaded = ref(false);
+const savingSettings = ref(false);
+const settingsSaved = ref(false);
+const settingsForm = reactive({
+  contact_phone: "", office_address: "", nid_number: "",
+  payout_method: "", payout_account_name: "", payout_account_number: "",
+  payout_bank_name: "", payout_bank_branch: "", payout_routing_number: "",
+});
+
+async function loadSettings() {
+  const { data } = await get("/zonal/settings/");
+  if (data) {
+    settingsData.value = data;
+    Object.keys(settingsForm).forEach((k) => {
+      settingsForm[k] = data[k] || "";
+    });
+    settingsLoaded.value = true;
+  }
+}
+
+async function saveSettings() {
+  savingSettings.value = true;
+  settingsSaved.value = false;
+  try {
+    const data = await authedFetch("/zonal/settings/", {
+      method: "PATCH",
+      body: { ...settingsForm },
+    });
+    if (data) {
+      settingsData.value = data;
+      settingsSaved.value = true;
+      setTimeout(() => (settingsSaved.value = false), 2500);
+    }
+  } catch (e) { /* keep form values */ }
+  finally {
+    savingSettings.value = false;
+  }
 }
 
 // ---------------- mount ----------------
