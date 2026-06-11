@@ -35,7 +35,8 @@ class MentionParser {
   static List<InlineSpan> _emojiAwareSpans(String text, TextStyle baseStyle) {
     if (text.isEmpty) return const <InlineSpan>[];
     final double base = baseStyle.fontSize ?? 14;
-    final TextStyle emojiStyle = baseStyle.copyWith(fontSize: base * 1.4);
+    // Emojis a touch larger than the text, not oversized (was 1.4 — too big).
+    final TextStyle emojiStyle = baseStyle.copyWith(fontSize: base * 1.18);
     final List<InlineSpan> spans = [];
     int last = 0;
     for (final m in _emojiRegex.allMatches(text)) {
@@ -139,8 +140,8 @@ class MentionParser {
           behavior: HitTestBehavior.opaque,
           onTap: () => onMentionTap?.call(mentionName),
           child: Container(
-            margin: const EdgeInsets.only(left: 1, right: 0),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            margin: const EdgeInsets.only(left: 2, right: 1),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -157,10 +158,11 @@ class MentionParser {
             child: Text(
               '@$mentionName',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w600,
                 color: Colors.blue.shade700,
-                height: 1.0,
+                height: 1.15,
+                letterSpacing: 0.1,
               ),
             ),
           ),
@@ -208,10 +210,11 @@ class MentionParser {
               child: Text(
                 '@$mentionName',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: Colors.blue.shade700,
-                  height: 1.0,
+                  height: 1.15,
+                  letterSpacing: 0.1,
                 ),
               ),
             ),
@@ -295,10 +298,11 @@ class MentionParser {
               child: Text(
                 '@$mentionName',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: Colors.blue.shade700,
-                  height: 1.0,
+                  height: 1.15,
+                  letterSpacing: 0.1,
                 ),
               ),
             ),
