@@ -244,16 +244,29 @@ class SalePost(models.Model):
             previous_status
             and previous_status != self.status
             and self.status == "active"
-            and has_email
         ):
-            try:
-                from base.email_service import send_post_approved_email, SITE_URL
-                send_post_approved_email(
-                    self.user, self.title, "Amar sheba ad",
-                    f"{SITE_URL}/sale/{self.slug}",
-                )
-            except Exception as e:
-                print(f"Error sending Amar sheba approved email: {e}")
+            # In-app notice + push (via the AdminNotice post_save signal).
+            if self.user_id:
+                try:
+                    from base.models import AdminNotice
+                    AdminNotice.objects.create(
+                        user_id=self.user_id,
+                        notification_type="sale_approved",
+                        title="আপনার বিজ্ঞাপন লাইভ হয়েছে ✅",
+                        message=f"“{self.title}” এখন Sale Marketplace-এ সবাই দেখতে পাচ্ছেন।",
+                        reference_id=str(self.id),
+                    )
+                except Exception as e:
+                    print(f"Error creating sale approved notice: {e}")
+            if has_email:
+                try:
+                    from base.email_service import send_post_approved_email, SITE_URL
+                    send_post_approved_email(
+                        self.user, self.title, "Amar sheba ad",
+                        f"{SITE_URL}/sale/{self.slug}",
+                    )
+                except Exception as e:
+                    print(f"Error sending Amar sheba approved email: {e}")
 
 
 class SaleImage(models.Model):

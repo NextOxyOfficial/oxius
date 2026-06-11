@@ -299,6 +299,32 @@ class NID(models.Model):
 
         super(NID, self).save(*args, **kwargs)
 
+        # In-app notice + push the moment KYC is approved/rejected (the
+        # AdminNotice post_save signal turns these into a push). Created only
+        # on the transition, so re-saving an already-approved NID won't repeat.
+        if self.user and self.approved and not (previous and previous["approved"]):
+            try:
+                from .models import AdminNotice
+                AdminNotice.objects.create(
+                    user=self.user,
+                    notification_type="kyc_approved",
+                    title="পরিচয়পত্র যাচাই সম্পন্ন ✅",
+                    message="আপনার পরিচয়পত্র approve হয়েছে — এখন উইথড্র, বিক্রি, পোস্ট সব আনলক হয়ে গেছে।",
+                )
+            except Exception as e:
+                print(f"Error creating KYC approved notice: {e}")
+        elif self.user and self.rejected and not (previous and previous["rejected"]):
+            try:
+                from .models import AdminNotice
+                AdminNotice.objects.create(
+                    user=self.user,
+                    notification_type="kyc_rejected",
+                    title="পরিচয়পত্র যাচাই হয়নি",
+                    message="দুঃখিত, আপনার পরিচয়পত্রটি যাচাই করা যায়নি। সঠিক তথ্য দিয়ে আবার চেষ্টা করুন।",
+                )
+            except Exception as e:
+                print(f"Error creating KYC rejected notice: {e}")
+
         if self.user and self.user.email:
             if self.approved and not (previous and previous["approved"]):
                 try:
@@ -362,6 +388,11 @@ class AdminNotice(models.Model):
         ("gig_posted", "Gig Posted Successfully"),
         ("gig_approved", "Gig Approved by Admin"),
         ("gig_rejected", "Gig Rejected by Admin"),
+        ("kyc_approved", "KYC Approved"),
+        ("kyc_rejected", "KYC Rejected"),
+        ("service_approved", "Amar Sheba Approved"),
+        ("sale_approved", "Sale Ad Approved"),
+        ("sponsor_approved", "Gold Sponsor Approved"),
         ("general", "General Update"),
     )
 

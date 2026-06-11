@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.db.models import F, Q, Value
 from django.db.models.functions import Concat, Greatest, Trim
 from django.utils import timezone
+from django.db.models.signals import pre_save
 from .models import (
     BusinessNetworkFollowerModel,
     BusinessNetworkPostLike,
@@ -14,10 +15,11 @@ from .models import (
     BusinessNetworkMediaComment,
     BusinessNetworkNotification,
     BusinessNetworkPost,
+    GoldSponsor,
     UserSavedPosts,
 )
 from base.fcm_service import send_fcm_notification_async
-from base.models import FCMToken
+from base.models import AdminNotice, FCMToken
 
 
 # ---------------------------------------------------------------------------
@@ -333,3 +335,32 @@ def create_mindforce_comment_notification(sender, instance, created, **kwargs):
             read=False,
             content=f"Marked your advice as a solution to '{instance.mindforce_problem.title}'"
         )
+
+@receiver(pre_save, sender=GoldSponsor)
+def _store_prev_sponsor_status(sender, instance, **kwargs):
+    if instance.pk:
+        instance._prev_status = sender.objects.filter(pk=instance.pk).values_list(
+            "status", flat=True
+        ).first()
+    else:
+        instance._prev_status = None
+
+
+@receiver(post_save, sender=GoldSponsor)
+def _notify_sponsor_approved(sender, instance, created, **kwargs):
+    """Push (+ in-app) when a Gold Sponsor goes pending -> active (approved)."""
+    if created or not instance.user_id:
+        return
+    prev = getattr(instance, "_prev_status", None)
+    if prev != "active" and instance.status == "active":
+        try:
+            AdminNotice.objects.create(
+                user_id=instance.user_id,
+                notification_type="sponsor_approved",
+                title="গোল্ড স্পনসর চালু হয়েছে 🥇",
+                message=f"অভিনন্দন! “{instance.business_name}” এখন গোল্ড স্পনসর হিসেবে "
+                        "বিজনেস নেটওয়ার্কে দেখানো হচ্ছে।",
+                reference_id=str(instance.id),
+            )
+        except Exception as e:
+            print(f"Error creating sponsor approved notice: {e}")
