@@ -1835,6 +1835,8 @@ class _NewChatModalState extends State<_NewChatModal> {
       final params = {
         'q': query,
         'page_size': '10',
+        // You can't chat with yourself — don't offer yourself in the picker.
+        'exclude_self': '1',
       };
 
       final uri = Uri.parse('${ApiService.baseUrl}/bn/users/search/').replace(
@@ -1846,10 +1848,14 @@ class _NewChatModalState extends State<_NewChatModal> {
       if (response.statusCode == 200 && mounted) {
         final data = json.decode(response.body);
         final List<Map<String, dynamic>> results = [];
+        final selfId = AuthService.currentUser?.id ?? '';
 
         if (data['results'] != null && data['results'] is List) {
           for (var item in data['results']) {
-            results.add(Map<String, dynamic>.from(item));
+            final user = Map<String, dynamic>.from(item);
+            // Client-side guard too, for older servers.
+            if (selfId.isNotEmpty && user['id'].toString() == selfId) continue;
+            results.add(user);
           }
         }
 
@@ -1906,9 +1912,14 @@ class _NewChatModalState extends State<_NewChatModal> {
       if (mounted) Navigator.pop(context);
 
       if (mounted) {
+        // AdsyChatException carries a clean user-facing (Bangla) message;
+        // anything else gets a generic line — never raw backend output.
+        final message = e is AdsyChatException
+            ? e.message
+            : 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to open chat: $e'),
+            content: Text(message),
             backgroundColor: Colors.red,
           ),
         );

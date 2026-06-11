@@ -747,10 +747,11 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Check if user is trying to chat with themselves
+        # Check if user is trying to chat with themselves — plain Bangla text;
+        # the app shows this message directly (no raw status/body).
         if str(other_user_id) == str(request.user.id):
             return Response(
-                {'error': 'Cannot create chat with yourself'},
+                {'error': 'নিজের সাথে চ্যাট করা যায় না।'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         

@@ -220,6 +220,11 @@ class UserSearchView(generics.ListAPIView):
         if not query or not query.strip():
             return User.objects.none()
 
+        # The new-chat picker passes exclude_self=1 — you can't chat with
+        # yourself, so don't offer yourself. (Default keeps self so features
+        # like @mention-ing yourself in a post still work.)
+        exclude_self = self.request.query_params.get("exclude_self") in ("1", "true")
+
         # Normalize query for better matching
         normalized_query = query.strip()
 
@@ -258,6 +263,8 @@ class UserSearchView(generics.ListAPIView):
 
         # Get all matching users (excluding superusers)
         users = User.objects.filter(search_query).exclude(is_superuser=True)
+        if exclude_self and self.request.user.is_authenticated:
+            users = users.exclude(id=self.request.user.id)
 
         # Hide only accounts with no usable display name at all (nothing
         # human-readable to show in results). New users who registered with a
@@ -1503,7 +1510,14 @@ class UserFollowCreateView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         user_id = self.kwargs.get("user_id")
-        
+
+        # Nobody can follow themselves — plain-text message the app can show.
+        if str(user_id) == str(request.user.id):
+            return Response(
+                {"detail": "নিজেকে ফলো করা যায় না।"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # Check if already following
         existing_follow = BusinessNetworkFollowerModel.objects.filter(
             follower=request.user,

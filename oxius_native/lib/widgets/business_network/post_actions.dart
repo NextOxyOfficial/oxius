@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
+import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
 import '../../screens/business_network/profile_screen.dart';
 
@@ -324,7 +325,25 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
             ),
           ),
           const SizedBox(width: 10),
-          _buildFollowButton(like, following, busy),
+          // Your own like: show a quiet "আপনি" tag — you can't follow yourself.
+          if (like.userUuid == (AuthService.currentUser?.id ?? ''))
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'আপনি',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            )
+          else
+            _buildFollowButton(like, following, busy),
         ],
       ),
     );

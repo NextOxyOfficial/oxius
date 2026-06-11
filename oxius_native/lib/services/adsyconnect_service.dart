@@ -7,6 +7,15 @@ import 'auth_service.dart';
 import 'api_service.dart';
 import 'active_chat_tracker.dart';
 
+/// A user-facing chat error: `message` is plain text safe to show in a
+/// snackbar (already in Bangla from the backend when available).
+class AdsyChatException implements Exception {
+  final String message;
+  AdsyChatException(this.message);
+  @override
+  String toString() => message;
+}
+
 class AdsyConnectService {
   static String get baseUrl => '${ApiService.baseUrl}/adsyconnect';
 
@@ -85,11 +94,21 @@ class AdsyConnectService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return _normalizeChatroomPayload(jsonDecode(response.body));
       } else {
-        throw Exception(
-            'Failed to get or create chat room: ${response.statusCode} - ${response.body}');
+        // Surface only the backend's plain message (error/detail) — never the
+        // raw status code + body, which looked like leaked backend code.
+        String message = 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।';
+        try {
+          final decoded = jsonDecode(response.body);
+          if (decoded is Map) {
+            final m = decoded['error'] ?? decoded['detail'];
+            if (m is String && m.trim().isNotEmpty) message = m.trim();
+          }
+        } catch (_) {}
+        throw AdsyChatException(message);
       }
     } catch (e) {
       debugPrint('Error getting or creating chat room: $e');
+      if (e is AdsyChatException) rethrow; // clean user-facing message
       final existingChatroom = await findExistingChatRoom(userId);
       if (existingChatroom != null && existingChatroom['id'] != null) {
         return existingChatroom;
