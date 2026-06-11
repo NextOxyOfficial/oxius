@@ -1227,7 +1227,6 @@ onMounted(() => {
       loadCategoryPosts(),
       loadRecentListings(),
       loadTrendingListings(),
-      loadLocationData(),
     ]).catch((error) => {
       console.error("Error during initial data loading:", error);
     });
@@ -1266,19 +1265,6 @@ watch(
   async (newDivision) => {
     if (newDivision) {
       selectedDivision.value = newDivision;
-
-      // Load districts for this division if not already loaded
-      try {
-        const districtsResponse = await get(
-          `${API_ENDPOINTS.DISTRICTS}?division=${newDivision}`
-        );
-        if (districtsResponse?.data && Array.isArray(districtsResponse.data)) {
-          districtsByDivision.value[newDivision] = districtsResponse.data;
-          cities.value = districtsResponse.data;
-        }
-      } catch (error) {
-        console.error(`Error loading districts for ${newDivision}:`, error);
-      }
     } else {
       cities.value = [];
     }
@@ -1291,19 +1277,6 @@ watch(
   async (newDistrict) => {
     if (newDistrict) {
       selectedDistrict.value = newDistrict;
-
-      // Load areas for this district if not already loaded
-      try {
-        const areasResponse = await get(
-          `${API_ENDPOINTS.AREAS}?district=${newDistrict}`
-        );
-        if (areasResponse?.data && Array.isArray(areasResponse.data)) {
-          areasByDistrict.value[newDistrict] = areasResponse.data;
-          upazilas.value = areasResponse.data;
-        }
-      } catch (error) {
-        console.error(`Error loading areas for ${newDistrict}:`, error);
-      }
     } else {
       upazilas.value = [];
     }
