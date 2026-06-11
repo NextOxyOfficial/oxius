@@ -63,15 +63,10 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      Inter: {
-        wght: [400, 500, 600, 700],
-        subsets: ['latin'],
-      },
-      "Hind Siliguri": {
-        wght: [300, 400, 500, 600, 700],
-        subsets: ['bengali', 'latin'],
-      },
+      Inter: [400, 500, 600, 700],
+      "Hind Siliguri": [300, 400, 500, 600, 700],
     },
+    subsets: ['bengali', 'latin'],
     display: 'swap',
     prefetch: true,
     preconnect: true,

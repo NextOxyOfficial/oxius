@@ -1,7 +1,7 @@
 <template>
   <!-- Sidebar with filters - Commercial Compact Design -->
   <div
-    class="filter-sidebar lg:w-64 bg-white rounded-xl shadow-sm border border-gray-200/80"
+    class="filter-sidebar lg:w-64 rounded-xl border border-slate-200/80 bg-white/95 shadow-[0_1px_8px_rgba(15,23,42,0.05)] backdrop-blur-sm"
     :class="[
       isMobileFilterOpen ? 'mobile-sidebar-open' : 'mobile-sidebar-closed',
       'lg:block',
@@ -9,20 +9,22 @@
   >
     <!-- Mobile Header -->
     <div
-      class="lg:hidden sticky top-0 flex items-center justify-between px-3 py-2.5 border-b border-gray-200 bg-gradient-to-r from-emerald-600 to-emerald-700 z-20 rounded-t-xl"
+      class="lg:hidden sticky top-0 flex items-center justify-between px-3 py-2.5 border-b border-slate-200 bg-white/95 z-20 rounded-t-xl"
     >
-      <h2 class="text-base font-semibold text-white">
+      <h2 class="text-base font-semibold text-slate-800">
         <span class="flex items-center gap-2">
-          <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
-          Categories
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+            <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
+          </span>
+          {{ t("sale_sidebar_categories") }}
         </span>
       </h2>
       <UButton
         icon="i-heroicons-x-mark"
         size="xs"
-        color="white"
+        color="gray"
         variant="ghost"
-        class="ml-auto hover:bg-white/20"
+        class="ml-auto hover:bg-slate-100"
         @click="toggleMobileSidebar"
         aria-label="Close"
       />
@@ -33,14 +35,14 @@
       class="overflow-y-auto sidebar-content p-3 flex-grow sidebar-scrollable-content"
     >
       <!-- Categories Section - Compact List -->
-      <div class="mb-4">
-        <div class="hidden lg:flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
-          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-            <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4 text-white" />
+      <div class="mb-3">
+        <div class="hidden lg:flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-100">
+          <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center ring-1 ring-emerald-100">
+            <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
           </div>
           <div>
-            <h2 class="text-sm font-bold text-gray-800">Categories</h2>
-            <p class="text-[10px] text-gray-500">Browse by category</p>
+            <h2 class="text-sm font-bold text-slate-800">{{ t("sale_sidebar_categories") }}</h2>
+            <p class="text-[10px] text-slate-500">{{ t("sale_sidebar_categories_subtitle") }}</p>
           </div>
         </div>
         <ul class="space-y-0.5">
@@ -51,22 +53,22 @@
               class="w-full text-left px-2.5 py-2 rounded-lg flex items-center justify-between transition-all duration-200 group"
               :class="
                 !selectedCategory
-                  ? 'bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 font-semibold border border-emerald-200'
-                  : 'text-gray-700 hover:bg-gray-50 border border-transparent'
+                  ? 'bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/80'
+                  : 'text-slate-700 hover:bg-slate-50 border border-transparent'
               "
             >
               <span class="flex items-center gap-2">
                 <div 
                   class="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
-                  :class="!selectedCategory ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500 group-hover:bg-emerald-100 group-hover:text-emerald-600'"
+                  :class="!selectedCategory ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-600'"
                 >
                   <UIcon name="i-heroicons-home" class="w-3.5 h-3.5" />
                 </div>
-                <span class="text-[13px]">All Categories</span>
+                <span class="text-[13px]">{{ t("all_category") }}</span>
               </span>
               <span
                 class="text-[11px] px-2 py-0.5 rounded-full font-semibold"
-                :class="!selectedCategory ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'"
+                :class="!selectedCategory ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'"
               >
                 {{ totalListings }}
               </span>
@@ -79,14 +81,14 @@
               class="w-full text-left px-2.5 py-2 rounded-lg flex items-center justify-between transition-all duration-200 group"
               :class="
                 selectedCategory === category.id
-                  ? 'bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 font-semibold border border-emerald-200'
-                  : 'text-gray-700 hover:bg-gray-50 border border-transparent'
+                  ? 'bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/80'
+                  : 'text-slate-700 hover:bg-slate-50 border border-transparent'
               "
             >
               <span class="flex items-center gap-2">
                 <div 
                   class="w-6 h-6 rounded-md flex items-center justify-center transition-colors overflow-hidden"
-                  :class="selectedCategory === category.id ? 'bg-emerald-500' : 'bg-gray-100 group-hover:bg-emerald-100'"
+                  :class="selectedCategory === category.id ? 'bg-emerald-500' : 'bg-slate-100 group-hover:bg-emerald-100'"
                 >
                   <img
                     v-if="category.icon"
@@ -105,7 +107,7 @@
               </span>
               <span
                 class="text-[11px] px-2 py-0.5 rounded-full font-semibold min-w-[28px] text-center"
-                :class="selectedCategory === category.id ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'"
+                :class="selectedCategory === category.id ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'"
               >
                 {{ category?.post_count || 0 }}
               </span>
@@ -115,27 +117,26 @@
       </div>
 
       <!-- Post Ad CTA - Compact Commercial Design -->
-      <div class="mb-4">
+      <div class="mb-3">
         <div
-          class="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-3 rounded-xl shadow-lg relative overflow-hidden"
+          class="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-3 relative overflow-hidden"
         >
           <!-- Background Pattern -->
-          <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
-          <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
+          <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-100/40 rounded-full -translate-y-12 translate-x-12"></div>
           
           <div class="relative z-10">
             <div class="flex items-center gap-2 mb-2">
-              <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                <UIcon name="i-heroicons-megaphone" class="w-4 h-4 text-white" />
+              <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 ring-1 ring-emerald-100">
+                <UIcon name="i-heroicons-megaphone" class="w-4 h-4" />
               </div>
               <div>
-                <h3 class="text-sm font-bold text-white">Sell Your Items</h3>
-                <p class="text-[10px] text-emerald-100">Reach thousands of buyers</p>
+                <h3 class="text-sm font-bold text-slate-800">{{ t("sale_sidebar_sell_title") }}</h3>
+                <p class="text-[10px] text-slate-500">{{ t("sale_sidebar_sell_subtitle") }}</p>
               </div>
             </div>
             <NuxtLink
               to="/sale/my-posts?tab=post-sale"
-              class="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white text-emerald-700 rounded-lg hover:bg-emerald-50 transition-all text-xs font-bold shadow-sm"
+              class="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all text-xs font-bold"
               @click="handleButtonClick('post-your-ad-1')"
             >
               <div
@@ -143,7 +144,7 @@
                 class="dotted-spinner emerald h-3 w-3"
               ></div>
               <UIcon v-else name="i-heroicons-plus-circle" class="h-3.5 w-3.5" />
-              <span v-if="!loadingButtons.has('post-your-ad-1')">Post Free Ad</span>
+              <span v-if="!loadingButtons.has('post-your-ad-1')">{{ t("sale_sidebar_post_ad") }}</span>
             </NuxtLink>
           </div>
         </div>
@@ -153,12 +154,12 @@
       <div class="mb-4" v-if="saleHorizontalAds.length > 0">
         <div class="flex items-center gap-1.5 mb-2">
           <UIcon name="i-heroicons-sparkles" class="w-3 h-3 text-amber-500" />
-          <span class="text-[10px] uppercase text-gray-500 font-semibold tracking-wide">Sponsored</span>
+          <span class="text-[10px] uppercase text-slate-500 font-semibold tracking-wide">{{ t("sale_sidebar_sponsored") }}</span>
         </div>
 
         <!-- Compact Ad Card -->
         <NuxtLink
-          class="block bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200/60 overflow-hidden group cursor-pointer hover:shadow-sm transition-all duration-300"
+          class="block bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200/60 overflow-hidden group cursor-pointer transition-all duration-300"
           :to="saleHorizontalAds[0]?.link || '#'"
           :target="saleHorizontalAds[0]?.open_external ? '_blank' : '_self'"
         >
@@ -184,13 +185,13 @@
       <div class="mb-4" v-if="saleVerticalAds.length > 0">
         <div class="flex items-center gap-1.5 mb-2">
           <UIcon name="i-heroicons-fire" class="w-3 h-3 text-red-500" />
-          <span class="text-[10px] uppercase text-gray-500 font-semibold tracking-wide">Hot Deal</span>
+          <span class="text-[10px] uppercase text-slate-500 font-semibold tracking-wide">{{ t("sale_sidebar_hot_deal") }}</span>
         </div>
 
         <NuxtLink
           :to="saleVerticalAds[0]?.link || '#'"
           :target="saleVerticalAds[0]?.open_external ? '_blank' : '_self'"
-          class="block bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm group cursor-pointer hover:shadow-lg transition-all duration-300"
+          class="block bg-white rounded-lg border border-slate-200 overflow-hidden group cursor-pointer transition-all duration-300"
         >
           <div class="relative h-48 overflow-hidden">
             <img
@@ -202,14 +203,14 @@
             <div class="absolute top-2 left-2">
               <span class="bg-red-500 text-white text-[9px] px-2 py-1 rounded-full font-bold flex items-center gap-1">
                 <UIcon name="i-heroicons-bolt" class="w-2.5 h-2.5" />
-                {{ saleVerticalAds[0]?.offer_title || 'Limited Offer' }}
+                {{ saleVerticalAds[0]?.offer_title || t("sale_sidebar_limited_offer") }}
               </span>
             </div>
             <div class="absolute bottom-0 left-0 right-0 p-3">
               <h4 class="font-bold text-white text-sm line-clamp-2">{{ saleVerticalAds[0]?.title }}</h4>
               <p class="text-gray-200 text-[10px] mt-1 line-clamp-1">{{ saleVerticalAds[0]?.description }}</p>
               <div class="mt-2 flex items-center gap-1 text-emerald-400 text-[10px] font-semibold">
-                <span>Shop Now</span>
+                <span>{{ t("sale_sidebar_shop_now") }}</span>
                 <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
               </div>
             </div>
@@ -218,15 +219,15 @@
       </div>
 
       <!-- Quick Stats -->
-      <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+      <div class="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
         <div class="grid grid-cols-2 gap-2">
           <div class="text-center">
             <div class="text-lg font-bold text-emerald-600">{{ totalListings }}</div>
-            <div class="text-[10px] text-gray-500">Total Ads</div>
+            <div class="text-[10px] text-slate-500">{{ t("sale_sidebar_total_ads") }}</div>
           </div>
           <div class="text-center">
             <div class="text-lg font-bold text-blue-600">{{ categories?.length || 0 }}</div>
-            <div class="text-[10px] text-gray-500">Categories</div>
+            <div class="text-[10px] text-slate-500">{{ t("sale_sidebar_categories") }}</div>
           </div>
         </div>
       </div>
@@ -245,7 +246,7 @@
           class="dotted-spinner emerald w-4 h-4"
         ></div>
         <UIcon v-else name="i-heroicons-plus-circle" class="w-4 h-4" />
-        <span v-if="!loadingButtons.has('post-your-ad-2')">Post Free Ad</span>
+        <span v-if="!loadingButtons.has('post-your-ad-2')">{{ t("sale_sidebar_post_ad") }}</span>
       </NuxtLink>
     </div>
   </div>
@@ -253,6 +254,7 @@
 
 <script setup>
 // Loading state for buttons
+const { t } = useI18n();
 const { get } = useApi();
 const saleHorizontalAds = ref([]);
 const saleVerticalAds = ref([]);
@@ -477,7 +479,7 @@ function getCategoryIcon(categoryId, categoryName = "") {
 
   .mobile-sidebar-open {
     transform: translateX(0);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 8px 0 24px rgba(15, 23, 42, 0.12);
   }
 
   .sidebar-scrollable-content {
@@ -511,7 +513,7 @@ function getCategoryIcon(categoryId, categoryName = "") {
   }
 
   .filter-sidebar:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
   }
 
   .sidebar-scrollable-content {

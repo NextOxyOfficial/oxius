@@ -12,19 +12,25 @@
       <UContainer class="max-w-7xl mx-auto py-4 sm:py-6">
         <!-- Header -->
         <div
-          class="bg-gradient-to-r from-emerald-600 to-teal-500 rounded-xl px-5 py-5 mb-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+          class="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-emerald-50/60 px-4 py-4 sm:px-5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         >
-          <div class="text-center sm:text-left">
-            <h1 class="text-lg sm:text-xl font-semibold text-white">
-              Manage Your Sale Posts
-            </h1>
-            <p class="text-emerald-50/90 text-sm mt-0.5">
-              View, edit, and manage all your listings in one place
-            </p>
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
+              <UIcon name="i-heroicons-clipboard-document-list" class="h-5 w-5" />
+            </div>
+            <div>
+              <h1 class="text-base sm:text-lg font-bold text-slate-900">
+                {{ t("sale_manage_title") }}
+              </h1>
+              <p class="text-slate-500 text-xs sm:text-sm mt-0.5">
+                {{ t("sale_manage_subtitle") }}
+              </p>
+            </div>
           </div>
           <UButton
-            color="white"
-            class="font-medium rounded-lg px-5 py-2.5 text-emerald-700"
+            color="emerald"
+            variant="soft"
+            class="font-medium rounded-lg px-4 py-2 shrink-0"
             @click="navigateToMarketplace"
           >
             <template #leading>
@@ -34,7 +40,7 @@
               ></div>
               <UIcon v-else name="i-heroicons-shopping-bag" class="text-lg" />
             </template>
-            <span>Go to Marketplace</span>
+            <span>{{ t("sale_go_marketplace") }}</span>
           </UButton>
         </div>
 
@@ -47,7 +53,7 @@
             @click="activeTab = tab.id"
           >
             <UIcon :name="tab.icon" class="w-4 h-4" />
-            <span>{{ tab.name }}</span>
+            <span>{{ t(tab.labelKey) }}</span>
             <span
               v-if="tab.id === 'my-posts' && myPostsCount > 0"
               :class="tabBadgeClass(tab.id)"
@@ -68,7 +74,7 @@
         </div>
 
         <!-- Post a Sale -->
-        <div v-else class="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+        <div v-else>
           <SalePostForm @post-created="handlePostCreated" />
         </div>
       </UContainer>
@@ -85,6 +91,8 @@ definePageMeta({
   middleware: "auth",
 });
 
+const { t } = useI18n();
+
 // Loading state for buttons
 const loadingButtons = ref(new Set());
 
@@ -100,8 +108,8 @@ const activeTab = ref("my-posts");
 const myPostsCount = ref(0);
 
 const tabs = [
-  { id: "my-posts", name: "My Posts", icon: "i-heroicons-document-text" },
-  { id: "post-sale", name: "Post a Sale", icon: "i-heroicons-plus-circle" },
+  { id: "my-posts", labelKey: "sale_tab_my_posts", icon: "i-heroicons-document-text" },
+  { id: "post-sale", labelKey: "sale_tab_post_sale", icon: "i-heroicons-plus-circle" },
 ];
 
 // Tab styling
@@ -142,8 +150,8 @@ const handlePostCreated = () => {
   activeTab.value = "my-posts";
   const toast = useToast();
   toast.add({
-    title: "Success!",
-    description: "Your listing has been posted successfully.",
+    title: t("sale_post_success_title"),
+    description: t("sale_post_success_desc"),
     color: "green",
   });
 };

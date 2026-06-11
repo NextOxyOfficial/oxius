@@ -6,11 +6,11 @@
         <div class="h-20 w-20 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
           <UIcon name="i-heroicons-clipboard-document-list" class="h-9 w-9 text-emerald-500" />
         </div>
-        <p class="text-slate-700 font-medium">No posts yet</p>
-        <p class="text-slate-400 text-sm mt-1">Create your first listing to start selling in the marketplace.</p>
+        <p class="text-slate-700 font-medium">{{ t("sale_mp_no_posts_title") }}</p>
+        <p class="text-slate-400 text-sm mt-1">{{ t("sale_mp_no_posts_desc") }}</p>
         <UButton class="mt-6 font-medium rounded-lg px-6 py-2.5" color="primary" @click="$emit('create-post')">
           <UIcon name="i-heroicons-plus-circle" class="mr-2" />
-          <span>Create Your First Post</span>
+          <span>{{ t("sale_mp_create_first") }}</span>
         </UButton>
       </div>
     </UCard>
@@ -31,11 +31,11 @@
           <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
               <UIcon name="i-heroicons-squares-2x2" class="text-emerald-600" />
-              Categories
+              {{ t("sale_sidebar_categories") }}
             </h2>
             <button
               class="text-slate-400 hover:text-emerald-600 transition-colors"
-              title="Refresh posts"
+              :title="t('sale_mp_refresh')"
               @click="refreshPosts"
             >
               <UIcon name="i-heroicons-arrow-path" :class="{ 'animate-spin': isRefreshing }" />
@@ -45,7 +45,7 @@
             <button :class="categoryBtnClass('all')" @click="selectCategory('all')">
               <span class="flex items-center gap-2 truncate">
                 <UIcon name="i-heroicons-square-3-stack-3d" class="shrink-0" />
-                <span class="truncate">All Categories</span>
+                <span class="truncate">{{ t("all_category") }}</span>
               </span>
               <span :class="countBadgeClass('all')">{{ posts.length }}</span>
             </button>
@@ -75,7 +75,7 @@
             :class="tabClass(tab.key)"
             @click="selectStatus(tab.key)"
           >
-            <span>{{ tab.label }}</span>
+            <span>{{ t(tab.labelKey) }}</span>
             <span :class="tabCountClass(tab.key)">{{ statusCount(tab.key) }}</span>
           </button>
         </div>
@@ -135,7 +135,7 @@
                   </span>
                   <span class="inline-flex items-center gap-1 font-medium text-slate-700">
                     <UIcon name="i-heroicons-currency-bangladeshi" class="h-4 w-4" />
-                    {{ post.price ? `৳${Number(post.price).toLocaleString()}` : "Negotiable" }}
+                    {{ post.price ? `৳${Number(post.price).toLocaleString()}` : t("sale_form_negotiable") }}
                   </span>
                 </div>
 
@@ -149,14 +149,14 @@
                     :loading="markingSold === post.id"
                     @click="markAsSold(post.id)"
                   >
-                    <UIcon name="i-heroicons-tag" class="mr-1" /> Mark as Sold
+                    <UIcon name="i-heroicons-tag" class="mr-1" /> {{ t("sale_mp_mark_sold") }}
                   </UButton>
 
                   <span
                     v-else-if="post.status === 'pending'"
                     class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
                   >
-                    <UIcon name="i-heroicons-clock" /> Awaiting Approval
+                    <UIcon name="i-heroicons-clock" /> {{ t("sale_mp_awaiting") }}
                   </span>
 
                   <UButton
@@ -165,7 +165,7 @@
                     variant="soft"
                     @click="$emit('edit-post', post)"
                   >
-                    <UIcon name="i-heroicons-pencil-square" class="mr-1" /> Edit
+                    <UIcon name="i-heroicons-pencil-square" class="mr-1" /> {{ t("sale_mp_edit") }}
                   </UButton>
 
                   <UButton
@@ -174,7 +174,7 @@
                     variant="soft"
                     @click="confirmDelete(post.id, post.title)"
                   >
-                    <UIcon name="i-heroicons-trash" class="mr-1" /> Delete
+                    <UIcon name="i-heroicons-trash" class="mr-1" /> {{ t("sale_mp_delete") }}
                   </UButton>
                 </div>
               </div>
@@ -185,8 +185,8 @@
         <!-- No results for current filter -->
         <div v-else class="bg-white rounded-xl border border-slate-200 py-14 text-center">
           <UIcon name="i-heroicons-funnel" class="h-10 w-10 text-slate-300 mx-auto mb-3" />
-          <p class="text-slate-600 font-medium">No {{ activeStatusLabel }} posts</p>
-          <p class="text-slate-400 text-sm mt-1">Try a different filter or category.</p>
+          <p class="text-slate-600 font-medium">{{ t("sale_mp_no_results_title") }}</p>
+          <p class="text-slate-400 text-sm mt-1">{{ t("sale_mp_no_results_desc") }}</p>
         </div>
 
         <!-- Pagination -->
@@ -218,20 +218,19 @@
             <UIcon name="i-heroicons-exclamation-triangle" class="h-6 w-6 text-red-500" />
           </div>
           <div class="min-w-0">
-            <h3 class="text-lg font-semibold text-slate-800">Delete Post</h3>
+            <h3 class="text-lg font-semibold text-slate-800">{{ t("sale_mp_delete_title") }}</h3>
             <p class="text-slate-600 text-sm mt-1">
-              Are you sure you want to delete
-              "<span class="font-medium text-slate-800">{{ postToDeleteTitle }}</span>"?
-              This action cannot be undone.
+              {{ t("sale_mp_delete_q1") }}
+              "<span class="font-medium text-slate-800">{{ postToDeleteTitle }}</span>"{{ t("sale_mp_delete_q2") }}
             </p>
           </div>
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <UButton color="white" variant="solid" class="border border-gray-300" @click="showDeleteModal = false">
-            Cancel
+            {{ t("cancel") }}
           </UButton>
           <UButton color="red" variant="solid" :loading="isDeleting" @click="deletePost">
-            <UIcon name="i-heroicons-trash" class="mr-1.5" /> Delete Post
+            <UIcon name="i-heroicons-trash" class="mr-1.5" /> {{ t("sale_mp_delete_btn") }}
           </UButton>
         </div>
       </div>
@@ -245,6 +244,7 @@ import { ref, computed, watch, onMounted } from "vue";
 const { get, post, del } = useApi();
 const { user } = useAuth();
 const { showNotification } = useNotifications();
+const { t } = useI18n();
 
 const emit = defineEmits(["edit-post", "delete-post", "posts-updated", "create-post"]);
 
@@ -267,11 +267,11 @@ const postToDeleteId = ref(null);
 const postToDeleteTitle = ref("");
 
 const statusTabs = [
-  { key: "all", label: "All" },
-  { key: "active", label: "Active" },
-  { key: "pending", label: "Pending" },
-  { key: "sold", label: "Sold" },
-  { key: "expired", label: "Expired" },
+  { key: "all", labelKey: "sale_mp_status_all" },
+  { key: "active", labelKey: "sale_mp_status_active" },
+  { key: "pending", labelKey: "sale_mp_status_pending" },
+  { key: "sold", labelKey: "sale_mp_status_sold" },
+  { key: "expired", labelKey: "sale_mp_status_expired" },
 ];
 
 function catKey(p) {
@@ -318,9 +318,10 @@ const paginatedPosts = computed(() => {
   return filteredPosts.value.slice(start, start + itemsPerPage.value);
 });
 
-const activeStatusLabel = computed(
-  () => statusTabs.find((t) => t.key === statusFilter.value)?.label.toLowerCase() || ""
-);
+const activeStatusLabel = computed(() => {
+  const tab = statusTabs.find((s) => s.key === statusFilter.value);
+  return tab ? t(tab.labelKey) : "";
+});
 
 watch(totalPages, (tp) => {
   if (currentPage.value > tp) currentPage.value = Math.max(1, tp);
@@ -347,29 +348,29 @@ function scrollTop() {
 function locationOf(p) {
   return p.division && p.district && p.area
     ? `${p.division}, ${p.district}, ${p.area}`
-    : "All Over Bangladesh";
+    : t("all_over_bangladesh");
 }
 
 function formatDate(dateString) {
   if (!dateString) return "";
   const date = new Date(dateString);
   const diffDays = Math.ceil(Math.abs(Date.now() - date) / (1000 * 60 * 60 * 24));
-  if (diffDays <= 1) return "Today";
-  if (diffDays <= 2) return "Yesterday";
-  if (diffDays <= 7) return `${diffDays} days ago`;
+  if (diffDays <= 1) return t("sale_mp_today");
+  if (diffDays <= 2) return t("sale_mp_yesterday");
+  if (diffDays <= 7) return `${diffDays} ${t("sale_mp_days_ago")}`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function statusMeta(p) {
   switch (p.status) {
     case "active":
-      return { label: "Active", dot: true };
+      return { label: t("sale_mp_status_active"), dot: true };
     case "pending":
-      return { label: "Pending" };
+      return { label: t("sale_mp_status_pending") };
     case "sold":
-      return { label: "Sold" };
+      return { label: t("sale_mp_status_sold") };
     case "expired":
-      return { label: "Expired" };
+      return { label: t("sale_mp_status_expired") };
     default:
       return { label: p.status || "—" };
   }
@@ -455,8 +456,8 @@ async function loadAllPosts({ refresh = false } = {}) {
   } catch (error) {
     console.error("Error fetching posts:", error);
     showNotification({
-      title: "Error",
-      message: "Failed to load your posts. Please try again later.",
+      title: t("sale_error_title"),
+      message: t("sale_mp_load_error"),
       type: "error",
     });
   } finally {
@@ -481,18 +482,18 @@ async function markAsSold(postId) {
       if (idx !== -1) posts.value[idx] = { ...posts.value[idx], status: "sold" };
       emit("posts-updated", { posts: posts.value, pagination: { count: posts.value.length } });
       showNotification({
-        title: "Success!",
-        message: "Your post has been marked as sold.",
+        title: t("sale_success_title"),
+        message: t("sale_mp_sold_success"),
         type: "success",
       });
     }
   } catch (error) {
     console.error("Error marking post as sold:", error);
-    let message = "Failed to mark post as sold. Please try again later.";
-    if (error.response?.status === 403) message = "You don't have permission to do this.";
-    else if (error.response?.status === 404) message = "This post no longer exists.";
+    let message = t("sale_mp_sold_error");
+    if (error.response?.status === 403) message = t("sale_mp_no_permission");
+    else if (error.response?.status === 404) message = t("sale_mp_post_gone");
     else if (error.response?.data?.detail) message = error.response.data.detail;
-    showNotification({ title: "Error", message, type: "error" });
+    showNotification({ title: t("sale_error_title"), message, type: "error" });
   } finally {
     markingSold.value = null;
   }
@@ -515,12 +516,12 @@ async function deletePost() {
     posts.value = posts.value.filter((p) => p.id !== postToDeleteId.value);
     emit("delete-post", postToDeleteId.value);
     emit("posts-updated", { posts: posts.value, pagination: { count: posts.value.length } });
-    showNotification({ title: "Success", message: "Post deleted successfully!", type: "success" });
+    showNotification({ title: t("sale_success_title"), message: t("sale_mp_delete_success"), type: "success" });
   } catch (error) {
     console.error("Error deleting post:", error);
     showNotification({
-      title: "Error",
-      message: "Failed to delete post. Please try again later.",
+      title: t("sale_error_title"),
+      message: t("sale_mp_delete_error"),
       type: "error",
     });
   } finally {

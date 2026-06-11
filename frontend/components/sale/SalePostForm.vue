@@ -1,28 +1,29 @@
 <template>
-  <form @submit.prevent="submitForm" class="space-y-6">
+  <form
+    @submit.prevent="submitForm"
+    class="bg-white rounded-xl border border-slate-200 overflow-hidden"
+  >
     <!-- Basic Details Section -->
-    <div class="bg-white rounded-b-lg border border-gray-200 sm:p-6 p-2">
-      <h3
-        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
-      >
-        <UIcon name="i-heroicons-document-text" class="text-emerald-600" />
-        Basic Details
-      </h3>
+    <section class="p-4 sm:p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <UIcon name="i-heroicons-document-text" class="h-4 w-4" />
+        </span>
+        <h3 class="text-sm font-bold text-slate-800">{{ t("sale_form_basic_details") }}</h3>
+      </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <UFormGroup
-          label="Category"
+          :label="t('sale_form_category')"
           required
-          :error="
-            !formData.category && checkSubmit && 'You must select a category'
-          "
+          :error="!formData.category && checkSubmit && t('sale_form_err_category')"
         >
           <USelectMenu
             v-model="formData.category"
             color="white"
             size="md"
             :options="categories"
-            placeholder="Select Category"
+            :placeholder="t('sale_form_select_category')"
             option-attribute="name"
             value-attribute="id"
             @change="handleCategoryChange"
@@ -31,19 +32,15 @@
 
         <UFormGroup
           v-if="childCategories.length > 0"
-          label="Sub Category"
-          :error="
-            !formData.childCategory &&
-            checkSubmit &&
-            'You must select a sub category'
-          "
+          :label="t('sale_form_subcategory')"
+          :error="!formData.childCategory && checkSubmit && t('sale_form_err_subcategory')"
         >
           <USelectMenu
             v-model="formData.childCategory"
             color="white"
             size="md"
             :options="childCategories"
-            placeholder="Select Sub Category"
+            :placeholder="t('sale_form_select_subcategory')"
             option-attribute="name"
             value-attribute="id"
           />
@@ -51,16 +48,16 @@
       </div>
 
       <UFormGroup
-        label="Title"
+        :label="t('sale_form_title')"
         required
-        :error="!formData.title && checkSubmit && 'You must enter a title!'"
+        :error="!formData.title && checkSubmit && t('sale_form_err_title')"
         class="mt-4"
       >
         <UInput
           type="text"
           size="md"
           color="white"
-          placeholder="What are you selling?"
+          :placeholder="t('sale_form_title_ph')"
           v-model="formData.title"
           maxlength="100"
         >
@@ -68,56 +65,47 @@
             <UIcon name="i-heroicons-pencil-square" />
           </template>
         </UInput>
-        <div class="text-right text-sm text-gray-500 mt-1">
-          {{ formData.title.length }}/100
-        </div>
+        <div class="text-right text-xs text-gray-400 mt-1">{{ formData.title.length }}/100</div>
       </UFormGroup>
+
       <UFormGroup
-        label="Description"
+        :label="t('sale_form_description')"
         required
         class="mt-4"
-        :error="
-          getTextLength(formData.description) === 0 &&
-          checkSubmit &&
-          'Please provide a description of your item'
-        "
+        :error="getTextLength(formData.description) === 0 && checkSubmit && t('sale_form_err_description')"
       >
         <Editor
           :content="formData.description"
           @updateContent="formData.description = $event"
         />
-        <div class="text-right text-sm text-gray-500 mt-1">
-          {{ getTextLength(formData.description) }}/1000
-        </div>
+        <div class="text-right text-xs text-gray-400 mt-1">{{ getTextLength(formData.description) }}/1000</div>
       </UFormGroup>
-    </div>
+    </section>
 
     <!-- Pricing & Condition Section -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3
-        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
-      >
-        <UIcon name="i-heroicons-currency-dollar" class="text-emerald-600" />
-        Pricing & Condition
-      </h3>
+    <section class="p-4 sm:p-5 border-t border-slate-100">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <UIcon name="i-mdi:currency-bdt" class="h-4 w-4" />
+        </span>
+        <h3 class="text-sm font-bold text-slate-800">{{ t("sale_form_pricing_condition") }}</h3>
+      </div>
 
       <UFormGroup
-        label="Condition"
+        :label="t('sale_form_condition')"
         required
-        :error="
-          !formData.condition && checkSubmit && 'You must select a condition'
-        "
+        :error="!formData.condition && checkSubmit && t('sale_form_err_condition')"
         class="mb-4"
       >
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5">
           <label
             v-for="condition in conditions"
             :key="condition.value"
             :class="[
-              'flex items-center justify-center p-3 border-2 rounded-lg cursor-pointer transition-all text-sm font-medium',
+              'flex items-center justify-center px-2 py-2.5 border rounded-lg cursor-pointer transition-all text-sm font-medium text-center',
               formData.condition === condition.value
                 ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50',
+                : 'border-gray-200 text-gray-600 hover:border-emerald-300 hover:bg-emerald-50/50',
             ]"
           >
             <input
@@ -132,13 +120,8 @@
       </UFormGroup>
 
       <UFormGroup
-        label="Price"
-        :error="
-          formData.price <= 0 &&
-          !formData.negotiable &&
-          checkSubmit &&
-          'Price must be greater than 0 or mark as Negotiable'
-        "
+        :label="t('sale_form_price')"
+        :error="formData.price <= 0 && !formData.negotiable && checkSubmit && t('sale_form_err_price')"
       >
         <div class="flex items-center gap-4">
           <UInput
@@ -146,7 +129,7 @@
             size="md"
             color="white"
             :disabled="formData.negotiable"
-            placeholder="e.g. 1000"
+            :placeholder="t('sale_form_price_ph')"
             min="0"
             step="0.01"
             class="flex-1"
@@ -160,31 +143,28 @@
           <UCheckbox
             v-model="formData.negotiable"
             name="Negotiable"
-            label="Negotiable"
+            :label="t('sale_form_negotiable')"
           />
         </div>
       </UFormGroup>
-    </div>
+    </section>
 
     <!-- Media Upload Section -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3
-        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
-      >
-        <UIcon name="i-heroicons-photo" class="text-emerald-600" />
-        Upload Photos
-      </h3>
-      <p class="text-sm text-gray-600 mb-4">
-        Add photos to showcase your listing (up to 8 images). First image will
-        be the main image.
-      </p>
+    <section class="p-4 sm:p-5 border-t border-slate-100">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <UIcon name="i-heroicons-photo" class="h-4 w-4" />
+        </span>
+        <h3 class="text-sm font-bold text-slate-800">{{ t("sale_form_photos") }}</h3>
+      </div>
+      <p class="text-xs text-gray-500 mb-3 ml-9">{{ t("sale_form_photos_hint") }}</p>
 
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-wrap gap-3">
         <!-- Uploaded images -->
         <div
           v-for="(img, i) in formData.images"
           :key="i"
-          class="w-32 h-32 rounded-lg overflow-hidden relative border border-gray-200 bg-gray-50 group"
+          class="w-28 h-28 rounded-lg overflow-hidden relative border border-gray-200 bg-gray-50 group"
           v-show="img"
         >
           <img
@@ -194,21 +174,21 @@
           />
           <button
             type="button"
-            class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-sm hover:bg-red-50 hover:scale-110 transition-all"
+            class="absolute top-1.5 right-1.5 bg-white rounded-full w-7 h-7 flex items-center justify-center text-red-500 shadow-sm hover:bg-red-50 hover:scale-110 transition-all"
             @click="removeImage(i)"
           >
-            <UIcon name="i-heroicons-trash" />
+            <UIcon name="i-heroicons-trash" class="h-4 w-4" />
           </button>
           <div
             v-if="i === 0"
-            class="absolute top-2 left-2 bg-emerald-500 text-white text-xs px-2 py-1 rounded font-medium"
+            class="absolute bottom-1.5 left-1.5 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded font-medium"
           >
-            Main
+            {{ t("sale_form_main") }}
           </div>
         </div>
         <!-- Upload button -->
         <div
-          class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
+          class="w-28 h-28 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
           v-if="formData.images.filter((img) => img).length < 8"
           @click="openFileUpload"
         >
@@ -220,42 +200,37 @@
             accept="image/*"
           />
           <div
-            class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600 pointer-events-none"
+            class="flex flex-col items-center gap-1.5 text-gray-500 text-xs text-center p-2 group-hover:text-emerald-600 pointer-events-none"
           >
-            <UIcon
-              name="i-heroicons-arrow-up-tray"
-              class="text-xl text-emerald-500"
-            />
-            <span>Add Photo</span>
+            <UIcon name="i-heroicons-arrow-up-tray" class="text-lg text-emerald-500" />
+            <span>{{ t("sale_form_add_photo") }}</span>
           </div>
         </div>
       </div>
 
-      <p v-if="uploadError" class="mt-3 text-red-500 text-sm">
-        {{ uploadError }}
-      </p>
+      <p v-if="uploadError" class="mt-3 text-red-500 text-sm">{{ uploadError }}</p>
       <p
         v-if="isUploading"
-        class="mt-3 text-emerald-600 text-sm flex items-center"
+        class="mt-3 text-emerald-600 text-sm flex items-center gap-1"
       >
-        <UIcon name="i-heroicons-arrow-path" class="animate-spin mr-1" />
-        Processing image...
+        <UIcon name="i-heroicons-arrow-path" class="animate-spin" />
+        {{ t("sale_form_processing") }}
       </p>
-    </div>
+    </section>
 
     <!-- Location Section -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3
-        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
-      >
-        <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
-        Ads Showing Location
-      </h3>
+    <section class="p-4 sm:p-5 border-t border-slate-100">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <UIcon name="i-heroicons-map-pin" class="h-4 w-4" />
+        </span>
+        <h3 class="text-sm font-bold text-slate-800">{{ t("sale_form_location") }}</h3>
+      </div>
 
       <UCheckbox
         v-model="allOverBangladesh"
         name="all-bangladesh"
-        label="All over Bangladesh"
+        :label="t('sale_form_all_bangladesh')"
         color="primary"
         class="mb-4"
       />
@@ -265,40 +240,30 @@
         v-if="!allOverBangladesh"
       >
         <UFormGroup
-          label="Division"
-          :error="
-            !formData.division &&
-            checkSubmit &&
-            !allOverBangladesh &&
-            'You must select a division!'
-          "
+          :label="t('sale_form_division')"
+          :error="!formData.division && checkSubmit && !allOverBangladesh && t('sale_form_err_division')"
         >
           <USelectMenu
             v-model="formData.division"
             color="white"
             size="md"
             :options="regions"
-            placeholder="Select Division"
+            :placeholder="t('sale_form_select_division')"
             option-attribute="name_eng"
             value-attribute="name_eng"
           />
         </UFormGroup>
 
         <UFormGroup
-          label="District"
-          :error="
-            !formData.district &&
-            checkSubmit &&
-            !allOverBangladesh &&
-            'You must select a district'
-          "
+          :label="t('sale_form_district')"
+          :error="!formData.district && checkSubmit && !allOverBangladesh && t('sale_form_err_district')"
         >
           <USelectMenu
             v-model="formData.district"
             color="white"
             size="md"
             :options="cities"
-            placeholder="Select District"
+            :placeholder="t('sale_form_select_district')"
             option-attribute="name_eng"
             value-attribute="name_eng"
             :disabled="!formData.division"
@@ -306,70 +271,53 @@
         </UFormGroup>
 
         <UFormGroup
-          label="Area"
-          :error="
-            !formData.area &&
-            checkSubmit &&
-            !allOverBangladesh &&
-            'You must select an area'
-          "
+          :label="t('sale_form_area')"
+          :error="!formData.area && checkSubmit && !allOverBangladesh && t('sale_form_err_area')"
         >
           <USelectMenu
             v-model="formData.area"
             color="white"
             size="md"
             :options="upazilas"
-            placeholder="Select Area"
+            :placeholder="t('sale_form_select_area')"
             option-attribute="name_eng"
             value-attribute="name_eng"
             :disabled="!formData.district"
           />
         </UFormGroup>
       </div>
-      <div class="mt-5">
-        <h3
-          class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
-        >
-          <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
-          Product/Property/Service Address
-        </h3>
-      </div>
+
       <UFormGroup
-        label="Detailed Address"
+        :label="t('sale_form_detailed_address')"
         required
-        :error="
-          !formData.detailedAddress &&
-          checkSubmit &&
-          'You must provide a detailed address!'
-        "
+        class="mt-4"
+        :error="!formData.detailedAddress && checkSubmit && t('sale_form_err_address')"
       >
         <UTextarea
           v-model="formData.detailedAddress"
           color="white"
           size="md"
           :rows="3"
-          placeholder="Provide specific location details..."
+          :placeholder="t('sale_form_detailed_address_ph')"
           class="resize-none"
         />
       </UFormGroup>
-    </div>
+    </section>
 
     <!-- Contact Information Section -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3
-        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
-      >
-        <UIcon name="i-heroicons-phone" class="text-emerald-600" />
-        Contact Information
-      </h3>
+    <section class="p-4 sm:p-5 border-t border-slate-100">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <UIcon name="i-heroicons-phone" class="h-4 w-4" />
+        </span>
+        <h3 class="text-sm font-bold text-slate-800">{{ t("sale_form_contact") }}</h3>
+      </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <UFormGroup
-          label="Phone Number"
+          :label="t('sale_form_phone')"
           required
-          :error="
-            !formData.phone && checkSubmit && 'You must enter a phone number!'
-          "
+          :error="!formData.phone && checkSubmit && t('sale_form_err_phone')"
         >
           <UInput
             v-model="formData.phone"
@@ -385,7 +333,7 @@
           </UInput>
         </UFormGroup>
 
-        <UFormGroup label="Email (Optional)">
+        <UFormGroup :label="t('sale_form_email_optional')">
           <UInput
             v-model="formData.email"
             type="email"
@@ -399,46 +347,36 @@
           </UInput>
         </UFormGroup>
       </div>
-    </div>
+    </section>
 
-    <!-- Terms Section -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <UCheckbox
-        v-model="formData.termsAccepted"
-        name="terms"
-        color="primary"
-        required
-      >
+    <!-- Terms + Submit -->
+    <div
+      class="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/60 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <UCheckbox v-model="formData.termsAccepted" name="terms" color="primary" required>
         <template #label>
-          <span class="text-sm text-gray-700">
-            I agree to the
-            <a href="#" class="text-emerald-600 hover:underline font-medium"
-              >Terms and Conditions</a
-            >
-            and
-            <a href="#" class="text-emerald-600 hover:underline font-medium"
-              >Privacy Policy</a
-            >
-            <span class="text-red-500">*</span>
+          <span class="text-sm text-gray-600">
+            {{ t("sale_form_terms_pre") }}
+            <NuxtLink to="/terms" target="_blank" class="text-emerald-600 hover:underline font-medium">{{ t("sale_form_terms_link") }}</NuxtLink>
+            {{ t("sale_form_terms_and") }}
+            <NuxtLink to="/privacy" target="_blank" class="text-emerald-600 hover:underline font-medium">{{ t("sale_form_privacy_link") }}</NuxtLink>
+            {{ t("sale_form_terms_suf") }}<span class="text-red-500"> *</span>
           </span>
         </template>
       </UCheckbox>
-    </div>
 
-    <!-- Submit Button -->
-    <div class="flex justify-end p-4">
       <UButton
         type="submit"
         :loading="isSubmitting"
         :disabled="isSubmitting"
         color="emerald"
         size="lg"
-        class="px-8 py-3"
+        class="px-8 justify-center shrink-0"
       >
         <template #leading>
           <UIcon v-if="!isSubmitting" name="i-heroicons-paper-airplane" />
         </template>
-        {{ isSubmitting ? "Posting..." : "Post Your Ad" }}
+        {{ isSubmitting ? t("sale_form_submitting") : t("sale_form_submit") }}
       </UButton>
     </div>
   </form>
@@ -452,6 +390,7 @@ const emit = defineEmits(["post-created"]);
 
 const { get, post } = useApi();
 const toast = useToast();
+const { t } = useI18n();
 
 // Loading and error states
 const apiLoading = ref(false);
@@ -848,10 +787,8 @@ const submitForm = async () => {
 
   if (missingFields.length > 0) {
     toast.add({
-      title: "Validation Error",
-      description: `Please fill in all required fields: ${missingFields.join(
-        ", "
-      )}`,
+      title: t("sale_form_validation_error"),
+      description: t("sale_form_fill_required"),
       color: "red",
       timeout: 5000,
     });
@@ -864,8 +801,8 @@ const submitForm = async () => {
     (!formData.price || parseFloat(formData.price) <= 0)
   ) {
     toast.add({
-      title: "Validation Error",
-      description: "Please enter a valid price or mark as negotiable",
+      title: t("sale_form_validation_error"),
+      description: t("sale_form_price_invalid"),
       color: "red",
       timeout: 5000,
     });
@@ -875,8 +812,8 @@ const submitForm = async () => {
   // Validate description length
   if (getTextLength(formData.description) > 1000) {
     toast.add({
-      title: "Validation Error",
-      description: "Description must be less than 1000 characters",
+      title: t("sale_form_validation_error"),
+      description: t("sale_form_desc_too_long"),
       color: "red",
       timeout: 5000,
     });
@@ -889,8 +826,8 @@ const submitForm = async () => {
   );
   if (validImages.length === 0) {
     toast.add({
-      title: "Validation Error",
-      description: "Please upload at least one image",
+      title: t("sale_form_validation_error"),
+      description: t("sale_form_need_image"),
       color: "red",
       timeout: 5000,
     });
@@ -900,8 +837,8 @@ const submitForm = async () => {
   // Validate terms
   if (!formData.termsAccepted) {
     toast.add({
-      title: "Validation Error",
-      description: "Please accept the terms and conditions",
+      title: t("sale_form_validation_error"),
+      description: t("sale_form_accept_terms"),
       color: "red",
       timeout: 5000,
     });
@@ -1041,7 +978,7 @@ const submitForm = async () => {
     }
 
     toast.add({
-      title: "Error",
+      title: t("sale_form_error_title"),
       description: errorMessage,
       color: "red",
       timeout: 8000,

@@ -235,6 +235,15 @@
             </div>
           </div>
 
+          <!-- Browse by Category (compact single-row scroller) -->
+          <SaleCategoryGrid
+            :categories="categories"
+            :active-id="selectedCategory"
+            class="mb-3"
+            @select="selectCategory"
+            @clear="clearCategory"
+          />
+
           <!-- Category Tabs Listings Section - Compact Commercial -->
           <div
             class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden mb-4"
@@ -284,60 +293,13 @@
                   </button>
                 </div>
               </div>
-              <!-- List Type Design - Compact -->
-              <div v-else class="space-y-2">
-                <NuxtLink
+              <!-- Product Grid -->
+              <div v-else class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
+                <SaleProductCard
                   v-for="(post, i) in listings"
                   :key="`post-${i}`"
-                  :to="`/sale/${post.slug}`"
-                  class="flex bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:border-emerald-200 transition-all duration-200 group"
-                >
-                  <!-- Image - Left Side (Compact) -->
-                  <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 overflow-hidden bg-gray-100">
-                    <div
-                      v-if="!getListingImage(post) || getListingImage(post).includes('placeholder')"
-                      class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
-                    >
-                      <UIcon name="i-heroicons-photo" class="h-6 w-6 text-gray-300" />
-                    </div>
-                    <img
-                      v-else
-                      :src="getListingImage(post)"
-                      :alt="post?.title || 'Image'"
-                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                    <!-- Condition Badge -->
-                    <div v-if="post.condition" class="absolute top-1 left-1">
-                      <span class="px-1.5 py-0.5 bg-emerald-600 text-white text-[8px] font-bold rounded uppercase">{{ post.condition }}</span>
-                    </div>
-                  </div>
-                  <!-- Content - Right Side -->
-                  <div class="flex-1 p-2 sm:p-2.5 flex flex-col justify-between min-w-0">
-                    <!-- Title -->
-                    <h3
-                      class="text-gray-800 text-sm font-semibold line-clamp-1 leading-tight group-hover:text-emerald-600 transition-colors"
-                      v-html="highlightSearchTerm(capitalizeTitle(post?.title) || 'Post title', searchQuery)"
-                    ></h3>
-                    <!-- Location -->
-                    <div class="flex items-center gap-1 text-[11px] text-gray-500 mt-1">
-                      <UIcon name="i-heroicons-map-pin" class="h-3 w-3 flex-shrink-0 text-gray-400" />
-                      <span class="truncate">{{ post?.district ? `${post.district}, ${post.division}` : post?.division || 'Bangladesh' }}</span>
-                    </div>
-                    <!-- Price & Date Row -->
-                    <div class="flex items-center justify-between mt-1.5">
-                      <p class="text-emerald-600 font-bold text-base">
-                        <span v-if="post.negotiable && !post.price" class="text-sm text-gray-600">Negotiable</span>
-                        <span v-else-if="post.price">৳{{ formatPrice(post.price) }}</span>
-                        <span v-else class="text-gray-500 text-xs">Contact</span>
-                      </p>
-                      <p class="text-[10px] text-gray-400 flex items-center gap-0.5">
-                        <UIcon name="i-heroicons-clock" class="h-3 w-3" />
-                        {{ formatDate(post.created_at) }}
-                      </p>
-                    </div>
-                  </div>
-                </NuxtLink>
+                  :post="post"
+                />
               </div>
             </div>
             <!-- Load More Button - Compact -->
@@ -364,172 +326,91 @@
             </div>
           </div>
 
-          <!-- Recent Listings Section - Compact Commercial -->
-          <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden mb-4">
-            <!-- Section Header -->
-            <div class="px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                  <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5 text-white" />
+          <!-- Ad slot #2 (billboard) -->
+          <SaleAdSlot variant="billboard" class="mb-4" />
+
+          <!-- Newest listings -->
+          <SaleTrendingRail
+            v-if="!searchQuery && recentListings.length"
+            :posts="recentListings"
+            title="নতুন অ্যাড হয়েছে"
+            class="mb-4"
+          />
+          <!-- Marketplace Guidance -->
+          <div class="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white/95 shadow-[0_1px_8px_rgba(15,23,42,0.05)]">
+            <div class="flex flex-col gap-2 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-emerald-50/60 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
+                  <UIcon name="i-heroicons-shield-check" class="h-5 w-5" />
                 </div>
-                <h2 class="text-sm font-bold text-amber-800">Recent Listings</h2>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">{{ t("sale_safety_guide_title") }}</h3>
+                  <p class="text-[11px] text-slate-500">{{ t("sale_safety_guide_subtitle") }}</p>
+                </div>
               </div>
+              <span class="inline-flex w-fit items-center gap-1 rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
+                <UIcon name="i-heroicons-check-badge" class="h-3.5 w-3.5" />
+                {{ t("sale_safety_guide_badge") }}
+              </span>
             </div>
-            <!-- Recent Listings Horizontal Scroll -->
-            <div class="p-2">
-              <div class="overflow-x-auto scrollbar-hide -mx-1 px-1">
-                <div class="flex gap-2 min-w-max pb-1">
-                  <NuxtLink
-                    v-for="(listing, i) in recentListings.slice(0, 6)"
-                    :key="`listing-${i}`"
-                    :to="`/sale/${listing.slug}`"
-                    class="flex-shrink-0 w-44 bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-md hover:border-amber-200 transition-all group"
+
+            <div class="grid grid-cols-1 divide-y divide-slate-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
+              <div class="p-3">
+                <div class="mb-2 flex items-center gap-2">
+                  <UIcon name="i-heroicons-light-bulb" class="h-4 w-4 text-blue-600" />
+                  <h4 class="text-xs font-bold uppercase tracking-wide text-slate-700">{{ t("sale_buying_tips_title") }}</h4>
+                </div>
+                <div class="space-y-2">
+                  <div
+                    v-for="item in buyingGuideItems"
+                    :key="item.title"
+                    class="flex items-start gap-2 rounded-lg border border-transparent px-2 py-1.5 transition-colors hover:border-blue-100 hover:bg-blue-50/60"
                   >
-                    <div class="relative h-28 overflow-hidden bg-gray-50">
-                      <img
-                        :src="getListingImage(listing)"
-                        :alt="listing?.title || 'Image'"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                      <div class="absolute top-1 right-1">
-                        <span class="bg-white/90 text-amber-700 text-[9px] px-1.5 py-0.5 rounded-full font-semibold shadow-sm">
-                          {{ getCategoryName(listing.category) }}
-                        </span>
-                      </div>
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                      <UIcon :name="item.icon" class="h-3.5 w-3.5" />
                     </div>
-                    <div class="p-2">
-                      <h3 class="font-medium text-gray-700 text-[11px] line-clamp-1 group-hover:text-amber-700 transition-colors">
-                        {{ capitalizeTitle(listing?.title) || 'Title' }}
-                      </h3>
-                      <div class="flex items-center justify-between mt-1">
-                        <p class="text-amber-600 font-bold text-xs">
-                          <span v-if="listing.price">৳{{ formatPrice(listing.price) }}</span>
-                          <span v-else class="text-gray-500">Negotiable</span>
-                        </p>
-                        <p class="text-[9px] text-gray-400">{{ formatDate(listing.created_at) }}</p>
-                      </div>
+                    <div>
+                      <p class="text-[12px] font-semibold text-slate-800">{{ item.title }}</p>
+                      <p class="text-[11px] leading-4 text-slate-500">{{ item.description }}</p>
                     </div>
-                  </NuxtLink>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="recentListingsLoading" class="py-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
-            <div class="w-8 h-8 mx-auto mb-2 rounded-full bg-amber-100 flex items-center justify-center">
-              <UIcon name="i-heroicons-arrow-path" class="animate-spin h-4 w-4 text-amber-600" />
-            </div>
-            <p class="text-gray-500 text-xs">Loading recent...</p>
-          </div>
-          <!-- Tips & Safety Guide - Compact Commercial -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <!-- Smart Buying Tips -->
-            <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
-              <div class="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
-                    <UIcon name="i-heroicons-light-bulb" class="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-bold text-blue-800">Smart Buying Tips</h3>
-                    <p class="text-[10px] text-blue-600">Shop with confidence</p>
                   </div>
                 </div>
               </div>
 
-              <div class="p-3 space-y-2">
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-eye" class="h-2.5 w-2.5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Inspect Before Buying</p>
-                    <p class="text-gray-500 text-[10px]">Examine items in person before payment</p>
-                  </div>
+              <div class="p-3">
+                <div class="mb-2 flex items-center gap-2">
+                  <UIcon name="i-heroicons-lock-closed" class="h-4 w-4 text-emerald-600" />
+                  <h4 class="text-xs font-bold uppercase tracking-wide text-slate-700">{{ t("sale_security_tips_title") }}</h4>
                 </div>
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-map-pin" class="h-2.5 w-2.5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Meet in Public Places</p>
-                    <p class="text-gray-500 text-[10px]">Choose safe, well-lit locations</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-document-check" class="h-2.5 w-2.5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Verify Authenticity</p>
-                    <p class="text-gray-500 text-[10px]">Check documentation before purchase</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-scale" class="h-2.5 w-2.5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Compare Prices</p>
-                    <p class="text-gray-500 text-[10px]">Research similar listings for fair pricing</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Security & Safety -->
-            <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
-              <div class="px-3 py-2 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-emerald-100">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
-                    <UIcon name="i-heroicons-shield-check" class="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div>
-                    <h3 class="text-sm font-bold text-emerald-800">Security & Safety</h3>
-                    <p class="text-[10px] text-emerald-600">Stay protected online</p>
-                  </div>
-                </div>
-              </div>
-              <div class="p-3 space-y-2">
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-lock-closed" class="h-2.5 w-2.5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Protect Personal Info</p>
-                    <p class="text-gray-500 text-[10px]">Never share banking details</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-exclamation-triangle" class="h-2.5 w-2.5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Spot Red Flags</p>
-                    <p class="text-gray-500 text-[10px]">Be cautious of unrealistic deals</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="h-2.5 w-2.5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Use Platform Messaging</p>
-                    <p class="text-gray-500 text-[10px]">Keep communications secure</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-2">
-                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <UIcon name="i-heroicons-user-group" class="h-2.5 w-2.5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p class="text-gray-700 font-medium text-[11px]">Trust Your Instincts</p>
-                    <p class="text-gray-500 text-[10px]">Walk away if something feels wrong</p>
+                <div class="space-y-2">
+                  <div
+                    v-for="item in securityGuideItems"
+                    :key="item.title"
+                    class="flex items-start gap-2 rounded-lg border border-transparent px-2 py-1.5 transition-colors hover:border-emerald-100 hover:bg-emerald-50/60"
+                  >
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                      <UIcon :name="item.icon" class="h-3.5 w-3.5" />
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-semibold text-slate-800">{{ item.title }}</p>
+                      <p class="text-[11px] leading-4 text-slate-500">{{ item.description }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Ad slot #1 (leaderboard) — above Trending -->
+          <SaleAdSlot variant="leaderboard" class="mt-4" />
+
+          <!-- Trending (most viewed) — below the safety guide -->
+          <SaleTrendingRail
+            v-if="!searchQuery && trendingListings.length"
+            :posts="trendingListings"
+            title="ট্রেন্ডিং পণ্য"
+            class="mt-3"
+          />
         </div>
       </div>
     </UContainer>
@@ -542,6 +423,10 @@ import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 import { useApi } from "~/composables/useApi";
 import SaleSidebar from "~/components/sale/SaleSidebar.vue";
 import SaleSearchBar from "~/components/sale/SaleSearchBar.vue";
+import SaleCategoryGrid from "~/components/sale/SaleCategoryGrid.vue";
+import SaleTrendingRail from "~/components/sale/SaleTrendingRail.vue";
+import SaleProductCard from "~/components/sale/SaleProductCard.vue";
+import SaleAdSlot from "~/components/sale/SaleAdSlot.vue";
 
 const { user, isAuthenticated } = useAuth();
 const { query } = useRoute();
@@ -585,6 +470,52 @@ const { location, clearLocation } = useLocation(); // Use enhanced location comp
 const { t } = useI18n();
 
 const { get } = useApi();
+
+const buyingGuideItems = computed(() => [
+  {
+    icon: "i-heroicons-camera",
+    title: t("sale_buying_tip_photos_title"),
+    description: t("sale_buying_tip_photos_desc"),
+  },
+  {
+    icon: "i-heroicons-map-pin",
+    title: t("sale_buying_tip_meet_title"),
+    description: t("sale_buying_tip_meet_desc"),
+  },
+  {
+    icon: "i-heroicons-document-check",
+    title: t("sale_buying_tip_verify_title"),
+    description: t("sale_buying_tip_verify_desc"),
+  },
+  {
+    icon: "i-heroicons-banknotes",
+    title: t("sale_buying_tip_payment_title"),
+    description: t("sale_buying_tip_payment_desc"),
+  },
+]);
+
+const securityGuideItems = computed(() => [
+  {
+    icon: "i-heroicons-lock-closed",
+    title: t("sale_security_tip_personal_title"),
+    description: t("sale_security_tip_personal_desc"),
+  },
+  {
+    icon: "i-heroicons-chat-bubble-left-ellipsis",
+    title: t("sale_security_tip_chat_title"),
+    description: t("sale_security_tip_chat_desc"),
+  },
+  {
+    icon: "i-heroicons-exclamation-triangle",
+    title: t("sale_security_tip_advance_title"),
+    description: t("sale_security_tip_advance_desc"),
+  },
+  {
+    icon: "i-heroicons-flag",
+    title: t("sale_security_tip_report_title"),
+    description: t("sale_security_tip_report_desc"),
+  },
+]);
 
 const form = ref({
   country: "Bangladesh",
@@ -954,6 +885,7 @@ function mapListingsData(data) {
     condition: item.condition,
     status: item.status,
     featured: item.featured,
+    views: item.views ?? item.view_count ?? 0,
     created_at: item.created_at || new Date().toISOString(),
 
     // Images
@@ -1209,6 +1141,38 @@ async function loadCategoryPosts() {
   }
 }
 
+// Trending (most-viewed) listings section
+const trendingListings = ref([]);
+const trendingLoading = ref(false);
+
+async function loadTrendingListings() {
+  trendingLoading.value = true;
+  try {
+    const params = new URLSearchParams();
+    params.append("page", "1");
+    params.append("page_size", "10");
+    params.append("sort", "-views"); // Most viewed first
+
+    const userLocation = location.value;
+    if (userLocation && !userLocation.allOverBangladesh) {
+      if (userLocation.state) params.append("division", userLocation.state);
+      if (userLocation.city) params.append("district", userLocation.city);
+      if (userLocation.upazila) params.append("area", userLocation.upazila);
+    }
+
+    const response = await get(`${API_ENDPOINTS.POSTS}?${params.toString()}`);
+    const data = response?.data;
+    if (data?.results) trendingListings.value = mapListingsData(data.results);
+    else if (Array.isArray(data)) trendingListings.value = mapListingsData(data);
+    else trendingListings.value = [];
+  } catch (error) {
+    console.error("Error loading trending listings:", error);
+    trendingListings.value = [];
+  } finally {
+    trendingLoading.value = false;
+  }
+}
+
 // Recent Listings section variables
 const recentListings = ref([]);
 const recentListingsLoading = ref(false);
@@ -1262,6 +1226,7 @@ onMounted(() => {
       loadPosts(),
       loadCategoryPosts(),
       loadRecentListings(),
+      loadTrendingListings(),
       loadLocationData(),
     ]).catch((error) => {
       console.error("Error during initial data loading:", error);
@@ -1274,6 +1239,7 @@ watch(categories, () => {
   if (categories.value?.length > 0) {
     if (categoryPosts.value?.length === 0) loadCategoryPosts();
     if (recentListings.value?.length === 0) loadRecentListings();
+    if (trendingListings.value?.length === 0) loadTrendingListings();
   }
 });
 
