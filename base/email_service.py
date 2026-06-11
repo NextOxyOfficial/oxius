@@ -11,7 +11,10 @@ from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
-ADMIN_EMAIL = "alimulislam50@gmail.com"
+# No hardcoded admin address: the source of truth is the database (Django
+# admin → Email Settings → admin_email, plus Admin Email Recipients).
+# settings.ADMIN_EMAIL (env-driven) is only a last-resort fallback.
+ADMIN_EMAIL = getattr(settings, "ADMIN_EMAIL", "")
 SUPPORT_EMAIL = "support@adsyclub.com"
 SUPPORT_PHONE = "+8801896144066"
 SITE_NAME = "AdsyClub"

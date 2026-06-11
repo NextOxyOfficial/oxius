@@ -619,10 +619,13 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "alimulislam50@gmail.com"
-EMAIL_HOST_PASSWORD = ""  # TODO: Add Gmail App Password here
-DEFAULT_FROM_EMAIL = "AdsyClub <alimulislam50@gmail.com>"
-ADMIN_EMAIL = "alimulislam50@gmail.com"
+# SMTP + addresses come from the database (Django admin → Email Settings);
+# these env-driven values are only last-resort fallbacks — no emails are
+# hardcoded in code.
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "AdsyClub <support@adsyclub.com>")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "")
 
 # TinyMCE Configuration
 TINYMCE_DEFAULT_CONFIG = {
