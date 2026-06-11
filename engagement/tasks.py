@@ -294,11 +294,17 @@ def run_nudge_engine(dry_run=False):
     ]
 
     # Preload recent nudge history for caps/cooldowns (one query).
+    # PUSH CATALOG nudges only: feature promos and engagement emails keep their
+    # own daily/cooldown accounting, so counting them here silently delayed
+    # high-value nudges (money waiting / KYC / local services) by up to a day
+    # whenever a promo or an email happened to go out first.
     since = now - timedelta(days=14)
     last_any = {}                         # user_id -> latest sent_at
     last_by_key = defaultdict(dict)       # user_id -> {nudge_key: sent_at}
-    for uid, key, sent in NudgeLog.objects.filter(sent_at__gte=since).values_list(
-        "user_id", "nudge_key", "sent_at"
+    for uid, key, sent in (
+        NudgeLog.objects.filter(sent_at__gte=since, channel="push")
+        .exclude(nudge_key__startswith="promo_")
+        .values_list("user_id", "nudge_key", "sent_at")
     ):
         if uid not in last_any or sent > last_any[uid]:
             last_any[uid] = sent

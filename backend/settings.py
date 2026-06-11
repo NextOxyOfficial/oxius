@@ -567,7 +567,9 @@ CELERY_BEAT_SCHEDULE = {
 ENGAGEMENT_NUDGES_ENABLED = True
 ENGAGEMENT_TIMEZONE = "Asia/Dhaka"        # audience timezone for the send window
 ENGAGEMENT_NUDGE_HOURS = (9, 21)          # 9am-9pm in ENGAGEMENT_TIMEZONE
-ENGAGEMENT_NUDGE_PER_RUN_CAP = 300        # max sends per engine run (anti-burst)
+# Push costs nothing (FCM) — keep only a runaway safety ceiling so every
+# eligible user gets their nudge in a single run.
+ENGAGEMENT_NUDGE_PER_RUN_CAP = 10000
 # Hold lifecycle-heuristic nudges (win-back, at-risk) until ~a week of event
 # data has accumulated and the lifecycle stages are trustworthy. Flip to True
 # then. Hard-data nudges (KYC withdraw, subscription, onboarding) send regardless.
@@ -588,7 +590,10 @@ ENGAGEMENT_FEATURE_PROMOS_PER_DAY = 2
 # then set True.
 ENGAGEMENT_EMAIL_ENABLED = True
 ENGAGEMENT_EMAIL_HOURS = (10, 20)          # 10am-8pm in ENGAGEMENT_TIMEZONE
-ENGAGEMENT_EMAIL_PER_RUN_CAP = 200         # anti-burst: max emails per run
+# Our SMTP has no outbound limit, so no artificial throttle — the real
+# anti-spam guard is the per-user cooldown below. The cap is only a runaway
+# safety ceiling, set far above the user base.
+ENGAGEMENT_EMAIL_PER_RUN_CAP = 100000
 ENGAGEMENT_EMAIL_COOLDOWN_DAYS = 3         # at most one engagement email / N days / user
 
 # --- Guest registration-conversion pushes (FCMToken.user is None) ---
