@@ -290,7 +290,7 @@
             </span>
             <div class="flex flex-col items-center gap-1.5 text-slate-400">
               <UIcon name="i-heroicons-megaphone" class="size-6" />
-              <p class="text-sm">এখানে শীঘ্রই বিজ্ঞাপন দেখানো হবে</p>
+              <p class="text-sm">এখানে আপনার বিজ্ঞাপন দিন</p>
             </div>
           </div>
         </div>
