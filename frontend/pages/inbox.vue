@@ -268,14 +268,6 @@
                     class="flex items-center gap-2 p-2 cursor-pointer"
                     @click="openTicketDetail(ticket)"
                   >
-                    <!-- Left Status Stripe -->
-                    <div 
-                      class="w-1 h-12 rounded-full"
-                      :class="{
-                        'bg-red-500': !readMessages[ticket.id],
-                        'bg-gray-300': readMessages[ticket.id]
-                      }"
-                    ></div>
 
                     <!-- Icon -->
                     <div class="flex-shrink-0">
@@ -919,15 +911,6 @@
                     class="flex items-center gap-2 py-3 px-1.5 cursor-pointer"
                     @click="markUpdateAsRead(update)"
                   >
-                    <!-- Left Status Stripe -->
-                    <div 
-                      class="w-1 h-12 rounded-full"
-                      :class="{
-                        'bg-primary-500': !update.is_read,
-                        'bg-gray-300': update.is_read
-                      }"
-                    ></div>
-
                     <!-- Icon -->
                     <div class="flex-shrink-0">
                       <div
