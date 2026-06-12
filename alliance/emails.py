@@ -116,9 +116,9 @@ def _signature_html():
     # Founder photo on the left of the name/title/contacts (full image, rounded
     # square so nothing is clipped). Only rendered when FOUNDER_PHOTO is hosted.
     photo_cell = (
-        f'<td style="width:88px;vertical-align:top;padding-right:18px;">'
-        f'<img src="{FOUNDER_PHOTO}" width="76" height="76" alt="Alimul Islam" '
-        f'style="width:76px;height:76px;border-radius:12px;display:block;border:0;"></td>'
+        f'<td style="width:130px;vertical-align:top;padding-right:18px;">'
+        f'<img src="{FOUNDER_PHOTO}" width="112" height="112" alt="Alimul Islam" '
+        f'style="width:112px;height:112px;border-radius:14px;display:block;border:0;"></td>'
     ) if FOUNDER_PHOTO else ""
     return f"""
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:30px;">

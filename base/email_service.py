@@ -104,9 +104,9 @@ SIG_LINK = "#4f46e5"  # indigo
 def _founder_signature_html():
     """Founder photo + name/title/contacts + social icons (FB, LinkedIn). The
     photo only renders once FOUNDER_PHOTO is hosted on a public URL."""
-    photo = (f'<td style="width:88px;vertical-align:top;padding-right:18px;">'
-             f'<img src="{FOUNDER_PHOTO}" width="76" height="76" alt="Alimul Islam" '
-             f'style="width:76px;height:76px;border-radius:12px;display:block;border:0;"></td>') if FOUNDER_PHOTO else ""
+    photo = (f'<td style="width:130px;vertical-align:top;padding-right:18px;">'
+             f'<img src="{FOUNDER_PHOTO}" width="112" height="112" alt="Alimul Islam" '
+             f'style="width:112px;height:112px;border-radius:14px;display:block;border:0;"></td>') if FOUNDER_PHOTO else ""
 
     def crow(icon, val):
         return (f'<tr><td style="padding:5px 12px 5px 0;vertical-align:middle;width:18px;">'
@@ -557,10 +557,10 @@ def send_ceo_welcome_email(user):
     the standard welcome email (so a new user gets two: the system welcome + this
     personal note). Uses the founder-signature design (photo + socials)."""
     name = user.name or user.first_name or user.username or "বন্ধু"
-    subject = "AdsyClub-এ স্বাগতম — CEO-র পক্ষ থেকে 💚"
+    subject = "CEO-র পক্ষ থেকে আন্তরিক অভিনন্দন💚"
     text = (
         f"প্রিয় {name},\n\nAdsyClub পরিবারে আপনাকে পেয়ে আমি সত্যিই অনেক খুশি। আমি Alimul Islam — "
-        "AdsyClub-এর প্রতিষ্ঠাতা। আমরা বাংলাদেশের সাধারণ মানুষের জন্য আয় আর কাজের সুযোগ তৈরি করতে "
+        "AdsyClub-এর প্রতিষ্ঠাতা। আমরা বাংলাদেশের সাধারণ মানুষের জন্য আয়, সহজ সেবা প্রদান, দেশীয় কমিউনিটি, আর কাজের সুযোগ তৈরি করতে "
         "কাজ করছি, আর আজ থেকে আপনিও এই যাত্রার একজন সঙ্গী।\n\nযেকোনো দরকারে সরাসরি আমাকে লিখুন।\n\n"
         f"— Alimul Islam, Founder & CEO, AdsyClub\n{CEO_EMAIL}"
     )
