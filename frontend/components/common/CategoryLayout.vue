@@ -22,9 +22,6 @@
       <section class="mb-4 mt-6 relative">
         <div class="flex items-center justify-between mt-3 mb-2 sm:px-6">
           <div class="flex items-center">
-            <div
-              class="w-1 h-6 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full mr-2"
-            ></div>
             <h2 class="text-lg font-medium text-gray-800">
               New & Hot Arrivals
             </h2>

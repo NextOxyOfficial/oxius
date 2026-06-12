@@ -7,10 +7,6 @@
         >
           {{ $t("classified_service") }}
         </h1>
-        <!-- Header underline -->
-        <div
-          class="h-1 ml-4 w-20 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
-        ></div>
       </div>
     </div>    
     <UButton

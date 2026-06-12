@@ -47,10 +47,6 @@
                     class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"
                   ></div>
                 </div>
-                <!-- Active indicator dot -->
-                <div
-                  class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-800"
-                ></div>
               </div>
 
               <!-- Title and description -->
