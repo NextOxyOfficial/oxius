@@ -270,36 +270,30 @@
           </h2>
         </NuxtLink>
 
-        <AccountBalance v-if="user" :user="user" :isUser="true" class="mb-8" />
+        <AccountBalance
+          v-if="user"
+          :user="user"
+          :operators="operators"
+          :isUser="true"
+          class="mb-8"
+        />
 
-        <!-- Mobile recharge link with premium styling -->
-        <NuxtLink
-          to="/mobile-recharge"
-          class="mb-8 bg-slate-50/70 dark:bg-slate-800 shadow-sm hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-200 group"
-        >
-          <div class="flex items-center gap-3">
-            <UIcon
-              name="i-heroicons-device-phone-mobile"
-              class="text-emerald-500 size-6"
-            />
-            <h2
-              class="text-base text-gray-800 dark:text-gray-200 sm:text-xl font-medium"
+        <!-- Ad placeholder (replaces the old standalone mobile-recharge bar) -->
+        <div class="mb-8">
+          <div
+            class="relative mx-auto flex min-h-[96px] max-w-3xl items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-6 py-6 text-center dark:border-slate-700 dark:bg-slate-800/50"
+          >
+            <span
+              class="absolute right-3 top-2 rounded bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-500 dark:bg-slate-700 dark:text-slate-300"
             >
-              {{ $t("mobile_recharge") }}
-            </h2>
-            <div class="flex justify-center gap-2">
-              <img
-                v-for="operator in operators"
-                :key="operator.id"
-                :src="operator.icon"
-                :alt="operator.name"
-                :title="operator.name"
-                class="size-6 transition-transform duration-200"
-                :style="`transition-delay: ${operator.id * 50}ms`"
-              />
+              বিজ্ঞাপন
+            </span>
+            <div class="flex flex-col items-center gap-1.5 text-slate-400">
+              <UIcon name="i-heroicons-megaphone" class="size-6" />
+              <p class="text-sm">এখানে শীঘ্রই বিজ্ঞাপন দেখানো হবে</p>
             </div>
           </div>
-        </NuxtLink>
+        </div>
 
         <!-- Micro gigs card with premium styling -->
         <UCard
