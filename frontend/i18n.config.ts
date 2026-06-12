@@ -348,6 +348,10 @@ export default defineI18nConfig(() => ({
       sale_cond_fair: "Fair",
       sale_cond_for_parts: "For Parts",
       sale_cond_refurbished: "Refurbished",
+      sale_cond_poor: "Poor",
+      sale_time_min: "min",
+      sale_time_hr: "hr",
+      sale_time_day: "days",
       // PWA Installation translations
       add_to_home_screen: "Add AdsyClub to Home Screen",
       install_app_message:
@@ -1117,6 +1121,10 @@ export default defineI18nConfig(() => ({
       sale_cond_fair: "মোটামুটি",
       sale_cond_for_parts: "যন্ত্রাংশের জন্য",
       sale_cond_refurbished: "রিফার্বিশড",
+      sale_cond_poor: "পুরনো",
+      sale_time_min: "মিনিট",
+      sale_time_hr: "ঘণ্টা",
+      sale_time_day: "দিন",
       // PWA Installation translations for Bangla
       add_to_home_screen: "AdsyClub হোম স্ক্রিনে যোগ করুন",
       install_app_message:

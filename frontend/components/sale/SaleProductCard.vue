@@ -24,14 +24,14 @@
       <span
         v-if="post.negotiable"
         class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-emerald-600/90 text-white text-[10px] font-semibold"
-      >দরদাম</span>
+      >{{ t("sale_card_negotiable") }}</span>
     </div>
 
     <!-- Body -->
     <div class="p-2 sm:p-2.5 flex flex-col gap-0.5 flex-1">
       <p class="font-bold text-[15px] leading-tight text-gray-900">
         <span v-if="post.price">৳{{ formatPrice(post.price) }}</span>
-        <span v-else class="text-[13px] font-semibold text-gray-500">যোগাযোগ করুন</span>
+        <span v-else class="text-[13px] font-semibold text-gray-500">{{ t("sale_card_contact") }}</span>
       </p>
       <h3 class="text-[13px] text-gray-700 leading-snug line-clamp-2 group-hover:text-emerald-700 min-h-[34px]">
         {{ title }}
@@ -54,42 +54,50 @@ const props = defineProps({
   post: { type: Object, required: true },
 });
 
+const { t, locale } = useI18n();
+
 const image = computed(
   () => props.post.main_image || (props.post.images && props.post.images[0]) || null
 );
 
 const title = computed(() => {
-  const t = props.post.title || "শিরোনামহীন";
+  const t = props.post.title || "";
   return t.charAt(0).toUpperCase() + t.slice(1);
 });
 
 const location = computed(
-  () => props.post.district || props.post.division || props.post.area || "বাংলাদেশ"
+  () => props.post.district || props.post.division || props.post.area || t("all_over_bangladesh")
 );
 
-const CONDITION_LABELS = {
-  new: "নতুন",
-  used: "ব্যবহৃত",
-  like_new: "প্রায় নতুন",
-  refurbished: "রিফার্বিশড",
-  good: "ভালো",
-  fair: "মোটামুটি",
-  poor: "পুরনো",
+const CONDITION_KEYS = {
+  brand_new: "sale_cond_brand_new",
+  new: "sale_cond_new",
+  like_new: "sale_cond_like_new",
+  used: "sale_cond_used",
+  good: "sale_cond_good",
+  fair: "sale_cond_fair",
+  for_parts: "sale_cond_for_parts",
+  refurbished: "sale_cond_refurbished",
+  poor: "sale_cond_poor",
 };
 const conditionLabel = computed(() => {
   const c = (props.post.condition || "").toString().toLowerCase().replace(/[\s-]+/g, "_");
   if (!c) return "";
-  return CONDITION_LABELS[c] || props.post.condition;
+  const key = CONDITION_KEYS[c];
+  return key ? t(key) : props.post.condition;
 });
 
 const time = computed(() => {
   const d = props.post.created_at ? new Date(props.post.created_at) : null;
   if (!d || isNaN(d)) return "";
   const diff = (Date.now() - d.getTime()) / 1000;
-  if (diff < 3600) return `${Math.max(1, Math.floor(diff / 60))} মিনিট`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} ঘণ্টা`;
-  if (diff < 2592000) return `${Math.floor(diff / 86400)} দিন`;
-  return d.toLocaleDateString("bn-BD", { day: "numeric", month: "short" });
+  if (diff < 3600) return `${Math.max(1, Math.floor(diff / 60))} ${t("sale_time_min")}`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ${t("sale_time_hr")}`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)} ${t("sale_time_day")}`;
+  return d.toLocaleDateString(locale.value === "bn" ? "bn-BD" : "en-US", {
+    day: "numeric",
+    month: "short",
+  });
 });
 
 function formatPrice(price) {

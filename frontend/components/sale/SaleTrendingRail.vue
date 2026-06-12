@@ -2,7 +2,7 @@
   <section v-if="posts && posts.length" class="bg-white rounded-xl border border-gray-200 p-3 sm:p-4">
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-[15px] sm:text-base font-bold text-gray-900 flex items-center gap-1.5">
-        <UIcon name="i-heroicons-fire" class="h-4.5 w-4.5 text-orange-500" />
+        <UIcon :name="icon" :class="['h-5 w-5', iconColor]" />
         {{ title }}
       </h2>
       <div class="flex items-center gap-1">
@@ -51,6 +51,8 @@ import SaleProductCard from "~/components/sale/SaleProductCard.vue";
 defineProps({
   posts: { type: Array, default: () => [] },
   title: { type: String, default: "ট্রেন্ডিং পণ্য" },
+  icon: { type: String, default: "i-heroicons-fire" },
+  iconColor: { type: String, default: "text-orange-500" },
 });
 
 const rail = ref(null);

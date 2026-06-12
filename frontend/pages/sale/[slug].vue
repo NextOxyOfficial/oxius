@@ -226,6 +226,9 @@
         </div>
       </div>
 
+      <!-- Ad slot #1 (leaderboard) -->
+      <SaleAdSlot variant="leaderboard" class="mt-3" />
+
       <!-- Details + Seller Section -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mt-3">
         <!-- Product Details -->
@@ -360,58 +363,18 @@
         </div>
       </div>
 
-      <!-- Similar Listings -->
-      <div v-if="filteredSimilar.length" class="mt-6">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-base font-bold text-gray-900 flex items-center gap-2">
-            <LayoutGrid class="h-5 w-5 text-emerald-600" />
-            {{ t("sale_detail_similar") }}
-          </h2>
-          <NuxtLink
-            to="/sale"
-            class="text-emerald-600 hover:text-emerald-700 text-sm flex items-center gap-1"
-            @click="handleButtonClick('view_all')"
-          >
-            {{ t("view_all") }}
-            <div v-if="loadingButtons.has('view_all')" class="dotted-spinner emerald"></div>
-            <ChevronRight v-else class="h-3 w-3" />
-          </NuxtLink>
-        </div>
+      <!-- Ad slot #2 (billboard) -->
+      <SaleAdSlot variant="billboard" class="mt-3" />
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
-          <NuxtLink
-            v-for="item in filteredSimilar.slice(0, 8)"
-            :key="item.id"
-            :to="`/sale/${item.slug}`"
-            class="group flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-emerald-300 hover:shadow-[0_2px_12px_rgba(16,185,129,0.12)] transition-all"
-          >
-            <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-              <img
-                v-if="item?.main_image"
-                :src="item.main_image"
-                :alt="item?.title"
-                loading="lazy"
-                class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
-              />
-              <div v-else class="absolute inset-0 flex items-center justify-center text-gray-300">
-                <UIcon name="i-heroicons-photo" class="h-8 w-8" />
-              </div>
-            </div>
-            <div class="p-2 sm:p-2.5 flex flex-col gap-0.5 flex-1">
-              <p class="font-bold text-[15px] text-gray-900 leading-tight">
-                {{ item?.price ? `৳${item.price.toLocaleString()}` : t("sale_card_contact") }}
-              </p>
-              <h3 class="text-[13px] text-gray-700 leading-snug line-clamp-2 group-hover:text-emerald-700 min-h-[34px]">
-                {{ capitalizeTitle(item.title) }}
-              </h3>
-              <div class="mt-auto pt-1 flex items-center gap-0.5 text-[11px] text-gray-400">
-                <UIcon name="i-heroicons-map-pin" class="h-3 w-3 flex-shrink-0" />
-                <span class="truncate">{{ item?.district || item?.division || t("all_over_bangladesh") }}</span>
-              </div>
-            </div>
-          </NuxtLink>
-        </div>
-      </div>
+      <!-- Similar Listings (rail) -->
+      <SaleTrendingRail
+        v-if="filteredSimilar.length"
+        :posts="filteredSimilar.slice(0, 12)"
+        :title="t('sale_detail_similar')"
+        icon="i-heroicons-sparkles"
+        icon-color="text-emerald-600"
+        class="mt-3"
+      />
 
       <!-- Share Dialog -->
       <div
@@ -493,6 +456,8 @@
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from "vue";
 import SaleSearchBar from "~/components/sale/SaleSearchBar.vue";
+import SaleTrendingRail from "~/components/sale/SaleTrendingRail.vue";
+import SaleAdSlot from "~/components/sale/SaleAdSlot.vue";
 import {
   Calendar,
   MapPin,
