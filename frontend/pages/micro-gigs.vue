@@ -114,9 +114,8 @@
 
           <!-- Gigs Grid -->
           <div class="space-y-3">
+            <template v-for="(gig, i) in paginatedGigs" :key="i">
             <div
-              v-for="(gig, i) in paginatedGigs"
-              :key="i"
               v-if="gig.user"
               class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-emerald-200 transition-all duration-200 overflow-hidden"
             >
@@ -258,6 +257,7 @@
                 </div>
               </div>
             </div>
+            </template>
           </div>
 
           <!-- Professional Pagination Section -->
