@@ -88,6 +88,7 @@ export default defineI18nConfig(() => ({
       general_support: "General Support",
       partnership: "Partnership",
       mobile_recharge: "Mobile Recharge",
+      mobile_recharge_subtitle: "Instant top-up for any operator",
       recharge_package_choice:
         "Choose the perfect recharge package for your needs",
       select_operator: "Select Operator",
@@ -414,6 +415,20 @@ export default defineI18nConfig(() => ({
       cd_provider_unavailable: "Service provider information not available.",
       cd_no_contact_title: "Contact Information Not Available",
       cd_no_contact_desc: "No contact information is available for this provider.",
+      // Micro gigs page
+      mg_page_subtitle: "Complete simple tasks and earn money instantly. Choose from a category below.",
+      mg_earn_label: "Earn",
+      mg_your_gig: "Your Gig",
+      mg_login_to_earn: "Login to Earn",
+      mg_login: "Login",
+      mg_progress: "Progress",
+      mg_no_gigs: "No gigs available",
+      mg_no_gigs_desc: "There are no gigs available in this category right now. Check back later or try another category.",
+      mg_view_all_cats: "View All Categories",
+      mg_to: "to",
+      mg_show: "Show:",
+      mg_previous: "Previous",
+      mg_next: "Next",
       // PWA Installation translations
       add_to_home_screen: "Add AdsyClub to Home Screen",
       install_app_message:
@@ -923,6 +938,7 @@ export default defineI18nConfig(() => ({
       general_support: "সাধারণ তথ্যের জন্য",
       partnership: "ব্যবসায়িক তথ্যের জন্য",
       mobile_recharge: "মোবাইল রিচার্জ",
+      mobile_recharge_subtitle: "যেকোনো অপারেটরে তাৎক্ষণিক রিচার্জ",
       recharge_package_choice: "রিচার্জের জন্য প্যাকেজ সিলেক্ট করুন",
       select_operator: "অপারেটার সিলেক্ট করুন",
       recharge_history: "রিচার্জ বিবরণী",
@@ -1249,6 +1265,20 @@ export default defineI18nConfig(() => ({
       cd_provider_unavailable: "সার্ভিস প্রোভাইডারের তথ্য পাওয়া যাচ্ছে না।",
       cd_no_contact_title: "যোগাযোগের তথ্য নেই",
       cd_no_contact_desc: "এই প্রোভাইডারের কোনো যোগাযোগের তথ্য নেই।",
+      // Micro gigs page (Bangla)
+      mg_page_subtitle: "সহজ কাজ করে সাথে সাথে আয় করুন। নিচের যেকোনো ক্যাটাগরি থেকে বেছে নিন।",
+      mg_earn_label: "আয়",
+      mg_your_gig: "আপনার গিগ",
+      mg_login_to_earn: "আয় করতে লগইন করুন",
+      mg_login: "লগইন",
+      mg_progress: "চলছে",
+      mg_no_gigs: "কোনো গিগ নেই",
+      mg_no_gigs_desc: "এই ক্যাটাগরিতে এখন কোনো গিগ নেই। পরে আবার দেখুন বা অন্য ক্যাটাগরি দেখুন।",
+      mg_view_all_cats: "সব ক্যাটাগরি দেখুন",
+      mg_to: "-",
+      mg_show: "দেখান:",
+      mg_previous: "আগের",
+      mg_next: "পরের",
       // PWA Installation translations for Bangla
       add_to_home_screen: "AdsyClub হোম স্ক্রিনে যোগ করুন",
       install_app_message:

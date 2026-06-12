@@ -1,324 +1,254 @@
 <template>
-  <UCard
+  <div
     v-if="user?.user"
-    class="md:max-w-4xl mx-auto mb-4 sm:mb-8 overflow-hidden transition-all duration-500 hover:shadow-sm"
-    :ui="{
-      rounded: 'rounded-xl',
-      body: {
-        padding: 'p-0',
-      },
-      ring: '',
-      base: 'bg-gradient-to-br from-green-100 to-teal-100/60   border border-dashed border-emerald-400/70',
-    }"
+    class="md:max-w-4xl mx-auto mb-4 sm:mb-6 bg-white rounded-xl border border-gray-200 overflow-hidden"
   >
-    <!-- Decorative elements -->
-    <div
-      class="absolute top-0 right-0 w-32 h-32 bg-emerald-100/20 rounded-full -z-10"
-    ></div>
-    <div
-      class="absolute bottom-0 left-0 w-40 h-40 bg-teal-300/10 rounded-full -z-10"
-    ></div>
-
-    <!-- Header with balance info -->
-    <div class="relative p-4 sm:p-6 overflow-hidden">
-      <!-- Decorative pattern -->
-      <div class="absolute top-0 right-0 opacity-5 pointer-events-none">
-        <svg
-          width="200"
-          height="200"
-          viewBox="0 0 100 100"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path fill="currentColor" d="M0,0 L100,0 L100,100 L0,100 Z" />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1"
-            d="M0,0 L100,100 M100,0 L0,100"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="30"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1"
-          />
-        </svg>
-      </div>
-
-      <div class="flex flex-col md:flex-row justify-between gap-4 sm:gap-6">
-        <!-- Main balance -->
+    <!-- Balance + Pending tiles -->
+    <div class="p-4 sm:p-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Balance -->
         <div
-          class="balance-container group bg-white rounded-xl p-4 shadow-sm hover:shadow-sm transition-all duration-300 border border-emerald-300"
+          class="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 p-3.5"
         >
-          <div class="flex items-center gap-3">
-            <div
-              class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm"
-            >
-              <UIcon
-                name="i-material-symbols:account-balance-wallet-outline"
-                class="text-white text-xl"
-              />
-            </div>
-            <div>
-              <p class="text-sm text-emerald-700 font-medium">
-                {{ $t("balance") }}
-              </p>
-              <h3
-                class="text-xl font-semibold text-emerald-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
-              >
-                <UIcon
-                  name="i-mdi:currency-bdt"
-                  class="text-xl text-emerald-600"
-                />
-                <span class="balance-value">{{ user?.user.balance }}</span>
-              </h3>
-            </div>
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white"
+          >
+            <UIcon
+              name="i-material-symbols:account-balance-wallet-outline"
+              class="text-2xl"
+            />
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-medium text-emerald-700">
+              {{ $t("balance") }}
+            </p>
+            <p class="text-xl font-bold text-emerald-900 flex items-center gap-0.5">
+              <UIcon name="i-mdi:currency-bdt" class="text-lg" />
+              <span class="truncate">{{ user?.user.balance }}</span>
+            </p>
           </div>
         </div>
 
         <!-- Pending tasks -->
         <div
-          class="pending-container group bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm hover:shadmd-lg transition-all duration-300 border border-amber-200"
+          class="flex items-center justify-between gap-2 rounded-xl border border-amber-100 bg-amber-50/60 p-3.5"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div
-                class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-sm"
-              >
-                <UIcon
-                  name="i-ic:outline-watch-later"
-                  class="text-white text-xl"
-                />
-              </div>
-              <div>
-                <p class="text-sm text-amber-700 font-medium">
-                  {{ $t("pending_task") }}
-                </p>
-                <h3
-                  class="text-xl font-semibold text-amber-900 flex items-center gap-1 group-hover:scale-105 transition-transform duration-300"
-                >
-                  <UIcon
-                    name="i-mdi:currency-bdt"
-                    class="text-xl text-amber-600"
-                  />
-                  <span class="pending-value">{{
-                    user?.user.pending_balance
-                  }}</span>
-                </h3>
-              </div>
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white"
+            >
+              <UIcon name="i-ic:outline-watch-later" class="text-2xl" />
             </div>
-
-            <UButton
-              size="md"
-              color="amber"
-              variant="ghost"
-              icon="i-mdi-eye-outline"
-              :label="t('view')"
-              :to="`/pending-tasks/${user?.user.id}`"
-              class="ml-2 hover:scale-105 transition-transform duration-300"
-              :ui="{
-                padding: {
-                  sm: 'px-3 py-2',
-                },
-                base: 'font-medium',
-              }"
-            />
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-amber-700">
+                {{ $t("pending_task") }}
+              </p>
+              <p class="text-xl font-bold text-amber-900 flex items-center gap-0.5">
+                <UIcon name="i-mdi:currency-bdt" class="text-lg" />
+                <span class="truncate">{{ user?.user.pending_balance }}</span>
+              </p>
+            </div>
           </div>
+
+          <UButton
+            size="xs"
+            color="amber"
+            variant="soft"
+            icon="i-mdi-eye-outline"
+            :label="t('view')"
+            :to="`/pending-tasks/${user?.user.id}`"
+            class="shrink-0"
+          />
         </div>
       </div>
 
       <!-- Action buttons -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">        <UButton
-          size="md"
-          color="emerald"
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3.5">
+        <UButton
+          color="gray"
           variant="soft"
           to="/deposit-withdraw/"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5"
-          :ui="{
-            base: 'font-medium',
-          }"
+          class="justify-center py-2.5 rounded-xl font-medium text-gray-700 hover:bg-gray-200/70"
           @click="handleButtonClick('transaction')"
         >
           <template #leading>
             <div v-if="loadingButtons.has('transaction')" class="dotted-spinner emerald"></div>
-            <UIcon v-else name="i-token:cusd" />
+            <UIcon v-else name="i-token:cusd" class="text-emerald-600 text-lg" />
           </template>
-          <span v-if="!loadingButtons.has('transaction')">{{ t('transaction') }}</span>
-        </UButton>        <UButton
-          size="md"
-          color="blue"
+          <span v-if="!loadingButtons.has('transaction')" class="text-xs sm:text-sm">{{ t('transaction') }}</span>
+        </UButton>
+
+        <UButton
+          color="gray"
           variant="soft"
           to="/inbox/"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5 relative"
-          :ui="{
-            base: 'font-medium',
-          }"
+          class="relative justify-center py-2.5 rounded-xl font-medium text-gray-700 hover:bg-gray-200/70"
           @click="handleButtonClick('inbox')"
         >
           <template #leading>
             <div v-if="loadingButtons.has('inbox')" class="dotted-spinner blue"></div>
-            <UIcon v-else name="i-material-symbols:mark-email-unread-outline" />
+            <UIcon v-else name="i-material-symbols:mark-email-unread-outline" class="text-blue-600 text-lg" />
           </template>
-          <span v-if="!loadingButtons.has('inbox')">{{ t('inbox') }}</span>
+          <span v-if="!loadingButtons.has('inbox')" class="text-xs sm:text-sm">{{ t('inbox') }}</span>
           <div
             v-if="badgeCount > 0"
-            class="notification-badge absolute top-1 right-16 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs px-1 font-semibold shadow-sm animate-pulse-subtle"
+            class="notification-badge absolute -top-1.5 -right-1.5 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs px-1 font-semibold shadow-sm animate-pulse-subtle"
           >
             {{ badgeCount > 99 ? "99+" : badgeCount }}
           </div>
-        </UButton>        <UButton
-          size="md"
-          color="violet"
+        </UButton>
+
+        <UButton
+          color="gray"
           variant="soft"
           :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-violet-500/10 to-violet-500/5"
-          :ui="{
-            base: 'font-medium',
-          }"
+          class="justify-center py-2.5 rounded-xl font-medium text-gray-700 hover:bg-gray-200/70"
           @click="handleButtonClick('my-gigs')"
         >
           <template #leading>
             <div v-if="loadingButtons.has('my-gigs')" class="dotted-spinner violet"></div>
-            <UIcon v-else name="i-material-symbols:list-rounded" />
+            <UIcon v-else name="i-material-symbols:list-rounded" class="text-violet-600 text-lg" />
           </template>
-          <span v-if="!loadingButtons.has('my-gigs')">{{ t('my_gigs') }}</span>
-        </UButton><UButton
-          size="md"
-          color="slate"
+          <span v-if="!loadingButtons.has('my-gigs')" class="text-xs sm:text-sm">{{ t('my_gigs') }}</span>
+        </UButton>
+
+        <UButton
+          color="gray"
           variant="soft"
           to="/post-a-gig"
-          class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-slate-500/10 to-slate-500/5"
-          :ui="{
-            base: 'font-medium',
-          }"
+          class="justify-center py-2.5 rounded-xl font-medium text-gray-700 hover:bg-gray-200/70"
           @click="handleButtonClick('post-gigs-balance')"
         >
           <template #leading>
             <div v-if="loadingButtons.has('post-gigs-balance')" class="dotted-spinner slate"></div>
-            <UIcon v-else name="i-heroicons-plus-circle" />
+            <UIcon v-else name="i-heroicons-plus-circle" class="text-emerald-600 text-lg" />
           </template>
-          <span v-if="!loadingButtons.has('post-gigs-balance')">{{ t('post_gigs') }}</span>
+          <span v-if="!loadingButtons.has('post-gigs-balance')" class="text-xs sm:text-sm">{{ t('post_gigs') }}</span>
         </UButton>
       </div>
     </div>
 
-    <!-- Divider with dot accent -->
-    <div class="relative">
-      <UDivider class="my-1" />
-      <div
-        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white dark:bg-slate-800 border-2 border-emerald-200 dark:border-emerald-800 flex items-center justify-center"
-      >
-        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-      </div>
-    </div>
-
-    <!-- Referral section -->
-    <div
-      class="p-4 sm:p-6 bg-gradient-to-br from-white/50 to-emerald-50/50 dark:from-slate-900/50 dark:to-emerald-950/30"
+    <!-- Mobile Recharge -->
+    <NuxtLink
+      to="/mobile-recharge"
+      class="group flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-t border-gray-100 hover:bg-gray-50 transition-colors"
     >
-      <div class="flex flex-col gap-4">
-        <div class="text-center w-full flex flex-col items-center gap-3">
-          <h3
-            class="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2"
-          >
-            <UIcon
-              name="i-heroicons-user-group"
-              class="text-emerald-600 dark:text-emerald-400"
-            />
-            {{ $t("refer") }}
-          </h3>
-          <div class="relative w-full max-w-md mx-auto">
-            <div
-              class="flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-emerald-200 dark:border-emerald-700"
-            >
-              <input
-                type="text"
-                class="text-sm py-3 px-4 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-700 dark:text-slate-200"
-                readonly
-                :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
-              />
-              <UButton
-                size="sm"
-                color="emerald"
-                icon="i-iconamoon-copy-light"
-                variant="solid"
-                class="m-1"
-                @click="
-                  CopyToClip(
-                    `https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`
-                  )
-                "
-                :ui="{
-                  base: 'font-medium',
-                }"
-              >
-                Copy
-              </UButton>
-            </div>
-          </div>
-        </div>
-        <!-- Referral stats -->
+      <div class="flex items-center gap-3 min-w-0">
         <div
-          class="flex gap-6 justify-center items-center bg-white/80 rounded-xl p-3"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
         >
-          <div class="flex flex-col items-center">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-              {{ $t("refer_user") }}
-            </p>
-            <p
-              class="text-xl font-semibold text-emerald-700 dark:text-emerald-400"
-            >
+          <UIcon name="i-heroicons-device-phone-mobile" class="w-5 h-5" />
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-bold text-gray-900 truncate">
+            {{ $t("mobile_recharge") }}
+          </p>
+          <p class="text-xs text-gray-500 truncate">
+            {{ $t("mobile_recharge_subtitle") }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <div v-if="operators?.length" class="hidden sm:flex -space-x-1.5">
+          <img
+            v-for="op in operators.slice(0, 4)"
+            :key="op.id"
+            :src="op.icon"
+            :title="op.title"
+            class="w-7 h-7 rounded-full border-2 border-white bg-white object-contain"
+          />
+        </div>
+        <span class="hidden sm:inline text-sm font-semibold text-emerald-600">
+          {{ $t("recharge_now") }}
+        </span>
+        <UIcon
+          name="i-heroicons-arrow-right"
+          class="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition-transform"
+        />
+      </div>
+    </NuxtLink>
+
+    <!-- Referral -->
+    <div class="px-4 sm:px-5 py-4 border-t border-gray-100 bg-gray-50/60">
+      <div class="flex items-center gap-2 mb-2.5">
+        <UIcon name="i-heroicons-user-group" class="w-5 h-5 text-emerald-600 shrink-0" />
+        <h3 class="text-sm font-bold text-gray-900">{{ $t("refer") }}</h3>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <!-- Link + copy -->
+        <div
+          class="w-full sm:w-[420px] sm:shrink-0 min-w-0 flex items-center bg-white rounded-lg border border-gray-200 overflow-hidden"
+        >
+          <input
+            type="text"
+            class="text-xs sm:text-sm py-2.5 px-3 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-gray-600 truncate"
+            readonly
+            :value="referralUrl"
+          />
+          <UButton
+            size="sm"
+            color="emerald"
+            icon="i-iconamoon-copy-light"
+            variant="solid"
+            class="m-1 shrink-0"
+            @click="CopyToClip(referralUrl)"
+          >
+            Copy
+          </UButton>
+        </div>
+
+        <!-- Stats -->
+        <div class="flex gap-3 flex-1">
+          <div
+            class="flex-1 text-center rounded-lg bg-white border border-gray-200 px-4 py-2"
+          >
+            <p class="text-xs text-gray-500">{{ $t("refer_user") }}</p>
+            <p class="text-base font-bold text-emerald-700">
               {{ user.user.refer_count }}
             </p>
           </div>
-
-          <div class="h-10 w-px bg-slate-200 dark:bg-slate-700"></div>
-
-          <div class="flex flex-col items-center">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-              {{ $t("earnings") }}
-            </p>
+          <div
+            class="flex-1 text-center rounded-lg bg-white border border-gray-200 px-4 py-2"
+          >
+            <p class="text-xs text-gray-500">{{ $t("earnings") }}</p>
             <p
-              class="text-xl font-semibold text-emerald-700 dark:text-emerald-400 flex items-center"
+              class="text-base font-bold text-emerald-700 flex items-center justify-center gap-0.5"
             >
-              <UIcon name="i-mdi:currency-bdt" class="text-lg" />
+              <UIcon name="i-mdi:currency-bdt" class="text-sm" />
               {{ user.user.commission_earned }}
             </p>
           </div>
         </div>
       </div>
     </div>
-  </UCard>
+  </div>
 </template>
 
 <script setup>
-const { user } = useAuth();
 const { t } = useI18n();
 const toast = useToast();
-const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
+const { totalUnreadCount, fetchUnreadCount } = useTickets();
 const badgeCount = ref(0);
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());
 
-// Function to handle button click and show loading
 const handleButtonClick = (buttonId) => {
   loadingButtons.value.add(buttonId);
-  // Remove loading state after navigation (cleanup happens in route change)
   setTimeout(() => {
     loadingButtons.value.delete(buttonId);
-  }, 3000); // Fallback timeout
+  }, 3000);
 };
 
-// Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
-// Update badge count when totalUnreadCount changes
 watch(
   () => totalUnreadCount.value,
   (newCount) => {
@@ -326,13 +256,12 @@ watch(
   }
 );
 
-// Fetch unread ticket count when component mounts
 onMounted(async () => {
   await fetchUnreadCount();
   badgeCount.value = totalUnreadCount.value;
 });
 
-defineProps({
+const props = defineProps({
   user: {
     type: Object,
     required: true,
@@ -341,10 +270,17 @@ defineProps({
     type: Boolean,
     required: true,
   },
+  operators: {
+    type: Array,
+    default: () => [],
+  },
 });
 
+const referralUrl = computed(
+  () => `https://adsyclub.com/auth/register/?ref=${props.user?.user?.referral_code}`
+);
+
 function CopyToClip(text) {
-  //Copy text to clipboard
   navigator.clipboard.writeText(text);
   toast.add({
     title: "Link copied",
@@ -355,76 +291,6 @@ function CopyToClip(text) {
 </script>
 
 <style scoped>
-/* Premium animations */
-@keyframes pulse-subtle {
-  0%,
-  100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.balance-value,
-.pending-value {
-  position: relative;
-  display: inline-block;
-}
-
-.balance-value::after,
-.pending-value::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.3s ease;
-  opacity: 0.5;
-}
-
-.balance-container:hover .balance-value::after,
-.pending-container:hover .pending-value::after {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
-.action-button {
-  position: relative;
-  overflow: hidden;
-}
-
-.action-button::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-}
-
-.action-button:hover::after {
-  transform: translateX(100%);
-}
-
-/* Scale utility */
-.hover\:scale-102:hover {
-  transform: scale(1.02);
-}
-
-/* Notification badge animation */
 @keyframes pulse-subtle {
   0%,
   100% {
@@ -444,12 +310,7 @@ function CopyToClip(text) {
   transition: all 0.3s ease;
 }
 
-/* Notification badge hover effect */
-.action-button:hover .notification-badge {
-  transform: scale(1.1);
-}
-
-/* Dotted Spinner Styles */
+/* Dotted spinner */
 .dotted-spinner {
   width: 1rem;
   height: 1rem;
@@ -459,19 +320,15 @@ function CopyToClip(text) {
   flex-shrink: 0;
 }
 
-/* Color variations for dotted spinner */
 .dotted-spinner.slate {
   border-color: #64748b;
 }
-
 .dotted-spinner.emerald {
   border-color: #059669;
 }
-
 .dotted-spinner.blue {
   border-color: #2563eb;
 }
-
 .dotted-spinner.violet {
   border-color: #7c3aed;
 }

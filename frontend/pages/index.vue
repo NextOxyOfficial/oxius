@@ -577,7 +577,7 @@
                           size="md"
                           color="emerald"
                           variant="solid"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
+                          class="min-w-[7rem] justify-center whitespace-nowrap shadow-sm hover:shadow-sm transition-all duration-200"
                           :to="`/order/${gig.slug}`"
                         >
                           <UIcon
@@ -592,7 +592,7 @@
                           size="md"
                           color="slate"
                           variant="outline"
-                          class="w-24 justify-center"
+                          class="min-w-[7rem] justify-center whitespace-nowrap"
                         >
                           {{ $t("mg_ineligible") }}
                         </UButton>
@@ -602,7 +602,7 @@
                           color="emerald"
                           variant="solid"
                           :to="`/auth/login/`"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
+                          class="min-w-[7rem] justify-center whitespace-nowrap shadow-sm hover:shadow-sm transition-all duration-200"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"
@@ -620,7 +620,7 @@
                           size="md"
                           color="emerald"
                           variant="solid"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
+                          class="min-w-[7rem] justify-center whitespace-nowrap shadow-sm hover:shadow-sm transition-all duration-200"
                           :to="`/order/${gig.slug}/`"
                         >
                           <UIcon
@@ -635,7 +635,7 @@
                           size="md"
                           color="slate"
                           variant="outline"
-                          class="w-24 justify-center"
+                          class="min-w-[7rem] justify-center whitespace-nowrap"
                         >
                           {{ $t("mg_ineligible") }}
                         </UButton>
@@ -645,7 +645,7 @@
                           color="emerald"
                           variant="solid"
                           :to="`/auth/login/`"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
+                          class="min-w-[7rem] justify-center whitespace-nowrap shadow-sm hover:shadow-sm transition-all duration-200"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"

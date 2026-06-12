@@ -1,77 +1,84 @@
 <template>
-  <div id="micro-gigs" class="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/30">
-    <UContainer class="py-6 md:py-10">
-      <!-- Header Section -->
-      <div class="text-center mb-8">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-          {{ $t("micro_gigs") }}
-        </h1>
-        <p class="text-gray-600 max-w-xl mx-auto">
-          Complete simple tasks and earn money instantly. Choose from various categories below.
-        </p>
+  <div id="micro-gigs" class="min-h-screen bg-gray-50/60">
+    <UContainer class="py-5 md:py-7">
+      <!-- Header Bar -->
+      <div
+        class="bg-white rounded-xl border border-gray-200 px-4 py-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+      >
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+            <UIcon name="i-heroicons-bolt" class="h-6 w-6" />
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-lg sm:text-xl font-bold text-gray-900 leading-tight">
+              {{ $t("micro_gigs") }}
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 line-clamp-1">
+              {{ $t("mg_page_subtitle") }}
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <NuxtLink
+            to="/post-a-gig"
+            class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3.5 py-2 text-sm font-medium transition-colors"
+          >
+            <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+            {{ $t("post_gigs") }}
+          </NuxtLink>
+        </div>
       </div>
 
       <!-- Account Balance Card -->
-      <AccountBalance v-if="user" :user="user" :isUser="true" class="mb-6" />
-
-      <!-- Quick Actions Bar -->
-      <div class="flex flex-wrap items-center justify-center gap-3 mb-8">
-        <NuxtLink
-          to="/mobile-recharge"
-          class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 transition-all hover:shadow-md"
-        >
-          <UIcon name="i-heroicons-device-phone-mobile" class="w-5 h-5 text-emerald-600" />
-          <span class="font-medium text-gray-700">Mobile Recharge</span>
-          <div class="flex -space-x-1">
-            <NuxtImg
-              v-for="operator in operators.slice(0, 4)"
-              :key="operator.id"
-              :src="operator.icon"
-              :title="operator.title"
-              class="w-5 h-5 rounded-full border border-white"
-            />
-          </div>
-        </NuxtLink>
-        <NuxtLink
-          to="/post-gig"
-          class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2.5 transition-all hover:shadow-md"
-        >
-          <UIcon name="i-heroicons-plus" class="w-5 h-5" />
-          <span class="font-medium">Post a Gig</span>
-        </NuxtLink>
-      </div>
+      <AccountBalance v-if="user" :user="user" :isUser="true" :operators="operators" class="mb-4" />
 
       <!-- Main Content -->
-      <div class="flex flex-col lg:flex-row gap-6">
+      <div class="flex flex-col lg:flex-row gap-5">
         <!-- Sidebar - Categories -->
         <div class="w-full lg:w-64 flex-shrink-0">
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-20">
-            <div class="p-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
-              <h3 class="font-semibold flex items-center gap-2">
-                <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5" />
-                Categories
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden lg:sticky lg:top-20">
+            <div class="px-4 py-3 border-b border-gray-100">
+              <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5 text-emerald-600" />
+                {{ $t("home_categories") }}
               </h3>
             </div>
-            <div class="p-2 max-h-[400px] overflow-y-auto">
+            <div class="p-2 max-h-[55vh] lg:max-h-[calc(100vh-200px)] lg:min-h-[480px] overflow-y-auto">
               <!-- All Categories -->
               <button
                 @click.prevent="selectAllCategories"
-                class="w-full flex items-center justify-between p-3 rounded-xl transition-all"
+                class="w-full flex items-center justify-between gap-2 p-2.5 rounded-xl transition-all"
                 :class="!selectedCategory ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-gray-50 text-gray-700'"
               >
-                <span class="font-medium">{{ $t("all_category") }}</span>
+                <span class="flex items-center gap-2 min-w-0">
+                  <span class="w-7 h-7 rounded-md bg-white border border-gray-100 flex items-center justify-center shrink-0">
+                    <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4 text-emerald-600" />
+                  </span>
+                  <span class="font-medium truncate">{{ $t("all_category") }}</span>
+                </span>
                 <UBadge color="emerald" variant="soft" size="xs">{{ totalGigs }}</UBadge>
               </button>
-              
+
               <!-- Category List -->
               <button
                 v-for="category in categoryArray"
                 :key="category?.id"
                 @click.prevent="selectCategory(category)"
-                class="w-full flex items-center justify-between p-3 rounded-xl transition-all"
+                class="w-full flex items-center justify-between gap-2 p-2.5 rounded-xl transition-all"
                 :class="selectedCategory?.id === category.id ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-gray-50 text-gray-700'"
               >
-                <span class="capitalize truncate">{{ category.category }}</span>
+                <span class="flex items-center gap-2 min-w-0">
+                  <span class="w-7 h-7 rounded-md bg-white border border-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+                    <img
+                      v-if="category.image"
+                      :src="category.image"
+                      :alt="category.category"
+                      class="w-5 h-5 object-contain"
+                    />
+                    <UIcon v-else name="i-heroicons-tag" class="w-4 h-4 text-emerald-600" />
+                  </span>
+                  <span class="capitalize truncate">{{ category.category }}</span>
+                </span>
                 <UBadge :color="selectedCategory?.id === category.id ? 'emerald' : 'gray'" variant="soft" size="xs">
                   {{ category.active }}
                 </UBadge>
@@ -83,21 +90,21 @@
         <!-- Main Content - Gigs List -->
         <div class="flex-1">
           <!-- Filter Bar -->
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div class="flex items-center gap-3">
-                <h2 class="font-semibold text-gray-900 flex items-center gap-2">
+                <h2 class="text-base font-bold text-gray-900 flex items-center gap-2">
                   <UIcon name="i-heroicons-briefcase" class="w-5 h-5 text-emerald-600" />
                   {{ $t("available_gigs") }}
                 </h2>
-                <UBadge color="emerald" variant="soft">{{ totalGigs }} gigs</UBadge>
+                <UBadge color="emerald" variant="soft">{{ totalGigs }} {{ $t("mg_gigs") }}</UBadge>
               </div>
               <div class="flex items-center gap-3">
                 <USelectMenu
                   v-model="microGigsStatus"
                   :options="microGigsFilter"
                   @change="getMicroGigsByAvailability($event)"
-                  placeholder="Filter"
+                  :placeholder="$t('mg_filter')"
                   value-attribute="value"
                   option-attribute="title"
                   size="sm"
@@ -113,20 +120,20 @@
             <template v-for="(gig, i) in paginatedGigs" :key="i">
             <div
               v-if="gig.user"
-              class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-emerald-200 transition-all duration-200 overflow-hidden"
+              class="bg-white rounded-xl border border-gray-200 hover:border-emerald-300 hover:shadow-sm transition-all duration-200 overflow-hidden"
             >
               <div class="p-4">
                 <div class="flex items-start gap-4">
                   <!-- Category Icon -->
                   <div class="flex-shrink-0">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center overflow-hidden">
+                    <div class="w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center overflow-hidden">
                       <NuxtImg
                         v-if="!errorIndex.includes(i) && gig.category_details?.image"
                         :src="gig.category_details?.image"
-                        class="w-10 h-10 object-contain"
+                        class="w-8 h-8 object-contain"
                         @error="handleImageError(i)"
                       />
-                      <UIcon v-else name="i-heroicons-briefcase" class="w-6 h-6 text-emerald-600" />
+                      <UIcon v-else name="i-heroicons-briefcase" class="w-5 h-5 text-emerald-600" />
                     </div>
                   </div>
 
@@ -161,10 +168,10 @@
                       </div>
 
                       <!-- Price & Action (Desktop) -->
-                      <div class="hidden sm:flex items-center gap-4">
+                      <div class="hidden sm:flex items-center gap-4 shrink-0">
                         <div class="text-right">
-                          <div class="text-xs text-gray-500 mb-0.5">Earn</div>
-                          <div class="text-xl font-bold text-emerald-600 flex items-center">
+                          <div class="text-xs text-gray-500 mb-0.5">{{ $t("mg_earn_label") }}</div>
+                          <div class="text-xl font-bold text-emerald-600 flex items-center justify-end">
                             <span class="text-sm">৳</span>{{ gig.price }}
                           </div>
                         </div>
@@ -173,10 +180,10 @@
                           :to="`/order/${gig.slug}/`"
                           color="primary"
                           size="md"
-                          class="px-6"
+                          class="px-6 whitespace-nowrap"
                         >
                           <UIcon name="i-heroicons-currency-dollar" class="w-4 h-4 mr-1" />
-                          Earn Now
+                          {{ $t("mg_earn") }}
                         </UButton>
                         <UButton
                           v-else-if="user?.user?.id === gig.user.id"
@@ -184,8 +191,9 @@
                           color="gray"
                           variant="soft"
                           size="md"
+                          class="whitespace-nowrap"
                         >
-                          Your Gig
+                          {{ $t("mg_your_gig") }}
                         </UButton>
                         <UButton
                           v-else
@@ -193,9 +201,9 @@
                           color="primary"
                           variant="outline"
                           size="md"
-                          class="px-6"
+                          class="px-6 whitespace-nowrap"
                         >
-                          Login to Earn
+                          {{ $t("mg_login_to_earn") }}
                         </UButton>
                       </div>
                     </div>
@@ -203,7 +211,7 @@
                     <!-- Progress Bar -->
                     <div class="mt-3">
                       <div class="flex items-center justify-between text-xs mb-1">
-                        <span class="text-gray-500">Progress</span>
+                        <span class="text-gray-500">{{ $t("mg_progress") }}</span>
                         <span class="font-medium" :class="getProgressColor(gig)">
                           {{ Math.round((gig.filled_quantity / gig.required_quantity) * 100) }}%
                         </span>
@@ -228,7 +236,7 @@
                         color="primary"
                         size="sm"
                       >
-                        Earn Now
+                        {{ $t("mg_earn") }}
                       </UButton>
                       <UButton
                         v-else-if="user?.user?.id === gig.user.id"
@@ -237,7 +245,7 @@
                         variant="soft"
                         size="sm"
                       >
-                        Your Gig
+                        {{ $t("mg_your_gig") }}
                       </UButton>
                       <UButton
                         v-else
@@ -246,7 +254,7 @@
                         variant="outline"
                         size="sm"
                       >
-                        Login
+                        {{ $t("mg_login") }}
                       </UButton>
                     </div>
                   </div>
@@ -257,18 +265,18 @@
           </div>
 
           <!-- Professional Pagination Section -->
-          <div v-if="microGigs?.length > 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mt-4">
+          <div v-if="microGigs?.length > 0" class="bg-white rounded-xl border border-gray-200 p-4 mt-4">
             <!-- Results Info -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
               <p class="text-sm text-gray-600">
-                Showing <span class="font-medium text-gray-900">{{ startIndex + 1 }}</span> to 
-                <span class="font-medium text-gray-900">{{ endIndex }}</span> of 
-                <span class="font-medium text-gray-900">{{ totalGigs }}</span> gigs
+                {{ $t("mg_showing") }} <span class="font-medium text-gray-900">{{ startIndex + 1 }}</span> {{ $t("mg_to") }}
+                <span class="font-medium text-gray-900">{{ endIndex }}</span> {{ $t("mg_of") }}
+                <span class="font-medium text-gray-900">{{ totalGigs }}</span> {{ $t("mg_gigs") }}
               </p>
               
               <!-- Items per page selector -->
               <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600">Show:</span>
+                <span class="text-sm text-gray-600">{{ $t("mg_show") }}</span>
                 <USelectMenu
                   v-model="selectedItemsPerPage"
                   :options="itemsPerPageOptions"
@@ -304,7 +312,7 @@
                 :ui="{ rounded: 'rounded-lg' }"
               >
                 <UIcon name="i-heroicons-chevron-left-20-solid" class="w-4 h-4" />
-                <span class="hidden sm:inline ml-1">Previous</span>
+                <span class="hidden sm:inline ml-1">{{ $t("mg_previous") }}</span>
               </UButton>
 
               <!-- Page Numbers -->
@@ -363,7 +371,7 @@
                 variant="ghost"
                 :ui="{ rounded: 'rounded-lg' }"
               >
-                <span class="hidden sm:inline mr-1">Next</span>
+                <span class="hidden sm:inline mr-1">{{ $t("mg_next") }}</span>
                 <UIcon name="i-heroicons-chevron-right-20-solid" class="w-4 h-4" />
               </UButton>
 
@@ -383,14 +391,14 @@
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="!microGigs?.length" class="bg-white rounded-2xl shadow-sm border border-gray-100 py-16 text-center">
+          <div v-else-if="!microGigs?.length" class="bg-white rounded-xl border border-gray-200 py-16 text-center">
             <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
               <UIcon name="i-heroicons-briefcase" class="w-10 h-10 text-gray-300" />
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Gigs Available</h3>
-            <p class="text-gray-500 mb-6 max-w-sm mx-auto">There are no gigs available in this category right now. Check back later or try another category.</p>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t("mg_no_gigs") }}</h3>
+            <p class="text-gray-500 mb-6 max-w-sm mx-auto">{{ $t("mg_no_gigs_desc") }}</p>
             <UButton color="primary" @click="selectAllCategories">
-              View All Categories
+              {{ $t("mg_view_all_cats") }}
             </UButton>
           </div>
         </div>
@@ -403,8 +411,16 @@
 const { t } = useI18n();
 const { formatDate } = useUtils();
 const isOpen = ref(false);
-const { get, baseURL } = useApi();
+const { get, baseURL, staticURL } = useApi();
 const { user } = useAuth();
+
+// Resolve a category/media image path to a full URL (handles absolute + relative)
+const getImageUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("/")) return staticURL + url;
+  return staticURL + "/" + url;
+};
 const services = ref([]);
 const searchServices = ref([]);
 const microGigs = ref([]);
@@ -505,13 +521,13 @@ classifiedLatestPosts.value = res2.data;
 const classifiedPosts = ref([]);
 const toast = useToast();
 
-const microGigsFilter = [
-  { title: "All", value: "" },
-  { title: "Available", value: "approved" },
-  { title: "Completed", value: "completed" },
-];
+const microGigsFilter = computed(() => [
+  { title: t("mg_all"), value: "" },
+  { title: t("mg_available"), value: "approved" },
+  { title: t("mg_completed"), value: "completed" },
+]);
 
-const microGigsStatus = ref(microGigsFilter[1]);
+const microGigsStatus = ref(microGigsFilter.value[1]);
 
 const errorIndex = ref([]);
 function handleImageError(index) {
@@ -564,6 +580,7 @@ async function getMicroGigsCategories() {
 
   categoryArray.value = categories.map((category) => ({
     category: category.title,
+    image: getImageUrl(category.image),
     total: categoryCounts[category.id]?.total || 0,
     active: categoryCounts[category.id]?.active || 0,
     id: category.id,
@@ -611,7 +628,7 @@ const selectAllCategories = async () => {
 async function handleSearch() {
   if (!title.value?.trim()) {
     toast.add({
-      title: "Please enter a search term",
+      title: t("home_enter_search"),
       color: "orange",
     });
     return;
@@ -634,7 +651,7 @@ async function handleSearch() {
   } catch (error) {
     console.error("Search error:", error);
     toast.add({
-      title: error?.message || "An error occurred while searching",
+      title: error?.message || t("home_search_error"),
       color: "red",
     });
   } finally {
@@ -682,7 +699,7 @@ watch(
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.add({
-          title: "Failed to refresh categories",
+          title: t("home_refresh_failed"),
           color: "red",
         });
       } finally {
@@ -707,7 +724,7 @@ watch(
     } catch (error) {
       console.error("Search error:", error);
       toast.add({
-        title: error?.message || "An error occurred while searching",
+        title: error?.message || t("home_search_error"),
         color: "red",
       });
     } finally {

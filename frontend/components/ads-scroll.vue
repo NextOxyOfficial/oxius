@@ -209,6 +209,10 @@ function getImageSrc(ad) {
     return ad.medias[0].image;
   }
 
+  if (ad.category_details?.image) {
+    return ad.category_details.image;
+  }
+
   if (ad.image) {
     return ad.image;
   }

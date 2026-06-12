@@ -493,18 +493,42 @@
     <!-- Ad slot #2 (billboard) -->
     <SaleAdSlot variant="billboard" class="mt-4" />
 
-    <!-- Similar Services -->
-    <div v-if="similarServices.length" class="mt-6">
-      <h2 class="text-base font-bold text-gray-900 flex items-center gap-2 mb-3">
-        <Layers class="h-5 w-5 text-emerald-600" />
-        {{ $t("cd_similar") }}
-      </h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+    <!-- Similar Services (single-row rail) -->
+    <section
+      v-if="similarServices.length"
+      class="mt-6 bg-white rounded-xl border border-gray-200 p-3 sm:p-4"
+    >
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-[15px] sm:text-base font-bold text-gray-900 flex items-center gap-1.5">
+          <Layers class="h-5 w-5 text-emerald-600" />
+          {{ $t("cd_similar") }}
+        </h2>
+        <div class="flex items-center gap-1">
+          <button
+            @click="simScroll(-1)"
+            class="h-7 w-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-emerald-600"
+            :aria-label="$t('cd_similar')"
+          >
+            <ChevronLeft class="h-4 w-4" />
+          </button>
+          <button
+            @click="simScroll(1)"
+            class="h-7 w-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-emerald-600"
+            :aria-label="$t('cd_similar')"
+          >
+            <ChevronRight class="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <div
+        ref="simRail"
+        class="flex gap-3 overflow-x-auto pb-1 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         <NuxtLink
           v-for="item in similarServices"
           :key="item.id"
           :to="`/classified-categories/details/${item.slug || item.id}`"
-          class="group flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-emerald-300 hover:shadow-[0_2px_12px_rgba(16,185,129,0.12)] transition-all"
+          class="group w-40 sm:w-44 flex-shrink-0 snap-start flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-emerald-300 hover:shadow-[0_2px_12px_rgba(16,185,129,0.12)] transition-all"
         >
           <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden">
             <img
@@ -534,7 +558,7 @@
           </div>
         </NuxtLink>
       </div>
-    </div>
+    </section>
 
     <!-- Share Dialog -->
     <div
@@ -744,6 +768,14 @@ async function fetchSimilar() {
 
 const getSimilarImage = (p) =>
   getImageUrl(p?.medias?.[0]?.image || p?.category_details?.image || "");
+
+// Horizontal scroll control for the similar-services rail
+const simRail = ref(null);
+function simScroll(dir) {
+  if (simRail.value) {
+    simRail.value.scrollBy({ left: dir * 320, behavior: "smooth" });
+  }
+}
 
 // Computed property to check if user has social links
 const hasSocialLinks = computed(() => {
