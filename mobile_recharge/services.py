@@ -103,7 +103,7 @@ def process_recharge(recharge):
         recharge.failure_reason = (
             recharge.provider_response.get('message')
             or recharge.provider_response.get('error')
-            or 'প্রোভাইডার রিচার্জটি সম্পন্ন করতে পারেনি।'
+            or 'প্রোভাইডার রিচার্জটি কমপ্লিট করতে পারেনি।'
         )[:255]
         recharge.save(update_fields=[
             'status', 'failure_reason', 'provider_response', 'processed_at',

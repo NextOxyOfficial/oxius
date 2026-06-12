@@ -127,7 +127,7 @@ CATALOG = [
         deep_link=f"{SITE}/deposit-withdraw",
         eligible=lambda s, u: bool(s.pending.get("kyc")) and _has_balance(s),
         build=lambda s, u: (
-            "৳{} তুলে নিন 💰".format(int(float(s.pending["withdrawable_balance"]))),
+            "৳{} টাকা আপনার একাউন্টে রয়েছে  💰".format(int(float(s.pending["withdrawable_balance"]))),
             "{}, আপনার ৳{} ব্যালেন্স উইথড্র করার জন্যে রেডি। KYC ভেরিফাই করে এখনই উইথড্র করুন।".format(
                 _name(u), int(float(s.pending["withdrawable_balance"]))
             ),

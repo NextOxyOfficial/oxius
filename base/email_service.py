@@ -450,7 +450,7 @@ def send_transfer_sent_email(sender_user, receiver_user, amount, transaction_id)
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ফান্ড ট্রান্সফার সফলভাবে সম্পন্ন হয়েছে।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ফান্ড ট্রান্সফার সফলভাবে কমপ্লিট হয়েছে।</p>
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
@@ -499,7 +499,7 @@ def send_deposit_email(user, amount, transaction_id, payment_method=""):
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ডিপোজিট সফলভাবে সম্পন্ন হয়েছে এবং টাকা ওয়ালেটে যোগ হয়েছে।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ডিপোজিট সফলভাবে কমপ্লিট হয়েছে এবং টাকা ওয়ালেটে যোগ হয়েছে।</p>
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
@@ -536,7 +536,7 @@ def send_withdraw_email(user, amount, transaction_id, payment_method="", payment
 {_button("ট্রান্সঅ্যাকশন দেখুন", SITE_URL + "/deposit-withdraw")}
 """
 
-    html = _base_template(subject, body, "উইথড্র সাধারণত ২৪–৪৮ ঘণ্টার মধ্যে প্রক্রিয়া করা হয়। সম্পন্ন হলে আপনি একটি নিশ্চিতকরণ পাবেন।")
+    html = _base_template(subject, body, "উইথড্র সাধারণত ২৪–৪৮ ঘণ্টার মধ্যে প্রক্রিয়া করা হয়। কমপ্লিট হলে আপনি একটি নিশ্চিতকরণ পাবেন।")
     return _send_email(subject, user.email, text, html)
 
 
@@ -611,24 +611,24 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
     # Email to buyer
     buyer_body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{buyer_name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার গিগ অর্ডার <strong style="color:{BRAND_COLOR};">সম্পন্ন</strong> হয়েছে এবং বিক্রেতাকে পেমেন্ট রিলিজ করা হয়েছে।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার গিগ অর্ডার <strong style="color:{BRAND_COLOR};">কমপ্লিট</strong> হয়েছে এবং বিক্রেতাকে পেমেন্ট রিলিজ করা হয়েছে।</p>
 
 {_info_table(
     _info_row("গিগ", gig_title) +
     _info_row("বিক্রেতা", seller_name) +
     _info_row("পরিমাণ", f"৳{amount}") +
-    _info_row("স্ট্যাটাস", "সম্পন্ন ✓")
+    _info_row("স্ট্যাটাস", "কমপ্লিট ✓")
 )}
 
 {_button("রিভিউ দিন", SITE_URL + "/business-network/workspaces")}
 """
-    buyer_html = _base_template("গিগ অর্ডার সম্পন্ন হয়েছে", buyer_body)
-    _send_email("গিগ অর্ডার সম্পন্ন হয়েছে", buyer.email, f"Your gig order for '{gig_title}' is completed.", buyer_html)
+    buyer_html = _base_template("গিগ অর্ডার কমপ্লিট হয়েছে", buyer_body)
+    _send_email("গিগ অর্ডার কমপ্লিট হয়েছে", buyer.email, f"Your gig order for '{gig_title}' is completed.", buyer_html)
 
     # Email to seller
     seller_body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{seller_name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">একটি গিগ অর্ডার সম্পন্ন হয়েছে এবং <strong style="color:{BRAND_COLOR};">৳{amount}</strong> আপনার ব্যালেন্সে যোগ হয়েছে!</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">একটি গিগ অর্ডার কমপ্লিট হয়েছে এবং <strong style="color:{BRAND_COLOR};">৳{amount}</strong> আপনার ব্যালেন্সে যোগ হয়েছে!</p>
 
 {_info_table(
     _info_row("গিগ", gig_title) +
@@ -640,7 +640,7 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
 {_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 """
     seller_html = _base_template("পেমেন্ট রিলিজ হয়েছে", seller_body)
-    _send_email("পেমেন্ট রিলিজ হয়েছে — গিগ সম্পন্ন", seller.email, f"'{gig_title}' গিগের জন্য ৳{amount} রিলিজ হয়েছে।", seller_html)
+    _send_email("পেমেন্ট রিলিজ হয়েছে — গিগ কমপ্লিট", seller.email, f"'{gig_title}' গিগের জন্য ৳{amount} রিলিজ হয়েছে।", seller_html)
 
 
 def send_gig_order_status_email(recipient_user, gig_title, order_id, new_status, actor_name=""):
@@ -835,7 +835,7 @@ def send_mobile_recharge_email(user, amount, phone_number):
     subject = "মোবাইল রিচার্জ সফল হয়েছে"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার মোবাইল রিচার্জ সফলভাবে সম্পন্ন হয়েছে!</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার মোবাইল রিচার্জ সফলভাবে কমপ্লিট হয়েছে!</p>
 
 {_info_table(
     _info_row("Recharge Amount", f"৳{amount}") +

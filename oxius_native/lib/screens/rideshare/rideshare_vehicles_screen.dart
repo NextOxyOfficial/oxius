@@ -1321,7 +1321,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     t(
                       'rideshare_driver_not_approved_desc',
                       fallback:
-                          'আপনার ড্রাইভার প্রোফাইল এখনো অনুমোদিত হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন সম্পন্ন করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
+                          'আপনার ড্রাইভার প্রোফাইল এখনো অনুমোদিত হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন কমপ্লিট করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
                     ),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(

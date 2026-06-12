@@ -1698,9 +1698,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       'ride requested! looking for a driver...':
           'রাইড রিকোয়েস্ট করা হয়েছে। ড্রাইভার খোঁজা হচ্ছে...',
       'ride complete. please pay the driver in cash.':
-          'রাইড সম্পন্ন। ড্রাইভারকে নগদ পরিশোধ করুন।',
+          'রাইড কমপ্লিট। ড্রাইভারকে নগদ পরিশোধ করুন।',
       'ride complete and wallet payment confirmed.':
-          'রাইড সম্পন্ন এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।',
+          'রাইড কমপ্লিট এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।',
       'you already have an active ride.':
           'আপনার ইতিমধ্যে একটি রাইড চলছে।',
       'ride requested successfully.': 'রাইড রিকোয়েস্ট সফলভাবে করা হয়েছে।',

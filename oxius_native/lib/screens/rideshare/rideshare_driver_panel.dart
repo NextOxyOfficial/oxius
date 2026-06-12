@@ -487,7 +487,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'লোকেশন সেটআপ সম্পন্ন করুন',
+                'লোকেশন সেটআপ কমপ্লিট করুন',
                 style: GoogleFonts.inter(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -570,7 +570,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       child: Text(
                         goOnlineAfterSetup
                             ? 'সেটিংস খুলুন'
-                            : 'সেটআপ সম্পন্ন করুন',
+                            : 'সেটআপ কমপ্লিট করুন',
                         style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -1373,7 +1373,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'রাইড অ্যালার্ট সেটআপ সম্পন্ন করুন',
+                'রাইড অ্যালার্ট সেটআপ কমপ্লিট করুন',
                 style: GoogleFonts.inter(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -1996,19 +1996,19 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       'unable to open chat': 'চ্যাট খোলা যাচ্ছে না।',
       'passenger chat is unavailable':
           'যাত্রীর সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
-      'ride completed!': 'রাইড সম্পন্ন হয়েছে!',
+      'ride completed!': 'রাইড কমপ্লিট হয়েছে!',
       'ride cancelled': 'রাইড বাতিল হয়েছে।',
       'application submitted! wait for admin approval.':
           'আবেদন জমা হয়েছে। এখন অ্যাডমিন অনুমোদনের জন্য অপেক্ষা করুন।',
       'profile saved': 'প্রোফাইল সেভ করা হয়েছে।',
       'you are now online': 'আপনি এখন অনলাইনে আছেন।',
       'you are now offline': 'আপনি এখন অফলাইনে আছেন।',
-      'done!': 'সম্পন্ন হয়েছে!',
+      'done!': 'কমপ্লিট হয়েছে!',
       'this ride request has expired.': 'এই রাইড রিকোয়েস্টের সময় শেষ হয়েছে।',
       'ride accepted!': 'রাইড গ্রহণ করা হয়েছে!',
       'ride skipped.': 'রাইডটি স্কিপ করা হয়েছে।',
       'passenger confirmation requested for early completion.':
-          'আগাম সম্পন্নের জন্য যাত্রীর অনুমোদন চাওয়া হয়েছে।',
+          'আগাম কমপ্লিটের জন্য যাত্রীর অনুমোদন চাওয়া হয়েছে।',
       'could not pick documents right now.':
           'এই মুহূর্তে ডকুমেন্ট নেওয়া যাচ্ছে না।',
       'you can upload up to 10 additional documents.':
@@ -2017,7 +2017,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       'this ride is currently assigned to another driver.':
           'এই রাইডটি বর্তমানে অন্য একজন ড্রাইভারের জন্য নির্ধারিত।',
       'you already have an active ride. complete it before accepting a new one.':
-          'আপনার ইতোমধ্যে একটি সক্রিয় রাইড আছে। নতুনটি নেওয়ার আগে সেটি শেষ করুন।',
+          'আপনার ইতোমধ্যে একটি একটিভ রাইড আছে। নতুনটি নেওয়ার আগে সেটি শেষ করুন।',
       'ride accepted successfully.': 'রাইড সফলভাবে গ্রহণ করা হয়েছে।',
     };
 
