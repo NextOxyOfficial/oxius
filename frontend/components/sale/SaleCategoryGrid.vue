@@ -40,7 +40,7 @@
         :key="cat.id"
         @click="$emit('select', cat.id)"
         :class="[
-          'group flex-shrink-0 w-24 snap-start flex flex-col items-center gap-1.5 py-2.5 px-1.5 rounded-lg border transition-all duration-150',
+          'group flex-shrink-0 w-28 snap-start flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-lg border transition-all duration-150',
           isActive(cat.id)
             ? 'border-emerald-500 bg-emerald-50'
             : 'border-gray-200 bg-gray-50/60 hover:border-emerald-300 hover:bg-emerald-50/50',
@@ -48,13 +48,22 @@
       >
         <span
           :class="[
-            'h-11 w-11 rounded-full flex items-center justify-center transition-colors',
-            isActive(cat.id) ? 'bg-emerald-100' : 'bg-white group-hover:bg-emerald-100 border border-gray-100',
+            'h-14 w-14 rounded-full flex items-center justify-center overflow-hidden transition-colors',
+            isActive(cat.id) ? 'bg-emerald-100' : 'bg-white group-hover:bg-emerald-50 border border-gray-100',
           ]"
         >
+          <img
+            v-if="cat.icon && !failed[cat.id]"
+            :src="cat.icon"
+            :alt="cat.name"
+            loading="lazy"
+            class="h-9 w-9 object-contain"
+            @error="failed[cat.id] = true"
+          />
           <UIcon
+            v-else
             :name="iconFor(cat.name)"
-            :class="['h-6 w-6', isActive(cat.id) ? 'text-emerald-600' : 'text-gray-500 group-hover:text-emerald-600']"
+            :class="['h-7 w-7', isActive(cat.id) ? 'text-emerald-600' : 'text-gray-500 group-hover:text-emerald-600']"
           />
         </span>
         <span class="text-[11.5px] font-medium text-gray-700 leading-tight text-center break-words w-full min-h-[2.4em] flex items-center justify-center">{{ cat.name }}</span>
@@ -65,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 
 const props = defineProps({
   categories: { type: Array, default: () => [] },
@@ -73,9 +82,12 @@ const props = defineProps({
 });
 defineEmits(["select", "clear"]);
 
+// Tracks category ids whose icon image failed to load, so we fall back to a glyph.
+const failed = reactive({});
+
 const rail = ref(null);
 function scrollBy(dir) {
-  if (rail.value) rail.value.scrollBy({ left: dir * 320, behavior: "smooth" });
+  if (rail.value) rail.value.scrollBy({ left: dir * 360, behavior: "smooth" });
 }
 
 function isActive(id) {
