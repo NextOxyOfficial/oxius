@@ -201,9 +201,9 @@
         <PublicServiceCategory :services="services" />
 
         <!-- Premium load more button -->
-        <div class="text-center mt-4" v-if="services.next">
+        <div class="text-center mt-4" v-if="services?.next">
           <button
-            @click="loadMore(services.next)"
+            @click="loadMore(services?.next)"
             class="group relative inline-flex text-sm items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-sm hover:shadow-sm transition-all duration-200"
             :disabled="isLoadingMore"
           >
@@ -804,7 +804,7 @@ async function loadInitialData() {
     if (Array.isArray(res.data)) {
       services.value = { results: res.data, next: null };
     } else {
-      services.value = res.data;
+      services.value = res.data || { results: [], next: null };
     }
   } catch (e) {
     services.value = { results: [], next: null };
@@ -1024,7 +1024,7 @@ async function handleSearch() {
     if (Array.isArray(categoriesRes.data)) {
       services.value = { results: categoriesRes.data, next: null };
     } else {
-      services.value = categoriesRes.data;
+      services.value = categoriesRes.data || { results: [], next: null };
     }
 
     classifiedPosts.value = postsRes.data;
@@ -1052,7 +1052,7 @@ watch(
         if (Array.isArray(res.data)) {
           services.value = { results: res.data, next: null };
         } else {
-          services.value = res.data;
+          services.value = res.data || { results: [], next: null };
         }
         searchServices.value = { results: [], next: null };
         classifiedPosts.value = [];
