@@ -8,7 +8,7 @@
       @clear-location="handleClearLocation"
     />
 
-    <div class="max-w-6xl mx-auto px-3 py-3 sm:py-4">
+    <div class="max-w-6xl mx-auto px-1 py-3 sm:py-4">
       <!-- Breadcrumb -->
       <nav class="flex items-center justify-between text-sm mb-3">
         <div class="flex items-center flex-1 min-w-0 text-gray-500">
