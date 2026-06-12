@@ -6,11 +6,11 @@
         <div class="p-1.5 rounded bg-primary/10 text-primary">
           <UIcon :name="icon" class="w-5 h-5" />
         </div>
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+        <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
           {{ title }}
         </h2>
         <UBadge color="primary" variant="subtle" class="ml-2">
-          {{ products.length }} Products
+          {{ products.length }} {{ $t("product_products") }}
         </UBadge>
       </div>
 
@@ -356,7 +356,7 @@
                       />
 
                       <!-- Button text -->
-                      <span class="text-base">Add to Cart</span>
+                      <span class="text-base">{{ $t("product_add_to_cart") }}</span>
                     </div>
                   </UButton>
                 </div>

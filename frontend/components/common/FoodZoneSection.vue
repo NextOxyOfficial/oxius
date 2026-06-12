@@ -13,14 +13,10 @@
     >
       <div class="px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-600 to-pink-500 flex items-center justify-center shadow-sm"
-          >
-            <UIcon name="i-heroicons-rectangle-stack" class="w-5 h-5 text-white" />
-          </div>
+          <UIcon name="i-heroicons-rectangle-stack" class="w-8 h-8 text-pink-600 dark:text-pink-400 shrink-0" />
           <div>
-            <div class="text-sm font-bold text-pink-700">Food Zone</div>
-            <div class="text-xs text-gray-500">Delicious food near you</div>
+            <div class="text-sm font-bold text-pink-700">{{ $t("food_zone_title") }}</div>
+            <div class="text-xs text-gray-500">{{ $t("food_zone_subtitle") }}</div>
           </div>
         </div>
 
@@ -28,7 +24,7 @@
           to="/food-zone"
           class="px-3 py-1.5 rounded-full bg-pink-600 text-white text-xs font-bold hover:bg-pink-700 transition-colors"
         >
-          See All
+          {{ $t("food_zone_view_all") }}
         </NuxtLink>
       </div>
 
@@ -84,7 +80,7 @@
                 v-if="p.negotiable"
                 class="absolute top-1 left-1 px-2 py-0.5 rounded bg-pink-600 text-white text-[10px] font-bold"
               >
-                Negotiable
+                {{ $t("sale_card_negotiable") }}
               </div>
             </div>
 
@@ -95,7 +91,7 @@
               <div class="mt-1 flex items-center justify-between">
                 <div class="text-xs font-bold text-pink-600">
                   <span v-if="p?.price && Number(p.price) > 0">৳{{ Number(p.price).toFixed(0) }}</span>
-                  <span v-else class="text-[10px] font-medium text-gray-500">Contact</span>
+                  <span v-else class="text-[10px] font-medium text-gray-500">{{ $t("sale_cat_contact") }}</span>
                 </div>
                 <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-300" />
               </div>

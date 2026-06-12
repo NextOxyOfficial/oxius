@@ -32,22 +32,11 @@
           <!-- Top section with icon and title -->
           <div class="flex items-center justify-between mb-3 sm:mb-0">
             <div class="flex items-center gap-3 sm:gap-4">
-              <!-- App-style Icon -->
-              <div class="relative">
-                <!-- Icon background with modern design -->
-                <div
-                  class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
-                >
-                  <UIcon
-                    name="i-heroicons-shopping-bag"
-                    class="w-5 h-5 sm:w-6 sm:h-6 text-white"
-                  />
-                  <!-- Subtle shine effect -->
-                  <div
-                    class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"
-                  ></div>
-                </div>
-              </div>
+              <!-- Clean icon, no background -->
+              <UIcon
+                name="i-heroicons-shopping-bag"
+                class="w-8 h-8 sm:w-9 sm:h-9 text-violet-600 dark:text-violet-400 shrink-0"
+              />
 
               <!-- Title and description -->
               <div class="flex-1 min-w-0">
@@ -61,7 +50,7 @@
                 <p
                   class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium"
                 >
-                  Diverse products from various categories
+                  {{ $t("eshop_subtitle") }}
                 </p>
               </div>
             </div>

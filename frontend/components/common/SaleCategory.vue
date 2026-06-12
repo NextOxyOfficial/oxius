@@ -68,22 +68,11 @@
               class="section-header max-sm:flex max-sm:flex-col max-sm:gap-4 sm:mb-0 mb-0 flex justify-between items-center relative z-10"
             >
               <div class="flex items-center gap-4">
-                <!-- App-style Icon -->
-                <div class="relative">
-                  <!-- Icon background with modern design -->
-                  <div
-                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center"
-                  >
-                    <Icon
-                      name="heroicons:tag"
-                      class="w-5 h-5 sm:w-6 sm:h-6 text-white"
-                    />
-                    <!-- Subtle shine effect -->
-                    <div
-                      class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"
-                    ></div>
-                  </div>
-                </div>
+                <!-- Clean icon, no background -->
+                <Icon
+                  name="heroicons:tag"
+                  class="w-8 h-8 sm:w-9 sm:h-9 text-emerald-600 dark:text-emerald-400 shrink-0"
+                />
 
                 <!-- Title with enhanced styling -->
                 <div class="flex-1 min-w-0">
@@ -437,12 +426,12 @@
                     <span
                       v-if="post.featured"
                       class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded"
-                      >Featured</span
+                      >{{ $t("sale_cat_featured") }}</span
                     >
                     <span
                       v-else-if="post.status === 'sold'"
                       class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded"
-                      >Sold</span
+                      >{{ $t("sale_cat_sold") }}</span
                     >
                   </div>
 
@@ -527,12 +516,12 @@
                     <span
                       v-if="post.featured"
                       class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded"
-                      >Featured</span
+                      >{{ $t("sale_cat_featured") }}</span
                     >
                     <span
                       v-else-if="post.status === 'sold'"
                       class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded"
-                      >Sold</span
+                      >{{ $t("sale_cat_sold") }}</span
                     >
                   </div>
 

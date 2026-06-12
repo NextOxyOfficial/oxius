@@ -1,5 +1,6 @@
 <template>
-  <div class="max-w-6xl mx-auto -mt-3 mb-8">
+  <div class="bg-gray-50/60 min-h-screen pb-8">
+    <div class="max-w-6xl mx-auto px-3 py-3 sm:py-4">
     <!-- Breadcrumb -->
     <nav
       class="flex items-center text-sm my-3 px-3 pt-4 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide"
@@ -7,7 +8,7 @@
       <NuxtLink
         to="/"
         class="text-gray-500 hover:text-emerald-600 flex-shrink-0"
-        >Home</NuxtLink
+        >{{ $t("home") }}</NuxtLink
       >
       <span class="mx-2 text-gray-400 flex-shrink-0">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
@@ -15,7 +16,7 @@
       <NuxtLink
         to="/classified-categories"
         class="text-gray-500 hover:text-emerald-600 flex-shrink-0"
-        >Classified Categories</NuxtLink
+        >{{ $t("cd_breadcrumb") }}</NuxtLink
       >
       <span class="mx-2 text-gray-400 flex-shrink-0">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
@@ -43,7 +44,7 @@
       <div class="lg:col-span-3 relative">
         <div
           ref="galleryRef"
-          class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200"
+          class="relative aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200"
           @touchstart="handleTouchStart"
           @touchmove="handleTouchMove"
           @touchend="handleTouchEnd"
@@ -57,7 +58,7 @@
             >
               <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400" />
             </div>
-            <p class="text-gray-500 text-lg font-medium">No Photo Uploaded</p>
+            <p class="text-gray-500 text-lg font-medium">{{ $t("sale_detail_no_photo") }}</p>
           </div>
           <img
             v-else
@@ -89,7 +90,7 @@
               @click="downloadImage"
             >
               <Download class="h-3 w-3 mr-1" />
-              Download
+              {{ $t("sale_detail_download") }}
             </button>
             <span
               v-if="service?.medias?.length > 1"
@@ -132,9 +133,9 @@
 
       <!-- Service Info - 2 columns on large screens -->
       <div class="lg:col-span-2">
-        <div class="bg-white rounded-lg p-3 border border-gray-200">
+        <div class="bg-white rounded-xl p-3 border border-gray-200">
           <div class="flex justify-between items-start">
-            <h1 class="text-xl font-bold text-gray-800">
+            <h1 class="text-lg sm:text-xl font-bold text-gray-900">
               {{ capitalizeTitle(service?.title) }}
             </h1>
             <div class="flex space-x-2">
@@ -148,7 +149,7 @@
           </div>
           <div class="mt-2 flex items-center text-sm text-gray-600">
             <span v-if="numericServiceId" class="font-medium text-gray-600 mr-2"
-              >Service ID: {{ numericServiceId }}</span
+              >{{ $t("cd_service_id") }} {{ numericServiceId }}</span
             >
             <span v-if="service?.created_at" class="flex items-center">
               <Calendar class="h-3 w-3 mr-1" />
@@ -164,11 +165,11 @@
               <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
                 service?.price
                   ? service.price.toLocaleString()
-                  : "Contact for Price"
+                  : $t("sale_detail_contact_price")
               }}
             </span>
             <span v-else class="text-2xl font-bold text-emerald-600"
-              >Negotiable</span
+              >{{ $t("sale_card_negotiable") }}</span
             >
           </div>
           <div class="mt-4 space-y-3">
@@ -180,9 +181,9 @@
                 <MapPin class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-600">Location</div>
+                <div class="text-sm font-medium text-gray-600">{{ $t("location") }}</div>
                 <div class="text-sm text-gray-800">
-                  {{ service?.location || "Location not specified" }}
+                  {{ service?.location || $t("sale_detail_location_unspecified") }}
                 </div>
               </div>
             </div>
@@ -196,7 +197,7 @@
                   <Tag class="h-4 w-4 text-emerald-600" />
                 </div>
                 <div>
-                  <div class="text-sm font-medium text-gray-600">Category</div>
+                  <div class="text-sm font-medium text-gray-600">{{ $t("sale_form_category") }}</div>
                   <div class="text-sm text-gray-800">
                     {{ service.category_details?.title }}
                   </div>
@@ -210,7 +211,7 @@
                   <Clock class="h-4 w-4 text-emerald-600" />
                 </div>
                 <div>
-                  <div class="text-sm font-medium text-gray-600">Posted</div>
+                  <div class="text-sm font-medium text-gray-600">{{ $t("cd_posted") }}</div>
                   <div class="text-sm text-gray-800">
                     {{ formatRelativeTime(service?.created_at) }}
                   </div>
@@ -225,29 +226,32 @@
               @click="openReportDialog"
             >
               <Flag class="h-3 w-3 mr-1" />
-              Report Service
+              {{ $t("cd_report") }}
             </button>
             <button
               class="flex-1 text-sm py-2 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-600"
               @click="handleShare"
             >
               <Share2 class="h-3 w-3 mr-1" />
-              Share
+              {{ $t("sale_detail_share") }}
             </button>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Ad slot #1 (leaderboard) -->
+    <SaleAdSlot variant="leaderboard" class="mt-4" />
+
     <!-- Details Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
       <!-- Service Details - 2 columns on large screens -->
       <div class="lg:col-span-2">
-        <div class="bg-white rounded-lg overflow-hidden border border-gray-200">
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
           <div class="p-3">
-            <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
-              <ClipboardList class="h-5 w-5 mr-2 text-emerald-600" />
-              Service Details
+            <h2 class="text-base font-bold mb-3 text-gray-900 flex items-center gap-2">
+              <ClipboardList class="h-5 w-5 text-emerald-600" />
+              {{ $t("cd_details") }}
             </h2>
             <div
               v-if="service?.instructions"
@@ -255,7 +259,7 @@
               v-html="renderRichText(service?.instructions)"
             ></div>
             <div v-else class="text-gray-500 sm:px-6 text-sm italic">
-              No service details provided
+              {{ $t("cd_no_details") }}
             </div>
 
             <!-- Service Location - Only show if location exists -->
@@ -263,10 +267,10 @@
               <div class="my-6 border-t border-gray-100"></div>
               <div>
                 <h3
-                  class="text-base font-semibold mb-3 text-gray-800 flex items-center"
+                  class="text-base font-semibold mb-3 text-gray-900 flex items-center gap-2"
                 >
-                  <MapPin class="h-4 w-4 mr-2 text-emerald-600" />
-                  Service Location
+                  <MapPin class="h-4 w-4 text-emerald-600" />
+                  {{ $t("cd_service_location") }}
                 </h3>
                 <div class="text-sm sm:px-6 text-gray-800">
                   {{ service?.location }}
@@ -278,39 +282,37 @@
 
         <!-- Safety Tips -->
         <div
-          class="bg-white rounded-lg overflow-hidden mt-6 border border-gray-200"
+          class="bg-white rounded-xl overflow-hidden mt-6 border border-gray-200"
         >
-          <div class="p-6">
-            <div class="flex items-center mb-4">
-              <ShieldCheck class="h-5 w-5 text-emerald-600 mr-2" />
-              <h2 class="text-lg font-bold text-gray-800">Safety Tips</h2>
+          <div class="p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <ShieldCheck class="h-5 w-5 text-emerald-600" />
+              <h2 class="text-base font-bold text-gray-900">{{ $t("sale_detail_safety") }}</h2>
             </div>
             <ul class="space-y-3 text-gray-600 text-sm">
               <li class="flex items-start">
                 <div class="bg-emerald-50 rounded-full p-1 mr-3 mt-0.5">
                   <Check class="h-3 w-3 text-emerald-600" />
                 </div>
-                <span>Verify service provider credentials</span>
+                <span>{{ $t("cd_tip_credentials") }}</span>
               </li>
               <li class="flex items-start">
                 <div class="bg-emerald-50 rounded-full p-1 mr-3 mt-0.5">
                   <Check class="h-3 w-3 text-emerald-600" />
                 </div>
-                <span
-                  >Meet in a safe, public place for initial consultation</span
-                >
+                <span>{{ $t("cd_tip_meet") }}</span>
               </li>
               <li class="flex items-start">
                 <div class="bg-emerald-50 rounded-full p-1 mr-3 mt-0.5">
                   <Check class="h-3 w-3 text-emerald-600" />
                 </div>
-                <span>Get written quotes and agreements</span>
+                <span>{{ $t("cd_tip_quotes") }}</span>
               </li>
               <li class="flex items-start">
                 <div class="bg-emerald-50 rounded-full p-1 mr-3 mt-0.5">
                   <Check class="h-3 w-3 text-emerald-600" />
                 </div>
-                <span>Don't pay full amount in advance</span>
+                <span>{{ $t("cd_tip_advance") }}</span>
               </li>
             </ul>
           </div>
@@ -319,11 +321,11 @@
 
       <!-- Service Provider Info - 1 column on large screens -->
       <div class="lg:col-span-1">
-        <div class="bg-white rounded-lg overflow-hidden border border-gray-200">
-          <div class="p-6">
-            <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
-              <User class="h-5 w-5 mr-2 text-emerald-600" />
-              Service Provider
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
+          <div class="p-4">
+            <h2 class="text-base font-bold mb-3 text-gray-900 flex items-center gap-2">
+              <User class="h-5 w-5 text-emerald-600" />
+              {{ $t("cd_provider") }}
             </h2>
             <div class="flex items-center">
               <div
@@ -348,25 +350,25 @@
                       v-if="service.user?.kyc"
                       name="mdi:check-decagram"
                       class="w-4 h-4 text-blue-600"
-                      title="Verified"
+                      :title="$t('sale_detail_verified')"
                     />
                     <div class="inline-flex" v-if="service.user?.is_pro">
                       <span
                         class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm"
-                        title="Pro Member"
+                        :title="$t('pro_member')"
                       >
                         <div class="flex items-center gap-1">
                           <UIcon
                             name="i-heroicons-shield-check"
                             class="size-3"
                           />
-                          <span class="text-2xs">Pro</span>
+                          <span class="text-2xs">{{ $t("pro") }}</span>
                         </div>
                       </span>
                     </div>
                   </div>
                 </div>
-                <p class="text-sm text-gray-600">Service Provider</p>
+                <p class="text-sm text-gray-600">{{ $t("cd_provider_label") }}</p>
               </div>
             </div>
 
@@ -378,7 +380,7 @@
 
             <div class="mt-4 space-y-3 bg-gray-50 p-4 rounded-md">
               <div v-if="service.user?.phone" class="flex justify-between items-center text-sm">
-                <span class="text-gray-600">Phone</span>
+                <span class="text-gray-600">{{ $t("sale_detail_phone") }}</span>
                 <div class="flex items-center">
                   <span v-if="!showPhone" class="text-gray-800">{{
                     maskPhoneNumber(service.user?.phone)
@@ -400,7 +402,7 @@
                 v-if="service.user?.email"
                 class="flex justify-between text-sm"
               >
-                <span class="text-gray-600">Email</span>
+                <span class="text-gray-600">{{ $t("cd_email") }}</span>
                 <a
                   :href="'mailto:' + service.user?.email"
                   class="font-medium text-emerald-600 hover:text-emerald-700"
@@ -411,13 +413,13 @@
               
               <!-- Show message if no contact info -->
               <div v-if="!service.user?.phone && !service.user?.email" class="text-sm text-gray-500 text-center py-2">
-                No contact information available
+                {{ $t("cd_no_contact") }}
               </div>
             </div>
 
             <!-- Social Links -->
             <div v-if="hasSocialLinks" class="mt-4 space-y-2">
-              <h4 class="text-sm font-medium text-gray-800">Connect</h4>
+              <h4 class="text-sm font-medium text-gray-800">{{ $t("cd_connect") }}</h4>
               <div class="flex flex-wrap gap-2">
                 <a
                   v-if="service.user?.face_link"
@@ -455,7 +457,7 @@
               class="mt-4 pt-4 border-t border-gray-100"
             >
               <button
-                class="w-full flex items-center justify-center text-blue-600 hover:text-blue-700 transition-all duration-200 text-base font-semibold cursor-pointer group py-2 px-4 hover:bg-blue-50 rounded-lg"
+                class="w-full flex items-center justify-center text-blue-600 hover:text-blue-700 transition-all duration-200 text-base font-semibold cursor-pointer group py-2 px-4 hover:bg-blue-50 rounded-xl"
                 @click="
                   handleButtonClick('chat_provider');
                   startChatWithProvider();
@@ -471,7 +473,7 @@
                     alt="Chat"
                     class="w-5 h-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity"
                   />
-                  Chat with Service Provider
+                  {{ $t("cd_chat") }}
                 </template>
               </button>
             </div>
@@ -481,10 +483,56 @@
               @click="contactProvider"
             >
               <Phone class="h-4 w-4 mr-2 text-emerald-600" />
-              Contact Provider
+              {{ $t("cd_contact_provider") }}
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Ad slot #2 (billboard) -->
+    <SaleAdSlot variant="billboard" class="mt-4" />
+
+    <!-- Similar Services -->
+    <div v-if="similarServices.length" class="mt-6">
+      <h2 class="text-base font-bold text-gray-900 flex items-center gap-2 mb-3">
+        <Layers class="h-5 w-5 text-emerald-600" />
+        {{ $t("cd_similar") }}
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+        <NuxtLink
+          v-for="item in similarServices"
+          :key="item.id"
+          :to="`/classified-categories/details/${item.slug || item.id}`"
+          class="group flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-emerald-300 hover:shadow-[0_2px_12px_rgba(16,185,129,0.12)] transition-all"
+        >
+          <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+            <img
+              v-if="getSimilarImage(item)"
+              :src="getSimilarImage(item)"
+              :alt="item?.title"
+              loading="lazy"
+              class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
+            />
+            <div v-else class="absolute inset-0 flex items-center justify-center text-gray-300">
+              <UIcon name="i-heroicons-photo" class="h-8 w-8" />
+            </div>
+          </div>
+          <div class="p-2 sm:p-2.5 flex flex-col gap-0.5 flex-1">
+            <p class="font-bold text-[15px] text-emerald-600 leading-tight">
+              <span v-if="item?.negotiable">{{ $t("sale_card_negotiable") }}</span>
+              <span v-else-if="item?.price">৳{{ Number(item.price).toLocaleString() }}</span>
+              <span v-else class="text-[13px] text-gray-500">{{ $t("sale_card_contact") }}</span>
+            </p>
+            <h3 class="text-[13px] text-gray-700 leading-snug line-clamp-2 group-hover:text-emerald-700 min-h-[34px]">
+              {{ capitalizeTitle(item.title) }}
+            </h3>
+            <div class="mt-auto pt-1 flex items-center gap-0.5 text-[11px] text-gray-400">
+              <UIcon name="i-heroicons-map-pin" class="h-3 w-3 flex-shrink-0" />
+              <span class="truncate">{{ item?.location || $t("all_over_bangladesh") }}</span>
+            </div>
+          </div>
+        </NuxtLink>
       </div>
     </div>
 
@@ -495,11 +543,11 @@
       @click="closeShareDialog"
     >
       <div
-        class="bg-white rounded-lg max-w-md w-full mx-4 border border-gray-200"
+        class="bg-white rounded-xl max-w-md w-full mx-4 border border-gray-200"
         @click.stop
       >
         <div class="flex justify-between items-center p-5 border-b">
-          <h3 class="font-semibold text-gray-800">Share this service</h3>
+          <h3 class="font-semibold text-gray-800">{{ $t("cd_share_title") }}</h3>
           <button
             @click="closeShareDialog"
             class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
@@ -526,13 +574,13 @@
             >
               <span class="flex items-center">
                 <UIcon name="i-heroicons-clipboard" class="w-4 h-4 mr-1" />
-                Copy
+                {{ $t("sale_detail_copy") }}
               </span>
             </button>
           </div>
 
           <div class="mt-5">
-            <h4 class="text-sm font-medium mb-3 text-gray-800">Share via</h4>
+            <h4 class="text-sm font-medium mb-3 text-gray-800">{{ $t("sale_detail_share_via") }}</h4>
             <div class="grid grid-cols-2 gap-3">
               <button
                 class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
@@ -570,11 +618,12 @@
 
     <CommonUniversalReportDialog
       v-model="showReportDialog"
-      title="Report Service"
-      prompt="Please select a reason for reporting this service:"
+      :title="$t('cd_report')"
+      :prompt="$t('cd_report_prompt')"
       :options="classifiedReportOptions"
       :on-submit="submitReport"
     />
+    </div>
   </div>
 </template>
 
@@ -605,8 +654,10 @@ import {
   Check,
   Phone,
 } from "lucide-vue-next";
+import SaleAdSlot from "~/components/sale/SaleAdSlot.vue";
 
 const { renderRichText } = useRichText();
+const { t } = useI18n();
 
 // Import toast functionality for notifications
 const toast = useToast();
@@ -636,14 +687,14 @@ const galleryRef = ref(null);
 const touchStartX = ref(0);
 const touchEndX = ref(0);
 const shareUrl = ref("");
-const classifiedReportOptions = [
-  { label: "Spam or misleading", value: "spam" },
-  { label: "Inappropriate content", value: "inappropriate" },
-  { label: "Harassment or hate speech", value: "harassment" },
-  { label: "Violence or dangerous content", value: "violence" },
-  { label: "Fraudulent or scam", value: "fraud" },
-  { label: "Other", value: "other" },
-];
+const classifiedReportOptions = computed(() => [
+  { label: t("sale_report_spam"), value: "spam" },
+  { label: t("sale_report_inappropriate"), value: "inappropriate" },
+  { label: t("cd_report_harassment"), value: "harassment" },
+  { label: t("cd_report_violence"), value: "violence" },
+  { label: t("sale_report_fraud"), value: "fraud" },
+  { label: t("sale_report_other"), value: "other" },
+]);
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());
@@ -659,6 +710,7 @@ async function fetchServices() {
   );
 
   service.value = response;
+  fetchSimilar();
   useHead({
     title: `AdsyClub | ${
       response?.title
@@ -672,6 +724,27 @@ setTimeout(() => {
   fetchServices();
 }, 20);
 
+// Similar services (same category) for the bottom rail
+const similarServices = ref([]);
+async function fetchSimilar() {
+  try {
+    const catId = service.value?.category_details?.id || service.value?.category;
+    const url = catId
+      ? `${baseURL}/classified-posts/?category=${catId}`
+      : `${baseURL}/classified-posts/`;
+    const res = await $fetch(url);
+    const list = Array.isArray(res) ? res : res?.results || [];
+    similarServices.value = list
+      .filter((p) => String(p.slug || p.id) !== String(router.params.id))
+      .slice(0, 8);
+  } catch (e) {
+    similarServices.value = [];
+  }
+}
+
+const getSimilarImage = (p) =>
+  getImageUrl(p?.medias?.[0]?.image || p?.category_details?.image || "");
+
 // Computed property to check if user has social links
 const hasSocialLinks = computed(() => {
   return (
@@ -684,7 +757,7 @@ const hasSocialLinks = computed(() => {
 // Computed property for provider display name
 const providerDisplayName = computed(() => {
   const user = service.value?.user;
-  if (!user) return "Unknown Provider";
+  if (!user) return t("cd_unknown_provider");
   
   const firstName = user.first_name?.trim() || "";
   const lastName = user.last_name?.trim() || "";
@@ -699,7 +772,7 @@ const providerDisplayName = computed(() => {
     return user.username;
   }
   
-  return "Service Provider";
+  return t("cd_provider_label");
 });
 
 // Generate numeric service ID
@@ -741,27 +814,27 @@ const formatDate = (dateString) => {
 
 // Format relative time
 const formatRelativeTime = (dateString) => {
-  if (!dateString) return "Recently";
+  if (!dateString) return t("cd_recently");
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Recently";
+    if (isNaN(date.getTime())) return t("cd_recently");
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
 
-    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 60) return t("cd_just_now");
     if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+      return `${Math.floor(diffInSeconds / 60)} ${t("cd_minutes_ago")}`;
     if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+      return `${Math.floor(diffInSeconds / 3600)} ${t("cd_hours_ago")}`;
+    return `${Math.floor(diffInSeconds / 86400)} ${t("cd_days_ago")}`;
   } catch (e) {
-    return "Recently";
+    return t("cd_recently");
   }
 };
 
 // Mask phone number
 const maskPhoneNumber = (phone) => {
-  if (!phone) return "Not provided";
+  if (!phone) return t("sale_detail_not_provided");
   return "XXXXXXX" + phone?.slice(-3);
 };
 
@@ -861,8 +934,8 @@ const copyToClipboard = () => {
   navigator.clipboard.writeText(shareUrl.value);
   // Show a toast message
   toast.add({
-    title: "Link Copied!",
-    description: "Share link has been copied to clipboard",
+    title: t("sale_detail_link_copied"),
+    description: t("sale_detail_link_copied_desc"),
     color: "green",
     icon: "i-heroicons-check-circle",
   });
@@ -925,8 +998,8 @@ const contactProvider = () => {
     window.open(service.value.user.whatsapp_link, "_blank");
   } else {
     toast.add({
-      title: "Contact Information Not Available",
-      description: "No contact information is available for this provider.",
+      title: t("cd_no_contact_title"),
+      description: t("cd_no_contact_desc"),
       color: "red",
       icon: "i-heroicons-exclamation-triangle",
     });
@@ -990,8 +1063,8 @@ const startChatWithProvider = async () => {
 
     if (!service.value?.user?.id) {
       toast.add({
-        title: 'Error',
-        description: 'Service provider information not available.',
+        title: t('sale_detail_error'),
+        description: t('cd_provider_unavailable'),
         color: 'red',
         timeout: 3000,
       });
@@ -1002,16 +1075,16 @@ const startChatWithProvider = async () => {
     await navigateTo(`/inbox?chat_with=${service.value.user.id}`);
     
     toast.add({
-      title: 'Chat Started',
-      description: `Opening chat with ${providerDisplayName.value}`,
+      title: t('sale_detail_chat_started'),
+      description: providerDisplayName.value,
       color: 'green',
       timeout: 2000,
     });
   } catch (error) {
     console.error('Error starting chat:', error);
     toast.add({
-      title: 'Error',
-      description: 'Failed to start chat. Please try again.',
+      title: t('sale_detail_error'),
+      description: t('sale_detail_chat_failed'),
       color: 'red',
       timeout: 3000,
     });

@@ -124,7 +124,7 @@
             class="text-lg font-semibold flex items-center gap-2"
           >
             <UIcon name="i-heroicons-tag" class="text-emerald-500" />
-            Categories
+            {{ $t("home_categories") }}
           </h3>
           <ul
             class="flex flex-wrap gap-2"
@@ -161,7 +161,7 @@
             class="text-lg font-semibold flex items-center gap-2"
           >
             <UIcon name="i-heroicons-newspaper" class="text-blue-500" />
-            Ad Posts
+            {{ $t("home_ad_posts") }}
           </h3>
           <ul v-if="classifiedPosts.results?.length" class="space-y-1.5">
             <li
@@ -232,13 +232,13 @@
     </PublicSection>
 
     <!-- Ads scroll section with premium styling -->
-    <div class="my-4 sm:my-10">
+    <div class="my-6 sm:my-8">
       <AdsScroll
         :ads="classifiedLatestPosts"
         :sectionTitle="t('recent_post')"
       />
     </div>
-    <div id="eshop">
+    <div id="eshop" class="my-6 sm:my-8">
       <CommonProductSlider />
     </div>
 
@@ -260,11 +260,11 @@
       <UContainer>
         <NuxtLink to="/micro-gigs">
           <h2
-            class="text-xl md:text-2xl mb-4 md:mb-8 text-center font-semibold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
+            class="text-lg sm:text-xl mb-4 text-center font-bold text-gray-900 dark:text-white"
             id="microgigs"
           >
             {{ $t("micro_gigs") }}
-            <span class="text-slate-700 dark:text-slate-300"
+            <span class="text-slate-500 dark:text-slate-400 font-medium"
               >({{ $t("quick_earn") }})</span
             >
           </h2>
@@ -323,7 +323,7 @@
                     name="i-heroicons-squares-2x2"
                     class="text-emerald-500 size-5"
                   />
-                  <h3 class="font-semibold text-md">Categories</h3>
+                  <h3 class="font-semibold text-md">{{ $t("home_categories") }}</h3>
                 </div>
 
                 <div
@@ -447,7 +447,7 @@
                     :options="microGigsFilter"
                     v-model="microGigsStatus"
                     @change="getMicroGigsByAvailability($event)"
-                    placeholder="Filter"
+                    :placeholder="$t('mg_filter')"
                     value-attribute="value"
                     option-attribute="title"
                     variant="outline"
@@ -538,7 +538,7 @@
                               />
                               <p class="text-sm font-medium">
                                 <span class="text-gray-600 dark:text-slate-300"
-                                  >By:</span
+                                  >{{ $t("mg_by") }}</span
                                 >
                                 <span
                                   class="text-emerald-600 dark:text-emerald-400"
@@ -584,7 +584,7 @@
                             name="i-heroicons-currency-dollar"
                             class="mr-1"
                           />
-                          Earn
+                          {{ $t("mg_earn") }}
                         </UButton>
                         <UButton
                           v-if="user?.user?.id === gig.user.id"
@@ -594,7 +594,7 @@
                           variant="outline"
                           class="w-24 justify-center"
                         >
-                          Ineligible
+                          {{ $t("mg_ineligible") }}
                         </UButton>
                         <UButton
                           v-if="!user?.user"
@@ -608,7 +608,7 @@
                             name="i-heroicons-currency-dollar"
                             class="mr-1"
                           />
-                          Earn
+                          {{ $t("mg_earn") }}
                         </UButton>
                       </div>
 
@@ -627,7 +627,7 @@
                             name="i-heroicons-currency-dollar"
                             class="mr-1"
                           />
-                          Earn
+                          {{ $t("mg_earn") }}
                         </UButton>
                         <UButton
                           v-if="user?.user?.id === gig.user.id"
@@ -637,7 +637,7 @@
                           variant="outline"
                           class="w-24 justify-center"
                         >
-                          Ineligible
+                          {{ $t("mg_ineligible") }}
                         </UButton>
                         <UButton
                           v-if="!user?.user"
@@ -651,7 +651,7 @@
                             name="i-heroicons-currency-dollar"
                             class="mr-1"
                           />
-                          Earn
+                          {{ $t("mg_earn") }}
                         </UButton>
                       </div>
                     </div>
@@ -679,8 +679,8 @@
                 >
                   <!-- Results count -->
                   <p class="text-sm text-gray-500">
-                    Showing <span class="font-medium text-gray-700">{{ displayedMicroGigs.length }}</span> 
-                    of <span class="font-medium text-gray-700">{{ microGigs.length }}</span> gigs
+                    {{ $t("mg_showing") }} <span class="font-medium text-gray-700">{{ displayedMicroGigs.length }}</span>
+                    {{ $t("mg_of") }} <span class="font-medium text-gray-700">{{ microGigs.length }}</span> {{ $t("mg_gigs") }}
                   </p>
                   
                   <!-- Action buttons -->
@@ -694,7 +694,7 @@
                       variant="soft"
                     >
                       <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-1" />
-                      Load More
+                      {{ $t("mg_load_more") }}
                     </UButton>
                     
                     <!-- View All / Go to MicroGigs page -->
@@ -704,7 +704,7 @@
                       color="emerald"
                       variant="outline"
                     >
-                      View All Gigs
+                      {{ $t("mg_view_all") }}
                       <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 ml-1" />
                     </UButton>
                   </div>
@@ -867,13 +867,13 @@ const loadMoreMicroGigs = async () => {
   }
 };
 
-const microGigsFilter = [
-  { title: "All", value: "" },
-  { title: "Available", value: "approved" },
-  { title: "Completed", value: "completed" },
-];
+const microGigsFilter = computed(() => [
+  { title: t("mg_all"), value: "" },
+  { title: t("mg_available"), value: "approved" },
+  { title: t("mg_completed"), value: "completed" },
+]);
 
-const microGigsStatus = ref(microGigsFilter[1].value);
+const microGigsStatus = ref("approved");
 
 const errorIndex = ref([]);
 function handleImageError(index) {
@@ -943,7 +943,7 @@ const selectCategory = async (category) => {
     microGigs.value = Array.isArray(data) ? data : [];
   } catch (error) {
     console.error(error);
-    toast.add({ title: "error" });
+    toast.add({ title: t("home_search_error") });
   }
 };
 
@@ -991,7 +991,7 @@ const loadMore = async (url) => {
   } catch (error) {
     console.error("Error loading more items:", error);
     toast.add({
-      title: "Failed to load more items",
+      title: t("home_load_more_failed"),
       color: "red",
     });
   } finally {
@@ -1002,7 +1002,7 @@ const loadMore = async (url) => {
 async function handleSearch() {
   if (!title.value?.trim()) {
     toast.add({
-      title: "Please enter a search term",
+      title: t("home_enter_search"),
       color: "orange",
     });
     return;
@@ -1031,7 +1031,7 @@ async function handleSearch() {
   } catch (error) {
     console.error("Search error:", error);
     toast.add({
-      title: error?.message || "An error occurred while searching",
+      title: error?.message || t("home_search_error"),
       color: "red",
     });
   } finally {
@@ -1059,7 +1059,7 @@ watch(
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.add({
-          title: "Failed to refresh categories",
+          title: t("home_refresh_failed"),
           color: "red",
         });
       } finally {
@@ -1090,7 +1090,7 @@ watch(
     } catch (error) {
       console.error("Search error:", error);
       toast.add({
-        title: error?.message || "An error occurred while searching",
+        title: error?.message || t("home_search_error"),
         color: "red",
       });
     } finally {

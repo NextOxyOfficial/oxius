@@ -3,10 +3,6 @@
     <UContainer class="py-6 md:py-10">
       <!-- Header Section -->
       <div class="text-center mb-8">
-        <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 mb-4">
-          <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
-          <span class="text-sm font-medium">{{ $t("quick_earn") }}</span>
-        </div>
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
           {{ $t("micro_gigs") }}
         </h1>

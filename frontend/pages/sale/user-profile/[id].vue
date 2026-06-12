@@ -1,8 +1,14 @@
 <template>
-  <div>
-    <div class="max-w-6xl mx-auto px-1 py-3">
+  <div class="bg-gray-50/60 min-h-screen">
+    <SaleSearchBar
+      :initial-search-term="''"
+      :is-searching="false"
+      @search="handleSearch"
+      @clear-location="handleClearLocation"
+    />
+    <div class="max-w-6xl mx-auto px-3 py-3 sm:py-4">
       <!-- Seller Profile Header -->
-      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div
           class="relative h-40 bg-gradient-to-r from-emerald-600 to-emerald-800 overflow-hidden"
           :style="
@@ -104,18 +110,18 @@
       </div>
 
       <!-- Seller Details Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mt-3">
         <!-- About & Contact - 1 column on large screens -->
         <div class="lg:col-span-1 space-y-3">
           <!-- About Section -->
           <div
-            class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+            class="bg-white rounded-xl border border-gray-200 overflow-hidden"
           >
-            <div class="p-5">
+            <div class="p-4">
               <h2
-                class="text-lg font-bold text-gray-800 flex items-center mb-4"
+                class="text-base font-bold text-gray-900 flex items-center gap-2 mb-3"
               >
-                <User class="h-5 w-5 mr-2 text-emerald-600" />
+                <User class="h-5 w-5 text-emerald-600" />
                 About
               </h2>
               <p class="text-gray-600 text-sm">
@@ -126,13 +132,13 @@
 
           <!-- Contact Information -->
           <div
-            class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+            class="bg-white rounded-xl border border-gray-200 overflow-hidden"
           >
-            <div class="p-5">
+            <div class="p-4">
               <h2
-                class="text-lg font-bold text-gray-800 flex items-center mb-4"
+                class="text-base font-bold text-gray-900 flex items-center gap-2 mb-3"
               >
-                <Phone class="h-5 w-5 mr-2 text-emerald-600" />
+                <Phone class="h-5 w-5 text-emerald-600" />
                 Contact Information
               </h2>
 
@@ -178,16 +184,16 @@
         <!-- Seller Products - 2 columns on large screens -->
         <div class="lg:col-span-2">
           <div
-            class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+            class="bg-white rounded-xl border border-gray-200 overflow-hidden"
           >
             <div class="py-5 px-1 sm:px-4">
               <div
                 class="max-sm:flex-block items-center justify-between max-sm:mb-4"
               >
                 <h2
-                  class="text-lg mb-4 font-bold text-gray-800 flex items-center"
+                  class="text-base mb-3 font-bold text-gray-900 flex items-center gap-2"
                 >
-                  <ShoppingBag class="h-5 w-5 mr-2 text-emerald-600" />
+                  <ShoppingBag class="h-5 w-5 text-emerald-600" />
                   {{ seller.name }}'s Listings ({{ seller.sale_post_count }})
                 </h2>
 
@@ -307,97 +313,15 @@
                 </span>
               </div>
               <!-- Grid View -->
-              <div v-if="viewMode === 'grid'" class="grid grid-cols-2 gap-2">
-                <div
+              <div
+                v-if="viewMode === 'grid'"
+                class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3"
+              >
+                <SaleProductCard
                   v-for="product in products"
                   :key="product.id"
-                  class="bg-white rounded-lg overflow-hidden border border-gray-200"
-                >
-                  <div
-                    class="relative aspect-video cursor-pointer"
-                    @click="navigateToPost(product.slug)"
-                  >
-                    <div
-                      v-if="!product.main_image"
-                      class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group hover:from-gray-200 hover:to-gray-300 transition-all duration-300"
-                    >
-                      <div
-                        class="bg-white/80 backdrop-blur-sm rounded-full p-3 mb-2 shadow-sm group-hover:shadow-md transition-all duration-300"
-                      >
-                        <ImageOff
-                          class="h-8 w-8 text-gray-400 group-hover:text-gray-500 transition-colors duration-300"
-                        />
-                      </div>
-                      <p
-                        class="text-gray-500 text-xs font-medium group-hover:text-gray-600 transition-colors duration-300"
-                      >
-                        No Photo Uploaded
-                      </p>
-                    </div>
-                    <img
-                      v-else
-                      :src="product.main_image"
-                      :alt="product.title"
-                      class="absolute inset-0 w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div class="p-2">
-                    <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
-                      <NuxtLink
-                        :to="`/sale/${product.slug}`"
-                        class="hover:text-emerald-600 transition-colors"
-                      >
-                        {{ capitalizeTitle(product.title) }}
-                      </NuxtLink>
-                    </h3>
-                    <div class="flex items-center justify-between mt-2">
-                      <span class="font-bold text-emerald-700"
-                        >৳{{
-                          product.price
-                            ? product.price.toLocaleString()
-                            : "Contact for Price"
-                        }}</span
-                      >
-                      <span class="text-sm text-gray-600">{{
-                        formatDate(product.created_at)
-                      }}</span>
-                    </div>
-
-                    <div class="flex items-center mt-3 text-sm text-gray-600">
-                      <Tag class="h-3 w-3 mr-1" />
-                      <span>{{ product.category_name }}</span>
-                      <span class="mx-1">•</span>
-                      <MapPin class="h-3 w-3 mr-1" />
-                      <span>{{
-                        product?.division && product?.district && product?.area
-                          ? `${product?.division}, ${product?.district}, ${product?.area}`
-                          : `All Over Bagnladesh`
-                      }}</span>
-                    </div>
-                    <div
-                      class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100"
-                    >
-                      <NuxtLink
-                        :to="`/sale/${product.slug}`"
-                        class="text-emerald-600 hover:text-emerald-700 text-sm flex items-center"
-                        @click="
-                          handleButtonClick(`view_details_grid_${product.id}`)
-                        "
-                      >
-                        View Details
-                        <div
-                          v-if="
-                            loadingButtons.has(
-                              `view_details_grid_${product.id}`
-                            )
-                          "
-                          class="dotted-spinner emerald ml-1"
-                        ></div>
-                        <ChevronRight v-else class="h-3 w-3 ml-1" />
-                      </NuxtLink>
-                    </div>
-                  </div>
-                </div>
+                  :post="product"
+                />
               </div>
 
               <!-- List View -->
@@ -699,6 +623,7 @@
 import { ref, reactive, computed, watch } from "vue";
 import MediaViewer from "~/components/business-network/MediaViewer.vue";
 import SaleSearchBar from "~/components/sale/SaleSearchBar.vue";
+import SaleProductCard from "~/components/sale/SaleProductCard.vue";
 import {
   User,
   MapPin,
@@ -730,7 +655,7 @@ const toast = useToast();
 
 // State variables
 const showPhone = ref(false);
-const viewMode = ref("list"); // Changed from 'grid' to 'list' to show list view by default
+const viewMode = ref("grid"); // Grid (SaleProductCard) by default for marketplace consistency
 const sortOption = ref("recent");
 const categoryFilter = ref("");
 const conditionFilter = ref("");
