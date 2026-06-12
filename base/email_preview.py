@@ -113,6 +113,7 @@ def _registry():
     s = _SampleSeller()
     return [
         ("welcome", "Welcome", lambda: es.send_welcome_email(u)),
+        ("ceo_welcome", "Message from CEO", lambda: es.send_ceo_welcome_email(u)),
         ("deposit", "Deposit confirmation", lambda: es.send_deposit_email(u, 1000, "TXN10001", "bKash")),
         ("withdraw", "Withdraw requested", lambda: es.send_withdraw_email(u, 500, "TXN10002", "bKash", "01700000000")),
         ("withdraw_approved", "Withdraw approved", lambda: es.send_withdraw_approved_email(u, 500, "TXN10002")),
@@ -190,6 +191,11 @@ def render_email_preview(key):
     original_send = es._send_email
 
     def _capture(subject, to_email, text_content, html_content):
+        # _send_email is bypassed here, so swap the donate + unsubscribe
+        # placeholders for generic links (real sends inject per-recipient ones).
+        html_content = ((html_content or "")
+                        .replace(es.DONATE_PLACEHOLDER, f"{es.SITE_URL}/donate?lang=bn")
+                        .replace(es.UNSUB_PLACEHOLDER, f"{es.SITE_URL}/api/email/unsubscribe/"))
         captured.append((subject, html_content))
         return True  # don't actually send
 

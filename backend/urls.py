@@ -57,6 +57,8 @@ urlpatterns = urlpatterns + [
     path("api/referral-rewards/", include("referral_rewards.urls")),
     # Raise Up crowdfunding system URLs
     path("api/raise-up/", include("raise_up.urls")),
+    # Alliance outreach console (admin-only) + donations
+    path("api/alliance/", include("alliance.urls")),
     # Android App Links - Digital Asset Links verification
     path(".well-known/assetlinks.json", assetlinks_json, name="assetlinks"),
     path(

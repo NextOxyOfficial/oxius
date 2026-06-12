@@ -117,9 +117,10 @@ def register(request):
 
         # Send welcome email to user + admin notification (async, non-blocking)
         try:
-            from .email_service import send_welcome_email, notify_admin_new_registration
+            from .email_service import send_welcome_email, send_ceo_welcome_email, notify_admin_new_registration
             if new_user.email:
                 send_welcome_email(new_user)
+                send_ceo_welcome_email(new_user)  # personal note from the CEO
             notify_admin_new_registration(new_user)
         except Exception as e:
             print(f"Email notification error (non-blocking): {e}")
@@ -259,10 +260,12 @@ def social_login(request):
         try:
             from .email_service import (
                 send_welcome_email,
+                send_ceo_welcome_email,
                 notify_admin_new_registration,
             )
             if user.email:
                 send_welcome_email(user)
+                send_ceo_welcome_email(user)  # personal note from the CEO
             notify_admin_new_registration(user)
         except Exception as e:
             print(f"Email notification error (non-blocking): {e}")
@@ -6283,28 +6286,83 @@ box-shadow:0 4px 24px rgba(15,23,42,.08);padding:36px 28px;text-align:center;">
 </div></body></html>""")
 
 
+_UNSUB_STR = {
+    "bn": {
+        "invalid_t": "লিংকটি সঠিক নয়",
+        "invalid_m": "এই আনসাবস্ক্রাইব লিংকটির মেয়াদ শেষ হয়েছে বা লিংকটি ভুল। সর্বশেষ ইমেইলের নিচের লিংকটি ব্যবহার করুন।",
+        "ask_t": "আনসাবস্ক্রাইব করবেন?",
+        "ask_m": "{hello}<br>আপনি কি <strong>{email}</strong> ঠিকানায় AdsyClub-এর ইমেইল পাওয়া বন্ধ করতে চান?",
+        "yes": "হ্যাঁ, আনসাবস্ক্রাইব করুন",
+        "no": "না, থাক",
+        "done_t": "আনসাবস্ক্রাইব হয়ে গেছে ✅",
+        "done_m": "{hello}<br><strong>{email}</strong> ঠিকানায় আর কোনো প্রোমোশনাল/আপডেট ইমেইল যাবে না। অ্যাকাউন্ট-সংক্রান্ত জরুরি ইমেইল (যেমন পাসওয়ার্ড রিসেট) আগের মতোই পাবেন।",
+        "resub": "ভুল করে করেছি — আবার চালু করুন",
+        "hello": "হ্যালো {name},",
+        "hello_blank": "হ্যালো,",
+    },
+    "en": {
+        "invalid_t": "Invalid link",
+        "invalid_m": "This unsubscribe link is invalid or has expired. Please use the link at the bottom of the latest email.",
+        "ask_t": "Unsubscribe?",
+        "ask_m": "{hello}<br>Do you want to stop receiving AdsyClub emails at <strong>{email}</strong>?",
+        "yes": "Yes, unsubscribe me",
+        "no": "No, keep me subscribed",
+        "done_t": "You've been unsubscribed ✅",
+        "done_m": "{hello}<br>No more promotional/update emails will go to <strong>{email}</strong>. You'll still get essential account emails (like password resets).",
+        "resub": "Did this by mistake — resubscribe",
+        "hello": "Hi {name},",
+        "hello_blank": "Hi there,",
+    },
+}
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def email_unsubscribe(request):
-    """One-click unsubscribe from engagement emails (signed token, no login)."""
+    """Unsubscribe from AdsyClub emails. Shows the recipient's name and asks for a
+    confirmation click before actually unsubscribing (signed token, no login)."""
     from .email_service import email_from_unsub_token, suppress_email, unsubscribe_token
 
-    email = email_from_unsub_token(request.query_params.get("t", ""))
+    token = request.query_params.get("t", "")
+    lang = request.query_params.get("lang", "bn")
+    s = _UNSUB_STR.get(lang, _UNSUB_STR["bn"])
+
+    email = email_from_unsub_token(token)
     if not email:
+        return _unsub_page(s["invalid_t"], s["invalid_m"])
+
+    name = ""
+    try:
+        u = User.objects.filter(email__iexact=email).first()
+        if u:
+            name = u.name or getattr(u, "first_name", "") or ""
+    except Exception:
+        pass
+    hello = s["hello"].format(name=name) if name else s["hello_blank"]
+
+    # Step 2 — confirmed: actually suppress.
+    if request.query_params.get("confirm") == "1":
+        suppress_email(email, reason="unsubscribed", note="user confirmed unsubscribe")
+        resub = f"/api/email/resubscribe/?t={unsubscribe_token(email)}&lang={lang}"
         return _unsub_page(
-            "লিংকটি সঠিক নয়",
-            "এই আনসাবস্ক্রাইব লিংকটির মেয়াদ শেষ হয়েছে বা লিংকটি ভুল। "
-            "সর্বশেষ ইমেইলের নিচের লিংকটি ব্যবহার করুন।",
+            s["done_t"],
+            s["done_m"].format(hello=hello, email=email),
+            f'<a href="{resub}" style="display:inline-block;background:#10b981;color:#fff;'
+            'text-decoration:none;font-size:14px;font-weight:600;padding:10px 22px;'
+            f'border-radius:10px;">{s["resub"]}</a>',
         )
-    suppress_email(email, reason="unsubscribed", note="user clicked unsubscribe")
-    resub = f"/api/email/resubscribe/?t={unsubscribe_token(email)}"
+
+    # Step 1 — show the name and ask for confirmation.
+    from django.utils.http import urlencode
+    confirm_url = f"/api/email/unsubscribe/?{urlencode({'t': token, 'lang': lang, 'confirm': '1'})}"
     return _unsub_page(
-        "আনসাবস্ক্রাইব হয়ে গেছে ✅",
-        f"<strong>{email}</strong> ঠিকানায় আর কোনো প্রোমোশনাল/আপডেট ইমেইল যাবে না। "
-        "অ্যাকাউন্ট-সংক্রান্ত জরুরি ইমেইল (যেমন পাসওয়ার্ড রিসেট) আগের মতোই পাবেন।",
-        f'<a href="{resub}" style="display:inline-block;background:#10b981;color:#fff;'
-        'text-decoration:none;font-size:14px;font-weight:600;padding:10px 22px;'
-        'border-radius:10px;">ভুল করে করেছি — আবার চালু করুন</a>',
+        s["ask_t"],
+        s["ask_m"].format(hello=hello, email=email),
+        f'<a href="{confirm_url}" style="display:inline-block;background:#4f46e5;color:#fff;'
+        'text-decoration:none;font-size:14px;font-weight:600;padding:11px 24px;border-radius:10px;">'
+        f'{s["yes"]}</a>'
+        f'<div style="margin-top:14px;"><a href="https://www.adsyclub.com" '
+        f'style="color:#64748b;font-size:13px;text-decoration:none;">{s["no"]}</a></div>',
     )
 
 

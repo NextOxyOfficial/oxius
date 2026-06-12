@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     "rideshare",  # Ride share MVP
     "app_versioning",  # Mobile app update prompts
     "engagement",  # Engagement & assistant brain (event tracking + user state)
+    "alliance",  # Alliance outreach console (sponsor/partner email review + send + donate)
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",

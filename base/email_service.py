@@ -27,6 +27,117 @@ BRAND_GRADIENT = "linear-gradient(135deg,#3B82F6,#6366F1,#8B5CF6)"
 BRAND_GRADIENT_BAR = "linear-gradient(90deg,#3B82F6,#6366F1,#8B5CF6)"
 BRAND_SHADOW = "rgba(99,102,241,0.16)"
 
+# Every transactional email's footer carries a Donate button. The href is a
+# placeholder that _send_email() swaps for a PERSONALIZED donate link (greets the
+# recipient by name on the donate page) — the "smart" donation feature. Must match
+# the salt used by alliance.views.donate_context to decode the token.
+DONATE_PLACEHOLDER = "%%ADSY_DONATE_URL%%"
+DONATE_SALT = "adsy-donate-v1"
+
+
+def _donate_url_for(to_email):
+    """Personalized donate link for a single known recipient (token greets them by
+    name), or the generic /donate for unknown / multi-recipient sends."""
+    try:
+        from django.core import signing
+        from django.contrib.auth import get_user_model
+        if to_email and not isinstance(to_email, (list, tuple)):
+            user = get_user_model().objects.filter(email__iexact=to_email).first()
+            if user:
+                name = user.name or getattr(user, "first_name", "") or ""
+                token = signing.dumps({"n": name, "l": "bn"}, salt=DONATE_SALT)
+                return f"{SITE_URL}/donate?u={token}"
+    except Exception:
+        pass
+    return f"{SITE_URL}/donate?lang=bn"
+
+
+# Every email footer also carries a one-click Unsubscribe hyperlink. Like the
+# donate link, the href is a placeholder that _send_email() swaps for a unique
+# per-recipient unsubscribe link (the unsubscribe page greets them by name and
+# asks for confirmation).
+UNSUB_PLACEHOLDER = "%%ADSY_UNSUB_URL%%"
+
+
+def _unsub_url_for(to_email, lang="bn"):
+    """Unique unsubscribe link for a single recipient (signed token, no login)."""
+    try:
+        if to_email and not isinstance(to_email, (list, tuple)):
+            return f"{SITE_URL}/api/email/unsubscribe/?t={unsubscribe_token(to_email)}&lang={lang}"
+    except Exception:
+        pass
+    return f"{SITE_URL}/api/email/unsubscribe/"
+
+
+# App store install badges (icon + label, shown in the footer).
+ANDROID_URL = "https://play.google.com/store/apps/details?id=com.oxius.app"
+IOS_URL = "https://apps.apple.com/us/app/adsyclub/id6760218370"
+ICON_GOOGLEPLAY = "https://img.icons8.com/color/96/google-play.png"
+ICON_APPSTORE = "https://img.icons8.com/color/96/apple-app-store--v1.png"
+
+
+def _app_badges_html():
+    def badge(url, icon, label):
+        return (f'<a href="{url}" target="_blank" style="display:inline-block;text-decoration:none;'
+                f'border:1px solid #e3e5e9;border-radius:8px;padding:7px 13px;margin:0 5px 8px;background:#ffffff;">'
+                f'<img src="{icon}" width="18" height="18" alt="" style="vertical-align:middle;border:0;">'
+                f'<span style="color:#4b515b;font-size:12px;font-weight:600;vertical-align:middle;">&nbsp;&nbsp;{label}</span></a>')
+    return (badge(ANDROID_URL, ICON_GOOGLEPLAY, "Available on Android")
+            + badge(IOS_URL, ICON_APPSTORE, "Available on iOS"))
+
+
+# ── Founder identity (CEO welcome email signature — mirrors the Alliance mail) ──
+FOUNDER_PHOTO = "https://adsyclub.com/static/frontend/images/founder.jpg"
+CEO_EMAIL = "ceo@adsyclub.com"
+CEO_WHATSAPP = "+8801957045438"
+CEO_WHATSAPP_LINK = "https://wa.me/8801957045438"
+FOUNDER_FACEBOOK = "https://fb.com/AlimulOfficial"
+FOUNDER_LINKEDIN = "https://www.linkedin.com/in/md-alimul-islam-299435115/"
+ICON_EMAIL = "https://img.icons8.com/ios-filled/100/737a86/new-post.png"
+ICON_WHATSAPP = "https://img.icons8.com/color/96/whatsapp--v1.png"
+ICON_WEB = "https://img.icons8.com/ios-filled/100/737a86/domain.png"
+ICON_FB = "https://img.icons8.com/color/96/facebook-new.png"
+ICON_LI = "https://img.icons8.com/color/96/linkedin.png"
+SIG_LINK = "#4f46e5"  # indigo
+
+
+def _founder_signature_html():
+    """Founder photo + name/title/contacts + social icons (FB, LinkedIn). The
+    photo only renders once FOUNDER_PHOTO is hosted on a public URL."""
+    photo = (f'<td style="width:88px;vertical-align:top;padding-right:18px;">'
+             f'<img src="{FOUNDER_PHOTO}" width="76" height="76" alt="Alimul Islam" '
+             f'style="width:76px;height:76px;border-radius:12px;display:block;border:0;"></td>') if FOUNDER_PHOTO else ""
+
+    def crow(icon, val):
+        return (f'<tr><td style="padding:5px 12px 5px 0;vertical-align:middle;width:18px;">'
+                f'<img src="{icon}" width="17" height="17" alt="" style="display:block;border:0;"></td>'
+                f'<td style="padding:5px 0;font-size:13px;color:#5b626d;vertical-align:middle;">{val}</td></tr>')
+
+    contacts = (crow(ICON_EMAIL, f'<a href="mailto:{CEO_EMAIL}" style="color:{SIG_LINK};text-decoration:none;">{CEO_EMAIL}</a>')
+                + crow(ICON_WHATSAPP, f'<a href="{CEO_WHATSAPP_LINK}" style="color:{SIG_LINK};text-decoration:none;">{CEO_WHATSAPP}</a>')
+                + crow(ICON_WEB, f'<a href="https://www.adsyclub.com" style="color:{SIG_LINK};text-decoration:none;">https://www.adsyclub.com</a>'))
+
+    def social(url, icon, alt):
+        return (f'<td style="padding-right:11px;"><a href="{url}" target="_blank" style="text-decoration:none;">'
+                f'<img src="{icon}" width="30" height="30" alt="{alt}" style="display:block;border:0;"></a></td>')
+
+    socials = social(FOUNDER_FACEBOOK, ICON_FB, "Facebook") + social(FOUNDER_LINKEDIN, ICON_LI, "LinkedIn")
+    return f"""
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:28px;">
+<tr><td style="border-top:1px solid #ecedf1;padding-top:22px;">
+  <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+    {photo}
+    <td style="vertical-align:top;">
+      <div style="font-size:16px;color:#1a1d23;font-weight:700;letter-spacing:-0.2px;">Alimul Islam</div>
+      <div style="font-size:13px;color:#8a919c;margin-top:3px;">Developer, Founder &amp; CEO, AdsyClub</div>
+      <table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:12px;">{contacts}</table>
+    </td>
+  </tr></table>
+  <table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:14px;"><tr>{socials}</tr></table>
+</td></tr>
+</table>
+"""
+
 
 def _logo_url():
     """The current AdsyClub brand logo (as shown on the site), with a stable
@@ -98,32 +209,26 @@ def _base_template(title, body_content, footer_note=""):
 
 {note_html}
 
-<!-- Footer -->
+<!-- Footer (app badges + donation appeal + clean meta) -->
 <tr>
-<td class="ec-pad" style="background-color:#f8fafc;padding:30px 32px;border-top:1px solid #e8edf3;text-align:center;">
-<div style="margin:0 0 4px;color:#0f172a;font-size:16px;font-weight:800;letter-spacing:-0.2px;">{SITE_NAME}</div>
-<div style="margin:0 0 16px;color:#94a3b8;font-size:12px;">Bangladesh's Social Business Network</div>
-<div style="margin:0 0 16px;">
-<a href="{SITE_URL}" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Website</a>
-<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
-<a href="{SITE_URL}/faq" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Help Center</a>
-<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
-<a href="{SITE_URL}/privacy-policy" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Privacy</a>
-<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
-<a href="{SITE_URL}/contact-us" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-size:12px;font-weight:600;">Contact</a>
-</div>
-<div style="margin:0 0 14px;color:#64748b;font-size:12px;line-height:1.7;">
-Need help? <a href="mailto:{SUPPORT_EMAIL}" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-weight:600;">{SUPPORT_EMAIL}</a>
-<span style="color:#cbd5e1;">&nbsp;&bull;&nbsp;</span>
-<a href="tel:{SUPPORT_PHONE}" style="color:{BRAND_COLOR_DARK};text-decoration:none;font-weight:600;">{SUPPORT_PHONE}</a>
-</div>
-<div style="margin:0 0 6px;color:#9aa5b4;font-size:11px;">&copy; {year} {SITE_NAME}. All rights reserved.</div>
-<div style="margin:0;color:#b8c2cf;font-size:11px;line-height:1.5;">This is an automated message — please do not reply to this email.<br>If you didn't request this, you can safely ignore it.</div>
+<td class="ec-pad" style="background-color:#f8fafc;padding:28px 32px 32px;border-top:1px solid #e8edf3;text-align:center;">
+<div style="margin:0 0 22px;line-height:0;">{_app_badges_html()}</div>
+<div style="font-size:15px;color:#1a1d23;font-weight:700;margin:0 0 7px;">Believe in what we're building?</div>
+<div style="font-size:13px;color:#6b7280;line-height:1.7;margin:0 auto 18px;max-width:430px;">AdsyClub creates income &amp; employment for everyday people across Bangladesh. Your support — however small — helps us reach more lives. Please consider a donation.</div>
+<a href="{DONATE_PLACEHOLDER}" style="display:inline-block;padding:13px 34px;background:{BRAND_GRADIENT};color:#ffffff;text-decoration:none;border-radius:9px;font-size:14px;font-weight:700;"><span style="font-size:15px;vertical-align:-1px;">&#10084;</span>&nbsp;&nbsp;Donate to AdsyClub</a>
+
+<div style="border-top:1px solid #e7e9ee;margin:26px auto 16px;font-size:0;line-height:0;">&nbsp;</div>
+
+<div style="margin:0 0 3px;color:#0f172a;font-size:15px;font-weight:800;letter-spacing:-0.2px;">{SITE_NAME}</div>
+<div style="margin:0 0 11px;color:#94a3b8;font-size:11px;">Bangladesh's Social Business Network</div>
+<div style="margin:0 0 10px;color:#7b828d;font-size:11px;line-height:1.7;">Need help? <a href="mailto:{SUPPORT_EMAIL}" style="color:{BRAND_COLOR_DARK};text-decoration:none;">{SUPPORT_EMAIL}</a> &middot; <a href="tel:{SUPPORT_PHONE}" style="color:{BRAND_COLOR_DARK};text-decoration:none;">{SUPPORT_PHONE}</a></div>
+<div style="margin:0 0 7px;color:#9aa5b4;font-size:11px;">&copy; {year} {SITE_NAME}</div>
+<div style="margin:0;font-size:11px;"><a href="{UNSUB_PLACEHOLDER}" style="color:#9aa5b4;text-decoration:underline;">Don't want these emails? Unsubscribe</a></div>
 </td>
 </tr>
 
 </table>
-<div style="color:#aab3c0;font-size:11px;margin-top:18px;">Sent with care by {SITE_NAME} &middot; <a href="{SITE_URL}" style="color:#8a96a5;text-decoration:none;">{SITE_URL}</a></div>
+<div style="color:#aab3c0;font-size:11px;margin-top:18px;">AdsyClub &middot; Bangladesh &middot; <a href="https://www.adsyclub.com" style="color:#8a96a5;text-decoration:none;">https://www.adsyclub.com</a></div>
 </td></tr>
 </table>
 </body>
@@ -146,10 +251,10 @@ def _info_table(rows_html):
 
 
 def _button(text, url):
-    """CTA button"""
-    return f"""<div style="text-align:center;margin:28px 0;">
-<a href="{url}" style="display:inline-block;padding:14px 40px;background:{BRAND_GRADIENT};color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 2px 5px {BRAND_SHADOW};">{text}</a>
-</div>"""
+    """In-body CTA buttons are intentionally disabled — every email's single CTA is
+    now the Donate button in the footer. Kept as a no-op so the ~30 existing callers
+    don't each need editing (the relevant page is still reachable via the app)."""
+    return ""
 
 
 def _get_email_settings():
@@ -271,6 +376,14 @@ def _send_email(subject, to_email, text_content, html_content):
             clean.append(r)
         if not clean:
             return False
+
+        # Swap the donate + unsubscribe placeholders for unique per-recipient
+        # links (single, known recipient only; generic for multi-recipient).
+        single = clean[0] if len(clean) == 1 else None
+        donate_url = _donate_url_for(single or clean)
+        unsub_url = _unsub_url_for(single)
+        html_content = (html_content or "").replace(DONATE_PLACEHOLDER, donate_url).replace(UNSUB_PLACEHOLDER, unsub_url)
+        text_content = (text_content or "").replace(DONATE_PLACEHOLDER, donate_url).replace(UNSUB_PLACEHOLDER, unsub_url)
 
         msg = EmailMultiAlternatives(
             subject=subject,
@@ -431,13 +544,35 @@ def send_welcome_email(user):
 <li><strong>পুরোনো কেনাবেচা</strong> – ব্যবহৃত জিনিস কেনাবেচা করুন</li>
 <li><strong>Workspace Gigs</strong> – কাজ দিন বা কাজ নিন</li>
 <li><strong>AdsyConnect</strong> – চ্যাট, ভয়েস ও ভিডিও কল</li>
-<li><strong>eLearning</strong> – নতুন দক্ষতা শিখুন</li>
+<li><strong>eLearning</strong> – নতুন স্কিল শিখুন</li>
 </ul>
-
-{_button("শুরু করুন", SITE_URL + "/business-network")}
 """
 
-    html = _base_template(subject, body, "আপনি যদি এই অ্যাকাউন্টটি তৈরি না করে থাকেন, অনুগ্রহ করে আমাদের সাপোর্ট টিমের সাথে যোগাযোগ করুন।")
+    html = _base_template(subject, body, "এই অ্যাকাউন্টটা যদি আপনি না খুলে থাকেন, আমাদের সাপোর্ট টিমকে জানান।")
+    return _send_email(subject, user.email, text, html)
+
+
+def send_ceo_welcome_email(user):
+    """A personal welcome from the CEO — sent to a newly registered user alongside
+    the standard welcome email (so a new user gets two: the system welcome + this
+    personal note). Uses the founder-signature design (photo + socials)."""
+    name = user.name or user.first_name or user.username or "বন্ধু"
+    subject = "AdsyClub-এ স্বাগতম — CEO-র পক্ষ থেকে 💚"
+    text = (
+        f"প্রিয় {name},\n\nAdsyClub পরিবারে আপনাকে পেয়ে আমি সত্যিই অনেক খুশি। আমি Alimul Islam — "
+        "AdsyClub-এর প্রতিষ্ঠাতা। আমরা বাংলাদেশের সাধারণ মানুষের জন্য আয় আর কাজের সুযোগ তৈরি করতে "
+        "কাজ করছি, আর আজ থেকে আপনিও এই যাত্রার একজন সঙ্গী।\n\nযেকোনো দরকারে সরাসরি আমাকে লিখুন।\n\n"
+        f"— Alimul Islam, Founder & CEO, AdsyClub\n{CEO_EMAIL}"
+    )
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">প্রিয় <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">AdsyClub পরিবারে আপনাকে পেয়ে আমি সত্যিই অনেক খুশি। আমি <strong>Alimul Islam</strong> — AdsyClub-এর প্রতিষ্ঠাতা।</p>
+<p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">আমরা একটা সহজ স্বপ্ন নিয়ে কাজ করছি — বাংলাদেশের সাধারণ মানুষের জন্য আয় আর কাজের সুযোগ তৈরি করা। আজ থেকে আপনিও এই যাত্রার একজন সঙ্গী, আর এটা আমাদের কাছে অনেক বড় ব্যাপার।</p>
+<p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">শুরু করতে কোথাও আটকে গেলে, কিংবা কোনো পরামর্শ বা অভিযোগ থাকলে — নিচের যেকোনো মাধ্যমে সরাসরি আমাকে লিখুন। আপনার একটা মেসেজও আমাদের আরও ভালো করতে সাহায্য করবে।</p>
+<p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 4px;">ভালো থাকবেন, পাশে থাকবেন। 🌿</p>
+{_founder_signature_html()}
+"""
+    html = _base_template(subject, body)
     return _send_email(subject, user.email, text, html)
 
 
@@ -1512,19 +1647,23 @@ def send_engagement_email(user, *, subject, heading, body_html,
             '<p style="color:#111827;font-size:16px;line-height:1.5;'
             f'margin:0 0 14px;font-weight:600;">{heading}</p>'
         )
+    # Marketing/followup emails KEEP their action CTA (it's the point of the
+    # email) — the global _button() is disabled for transactional mail, so render
+    # the CTA inline here.
+    cta = ""
+    if button_text and button_url:
+        cta = (f'<div style="text-align:center;margin:26px 0 4px;">'
+               f'<a href="{button_url}" style="display:inline-block;padding:13px 36px;background:{BRAND_GRADIENT};'
+               f'color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;">{button_text}</a></div>')
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">প্রিয় <strong>{name}</strong>,</p>
 {heading_html}
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{body_html}</p>
 {cards}
-{_button(button_text, button_url) if (button_text and button_url) else ""}
+{cta}
 """
-    # One-click unsubscribe link in the footer (signed token, no login).
-    unsub_url = f"{SITE_URL}/api/email/unsubscribe/?t={unsubscribe_token(email)}"
-    footer_note = (
-        "আপনি AdsyClub-এর সদস্য বলে এই ইমেইলটি পাচ্ছেন। "
-        f'এই ধরনের ইমেইল আর পেতে না চাইলে <a href="{unsub_url}" '
-        'style="color:#64748b;text-decoration:underline;">এখানে আনসাবস্ক্রাইব করুন</a>।'
-    )
+    # The base footer already carries a one-click Unsubscribe link, so the note
+    # above it just explains why they're getting the email (no duplicate link).
+    footer_note = "আপনি AdsyClub-এর সদস্য বলে এই ইমেইলটি পাচ্ছেন।"
     html = _base_template(subject, body, footer_note)
     return _send_email(subject, email, f"{name}, {heading}", html)
