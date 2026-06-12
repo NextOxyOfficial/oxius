@@ -1,66 +1,157 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-4">
-      <div class="mb-12">
-        <div
-          class="relative rounded-xl overflow-hidden shadow-sm sm:h-[430px] h-[400px] group"
-        >
-          <img
-            :src="latestArticle.image"
-            :alt="latestArticle.title"
-            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"
-          ></div>
-          <div
-            class="absolute bottom-0 left-0 right-0 p-2 sm:p-4 md:p-10 text-white"
+  <div class="min-h-screen bg-gray-50/60">
+    <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-10">
+      <!-- ===== FRONT PAGE: Lead story + Top stories ===== -->
+      <section class="mt-2 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Lead story -->
+          <NuxtLink
+            :to="`/adsy-news/${latestArticle.slug}/`"
+            class="lg:col-span-2 group relative block rounded-xl overflow-hidden border border-gray-200 bg-black h-[300px] sm:h-[420px]"
           >
-            <div class="flex items-center mb-4">
-              <span
-                class="bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full"
-                >LATEST NEWS</span
-              >
-              <span class="ml-3 text-sm opacity-80">{{
-                latestArticle.date
-              }}</span>
-            </div>
-            <h2
-              class="text-base sm:text-base md:text-base font-semibold mb-4 leading-tight"
-            >
-              <NuxtLink
-                :to="`/adsy-news/${latestArticle.slug}/`"
-                class="hover:text-primary transition-colors duration-200 line-clamp-2"
+            <img
+              :src="latestArticle.image"
+              :alt="latestArticle.title"
+              class="w-full h-full object-cover opacity-95 transition-transform duration-700 group-hover:scale-105"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent"
+            ></div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
+              <div class="flex items-center gap-3 mb-2">
+                <span
+                  class="bg-primary text-white text-[11px] font-bold px-2.5 py-1 rounded uppercase tracking-wide"
+                  >{{ $t("news_latest_news") }}</span
+                >
+                <span class="text-xs text-white/80">{{
+                  latestArticle.date
+                }}</span>
+              </div>
+              <h2
+                class="text-lg sm:text-2xl font-bold leading-snug line-clamp-3"
               >
                 {{ latestArticle.title }}
+              </h2>
+              <div
+                class="hidden sm:block mt-2 text-sm text-white/85 line-clamp-2"
+                v-html="latestArticle.summary"
+              ></div>
+            </div>
+          </NuxtLink>
+
+          <!-- Top stories -->
+          <div
+            class="rounded-xl border border-gray-200 bg-white p-4 flex flex-col"
+          >
+            <h3
+              class="flex items-center gap-2 text-base font-bold text-gray-900 mb-2"
+            >
+                {{ $t("news_top_stories") }}
+            </h3>
+            <div class="divide-y divide-gray-100 flex-1">
+              <NuxtLink
+                v-for="(article, idx) in topStories"
+                :key="article.id"
+                :to="`/adsy-news/${article.slug}/`"
+                class="flex gap-3 py-3 first:pt-1 last:pb-0 group items-start"
+              >
+                <span class="text-lg font-bold text-primary w-5 shrink-0 leading-6"
+                  >{{ idx + 1 }}</span
+                >
+                <div class="min-w-0 flex-1">
+                  <h4
+                    class="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors"
+                  >
+                    {{ article.title }}
+                  </h4>
+                  <span class="text-xs text-gray-500 mt-1 block">{{
+                    article.date
+                  }}</span>
+                </div>
+                <img
+                  :src="article.image"
+                  :alt="article.title"
+                  class="w-16 h-14 rounded-lg object-cover shrink-0"
+                />
               </NuxtLink>
-            </h2>
-            <div
-              class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl line-clamp-2"
-              v-html="latestArticle.summary"
-            ></div>
+            </div>
           </div>
         </div>
+      </section>
+
+      <!-- Ad -->
+      <div class="mb-8">
+        <SaleAdSlot variant="leaderboard" />
       </div>
 
-      <!-- Trending News Carousel -->
-      <div class="mb-12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-base font-semibold text-gray-800">Trending News</h2>
-          <div class="flex space-x-2">
+      <!-- ===== Category-wise News ===== -->
+      <section v-for="cat in categorySections" :key="cat.id" class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="flex items-center gap-2 text-lg font-bold text-gray-900">
+            {{ cat.title }}
+          </h2>
+          <NuxtLink
+            :to="`/adsy-news/categories/${cat.slug}/`"
+            class="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark transition-colors"
+          >
+            {{ $t("news_see_all") }}
+            <ChevronRightIcon class="h-4 w-4" />
+          </NuxtLink>
+        </div>
+        <div class="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
+          <NuxtLink
+            v-for="post in cat.posts"
+            :key="post.id"
+            :to="`/adsy-news/${post.slug}/`"
+            class="group block rounded-xl border border-gray-200 bg-white overflow-hidden hover:border-gray-300 transition-colors"
+          >
+            <div class="relative h-36">
+              <img
+                :src="post.image"
+                :alt="post.title"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+            <div class="p-3">
+              <h3
+                class="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors"
+              >
+                {{ post.title }}
+              </h3>
+              <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-2">
+                <UIcon name="i-heroicons-calendar-days" class="w-3.5 h-3.5" />
+                <span>{{ post.date }}</span>
+              </div>
+            </div>
+          </NuxtLink>
+        </div>
+      </section>
+
+      <!-- Ad -->
+      <div class="mb-8">
+        <SaleAdSlot variant="leaderboard" />
+      </div>
+
+      <!-- ===== Trending News ===== -->
+      <section class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="flex items-center gap-2 text-lg font-bold text-gray-900">
+            {{ $t("news_trending") }}
+          </h2>
+          <div class="flex gap-2">
             <button
               @click="prevTrending"
               @mouseenter="pauseCarousel"
-              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              class="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition-colors"
             >
-              <ChevronLeftIcon class="h-5 w-5 text-gray-800" />
+              <ChevronLeftIcon class="h-4 w-4 text-gray-700" />
             </button>
             <button
               @click="nextTrending"
               @mouseenter="pauseCarousel"
-              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              class="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition-colors"
             >
-              <ChevronRightIcon class="h-5 w-5 text-gray-800" />
+              <ChevronRightIcon class="h-4 w-4 text-gray-700" />
             </button>
           </div>
         </div>
@@ -79,51 +170,48 @@
             <div
               v-for="article in trendingArticles"
               :key="article.id"
-              class="flex-shrink-0 mb-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
+              class="flex-shrink-0 mb-1 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2"
             >
-              <div
-                class="bg-white rounded-lg shadow-sm overflow-hidden h-full hover:shadow-sm transition-shadow duration-300"
+              <NuxtLink
+                :to="`/adsy-news/${article.slug}/`"
+                class="group block h-full rounded-xl border border-gray-200 bg-white overflow-hidden hover:border-gray-300 transition-colors"
               >
-                <div class="relative h-40">
+                <div class="relative h-36">
                   <img
                     :src="article.image"
                     :alt="article.title"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div class="absolute top-0 left-0 m-2">
-                    <span
-                      v-for="tag in article.tags"
-                      :key="tag"
-                      class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
-                    >
-                      {{ tag }}
-                    </span>
-                  </div>
+                  <span
+                    v-for="tag in article.tags"
+                    :key="tag"
+                    class="absolute top-2 left-2 bg-primary text-white text-[10px] font-semibold px-2 py-0.5 rounded"
+                  >
+                    {{ tag }}
+                  </span>
                 </div>
-                <div class="p-4">
-                  <NuxtLink :to="`/adsy-news/${article.slug}/`">
-                    <h3
-                      class="text-sm font-medium mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
-                    >
-                      {{ article.title }}
-                    </h3>
-                  </NuxtLink>
+                <div class="p-3">
+                  <h3
+                    class="text-sm font-semibold mb-2 text-gray-800 line-clamp-2 group-hover:text-primary transition-colors"
+                  >
+                    {{ article.title }}
+                  </h3>
                   <div
-                    class="flex justify-between items-center text-sm text-gray-600"
+                    class="flex justify-between items-center text-xs text-gray-500"
                   >
                     <span>{{ article.date }}</span>
-                    <span class="flex items-center">
-                      <MessageSquareIcon class="h-4 w-4 mr-1" />
+                    <span class="flex items-center gap-1">
+                      <MessageSquareIcon class="h-3.5 w-3.5" />
                       {{ article.comments.length }}
                     </span>
                   </div>
                 </div>
-              </div>
+              </NuxtLink>
             </div>
           </div>
         </div>
 
-        <div class="flex justify-center mt-6 space-x-2">
+        <div class="flex justify-center mt-4 gap-1.5">
           <button
             v-for="(_, i) in Math.ceil(
               trendingArticles.length / trendingPerPage
@@ -131,203 +219,260 @@
             :key="i"
             @click="trendingIndex = i"
             :class="[
-              'w-2 h-2 rounded-full transition-colors',
+              'h-1.5 rounded-full transition-all',
               trendingIndex === i
-                ? 'bg-primary'
-                : 'bg-gray-300 hover:bg-gray-400',
+                ? 'w-5 bg-primary'
+                : 'w-1.5 bg-gray-300 hover:bg-gray-400',
             ]"
           ></button>
         </div>
-      </div>
+      </section>
 
-      <!-- Category Title -->
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-base font-semibold text-gray-800">All News</h2>
-        <div class="flex space-x-2">
-          <button
-            v-for="layout in layouts"
-            :key="layout.id"
-            @click="currentLayout = layout.id"
-            :class="[
-              'p-2 rounded-md transition-colors',
-              currentLayout === layout.id ? 'bg-gray-200' : 'hover:bg-gray-100',
-            ]"
-          >
-            <LayoutGridIcon
-              v-if="layout.id === 'grid'"
-              class="h-5 w-5 text-gray-800"
-            />
-            <LayoutListIcon v-else class="h-5 w-5 text-gray-800" />
-          </button>
+      <!-- ===== All News + Sidebar ===== -->
+      <section class="mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Main column -->
+          <div class="lg:col-span-2 min-w-0">
+            <div class="flex items-center justify-between mb-4">
+              <h2
+                class="flex items-center gap-2 text-lg font-bold text-gray-900"
+              >
+                    {{ $t("news_all") }}
+              </h2>
+          <div class="flex gap-2">
+            <button
+              v-for="layout in layouts"
+              :key="layout.id"
+              @click="currentLayout = layout.id"
+              :class="[
+                'p-1.5 rounded-md border transition-colors',
+                currentLayout === layout.id
+                  ? 'border-gray-300 bg-gray-100'
+                  : 'border-gray-200 hover:bg-gray-50',
+              ]"
+            >
+              <LayoutGridIcon
+                v-if="layout.id === 'grid'"
+                class="h-4 w-4 text-gray-700"
+              />
+              <LayoutListIcon v-else class="h-4 w-4 text-gray-700" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- Articles Grid/List -->
-      <div>
         <div
           :class="[
             currentLayout === 'grid'
-              ? 'grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-4'
-              : 'space-y-8',
+              ? 'grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+              : 'space-y-3',
           ]"
         >
           <article
             v-for="article in filteredArticles"
             :key="article.id"
             :class="[
-              'bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1',
-              currentLayout === 'list' ? 'flex flex-col md:flex-row' : '',
+              'rounded-xl border border-gray-200 bg-white overflow-hidden hover:border-gray-300 transition-colors',
+              currentLayout === 'list' ? 'flex' : '',
             ]"
           >
-            <div :class="[currentLayout === 'list' ? 'md:w-1/3' : '']">
+            <NuxtLink
+              :to="`/adsy-news/${article.slug}/`"
+              :class="[
+                'group relative block overflow-hidden',
+                currentLayout === 'list' ? 'w-28 sm:w-44 shrink-0' : '',
+              ]"
+            >
               <div
-                class="relative overflow-hidden"
-                :class="[currentLayout === 'list' ? 'h-full' : 'h-48 sm:h-56']"
+                :class="[
+                  currentLayout === 'list' ? 'h-full min-h-[6rem]' : 'h-40 sm:h-44',
+                ]"
               >
                 <img
                   :src="article.image"
                   :alt="article.title"
-                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div class="absolute top-0 left-0 m-3">
-                  <span
-                    v-for="tag in article.tags"
-                    :key="tag"
-                    class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
-                  >
-                    {{ tag }}
-                  </span>
-                </div>
               </div>
-            </div>
-            <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
+              <span
+                v-for="tag in article.tags"
+                :key="tag"
+                class="absolute top-2 left-2 bg-primary text-white text-[10px] font-semibold px-2 py-0.5 rounded"
+              >
+                {{ tag }}
+              </span>
+            </NuxtLink>
+            <div :class="['p-3', currentLayout === 'list' ? 'flex-1' : '']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="font-medium text-sm sm:text-base text-gray-800 hover:text-primary cursor-pointer transition-colors duration-200 clamp-2 overflow-hidden"
+                  class="text-sm font-semibold text-gray-800 line-clamp-2 hover:text-primary transition-colors"
                 >
-                  {{ article.title.substring(0, 50) + "..." }}
+                  {{ article.title }}
                 </h3>
               </NuxtLink>
+              <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-2">
+                <UIcon name="i-heroicons-calendar-days" class="w-3.5 h-3.5" />
+                <span>{{ article.date }}</span>
+              </div>
             </div>
           </article>
         </div>
 
-        <!-- Load More Button -->
-        <div v-if="hasMoreArticles" class="mt-12 text-center">
+        <!-- Load More -->
+        <div v-if="hasMoreArticles" class="mt-6 text-center">
           <button
             @click="loadMoreArticles"
-            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+            class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-sm disabled:opacity-60"
             :disabled="isLoading || !hasMoreArticles"
           >
-            <span v-if="isLoading">Loading...</span>
-            <span v-else>Load More Articles</span>
+            <span v-if="isLoading">{{ $t("loading") }}</span>
+            <span v-else>{{ $t("news_load_more") }}</span>
           </button>
         </div>
-        <!-- Trending Topics Section -->
-        <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-base font-semibold text-gray-800 mb-4">
-            Trending Topics
-          </h2>
-          <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
-            <NuxtLink
-              v-for="(topic, index) in trendingTopics"
-              :key="index"
-              :to="`/adsy-news/categories/${topic.slug}/`"
-              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-sm transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
-            >
-              <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
-              {{ topic.title }}
-            </NuxtLink>
           </div>
-        </div>
 
-        <!-- Tips and Suggestions Section -->
-        <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-base font-semibold text-gray-800 mb-6">
-            Tips and Suggestions
-          </h2>
-          <div
-            class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
-          >
+          <!-- Sidebar -->
+          <aside class="lg:col-span-1 space-y-5 lg:sticky lg:top-20 lg:self-start">
+            <!-- Most Read -->
             <div
-              v-for="(tip, index) in visibleTips"
-              :key="index"
-              class="bg-white rounded-lg shadow-sm p-4 hover:shadow-sm transition-shadow duration-300 flex flex-col"
+              v-if="mostReadArticles.length"
+              class="rounded-xl border border-gray-200 bg-white p-4"
             >
               <h3
-                class="text-sm font-semibold mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
+                class="flex items-center gap-2 text-base font-bold text-gray-900 mb-2"
               >
-                {{ tip.title }}
+                    {{ $t("news_most_read") }}
               </h3>
-              <p class="text-sm text-gray-600 line-clamp-3">
-                {{ tip.description }}
-              </p>
+              <div class="divide-y divide-gray-100">
+                <NuxtLink
+                  v-for="(a, idx) in mostReadArticles"
+                  :key="a.id"
+                  :to="`/adsy-news/${a.slug}/`"
+                  class="flex gap-3 py-3 first:pt-1 last:pb-0 group items-start"
+                >
+                  <span
+                    class="text-xl font-extrabold text-gray-300 w-6 shrink-0 leading-6"
+                    >{{ idx + 1 }}</span
+                  >
+                  <div class="min-w-0">
+                    <h4
+                      class="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors"
+                    >
+                      {{ a.title }}
+                    </h4>
+                    <div
+                      class="flex items-center gap-1 text-xs text-gray-500 mt-1"
+                    >
+                      <MessageSquareIcon class="h-3.5 w-3.5" />
+                      {{ a.comments.length }}
+                    </div>
+                  </div>
+                </NuxtLink>
+              </div>
             </div>
-          </div>
-          <div
-            v-if="visibleTips.length < tipsAndSuggestions.length"
-            class="mt-6 text-center"
-          >
-            <button
-              @click="loadMoreTips"
-              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+
+            <!-- Trending Topics -->
+            <div
+              v-if="trendingTopics.length"
+              class="rounded-xl border border-gray-200 bg-white p-4"
             >
-              Load More
-            </button>
+              <h3
+                class="flex items-center gap-2 text-base font-bold text-gray-900 mb-3"
+              >
+                    {{ $t("news_trending_topics") }}
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <NuxtLink
+                  v-for="(topic, index) in trendingTopics"
+                  :key="index"
+                  :to="`/adsy-news/categories/${topic.slug}/`"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 text-xs font-medium hover:border-gray-300 hover:text-primary transition-colors"
+                >
+                  <TrendingUpIcon class="h-3.5 w-3.5 text-primary" />
+                  {{ topic.title }}
+                </NuxtLink>
+              </div>
+            </div>
+
+            <!-- Ad -->
+            <SaleAdSlot variant="billboard" />
+          </aside>
+        </div>
+      </section>
+
+      <!-- ===== Tips and Suggestions ===== -->
+      <section v-if="visibleTips.length" class="mb-8">
+        <h2
+          class="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4"
+        >
+                    {{ $t("news_tips") }}
+        </h2>
+        <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            v-for="(tip, index) in visibleTips"
+            :key="index"
+            class="rounded-xl border border-gray-200 bg-white p-4"
+          >
+            <h3 class="text-sm font-semibold mb-1 text-gray-900 line-clamp-2">
+              {{ tip.title }}
+            </h3>
+            <p class="text-sm text-gray-600 line-clamp-3">
+              {{ tip.description }}
+            </p>
           </div>
         </div>
+        <div
+          v-if="visibleTips.length < tipsAndSuggestions.length"
+          class="mt-4 text-center"
+        >
+          <button
+            @click="loadMoreTips"
+            class="px-6 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            {{ $t("news_load_more") }}
+          </button>
+        </div>
+      </section>
+
+      <!-- Ad -->
+      <div class="mb-8">
+        <SaleAdSlot variant="leaderboard" />
       </div>
 
-      <!-- Newsletter Section -->
-      <div class="mt-16">
-        <div class="bg-primary rounded-xl p-8 sm:p-10 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-1/3 h-full opacity-10">
-            <svg
-              viewBox="0 0 100 100"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="75" cy="25" r="20" fill="white" />
-              <circle cx="25" cy="75" r="20" fill="white" />
-              <circle cx="75" cy="75" r="20" fill="white" />
-              <circle cx="25" cy="25" r="20" fill="white" />
-            </svg>
-          </div>
+      <!-- ===== Newsletter ===== -->
+      <section class="mb-2">
+        <div class="rounded-xl bg-primary p-6 sm:p-8 text-white">
           <div
-            class="relative z-10 flex flex-col md:flex-row items-center justify-between"
+            class="flex flex-col md:flex-row items-center justify-between gap-5"
           >
-            <div class="mb-6 md:mb-0 md:mr-8">
-              <h2 class="text-base sm:text-base font-semibold text-white mb-2">
-                Stay Updated
+            <div class="text-center md:text-left">
+              <h2 class="text-lg sm:text-xl font-bold mb-1">
+                {{ $t("news_stay_updated") }}
               </h2>
-              <p class="text-white/80 max-w-md">
-                Subscribe to our newsletter to receive the latest news and
-                exclusive content straight to your inbox.
+              <p class="text-white/85 text-sm max-w-md">
+                {{ $t("news_newsletter_desc") }}
               </p>
             </div>
-            <div class="w-full md:w-auto">
-              <form
-                @submit.prevent="subscribeNewsletter"
-                class="flex flex-col sm:flex-row gap-3"
+            <form
+              @submit.prevent="subscribeNewsletter"
+              class="w-full md:w-auto flex flex-col sm:flex-row gap-2"
+            >
+              <input
+                type="email"
+                v-model="newsletterEmail"
+                :placeholder="$t('news_email_placeholder')"
+                required
+                class="px-4 py-2.5 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-white/60 w-full sm:w-64"
+              />
+              <button
+                type="submit"
+                class="px-6 py-2.5 bg-white text-primary font-semibold rounded-lg hover:bg-gray-100 transition-colors whitespace-nowrap"
               >
-                <input
-                  type="email"
-                  v-model="newsletterEmail"
-                  placeholder="Your email address"
-                  required
-                  class="px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 w-full sm:w-64"
-                />
-                <button
-                  type="submit"
-                  class="px-6 py-3 bg-white text-primary font-medium rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
+                {{ $t("news_subscribe") }}
+              </button>
+            </form>
           </div>
         </div>
-      </div>
+      </section>
     </main>
   </div>
 </template>
@@ -350,6 +495,7 @@ import {
   TrendingUpIcon,
   SearchIcon,
 } from "lucide-vue-next";
+import SaleAdSlot from "~/components/sale/SaleAdSlot.vue";
 
 // Articles state
 const articles = ref([]);
@@ -622,6 +768,15 @@ const latestArticle = computed(() => {
   return formatArticleForDisplay(latest);
 });
 
+// Top stories beside the lead (next most-recent after the latest)
+const topStories = computed(() => {
+  if (articles.value.length === 0) return [];
+  return [...articles.value]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(1, 5)
+    .map((article) => formatArticleForDisplay(article));
+});
+
 // Filter articles based on active category and include all articles
 const filteredArticles = computed(() => {
   if (articles.value.length === 0) return [];
@@ -642,6 +797,44 @@ const trendingArticles = computed(() => {
     .slice(0, 8) // Take the top 8 articles
     .map((article) => formatArticleForDisplay(article));
 });
+
+// Most read (ranked by comment count) — powers the sidebar
+const mostReadArticles = computed(() => {
+  return [...forTrendingArticles.value]
+    .sort((a, b) => {
+      const aC = a.post_comments ? a.post_comments.length : 0;
+      const bC = b.post_comments ? b.post_comments.length : 0;
+      return bC - aC;
+    })
+    .slice(0, 5)
+    .map((article) => formatArticleForDisplay(article));
+});
+
+// Category-wise news blocks (newspaper-style sections, real data per category)
+const categorySections = ref([]);
+async function getCategorySections() {
+  try {
+    const catRes = await get("/news/categories/");
+    const cats = (catRes.data?.results || []).slice(0, 4);
+    const sections = await Promise.all(
+      cats.map(async (cat) => {
+        try {
+          const res = await get(`/news/categories/${cat.slug}/posts/?page=1`);
+          const posts = (res.data?.results || [])
+            .slice(0, 4)
+            .map((a) => formatArticleForDisplay(a));
+          return { id: cat.id, title: cat.title, slug: cat.slug, posts };
+        } catch (e) {
+          return { id: cat.id, title: cat.title, slug: cat.slug, posts: [] };
+        }
+      })
+    );
+    categorySections.value = sections.filter((s) => s.posts.length > 0);
+  } catch (e) {
+    console.error("Error fetching category sections:", e);
+  }
+}
+getCategorySections();
 
 // Helper functions
 const getAuthorName = (authorDetails) => {
@@ -692,6 +885,10 @@ onUnmounted(() => {
 }
 
 .hover\:text-primary:hover {
+  color: var(--color-primary);
+}
+
+.group:hover .group-hover\:text-primary {
   color: var(--color-primary);
 }
 
@@ -757,21 +954,5 @@ onUnmounted(() => {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* Ensure fixed height for article cards */
-article {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-}
-
-article h3 {
-  min-height: 3rem; /* Adjust based on expected title height */
-}
-
-article p {
-  min-height: 4rem; /* Adjust based on expected description height */
 }
 </style>

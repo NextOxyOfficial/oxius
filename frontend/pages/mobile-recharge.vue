@@ -1,14 +1,43 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50/60 py-6 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-      <!-- Header -->
-      <div class="text-center mb-6">
-        <h1 class="text-xl font-semibold text-gray-800 sm:text-xl">
-          {{ $t("mobile_recharge") }}
-        </h1>
-        <p class="mt-2 text-base sm:text-xl text-gray-600">
-          {{ $t("recharge_package_choice") }}
-        </p>
+      <!-- Header bar -->
+      <div
+        class="bg-white rounded-xl border border-gray-200 px-4 py-3.5 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+      >
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
+          >
+            <UIcon name="i-heroicons-device-phone-mobile" class="h-6 w-6" />
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-lg sm:text-xl font-bold text-gray-900 leading-tight">
+              {{ $t("mobile_recharge") }}
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 line-clamp-1">
+              {{ $t("recharge_package_choice") }}
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <div
+            class="flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2 text-sm"
+          >
+            <span class="text-gray-500">{{ $t("available_balance") }}:</span>
+            <span class="font-bold text-emerald-700 flex items-center">
+              <span class="text-base">৳</span>{{ user?.user.balance }}
+            </span>
+          </div>
+          <UButton
+            :label="t('recharge_history')"
+            icon="i-heroicons-clock"
+            @click="isHistory = true"
+            size="sm"
+            color="gray"
+            variant="outline"
+          />
+        </div>
       </div>
       <!-- Search and Filter -->
       <div class="max-w-md mx-auto">
@@ -35,7 +64,7 @@
               :class="[
                 'flex flex-col items-center justify-center p-3 rounded-lg border transition-all',
                 selectedOperator === operator.id
-                  ? 'border-green-500 bg-green-50'
+                  ? 'border-emerald-500 bg-emerald-50'
                   : 'border-gray-200 bg-white hover:border-gray-300',
               ]"
             >
@@ -57,42 +86,26 @@
             :key="index"
             @click="activeFilter = filter.value"
             :variant="activeFilter === filter.value ? 'solid' : 'outline'"
-            :color="activeFilter === filter.value ? 'green' : 'gray'"
+            :color="activeFilter === filter.value ? 'emerald' : 'gray'"
             size="sm"
-            class="transition-all duration-200 hover:scale-105"
+            class="transition-colors duration-200"
           >
             {{ filter.label }}
           </UButton>
         </div>
       </div>
-      <div class="text-slate-700">
-        <span>{{ $t("available_balance") }}</span
-        >:&nbsp;
-        <span><span class="text-xl">৳</span> {{ user?.user.balance }}</span>
-      </div>
       <!-- Popular Packages -->
-      <div class="mb-10 mt-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">
-            {{ $t("popular_packages") }}
-          </h2>
-          <UButton
-            :label="t('recharge_history')"
-            icon="i-heroicons-clock"
-            @click="isHistory = true"
-            size="md"
-            variant="outline"
-            color="blue"
-            class="transition-all duration-200 hover:scale-105"
-          />
-        </div>
+      <div class="mb-8">
+        <h2 class="text-base font-bold text-gray-900 mb-4">
+          {{ $t("popular_packages") }}
+        </h2>
         <div
           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mx-auto max-w-7xl"
         >
           <div
             v-for="(pack, index) in popularPackages"
             :key="index"
-            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow duration-300"
+            class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-emerald-300 transition-colors"
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
@@ -148,9 +161,9 @@
               <div class="mt-3">
                 <UButton
                   @click="selectPackage(pack)"
-                  color="green"
+                  color="emerald"
                   size="sm"
-                  class="w-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+                  class="w-full transition-colors duration-200 shadow-sm hover:shadow-md"
                   :ui="{ rounded: 'rounded-lg' }"
                 >
                   <template #leading>
@@ -164,9 +177,14 @@
         </div>
       </div>
 
+      <!-- Ad placeholder -->
+      <div class="mb-8">
+        <SaleAdSlot variant="leaderboard" />
+      </div>
+
       <!-- All Packages -->
       <div>
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+        <h2 class="text-base font-bold text-gray-900 mb-4">
           {{ $t("all_packages") }}
         </h2>
         <div
@@ -175,7 +193,7 @@
           <div
             v-for="(pack, index) in filteredPackages"
             :key="index"
-            class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow duration-300"
+            class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-emerald-300 transition-colors"
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
@@ -226,9 +244,9 @@
               <div class="mt-3">
                 <UButton
                   @click="selectPackage(pack)"
-                  color="green"
+                  color="emerald"
                   size="sm"
-                  class="w-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+                  class="w-full transition-colors duration-200 shadow-sm hover:shadow-md"
                   :ui="{ rounded: 'rounded-lg' }"
                   block
                 >
@@ -316,7 +334,7 @@
               to="/deposit-withdraw"
               color="emerald"
               variant="soft"
-              class="w-full mt-3 transition-all duration-200 hover:scale-105"
+              class="w-full mt-3 transition-colors duration-200"
               size="sm"
               block
             >
@@ -348,7 +366,7 @@
               @click="showRechargeModal = false"
               color="gray"
               variant="outline"
-              class="flex-1 transition-all duration-200 hover:scale-105"
+              class="flex-1 transition-colors duration-200"
               block
               size="lg"
             >
@@ -360,8 +378,8 @@
             <UButton
               @click="handleRecharge"
               :disabled="!hasSufficientBalance"
-              color="green"
-              class="flex-1 transition-all duration-200 hover:scale-105"
+              color="emerald"
+              class="flex-1 transition-colors duration-200"
               :class="{
                 'opacity-50 cursor-not-allowed': !hasSufficientBalance,
               }"
@@ -383,7 +401,7 @@
       title="Recharge Successful!"
       description="Your mobile recharge has been processed successfully."
       icon="i-heroicons-check-circle"
-      color="green"
+      color="emerald"
       :timeout="3000"
       @close="showToast = false"
       class="fixed bottom-4 right-4 z-50 shadow-lg"
@@ -429,6 +447,7 @@
 definePageMeta({
   layout: "dashboard",
 });
+import SaleAdSlot from "~/components/sale/SaleAdSlot.vue";
 const { user, jwtLogin } = useAuth();
 const { post } = useApi();
 const { t } = useI18n();

@@ -1,287 +1,308 @@
 <template>
-  <UContainer>
-    <NuxtLink
-      to="/adsy-news/"
-      class="mb-6 flex items-center text-gray-800 hover:text-primary transition-colors"
-    >
-      <ArrowLeftIcon class="h-5 w-5 mr-1" />
-      Back to all news
-    </NuxtLink>
+  <div class="min-h-screen bg-gray-50/60">
+    <UContainer class="py-5">
+      <!-- Back link -->
+      <NuxtLink
+        to="/adsy-news/"
+        class="mb-4 inline-flex items-center text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+      >
+        <ArrowLeftIcon class="h-4 w-4 mr-1" />
+        {{ $t("news_back") }}
+      </NuxtLink>
 
-    <article
-      v-if="article"
-      class="bg-white rounded-xl shadow-sm overflow-hidden"
-    >
-      <div class="relative h-[350px]">
-        <img
-          :src="
-            article.image
-              ? article.image
-              : '/static/frontend/images/placeholder.jpg'
-          "
-          :alt="article.title"
-          class="w-full h-full object-cover"
-        />
-        <div
-          class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"
-        ></div>
-        <div class="absolute bottom-0 left-0 right-0 p-2 sm:p-6 text-white">
-          <div class="flex items-center mb-4">
-            <span
-              class="bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full"
-            >
-              All News
-            </span>
-            <span class="ml-3 text-sm opacity-80">{{
-              formatDate(article.created_at)
-            }}</span>
-            <span class="ml-3 text-sm opacity-80 flex items-center">
-              <ClockIcon class="h-4 w-4 mr-1" />
-              {{ calculateReadTime(article.content) }} min read
-            </span>
-          </div>
-          <h1 class="text-xl sm:text-2xl font-semibold mb-4 leading-tight">
-            {{ article.title }}
-          </h1>
-        </div>
-      </div>
-
-      <div class="p-2 sm:p-6">
-        <div class="flex mb-8 border-b border-gray-200 w-full pb-2">
-          <img
-            :src="
-              article.author_details?.image ||
-              '/static/frontend/images/placeholder.jpg'
-            "
-            :alt="getAuthorName(article.author_details)"
-            class="h-12 w-12 rounded-full mr-4 border-2 border-primary"
-          />
-          <div class="w-full">
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-gray-800">
-                Posted by:
-                <span class="text-primary">{{
-                  getAuthorName(article.author_details)
+      <div v-if="article" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main article column -->
+        <article class="lg:col-span-2 min-w-0">
+          <!-- Hero -->
+          <div
+            class="relative rounded-xl overflow-hidden border border-gray-200 bg-black h-[260px] sm:h-[380px]"
+          >
+            <img
+              :src="
+                article.image
+                  ? article.image
+                  : '/static/frontend/images/placeholder.jpg'
+              "
+              :alt="article.title"
+              class="w-full h-full object-cover opacity-95"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+            ></div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
+              <div class="flex flex-wrap items-center gap-3 mb-2">
+                <span
+                  class="bg-primary text-white text-[11px] font-bold px-2.5 py-1 rounded uppercase tracking-wide"
+                >
+                  {{
+                    article.categories && article.categories.length
+                      ? article.categories[0].title
+                      : $t("adsy_news")
+                  }}
+                </span>
+                <span class="text-xs text-white/80">{{
+                  formatDate(article.created_at)
                 }}</span>
-              </span>
-              <div class="items-center flex space-x-3">
+                <span class="text-xs text-white/80 flex items-center gap-1">
+                  <ClockIcon class="h-3.5 w-3.5" />
+                  {{ calculateReadTime(article.content) }}
+                  {{ $t("news_min_read") }}
+                </span>
+              </div>
+              <h1 class="text-lg sm:text-2xl font-bold leading-snug">
+                {{ article.title }}
+              </h1>
+            </div>
+          </div>
+
+          <!-- Body card -->
+          <div
+            class="mt-4 bg-white rounded-xl border border-gray-200 p-4 sm:p-6"
+          >
+            <!-- Author + share -->
+            <div
+              class="flex items-center justify-between gap-3 pb-4 mb-5 border-b border-gray-100"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <img
+                  :src="
+                    article.author_details?.image ||
+                    '/static/frontend/images/placeholder.jpg'
+                  "
+                  :alt="getAuthorName(article.author_details)"
+                  class="h-11 w-11 rounded-full object-cover border border-gray-200"
+                />
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-900 truncate">
+                    {{ getAuthorName(article.author_details) }}
+                  </p>
+                  <p class="text-xs text-gray-500 capitalize">
+                    {{
+                      article.author_details?.profession ||
+                      $t("news_contributor")
+                    }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
                 <button
-                  class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                  class="h-9 w-9 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
                   @click="shareArticle('twitter')"
                 >
                   <TwitterIcon class="h-4 w-4" />
                 </button>
                 <button
-                  class="p-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors"
+                  class="h-9 w-9 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
                   @click="shareArticle('facebook')"
                 >
                   <FacebookIcon class="h-4 w-4" />
                 </button>
                 <button
-                  class="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
+                  class="h-9 w-9 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:opacity-90 transition-opacity"
                   @click="shareArticle('copy')"
                 >
                   <LinkIcon class="h-4 w-4" />
                 </button>
               </div>
             </div>
-            <span class="text-sm text-gray-600 capitalize">
-              {{ article.author_details?.profession || "Contributor" }}
-            </span>
-          </div>
-        </div>
 
-        <div class="prose max-w-none mb-10" v-html="article.content"></div>
-
-        <div
-          v-if="article.post_tags && article.post_tags.length > 0"
-          class="flex flex-wrap gap-2 mb-10"
-        >
-          <span
-            v-for="(tag, index) in article.post_tags"
-            :key="index"
-            class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200 cursor-pointer transition-colors"
-          >
-            #{{ tag.tag }}
-          </span>
-        </div>
-
-        <!-- Comments Section -->
-        <div class="border-t border-gray-200 pt-8">
-          <h2 class="text-xl font-semibold mb-6 text-gray-800">
-            Comments ({{
-              article.post_comments ? article.post_comments.length : 0
-            }})
-          </h2>
-
-          <form @submit.prevent="addComment" class="mb-8">
-            <div class="space-y-4">
-              <div class="flex-1">
-                <textarea
-                  v-model="newComment.content"
-                  rows="3"
-                  placeholder="Write a comment..."
-                  required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary bg-white text-gray-800"
-                ></textarea>
-                <div class="mt-3 flex justify-end">
-                  <button
-                    type="submit"
-                    class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                    :disabled="isSubmittingComment"
-                  >
-                    <span v-if="isSubmittingComment">Posting...</span>
-                    <span v-else>Post Comment</span>
-                  </button>
-                </div>
-              </div>
+            <!-- Ad (after intro) -->
+            <div class="mb-6">
+              <SaleAdSlot variant="leaderboard" />
             </div>
-          </form>
 
-          <div class="space-y-6">
-            <transition-group name="comment-list">
-              <div
-                v-for="comment in article.post_comments"
-                :key="comment.id"
-                class="bg-gray-50 p-4 rounded-lg border border-gray-200"
+            <!-- Content -->
+            <div class="prose max-w-none" v-html="article.content"></div>
+
+            <!-- Tags -->
+            <div
+              v-if="article.post_tags && article.post_tags.length > 0"
+              class="flex flex-wrap gap-2 mt-6 pt-5 border-t border-gray-100"
+            >
+              <span
+                v-for="(tag, index) in article.post_tags"
+                :key="index"
+                class="px-3 py-1 rounded-full bg-gray-50 border border-gray-200 text-gray-700 text-xs font-medium hover:border-gray-300 transition-colors"
               >
-                <div class="flex items-start space-x-4">
-                  <div class="flex-1">
-                    <div class="flex justify-between mb-2">
-                      <h3 class="font-semibold text-gray-800">
-                        {{
-                          comment.author_details
-                            ? getAuthorName(comment.author_details)
-                            : "Anonymous"
-                        }}
-                      </h3>
-                      <span class="text-sm text-gray-600">{{
-                        formatDate(comment.created_at)
-                      }}</span>
-                    </div>
-                    <p class="text-gray-800">{{ comment.content }}</p>
-                  </div>
-                </div>
-              </div>
-            </transition-group>
-            <div
-              v-if="
-                !article.post_comments || article.post_comments.length === 0
-              "
-              class="text-center py-8 text-gray-600"
-            >
-              No comments yet. Be the first to comment!
+                #{{ tag.tag }}
+              </span>
+            </div>
+
+            <!-- Ad (after content) -->
+            <div class="mt-6">
+              <SaleAdSlot variant="billboard" />
             </div>
           </div>
-        </div>
 
-        <!-- Related Articles -->
-        <div
-          v-if="relatedArticles.length > 0"
-          class="mt-12 border-t border-gray-200 pt-8"
-        >
-          <h2 class="text-xl font-semibold mb-6 text-gray-800">
-            Related Articles
-          </h2>
-          <div class="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-            <div
-              v-for="relatedArticle in relatedArticles.slice(0, 4)"
-              :key="relatedArticle.id"
-              class="bg-gray-50 rounded-lg overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300"
+          <!-- Comments -->
+          <div
+            class="mt-4 bg-white rounded-xl border border-gray-200 p-4 sm:p-6"
+          >
+            <h2
+              class="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4"
             >
-              <div class="relative h-40 overflow-hidden">
-                <img
-                  :src="
-                    relatedArticle.image
-                      ? relatedArticle.image
-                      : '/static/frontend/images/placeholder.jpg'
-                  "
-                  :alt="relatedArticle.title"
-                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                />
+                            {{ $t("news_comments") }} ({{
+                article.post_comments ? article.post_comments.length : 0
+              }})
+            </h2>
+
+            <form @submit.prevent="addComment" class="mb-6">
+              <textarea
+                v-model="newComment.content"
+                rows="3"
+                :placeholder="$t('news_comment_placeholder')"
+                required
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary bg-white text-gray-800 text-sm"
+              ></textarea>
+              <div class="mt-3 flex justify-end">
+                <button
+                  type="submit"
+                  :disabled="isSubmittingComment"
+                  class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-semibold disabled:opacity-60"
+                >
+                  <span v-if="isSubmittingComment">{{
+                    $t("news_posting")
+                  }}</span>
+                  <span v-else>{{ $t("news_post_comment") }}</span>
+                </button>
               </div>
-              <div class="p-4">
-                <NuxtLink :to="`/adsy-news/${relatedArticle.slug}/`">
+            </form>
+
+            <div class="space-y-4">
+              <transition-group name="comment-list">
+                <div
+                  v-for="comment in article.post_comments"
+                  :key="comment.id"
+                  class="bg-gray-50 p-4 rounded-lg border border-gray-100"
+                >
+                  <div class="flex justify-between mb-1.5">
+                    <h3 class="text-sm font-semibold text-gray-900">
+                      {{
+                        comment.author_details
+                          ? getAuthorName(comment.author_details)
+                          : "Anonymous"
+                      }}
+                    </h3>
+                    <span class="text-xs text-gray-500">{{
+                      formatDate(comment.created_at)
+                    }}</span>
+                  </div>
+                  <p class="text-sm text-gray-700">{{ comment.content }}</p>
+                </div>
+              </transition-group>
+              <div
+                v-if="
+                  !article.post_comments || article.post_comments.length === 0
+                "
+                class="text-center py-6 text-sm text-gray-500"
+              >
+                {{ $t("news_no_comments") }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Related Articles -->
+          <div v-if="relatedArticles.length > 0" class="mt-6">
+            <h2
+              class="flex items-center gap-2 text-lg font-bold text-gray-900 mb-4"
+            >
+                            {{ $t("news_related") }}
+            </h2>
+            <div class="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
+              <NuxtLink
+                v-for="relatedArticle in relatedArticles.slice(0, 3)"
+                :key="relatedArticle.id"
+                :to="`/adsy-news/${relatedArticle.slug}/`"
+                class="group block rounded-xl border border-gray-200 bg-white overflow-hidden hover:border-gray-300 transition-colors"
+              >
+                <div class="relative h-36 overflow-hidden">
+                  <img
+                    :src="
+                      relatedArticle.image
+                        ? relatedArticle.image
+                        : '/static/frontend/images/placeholder.jpg'
+                    "
+                    :alt="relatedArticle.title"
+                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div class="p-3">
                   <h3
-                    class="font-semibold text-lg mb-2 hover:text-primary transition-colors line-clamp-2"
+                    class="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors"
                   >
                     {{ relatedArticle.title }}
                   </h3>
-                </NuxtLink>
-                <div
-                  v-html="relatedArticle.content.substring(0, 100) + `...`"
-                  class="text-sm text-gray-600 mb-4 line-clamp-2"
-                ></div>
-
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">{{
-                    formatDate(relatedArticle.created_at)
-                  }}</span>
-                  <span class="text-gray-600 flex items-center">
-                    <MessageSquareIcon class="h-3 w-3 mr-1" />
-                    {{
-                      relatedArticle.post_comments
-                        ? relatedArticle.post_comments.length
-                        : 0
-                    }}
-                  </span>
+                  <div
+                    class="flex justify-between items-center text-xs text-gray-500 mt-2"
+                  >
+                    <span>{{ formatDate(relatedArticle.created_at) }}</span>
+                    <span class="flex items-center gap-1">
+                      <MessageSquareIcon class="h-3.5 w-3.5" />
+                      {{
+                        relatedArticle.post_comments
+                          ? relatedArticle.post_comments.length
+                          : 0
+                      }}
+                    </span>
+                  </div>
                 </div>
+              </NuxtLink>
+            </div>
+          </div>
+        </article>
+
+        <!-- Sidebar -->
+        <aside
+          class="lg:col-span-1 space-y-5 lg:sticky lg:top-20 lg:self-start"
+        >
+          <!-- Ad -->
+          <SaleAdSlot variant="billboard" />
+
+          <!-- Tips -->
+          <div
+            v-if="visibleTips.length"
+            class="rounded-xl border border-gray-200 bg-white p-4"
+          >
+            <h3
+              class="flex items-center gap-2 text-base font-bold text-gray-900 mb-3"
+            >
+                            {{ $t("news_tips") }}
+            </h3>
+            <div class="divide-y divide-gray-100">
+              <div
+                v-for="(tip, index) in visibleTips.slice(0, 6)"
+                :key="index"
+                class="py-2.5 first:pt-0 last:pb-0"
+              >
+                <h4 class="text-sm font-semibold text-gray-800 line-clamp-2">
+                  {{ tip.title }}
+                </h4>
+                <p class="text-xs text-gray-500 line-clamp-2 mt-0.5">
+                  {{ tip.description }}
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Tips and Suggestions Section -->
-        <div class="mt-12 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-xl font-semibold text-gray-800 mb-6">
-            Tips and Suggestions
-          </h2>
-          <div
-            class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
-          >
-            <div
-              v-for="(tip, index) in visibleTips"
-              :key="index"
-              class="bg-white rounded-lg shadow-sm p-4 hover:shadow-sm transition-shadow duration-300 flex flex-col"
-            >
-              <h3
-                class="text-sm font-semibold mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
-              >
-                {{ tip.title }}
-              </h3>
-              <p class="text-sm text-gray-600 line-clamp-3">
-                {{ tip.description }}
-              </p>
-            </div>
-          </div>
-          <div
-            v-if="visibleTips.length < tipsAndSuggestions.length"
-            class="mt-6 text-center"
-          >
-            <button
-              @click="loadMoreTips"
-              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
-            >
-              Load More
-            </button>
+          <!-- Ad -->
+          <SaleAdSlot variant="billboard" />
+        </aside>
+      </div>
+
+      <!-- Loading state -->
+      <div v-else class="py-12">
+        <div class="animate-pulse space-y-6 max-w-3xl mx-auto">
+          <div class="h-64 bg-gray-200 rounded-xl"></div>
+          <div class="h-7 bg-gray-200 rounded-full w-3/4"></div>
+          <div class="space-y-3">
+            <div class="h-4 bg-gray-200 rounded-full"></div>
+            <div class="h-4 bg-gray-200 rounded-full w-5/6"></div>
+            <div class="h-4 bg-gray-200 rounded-full w-4/6"></div>
           </div>
         </div>
       </div>
-    </article>
-
-    <!-- Loading state -->
-    <div v-else class="py-12 text-center">
-      <div class="animate-pulse space-y-8">
-        <div class="h-64 bg-gray-200 rounded-xl"></div>
-        <div class="h-8 bg-gray-200 rounded-full w-3/4 mx-auto"></div>
-        <div class="space-y-3">
-          <div class="h-4 bg-gray-200 rounded-full"></div>
-          <div class="h-4 bg-gray-200 rounded-full w-5/6"></div>
-          <div class="h-4 bg-gray-200 rounded-full w-4/6"></div>
-        </div>
-      </div>
-    </div>
-  </UContainer>
+    </UContainer>
+  </div>
 </template>
 
 <script setup>
@@ -532,6 +553,7 @@ import {
   MessageSquareIcon,
   SearchIcon,
 } from "lucide-vue-next";
+import SaleAdSlot from "~/components/sale/SaleAdSlot.vue";
 </script>
 
 <style scoped>

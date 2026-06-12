@@ -6,7 +6,7 @@
       @search="handleSearch"
       @clear-location="handleClearLocation"
     />
-    <div class="max-w-6xl mx-auto px-3 py-3 sm:py-4">
+    <div class="max-w-6xl mx-auto px-1 sm:py-4">
       <!-- Seller Profile Header -->
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div

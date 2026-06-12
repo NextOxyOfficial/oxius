@@ -80,7 +80,7 @@
         <!-- Main content -->
         <div class="min-w-0">
           <!-- Status filter tabs -->
-          <div class="flex gap-1.5 overflow-x-auto pb-2 mb-3">
+          <div class="flex gap-1.5 overflow-x-auto pb-2 mb-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <button
               v-for="tab in statusTabs"
               :key="tab.key"

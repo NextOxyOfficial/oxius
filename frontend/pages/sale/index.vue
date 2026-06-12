@@ -42,7 +42,7 @@
               <div class="flex items-center gap-2">
                 <div class="flex items-center gap-1.5">
                   <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                  <p class="text-gray-700 text-xs font-medium">
+                  <p class="text-gray-700 text-sm font-medium">
                     <span class="text-emerald-600 font-bold">{{
                       selectedCategory
                         ? getCateogryPostCount(selectedCategory)
@@ -57,30 +57,30 @@
               </div>
               <!-- Post Sale Ad Button - Mobile position -->
               <div class="lg:hidden">
-                <div v-if="isAuthenticated" class="flex items-center gap-1.5">
+                <div v-if="isAuthenticated" class="flex items-center gap-2">
                   <NuxtLink
                     to="/sale/my-posts"
-                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1 h-7 border border-emerald-400 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors text-[11px] font-semibold"
+                    class="whitespace-nowrap flex items-center gap-1.5 px-3 py-2 h-9 border border-emerald-400 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors text-xs font-semibold"
                     @click="handleButtonClick('my-posts-mobile')"
                   >
-                    <UIcon name="i-heroicons-list-bullet" class="h-3 w-3" />
+                    <UIcon name="i-heroicons-list-bullet" class="h-4 w-4" />
                     <span>My Ads</span>
                   </NuxtLink>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
-                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1 h-7 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-all text-[11px] font-bold shadow-sm"
+                    class="whitespace-nowrap flex items-center gap-1.5 px-3 py-2 h-9 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-all text-xs font-bold shadow-sm"
                     @click="handleButtonClick('post-ad-mobile')"
                   >
-                    <UIcon name="i-heroicons-plus" class="h-3 w-3" />
-                    <span>Post</span>
+                    <UIcon name="i-heroicons-plus" class="h-4 w-4" />
+                    <span>Post Ad</span>
                   </NuxtLink>
                 </div>
                 <div v-else>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
-                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1 h-7 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-[11px] font-bold shadow-sm"
+                    class="whitespace-nowrap flex items-center gap-1.5 px-3 py-2 h-9 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-xs font-bold shadow-sm"
                   >
-                    <UIcon name="i-heroicons-plus" class="h-3 w-3" />
+                    <UIcon name="i-heroicons-plus" class="h-4 w-4" />
                     Post Ad
                   </NuxtLink>
                 </div>
@@ -135,26 +135,26 @@
             </div>
             <!-- Mobile Sort Options - Compact -->
             <div class="lg:hidden w-full">
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-2">
                 <!-- Mobile Filter Button -->
                 <button
                   @click="toggleMobileSidebar"
-                  class="flex items-center gap-1 px-2 py-1 h-7 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-[11px] font-medium"
+                  class="flex items-center gap-1.5 px-3 py-2 h-9 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs font-medium whitespace-nowrap"
                 >
-                  <UIcon name="i-heroicons-squares-2x2" class="h-3 w-3" />
+                  <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
                   <span>Categories</span>
                 </button>
-                <span class="text-[11px] text-gray-500">Sort:</span>
+                <span class="text-xs text-gray-500 shrink-0">Sort:</span>
                 <USelect
                   v-model="sortOption"
                   :options="sortOptions"
                   option-attribute="label"
                   value-attribute="value"
-                  size="xs"
-                  class="w-28 h-7 flex-1"
+                  size="sm"
+                  class="flex-1"
                   :ui="{
-                    padding: { xs: 'px-2 py-0.5' },
-                    size: { xs: 'text-[11px]' },
+                    padding: { sm: 'px-3 py-2' },
+                    size: { sm: 'text-sm' },
                   }"
                   @update:modelValue="applyFilters"
                 />

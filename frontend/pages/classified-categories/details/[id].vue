@@ -1,9 +1,9 @@
 <template>
   <div class="bg-gray-50/60 min-h-screen pb-8">
-    <div class="max-w-6xl mx-auto px-3 py-3 sm:py-4">
+    <div class="max-w-6xl mx-auto px-1 sm:py-4">
     <!-- Breadcrumb -->
     <nav
-      class="flex items-center text-sm my-3 px-3 pt-4 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide"
+      class="flex items-center text-sm mb-3 px-3 pt-4 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide"
     >
       <NuxtLink
         to="/"
@@ -496,7 +496,7 @@
     <!-- Similar Services (single-row rail) -->
     <section
       v-if="similarServices.length"
-      class="mt-6 bg-white rounded-xl border border-gray-200 p-3 sm:p-4"
+      class="mt-6 bg-white rounded-xl border border-gray-200 p-2 sm:p-4"
     >
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-[15px] sm:text-base font-bold text-gray-900 flex items-center gap-1.5">
@@ -522,7 +522,7 @@
       </div>
       <div
         ref="simRail"
-        class="flex gap-3 overflow-x-auto pb-1 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        class="flex gap-2 overflow-x-auto pb-1 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         <NuxtLink
           v-for="item in similarServices"

@@ -12,10 +12,10 @@
           :key="filter.value"
           @click="activeFilter = filter.value"
           :class="[
-            'px-3 py-2 rounded-full text-sm font-medium transition-colors',
+            'px-3 py-1.5 rounded-full text-sm font-medium transition-colors border',
             activeFilter === filter.value
-              ? 'bg-green-500 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+              ? 'bg-emerald-600 text-white border-emerald-600'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100',
           ]"
         >
           {{ filter.label }}
@@ -31,15 +31,15 @@
       >
         <UIcon
           name="i-heroicons-document-magnifying-glass"
-          class="w-12 h-12 text-gray-400 mb-2"
+          class="w-12 h-12 text-gray-300 mb-2"
         />
-        <p>No transactions found</p>
+        <p class="text-sm">{{ $t("recharge_no_transactions") }}</p>
       </div>
 
       <div
         v-for="(transaction, index) in filteredTransactions"
         :key="index"
-        class="transaction-item border rounded-lg p-4 hover:shadow-sm transition-shadow bg-white"
+        class="transaction-item rounded-xl border border-gray-200 p-4 bg-white"
       >
         <div class="flex justify-between items-start">
           <div>
@@ -125,7 +125,7 @@
       <button
         @click="currentPage = Math.max(1, currentPage - 1)"
         :disabled="currentPage === 1"
-        class="px-3 py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        class="px-3 py-2 rounded-lg border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
       >
         <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
       </button>
@@ -135,10 +135,10 @@
         :key="page"
         @click="currentPage = page"
         :class="[
-          'px-3 py-2 rounded border transition-colors',
+          'px-3 py-2 rounded-lg border transition-colors',
           currentPage === page
-            ? 'bg-emerald-500 text-white border-emerald-500'
-            : 'hover:bg-gray-50',
+            ? 'bg-emerald-600 text-white border-emerald-600'
+            : 'border-gray-200 text-gray-700 hover:bg-gray-50',
         ]"
       >
         {{ page }}
@@ -147,7 +147,7 @@
       <button
         @click="currentPage = Math.min(totalPages, currentPage + 1)"
         :disabled="currentPage === totalPages || totalPages === 0"
-        class="px-3 py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        class="px-3 py-2 rounded-lg border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
       >
         <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
       </button>
