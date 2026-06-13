@@ -251,10 +251,27 @@ def _info_table(rows_html):
 
 
 def _button(text, url):
-    """In-body CTA buttons are intentionally disabled — every email's single CTA is
-    now the Donate button in the footer. Kept as a no-op so the ~30 existing callers
-    don't each need editing (the relevant page is still reachable via the app)."""
+    """In-body CTA buttons are intentionally disabled for USER-facing emails — each
+    email's single CTA is now the Donate button in the footer. Kept as a no-op so
+    the ~30 existing callers don't each need editing (the page is still reachable
+    via the app). ADMIN notification emails use _admin_button() instead, so staff
+    keep their quick "Review / View in Admin" action buttons."""
     return ""
+
+
+def _admin_button(text, url):
+    """A real CTA button — used ONLY in admin notification emails so staff can jump
+    straight to the relevant admin page and act fast (Review KYC, withdrawals,
+    etc.). User-facing emails deliberately use the no-op _button()."""
+    if not text or not url:
+        return ""
+    return (
+        '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:18px auto 6px;">'
+        '<tr><td style="border-radius:10px;background:#059669;">'
+        f'<a href="{url}" style="display:inline-block;padding:12px 28px;color:#ffffff;'
+        f'text-decoration:none;font-size:15px;font-weight:600;border-radius:10px;">{text}</a>'
+        '</td></tr></table>'
+    )
 
 
 def _get_email_settings():
@@ -1426,7 +1443,7 @@ def notify_admin_new_registration(user):
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("View in Admin", SITE_URL + "/admin/base/user/")}
+{_admin_button("View in Admin", SITE_URL + "/admin/base/user/")}
 """
 
     html = _base_template(subject, body)
@@ -1453,7 +1470,7 @@ def notify_admin_new_recharge(recharge):
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("View in Admin", SITE_URL + "/admin/mobile_recharge/recharge/")}
+{_admin_button("View in Admin", SITE_URL + "/admin/mobile_recharge/recharge/")}
 """
 
     html = _base_template(subject, body)
@@ -1482,7 +1499,7 @@ def notify_admin_withdrawal_request(user, amount, payment_method, payment_number
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("Review in Admin", SITE_URL + "/admin/base/balance/")}
+{_admin_button("Review in Admin", SITE_URL + "/admin/base/balance/")}
 """
 
     html = _base_template(subject, body, "Please review and approve/reject this withdrawal request.")
@@ -1504,7 +1521,7 @@ def notify_admin_kyc_submission(user):
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("Review KYC", SITE_URL + "/admin/base/nid/")}
+{_admin_button("Review KYC", SITE_URL + "/admin/base/nid/")}
 """
 
     html = _base_template(subject, body)
@@ -1531,7 +1548,7 @@ def notify_admin_user_blocked(blocker, blocked_user, reason=""):
 
 <p style="color:#ef4444;font-size:14px;line-height:1.6;margin:16px 0;font-weight:600;">⚠️ Please review the blocked user's content and account within 24 hours per our content moderation policy.</p>
 
-{_button("Review Blocked Users", SITE_URL + "/admin/adsyconnect/blockeduser/")}
+{_admin_button("Review Blocked Users", SITE_URL + "/admin/adsyconnect/blockeduser/")}
 """
 
     html = _base_template(subject, body)
