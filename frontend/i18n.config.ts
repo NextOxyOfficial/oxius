@@ -610,6 +610,8 @@ export default defineI18nConfig(() => ({
       passwords_not_match: "Passwords do not match",
       age_required: "Age is required",
       invalid_age: "Invalid age",
+      date_of_birth: "Date of birth",
+      dob_required: "Date of birth is required",
       gender_required: "Gender is required",
       invalid_referral: "Invalid referral code",// Success messages
       login_success_messages: {
@@ -1485,6 +1487,8 @@ export default defineI18nConfig(() => ({
       passwords_not_match: "পাসওয়ার্ড মিলছে না",
       age_required: "বয়স প্রয়োজন",
       invalid_age: "ভুল বয়স",
+      date_of_birth: "জন্ম তারিখ",
+      dob_required: "জন্ম তারিখ দিন",
       gender_required: "জেন্ডার প্রয়োজন",
       invalid_referral: "ভুল রেফারেল কোড",// Success messages (Bengali)
       login_success_messages: {

@@ -449,6 +449,29 @@
                     </p>
                   </div>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
+                      >Date of Birth</label
+                    >
+                    <UInput
+                      type="date"
+                      size="md"
+                      color="white"
+                      :max="maxDob"
+                      min="1940-01-01"
+                      v-model="userProfile.date_of_birth"
+                      class="w-full"
+                    />
+                    <p
+                      v-if="settingsAge !== null"
+                      class="text-xs text-gray-500 mt-1"
+                    >
+                      Age: {{ settingsAge }}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <!-- Address Information -->
@@ -841,6 +864,21 @@ const showDeleteBannerConfirmModal = ref(false); // New state for banner delete 
 const isProcessing = ref(false);
 const activeTab = ref("profile");
 const userProfile = ref({});
+
+// Date of birth → age (mirrors the register form + Flutter). The user picks a
+// date; age is derived (and on the backend, User.save() re-derives it too).
+const maxDob = new Date().toISOString().split("T")[0];
+const settingsAge = computed(() => {
+  const v = userProfile.value?.date_of_birth;
+  if (!v) return null;
+  const dob = new Date(v);
+  if (isNaN(dob.getTime())) return null;
+  const today = new Date();
+  let a = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) a--;
+  return a;
+});
 const errors = ref({});
 const isLoading = ref(false);
 const passwordLoading = ref(false);
@@ -1034,6 +1072,12 @@ async function handleForm() {
 
     if (dataToSend.store_banner === "" || dataToSend.store_banner === null) {
       delete dataToSend.store_banner;
+    }
+
+    // Omit an empty DOB — the backend treats date_of_birth as mandatory only
+    // when present, so leaving it out lets users without a DOB still save.
+    if (!dataToSend.date_of_birth) {
+      delete dataToSend.date_of_birth;
     }
 
     const res = await put(`/persons/update/${profileData.email}/`, dataToSend);

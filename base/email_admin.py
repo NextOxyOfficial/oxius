@@ -12,9 +12,32 @@ from django.urls import reverse
 from .models import EmailSettings
 
 
+class RevealablePasswordInput(forms.PasswordInput):
+    """Masked password field (shows dots, never plain text on the page) whose
+    stored value is preserved on save (render_value=True, so editing other fields
+    won't wipe the password). A small "Show" checkbox lets an admin reveal it when
+    they actually need to read it."""
+
+    def __init__(self, attrs=None, render_value=True):
+        super().__init__(attrs=attrs, render_value=render_value)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        attrs = dict(attrs or {})
+        field_id = attrs.get("id") or f"id_{name}"
+        attrs["id"] = field_id
+        html = super().render(name, value, attrs, renderer)
+        toggle = (
+            f'<label style="display:inline-block;margin-left:10px;font-weight:normal;cursor:pointer;color:#555;">'
+            f'<input type="checkbox" style="vertical-align:middle;" '
+            f"onclick=\"var f=document.getElementById('{field_id}');"
+            f"f.type=this.checked?'text':'password';\"> Show</label>"
+        )
+        return mark_safe(html + toggle)
+
+
 class EmailSettingsAdminForm(forms.ModelForm):
     """Form for email settings configuration"""
-    
+
     class Meta:
         model = EmailSettings
         fields = '__all__'
@@ -22,7 +45,7 @@ class EmailSettingsAdminForm(forms.ModelForm):
             'email_host': forms.TextInput(attrs={'class': 'vTextField', 'style': 'width: 300px;'}),
             'email_port': forms.NumberInput(attrs={'class': 'vIntegerField', 'style': 'width: 100px;'}),
             'email_host_user': forms.EmailInput(attrs={'class': 'vTextField', 'style': 'width: 300px;'}),
-            'email_host_password': forms.PasswordInput(attrs={'class': 'vTextField', 'style': 'width: 300px;'}),
+            'email_host_password': RevealablePasswordInput(attrs={'class': 'vTextField', 'style': 'width: 300px;'}),
             'from_email': forms.EmailInput(attrs={'class': 'vTextField', 'style': 'width: 300px;'}),
             'admin_email': forms.EmailInput(attrs={'class': 'vTextField', 'style': 'width: 300px;'}),
         }
@@ -37,7 +60,9 @@ class EmailSettingsAdminForm(forms.ModelForm):
 @admin.register(EmailSettings)
 class EmailSettingsAdmin(admin.ModelAdmin):
     """Admin interface for email settings"""
-    
+
+    form = EmailSettingsAdminForm  # masks the password (PasswordInput + Show toggle)
+
     list_display = ('email_host', 'email_port', 'email_host_user', 'from_email', 'is_active', 'updated_at')
     list_filter = ('is_active', 'email_host', 'email_port')
     search_fields = ('email_host', 'email_host_user', 'from_email', 'admin_email')

@@ -221,21 +221,33 @@
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <UFormGroup label="" class="space-y-1">
+                  <label class="block text-xs text-gray-500 mb-1">{{
+                    t("date_of_birth")
+                  }}</label>
                   <div class="relative">
                     <UIcon
                       name="i-heroicons-calendar"
-                      class="absolute left-3 top-3 text-gray-400 w-5 h-5"
+                      class="absolute left-3 top-3 text-gray-400 w-5 h-5 z-10"
                     />
                     <input
-                      type="text"
-                      size="md"
-                      :placeholder="t('age')"
-                      v-model="form.age"
-                      class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                      type="date"
+                      :max="maxDob"
+                      min="1940-01-01"
+                      v-model="form.date_of_birth"
+                      class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white text-gray-700"
                     />
                   </div>
-                  <p v-if="error.age" class="text-red-500 text-sm mt-1">
-                    {{ error.age }}
+                  <p
+                    v-if="computedAge !== null"
+                    class="text-xs text-gray-500 mt-1"
+                  >
+                    {{ t("age") }}: {{ computedAge }}
+                  </p>
+                  <p
+                    v-if="error.date_of_birth"
+                    class="text-red-500 text-sm mt-1"
+                  >
+                    {{ error.date_of_birth }}
                   </p>
                 </UFormGroup>
                 <UFormGroup label="" class="space-y-1">
@@ -648,10 +660,9 @@ function validateCurrentStep() {
       ? t("passwords_not_match")
       : "";
 
-    const ageValid = /^\d+$/;
-    error.value.age = !form.value.age
-      ? t("age_required")
-      : !ageValid.test(+form.value.age)
+    error.value.date_of_birth = !form.value.date_of_birth
+      ? t("dob_required")
+      : computedAge.value === null || computedAge.value < 0
       ? t("invalid_age")
       : "";
 
@@ -671,6 +682,7 @@ const form = ref({
   phone: "",
   password: "",
   confirmPassword: "",
+  date_of_birth: "",
   age: "",
   gender: "",
   refer: "",
@@ -681,6 +693,32 @@ const form = ref({
   zip: "",
   address: "",
 });
+
+// Date-of-birth → age, exactly like the Flutter register page: the user picks
+// a date and the age is derived from it (never typed by hand).
+const maxDob = new Date().toISOString().split("T")[0];
+
+function calculateAge(dateStr) {
+  if (!dateStr) return null;
+  const dob = new Date(dateStr);
+  if (isNaN(dob.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+const computedAge = computed(() => calculateAge(form.value.date_of_birth));
+
+watch(
+  () => form.value.date_of_birth,
+  (val) => {
+    const age = calculateAge(val);
+    form.value.age = age !== null ? String(age) : "";
+    if (val) error.value.date_of_birth = "";
+  }
+);
 
 const userProfile = ref({
   image: null, // Explicitly set to null to ensure it's handled properly
@@ -693,7 +731,7 @@ const error = ref({
   phone: "",
   password: "",
   confirmPassword: "",
-  age: "",
+  date_of_birth: "",
   gender: "",
   refer: "",
 });
@@ -770,13 +808,12 @@ async function handleSubmit() {
     phone: "",
     password: "",
     confirmPassword: "",
-    age: "",
+    date_of_birth: "",
     gender: "",
     refer: "",
   };
 
   const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
-  const ageValid = /^\d+$/; // Validate fields
   if (!form.value.first_name) error.value.first_name = t("first_name_required");
   if (!form.value.last_name) error.value.last_name = t("last_name_required");
   if (!form.value.email) error.value.email = t("email_required");
@@ -789,8 +826,10 @@ async function handleSubmit() {
   if (form.value.password !== form.value.confirmPassword) {
     error.value.confirmPassword = t("passwords_not_match");
   }
-  if (!form.value.age) error.value.age = t("age_required");
-  if (!ageValid.test(+form.value.age)) error.value.age = t("invalid_age");
+  if (!form.value.date_of_birth)
+    error.value.date_of_birth = t("dob_required");
+  else if (computedAge.value === null || computedAge.value < 0)
+    error.value.date_of_birth = t("invalid_age");
   if (!form.value.gender) error.value.gender = t("gender_required");
 
   // If any error exists, stop submission
@@ -804,7 +843,7 @@ async function handleSubmit() {
       error.value.phone ||
       error.value.password ||
       error.value.confirmPassword ||
-      error.value.age ||
+      error.value.date_of_birth ||
       error.value.gender
     ) {
       currentStep.value = 2;
@@ -820,7 +859,8 @@ async function handleSubmit() {
     username: form.value.email,
     phone: form.value.phone,
     refer: form.value.refer,
-    age: +form.value.age,
+    date_of_birth: form.value.date_of_birth,
+    age: computedAge.value,
     gender: form.value.gender,
     // Don't include image field if it's not provided
     country: form.value.country,
@@ -869,7 +909,7 @@ async function handleSubmit() {
         phone: "",
         password: "",
         confirmPassword: "",
-        age: "",
+        date_of_birth: "",
         gender: "",
         refer: "",
       };

@@ -106,7 +106,7 @@ def _founder_signature_html():
     photo only renders once FOUNDER_PHOTO is hosted on a public URL."""
     photo = (f'<td style="width:130px;vertical-align:top;padding-right:18px;">'
              f'<img src="{FOUNDER_PHOTO}" width="112" height="112" alt="Alimul Islam" '
-             f'style="width:112px;height:112px;border-radius:14px;display:block;border:0;"></td>') if FOUNDER_PHOTO else ""
+             f'style="width:112px;height:112px;border-radius:8px;display:block;border:0;"></td>') if FOUNDER_PHOTO else ""
 
     def crow(icon, val):
         return (f'<tr><td style="padding:5px 12px 5px 0;vertical-align:middle;width:18px;">'
@@ -567,13 +567,22 @@ def send_ceo_welcome_email(user):
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">প্রিয় <strong>{name}</strong>,</p>
 <p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">AdsyClub পরিবারে আপনাকে পেয়ে আমি সত্যিই অনেক খুশি। আমি <strong>Alimul Islam</strong> — AdsyClub-এর প্রতিষ্ঠাতা।</p>
-<p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">আমরা একটা সহজ স্বপ্ন নিয়ে কাজ করছি — বাংলাদেশের সাধারণ মানুষের জন্য আয় আর কাজের সুযোগ তৈরি করা। আজ থেকে আপনিও এই যাত্রার একজন সঙ্গী, আর এটা আমাদের কাছে অনেক বড় ব্যাপার।</p>
+<p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">আমরা বাংলাদেশের সাধারণ মানুষের জন্য আয়, সহজ সেবা প্রদান, দেশীয় কমিউনিটি, আর কাজের সুযোগ তৈরি করতে কাজ করছি — আর আজ থেকে আপনিও এই যাত্রার একজন সঙ্গী, যা আমাদের কাছে অনেক বড় ব্যাপার।</p>
 <p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;">শুরু করতে কোথাও আটকে গেলে, কিংবা কোনো পরামর্শ বা অভিযোগ থাকলে — নিচের যেকোনো মাধ্যমে সরাসরি আমাকে লিখুন। আপনার একটা মেসেজও আমাদের আরও ভালো করতে সাহায্য করবে।</p>
 <p style="color:#374151;font-size:15px;line-height:1.75;margin:0 0 4px;">ভালো থাকবেন, পাশে থাকবেন। 🌿</p>
 {_founder_signature_html()}
 """
     html = _base_template(subject, body)
-    return _send_email(subject, user.email, text, html)
+    ok = _send_email(subject, user.email, text, html)
+    # Remember a successful delivery so the one-time backfill never re-sends it.
+    if ok:
+        try:
+            if not user.ceo_welcome_sent:
+                user.ceo_welcome_sent = True
+                user.save(update_fields=["ceo_welcome_sent"])
+        except Exception as exc:  # never let bookkeeping break the send
+            logger.warning(f"could not mark ceo_welcome_sent for {user.pk}: {exc}")
+    return ok
 
 
 def send_transfer_sent_email(sender_user, receiver_user, amount, transaction_id):

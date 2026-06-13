@@ -118,7 +118,7 @@ def _signature_html():
     photo_cell = (
         f'<td style="width:130px;vertical-align:top;padding-right:18px;">'
         f'<img src="{FOUNDER_PHOTO}" width="112" height="112" alt="Alimul Islam" '
-        f'style="width:112px;height:112px;border-radius:14px;display:block;border:0;"></td>'
+        f'style="width:112px;height:112px;border-radius:8px;display:block;border:0;"></td>'
     ) if FOUNDER_PHOTO else ""
     return f"""
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:30px;">
@@ -216,11 +216,35 @@ def _unsub_url(draft):
     return f"{SITE}/api/email/unsubscribe/"
 
 
+def _body_to_html(raw):
+    """Accept EITHER ready-made HTML or plain text. If it already contains block
+    HTML tags, use it as-is (assistant-prepared drafts); otherwise treat it as
+    plain text typed in the admin and convert it to styled paragraphs — a blank
+    line starts a new paragraph, a single newline becomes a line break."""
+    import re
+    from django.utils.html import escape
+
+    raw = (raw or "").strip()
+    if not raw:
+        return ""
+    if re.search(r"<(p|div|br|table|ul|ol|h[1-6]|span)\b", raw, re.I):
+        return raw  # already HTML — leave it untouched
+    style = "color:#374151;font-size:15px;line-height:1.75;margin:0 0 16px;"
+    out = []
+    for para in re.split(r"\n\s*\n", raw):
+        para = para.strip()
+        if not para:
+            continue
+        out.append(f'<p style="{style}">{escape(para).replace(chr(10), "<br>")}</p>')
+    return "\n".join(out)
+
+
 def render_outreach_email(draft):
     """Return (subject, html, text) for an OutreachDraft (or any object with
     .subject / .body_html / .id). Chrome is always English; only the body language
-    varies (set by the author)."""
-    body = getattr(draft, "body_html", "") or ""
+    varies (set by the author). The body may be plain text OR HTML (see
+    _body_to_html) — so the admin can just type normal text."""
+    body = _body_to_html(getattr(draft, "body_html", "") or "")
     subject = getattr(draft, "subject", "") or ""
     donate_url = _donate_url(draft)
     unsub_url = _unsub_url(draft)

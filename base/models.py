@@ -5,7 +5,7 @@ import time
 
 # from django.contrib.auth.models import User
 import uuid
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import AbstractUser
@@ -97,6 +97,9 @@ class User(AbstractUser):
     date_of_birth = models.DateField(blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
+    # True once the personal CEO welcome email has been delivered (set on
+    # registration + by the one-time backfill command) so it's never sent twice.
+    ceo_welcome_sent = models.BooleanField(default=False)
     kyc_pending = models.BooleanField(default=False)
     kyc = models.BooleanField(default=False)
     address = models.CharField(max_length=256, blank=True, default="")
@@ -217,6 +220,20 @@ class User(AbstractUser):
         if self.pro_validity and self.is_pro:
             if timezone.now() > self.pro_validity:
                 self.is_pro = False
+
+        # age always follows date_of_birth (single source of truth) — covers
+        # every entry point the same way: web form, Flutter form, the Google
+        # post-signup profile sheet and admin edits.
+        if self.date_of_birth:
+            today = date.today()
+            self.age = (
+                today.year
+                - self.date_of_birth.year
+                - (
+                    (today.month, today.day)
+                    < (self.date_of_birth.month, self.date_of_birth.day)
+                )
+            )
 
         super(User, self).save(*args, **kwargs)
 
