@@ -274,32 +274,17 @@ class _EshopSectionState extends State<EshopSection> {
     final isLoading = _loadingButtons.contains('browse-eshop');
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF8B5CF6),
-            Color(0xFF3B82F6)
-          ], // Purple to Blue gradient
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: const BoxDecoration(),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(999),
         child: InkWell(
           borderRadius: BorderRadius.circular(999),
-          splashColor: Colors.white24,
+          splashColor: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
           onTap: isLoading ? null : () => _handleButtonClick('browse-eshop'),
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 16 : 22,
+              horizontal: isMobile ? 6 : 10,
               vertical: isMobile ? 8 : 10,
             ),
             child: Row(
@@ -312,10 +297,10 @@ class _EshopSectionState extends State<EshopSection> {
                       ? const AdsyLoadingIndicator(
                           strokeWidth: 2,
                           valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                              AlwaysStoppedAnimation<Color>(Color(0xFF7C3AED)),
                         )
                       : const Icon(Icons.shopping_bag,
-                          color: Colors.white, size: 18),
+                          color: Color(0xFF7C3AED), size: 18),
                 ),
                 if (!isLoading) ...[
                   const SizedBox(width: 8),
@@ -325,7 +310,7 @@ class _EshopSectionState extends State<EshopSection> {
                     style: AppFonts.poppins(
                       fontSize: isMobile ? 12 : 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: const Color(0xFF7C3AED),
                     ),
                   ),
                 ],
@@ -383,7 +368,7 @@ class _EshopSectionState extends State<EshopSection> {
         ? items.sublist(5, items.length.clamp(5, 10))
         : <Map<String, dynamic>>[];
 
-    const spacing = 8.0; // Increased spacing for better touch targets
+    const spacing = 10.0; // Even gutter between product cards
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
@@ -415,7 +400,7 @@ class _EshopSectionState extends State<EshopSection> {
             height: cardHeight,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               itemCount: data.length,
               separatorBuilder: (_, __) => SizedBox(width: spacing),
               itemBuilder: (context, idx) {
@@ -440,7 +425,7 @@ class _EshopSectionState extends State<EshopSection> {
         return Column(
           children: [
             if (row1.isNotEmpty) buildRow(row1),
-            const SizedBox(height: 8),
+            if (row2.isNotEmpty) const SizedBox(height: 12),
             if (row2.isNotEmpty) buildRow(row2),
           ],
         );

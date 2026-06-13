@@ -120,13 +120,19 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
             child: Row(
               children: [
                 // Plain icon next to the title (no background box).
@@ -137,8 +143,8 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  _translationService.t('hot_arrivals',
-                      fallback: 'নতুন ও জনপ্রিয়'),
+                  _translationService.t('popular_category',
+                      fallback: 'জনপ্রিয় ক্যাটাগরি'),
                   style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -158,11 +164,8 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
+                          horizontal: 4, vertical: 6),
+                      color: Colors.transparent,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -273,39 +276,24 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           width: 80,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: const Color(0xFFE5E7EB),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+          decoration: const BoxDecoration(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Image with dynamic badge
               Container(
-                height: 70,
+                height: 72,
                 decoration: BoxDecoration(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(10)),
-                  color: const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFF3F4F6),
+                  border: Border.all(color: const Color(0xFFEDEFF1)),
                 ),
                 child: Stack(
                   children: [
                     // Product Image
                     if (imageUrl.isNotEmpty)
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(10)),
+                        borderRadius: BorderRadius.circular(12),
                         child: AppImage.network(
                           imageUrl,
                           width: double.infinity,

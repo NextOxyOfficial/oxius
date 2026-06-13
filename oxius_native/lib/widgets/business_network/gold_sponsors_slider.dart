@@ -132,7 +132,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
             _buildEmptyContent()
           else
             SizedBox(
-              height: 128,
+              height: 138,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -151,7 +151,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
 
   Widget _buildLoadingContent() {
     return SizedBox(
-      height: 128,
+      height: 138,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -205,8 +205,8 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
     return GestureDetector(
       onTap: () => _showSponsorModal(sponsor),
       child: Container(
-        width: 96,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        width: 112,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         child: Column(
           children: [
             Stack(
@@ -281,8 +281,8 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 12.5,
-                height: 1.15,
+                fontSize: 12,
+                height: 1.2,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF78350F),
               ),

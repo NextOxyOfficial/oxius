@@ -1007,7 +1007,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   padding: EdgeInsets.zero,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.68,
+                    childAspectRatio: 0.78,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
@@ -1047,7 +1047,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: 1.05,
+              aspectRatio: 1.3,
               child: hasImage
                   ? CachedNetworkImage(
                       imageUrl: post.images![0].image,
@@ -1079,8 +1079,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     Text(
                       _capitalizeTitle(post.title),
                       style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                           color: Color(0xFF111827),
                           height: 1.25),
                       maxLines: 2,

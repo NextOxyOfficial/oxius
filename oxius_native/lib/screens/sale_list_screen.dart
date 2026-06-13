@@ -577,7 +577,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 },
               )
             : Text(
-                widget.categoryName ?? 'Sale Products',
+                widget.categoryName ?? 'পুরাতন কেনাবেচা',
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -648,14 +648,23 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   // Applied Filters
                   if (_hasActiveFilters()) _buildAppliedFilters(),
 
+                  // Browse by category (horizontal scroller)
+                  _buildCategoryScroller(),
+
                   // Posts Grid
                   if (_posts.isEmpty)
                     _buildEmptyState()
                   else
                     _buildPostsGridSection(),
 
+                  // Trust / feature highlights
+                  _buildTrustStrip(),
+
                   // Recent Listings
                   _buildRecentListings(),
+
+                  // Safe-marketplace guide
+                  _buildSafetyGuide(),
 
                   const SizedBox(height: 80),
                 ],
@@ -773,13 +782,37 @@ class _SaleListScreenState extends State<SaleListScreen> {
               Expanded(
                 child: Row(
                   children: [
-                    Text(
-                      '$_totalCount Products',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.1,
+                    Container(
+                      width: 7,
+                      height: 7,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '$_totalCount',
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF059669),
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.1,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' টি বিজ্ঞাপন',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.1,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     if (hasLocationFilter) ...[
@@ -967,16 +1000,54 @@ class _SaleListScreenState extends State<SaleListScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-            child: Text(
-              _selectedCategoryId != null
-                  ? '${_getCategoryName(_selectedCategoryId)} Listings'
-                  : 'Browse All Listings',
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
-                  letterSpacing: -0.2),
+            padding: const EdgeInsets.fromLTRB(2, 10, 2, 8),
+            child: Row(
+              children: [
+                Container(
+                  height: 26,
+                  width: 26,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.shopping_bag_outlined,
+                      size: 15, color: Colors.white),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _selectedCategoryId != null
+                        ? '${_getCategoryName(_selectedCategoryId)}'
+                        : 'সব বিজ্ঞাপন',
+                    style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1F2937),
+                        letterSpacing: -0.2),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_posts.length} টি',
+                    style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF6B7280)),
+                  ),
+                ),
+              ],
             ),
           ),
           _isListView
@@ -1014,26 +1085,31 @@ class _SaleListScreenState extends State<SaleListScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
-                child: OutlinedButton.icon(
-                  onPressed: _loadMore,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-                  label: const Text(
-                    'Load More',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.1),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981),
-                    minimumSize: const Size(180, 44),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 28, vertical: 12),
-                    side: BorderSide(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.45),
-                        width: 1.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: GestureDetector(
+                  onTap: _loadMore,
+                  child: Container(
+                    height: 34,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'আরও দেখুন',
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF059669)),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(Icons.keyboard_arrow_down_rounded,
+                            size: 16, color: Color(0xFF059669)),
+                      ],
                     ),
                   ),
                 ),
@@ -1059,7 +1135,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'All posts loaded!',
+                      'সব বিজ্ঞাপন দেখা হয়ে গেছে!',
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1067,7 +1143,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "You've seen all $_totalCount available listings",
+                      'মোট $_totalCount টি বিজ্ঞাপনের সবগুলো দেখানো হয়েছে',
                       style:
                           TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     ),
@@ -1584,8 +1660,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Widget _buildRecentListings() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.fromLTRB(2, 10, 2, 0),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.amber.shade50.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(12),
@@ -1601,7 +1677,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   color: Colors.amber.shade700, size: 18),
               const SizedBox(width: 6),
               Text(
-                'Recent Listings',
+                'নতুন অ্যাড হয়েছে',
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -1808,6 +1884,458 @@ class _SaleListScreenState extends State<SaleListScreen> {
               },
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ── Browse by Category — horizontal scroller (mirrors web SaleCategoryGrid) ──
+  Widget _buildCategoryScroller() {
+    if (_categories.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(2, 10, 2, 0),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.grid_view_rounded,
+                  size: 16, color: Color(0xFF059669)),
+              const SizedBox(width: 6),
+              const Text(
+                'ক্যাটাগরি থেকে খুঁজুন',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                    letterSpacing: -0.2),
+              ),
+              const Spacer(),
+              if (_selectedCategoryId != null)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCategoryId = null;
+                      _selectedSubcategoryId = null;
+                    });
+                    _applyFilters();
+                  },
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.close, size: 14, color: Color(0xFF059669)),
+                      SizedBox(width: 2),
+                      Text('সব',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF059669))),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 102,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.zero,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _categories.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, i) {
+                final cat = _categories[i];
+                final bool active = _selectedCategoryId == cat.id;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCategoryId = active ? null : cat.id;
+                      _selectedSubcategoryId = null;
+                    });
+                    _applyFilters();
+                  },
+                  child: SizedBox(
+                    width: 70,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 52,
+                          width: 52,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: active
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFE5E7EB),
+                                width: active ? 1.5 : 1),
+                          ),
+                          alignment: Alignment.center,
+                          child: cat.icon != null && cat.icon!.isNotEmpty
+                              ? ClipOval(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(9),
+                                    child: CachedNetworkImage(
+                                      imageUrl: cat.icon!,
+                                      fit: BoxFit.contain,
+                                      errorWidget: (c, u, e) => Icon(
+                                          _iconForCategory(cat.name),
+                                          size: 22,
+                                          color: active
+                                              ? const Color(0xFF059669)
+                                              : Colors.grey.shade500),
+                                    ),
+                                  ),
+                                )
+                              : Icon(_iconForCategory(cat.name),
+                                  size: 22,
+                                  color: active
+                                      ? const Color(0xFF059669)
+                                      : Colors.grey.shade500),
+                        ),
+                        const SizedBox(height: 7),
+                        Text(
+                          cat.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight:
+                                  active ? FontWeight.w700 : FontWeight.w500,
+                              color: active
+                                  ? const Color(0xFF059669)
+                                  : const Color(0xFF374151),
+                              height: 1.2),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Map a category name (Bangla/English) to a sensible Material icon.
+  IconData _iconForCategory(String name) {
+    final n = name.toLowerCase();
+    bool has(List<String> kws) => kws.any((k) => n.contains(k));
+    if (has(['মোবাইল', 'ফোন', 'mobile', 'phone'])) return Icons.smartphone;
+    if (has(['গাড়ি', 'কার', 'car', 'vehicle', 'যান'])) {
+      return Icons.directions_car_filled_outlined;
+    }
+    if (has(['বাইক', 'মোটর', 'bike', 'motor', 'সাইকেল', 'cycle'])) {
+      return Icons.two_wheeler;
+    }
+    if (has(['কম্পিউটার', 'ল্যাপটপ', 'computer', 'laptop', 'pc'])) {
+      return Icons.laptop_mac;
+    }
+    if (has(['ইলেকট্রন', 'electronic', 'টিভি', 'tv', 'gadget', 'গ্যাজেট'])) {
+      return Icons.tv;
+    }
+    if (has(['ফার্নিচার', 'আসবাব', 'furniture', 'sofa', 'চেয়ার'])) {
+      return Icons.weekend_outlined;
+    }
+    if (has([
+      'বাড়ি',
+      'প্রপার্টি',
+      'জমি',
+      'property',
+      'home',
+      'flat',
+      'ফ্ল্যাট',
+      'rent',
+      'ভাড়া'
+    ])) {
+      return Icons.home_work_outlined;
+    }
+    if (has([
+      'পোশাক',
+      'কাপড়',
+      'fashion',
+      'cloth',
+      'dress',
+      'ফ্যাশন',
+      'জুতা',
+      'shoe'
+    ])) {
+      return Icons.checkroom;
+    }
+    if (has(['চাকরি', 'job', 'নিয়োগ', 'career'])) return Icons.work_outline;
+    if (has(['পশু', 'pet', 'animal', 'প্রাণী', 'পাখি', 'bird'])) {
+      return Icons.pets;
+    }
+    if (has(['বই', 'book', 'শিক্ষা', 'education', 'course', 'কোর্স'])) {
+      return Icons.menu_book;
+    }
+    if (has(['খাবার', 'food', 'grocery', 'মুদি'])) return Icons.restaurant;
+    if (has(['সেবা', 'service'])) return Icons.handyman_outlined;
+    if (has(['ক্যামেরা', 'camera'])) return Icons.camera_alt_outlined;
+    if (has(['খেলা', 'sport', 'game', 'গেম', 'খেলনা', 'toy'])) {
+      return Icons.sports_esports_outlined;
+    }
+    if (has(['গহনা', 'jewel', 'ঘড়ি', 'watch'])) return Icons.watch_outlined;
+    if (has(['স্বাস্থ্য', 'health', 'beauty', 'সৌন্দর্য'])) {
+      return Icons.favorite_border;
+    }
+    if (has(['কৃষি', 'agri', 'farm'])) return Icons.agriculture_outlined;
+    if (has(['সংগীত', 'music', 'যন্ত্র', 'instrument'])) {
+      return Icons.music_note_outlined;
+    }
+    return Icons.sell_outlined;
+  }
+
+  // ── Safe marketplace guide — buying tips + security tips ──
+  Widget _buildSafetyGuide() {
+    const buying = [
+      [
+        'ছবি ভালো করে দেখুন',
+        'পণ্যের সব ছবি ও বিবরণ মনোযোগ দিয়ে দেখে নিন'
+      ],
+      [
+        'নিরাপদ স্থানে দেখা করুন',
+        'প্রকাশ্য ও পরিচিত জায়গায় বিক্রেতার সাথে দেখা করুন'
+      ],
+      ['পণ্য যাচাই করুন', 'টাকা দেওয়ার আগে পণ্য সরাসরি যাচাই করে নিন'],
+      ['পেমেন্টে সতর্ক থাকুন', 'পণ্য বুঝে পাওয়ার পরেই পুরো টাকা পরিশোধ করুন'],
+    ];
+    const buyingIcons = [
+      Icons.photo_camera_outlined,
+      Icons.location_on_outlined,
+      Icons.fact_check_outlined,
+      Icons.payments_outlined,
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(2, 4, 2, 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFF8FAFC), Color(0xFFECFDF5)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              border: Border(
+                  bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  height: 36,
+                  width: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECFDF5),
+                    borderRadius: BorderRadius.circular(9),
+                    border: Border.all(color: const Color(0xFFD1FAE5)),
+                  ),
+                  child: const Icon(Icons.verified_user_outlined,
+                      size: 19, color: Color(0xFF059669)),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('নিরাপদ কেনাবেচার গাইড',
+                          style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A))),
+                      SizedBox(height: 2),
+                      Text('কেনাকাটার আগে এই বিষয়গুলো মাথায় রাখুন',
+                          style: TextStyle(
+                              fontSize: 11, color: Color(0xFF64748B))),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFA7F3D0)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle,
+                          size: 13, color: Color(0xFF059669)),
+                      SizedBox(width: 3),
+                      Text('যাচাইকৃত',
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF047857))),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Buying tips
+          _buildGuideGroup(
+            title: 'কেনাকাটার টিপস',
+            titleIcon: Icons.lightbulb_outline,
+            titleColor: const Color(0xFF2563EB),
+            tintColor: const Color(0xFFEFF6FF),
+            items: buying,
+            icons: buyingIcons,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Trust / feature highlights strip (professional UX) ──
+  Widget _buildTrustStrip() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(2, 10, 2, 0),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          _trustCell(Icons.sell_outlined, 'ফ্রি বিজ্ঞাপন', 'কোনো খরচ নেই',
+              const Color(0xFF059669)),
+          _trustDivider(),
+          _trustCell(Icons.verified_user_outlined, 'যাচাইকৃত বিক্রেতা',
+              'বিশ্বস্ত প্রোফাইল', const Color(0xFF2563EB)),
+          _trustDivider(),
+          _trustCell(Icons.lock_outline, 'নিরাপদ লেনদেন', 'সুরক্ষিত কেনাবেচা',
+              const Color(0xFFB45309)),
+        ],
+      ),
+    );
+  }
+
+  Widget _trustDivider() =>
+      Container(width: 1, height: 34, color: const Color(0xFFF1F5F9));
+
+  Widget _trustCell(
+      IconData icon, String title, String sub, Color color) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 22, color: color),
+          const SizedBox(height: 7),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B)),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            sub,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 9.5, color: Color(0xFF94A3B8)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGuideGroup({
+    required String title,
+    required IconData titleIcon,
+    required Color titleColor,
+    required Color tintColor,
+    required List<List<String>> items,
+    required List<IconData> icons,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(titleIcon, size: 15, color: titleColor),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF334155),
+                    letterSpacing: 0.3),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...List.generate(items.length, (i) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: i == items.length - 1 ? 0 : 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 26,
+                    width: 26,
+                    decoration: BoxDecoration(
+                      color: tintColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icons[i], size: 14, color: titleColor),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          items[i][0],
+                          style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                              height: 1.3),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          items[i][1],
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                              height: 1.35),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

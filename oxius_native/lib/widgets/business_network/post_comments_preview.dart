@@ -532,29 +532,29 @@ class _ReplyInputState extends State<_ReplyInput> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
-            child: Icon(Icons.reply, size: 12, color: Colors.blue.shade700),
+            child: Icon(Icons.reply, size: 16, color: Colors.blue.shade700),
           ),
           const SizedBox(width: 4),
           Expanded(
             child: ConstrainedBox(
               constraints: const BoxConstraints(
-                maxHeight: 80,
+                maxHeight: 110,
               ),
               child: FlutterMentions(
                 key: _mentionKey,
                 suggestionPosition: SuggestionPosition.Top,
-                maxLines: 3,
+                maxLines: 4,
                 minLines: 1,
                 decoration: InputDecoration(
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle:
-                      TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                      TextStyle(fontSize: 14, color: Colors.grey.shade500),
                   border: InputBorder.none,
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   isDense: true,
                 ),
-                style: const TextStyle(fontSize: 11, height: 1.3),
+                style: const TextStyle(fontSize: 14, height: 1.35),
                 onChanged: (value) async {
                   if (value.contains('@')) {
                     final lastAtIndex = value.lastIndexOf('@');

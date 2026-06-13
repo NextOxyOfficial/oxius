@@ -109,7 +109,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     } catch (e) {
       if (mounted) {
         setState(() {
-          _commissionError = 'Failed to load commission history';
+          _commissionError = 'কমিশন হিস্ট্রি লোড করা যায়নি';
           _isLoadingCommissions = false;
         });
       }
@@ -205,8 +205,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       SnackBar(
         content: Text(
           successCount > 0
-              ? 'Claimed $successCount reward(s) (৳${totalAmount.toStringAsFixed(0)})'
-              : 'Failed to claim rewards',
+              ? '$successCount টি রিওয়ার্ড নেওয়া হয়েছে (৳${totalAmount.toStringAsFixed(0)})'
+              : 'রিওয়ার্ড নেওয়া যায়নি',
         ),
         backgroundColor:
             successCount > 0 ? const Color(0xFF10B981) : Colors.red,
@@ -239,7 +239,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Failed to claim reward'),
+              content: Text('রিওয়ার্ড নেওয়া যায়নি'),
               backgroundColor: Colors.red),
         );
       }
@@ -252,7 +252,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Copied to clipboard!'),
+        content: Text('লিংক কপি হয়েছে!'),
         backgroundColor: Color(0xFF10B981),
         duration: Duration(seconds: 2),
       ),
@@ -264,11 +264,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       await AdsyShareSheet.show(
         context,
         data: AdsyShareData(
-          title: 'Join me on AdsyClub',
-          description: 'Start earning with my referral link.',
+          title: 'AdsyClub-এ যোগ দিন',
+          description: 'আমার রেফারেল লিংক দিয়ে আয় শুরু করুন।',
           url: _referralLink!,
-          subject: 'Join AdsyClub',
-          eyebrow: 'Refer and Earn',
+          subject: 'AdsyClub-এ যোগ দিন',
+          eyebrow: 'রেফার করে আয়',
           hashtags: const ['AdsyClub', 'Referral'],
         ),
       );
@@ -317,7 +317,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Refer & Earn',
+          'রেফার করে আয়',
           style: AppFonts.roboto(
             fontSize: 17,
             fontWeight: FontWeight.w600,
@@ -362,7 +362,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'Invite Friends & Earn Together',
+                    'বন্ধুদের আনুন, একসাথে আয় করুন',
                     style: AppFonts.roboto(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -372,7 +372,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Earn Up to 20%',
+                  '২০% পর্যন্ত আয়',
                   style: AppFonts.roboto(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -382,7 +382,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  'Commission',
+                  'কমিশন',
                   style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -392,8 +392,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 const SizedBox(height: 10),
                 Text(
                   isIOSPlatform
-                      ? 'Share your unique link with friends, and earn rewards with different commission rates: 5% on gig completions, 20% on referral activities!'
-                      : 'Share your unique link with friends, and earn rewards with different commission rates: 5% on gig completions, 20% on subscriptions and sponsorships!',
+                      ? 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ সম্পন্নে ৫%, রেফারেল কার্যক্রমে ২০% কমিশন!'
+                      : 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ সম্পন্নে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% কমিশন!',
                   style: AppFonts.roboto(
                     fontSize: 12,
                     height: 1.4,
@@ -417,7 +417,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                           elevation: 0,
                         ),
                         child: Text(
-                          'Sign Up & Start Earning',
+                          'সাইন আপ করে আয় শুরু করুন',
                           style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -445,7 +445,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
             child: Column(
               children: [
                 Text(
-                  'How It Works',
+                  'যেভাবে কাজ করে',
                   style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -456,20 +456,20 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 const SizedBox(height: 12),
                 _buildStep(
                     1,
-                    'Create Account',
-                    'Sign up for a free account and get your unique referral link instantly',
+                    'অ্যাকাউন্ট খুলুন',
+                    'ফ্রি অ্যাকাউন্ট খুলুন আর সাথে সাথে নিজের রেফারেল লিংক পেয়ে যান',
                     Icons.person_add_rounded),
                 _buildStep(
                     2,
-                    'Share Your Link',
-                    'Share your referral link with friends via email, social media, or messaging apps',
+                    'লিংক শেয়ার করুন',
+                    'ইমেইল, সোশ্যাল মিডিয়া বা মেসেজে বন্ধুদের আপনার লিংক পাঠান',
                     Icons.share_rounded),
                 _buildStep(
                   3,
-                  'Earn Commissions',
+                  'কমিশন আয় করুন',
                   isIOSPlatform
-                      ? 'Earn different commission rates: 5% on gigs, 20% on referral activities'
-                      : 'Earn different commission rates: 5% on gigs, 20% on subscriptions & sponsorships',
+                      ? 'গিগে ৫%, রেফারেল কার্যক্রমে ২০% — আলাদা আলাদা হারে কমিশন পান'
+                      : 'গিগে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% — আলাদা হারে কমিশন পান',
                   Icons.paid_rounded,
                 ),
               ],
@@ -484,14 +484,14 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
               children: [
                 Expanded(
                     child: _buildStatCard(
-                        '5-20%', 'Commission Rate', Colors.green)),
+                        '৫-২০%', 'কমিশন রেট', Colors.green)),
                 const SizedBox(width: 8),
                 Expanded(
                     child: _buildStatCard(
                   _isLoadingPlatform
                       ? '...'
                       : '${_platformStats?.activeReferrers ?? 500}+',
-                  'Active Referrers',
+                  'সক্রিয় রেফারার',
                   Colors.blue,
                 )),
               ],
@@ -507,7 +507,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   _isLoadingPlatform
                       ? '...'
                       : '৳ ${_platformStats?.topEarnerAmount.toStringAsFixed(0) ?? '10000'}',
-                  'Top Earner',
+                  'সর্বোচ্চ আয়',
                   Colors.amber,
                 )),
                 const SizedBox(width: 8),
@@ -515,8 +515,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                     child: _buildStatCard(
                   _isLoadingPlatform
                       ? '...'
-                      : _platformStats?.quickPayoutTime ?? '24hr',
-                  'Quick Payouts',
+                      : _platformStats?.quickPayoutTime ?? '২৪ ঘণ্টা',
+                  'দ্রুত পেআউট',
                   Colors.purple,
                 )),
               ],
@@ -552,7 +552,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
             child: Column(
               children: [
                 Text(
-                  'Your Referral Code',
+                  'আপনার রেফারেল কোড',
                   style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -570,7 +570,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                         width: 2),
                   ),
                   child: Text(
-                    _referralCode ?? 'Loading...',
+                    _referralCode ?? 'লোড হচ্ছে...',
                     style: AppFonts.roboto(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -594,7 +594,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                         ),
                         icon: const Icon(Icons.copy_rounded, size: 16),
                         label: Text(
-                          'Copy Link',
+                          'লিংক কপি',
                           style: AppFonts.roboto(
                               fontSize: 13, fontWeight: FontWeight.w600),
                         ),
@@ -613,7 +613,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                         icon: const Icon(Icons.share_rounded,
                             size: 16, color: Color(0xFF10B981)),
                         label: Text(
-                          'Share',
+                          'শেয়ার',
                           style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -643,7 +643,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Your Earnings',
+                    'আপনার আয়',
                     style: AppFonts.roboto(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -657,7 +657,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                       Expanded(
                         child: _buildEarningCard(
                           '৳ ${_commissionData!.totalEarned.toStringAsFixed(0)}',
-                          'Total Earned',
+                          'মোট আয়',
                           Colors.green,
                         ),
                       ),
@@ -665,7 +665,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                       Expanded(
                         child: _buildEarningCard(
                           '${_commissionData!.recentTransactions.length}',
-                          'Transactions',
+                          'লেনদেন',
                           Colors.blue,
                         ),
                       ),
@@ -687,7 +687,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Commission Breakdown',
+                    'কমিশনের হিসাব',
                     style: AppFonts.roboto(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -697,7 +697,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   ),
                   const SizedBox(height: 12),
                   _buildBreakdownItem(
-                    title: 'Gig Completions',
+                    title: 'গিগ সম্পন্ন',
                     color: Colors.blue,
                     rate:
                         _commissionData!.commissionBreakdown.gigCompletion.rate,
@@ -708,7 +708,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   ),
                   const SizedBox(height: 10),
                   _buildBreakdownItem(
-                    title: 'Pro Subscriptions',
+                    title: 'প্রো সাবস্ক্রিপশন',
                     color: Colors.purple,
                     rate: _commissionData!
                         .commissionBreakdown.proSubscription.rate,
@@ -719,7 +719,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   ),
                   const SizedBox(height: 10),
                   _buildBreakdownItem(
-                    title: 'Gold Sponsors',
+                    title: 'গোল্ড স্পন্সর',
                     color: Colors.amber,
                     rate: _commissionData!.commissionBreakdown.goldSponsor.rate,
                     count:
@@ -753,8 +753,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   tabs: [
                     Tab(
                         text:
-                            'Earnings (${_commissionData?.recentTransactions.length ?? 0})'),
-                    Tab(text: 'Referred & Bonus'),
+                            'আয় (${_commissionData?.recentTransactions.length ?? 0})'),
+                    Tab(text: 'রেফার ও বোনাস'),
                   ],
                 ),
                 Container(
@@ -932,7 +932,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$count transaction(s) • $rate',
+                  '$count টি লেনদেন • $rate',
                   style: AppFonts.roboto(
                     fontSize: 10,
                     color: Colors.grey.shade600,
@@ -980,7 +980,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 size: 48, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
-              'No earnings yet',
+              'এখনো কোনো আয় নেই',
               style: AppFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],
@@ -1016,7 +1016,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      transaction.referredUser?.name ?? 'Unknown User',
+                      transaction.referredUser?.name ?? 'অজানা ইউজার',
                       style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -1077,7 +1077,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 size: 40, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
-              'Login to view referrals & bonus',
+              'রেফারেল ও বোনাস দেখতে লগইন করুন',
               style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
             ),
           ],
@@ -1099,7 +1099,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 size: 40, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
-              'No referred users or bonus yet',
+              'এখনো কোনো রেফারেল বা বোনাস নেই',
               style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
             ),
           ],
@@ -1155,7 +1155,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  claims.program?.name ?? 'Referral Reward',
+                  claims.program?.name ?? 'রেফারেল রিওয়ার্ড',
                   style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -1180,7 +1180,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                             height: 12,
                             child: AdsyLoadingIndicator(
                                 strokeWidth: 2, color: Color(0xFF0EA5E9)))
-                        : Text('Claim All ($_eligibleReferrerClaimsCount)',
+                        : Text('সব নিন ($_eligibleReferrerClaimsCount)',
                             style: AppFonts.roboto(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
@@ -1208,14 +1208,14 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                     decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6)),
-                    child: Text('+${referrerClaims.length - 3} more',
+                    child: Text('আরও ${referrerClaims.length - 3} টি',
                         style:
                             AppFonts.roboto(fontSize: 9, color: Colors.white)),
                   ),
               ],
             )
           else
-            Text('Refer friends to earn rewards!',
+            Text('বন্ধু রেফার করে রিওয়ার্ড নিন!',
                 style: AppFonts.roboto(
                     fontSize: 10, color: Colors.white.withValues(alpha: 0.9))),
         ],
@@ -1274,7 +1274,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         Row(
           children: [
             Text(
-              'Referred Users (${_referredUsers.length})',
+              'রেফার করা ইউজার (${_referredUsers.length})',
               style: AppFonts.roboto(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -1375,7 +1375,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            user.isActive ? 'Active' : 'Inactive',
+            user.isActive ? 'সক্রিয়' : 'নিষ্ক্রিয়',
             style: AppFonts.roboto(
                 fontSize: 8,
                 fontWeight: FontWeight.w600,
@@ -1391,7 +1391,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8)),
-                  child: Text('Claimed',
+                  child: Text('নেওয়া হয়েছে',
                       style: AppFonts.roboto(
                           fontSize: 8,
                           fontWeight: FontWeight.w700,
@@ -1424,7 +1424,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                       decoration: BoxDecoration(
                           color: Colors.amber.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8)),
-                      child: Text('Incompleted',
+                      child: Text('অসম্পূর্ণ',
                           style: AppFonts.roboto(
                               fontSize: 8,
                               fontWeight: FontWeight.w700,

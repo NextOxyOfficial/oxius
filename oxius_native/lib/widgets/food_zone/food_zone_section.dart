@@ -124,34 +124,25 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                 GestureDetector(
                   onTap: _navigateToFoodZoneScreen,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE91E63),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFE91E63).withValues(alpha: 0.3),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                    color: Colors.transparent,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           _translationService.t('see_all', fallback: 'সব দেখুন'),
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: Color(0xFFE91E63),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 3),
                         const Icon(
                           Icons.arrow_forward_ios,
                           size: 10,
-                          color: Colors.white,
+                          color: Color(0xFFE91E63),
                         ),
                       ],
                     ),

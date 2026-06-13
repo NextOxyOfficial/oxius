@@ -336,31 +336,18 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
       onTap: isLoading ? null : () => _handleButtonClick('post-free-ad'),
       child: Container(
         padding: EdgeInsets.symmetric(
-          vertical: isMobile ? 11 : 12,
-          horizontal: isMobile ? 12 : 14,
+          vertical: isMobile ? 10 : 11,
+          horizontal: isMobile ? 6 : 8,
         ),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0FA36B),
-          border: Border.all(
-            color: const Color(0xFF0C8F5E),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0FA36B).withValues(alpha: 0.12),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        color: Colors.transparent,
         child: isLoading
             ? SizedBox(
                 width: 16,
                 height: 16,
                 child: AdsyLoadingIndicator(
                   strokeWidth: 2,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
                 ),
               )
             : Row(
@@ -370,7 +357,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                   const Icon(
                     Icons.add_circle_outline,
                     size: 17,
-                    color: Colors.white,
+                    color: Color(0xFF059669),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -378,8 +365,8 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                         fallback: 'Post Free Service'),
                     style: AppFonts.roboto(
                       fontSize: isMobile ? 11.5 : 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF059669),
                       letterSpacing: -0.1,
                     ),
                     maxLines: 1,
