@@ -187,8 +187,26 @@ class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
         return round(avg_rating, 1) if avg_rating else 0.0
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
+        value = (value or "").strip()
+        if User.objects.filter(email__iexact=value).exists():
             raise ValidationError({"error": "This email is already registered."})
+        # Verify the address is actually deliverable at signup: correct syntax AND
+        # the domain accepts mail (has MX/A records). This catches typo or fake
+        # domains here instead of letting them silently bounce later. Falls back
+        # gracefully if the validator or DNS is unavailable — never block a real
+        # signup on an infra hiccup.
+        try:
+            from email_validator import validate_email as _verify, EmailNotValidError
+        except ImportError:
+            return value
+        try:
+            _verify(value, check_deliverability=True)
+        except EmailNotValidError:
+            raise ValidationError(
+                {"error": "অনুগ্রহ করে একটি সঠিক, কার্যকর ইমেইল ঠিকানা দিন।"}
+            )
+        except Exception:
+            pass  # DNS/network hiccup — don't punish a legitimate user
         return value
 
     def create(self, validated_data):
