@@ -262,13 +262,80 @@ class AdminEmailRecipientAdmin(admin.ModelAdmin):
     ordering = ('email',)
 
 
-from .models import EmailSuppression
+from .models import EmailSuppression, ValidEmail
 
 
 @admin.register(EmailSuppression)
 class EmailSuppressionAdmin(admin.ModelAdmin):
-    """Addresses excluded from engagement/marketing email — user unsubscribes
-    and auto-detected bounced/invalid addresses. Delete a row to re-allow."""
+    """The email BLACKLIST — invalid/bounced + unsubscribed addresses that the
+    whole email system skips. Filter by "reason" to see each list (invalid vs
+    unsubscribed); change the reason inline (then Save) or use the actions to move
+    between them; "Move to VALID" (or delete a row) re-allows sending. Add a row
+    manually to block any address."""
     list_display = ("email", "reason", "note", "created_at")
     list_filter = ("reason",)
+    list_editable = ("reason",)
     search_fields = ("email", "note")
+    ordering = ("-created_at",)
+    actions = ["mark_invalid", "mark_unsubscribed", "move_to_valid"]
+
+    def mark_invalid(self, request, queryset):
+        n = queryset.update(reason="invalid")
+        self.message_user(request, f"{n} address(es) marked INVALID.", level=messages.WARNING)
+    mark_invalid.short_description = "Mark selected as INVALID"
+
+    def mark_unsubscribed(self, request, queryset):
+        n = queryset.update(reason="unsubscribed")
+        self.message_user(request, f"{n} address(es) marked UNSUBSCRIBED.", level=messages.WARNING)
+    mark_unsubscribed.short_description = "Mark selected as UNSUBSCRIBED"
+
+    def move_to_valid(self, request, queryset):
+        n = queryset.count()
+        queryset.delete()
+        self.message_user(
+            request, f"{n} address(es) moved back to VALID (sending re-allowed).",
+            level=messages.SUCCESS,
+        )
+    move_to_valid.short_description = "Move selected to VALID (re-allow sending)"
+
+
+@admin.register(ValidEmail)
+class ValidEmailAdmin(admin.ModelAdmin):
+    """Active, deliverable user emails — NOT on the suppression blacklist. The
+    email system sends only to these. Use the actions to move an address to
+    invalid / unsubscribed (which immediately stops sending to it)."""
+    list_display = ("email", "name", "date_joined", "last_login")
+    search_fields = ("email", "name", "first_name", "last_name")
+    ordering = ("-date_joined",)
+    actions = ["move_to_invalid", "move_to_unsubscribed"]
+
+    def get_queryset(self, request):
+        from django.db.models.functions import Lower
+        qs = (
+            super().get_queryset(request)
+            .filter(is_active=True)
+            .exclude(email="")
+            .exclude(email__isnull=True)
+        )
+        blocked = set(EmailSuppression.objects.values_list("email", flat=True))
+        return qs.alias(_em=Lower("email")).exclude(_em__in=blocked)
+
+    def has_add_permission(self, request):
+        return False  # "valid" = an existing user not blocked; nothing to add here
+
+    def _block(self, request, queryset, reason, label):
+        from .email_service import suppress_email
+        n = 0
+        for u in queryset:
+            if (u.email or "").strip():
+                suppress_email(u.email, reason=reason, note="manually moved from Valid Emails admin")
+                n += 1
+        self.message_user(request, f"{n} address(es) moved to {label}.", level=messages.WARNING)
+
+    def move_to_invalid(self, request, queryset):
+        self._block(request, queryset, "invalid", "INVALID (sending stopped)")
+    move_to_invalid.short_description = "Move selected to INVALID (stop sending)"
+
+    def move_to_unsubscribed(self, request, queryset):
+        self._block(request, queryset, "unsubscribed", "UNSUBSCRIBED")
+    move_to_unsubscribed.short_description = "Move selected to UNSUBSCRIBED"

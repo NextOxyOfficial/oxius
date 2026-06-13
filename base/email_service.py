@@ -382,16 +382,27 @@ def _send_email(subject, to_email, text_content, html_content):
         # Accept a single address or a list of addresses.
         recipients = to_email if isinstance(to_email, (list, tuple)) else [to_email]
         # Drop blanks + syntactically invalid addresses (and remember the bad
-        # ones so we never retry them).
+        # ones so we never retry them), AND skip any address that is on the
+        # suppression list (bounced / invalid / unsubscribed / complaint). This
+        # makes the WHOLE email system deliver only to valid, active addresses.
         clean = []
+        skipped_suppressed = 0
         for r in recipients:
             if not r:
                 continue
             if not _valid_email_syntax(r):
                 suppress_email(r, reason="invalid", note="bad address format")
                 continue
+            if is_email_suppressed(r):
+                skipped_suppressed += 1
+                continue
             clean.append(r)
         if not clean:
+            if skipped_suppressed:
+                logger.info(
+                    f"Email '{subject}' not sent — all {skipped_suppressed} recipient(s) "
+                    f"are suppressed (invalid/bounced/unsubscribed)."
+                )
             return False
 
         # Swap the donate + unsubscribe placeholders for unique per-recipient

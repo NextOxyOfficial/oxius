@@ -1852,13 +1852,15 @@ class AdminEmailRecipient(models.Model):
 
 
 class EmailSuppression(models.Model):
-    """Addresses we must NOT send marketing/engagement email to.
+    """Addresses the email system must NOT send to (the blacklist).
 
     - unsubscribed: user clicked the unsubscribe link.
-    - bounced / invalid: SMTP refused the address (wrong email at signup), so we
-      stop retrying it forever.
-    Transactional/security mail (OTP, KYC, withdraw, password reset) ignores
-    this list — only engagement/marketing email is suppressed.
+    - bounced / invalid / complaint: delivery failed or the address is bad, so we
+      stop sending to it forever.
+    EVERY outgoing email (transactional, admin, engagement) now skips addresses on
+    this list — enforced in base.email_service._send_email via is_email_suppressed.
+    Move an address back to "valid" by deleting its row here (or from the Valid
+    Emails admin); staff can also add a row manually to block an address.
     """
     REASONS = [
         ("unsubscribed", "Unsubscribed (user choice)"),
@@ -1874,8 +1876,19 @@ class EmailSuppression(models.Model):
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Email Suppression"
-        verbose_name_plural = "Email Suppressions (unsub / bounced)"
+        verbose_name_plural = "Email Suppressions (invalid / unsubscribed)"
         indexes = [models.Index(fields=["email"])]
+
+
+class ValidEmail(User):
+    """Admin-only proxy over User to list ACTIVE, deliverable email addresses —
+    users whose email is NOT on the EmailSuppression blacklist. Read-only list
+    with actions to manually move an address to invalid / unsubscribed."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "Valid / active email"
+        verbose_name_plural = "Valid / active emails (deliverable)"
 
     def __str__(self):
         return f"{self.email} ({self.reason})"
