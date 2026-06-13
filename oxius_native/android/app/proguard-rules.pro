@@ -82,3 +82,7 @@
 
 ## Keep all plugin classes
 -keep class io.flutter.plugins.** { *; }
+
+## AppLovin/OMID attestation references optional Amazon PrivacyPass classes
+## that aren't on the classpath — silence R8 so release minify succeeds.
+-dontwarn com.amazon.privacypass.**
