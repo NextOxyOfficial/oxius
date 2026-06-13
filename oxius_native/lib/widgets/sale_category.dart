@@ -307,17 +307,10 @@ class _SaleCategoryState extends State<SaleCategory> {
       ),
       padding: EdgeInsets.all(screenWidth * 0.025),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF10B981).withValues(alpha: 0.05),
-            const Color(0xFF06B6D4).withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+          color: const Color(0xFFE5E7EB),
           width: 1,
         ),
       ),
@@ -329,20 +322,11 @@ class _SaleCategoryState extends State<SaleCategory> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.local_offer_outlined,
-                  color: Colors.white,
-                  size: 16,
-                ),
+              // Plain icon next to the title (no background box).
+              const Icon(
+                Icons.local_offer_outlined,
+                color: Color(0xFF10B981),
+                size: 22,
               ),
               SizedBox(width: screenWidth * 0.02),
               Expanded(
@@ -351,7 +335,8 @@ class _SaleCategoryState extends State<SaleCategory> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'পুরোনো কেনাবেচা মার্কেটপ্লেস',
+                      _translationService.t('sale_marketplace_title',
+                          fallback: 'পুরোনো কেনাবেচা মার্কেটপ্লেস'),
                       style: AppFonts.roboto(
                         fontSize: screenWidth * 0.042,
                         fontWeight: FontWeight.w700,
@@ -362,7 +347,8 @@ class _SaleCategoryState extends State<SaleCategory> {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'পুরোনো জিনিস সহজে কেনাবেচা করুন',
+                      _translationService.t('sale_marketplace_subtitle',
+                          fallback: 'পুরোনো জিনিস সহজে কেনাবেচা করুন'),
                       style: AppFonts.roboto(
                         fontSize: screenWidth * 0.028,
                         color: Colors.grey.shade600,

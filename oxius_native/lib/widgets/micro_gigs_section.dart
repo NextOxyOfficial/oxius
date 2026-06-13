@@ -338,17 +338,10 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: _indigo.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.work_outline,
-                    size: 16,
-                    color: _indigo,
-                  ),
+                const Icon(
+                  Icons.work_outline,
+                  size: 20,
+                  color: _indigo,
                 ),
                 const SizedBox(width: 8),
                 Text(

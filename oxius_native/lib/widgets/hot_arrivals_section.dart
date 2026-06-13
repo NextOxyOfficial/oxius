@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
+import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class HotArrivalsSection extends StatefulWidget {
@@ -23,6 +24,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
   bool _isLoading = true;
   bool _viewAllLoading = false;
   final ScrollController _scrollController = ScrollController();
+  final TranslationService _translationService = TranslationService();
 
   @override
   void initState() {
@@ -127,27 +129,16 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               children: [
-                // Icon with gradient background
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF10B981),
-                        const Color(0xFF059669),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.local_fire_department_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
+                // Plain icon next to the title (no background box).
+                const Icon(
+                  Icons.local_fire_department_rounded,
+                  color: Color(0xFF059669),
+                  size: 20,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Text(
-                  'New & Hot Arrivals',
+                  _translationService.t('hot_arrivals',
+                      fallback: 'নতুন ও জনপ্রিয়'),
                   style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -187,7 +178,8 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                             )
                           else ...[
                             Text(
-                              'View All',
+                              _translationService.t('view_all',
+                                  fallback: 'সব দেখুন'),
                               style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,

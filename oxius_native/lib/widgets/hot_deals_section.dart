@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
+import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class HotDealsSection extends StatefulWidget {
@@ -20,6 +21,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
   List<Map<String, dynamic>> _specialDeals = [];
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
+  final TranslationService _translationService = TranslationService();
 
   @override
   void initState() {
@@ -133,7 +135,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Special Deals',
+                      _translationService.t('special_deals',
+                          fallback: 'বিশেষ অফার'),
                       style: AppFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -149,7 +152,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'Limited Time',
+                        _translationService.t('limited_time',
+                            fallback: 'সীমিত সময়'),
                         style: AppFonts.roboto(
                           fontSize: 9,
                           fontWeight: FontWeight.w600,

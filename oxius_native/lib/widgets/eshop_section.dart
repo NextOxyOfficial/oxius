@@ -234,38 +234,29 @@ class _EshopSectionState extends State<EshopSection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [
-                          Color(0xFF8B5CF6),
-                          Color(0xFF3B82F6)
-                        ], // Purple to Blue gradient
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ).createShader(bounds),
-                      child: Text(
-                        _translationService.t('eshop', fallback: 'eShop'),
-                        style: AppFonts.poppins(
-                          fontSize: isMobile ? 20 : 24,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: .2,
+                    Row(
+                      children: [
+                        // Plain icon next to the title (no background box).
+                        Icon(
+                          Icons.storefront_outlined,
+                          size: isMobile ? 22 : 26,
+                          color: const Color(0xFF7C3AED),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 4,
-                      width: isMobile ? 60 : 96,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF8B5CF6),
-                            Color(0xFF3B82F6)
-                          ], // Purple to Blue gradient
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            _translationService.t('eshop', fallback: 'eShop'),
+                            style: AppFonts.poppins(
+                              fontSize: isMobile ? 20 : 24,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1F2937),
+                              letterSpacing: .2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),

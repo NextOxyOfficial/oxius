@@ -149,18 +149,10 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         children: [
           Container(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFF0FDFA),
-                  Color(0xFFFFFFFF),
-                  Color(0xFFECFDF5),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFCCFBF1),
+                color: const Color(0xFFE5E7EB),
               ),
             ),
             child: Column(
@@ -177,7 +169,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(isMobile),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 10),
                       ClassifiedSearchBar(
                         onSearch: _onSearch,
                         margin: EdgeInsets.zero,
@@ -186,7 +178,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 ClassifiedCategoriesGrid(
                   categories: categoriesToShow,
                   selectedId: _selectedCategoryId,
@@ -220,6 +212,15 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Plain icon next to the title (no background box) — clean app look.
+        Padding(
+          padding: const EdgeInsets.only(top: 1, right: 8),
+          child: Icon(
+            Icons.design_services_outlined,
+            size: isMobile ? 22 : 24,
+            color: const Color(0xFF0891B2),
+          ),
+        ),
         Expanded(
           child: _buildHeaderContent(title, subtitle, isMobile),
         ),

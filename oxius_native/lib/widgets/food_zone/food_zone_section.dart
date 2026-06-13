@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/classified_post.dart';
 import '../../services/food_zone_service.dart';
+import '../../services/translation_service.dart';
 import '../../screens/classified_post_details_screen.dart';
 import 'food_zone_card.dart';
 
@@ -18,6 +19,7 @@ class FoodZoneSection extends StatefulWidget {
 
 class _FoodZoneSectionState extends State<FoodZoneSection> {
   late FoodZoneService _foodZoneService;
+  final TranslationService _translationService = TranslationService();
   List<ClassifiedPost> _posts = [];
 
   @override
@@ -69,17 +71,10 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFCE4EC),
-            const Color(0xFFFCE4EC).withValues(alpha: 0.5),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFE91E63).withValues(alpha: 0.2),
+          color: const Color(0xFFE5E7EB),
           width: 1,
         ),
       ),
@@ -94,36 +89,20 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
               children: [
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFE91E63), Color(0xFFD81B60)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFE91E63).withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.restaurant_menu,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                    // Plain icon next to the title (no background box).
+                    const Icon(
+                      Icons.restaurant_menu,
+                      color: Color(0xFFE91E63),
+                      size: 22,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Food Zone',
-                          style: TextStyle(
+                        Text(
+                          _translationService.t('food_zone',
+                              fallback: 'ফুড জোন'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFE91E63),
@@ -131,7 +110,8 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                           ),
                         ),
                         Text(
-                          'Delicious food near you',
+                          _translationService.t('food_zone_subtitle',
+                              fallback: 'আপনার কাছের মজাদার খাবার'),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[600],
@@ -156,19 +136,19 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'See All',
-                          style: TextStyle(
+                          _translationService.t('see_all', fallback: 'সব দেখুন'),
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
                         ),
-                        SizedBox(width: 4),
-                        Icon(
+                        const SizedBox(width: 4),
+                        const Icon(
                           Icons.arrow_forward_ios,
                           size: 10,
                           color: Colors.white,
