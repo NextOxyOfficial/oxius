@@ -186,6 +186,24 @@ class DeepLinkService {
 
     final first = segments[0].toLowerCase();
 
+    // Web-only pages that have NO in-app screen (e.g. the donation page, which
+    // lives only on the website). The app's app-link filter is a catch-all for
+    // adsyclub.com, so these links land here — bounce them to an in-app browser
+    // tab (Custom Tab / SafariVC) so they always open in a browser instead of a
+    // blank/unknown app screen. Re-launching via externalApplication would loop
+    // (the app is the verified handler), so we use inAppBrowserView.
+    const webOnlyFirstSegments = {'donate'};
+    if (isWebLink && webOnlyFirstSegments.contains(first)) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      } catch (_) {
+        try {
+          await launchUrl(uri, mode: LaunchMode.platformDefault);
+        } catch (_) {}
+      }
+      return;
+    }
+
     if (segments.length == 1) {
       final route = _singleSegmentRouteAliases[first];
       if (route != null) {
