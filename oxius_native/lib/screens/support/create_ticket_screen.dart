@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/support_ticket_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class CreateTicketScreen extends StatefulWidget {
   const CreateTicketScreen({super.key});
@@ -37,31 +38,16 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
         setState(() => _isSubmitting = false);
 
         if (ticket != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Support ticket created successfully!'),
-              backgroundColor: Color(0xFF10B981),
-            ),
-          );
+          AdsyToast.success(context, 'Support ticket created successfully!');
           Navigator.pop(context, true); // Return true to indicate success
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to create ticket. Please try again.'),
-              backgroundColor: Color(0xFFEF4444),
-            ),
-          );
+          AdsyToast.error(context, 'Failed to create ticket. Please try again.');
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
       }
     }
   }

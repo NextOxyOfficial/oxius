@@ -12,6 +12,7 @@ import '../utils/url_launcher_utils.dart';
 import 'terms_and_conditions_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class GigDetailsScreen extends StatefulWidget {
   final String gigSlug;
@@ -148,13 +149,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Order Submitted Successfully!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 3),
-            ),
-          );
+          AdsyToast.success(context, 'Order Submitted Successfully!');
           // Return true to indicate successful submission
           Navigator.pop(context, true);
         }
@@ -189,12 +184,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
   void _showError(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, message);
     }
   }
 
@@ -752,12 +742,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
             await launchUrl(url, mode: LaunchMode.externalApplication);
           } else {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Could not open URL'),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              AdsyToast.error(context, 'Could not open URL');
             }
           }
         },

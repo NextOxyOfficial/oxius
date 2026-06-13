@@ -5,6 +5,7 @@ import '../models/sale_post.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 /// My Sale Posts Screen - View and manage user's sale posts
 /// This screen has 2 tabs: My Posts & Post Sale
@@ -796,9 +797,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
   void _editPost(SalePost post) {
     // TODO: Navigate to edit screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit post: ${post.title}')),
-    );
+    AdsyToast.info(context, 'Edit post: ${post.title}');
   }
 
 

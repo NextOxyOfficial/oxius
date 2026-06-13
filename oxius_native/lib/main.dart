@@ -266,6 +266,22 @@ class MyApp extends StatelessWidget {
                   statusBarBrightness: Brightness.light,
                 ),
               ),
+              // Unified, professional snackbar look across the whole app.
+              snackBarTheme: SnackBarThemeData(
+                behavior: SnackBarBehavior.floating,
+                elevation: 4,
+                backgroundColor: const Color(0xFF1F2937),
+                contentTextStyle: AppFonts.roboto(
+                  fontSize: 13.5,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                actionTextColor: const Color(0xFF34D399),
+                insetPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
             home: const Scaffold(
               body: Center(
@@ -325,6 +341,22 @@ class MyApp extends StatelessWidget {
                   statusBarColor: Colors.white,
                   statusBarIconBrightness: Brightness.dark,
                   statusBarBrightness: Brightness.light,
+                ),
+              ),
+              // Unified, professional snackbar look across the whole app.
+              snackBarTheme: SnackBarThemeData(
+                behavior: SnackBarBehavior.floating,
+                elevation: 4,
+                backgroundColor: const Color(0xFF1F2937),
+                contentTextStyle: AppFonts.roboto(
+                  fontSize: 13.5,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                actionTextColor: const Color(0xFF34D399),
+                insetPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),

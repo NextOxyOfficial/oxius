@@ -4,6 +4,7 @@ import '../../services/elearning_service.dart';
 import '../../models/cart_item.dart';
 import '../product_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class BatchProducts extends StatefulWidget {
   final String? selectedBatch;
@@ -317,13 +318,7 @@ class _BatchProductsState extends State<BatchProducts> {
         },
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: Unable to proceed to checkout. $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
     }
   }
 

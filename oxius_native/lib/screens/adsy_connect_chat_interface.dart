@@ -26,6 +26,7 @@ import 'business_network/profile_screen.dart';
 import 'call_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_report_sheet.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../utils/url_launcher_utils.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
@@ -498,12 +499,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   Future<void> _playVoiceMessage(String messageId, String? mediaUrl) async {
     if (mediaUrl == null || mediaUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Voice message not available'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Voice message not available');
       return;
     }
 
@@ -560,12 +556,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('Error playing voice message: $e');
       setState(() => _playingVoiceMessageId = null);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to play voice message: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'ভয়েস মেসেজ চালানো যায়নি');
       }
     }
   }
@@ -1216,13 +1207,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     if (idx == -1) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Original message is not loaded yet'),
-          backgroundColor: Color(0xFF374151),
-          duration: Duration(milliseconds: 1200),
-        ),
-      );
+      AdsyToast.info(context, 'Original message is not loaded yet');
       return;
     }
 
@@ -1514,13 +1499,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
       if (!status.isGranted) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'Microphone permission is required to record voice messages'),
-              backgroundColor: Color(0xFFEF4444),
-            ),
-          );
+          AdsyToast.error(context,
+              'Microphone permission is required to record voice messages');
         }
         return;
       }
@@ -1557,12 +1537,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     } catch (e) {
       debugPrint('Error starting recording: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to start recording'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to start recording');
       }
     }
   }
@@ -1614,12 +1589,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               _isSendingMessage = false;
               _recordDuration = 0;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to send voice message: $e'),
-                backgroundColor: const Color(0xFFEF4444),
-              ),
-            );
+            AdsyToast.error(context, 'ভয়েস মেসেজ পাঠানো যায়নি');
           }
         }
       }
@@ -1717,13 +1687,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                     final text = (message['message'] ?? '').toString();
                     Clipboard.setData(ClipboardData(text: text));
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Message copied'),
-                          duration: Duration(seconds: 1),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      AdsyToast.success(context, 'Message copied');
                     }
                   },
                 ),
@@ -1926,13 +1890,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                           );
 
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Message edited'),
-                                backgroundColor: Color(0xFF10B981),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
+                            AdsyToast.success(context, 'Message edited');
                           }
                         } catch (e) {
                           debugPrint('Error editing message: $e');
@@ -1955,12 +1913,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                             });
                           }
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Failed to edit message'),
-                                backgroundColor: Color(0xFFEF4444),
-                              ),
-                            );
+                            AdsyToast.error(context, 'Failed to edit message');
                           }
                         }
                       },
@@ -2102,13 +2055,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                           debugPrint('ðŸŸ¢ Message deleted successfully');
 
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Message deleted'),
-                                backgroundColor: Color(0xFF10B981),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
+                            AdsyToast.success(context, 'Message deleted');
                           }
                         } catch (e) {
                           debugPrint('ðŸ”´ Error deleting message: $e');
@@ -2283,12 +2230,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         // Check if adding these images exceeds the limit
         if (_selectedImages.length + images.length > 8) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Maximum 8 photos allowed'),
-                backgroundColor: Color(0xFFEF4444),
-              ),
-            );
+            AdsyToast.error(context, 'Maximum 8 photos allowed');
           }
           return;
         }
@@ -2321,12 +2263,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('Error picking images: $e');
       setState(() => _isCompressingImages = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to pick images: ${e.toString()}'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
       }
     }
   }
@@ -2336,12 +2273,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       // Check if limit reached
       if (_selectedImages.length >= 8) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Maximum 8 photos allowed'),
-              backgroundColor: Color(0xFFEF4444),
-            ),
-          );
+          AdsyToast.error(context, 'Maximum 8 photos allowed');
         }
         return;
       }
@@ -2378,12 +2310,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('Error taking photo: $e');
       setState(() => _isCompressingImages = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to take photo: ${e.toString()}'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'ছবি তোলা যায়নি');
       }
     }
   }
@@ -2400,12 +2327,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     } catch (e) {
       debugPrint('Error picking video: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to pick video'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to pick video');
       }
     }
   }
@@ -2441,23 +2363,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text('${_compressedImages.length} photos sent successfully'),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
+        AdsyToast.success(
+            context, '${_compressedImages.length} photos sent successfully');
       }
     } catch (e) {
       setState(() => _isSendingMessage = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send photos: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'ছবি পাঠানো যায়নি');
       }
     }
   }
@@ -2478,23 +2390,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               fileName: result.files.single.name);
         } else if (result.files.single.bytes != null && mounted) {
           // Handle web/desktop file selection
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('File selected. Upload functionality coming soon.'),
-              backgroundColor: Color(0xFF10B981),
-            ),
-          );
+          AdsyToast.success(
+              context, 'File selected. Upload functionality coming soon.');
         }
       }
     } catch (e) {
       debugPrint('Error picking document: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to pick document: ${e.toString()}'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'ফাইল বাছাই করা যায়নি');
       }
     }
   }
@@ -2595,12 +2498,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
       await _loadChatroomStatus();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.userName} has been blocked'),
-            backgroundColor: const Color(0xFFF59E0B),
-          ),
-        );
+        AdsyToast.warning(context, '${widget.userName} has been blocked');
       }
     } catch (e) {
       if (mounted) {
@@ -2623,12 +2521,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
       await _loadChatroomStatus();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.userName} has been unblocked'),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
+        AdsyToast.success(context, '${widget.userName} has been unblocked');
       }
     } catch (e) {
       if (mounted) {
@@ -2826,22 +2719,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   void _startCall(String callType) {
     final currentUser = AuthService.currentUser;
     if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to make calls')),
-      );
+      AdsyToast.warning(context, 'Please login to make calls');
       return;
     }
 
     // Prevent initiating a second call while one is already active/minimised.
     // The user can return to the ongoing call via the banner at the top.
     if (AgoraCallService.isInCall) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'You are already in a call. End it before starting a new one.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      AdsyToast.warning(context,
+          'You are already in a call. End it before starting a new one.');
       return;
     }
 
@@ -3393,12 +3279,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   ),
                 );
                 if (confirm == true && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Delete functionality coming soon'),
-                      backgroundColor: Color(0xFF3B82F6),
-                    ),
-                  );
+                  AdsyToast.info(context, 'Delete functionality coming soon');
                 }
               },
             ),
@@ -3410,41 +3291,21 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   Future<void> _downloadImage(String imageUrl) async {
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Downloading image...'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.info(context, 'Downloading image...');
       await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image downloaded successfully!'),
-            backgroundColor: Color(0xFF10B981),
-          ),
-        );
+        AdsyToast.success(context, 'Image downloaded successfully!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to download image: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'ছবি ডাউনলোড করা যায়নি');
       }
     }
   }
 
   Future<void> _downloadDocument(String? filePath, String fileName) async {
     if (filePath == null || filePath.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Document not available'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Document not available');
       return;
     }
     // Open the document through the system handler (browser / viewer), which
@@ -3454,12 +3315,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final opened = await UrlLauncherUtils.launchExternalUrl(url);
     if (!mounted) return;
     if (!opened) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not open $fileName'),
-          backgroundColor: const Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Could not open $fileName');
     }
   }
 

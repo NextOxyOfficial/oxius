@@ -4,6 +4,7 @@ import '../services/subscription_service.dart';
 import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class UpgradeToProScreen extends StatefulWidget {
   const UpgradeToProScreen({super.key});
@@ -116,13 +117,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     try {
       final refreshed = await _userState.refreshUser();
       if (!refreshed && mounted && _userState.isAuthenticated) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not refresh balance. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AdsyToast.error(context, 'Could not refresh balance. Please try again.');
       }
     } finally {
       if (mounted) {
@@ -838,12 +833,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   }
 
   void _showAlreadyProSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('You\'re already a Pro member!'),
-        backgroundColor: _mint,
-      ),
-    );
+    AdsyToast.success(context, 'You\'re already a Pro member!');
   }
 
   void _showInsufficientFundsDialog() {
@@ -952,11 +942,6 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   }
 
   void _showErrorSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error: $message'),
-        backgroundColor: const Color(0xFFEF4444),
-      ),
-    );
+    AdsyToast.error(context, 'Error: $message');
   }
 }

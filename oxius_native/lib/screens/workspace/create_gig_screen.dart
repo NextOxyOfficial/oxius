@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../services/workspace_service.dart';
 import '../../utils/network_error_handler.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -173,9 +174,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
         for (var image in images) {
           if (_selectedImages.length >= 5) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Maximum 5 images allowed')),
-              );
+              AdsyToast.info(context, 'Maximum 5 images allowed');
             }
             break;
           }
@@ -186,9 +185,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           // Check file size (5MB max)
           if (bytes.length > 5 * 1024 * 1024) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${image.name} is too large. Max 5MB')),
-              );
+              AdsyToast.info(context, '${image.name} is too large. Max 5MB');
             }
             continue;
           }
@@ -320,16 +317,12 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
-      );
+      AdsyToast.warning(context, 'Please select a category');
       return;
     }
 
     if (_selectedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one image')),
-      );
+      AdsyToast.warning(context, 'Please add at least one image');
       return;
     }
 
@@ -339,9 +332,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
         .toList();
 
     if (validFeatures.length < 3) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least 3 features')),
-      );
+      AdsyToast.warning(context, 'Please add at least 3 features');
       return;
     }
 
@@ -365,25 +356,14 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
       if (mounted) {
         final gigTitle = _titleController.text.trim();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('"$gigTitle" submitted for review!'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        AdsyToast.success(context, '"$gigTitle" submitted for review!');
 
         _resetForm();
         widget.onGigCreated?.call();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create gig: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'গিগ তৈরি করা যায়নি');
       }
     } finally {
       if (mounted) {

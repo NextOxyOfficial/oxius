@@ -5,6 +5,7 @@ import '../services/order_service.dart';
 import '../models/cart_item.dart';
 import '../models/order_model.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<CartItem> cartItems;
@@ -140,13 +141,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         item.quantity++;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Only ${item.product.quantity} units available in stock'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      AdsyToast.warning(
+          context, 'Only ${item.product.quantity} units available in stock');
     }
   }
 
@@ -211,12 +207,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error processing order: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'অর্ডার প্রসেস করা যায়নি');
       }
     } finally {
       if (mounted) {

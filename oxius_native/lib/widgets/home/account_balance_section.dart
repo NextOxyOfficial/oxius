@@ -9,6 +9,7 @@ import '../../models/wallet_models.dart';
 import '../../screens/wallet/wallet_screen.dart';
 import '../../screens/microgig/pending_tasks_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class AccountBalanceSection extends StatefulWidget {
   const AccountBalanceSection({super.key});
@@ -388,13 +389,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
                   child: InkWell(
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: referralLink));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(t('copied')),
-                          duration: const Duration(seconds: 2),
-                          backgroundColor: const Color(0xFF10B981),
-                        ),
-                      );
+                      AdsyToast.success(context, t('copied'));
                     },
                     borderRadius: const BorderRadius.only(
                       topRight: Radius.circular(8),

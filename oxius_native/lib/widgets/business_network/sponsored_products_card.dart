@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/product_card.dart';
 import '../../models/cart_item.dart';
+import '../../widgets/common/adsy_toast.dart';
 
 class SponsoredProductsCard extends StatelessWidget {
   final List<Map<String, dynamic>> products;
@@ -137,13 +138,7 @@ class SponsoredProductsCard extends StatelessWidget {
         },
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: Unable to proceed to checkout. $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
     }
   }
 

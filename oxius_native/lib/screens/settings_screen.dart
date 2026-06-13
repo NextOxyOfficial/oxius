@@ -10,6 +10,7 @@ import '../config/app_config.dart';
 import '../models/geo_location.dart';
 import '../models/user_profile.dart';
 import '../services/auth_service.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../services/geo_location_service.dart';
 import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
@@ -41,7 +42,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   static const _bodyTextColor = Color(0xFF475569);
   static const _mutedTextColor = Color(0xFF64748B);
   static const _dangerColor = Color(0xFFDC2626);
-  static const _successColor = Color(0xFF059669);
   static const _warningColor = Color(0xFFF59E0B);
 
   final _profileFormKey = GlobalKey<FormState>();
@@ -600,18 +600,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style:
-              AppFonts.roboto(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: isError ? _dangerColor : _successColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-    );
+    if (isError) {
+      AdsyToast.error(context, message);
+    } else {
+      AdsyToast.success(context, message);
+    }
   }
 
   Future<void> _saveProfile() async {

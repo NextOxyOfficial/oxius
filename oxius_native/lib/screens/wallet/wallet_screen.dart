@@ -12,6 +12,7 @@ import 'payment_verification_screen.dart';
 import 'withdraw_tab.dart';
 import 'transfer_tab.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -147,13 +148,7 @@ class _WalletScreenState extends State<WalletScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/login');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Please login to access AdsyPay'),
-              backgroundColor: Colors.orange,
-              duration: Duration(seconds: 3),
-            ),
-          );
+          AdsyToast.warning(context, 'Please login to access AdsyPay');
         }
       });
     }

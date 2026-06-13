@@ -10,6 +10,7 @@ import '../widgets/common/adsy_share_sheet.dart';
 import '../widgets/product_card.dart';
 import 'vendor_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -174,13 +175,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
         },
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: Unable to proceed to checkout. $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
     }
   }
 
@@ -263,12 +258,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
 
   Future<void> _openStore(String? storeUsername, String storeName) async {
     if (storeUsername == null || storeUsername.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Store information is not available for this product.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(
+          context, 'Store information is not available for this product.');
       return;
     }
 
@@ -1527,15 +1518,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     final currentUserId = AuthService.currentUser?.id;
 
     if (ownerId != null && ownerId == currentUserId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'You cannot write a review for your own product.',
-            style: AppFonts.roboto(fontSize: 13),
-          ),
-          backgroundColor: Colors.orange.shade700,
-        ),
-      );
+      AdsyToast.warning(
+          context, 'You cannot write a review for your own product.');
       return;
     }
 

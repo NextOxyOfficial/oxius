@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../services/wallet_service.dart';
 import '../../widgets/wallet/web_checkout_frame.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class PaymentVerificationScreen extends StatefulWidget {
   final String orderId;
@@ -472,12 +473,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Secure checkout URL is invalid.'),
-          backgroundColor: _red,
-        ),
-      );
+      AdsyToast.error(context, 'Secure checkout URL is invalid.');
       return;
     }
 
@@ -491,12 +487,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
     }
 
     if (!launched) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not open the payment page on this device.'),
-          backgroundColor: _red,
-        ),
-      );
+      AdsyToast.error(context, 'Could not open the payment page on this device.');
       return;
     }
 

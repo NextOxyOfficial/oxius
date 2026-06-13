@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../services/eshop_manager_service.dart';
 import '../../services/auth_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class CreateStoreScreen extends StatefulWidget {
   final VoidCallback onStoreCreated;
@@ -95,12 +96,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
     }
 
     if (_usernameChecked && !_usernameAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please choose an available username'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Please choose an available username');
       return;
     }
 
@@ -187,12 +183,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create store: ${e.toString()}'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'স্টোর তৈরি করা যায়নি');
       }
     } finally {
       if (mounted) {

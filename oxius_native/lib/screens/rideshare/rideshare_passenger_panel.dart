@@ -18,6 +18,7 @@ import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
 import 'custom_location_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 part 'rideshare_passenger_panel_active_ride.dart';
 part 'rideshare_passenger_panel_booking.dart';
@@ -1581,13 +1582,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     if (!mounted) return;
     final resolvedMessage =
         _localizeDisplayMessage(_resolveErrorMessage(message));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(resolvedMessage, style: GoogleFonts.inter(fontSize: 13)),
-      backgroundColor: Colors.red.shade600,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.all(12),
-    ));
+    AdsyToast.error(context, resolvedMessage);
   }
 
   String? _driverMapVehicleInfo(Ride ride) {
@@ -1728,14 +1723,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   void _showSuccess(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(_localizeDisplayMessage(message),
-          style: GoogleFonts.inter(fontSize: 13)),
-      backgroundColor: const Color(0xFF10B981),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.all(12),
-    ));
+    AdsyToast.success(context, _localizeDisplayMessage(message));
   }
 
   @override

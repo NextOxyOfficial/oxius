@@ -16,6 +16,7 @@ import '../widgets/geo_location_breadcrumb.dart';
 import '../widgets/skeleton_loader.dart';
 import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ClassifiedCategoryListScreen extends StatefulWidget {
   final String categoryId;
@@ -1809,13 +1810,7 @@ class _ClassifiedCategoryListScreenState
   /// Copy text to clipboard
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Copied to clipboard'),
-        duration: Duration(seconds: 1),
-        backgroundColor: Color(0xFF10B981),
-      ),
-    );
+    AdsyToast.success(context, 'Copied to clipboard');
   }
 
   Widget _buildCopyButton(String text, {IconData icon = Icons.copy_rounded}) {

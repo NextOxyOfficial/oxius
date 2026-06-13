@@ -10,6 +10,7 @@ import 'widgets/my_products_tab.dart';
 import 'widgets/add_product_tab.dart';
 import 'create_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class EshopManagerScreen extends StatefulWidget {
   const EshopManagerScreen({super.key});
@@ -191,13 +192,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen>
       debugPrint('❌ Refresh error: $e');
       // Show error message to user
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to refresh: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        AdsyToast.error(context, 'রিফ্রেশ করা যায়নি');
       }
     }
   }

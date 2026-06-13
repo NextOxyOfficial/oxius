@@ -10,6 +10,7 @@ import '../services/api_service.dart';
 import '../utils/url_launcher_utils.dart';
 import '../widgets/home/account_balance_section.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MyGigsScreen extends StatefulWidget {
   const MyGigsScreen({super.key});
@@ -502,38 +503,25 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(action == "completed"
+          AdsyToast.success(
+              context,
+              action == "completed"
                   ? "Gig stopped successfully"
                   : value
                       ? "Gig activated successfully"
-                      : "Gig paused successfully"),
-              backgroundColor: Colors.green,
-            ),
-          );
+                      : "Gig paused successfully");
 
           // Refresh gigs
           _loadUserGigs();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Failed to ${action == "completed" ? "stop" : value ? "activate" : "pause"} gig'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          AdsyToast.error(context,
+              'Failed to ${action == "completed" ? "stop" : value ? "activate" : "pause"} gig');
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
       }
     }
   }
@@ -1045,12 +1033,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load gig details: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'গিগের বিস্তারিত লোড করা যায়নি');
       }
     }
   }

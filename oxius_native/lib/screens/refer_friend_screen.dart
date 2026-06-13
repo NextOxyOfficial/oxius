@@ -9,6 +9,7 @@ import '../models/referral_models.dart';
 import '../models/referral_reward_models.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ReferFriendScreen extends StatefulWidget {
   const ReferFriendScreen({super.key});
@@ -201,16 +202,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          successCount > 0
-              ? '$successCount টি রিওয়ার্ড নেওয়া হয়েছে (৳${totalAmount.toStringAsFixed(0)})'
-              : 'রিওয়ার্ড নেওয়া যায়নি',
-        ),
-        backgroundColor:
-            successCount > 0 ? const Color(0xFF10B981) : Colors.red,
-      ),
+    AdsyToast.info(
+      context,
+      successCount > 0
+          ? '$successCount টি রিওয়ার্ড নেওয়া হয়েছে (৳${totalAmount.toStringAsFixed(0)})'
+          : 'রিওয়ার্ড নেওয়া যায়নি',
     );
 
     setState(() => _isClaimingReward = false);
@@ -223,13 +219,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     try {
       final result = await ReferralService.claimReward(claimId);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result.message),
-            backgroundColor:
-                result.success ? const Color(0xFF10B981) : Colors.red,
-          ),
-        );
+        AdsyToast.info(context, result.message);
         if (result.success) {
           _loadRewardClaims();
           AuthService.refreshUserData();
@@ -237,11 +227,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('রিওয়ার্ড নেওয়া যায়নি'),
-              backgroundColor: Colors.red),
-        );
+        AdsyToast.error(context, 'রিওয়ার্ড নেওয়া যায়নি');
       }
     } finally {
       if (mounted) setState(() => _isClaimingReward = false);
@@ -250,13 +236,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('লিংক কপি হয়েছে!'),
-        backgroundColor: Color(0xFF10B981),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    AdsyToast.success(context, 'লিংক কপি হয়েছে!');
   }
 
   Future<void> _shareLink() async {

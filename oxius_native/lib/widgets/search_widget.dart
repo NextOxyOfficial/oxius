@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'dart:async';
 
 class SearchWidget extends StatefulWidget {
@@ -117,12 +118,7 @@ class _SearchWidgetState extends State<SearchWidget> {
             },
             onSubmitted: (value) {
               if (value.trim().isNotEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Searching for: $value'),
-                    backgroundColor: const Color(0xFF10B981),
-                  ),
-                );
+                AdsyToast.success(context, 'Searching for: $value');
               }
             },
           ),

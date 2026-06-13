@@ -8,6 +8,7 @@ import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import 'transfer_confirmation_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -259,35 +260,20 @@ class _TransferTabState extends State<TransferTab> {
             } else {
               setState(() => _isLoading = false);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('User has no email or phone number'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                AdsyToast.error(context, 'User has no email or phone number');
               }
             }
           } else {
             setState(() => _isLoading = false);
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('User not found. Please try again.'),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              AdsyToast.error(context, 'User not found. Please try again.');
             }
           }
         } catch (e) {
           setState(() => _isLoading = false);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'Error: ${e.toString().replaceAll('Exception: ', '')}'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            AdsyToast.error(
+                context, 'Error: ${e.toString().replaceAll('Exception: ', '')}');
           }
         }
       } else {

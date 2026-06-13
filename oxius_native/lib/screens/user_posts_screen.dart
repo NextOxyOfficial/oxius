@@ -11,6 +11,7 @@ import '../services/adsyconnect_service.dart';
 import 'classified_post_details_screen.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class UserPostsScreen extends StatefulWidget {
   final String userId;
@@ -163,12 +164,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
     if (widget.userPhone != null && widget.userPhone!.isNotEmpty) {
       launchUrl(Uri.parse('tel:${widget.userPhone}'));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Phone number not available'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Phone number not available');
     }
   }
 
@@ -179,12 +175,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
     }
 
     if (widget.userId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User information not available'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'User information not available');
       return;
     }
 
@@ -212,22 +203,12 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
           isOnline: false,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to create chat room'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to create chat room');
       }
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: const Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
     }
   }
 

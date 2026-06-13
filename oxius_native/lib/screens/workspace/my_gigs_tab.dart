@@ -5,6 +5,7 @@ import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MyGigsTab extends StatefulWidget {
   const MyGigsTab({super.key});
@@ -68,23 +69,12 @@ class _MyGigsTabState extends State<MyGigsTab> {
     if (success) {
       _loadMyGigs();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Gig ${newStatus == 'active' ? 'activated' : 'paused'} successfully'),
-            backgroundColor:
-                newStatus == 'active' ? Colors.green : Colors.grey[700],
-          ),
-        );
+        AdsyToast.success(context,
+            'Gig ${newStatus == 'active' ? 'activated' : 'paused'} successfully');
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to update gig status'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'Failed to update gig status');
       }
     }
   }
@@ -115,9 +105,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
       if (success) {
         _loadMyGigs();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gig deleted successfully')),
-          );
+          AdsyToast.success(context, 'Gig deleted successfully');
         }
       }
     }

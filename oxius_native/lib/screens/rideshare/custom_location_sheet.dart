@@ -7,6 +7,7 @@ import '../../services/rideshare_service.dart';
 import '../../utils/payment_policy.dart';
 import '../../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const double customLocationFee = 199.0;
 
@@ -300,13 +301,11 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
 
   void _showSnack(String msg, {bool isError = true}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: GoogleFonts.inter(fontSize: 13)),
-      backgroundColor: isError ? Colors.red.shade600 : const Color(0xFF10B981),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.all(12),
-    ));
+    if (isError) {
+      AdsyToast.error(context, msg);
+    } else {
+      AdsyToast.success(context, msg);
+    }
   }
 
   // ── Build ────────────────────────────────────────────────────────────────

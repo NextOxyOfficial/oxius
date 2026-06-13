@@ -6,6 +6,7 @@ import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/payment_method_selector.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -110,15 +111,9 @@ class _WithdrawTabState extends State<WithdrawTab> {
 
       if (response != null && mounted) {
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response['message'] ??
-                  'Withdrawal request submitted successfully',
-            ),
-            backgroundColor: const Color(0xFF10B981),
-            duration: const Duration(seconds: 3),
-          ),
+        AdsyToast.success(
+          context,
+          response['message'] ?? 'Withdrawal request submitted successfully',
         );
 
         // Reset form
@@ -134,13 +129,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        AdsyToast.error(context, e.toString().replaceAll('Exception: ', ''));
       }
     } finally {
       if (mounted) {

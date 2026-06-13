@@ -16,6 +16,7 @@ import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import '../../widgets/common/adsy_report_sheet.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
+import '../../widgets/common/adsy_toast.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
@@ -317,12 +318,7 @@ class _PostCardState extends State<PostCard> {
     if (success && mounted) {
       widget.onSaveChanged?.call(_post.id, _post.isSaved);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_post.isSaved ? 'Post saved' : 'Post unsaved'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context, _post.isSaved ? 'Post saved' : 'Post unsaved');
     } else if (!success && mounted) {
       final rolledBack = _post.copyWith(isSaved: originalIsSaved);
       setState(() {
@@ -506,13 +502,7 @@ class _PostCardState extends State<PostCard> {
         _post = updatedPost;
       });
       widget.onPostUpdated?.call(updatedPost);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Post updated'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context, 'Post updated');
     }
   }
 
@@ -541,20 +531,10 @@ class _PostCardState extends State<PostCard> {
       final success = await BusinessNetworkService.deletePost(_post.id);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Post deleted successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AdsyToast.success(context, 'Post deleted successfully');
         widget.onPostDeleted?.call();
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to delete post'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'Failed to delete post');
       }
     }
   }
@@ -587,11 +567,7 @@ class _PostCardState extends State<PostCard> {
     final username = _post.user.username;
     if (userId.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Cannot block this user'),
-              backgroundColor: Colors.red),
-        );
+        AdsyToast.error(context, 'Cannot block this user');
       }
       return;
     }
@@ -640,20 +616,10 @@ class _PostCardState extends State<PostCard> {
     final success = await BusinessNetworkService.hidePost(_post.id);
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Post hidden from your feed'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.info(context, 'Post hidden from your feed');
       widget.onPostDeleted?.call(); // Remove from feed
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to hide post'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'Failed to hide post');
     }
   }
 
@@ -701,12 +667,7 @@ class _PostCardState extends State<PostCard> {
                 onTap: _handleViewAllComments,
                 onLongPress: () {
                   Clipboard.setData(ClipboardData(text: _post.title));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Title copied to clipboard'),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
+                  AdsyToast.success(context, 'Title copied to clipboard');
                 },
                 child: Text.rich(
                   TextSpan(
@@ -735,12 +696,7 @@ class _PostCardState extends State<PostCard> {
                   GestureDetector(
                     onLongPress: () {
                       Clipboard.setData(ClipboardData(text: plainPostContent));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Content copied to clipboard'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
+                      AdsyToast.success(context, 'Content copied to clipboard');
                     },
                     child: Text.rich(
                       TextSpan(

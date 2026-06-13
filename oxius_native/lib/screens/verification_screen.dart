@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/user_state_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -108,12 +109,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         if (!mounted) {
           return;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('File size too large. Maximum size is 12MB.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'File size too large. Maximum size is 12MB.');
         return;
       }
 
@@ -139,12 +135,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error selecting image. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'Error selecting image. Please try again.');
     }
   }
 
@@ -180,12 +171,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
 
     if (_errors.values.any((hasError) => hasError)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all required fields.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.warning(context, 'Please fill in all required fields.');
       return;
     }
 
@@ -209,33 +195,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text(data['message'] ?? 'Documents submitted successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AdsyToast.success(
+            context, data['message'] ?? 'Documents submitted successfully!');
         await _loadVerificationStatus();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to submit documents. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'Failed to submit documents. Please try again.');
       }
     } catch (error) {
       debugPrint('Error submitting documents: $error');
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An error occurred. Please try again later.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'An error occurred. Please try again later.');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

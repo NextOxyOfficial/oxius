@@ -12,6 +12,7 @@ import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
 import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -1189,10 +1190,8 @@ class _CommentItemState extends State<_CommentItem> {
                                   setState(() => _isEditing = false);
                                   widget.onCommentUpdated?.call(updatedComment);
                                   if (mounted && context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text('Comment updated')),
-                                    );
+                                    AdsyToast.success(
+                                        context, 'Comment updated');
                                   }
                                 }
                               },
@@ -1340,17 +1339,11 @@ class _CommentItemState extends State<_CommentItem> {
                   if (success) {
                     widget.onCommentDeleted?.call();
                     if (mounted && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Comment deleted')),
-                      );
+                      AdsyToast.info(context, 'Comment deleted');
                     }
                   } else {
                     if (mounted && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Failed to delete comment'),
-                            backgroundColor: Colors.red),
-                      );
+                      AdsyToast.error(context, 'Failed to delete comment');
                     }
                   }
                 }

@@ -6,6 +6,7 @@ import '../../utils/image_compressor.dart';
 import '../../utils/network_error_handler.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class CreateProblemScreen extends StatefulWidget {
   final List<MindForceCategory> categories;
@@ -43,9 +44,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
 
   Future<void> _pickImage() async {
     if (_images.length >= 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 4 images allowed')),
-      );
+      AdsyToast.info(context, 'Maximum 4 images allowed');
       return;
     }
 
@@ -74,9 +73,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
           });
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to compress image')),
-            );
+            AdsyToast.error(context, 'Failed to compress image');
           }
         }
       }

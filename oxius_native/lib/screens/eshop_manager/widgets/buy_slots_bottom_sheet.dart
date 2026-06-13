@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/eshop_manager_service.dart';
 import '../../../services/auth_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class BuySlotsBottomSheet extends StatefulWidget {
   final int currentProductCount;
@@ -72,14 +73,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
             : _selectedPackage!['price'] as double;
 
     if (_userBalance < price) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Insufficient balance. You need ৳${price.toStringAsFixed(0)}'),
-          backgroundColor: const Color(0xFFEF4444),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AdsyToast.error(context,
+          'Insufficient balance. You need ৳${price.toStringAsFixed(0)}');
       return;
     }
 
@@ -96,25 +91,13 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
     if (result['success'] == true) {
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Successfully purchased ${_selectedPackage!['slots']} slot(s)!'),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AdsyToast.success(context,
+            'Successfully purchased ${_selectedPackage!['slots']} slot(s)!');
         widget.onPurchaseSuccess();
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Purchase failed'),
-            backgroundColor: const Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AdsyToast.error(context, result['message'] ?? 'Purchase failed');
       }
     }
   }

@@ -6,6 +6,7 @@ import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import '../../../widgets/ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -233,12 +234,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
           _categories = [];
           _isLoadingCategories = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to load categories'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to load categories');
       }
     }
   }
@@ -274,12 +270,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
 
   Future<void> _pickImages() async {
     if (_images.length >= 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Maximum 5 images allowed'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.warning(context, 'Maximum 5 images allowed');
       return;
     }
 
@@ -588,22 +579,12 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedCategories.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select at least one category'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.warning(context, 'Please select at least one category');
       return;
     }
 
     if (_deliveryMethod.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a delivery method'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.warning(context, 'Please select a delivery method');
       return;
     }
 
@@ -658,12 +639,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
     if (result['success'] == true) {
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Product added successfully!'),
-            backgroundColor: Color(0xFF10B981),
-          ),
-        );
+        AdsyToast.success(context, 'Product added successfully!');
         widget.onProductAdded();
       }
     } else {
@@ -782,13 +758,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
             errorMessage = errorList.isNotEmpty ? errorList : errorMessage;
           }
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: const Color(0xFFEF4444),
-              duration: const Duration(seconds: 5),
-            ),
-          );
+          AdsyToast.error(context, errorMessage);
         }
       }
     }

@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../utils/payment_policy.dart';
 import 'diamond_purchase_bottom_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class DiamondGiftBottomSheet extends StatefulWidget {
   final String postId;
@@ -100,14 +101,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
         });
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Successfully sent ${_giftAmount!} diamonds to ${widget.postAuthorName}! 🎁'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        AdsyToast.success(context,
+            'Successfully sent ${_giftAmount!} diamonds to ${widget.postAuthorName}! 🎁');
 
         widget.onGiftSent?.call();
 
@@ -117,12 +112,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSending = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, e.toString().replaceAll('Exception: ', ''));
       }
     }
   }

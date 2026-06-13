@@ -9,6 +9,7 @@ import '../widgets/mobile_sticky_nav.dart';
 import '../widgets/product_skeleton_loader.dart';
 import '../models/cart_item.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class EshopScreen extends StatefulWidget {
   const EshopScreen({super.key});
@@ -583,13 +584,7 @@ class _EshopScreenState extends State<EshopScreen>
     } catch (e) {
       if (mounted) {
         setState(() => _isSearching = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Search error: $e'),
-            backgroundColor: Colors.red.shade400,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        AdsyToast.error(context, 'সার্চে সমস্যা হয়েছে');
       }
     }
   }

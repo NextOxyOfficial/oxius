@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import 'classified_post_form_screen.dart';
 import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MyClassifiedPostsScreen extends StatefulWidget {
   const MyClassifiedPostsScreen({super.key});
@@ -164,21 +165,11 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    AdsyToast.error(context, message);
   }
 
   void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFF10B981),
-      ),
-    );
+    AdsyToast.success(context, message);
   }
 
   /// Normalised status bucket used by both the badge and the filter tabs.

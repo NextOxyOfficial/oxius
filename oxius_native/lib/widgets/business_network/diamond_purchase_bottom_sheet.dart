@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../utils/payment_policy.dart';
 import '../ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class DiamondPurchaseBottomSheet extends StatefulWidget {
   final VoidCallback? onPurchaseSuccess;
@@ -193,13 +194,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
           _currentAccountBalance = newAccountBalance;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Successfully purchased $amount diamonds! 🎉'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        AdsyToast.success(context, 'Successfully purchased $amount diamonds! 🎉');
 
         widget.onPurchaseSuccess?.call();
 
@@ -222,12 +217,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, e.toString().replaceAll('Exception: ', ''));
       }
     }
   }

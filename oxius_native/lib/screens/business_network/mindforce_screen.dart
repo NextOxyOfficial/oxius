@@ -12,6 +12,7 @@ import 'create_problem_screen.dart';
 import '../../widgets/mindforce/problem_detail_bottom_sheet.dart';
 import 'profile_options.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -154,9 +155,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
   void _showCreateProblemDialog() {
     final user = AuthService.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to create a problem')),
-      );
+      AdsyToast.warning(context, 'Please login to create a problem');
       return;
     }
 
@@ -185,20 +184,10 @@ class _MindForceScreenState extends State<MindForceScreen> {
         _problems.insert(0, problem);
       });
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Problem posted successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AdsyToast.success(context, 'Problem posted successfully!');
     } else if (mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to post problem. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'Failed to post problem. Please try again.');
     }
   }
 
@@ -1387,13 +1376,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
     );
 
     if (saved == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Problem updated'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context, 'Problem updated');
       await _loadData();
     }
   }
@@ -1423,21 +1406,10 @@ class _MindForceScreenState extends State<MindForceScreen> {
     final ok = await MindForceService.deleteProblem(problem.id);
     if (!mounted) return;
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Problem deleted'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context, 'Problem deleted');
       await _loadData();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not delete the problem'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'Could not delete the problem');
     }
   }
 

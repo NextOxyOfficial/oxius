@@ -7,6 +7,7 @@ import '../config/app_config.dart';
 import '../utils/url_launcher_utils.dart';
 import 'ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
@@ -691,13 +692,7 @@ class _AppFooterState extends State<AppFooter>
         break;
       default:
         // For any unhandled routes, show a message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Navigate to $destination'),
-            backgroundColor: const Color(0xFF10B981),
-            duration: const Duration(seconds: 1),
-          ),
-        );
+        AdsyToast.success(context, 'Navigate to $destination');
         return;
     }
 

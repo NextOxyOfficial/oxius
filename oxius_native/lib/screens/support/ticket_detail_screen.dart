@@ -5,6 +5,7 @@ import '../../services/support_ticket_service.dart';
 import 'package:intl/intl.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class TicketDetailScreen extends StatefulWidget {
   final String ticketId;
@@ -71,34 +72,18 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
       if (reply != null) {
         _replyController.clear();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reply sent successfully!'),
-            backgroundColor: Color(0xFF10B981),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        AdsyToast.success(context, 'Reply sent successfully!');
         // Reload ticket to show new reply
         _loadTicketDetail();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to send reply. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to send reply. Please try again.');
       }
     }
   }
 
   Future<void> _closeTicket() async {
     if (_ticket?.status != 'resolved') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You can only close resolved tickets.'),
-          backgroundColor: Color(0xFFF59E0B),
-        ),
-      );
+      AdsyToast.warning(context, 'You can only close resolved tickets.');
       return;
     }
 
@@ -131,20 +116,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
       if (mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ticket closed successfully!'),
-              backgroundColor: Color(0xFF10B981),
-            ),
-          );
+          AdsyToast.success(context, 'Ticket closed successfully!');
           _loadTicketDetail();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to close ticket.'),
-              backgroundColor: Color(0xFFEF4444),
-            ),
-          );
+          AdsyToast.error(context, 'Failed to close ticket.');
         }
       }
     }

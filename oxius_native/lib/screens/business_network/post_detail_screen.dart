@@ -15,6 +15,7 @@ import '../../widgets/common/adsy_share_sheet.dart';
 import 'post_media_viewer_screen.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -98,14 +99,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         );
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Failed to ${originalIsLiked ? 'unlike' : 'like'} post'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.error(
+          context, 'Failed to ${originalIsLiked ? 'unlike' : 'like'} post');
     }
   }
 
@@ -160,12 +155,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         );
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_post.isSaved ? 'Post saved' : 'Post unsaved'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(
+          context, _post.isSaved ? 'Post saved' : 'Post unsaved');
     }
   }
 
@@ -245,14 +236,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         await BusinessNetworkService.toggleFollow(userId, wasFollowing);
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_post.user.isFollowing
+      AdsyToast.info(
+          context,
+          _post.user.isFollowing
               ? 'Following ${_post.user.name}'
-              : 'Unfollowed ${_post.user.name}'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+              : 'Unfollowed ${_post.user.name}');
     } else if (!success && mounted) {
       // Failed - rollback to original state
       setState(() {
@@ -273,14 +261,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         );
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Failed to ${wasFollowing ? 'unfollow' : 'follow'} ${_post.user.name}'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.error(context,
+          'Failed to ${wasFollowing ? 'unfollow' : 'follow'} ${_post.user.name}');
     }
   }
 

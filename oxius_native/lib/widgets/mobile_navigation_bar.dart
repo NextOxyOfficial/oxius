@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/scroll_direction_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MobileNavigationBar extends StatefulWidget {
   final ScrollDirectionService? scrollService;
@@ -267,14 +268,6 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
   void _handleNavigation(String destination) {
     if (_disposed) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Navigate to $destination'),
-        backgroundColor: const Color(0xFF10B981),
-        duration: const Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(bottom: 100, left: 16, right: 16),
-      ),
-    );
+    AdsyToast.success(context, 'Navigate to $destination');
   }
 }

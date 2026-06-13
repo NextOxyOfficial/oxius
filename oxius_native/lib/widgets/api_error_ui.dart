@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/api_error.dart';
 import '../screens/verification_screen.dart';
+import 'common/adsy_toast.dart';
 
 /// One place to surface a failed action's *real* reason to the user.
 ///
@@ -36,14 +37,8 @@ class ApiErrorUI {
 
   static void _showSnack(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFFDC2626),
-        duration: const Duration(seconds: 4),
-      ),
-    );
+    // Show the real backend reason as-is in the unified professional toast.
+    AdsyToast.error(context, message);
   }
 
   static void _showKycSheet(BuildContext context, String message) {

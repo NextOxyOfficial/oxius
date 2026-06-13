@@ -13,6 +13,7 @@ import 'adsy_connect_chat_interface.dart';
 import 'support/create_ticket_screen.dart';
 import 'support/ticket_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class InboxScreen extends StatefulWidget {
   final int initialTab;
@@ -483,12 +484,7 @@ class _InboxScreenState extends State<InboxScreen>
       if (unreadUpdates.isEmpty) return;
 
       // Show loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Marking all as read...'),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      AdsyToast.info(context, 'Marking all as read...');
 
       try {
         final headers = await ApiService.getHeaders();
@@ -521,23 +517,12 @@ class _InboxScreenState extends State<InboxScreen>
             }
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('All updates marked as read'),
-              backgroundColor: Color(0xFF10B981),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          AdsyToast.success(context, 'All updates marked as read');
         }
       } catch (e) {
         debugPrint('Error marking updates as read: $e');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to mark all as read'),
-              backgroundColor: Color(0xFFEF4444),
-            ),
-          );
+          AdsyToast.error(context, 'Failed to mark all as read');
         }
       }
     } else {
@@ -1917,12 +1902,7 @@ class _NewChatModalState extends State<_NewChatModal> {
         final message = e is AdsyChatException
             ? e.message
             : 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, message);
       }
     }
   }

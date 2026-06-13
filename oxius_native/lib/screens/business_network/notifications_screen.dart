@@ -13,6 +13,7 @@ import '../business_network/post_detail_screen.dart';
 import '../business_network/create_post_screen.dart';
 import 'profile_options.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -343,12 +344,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           );
         } else {
           // Show error if post is null
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Post not found'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          AdsyToast.error(context, 'Post not found');
         }
       }
     } catch (e) {
@@ -359,12 +355,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         Navigator.pop(context);
 
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load post: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'পোস্ট লোড করা যায়নি');
       }
     }
   }

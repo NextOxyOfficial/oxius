@@ -3,6 +3,7 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/contact_service.dart';
 import '../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -91,22 +92,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             _messageController.clear();
 
             // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(result['message']),
-                backgroundColor: const Color(0xFF10B981),
-                duration: const Duration(seconds: 3),
-              ),
-            );
+            AdsyToast.success(context, result['message']);
           } else {
             // Show error message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(result['message']),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 3),
-              ),
-            );
+            AdsyToast.error(context, result['message']);
           }
         }
       } catch (e) {
@@ -115,13 +104,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             _isSubmitting = false;
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to send message. Please try again.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 3),
-            ),
-          );
+          AdsyToast.error(context, 'Failed to send message. Please try again.');
         }
       }
     }
@@ -130,9 +113,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   Future<void> _openEmail(String email) async {
     final ok = await UrlLauncherUtils.launchExternalUrl('mailto:$email');
     if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open mail app')),
-      );
+      AdsyToast.info(context, 'Could not open mail app');
     }
   }
 
@@ -140,9 +121,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     final normalized = phone.replaceAll(RegExp(r'\s+'), '');
     final ok = await UrlLauncherUtils.launchExternalUrl('tel:$normalized');
     if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open phone app')),
-      );
+      AdsyToast.info(context, 'Could not open phone app');
     }
   }
 

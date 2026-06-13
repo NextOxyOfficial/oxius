@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
@@ -163,13 +164,11 @@ class _EditPostScreenState extends State<EditPostScreen> {
   }
 
   void _showSnack(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor:
-            isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-      ),
-    );
+    if (isError) {
+      AdsyToast.error(context, message);
+    } else {
+      AdsyToast.success(context, message);
+    }
   }
 
   @override

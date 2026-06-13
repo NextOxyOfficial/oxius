@@ -4,6 +4,7 @@ import '../../screens/business_network/become_gold_sponsor_screen.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/payment_policy.dart';
 import '../ios_web_redirect_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
@@ -491,13 +492,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
     );
 
     if (saved == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sponsorship updated'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context, 'Sponsorship updated');
       await _loadGoldSponsors();
     }
   }
@@ -530,21 +525,10 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
     final ok = await GoldSponsorService.deleteMySponsor(sponsorId);
     if (!mounted) return;
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sponsorship deleted'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context, 'Sponsorship deleted');
       await _loadGoldSponsors();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not delete sponsorship'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'Could not delete sponsorship');
     }
   }
 

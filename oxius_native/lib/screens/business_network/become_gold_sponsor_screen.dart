@@ -7,6 +7,7 @@ import '../../services/gold_sponsor_service.dart';
 import '../../services/geo_service.dart';
 import '../../models/gold_sponsor_models.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class BecomeGoldSponsorScreen extends StatefulWidget {
   const BecomeGoldSponsorScreen({super.key});
@@ -293,13 +294,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
 
           // Show success and go back
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'Success! Your new balance is ৳${_userBalance.toStringAsFixed(0)}'),
-                backgroundColor: Colors.green,
-              ),
-            );
+            AdsyToast.success(context,
+                'Success! Your new balance is ৳${_userBalance.toStringAsFixed(0)}');
           }
 
           Future.delayed(const Duration(seconds: 2), () {

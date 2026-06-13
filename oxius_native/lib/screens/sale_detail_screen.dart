@@ -12,6 +12,7 @@ import '../widgets/common/adsy_report_sheet.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 /// Sale Post Detail Screen - View full post details with image gallery and all features
 class SaleDetailScreen extends StatefulWidget {
@@ -1156,18 +1157,12 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                             mode: LaunchMode.externalApplication);
                       } catch (_) {
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Could not open phone dialer')),
-                          );
+                          AdsyToast.error(context, 'Could not open phone dialer');
                         }
                       }
                     } else {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Phone number not available')),
-                        );
+                        AdsyToast.info(context, 'Phone number not available');
                       }
                     }
                   },
@@ -1288,12 +1283,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           _showLoginRequiredDialog();
         }
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to open chat. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to open chat. Please try again.');
       }
     }
   }

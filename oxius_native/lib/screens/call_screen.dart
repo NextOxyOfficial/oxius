@@ -12,6 +12,7 @@ import '../services/agora_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
 import 'inbox_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class CallScreen extends StatefulWidget {
   final String channelName;
@@ -355,12 +356,7 @@ class _CallScreenState extends State<CallScreen>
       await _joinChannel();
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not restore the call. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'Could not restore the call. Please try again.');
       Navigator.of(context).pop();
     }
   }
@@ -487,15 +483,11 @@ class _CallScreenState extends State<CallScreen>
         if (!notified) {
           _stopOutgoingRingback();
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                _formatCallStartError(
-                  AgoraCallService.lastNotificationError,
-                  fallback: 'Could not reach the recipient. Please try again.',
-                ),
-              ),
-              backgroundColor: Colors.red,
+          AdsyToast.error(
+            context,
+            _formatCallStartError(
+              AgoraCallService.lastNotificationError,
+              fallback: 'Could not reach the recipient. Please try again.',
             ),
           );
           Navigator.of(context).pop();
@@ -547,9 +539,7 @@ class _CallScreenState extends State<CallScreen>
                   fallback:
                       'Unable to start call. Please check your connection.',
                 );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(msg), backgroundColor: Colors.red),
-          );
+          AdsyToast.error(context, msg);
           Navigator.pop(context);
         }
       }
@@ -571,15 +561,11 @@ class _CallScreenState extends State<CallScreen>
 
     if (!success && mounted) {
       setState(() => _isConnecting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _formatCallStartError(
-              AgoraCallService.lastError,
-              fallback: 'Could not join the call. Please try again.',
-            ),
-          ),
-          backgroundColor: Colors.red,
+      AdsyToast.error(
+        context,
+        _formatCallStartError(
+          AgoraCallService.lastError,
+          fallback: 'Could not join the call. Please try again.',
         ),
       );
       AgoraCallService.setInCall(false);
@@ -672,9 +658,7 @@ class _CallScreenState extends State<CallScreen>
           final msg = errStr.toLowerCase().contains('permission')
               ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission.'
               : 'Unable to join the call. Please try again.';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(msg), backgroundColor: Colors.red),
-          );
+          AdsyToast.error(context, msg);
           if (mounted) Navigator.of(context).pop();
         }
       }

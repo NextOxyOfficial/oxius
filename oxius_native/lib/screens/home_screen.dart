@@ -36,6 +36,7 @@ import '../services/adsyconnect_service.dart';
 import 'dart:async';
 import 'package:app_badge_plus/app_badge_plus.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/home/home_popup_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -1869,13 +1870,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Try to show error message if context is still valid
           if (mounted && context.mounted) {
             try {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('An error occurred: ${e.toString()}'),
-                  backgroundColor: const Color(0xFFEF4444),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+              AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
             } catch (snackbarError) {
               debugPrint('❌ Could not show error snackbar: $snackbarError');
             }

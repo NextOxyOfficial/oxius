@@ -11,6 +11,7 @@ import '../services/adsyconnect_service.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 /// Seller Profile Screen - Display seller information and their listings
 class SellerProfileScreen extends StatefulWidget {
@@ -672,12 +673,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
           e.toString().contains('Unauthorized')) {
         if (mounted) _showLoginRequiredDialog();
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to open chat. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to open chat. Please try again.');
       }
     }
   }

@@ -11,6 +11,7 @@ import '../../config/app_config.dart';
 import '../../widgets/linkify_text.dart';
 import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ProblemDetailBottomSheet extends StatefulWidget {
   final String problemId;
@@ -118,20 +119,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     if (ok) {
       // Pop the sheet with a result so the list screen can refresh.
       Navigator.pop(context, 'deleted');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('পোস্ট মুছে ফেলা হয়েছে'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context, 'পোস্ট মুছে ফেলা হয়েছে');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('পোস্ট মুছে ফেলা যায়নি'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'পোস্ট মুছে ফেলা যায়নি');
     }
   }
 
@@ -229,17 +219,11 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
       if (updated != null) {
         await _reloadComments();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Comment updated')),
-          );
+          AdsyToast.success(context, 'Comment updated');
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Failed to update comment'),
-                backgroundColor: Colors.red),
-          );
+          AdsyToast.error(context, 'Failed to update comment');
         }
       }
     } finally {
@@ -276,17 +260,11 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     if (success) {
       await _reloadComments();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Comment deleted')),
-        );
+        AdsyToast.info(context, 'Comment deleted');
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Failed to delete comment'),
-              backgroundColor: Colors.red),
-        );
+        AdsyToast.error(context, 'Failed to delete comment');
       }
     }
   }
@@ -312,9 +290,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
 
   Future<void> _pickImage() async {
     if (_commentImages.length >= 3) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 3 images allowed')),
-      );
+      AdsyToast.info(context, 'Maximum 3 images allowed');
       return;
     }
 
@@ -342,9 +318,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
         } else {
           setState(() => _isCompressing = false);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to compress image')),
-            );
+            AdsyToast.error(context, 'Failed to compress image');
           }
         }
       } else {
@@ -353,9 +327,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     } catch (e) {
       setState(() => _isCompressing = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
+        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
       }
     }
   }
@@ -369,9 +341,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
 
   Future<void> _submitComment() async {
     if (_commentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a comment')),
-      );
+      AdsyToast.warning(context, 'Please enter a comment');
       return;
     }
 
@@ -394,20 +364,12 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
       await _reloadComments();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Solution added successfully'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        AdsyToast.success(context, 'Solution added successfully');
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmittingComment = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
       }
     }
   }
@@ -420,19 +382,11 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
       await _reloadComments();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Marked as solution'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        AdsyToast.success(context, 'Marked as solution');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
       }
     }
   }

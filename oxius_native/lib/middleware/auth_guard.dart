@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../pages/login_page.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 /// Authentication Guard Middleware
 /// Similar to Vue's auth.ts middleware for protecting routes
@@ -103,13 +104,7 @@ class AuthRouteGuard {
       // User needs to login first
       if (context.mounted) {
         // Show message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please login to access this feature'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        AdsyToast.warning(context, 'Please login to access this feature');
 
         // Navigate to login with return route
         await Navigator.of(context).pushNamed(
@@ -137,12 +132,7 @@ class AuthRouteGuard {
       }
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please login to access this feature'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        AdsyToast.warning(context, 'Please login to access this feature');
 
         await Navigator.of(context).pushReplacementNamed(
           '/login',

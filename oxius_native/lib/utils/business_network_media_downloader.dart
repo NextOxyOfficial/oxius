@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../models/business_network_models.dart';
 import '../widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'download_open_utils.dart';
 import 'gallery_saver.dart';
 
@@ -216,13 +217,6 @@ class BusinessNetworkMediaDownloader {
 
   static void _showError(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 4),
-      ),
-    );
+    AdsyToast.error(context, message);
   }
 }

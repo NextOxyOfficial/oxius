@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import 'order_chat_screen.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class OrdersReceivedTab extends StatefulWidget {
   const OrdersReceivedTab({super.key});
@@ -86,9 +87,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
     if (success) {
       _loadOrders();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Order ${action.replaceAll('_', ' ')}')),
-        );
+        AdsyToast.info(context, 'Order ${action.replaceAll('_', ' ')}');
       }
     }
   }
@@ -216,18 +215,12 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                         child: ElevatedButton(
                           onPressed: () {
                             if (selectedReason == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Please select a reason')),
-                              );
+                              AdsyToast.warning(context, 'Please select a reason');
                               return;
                             }
                             if (descriptionController.text.trim().length < 20) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Description must be at least 20 characters')),
-                              );
+                              AdsyToast.info(context,
+                                  'Description must be at least 20 characters');
                               return;
                             }
                             Navigator.pop(context, true);
@@ -263,21 +256,12 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
 
       if (mounted) {
         if (response['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content:
-                  Text(response['message'] ?? 'Dispute raised successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AdsyToast.success(
+              context, response['message'] ?? 'Dispute raised successfully');
           _loadOrders();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response['error'] ?? 'Failed to raise dispute'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          AdsyToast.error(
+              context, response['error'] ?? 'Failed to raise dispute');
         }
       }
     }

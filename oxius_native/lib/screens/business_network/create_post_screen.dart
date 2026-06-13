@@ -13,6 +13,7 @@ import '../../utils/network_error_handler.dart';
 import '../../utils/api_error.dart';
 import '../../widgets/api_error_ui.dart';
 import '../../widgets/link_preview_card.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -87,12 +88,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       // Check if we've reached the limit
       if (_selectedImages.length >= 12) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Maximum 12 photos allowed'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          AdsyToast.warning(context, 'Maximum 12 photos allowed');
         }
         return;
       }
@@ -106,12 +102,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
         // Show warning if some images were skipped
         if (images.length > remainingSlots && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Only $remainingSlots photos added (12 max)'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          AdsyToast.warning(
+              context, 'Only $remainingSlots photos added (12 max)');
         }
 
         setState(() {
@@ -150,13 +142,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content:
-                  Text('${imagesToAdd.length} images compressed successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AdsyToast.success(
+              context, '${imagesToAdd.length} images compressed successfully');
         }
       }
     } catch (e) {
@@ -165,12 +152,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error selecting images: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
       }
     }
   }
@@ -185,12 +167,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     // Check video limit
     if (_selectedVideos.length >= _maxVideos) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Maximum $_maxVideos videos allowed per post'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        AdsyToast.warning(
+            context, 'Maximum $_maxVideos videos allowed per post');
       }
       return;
     }
@@ -217,13 +195,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
         if (duration > const Duration(seconds: _maxVideoDurationSeconds)) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content:
-                    Text('Video is too long. Maximum length is 2 minutes.'),
-                backgroundColor: Colors.orange,
-              ),
-            );
+            AdsyToast.warning(
+                context, 'Video is too long. Maximum length is 2 minutes.');
           }
           setState(() {
             _isCompressing = false;
@@ -245,12 +218,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Video added'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AdsyToast.success(context, 'Video added');
       }
     } catch (e) {
       setState(() {
@@ -259,12 +227,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error selecting video: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'ভিডিও বাছাই করা যায়নি');
       }
     }
   }
@@ -412,13 +375,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final hasTags = _hashtags.isNotEmpty;
 
     if (!hasTitle && !hasContent && !hasImages && !hasVideos && !hasTags) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Please add at least a title, content, image, video, or hashtag'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      AdsyToast.warning(context,
+          'Please add at least a title, content, image, video, or hashtag');
       return;
     }
 
@@ -449,19 +407,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (mounted) {
         if (post != null) {
           Navigator.pop(context, post);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Post created successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AdsyToast.success(context, 'Post created successfully!');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to create post'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          AdsyToast.error(context, 'Failed to create post');
         }
       }
     } catch (e) {

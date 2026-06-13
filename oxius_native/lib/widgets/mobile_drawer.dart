@@ -5,6 +5,7 @@ import '../services/translation_service.dart';
 import '../screens/settings_screen.dart';
 import 'ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MobileDrawer extends StatefulWidget {
   const MobileDrawer({super.key});
@@ -42,21 +43,10 @@ class _MobileDrawerState extends State<MobileDrawer> {
       setState(() {});
 
       final languageInfo = _translationService.getLanguageInfo(languageCode);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Language changed to ${languageInfo?['native_name'] ?? languageCode}'),
-          backgroundColor: const Color(0xFF10B981),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      AdsyToast.success(context,
+          'Language changed to ${languageInfo?['native_name'] ?? languageCode}');
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to change language'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'Failed to change language');
     }
   }
 
@@ -65,15 +55,11 @@ class _MobileDrawerState extends State<MobileDrawer> {
     try {
       final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!ok && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Facebook পেজ খোলা যায়নি')),
-        );
+        AdsyToast.error(context, 'Facebook পেজ খোলা যায়নি');
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Facebook পেজ খোলা যায়নি')),
-        );
+        AdsyToast.error(context, 'Facebook পেজ খোলা যায়নি');
       }
     }
   }

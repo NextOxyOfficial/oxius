@@ -16,6 +16,7 @@ import '../screens/news_screen.dart';
 import '../screens/news_detail_screen.dart';
 import 'ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -792,12 +793,7 @@ class _HeroBannerState extends State<HeroBanner> {
       Navigator.pushNamed(context, route);
     } catch (e) {
       debugPrint('Unable to open banner route "$route": $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('This banner destination is not available yet.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'This banner destination is not available yet.');
     }
   }
 

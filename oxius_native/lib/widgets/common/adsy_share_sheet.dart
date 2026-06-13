@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../config/app_config.dart';
 import '../../utils/url_launcher_utils.dart';
+import 'adsy_toast.dart';
 
 class AdsyShareData {
   final String title;
@@ -120,12 +121,7 @@ class AdsyShareSheet {
     required AdsyShareData data,
   }) async {
     if (data.cleanUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Share link is not available.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Share link is not available.');
       return;
     }
 
@@ -146,12 +142,7 @@ class AdsyShareSheet {
     } catch (_) {
       await Clipboard.setData(ClipboardData(text: data.cleanUrl));
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Share failed. Link copied instead.'),
-            backgroundColor: Color(0xFF10B981),
-          ),
-        );
+        AdsyToast.success(context, 'Share failed. Link copied instead.');
       }
     }
   }
@@ -175,13 +166,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     await Clipboard.setData(ClipboardData(text: data.cleanUrl));
     if (!mounted) return;
     setState(() => _copied = true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Link copied to clipboard'),
-        backgroundColor: Color(0xFF10B981),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    AdsyToast.success(context, 'Link copied to clipboard');
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _copied = false);
     });
@@ -196,12 +181,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     Navigator.pop(context);
     final ok = await UrlLauncherUtils.launchExternalUrl(url);
     if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not open share app.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Could not open share app.');
     }
   }
 

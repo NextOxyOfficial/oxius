@@ -8,6 +8,7 @@ import '../../utils/network_error_handler.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import '../../widgets/mobile_sticky_nav.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MobileRechargeScreen extends StatefulWidget {
   const MobileRechargeScreen({super.key});
@@ -1285,12 +1286,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     // Validate phone number
     final phoneRegex = RegExp(r'^(?:\+?88)?01[3-9]\d{8}$');
     if (!phoneRegex.hasMatch(_phoneController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid Bangladesh mobile number'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.warning(context, 'Please enter a valid Bangladesh mobile number');
       return;
     }
 
@@ -1317,30 +1313,15 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         Navigator.pop(context);
 
         if (result['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['message'] ?? 'Recharge successful!'),
-              backgroundColor: const Color(0xFF10B981),
-            ),
-          );
+          AdsyToast.success(context, result['message'] ?? 'Recharge successful!');
           _phoneController.clear();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['message'] ?? 'Recharge failed'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          AdsyToast.error(context, result['message'] ?? 'Recharge failed');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Recharge failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'রিচার্জ ব্যর্থ হয়েছে');
       }
     } finally {
       if (mounted) {

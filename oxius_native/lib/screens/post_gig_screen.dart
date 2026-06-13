@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/widgets/api_error_ui.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
@@ -87,12 +88,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingData = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load data: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'ডেটা লোড করা যায়নি');
       }
     }
   }
@@ -226,25 +222,15 @@ class _PostGigScreenState extends State<PostGigScreen> {
     }
 
     if (!_validateForm()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all required fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.warning(context, 'সব ঘর ঠিকভাবে পূরণ করুন');
       return;
     }
 
     // Validate action link if provided
     if (_actionLinkController.text.trim().isNotEmpty &&
         !_isValidUrl(_actionLinkController.text.trim())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Invalid URL format. Please enter a valid URL (e.g., https://example.com)'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.warning(
+          context, 'সঠিক লিংক দিন (যেমন https://example.com)');
       return;
     }
 
@@ -289,12 +275,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
 
       if (mounted) {
         if (result['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('MicroGig Added Successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          AdsyToast.success(context, 'গিগ সফলভাবে যোগ হয়েছে!');
           Navigator.pop(context, true); // Return true to indicate success
         } else {
           final msg = (result['error'] ?? 'Failed to post gig').toString();
@@ -315,12 +296,9 @@ class _PostGigScreenState extends State<PostGigScreen> {
         setState(() {
           _showError = e.toString();
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error posting gig: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // Surface the real backend reason (KYC, balance, etc.); falls back to a
+        // clean generic message for purely technical errors.
+        ApiErrorUI.fromError(context, e);
       }
     } finally {
       if (mounted) {

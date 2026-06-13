@@ -11,6 +11,7 @@ import '../../widgets/skeleton_loader.dart';
 import '../../widgets/linkify_text.dart';
 import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MindForceDetailScreen extends StatefulWidget {
   final String problemId;
@@ -77,9 +78,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
 
   Future<void> _pickImage() async {
     if (_commentImages.length >= 3) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 3 images allowed')),
-      );
+      AdsyToast.info(context, 'Maximum 3 images allowed');
       return;
     }
 
@@ -151,22 +150,12 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           }
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Advice posted successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AdsyToast.success(context, 'Advice posted successfully!');
       }
     } catch (e) {
       debugPrint('Error submitting comment: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to post advice'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(context, 'Failed to post advice');
       }
     } finally {
       if (mounted) {
@@ -204,12 +193,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         setState(() {
           _problem = _problem!.copyWith(status: 'solved');
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Problem marked as solved!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AdsyToast.success(context, 'Problem marked as solved!');
       }
     }
   }
@@ -219,12 +203,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     if (success && mounted) {
       await _loadProblemDetails();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Comment marked as solution!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AdsyToast.success(context, 'Comment marked as solution!');
     }
   }
 
@@ -334,17 +313,11 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
       if (updated != null) {
         await _loadProblemDetails();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Comment updated')),
-          );
+          AdsyToast.success(context, 'Comment updated');
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Failed to update comment'),
-                backgroundColor: Colors.red),
-          );
+          AdsyToast.error(context, 'Failed to update comment');
         }
       }
     } finally {
@@ -381,17 +354,11 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     if (success) {
       await _loadProblemDetails();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Comment deleted')),
-        );
+        AdsyToast.info(context, 'Comment deleted');
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Failed to delete comment'),
-              backgroundColor: Colors.red),
-        );
+        AdsyToast.error(context, 'Failed to delete comment');
       }
     }
   }

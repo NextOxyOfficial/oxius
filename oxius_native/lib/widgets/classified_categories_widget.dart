@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
 import '../screens/classified_category_list_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 /// Widget to display classified categories in a grid
 /// Can be added to the home screen or any other screen
@@ -79,10 +80,7 @@ class _ClassifiedCategoriesWidgetState
                 TextButton(
                   onPressed: () {
                     // Navigate to all categories screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('View All Categories - Coming Soon')),
-                    );
+                    AdsyToast.info(context, 'View All Categories - Coming Soon');
                   },
                   child: const Text('View All'),
                 ),

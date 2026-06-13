@@ -27,6 +27,7 @@ import 'profile_options.dart';
 import 'post_media_viewer_screen.dart';
 import 'shorts_player_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -366,22 +367,14 @@ class _ProfileScreenState extends State<ProfileScreen>
           }).toList();
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isFollowing
+        AdsyToast.info(
+            context,
+            _isFollowing
                 ? 'Following ${_userData?['name']}'
-                : 'Unfollowed ${_userData?['name']}'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+                : 'Unfollowed ${_userData?['name']}');
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text('Failed to ${wasFollowing ? 'unfollow' : 'follow'} user'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AdsyToast.error(
+            context, 'Failed to ${wasFollowing ? 'unfollow' : 'follow'} user');
       }
     } catch (e) {
       if (mounted) {
@@ -720,26 +713,14 @@ class _ProfileScreenState extends State<ProfileScreen>
             _profileImageRefreshTick = DateTime.now().millisecondsSinceEpoch;
           });
           // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Profile picture updated successfully!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          AdsyToast.success(context, 'Profile picture updated successfully!');
 
           // Reload profile data to show new image
           _loadProfileData();
         } else {
           // Show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content:
-                  Text('Failed to upload profile picture. Please try again.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 3),
-            ),
-          );
+          AdsyToast.error(
+              context, 'Failed to upload profile picture. Please try again.');
         }
       }
     } catch (e) {

@@ -4,6 +4,7 @@ import '../../models/gold_sponsor_models.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class GoldSponsorsScreen extends StatefulWidget {
   const GoldSponsorsScreen({super.key});
@@ -54,13 +55,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
 
   void _showMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF92400E),
-      ),
-    );
+    AdsyToast.warning(context, message);
   }
 
   String _descriptionFor(GoldSponsor sponsor) {

@@ -156,7 +156,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('Error: ${e.toString()}'),
+                  child: Text('কিছু একটা সমস্যা হয়েছে'),
                 ),
               ],
             ),

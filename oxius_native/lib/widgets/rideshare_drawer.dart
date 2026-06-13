@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/translation_service.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 /// Shared sidebar drawer for all Rideshare screens.
 ///
@@ -437,17 +438,7 @@ class RideshareDrawer extends StatelessWidget {
                   onPressed: () {
                     if (controller.text.trim().isEmpty) return;
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('আপনার রিপোর্ট পাঠানো হয়েছে।',
-                            style: GoogleFonts.inter(fontSize: 13)),
-                        backgroundColor: const Color(0xFF10B981),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        margin: const EdgeInsets.all(12),
-                      ),
-                    );
+                    AdsyToast.success(context, 'আপনার রিপোর্ট পাঠানো হয়েছে।');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6366F1),

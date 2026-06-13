@@ -12,6 +12,7 @@ import 'hot_deals_section.dart';
 import 'hot_arrivals_section.dart';
 import 'mobile_banner.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class EshopSection extends StatefulWidget {
   const EshopSection({super.key});
@@ -70,13 +71,7 @@ class _EshopSectionState extends State<EshopSection> {
         },
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: Unable to proceed to checkout. $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
     }
   }
 

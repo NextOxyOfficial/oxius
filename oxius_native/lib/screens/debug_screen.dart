@@ -6,6 +6,7 @@ import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 /// Debug screen showing app configuration and system info
 /// Only visible in debug mode
@@ -61,9 +62,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Copied to clipboard')),
-    );
+    AdsyToast.success(context, 'Copied to clipboard');
   }
 
   @override
@@ -183,9 +182,7 @@ class _DebugScreenState extends State<DebugScreen> {
                     _userToken = null;
                   });
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logged out')),
-                    );
+                    AdsyToast.info(context, 'Logged out');
                   }
                 },
                 icon: const Icon(Icons.logout),
@@ -229,10 +226,7 @@ class _DebugScreenState extends State<DebugScreen> {
                 onTap: () {
                   // In debug mode, this will trigger hot reload
                   if (kDebugMode) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Press R in console for hot reload')),
-                    );
+                    AdsyToast.info(context, 'Press R in console for hot reload');
                   }
                 },
               ),
@@ -242,9 +236,7 @@ class _DebugScreenState extends State<DebugScreen> {
                 subtitle: const Text('Print configuration to console'),
                 onTap: () {
                   AppConfig.printConfig();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Config printed to console')),
-                  );
+                  AdsyToast.info(context, 'Config printed to console');
                 },
               ),
             ],

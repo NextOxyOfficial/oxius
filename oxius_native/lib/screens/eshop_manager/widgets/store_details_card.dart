@@ -5,6 +5,7 @@ import '../../../services/eshop_manager_service.dart';
 import '../../../widgets/ios_web_redirect_screen.dart';
 import 'buy_slots_bottom_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class StoreDetailsCard extends StatefulWidget {
   final StoreDetails storeDetails;
@@ -109,15 +110,11 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor:
-            isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+    if (isError) {
+      AdsyToast.error(context, message);
+    } else {
+      AdsyToast.success(context, message);
+    }
   }
 
   String _getLastOrderDate() {

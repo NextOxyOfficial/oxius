@@ -18,6 +18,7 @@ import '../verification_screen.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
   const ProfileOptionsScreen({super.key});
@@ -1086,12 +1087,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
 
       if (firstPost == null || firstMedia == null) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No shorts yet'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        AdsyToast.warning(context, 'No shorts yet');
         return;
       }
 
@@ -1110,12 +1106,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         Navigator.pop(context);
       }
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to open shorts: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, 'শর্টস খোলা যায়নি');
     }
   }
 

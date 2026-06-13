@@ -16,6 +16,7 @@ import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'user_posts_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -83,12 +84,7 @@ class _ClassifiedPostDetailsScreenState
     }
 
     if (_post?.user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Seller information not available'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Seller information not available');
       return;
     }
 
@@ -98,12 +94,7 @@ class _ClassifiedPostDetailsScreenState
 
     if (_post?.user?.id == null) {
       debugPrint('🔴 Seller information not available');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Seller information not available'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      AdsyToast.error(context, 'Seller information not available');
       return;
     }
 
@@ -160,12 +151,7 @@ class _ClassifiedPostDetailsScreenState
           _showLoginRequiredDialog();
         }
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to open chat. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AdsyToast.error(context, 'Failed to open chat. Please try again.');
       }
     }
   }
@@ -265,9 +251,7 @@ class _ClassifiedPostDetailsScreenState
     } else if (user.whatsappLink != null) {
       launchUrl(Uri.parse(user.whatsappLink!));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contact information not available')),
-      );
+      AdsyToast.info(context, 'Contact information not available');
     }
   }
 

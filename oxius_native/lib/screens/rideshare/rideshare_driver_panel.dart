@@ -20,6 +20,7 @@ import '../adsy_connect_chat_interface.dart';
 import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 // Design tokens
 const _indigo = Color(0xFF6366F1);
@@ -1901,14 +1902,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   void _showError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(_localizeDriverMessage(_resolveDriverErrorMessage(msg)),
-          style: GoogleFonts.inter(fontSize: 13)),
-      backgroundColor: Colors.red.shade600,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.all(12),
-    ));
+    AdsyToast.error(
+        context, _localizeDriverMessage(_resolveDriverErrorMessage(msg)));
   }
 
   String _resolveDriverErrorMessage(String message) {
@@ -1946,14 +1941,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   void _showSuccess(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(_localizeDriverMessage(msg),
-          style: GoogleFonts.inter(fontSize: 13)),
-      backgroundColor: _emerald,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.all(12),
-    ));
+    AdsyToast.success(context, _localizeDriverMessage(msg));
   }
 
   String _localizeDriverMessage(String message) {

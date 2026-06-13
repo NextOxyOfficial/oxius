@@ -13,6 +13,7 @@ import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import '../widgets/geo_selector_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -360,14 +361,11 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       }
 
       if (response != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isEditMode
+        AdsyToast.success(
+            context,
+            _isEditMode
                 ? 'Post updated successfully!'
-                : 'Post created successfully!'),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
+                : 'Post created successfully!');
         Navigator.of(context).pop(true);
       } else {
         _showError('Failed to ${_isEditMode ? 'update' : 'create'} post');
@@ -385,12 +383,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
   void _showError(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AdsyToast.error(context, message);
     }
   }
 

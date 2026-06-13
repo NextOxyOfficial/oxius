@@ -5,6 +5,7 @@ import '../services/translation_service.dart';
 import '../screens/eshop_manager_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/news_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class MobileStickyNav extends StatefulWidget {
   final String? currentRoute;
@@ -400,13 +401,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
     } else if (destination == 'Wallet') {
       Navigator.pushNamed(context, '/deposit-withdraw');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Navigate to $destination'),
-          backgroundColor: const Color(0xFF10B981),
-          duration: const Duration(seconds: 1),
-        ),
-      );
+      AdsyToast.success(context, 'Navigate to $destination');
     }
   }
 }

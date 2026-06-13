@@ -7,6 +7,7 @@ import '../utils/network_error_handler.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/terms_and_conditions_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/profile_completion_sheet.dart';
 import '../screens/suspended_account_screen.dart';
 import '../widgets/social_login_buttons.dart';
@@ -81,13 +82,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login Successful!'),
-              backgroundColor: _primaryColor,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          AdsyToast.success(context, 'Login Successful!');
 
           await Future.delayed(const Duration(milliseconds: 300));
 
@@ -181,13 +176,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login Successful!'),
-              backgroundColor: _primaryColor,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          AdsyToast.success(context, 'Login Successful!');
 
           await Future.delayed(const Duration(milliseconds: 300));
           if (mounted) {
