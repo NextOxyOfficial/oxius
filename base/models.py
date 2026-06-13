@@ -1857,10 +1857,12 @@ class EmailSuppression(models.Model):
     - unsubscribed: user clicked the unsubscribe link.
     - bounced / invalid / complaint: delivery failed or the address is bad, so we
       stop sending to it forever.
-    EVERY outgoing email (transactional, admin, engagement) now skips addresses on
-    this list — enforced in base.email_service._send_email via is_email_suppressed.
-    Move an address back to "valid" by deleting its row here (or from the Valid
-    Emails admin); staff can also add a row manually to block an address.
+    Only MARKETING/engagement email skips this list (send_engagement_email + the
+    CEO backfill check is_email_suppressed before sending). Transactional/security
+    mail (OTP, password reset, KYC, withdraw…) always tries, since the user may
+    have fixed a previously-bad address. Move an address back to "valid" by
+    deleting its row here (or from the Valid Emails admin); staff can also add a
+    row manually to block an address from marketing.
     """
     REASONS = [
         ("unsubscribed", "Unsubscribed (user choice)"),
