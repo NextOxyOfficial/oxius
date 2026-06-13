@@ -280,11 +280,39 @@ function logout() {
   if (process.client) localStorage.removeItem("alliance_token");
 }
 
+// Turn stored HTML body into plain text for the editor (so staff write plainly,
+// no <p> tags). Paragraphs -> blank line, <br> -> newline, other tags stripped.
+function htmlToPlain(html) {
+  if (!html) return "";
+  if (!/<[a-z][\s\S]*>/i.test(html)) return html; // already plain
+  let t = html
+    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+    .replace(/<p[^>]*>/gi, "")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/?(strong|b|em|i|span|div)[^>]*>/gi, "")
+    .replace(/<[^>]+>/g, "");
+  t = t
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/gi, '"');
+  return t.replace(/\n{3,}/g, "\n\n").trim();
+}
+
 async function loadAll() {
   loading.value = true;
   try {
     const [list, st] = await Promise.all([api("/drafts/?page_size=300"), api("/drafts/stats/")]);
-    drafts.value = Array.isArray(list) ? list : list.results || [];
+    const rows = Array.isArray(list) ? list : list.results || [];
+    // Show the body as plain text for editing (no <p> tags). The backend turns
+    // plain text back into HTML paragraphs on preview/send (see _body_to_html).
+    rows.forEach((d) => {
+      d.body_html = htmlToPlain(d.body_html);
+    });
+    drafts.value = rows;
     stats.value = st || {};
     selected.value = new Set();
     await renderAllPreviews(); // show every email's full design by default

@@ -104,9 +104,9 @@ SIG_LINK = "#4f46e5"  # indigo
 def _founder_signature_html():
     """Founder photo + name/title/contacts + social icons (FB, LinkedIn). The
     photo only renders once FOUNDER_PHOTO is hosted on a public URL."""
-    photo = (f'<td style="width:130px;vertical-align:top;padding-right:18px;">'
-             f'<img src="{FOUNDER_PHOTO}" width="112" height="112" alt="Alimul Islam" '
-             f'style="width:112px;height:112px;border-radius:8px;display:block;border:0;"></td>') if FOUNDER_PHOTO else ""
+    photo = (f'<td style="width:138px;vertical-align:top;padding-right:10px;">'
+             f'<img src="{FOUNDER_PHOTO}" width="128" height="128" alt="Alimul Islam" '
+             f'style="width:128px;height:128px;border-radius:10px;display:block;border:0;"></td>') if FOUNDER_PHOTO else ""
 
     def crow(icon, val):
         return (f'<tr><td style="padding:5px 12px 5px 0;vertical-align:middle;width:18px;">'
