@@ -113,7 +113,10 @@ class Command(BaseCommand):
 
             for num in uniq:
                 try:
-                    typ, msgdata = box.fetch(num, "(RFC822)")
+                    # BODY.PEEK[] reads the message WITHOUT setting the \Seen flag,
+                    # so a --dry-run never consumes a bounce. The real run marks
+                    # \Seen explicitly below, only after it has been processed.
+                    typ, msgdata = box.fetch(num, "(BODY.PEEK[])")
                     if typ != "OK" or not msgdata or not msgdata[0]:
                         continue
                     msg = email.message_from_bytes(msgdata[0][1])
