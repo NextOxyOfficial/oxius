@@ -3766,8 +3766,14 @@ class OrderWithItemsCreate(generics.CreateAPIView):
         order_data = request.data.get("order", {})
         items_data = request.data.get("items", [])
 
+        if not items_data:
+            return Response(
+                {"detail": "At least one order item is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # Set user if not provided in the request
-        if "user" not in order_data:
+        if "user" not in order_data and request.user.is_authenticated:
             order_data["user"] = request.user.id
 
         # Validate payment method
@@ -3777,6 +3783,11 @@ class OrderWithItemsCreate(generics.CreateAPIView):
         # If using account balance, check if user has sufficient funds
         buyer = request.user
         if payment_method == "balance":
+            if not buyer.is_authenticated:
+                return Response(
+                    {"detail": "Login is required for account balance payment."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             if buyer.balance < total_amount:
                 return Response(
                     {"detail": "Insufficient balance to complete this order."},

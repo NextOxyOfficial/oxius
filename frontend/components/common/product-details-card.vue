@@ -274,7 +274,8 @@
               <button
                 type="button"
                 class="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                @click="quantity++"
+                :disabled="quantity >= currentProduct.quantity"
+                @click="increaseQuantity"
               >
                 <UIcon name="i-heroicons-plus" class="w-4 h-4" />
               </button>
@@ -1817,8 +1818,16 @@ function handleStoreProductsScroll(e) {
 }
 
 const cart = useStoreCart();
+function increaseQuantity() {
+  const available = Number(currentProduct?.quantity || 0);
+  if (!available || quantity.value >= available) return;
+  quantity.value += 1;
+}
+
 function addToCart(product, qty) {
-  cart.addProduct(product, qty);
+  if (!product || Number(product.quantity || 0) <= 0) return;
+  const safeQty = Math.min(Number(qty || 1), Number(product.quantity || 1));
+  cart.addProduct(product, safeQty);
   navigateTo("/checkout/");
 }
 

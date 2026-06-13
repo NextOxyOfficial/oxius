@@ -122,16 +122,23 @@
           </NuxtLink>
           <!-- Full Width Buy Now Button -->
           <button
-            :disabled="loadingStates[product.id]"
+            :disabled="loadingStates[product.id] || Number(product.quantity || 0) <= 0"
             class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gray-700 hover:bg-gray-800 rounded transition-colors duration-200 disabled:opacity-70"
             @click="addToCart(product, quantity)"
           >
             <span
-              v-if="!loadingStates[product.id]"
+              v-if="!loadingStates[product.id] && Number(product.quantity || 0) > 0"
               class="flex items-center gap-2"
             >
               <UIcon name="i-heroicons-shopping-cart" class="size-4" />
               <span class="text-sm font-medium">Buy Now</span>
+            </span>
+            <span
+              v-else-if="Number(product.quantity || 0) <= 0"
+              class="flex items-center gap-2"
+            >
+              <UIcon name="i-heroicons-x-circle" class="size-4" />
+              <span class="text-sm">Out of Stock</span>
             </span>
             <span v-else class="flex items-center gap-2">
               <UIcon
@@ -240,18 +247,16 @@ function calculateDiscount(salePrice, originalPrice) {
 
 // Cart functionality with improved loading handling
 function addToCart(item, qty = 1) {
+  if (!item || Number(item.quantity || 0) <= 0) return;
+
   // Set loading state for this specific product
   loadingStates.value[item.id] = true;
 
   try {
-    // Simulate network delay (remove in production)
-    setTimeout(() => {
-      cart.addProduct(item, qty);
-      navigateTo("/checkout/");
-
-      // Clear loading state if navigation fails
-      loadingStates.value[item.id] = false;
-    }, 800); // Simulate network latency
+    const safeQty = Math.min(Number(qty || 1), Number(item.quantity || 1));
+    cart.addProduct(item, safeQty);
+    navigateTo("/checkout/");
+    loadingStates.value[item.id] = false;
   } catch (error) {
     console.error("Error adding to cart:", error);
     const toast = useToast();

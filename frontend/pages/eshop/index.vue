@@ -361,6 +361,12 @@ const buildCategoryQuery = () => {
   return `&category=${encodeURIComponent(String(selectedCategory.value))}`;
 };
 
+const listFromApi = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+};
+
 // Update URL when category changes
 const updateURL = (categorySlug = null) => {
   const query = { ...route.query };
@@ -643,13 +649,17 @@ function navigateToEshopManager() {
 async function fetchCategories() {
   try {
     const res = await get("/product-categories/");
-    categories.value = res.data;
-    displayedCategories.value = res.data.slice(0, 10); // Display first 10 categories initially
-    hasMoreCategoriesToLoad.value = res.data.length > 10;
+    const categoryList = listFromApi(res?.data);
+    categories.value = categoryList;
+    displayedCategories.value = categoryList.slice(0, 10); // Display first 10 categories initially
+    hasMoreCategoriesToLoad.value = categoryList.length > 10;
     // NOTE: initializeFromURL() is called by the caller AFTER this resolves
     // so the watcher is NOT triggered inside this function.
   } catch (error) {
     console.error("Error fetching categories:", error);
+    categories.value = [];
+    displayedCategories.value = [];
+    hasMoreCategoriesToLoad.value = false;
     toast.add({
       title: "Error loading categories",
       description: "Could not load categories. Please try again later.",
@@ -667,7 +677,7 @@ async function fetchDiverseProducts() {
       const res = await get(
         `/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=-created_at`
       );
-      return res.data?.results || [];
+      return listFromApi(res?.data);
     }
 
     const diverseProducts = [];
@@ -691,7 +701,7 @@ async function fetchDiverseProducts() {
           const res = await get(
             `/all-products/?category=${category.id}&page_size=${productsPerCategory}&ordering=-created_at`
           );
-          return res.data?.results || [];
+          return listFromApi(res?.data);
         } catch (error) {
           console.warn(
             `Error fetching products for category ${category.name}:`,
@@ -717,7 +727,7 @@ async function fetchDiverseProducts() {
         const res = await get(
           `/all-products/?page_size=${additionalCount * 2}&ordering=-created_at`
         );
-        const additionalProducts = (res.data?.results || []).filter(
+        const additionalProducts = listFromApi(res?.data).filter(
           (product) =>
             !diverseProducts.some((existing) => existing.id === product.id)
         );
@@ -734,7 +744,7 @@ async function fetchDiverseProducts() {
         const res = await get(
           `/all-products/?page_size=${stillNeeded * 3}&ordering=random`
         );
-        const moreProducts = (res.data?.results || []).filter(
+        const moreProducts = listFromApi(res?.data).filter(
           (product) =>
             !diverseProducts.some((existing) => existing.id === product.id)
         );
@@ -756,7 +766,7 @@ async function fetchDiverseProducts() {
       const res = await get(
         `/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=-created_at`
       );
-      return res.data?.results || [];
+      return listFromApi(res?.data);
     } catch (fallbackError) {
       return [];
     }
@@ -811,7 +821,7 @@ async function fetchProducts() {
       return;
     }
 
-    let productsToDisplay = res.data.results || [];
+    let productsToDisplay = listFromApi(res.data);
 
     // Only use diverse products for the very first page with no filters
     if (
@@ -828,7 +838,7 @@ async function fetchProducts() {
           productsToDisplay = diverseProducts;
           // Update response data structure to maintain consistency
           products.value = {
-            ...res.data,
+            ...(res.data || {}),
             results: diverseProducts,
             count: res.data.count || diverseProducts.length,
           };
@@ -916,7 +926,7 @@ async function loadMoreProducts() {
     // More robust response validation
     if (!res || !res.data) return;
 
-    const newProducts = res.data.results || [];
+    const newProducts = listFromApi(res.data);
     const responseCount = res.data.count || 0;
 
     // Update total products count if available

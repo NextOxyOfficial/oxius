@@ -149,7 +149,9 @@
             <!-- Primary CTA Button -->
             <button
               @click="addToCart(currentProduct, 1)"
+              :disabled="currentProduct.quantity <= 0"
               class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-lg font-semibold rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 focus:ring-4 focus:ring-primary-500/50 flex items-center justify-center gap-3 group"
+              :class="{ 'opacity-75 cursor-not-allowed': currentProduct.quantity <= 0 }"
             >
               <UIcon name="i-heroicons-shopping-cart" class="w-6 h-6" />
               Buy Now
@@ -239,7 +241,9 @@
       <div class="text-center mt-6">
         <button
           @click="addToCart(currentProduct, 1)"
+          :disabled="currentProduct.quantity <= 0"
           class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-sm transition-all duration-300"
+          :class="{ 'opacity-75 cursor-not-allowed': currentProduct.quantity <= 0 }"
         >
           {{ currentProduct.benefits_cta }}
         </button>
@@ -823,7 +827,9 @@
 
         <button
           @click="addToCart(currentProduct, 1)"
+          :disabled="currentProduct.quantity <= 0"
           class="px-10 py-4 bg-white hover:bg-slate-50 text-primary-700 text-xl font-semibold rounded-xl shadow-sm transition-all duration-300 animate-pulse hover:animate-none transform hover:scale-105"
+          :class="{ 'opacity-75 cursor-not-allowed': currentProduct.quantity <= 0 }"
         >
           {{ currentProduct.cta_button_text }}
           <span class="block text-sm font-normal mt-1">{{
@@ -1091,7 +1097,9 @@ onMounted(async () => {
 });
 
 function addToCart(product, quantity) {
-  cart.addProduct(product, quantity);
+  if (!product || Number(product.quantity || 0) <= 0) return;
+  const safeQty = Math.min(Number(quantity || 1), Number(product.quantity || 1));
+  cart.addProduct(product, safeQty);
   navigateTo("/checkout/");
 }
 

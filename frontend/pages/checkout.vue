@@ -6,8 +6,8 @@
     >
       <p>You have no products in the cart. Start adding some.</p>
       <UButton
-        to="/"
-        label="Back to Home"
+        to="/eshop"
+        label="Back to eShop"
         variant="link"
         icon="i-heroicons-arrow-long-left-20-solid"
         :trailing="false"
@@ -654,11 +654,7 @@
                   <button
                     type="button"
                     class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-3 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
-                    @click="
-                      (showInsufficientFundsModal = false)(
-                        navigateTo('/deposit-withdraw')
-                      )
-                    "
+                    @click="goToAddFunds"
                   >
                     Add Funds
                   </button>
@@ -811,6 +807,7 @@ const { toPlainText } = useRichText();
 
 const { user } = useAuth();
 const { post } = useApi();
+const toast = useToast();
 
 // Get cart store
 const cart = useStoreCart();
@@ -821,6 +818,12 @@ const products = ref(cart.products || []);
 const accountBalance = ref(500);
 const orderNumber = ref(Math.floor(100000 + Math.random() * 900000));
 
+const productPrice = (product) => {
+  const salePrice = Number(product?.sale_price || 0);
+  const regularPrice = Number(product?.regular_price || 0);
+  return salePrice > 0 ? salePrice : regularPrice;
+};
+
 // Form state
 const form = reactive({
   name: "",
@@ -828,7 +831,7 @@ const form = reactive({
   email: "",
   address: "",
   deliveryOption: "inside",
-  paymentMethod: "account",
+  paymentMethod: user.value?.user ? "account" : "cod",
 });
 
 // Error state
@@ -847,20 +850,7 @@ const isScrolled = ref(false);
 // Fix subtotal calculation to properly handle string values
 const subtotal = computed(() => {
   return products.value.reduce((total, product) => {
-    // Convert sale_price to number in case it's a string
-    const price =
-      typeof product.regular_price && !product.sale_price
-        ? product.regular_price
-        : product.sale_price === "string"
-        ? parseFloat(
-            product.regular_price && !product.sale_price
-              ? product.regular_price
-              : product.sale_price
-          )
-        : product.regular_price && !product.sale_price
-        ? product.regular_price
-        : product.sale_price;
-    return total + price * product.count;
+    return total + productPrice(product) * Number(product.count || 0);
   }, 0);
 });
 
@@ -1018,11 +1008,7 @@ const processCheckout = async () => {
       items: products.value.map((product) => ({
         product: product.id,
         quantity: product.count,
-        price: parseFloat(
-          product.regular_price && !product.sale_price
-            ? product.regular_price
-            : product.sale_price
-        ),
+        price: productPrice(product),
       })),
     };
 
@@ -1058,6 +1044,11 @@ const switchToCOD = () => {
   showInsufficientFundsModal.value = false;
 };
 
+const goToAddFunds = () => {
+  showInsufficientFundsModal.value = false;
+  navigateTo("/deposit-withdraw");
+};
+
 const resetForm = () => {
   // Reset form
   form.name = "";
@@ -1065,7 +1056,7 @@ const resetForm = () => {
   form.phone = "";
   form.address = "";
   form.deliveryOption = "inside";
-  form.paymentMethod = "account";
+  form.paymentMethod = user.value?.user ? "account" : "cod";
 
   // Reset products
   products.value.forEach((product) => {
@@ -1081,8 +1072,8 @@ const resetForm = () => {
   // Clear cart
   cart.clearCart();
 
-  // Navigate to home
-  navigateTo("/");
+  // Navigate back to eShop after successful order
+  navigateTo("/eshop");
 };
 
 // Handle scroll effect for sticky summary
