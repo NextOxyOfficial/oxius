@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 
-import 'package:applovin_max/applovin_max.dart';
+// ── AppLovin MAX temporarily DISABLED (account approval pending) ──
+// import 'package:applovin_max/applovin_max.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:http/http.dart' as http;
 
@@ -47,10 +48,15 @@ class AdsService {
         debugPrint('[ads] no sdk key / placements — staying off');
         return;
       }
-      final conf = await AppLovinMAX.initialize(sdkKey);
-      _sdkReady = conf != null;
-      debugPrint('[ads] MAX initialized=$_sdkReady '
-          'placements=${_placements.keys.toList()}');
+      // ── AppLovin MAX temporarily DISABLED (account approval pending) ──
+      // When the AppLovin account is approved, re-add `applovin_max` to
+      // pubspec, restore the import above, and replace the two lines below with:
+      //   final conf = await AppLovinMAX.initialize(sdkKey);
+      //   _sdkReady = conf != null;
+      _sdkReady = false;
+      debugPrint('[ads] MAX disabled — account approval pending '
+          '(sdkKey present=${sdkKey.isNotEmpty}, '
+          'placements=${_placements.keys.toList()})');
     } catch (e) {
       debugPrint('[ads] init skipped: $e');
     }

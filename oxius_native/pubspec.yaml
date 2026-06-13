@@ -30,7 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  applovin_max: ^4.0.0
+  # AppLovin MAX temporarily DISABLED (account approval pending) — re-enable
+  # this line + the code in ads_service.dart / feed_native_ad_card.dart when
+  # the AppLovin account is approved.
+  # applovin_max: ^4.0.0
   flutter_mentions: ^2.0.0
 
   # The following adds the Cupertino Icons font to your application.
