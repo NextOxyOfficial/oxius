@@ -1838,25 +1838,40 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 print(f"Login email notification error (non-blocking): {email_err}")
 
             return Response(validated, status=status.HTTP_200_OK)
-        except ValidationError:
-            # Return a clean, single human-readable string — never the raw
-            # serializer.errors dict repr (which leaked as
-            # "{'non_field_errors': [ErrorDetail(string=..., code=...)]}").
-            errors = serializer.errors.get("non_field_errors") or [
-                "Invalid email or password."
-            ]
-            error_message = str(errors[0]).strip() or "Invalid email or password."
-            return Response(
-                {
-                    "error": error_message,
-                    "message": error_message,
-                    "detail": error_message,
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
         except Exception as exc:
-            # Never leak the raw exception text to the client.
-            print(f"Login error: {exc}")
+            # The serializer raises a DRF ValidationError ("Invalid email or
+            # password.", "account is inactive", ...). A bare `except
+            # ValidationError` here did NOT catch it (it fell through to the
+            # generic handler and showed a raw dict / "server error"), so detect
+            # the DRF APIException base class explicitly and surface its clean,
+            # single-line reason. A credential failure must say what's wrong —
+            # never a generic 500.
+            from rest_framework.exceptions import APIException
+
+            detail = getattr(exc, "detail", None)
+            if isinstance(exc, APIException) and detail is not None:
+                if isinstance(detail, dict):
+                    seq = detail.get("non_field_errors")
+                    if seq is None:
+                        _vals = list(detail.values())
+                        seq = _vals[0] if _vals else None
+                    if isinstance(seq, (list, tuple)):
+                        msg = str(seq[0]) if seq else "Invalid email or password."
+                    else:
+                        msg = str(seq) if seq else "Invalid email or password."
+                elif isinstance(detail, (list, tuple)):
+                    msg = str(detail[0]) if detail else "Invalid email or password."
+                else:
+                    msg = str(detail)
+                code = getattr(exc, "status_code", status.HTTP_401_UNAUTHORIZED)
+                if not isinstance(code, int) or code >= 500:
+                    code = status.HTTP_401_UNAUTHORIZED
+                return Response(
+                    {"error": msg, "message": msg, "detail": msg}, status=code
+                )
+
+            # Genuinely unexpected server-side error — never leak the raw text.
+            print(f"Login error: {exc!r}")
             msg = "Login failed due to a server error. Please try again."
             return Response(
                 {"error": msg, "message": msg, "detail": msg},
