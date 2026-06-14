@@ -321,11 +321,17 @@ def get_top_contributors(request):
 @permission_classes([IsAuthenticated])
 def update_user(request, email):
     data = request.data
-    print(data)
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    # Self-only: always act on the authenticated user's own record, never the
+    # account named in the URL. Closes an IDOR (any user could update ANY account
+    # by email) and stops cross-account writes from a stale frontend email. Staff
+    # may still target another account by email for admin use.
+    if request.user.is_staff and email and email != getattr(request.user, "email", None):
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        user = request.user
     # Remove email from data if it's unchanged
     if "email" in data and data["email"] == user.email:
         data.pop("email")
@@ -615,19 +621,34 @@ class PersonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
 
     def get_object(self):
+        # "My profile" endpoint: a user may only retrieve/update/delete their
+        # OWN record. Acting on request.user (not the URL email) closes an IDOR —
+        # any authenticated user could otherwise read/update/delete ANY account
+        # by email — and prevents cross-account data leaks if the frontend ever
+        # sends a stale/wrong email. Staff keep email-based lookup for admin use.
         email = self.kwargs.get("email")
-        try:
-            return User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise NotFound({"error": f"No person found with email: {email}"})
+        user = self.request.user
+        if user.is_staff and email and email != getattr(user, "email", None):
+            try:
+                return User.objects.get(email=email)
+            except User.DoesNotExist:
+                raise NotFound({"error": f"No person found with email: {email}"})
+        return user
 
 
 class PersonImageDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, email):
+        # Self-only: a user may only delete their own image. Staff keep
+        # email-based targeting for admin use.
         try:
-            user = User.objects.get(email=email)
+            if request.user.is_staff and email and email != getattr(
+                request.user, "email", None
+            ):
+                user = User.objects.get(email=email)
+            else:
+                user = request.user
 
             if user.image:
                 user.image.delete(save=False)
