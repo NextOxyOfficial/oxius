@@ -1839,15 +1839,27 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
             return Response(validated, status=status.HTTP_200_OK)
         except ValidationError:
-            error_message = serializer.errors.get(
-                "non_field_errors", ["Invalid credentials"]
-            )[0]
+            # Return a clean, single human-readable string — never the raw
+            # serializer.errors dict repr (which leaked as
+            # "{'non_field_errors': [ErrorDetail(string=..., code=...)]}").
+            errors = serializer.errors.get("non_field_errors") or [
+                "Invalid email or password."
+            ]
+            error_message = str(errors[0]).strip() or "Invalid email or password."
             return Response(
-                {"error": error_message}, status=status.HTTP_401_UNAUTHORIZED
+                {
+                    "error": error_message,
+                    "message": error_message,
+                    "detail": error_message,
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         except Exception as exc:
+            # Never leak the raw exception text to the client.
+            print(f"Login error: {exc}")
+            msg = "Login failed due to a server error. Please try again."
             return Response(
-                {"error": str(exc) or "Login failed due to a server error"},
+                {"error": msg, "message": msg, "detail": msg},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

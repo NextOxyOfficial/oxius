@@ -171,6 +171,9 @@ SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
 
 MIDDLEWARE = [
+    # Outermost: stamp no-store on every authenticated response so no CDN/proxy
+    # can cache one user's token-bearing response and serve it to another.
+    "base.middleware.PrivateCacheMiddleware",
     "base.middleware.BlockConnectMethodMiddleware",  # Block HTTP CONNECT proxy requests
     "base.middleware.AccountSuspendedMiddleware",  # 403 every service API for suspended users
     "django.middleware.security.SecurityMiddleware",

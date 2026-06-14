@@ -61,6 +61,40 @@ class AccountSuspendedMiddleware:
             return None
 
 
+class PrivateCacheMiddleware:
+    """Never let an intermediary (CDN/proxy/browser) cache a per-user response.
+
+    Authenticated responses carry tokens and private data — e.g.
+    ``/auth/validate-token/`` returns fresh access/refresh tokens AND the user
+    object. If a "cache everything" edge rule (Cloudflare/nginx) stored one
+    user's response and replayed it to another, that user would be silently
+    logged in as someone else (the account-switch / data-leak bug). Forcing
+    ``no-store`` + ``Vary`` on any request that carries auth credentials closes
+    that cross-account leak, while leaving truly anonymous public GETs cacheable.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        auth = request.META.get("HTTP_AUTHORIZATION", "")
+        authed = (
+            auth.startswith("Bearer ")
+            or auth.startswith("Token ")
+            or bool(request.COOKIES.get("sessionid"))
+            or bool(request.COOKIES.get("adsyclub-jwt"))
+        )
+        if authed:
+            response["Cache-Control"] = "no-store, no-cache, private, max-age=0"
+            response["Pragma"] = "no-cache"
+            vary = response.get("Vary")
+            response["Vary"] = (
+                f"{vary}, Cookie, Authorization" if vary else "Cookie, Authorization"
+            )
+        return response
+
+
 class BlockConnectMethodMiddleware:
     """
     Block HTTP CONNECT method requests that are not supported by Django dev server.

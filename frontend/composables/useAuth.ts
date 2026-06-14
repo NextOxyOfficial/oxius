@@ -5,9 +5,38 @@ export function useAuth() {
   const notifs = useState<Array<any>>("notifs", () => []);
   const isAuthenticated = computed(() => user.value !== null);
 
-  const readableError = (value: any, fallback = "Invalid email or password.") => {
+  // Friendly Bangla replacements for the few common auth messages the backend
+  // returns in English, so the user never sees a bookish/raw string.
+  const FRIENDLY_BN: Record<string, string> = {
+    "invalid email or password.": "ভুল ইমেইল বা পাসওয়ার্ড।",
+    "invalid email or password": "ভুল ইমেইল বা পাসওয়ার্ড।",
+    "invalid credentials": "ভুল ইমেইল বা পাসওয়ার্ড।",
+    "no active account found with the given credentials":
+      "ভুল ইমেইল বা পাসওয়ার্ড।",
+    "unable to log in with provided credentials.":
+      "ভুল ইমেইল বা পাসওয়ার্ড।",
+  };
+
+  // Turn any backend error value into a clean, human-readable sentence.
+  // Crucially, it NEVER lets a raw DRF/Python dump (e.g.
+  // "{'non_field_errors': [ErrorDetail(string='...', code='invalid')]}")
+  // reach the UI — it extracts the human text or falls back.
+  const cleanErrorString = (raw: string): string => {
+    let out = (raw || "").trim();
+    // Pull the human text out of a DRF "ErrorDetail(string='...', ...)" dump.
+    const detail = out.match(/ErrorDetail\(string=['"]([\s\S]*?)['"]\s*,/);
+    if (detail) out = detail[1].trim();
+    // If it still looks like a raw dict / list / object dump, reject it.
+    if (/^[[{]/.test(out) || /non_field_errors|ErrorDetail|\[object Object\]/.test(out)) {
+      return "";
+    }
+    const bn = FRIENDLY_BN[out.toLowerCase().trim()];
+    return bn || out;
+  };
+
+  const readableError = (value: any, fallback = "ভুল ইমেইল বা পাসওয়ার্ড।") => {
     if (!value) return fallback;
-    if (typeof value === "string") return value;
+    if (typeof value === "string") return cleanErrorString(value) || fallback;
     if (Array.isArray(value)) {
       const message = value.map((item) => readableError(item, "")).find(Boolean);
       return message || fallback;
@@ -19,7 +48,10 @@ export function useAuth() {
         value.error ||
         value.string ||
         value.code;
-      if (direct && typeof direct === "string") return direct;
+      if (direct && typeof direct === "string") {
+        const c = cleanErrorString(direct);
+        if (c) return c;
+      }
       for (const item of Object.values(value)) {
         const message = readableError(item, "");
         if (message) return message;
@@ -280,63 +312,55 @@ export function useAuth() {
       user.value = null;
       return false;    }
     
-    // First attempt with current token
-    let { data, error } = await useFetch<any>(
-      baseURL + "/auth/validate-token/",
-      {
+    // Use $fetch (NOT useFetch) for this token-bearing call: useFetch caches the
+    // response in the shared Nuxt payload keyed by URL, which risks one user's
+    // token/user being reused for another. $fetch + cache:"no-store" keeps it
+    // private and always fresh.
+    const fetchMe = () =>
+      $fetch<any>(baseURL + "/auth/validate-token/", {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${jwt.value}`,
           Accept: "application/json",
         },
-        method: "GET",
-      }
-    );
+        cache: "no-store",
+      });
 
-    // If token validation fails, try to refresh
-    if (error.value) {
+    let data: any = null;
+    try {
+      data = await fetchMe();
+    } catch (_err) {
+      // Token invalid/expired — try a refresh, then retry once.
       const refreshSuccess = await refreshTokens();
-      
       if (refreshSuccess) {
-        // Retry validation with new token
-        const retryResult = await useFetch<any>(
-          baseURL + "/auth/validate-token/",
-          {
-            headers: {
-              Authorization: `Bearer ${jwt.value}`,
-              Accept: "application/json",
-            },
-            method: "GET",
-          }
-        );
-        
-        data = retryResult.data;
-        error = retryResult.error;
+        try {
+          data = await fetchMe();
+        } catch (_retryErr) {
+          data = null;
+        }
       }
     }
 
-    if (error.value) {
+    if (!data) {
       jwt.value = null;
       refreshToken.value = null;
       user.value = null;
       return false;
     }
 
-    if (data.value) {
-      user.value = data.value;
-      jwt.value = data.value.access;
-      
-      // Store refresh token if provided
-      if (data.value.refresh) {
-        refreshToken.value = data.value.refresh;
-      }
-      
-      const username = useCookie("username");
-      if (data.value.user && data.value.user.username) {
-        username.value = data.value.user.username;
-      }
-      return true;
+    user.value = data;
+    jwt.value = data.access;
+
+    // Store refresh token if provided
+    if (data.refresh) {
+      refreshToken.value = data.refresh;
     }
-    return false;
+
+    const username = useCookie("username");
+    if (data.user && data.user.username) {
+      username.value = data.user.username;
+    }
+    return true;
   };
   const login = async (email: string, password: string) => {
     try {
