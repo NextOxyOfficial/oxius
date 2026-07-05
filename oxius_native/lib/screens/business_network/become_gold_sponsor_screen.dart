@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../services/geo_service.dart';
 import '../../models/gold_sponsor_models.dart';
+import '../../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -245,16 +246,48 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     });
 
     try {
-      // Prepare banner data with XFile objects
-      final List<Map<String, dynamic>>? bannerData = _banners.isNotEmpty
-          ? _banners.map((banner) {
-              return {
-                'title': banner.title,
-                'link_url': banner.linkUrl,
-                'file': banner.file, // Pass XFile directly
-              };
-            }).toList()
-          : null;
+      // Compress logo before upload (fallback to original on failure)
+      XFile? logoUpload = _logoFile;
+      if (_logoFile != null) {
+        final compressedLogo = await ImageCompressor.compressToBytes(
+          _logoFile!,
+          targetSize: 80 * 1024,
+        );
+        if (compressedLogo != null) {
+          logoUpload = XFile.fromData(
+            compressedLogo,
+            name: 'logo.jpg',
+            mimeType: 'image/jpeg',
+          );
+        }
+      }
+
+      // Prepare banner data with compressed XFile objects
+      List<Map<String, dynamic>>? bannerData;
+      if (_banners.isNotEmpty) {
+        bannerData = [];
+        for (final banner in _banners) {
+          XFile? bannerFile = banner.file;
+          if (bannerFile != null) {
+            final compressedBanner = await ImageCompressor.compressToBytes(
+              bannerFile,
+              targetSize: 80 * 1024,
+            );
+            if (compressedBanner != null) {
+              bannerFile = XFile.fromData(
+                compressedBanner,
+                name: 'banner.jpg',
+                mimeType: 'image/jpeg',
+              );
+            }
+          }
+          bannerData.add({
+            'title': banner.title,
+            'link_url': banner.linkUrl,
+            'file': bannerFile, // Pass XFile directly
+          });
+        }
+      }
 
       // Submit to backend API
       final result = await GoldSponsorService.submitApplication(
@@ -269,7 +302,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
             ? null
             : _profileUrlController.text.trim(),
         packageId: _selectedPackageId,
-        logoFile: _logoFile, // Pass XFile directly
+        logoFile: logoUpload, // Pass XFile directly
         banners: bannerData,
         locations: _targetAllBangladesh
             ? <Map<String, String>>[]

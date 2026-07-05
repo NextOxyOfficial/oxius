@@ -15,6 +15,7 @@ import '../../services/rideshare_service.dart';
 import '../../services/rideshare_realtime_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
+import '../../utils/image_compressor.dart';
 import '../../utils/network_error_handler.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../business_network/profile_screen.dart';
@@ -1247,15 +1248,25 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       final labels = List<String>.from(_additionalDocumentLabels);
 
       for (final file in files.take(remainingSlots)) {
-        final bytes = await file.readAsBytes();
-        final base64Data = base64Encode(bytes);
-        final ext = file.name.toLowerCase();
-        final mime = ext.endsWith('.png')
-            ? 'png'
-            : ext.endsWith('.webp')
-                ? 'webp'
-                : 'jpeg';
-        docs.add('data:image/$mime;base64,$base64Data');
+        // Compress before encoding — documents use a higher 200KB target so
+        // they stay readable (fallback to original bytes on failure).
+        final compressed = await ImageCompressor.compressToBase64(
+          file,
+          targetSize: 200 * 1024,
+        );
+        if (compressed != null) {
+          docs.add(compressed);
+        } else {
+          final bytes = await file.readAsBytes();
+          final base64Data = base64Encode(bytes);
+          final ext = file.name.toLowerCase();
+          final mime = ext.endsWith('.png')
+              ? 'png'
+              : ext.endsWith('.webp')
+                  ? 'webp'
+                  : 'jpeg';
+          docs.add('data:image/$mime;base64,$base64Data');
+        }
         labels.add(file.name);
       }
 

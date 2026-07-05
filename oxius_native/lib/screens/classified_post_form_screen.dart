@@ -10,6 +10,7 @@ import '../models/classified_post_form.dart';
 import '../models/geo_location.dart';
 import '../services/classified_post_service.dart';
 import '../services/geo_location_service.dart';
+import '../utils/image_compressor.dart';
 import '../services/api_service.dart';
 import '../widgets/geo_selector_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -212,6 +213,16 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
         // Convert XFile to base64
         if (image is XFile) {
+          // Compress before encoding (fallback to original bytes on failure)
+          final compressed = await ImageCompressor.compressToBase64(
+            image,
+            targetSize: 80 * 1024,
+          );
+          if (compressed != null) {
+            base64Images.add(compressed);
+            continue;
+          }
+
           final bytes = await image.readAsBytes();
           final base64String = base64Encode(bytes);
 
@@ -234,7 +245,19 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         }
         // Convert File to base64 (mobile platforms)
         else if (image is File) {
-          final bytes = await image.readAsBytes();
+          final rawBytes = await image.readAsBytes();
+          // Compress before encoding (fallback to original bytes on failure)
+          final compressedBytes = await ImageCompressor.compressFromBytes(
+            rawBytes,
+            targetSize: 80 * 1024,
+          );
+          if (compressedBytes != null) {
+            base64Images
+                .add('data:image/jpeg;base64,${base64Encode(compressedBytes)}');
+            continue;
+          }
+
+          final bytes = rawBytes;
           final base64String = base64Encode(bytes);
 
           // Get file extension

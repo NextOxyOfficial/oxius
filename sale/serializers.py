@@ -118,6 +118,10 @@ class SalePostListSerializer(_NullifyEmptyLocationMixin, serializers.ModelSerial
             "price",
             "negotiable",
             "condition",
+            "description",
+            "phone",
+            "detailed_address",
+            "delivery_locations",
             "division",
             "district",
             "area",
@@ -210,6 +214,7 @@ class SalePostDetailSerializer(_NullifyEmptyLocationMixin, serializers.ModelSeri
             "area",
             "location",
             "detailed_address",
+            "delivery_locations",
             "phone",
             "email",
             "status",
@@ -256,10 +261,35 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
             "division",
             "district",
             "area",
+            "delivery_locations",
         ]
 
+    def validate_delivery_locations(self, value):
+        """Keep only well-formed {division[, district]} entries."""
+        if not isinstance(value, list):
+            return []
+        cleaned = []
+        for item in value[:20]:
+            if not isinstance(item, dict):
+                continue
+            division = str(item.get("division") or "").strip()
+            district = str(item.get("district") or "").strip()
+            if not division:
+                continue
+            entry = {"division": division}
+            if district:
+                entry["district"] = district
+            if entry not in cleaned:
+                cleaned.append(entry)
+        return cleaned
+
     def validate(self, data):
-        """Validate required fields"""
+        """Validate required fields.
+
+        On partial updates (PATCH) only the fields actually sent are checked —
+        demanding every field made ANY edit fail with 400 even though the post
+        already had them.
+        """
         required_fields = [
             "title",
             "description",
@@ -268,6 +298,31 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
             "detailed_address",
             "phone",
         ]
+
+        if self.partial:
+            # Only reject explicitly-blanked fields.
+            for field in required_fields:
+                if field in data:
+                    value = data[field]
+                    if value is None or (
+                        isinstance(value, str) and not value.strip()
+                    ):
+                        raise serializers.ValidationError(
+                            {field: f"{field} cannot be empty"}
+                        )
+            # Price/negotiable: only validate when the caller is touching them.
+            if ("price" in data or "negotiable" in data):
+                price = data.get(
+                    "price", getattr(self.instance, "price", None)
+                )
+                negotiable = data.get(
+                    "negotiable", getattr(self.instance, "negotiable", False)
+                )
+                if not price and not negotiable:
+                    raise serializers.ValidationError(
+                        {"price": "Either price or negotiable must be provided"}
+                    )
+            return data
 
         # Validate price and negotiable (one must be present)
         if not data.get("price") and not data.get("negotiable"):

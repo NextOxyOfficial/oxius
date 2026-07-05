@@ -11,6 +11,7 @@ import '../services/fcm_service.dart';
 import '../services/geo_service.dart';
 import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
+import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/profile_completion_sheet.dart';
 import '../widgets/social_login_buttons.dart';
@@ -156,8 +157,14 @@ class _RegisterPageState extends State<RegisterPage> {
         return;
       }
 
-      final bytes = await pickedFile.readAsBytes();
-      final mimeType = pickedFile.mimeType ?? 'image/jpeg';
+      // Compress before storing for upload (fallback to original bytes)
+      final Uint8List? compressed = await ImageCompressor.compressToBytes(
+        pickedFile,
+        targetSize: 80 * 1024,
+      );
+      final bytes = compressed ?? await pickedFile.readAsBytes();
+      final mimeType =
+          compressed != null ? 'image/jpeg' : (pickedFile.mimeType ?? 'image/jpeg');
 
       setState(() {
         _profileImageBytes = bytes;

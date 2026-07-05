@@ -15,6 +15,7 @@ import '../services/geo_location_service.dart';
 import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/app_fonts.dart';
+import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/dob_picker.dart';
 
@@ -1005,6 +1006,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required bool enableCropper,
     required String fieldName,
   }) async {
+    // Compress before upload (fallback to original bytes on failure)
+    final compressed = await ImageCompressor.compressToBytes(
+      image,
+      targetSize: 80 * 1024,
+    );
+    if (compressed != null) {
+      return compressed;
+    }
     return image.readAsBytes();
   }
 

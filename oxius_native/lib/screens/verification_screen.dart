@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../services/api_service.dart';
 import '../services/user_state_service.dart';
+import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -113,7 +114,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
         return;
       }
 
-      final base64String = base64Encode(bytes);
+      // Compress before encoding — KYC documents use a higher 200KB target so
+      // they stay readable (fallback to original bytes on failure).
+      final compressed = await ImageCompressor.compressFromBytes(
+        bytes,
+        targetSize: 200 * 1024,
+      );
+
+      final base64String = base64Encode(compressed ?? bytes);
       setState(() {
         switch (field) {
           case 'front':

@@ -3,7 +3,7 @@ from rest_framework import viewsets, status, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import F, Max
+from django.db.models import F, Max, Q
 import logging
 import base64
 from django.core.files.base import ContentFile
@@ -101,8 +101,15 @@ class SalePostViewSet(viewsets.ModelViewSet):
         logger.info(f"User: {self.request.user}")
         
         if self.action in ["list", "retrieve"]:
-            # For public viewing, show active posts only
-            queryset = SalePost.objects.filter(status="active")
+            # For public viewing, show active posts only. On detail, an owner
+            # can always open their OWN post (sold/pending/expired too) — it
+            # 404'd from "My Posts" otherwise.
+            if self.action == "retrieve" and self.request.user.is_authenticated:
+                queryset = SalePost.objects.filter(
+                    Q(status="active") | Q(user=self.request.user)
+                )
+            else:
+                queryset = SalePost.objects.filter(status="active")
         elif self.action == "mark_as_sold":
             # For mark_as_sold, return all posts and let the action method check ownership
             # This is needed because get_object() needs to find the post first
@@ -164,7 +171,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
         # Comprehensive search in title and description
         search = self.request.query_params.get("search")
         if search:
-            from django.db.models import Q
+
 
             queryset = queryset.filter(
                 Q(title__icontains=search) | Q(description__icontains=search)
@@ -306,9 +313,14 @@ class SalePostViewSet(viewsets.ModelViewSet):
             logger.info(f"Post owner: {post.user}")
             logger.info(f"Post owner ID: {post.user.id if post.user else 'N/A'}")
             logger.info(f"Post current status: {post.status}")
-            
-            # Simply mark as sold without permission check for now to debug
-            # The viewset already requires authentication
+
+            # Only the owner (or staff) may mark a post as sold.
+            if post.user != request.user and not request.user.is_staff:
+                return Response(
+                    {"detail": "You don't have permission to update this post."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
             post.status = "sold"
             post.save(update_fields=["status"])
             logger.info(f"✓ Post {post.id} successfully marked as sold")
@@ -323,6 +335,44 @@ class SalePostViewSet(viewsets.ModelViewSet):
                 {"detail": f"Error: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="change_status",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def change_status(self, request, slug=None):
+        """Owner switches a post between 'active' and 'sold'.
+
+        The queryset for this action is already limited to the requester's own
+        posts (see get_queryset's fallback branch), so non-owners get a 404.
+        Sellers cannot self-approve: 'pending'/'expired' are not settable here.
+        """
+        new_status = (request.data.get("status") or "").strip()
+        if new_status not in ("active", "sold"):
+            return Response(
+                {"detail": "status must be 'active' or 'sold'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        post = self.get_object()
+
+        # A pending (not yet approved) post can't be flipped by the seller.
+        if post.status == "pending" and new_status == "active":
+            return Response(
+                {"detail": "Post is awaiting review and can't be activated."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # queryset.update() skips SalePost.save() on purpose: its side effects
+        # (synchronous approval email + admin notice) belong to moderation, not
+        # to a seller toggling sold/active — and the blocking SMTP call made
+        # this endpoint hang until the app timed out.
+        SalePost.objects.filter(pk=post.pk).update(status=new_status)
+        post.refresh_from_db(fields=["status"])
+        serializer = SalePostDetailSerializer(post, context={"request": request})
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="report", permission_classes=[permissions.IsAuthenticated])
     def report(self, request, slug=None):
@@ -395,7 +445,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
         limit = min(int(request.query_params.get("limit", 10)), 20)
 
         # Search in title and description
-        from django.db.models import Q
+
 
         queryset = (
             SalePost.objects.filter(status="active")

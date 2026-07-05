@@ -14,11 +14,11 @@ class ResetPasswordPage extends StatefulWidget {
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   // Palette shared with the login / register screens.
-  static const _pageBackgroundColor = Color(0xFFF0F3FC);
+  static const _pageBackgroundColor = Color(0xFFF3F4FB);
   static const _surfaceColor = Colors.white;
   static const _cardBorderColor = Color(0xFFDDE3F5);
-  static const _primaryColor = Color(0xFF5B67E8);
-  static const _primaryDarkColor = Color(0xFF4149C8);
+  static const _primaryColor = Color(0xFF10B5A5);
+  static const _primaryDarkColor = Color(0xFF0B8F84);
   static const _headingTextColor = Color(0xFF1E2749);
   static const _bodyTextColor = Color(0xFF4A5578);
   static const _mutedTextColor = Color(0xFF7C87A8);
@@ -32,6 +32,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   String? _errorMessage;
   String? _successMessage;
   int _resendCooldown = 0;
+  // Reset method: 'phone' (SMS OTP) or 'email' (email OTP).
+  String _method = 'phone';
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   String _maskedContact = '';
   final _otpController = TextEditingController();
@@ -44,6 +47,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   void dispose() {
     _phoneController.dispose();
+    _emailController.dispose();
     _otpController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
@@ -92,23 +96,32 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         _successMessage = null;
       });
 
-  bool _validateContact() =>
-      RegExp(r'^(?:\+?88)?01[3-9]\d{8}$').hasMatch(_phoneController.text);
+  String get _contactValue => _method == 'email'
+      ? _emailController.text.trim()
+      : _phoneController.text.trim();
+
+  bool _validateContact() => _method == 'email'
+      ? RegExp(r'^[\w\.\+\-]+@[\w\-]+(\.[\w\-]+)+$')
+          .hasMatch(_emailController.text.trim())
+      : RegExp(r'^(?:\+?88)?01[3-9]\d{8}$').hasMatch(_phoneController.text);
 
   Future<void> _handleSendOtp() async {
     _clearMessages();
     if (!_validateContact()) {
-      setState(() => _errorMessage = _t('reset_invalid_phone',
-          'একটা সঠিক ফোন নম্বর দিন (যেমন: 01XXXXXXXXX)'));
+      setState(() => _errorMessage = _method == 'email'
+          ? _t('reset_invalid_email', 'একটা সঠিক ইমেইল দিন')
+          : _t('reset_invalid_phone',
+              'একটা সঠিক ফোন নম্বর দিন (যেমন: 01XXXXXXXXX)'));
       return;
     }
     setState(() => _isLoading = true);
     try {
       final result = await AuthService.sendOtp(
-          method: 'phone', phone: _phoneController.text.trim());
+          method: _method, phone: _contactValue);
       if (mounted) {
         setState(() {
-          _maskedContact = result['masked_phone'] ?? '';
+          _maskedContact =
+              result['masked_phone'] ?? result['masked_email'] ?? '';
           _successMessage = result['message'] ??
               _t('reset_code_sent', 'কোড পাঠানো হয়েছে');
           _currentStep = 2;
@@ -136,8 +149,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     setState(() => _isLoading = true);
     try {
       final result = await AuthService.verifyOtp(
-          method: 'phone',
-          phone: _phoneController.text.trim(),
+          method: _method,
+          phone: _contactValue,
           otp: _otpController.text);
       if (mounted) {
         setState(() {
@@ -329,7 +342,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           decoration: BoxDecoration(
             color: _primaryColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: const Color(0xFFCFE0FF)),
+            border: Border.all(color: const Color(0xFFBDE8E2)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -472,17 +485,91 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         ]),
       );
 
+  // Segmented toggle: reset via phone SMS or via email OTP.
+  Widget _methodTab(String value, IconData icon, String label) {
+    final selected = _method == value;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() {
+          _method = value;
+          _errorMessage = null;
+        }),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 16,
+                  color: selected ? _primaryColor : _mutedTextColor),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: AppFonts.roboto(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: selected ? _primaryDarkColor : _mutedTextColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStep1() => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _fieldLabel(_t('reset_phone_label', 'ফোন নম্বর')),
-          const SizedBox(height: 8),
-          _field(
-            controller: _phoneController,
-            hint: '01XXXXXXXXX',
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF1F8),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                _methodTab('phone', Icons.phone_iphone_rounded,
+                    _t('reset_via_phone', 'ফোন নম্বর')),
+                _methodTab('email', Icons.alternate_email_rounded,
+                    _t('reset_via_email', 'ইমেইল')),
+              ],
+            ),
           ),
+          const SizedBox(height: 16),
+          if (_method == 'phone') ...[
+            _fieldLabel(_t('reset_phone_label', 'ফোন নম্বর')),
+            const SizedBox(height: 8),
+            _field(
+              controller: _phoneController,
+              hint: '01XXXXXXXXX',
+              icon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+            ),
+          ] else ...[
+            _fieldLabel(_t('reset_email_label', 'ইমেইল')),
+            const SizedBox(height: 8),
+            _field(
+              controller: _emailController,
+              hint: 'your@email.com',
+              icon: Icons.alternate_email_rounded,
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ],
           const SizedBox(height: 20),
           _primaryButton(
             label: _t('reset_send_code', 'রিসেট কোড পাঠান'),
@@ -497,10 +584,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           Text(
             _maskedContact.isNotEmpty
                 ? _t('reset_code_sent_to',
-                        '{contact} নম্বরে ৬ ডিজিটের কোড পাঠানো হয়েছে')
+                        '{contact}-এ ৬ ডিজিটের কোড পাঠানো হয়েছে')
                     .replaceFirst('{contact}', _maskedContact)
                 : _t('reset_code_sent_generic',
-                    'আপনার ফোনে ৬ ডিজিটের কোড পাঠানো হয়েছে'),
+                    'আপনার ফোন/ইমেইলে ৬ ডিজিটের কোড পাঠানো হয়েছে'),
             style: AppFonts.roboto(fontSize: 12.5, color: _bodyTextColor),
           ),
           const SizedBox(height: 16),

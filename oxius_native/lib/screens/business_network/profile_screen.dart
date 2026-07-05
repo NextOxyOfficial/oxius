@@ -4,6 +4,7 @@ import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../utils/image_compressor.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/notification_service.dart';
 import '../../services/adsyconnect_service.dart';
@@ -701,8 +702,23 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
 
+      // Compress before upload (fallback to original XFile on failure)
+      XFile uploadFile = image;
+      final compressed = await ImageCompressor.compressToBytes(
+        image,
+        targetSize: 80 * 1024,
+      );
+      if (compressed != null) {
+        uploadFile = XFile.fromData(
+          compressed,
+          name: 'profile.jpg',
+          mimeType: 'image/jpeg',
+        );
+      }
+
       // Upload to server (pass XFile directly for cross-platform support)
-      final success = await BusinessNetworkService.uploadProfilePicture(image);
+      final success =
+          await BusinessNetworkService.uploadProfilePicture(uploadFile);
 
       if (mounted) {
         // Hide loading snackbar

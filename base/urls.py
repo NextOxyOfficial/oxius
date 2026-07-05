@@ -196,6 +196,7 @@ urlpatterns = [
     path("api/auth/reset-password/", reset_password_request),
     path("api/auth/verify-reset-otp/", verify_reset_otp),
     path("api/auth/set-new-password/", set_new_password),
+    path("auth/set-new-password/", set_new_password),
     # product      # Product URLs
     path("all-products/", AllProductsListView.as_view(), name="all-products"),
     path("my-products/", UserProductsListView.as_view(), name="user-products"),

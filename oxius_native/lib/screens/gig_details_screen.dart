@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
+import '../utils/image_compressor.dart';
 import '../utils/url_launcher_utils.dart';
 import 'terms_and_conditions_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -94,8 +95,18 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
       if (image != null) {
         final File imageFile = File(image.path);
-        final bytes = await imageFile.readAsBytes();
-        final base64String = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        // Compress before encoding (fallback to original bytes on failure)
+        final compressed = await ImageCompressor.compressToBase64(
+          image,
+          targetSize: 80 * 1024,
+        );
+        final String base64String;
+        if (compressed != null) {
+          base64String = compressed;
+        } else {
+          final bytes = await imageFile.readAsBytes();
+          base64String = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        }
 
         setState(() {
           _selectedImages.add(imageFile);

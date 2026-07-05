@@ -80,7 +80,29 @@ class _SaleListScreenState extends State<SaleListScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounceTimer;
 
-  String t(String key) => _translationService.translate(key);
+  String _t(String key, String fallback) =>
+      _translationService.translate(key, fallback: fallback);
+
+  String _conditionLabel(String condition) {
+    switch (condition) {
+      case 'brand-new':
+      case 'new':
+        return _t('sale_condition_brand_new', 'একদম নতুন');
+      case 'like-new':
+      case 'like_new':
+        return _t('sale_condition_like_new', 'নতুনের মতো');
+      case 'good':
+        return _t('sale_condition_good', 'ভালো');
+      case 'fair':
+        return _t('sale_condition_fair', 'মোটামুটি');
+      case 'for-parts':
+        return _t('sale_condition_for_parts', 'পার্টসের জন্য');
+      case 'poor':
+        return _t('sale_condition_poor', 'পুরনো');
+      default:
+        return condition.replaceAll('-', ' ').replaceAll('_', ' ');
+    }
+  }
 
   @override
   void initState() {
@@ -314,7 +336,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
   String _formatPrice(SalePost post) {
     // If negotiable, show 'Negotiable' text instead of price
     if (post.negotiable) {
-      return 'Negotiable';
+      return _t('sale_negotiable', 'দামাদামি করা যাবে');
     }
     // Otherwise show formatted price
     final formatter = NumberFormat('#,##,###');
@@ -327,17 +349,17 @@ class _SaleListScreenState extends State<SaleListScreen> {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Today';
+      return _t('sale_today', 'আজ');
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return _t('sale_yesterday', 'গতকাল');
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+      return '${difference.inDays} ${_t('sale_days_ago', 'দিন আগে')}';
     } else if (difference.inDays < 30) {
       final weeks = (difference.inDays / 7).floor();
-      return '$weeks ${weeks == 1 ? 'week' : 'weeks'} ago';
+      return '$weeks ${_t('sale_weeks_ago', 'সপ্তাহ আগে')}';
     } else if (difference.inDays < 365) {
       final months = (difference.inDays / 30).floor();
-      return '$months ${months == 1 ? 'month' : 'months'} ago';
+      return '$months ${_t('sale_months_ago', 'মাস আগে')}';
     } else {
       return DateFormat('MMM d, yyyy').format(date);
     }
@@ -351,7 +373,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
     } else if (post.division != null) {
       return post.division!;
     }
-    return 'All Over Bangladesh';
+    return _t('sale_all_over_bangladesh', 'সারা বাংলাদেশ');
   }
 
   String? _getCategoryName(String? categoryId) {
@@ -386,7 +408,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           Row(
             children: [
               Text(
-                'Applied Filters',
+                _t('sale_applied_filters', 'যেসব ফিল্টার দেওয়া আছে'),
                 style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade700,
@@ -418,8 +440,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   minimumSize: const Size(50, 30),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text('Clear All',
-                    style: TextStyle(fontSize: 11, color: Color(0xFFEF4444))),
+                child: Text(_t('sale_clear_all', 'সব ক্লিয়ার করুন'),
+                    style: const TextStyle(
+                        fontSize: 11, color: Color(0xFFEF4444))),
               ),
             ],
           ),
@@ -430,7 +453,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
             children: [
               if (_selectedCategoryId != null)
                 _buildFilterChip(
-                  _getCategoryName(_selectedCategoryId) ?? 'Category',
+                  _getCategoryName(_selectedCategoryId) ??
+                      _t('sale_category', 'ক্যাটাগরি'),
                   Icons.category,
                   () {
                     setState(() {
@@ -479,7 +503,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 ),
               if (_minPrice != null || _maxPrice != null)
                 _buildFilterChip(
-                  '৳${_minPrice?.toInt() ?? 0} - ৳${_maxPrice?.toInt() ?? 'Any'}',
+                  '৳${_minPrice?.toInt() ?? 0} - ৳${_maxPrice?.toInt() ?? _t('sale_any', 'যেকোনো')}',
                   Icons.attach_money,
                   () {
                     setState(() {
@@ -493,7 +517,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 ),
               if (_selectedCondition != null)
                 _buildFilterChip(
-                  _selectedCondition!.replaceAll('_', ' ').toUpperCase(),
+                  _conditionLabel(_selectedCondition!),
                   Icons.stars,
                   () {
                     setState(() => _selectedCondition = null);
@@ -561,7 +585,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 autofocus: true,
                 style: const TextStyle(color: Colors.white, fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: 'Search products...',
+                  hintText: _t('sale_search_hint', 'কী খুঁজছেন লিখুন...'),
                   hintStyle: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7), fontSize: 16),
                   border: InputBorder.none,
@@ -577,7 +601,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 },
               )
             : Text(
-                widget.categoryName ?? 'পুরাতন কেনাবেচা',
+                widget.categoryName ?? _t('sale_title', 'পুরাতন কেনাবেচা'),
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -608,7 +632,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 }
               });
             },
-            tooltip: _isSearchActive ? 'Close Search' : 'Search',
+            tooltip: _isSearchActive
+                ? _t('sale_close_search', 'সার্চ বন্ধ করুন')
+                : _t('sale_search', 'সার্চ'),
           ),
           if (AuthService.isAuthenticated)
             IconButton(
@@ -616,7 +642,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
               onPressed: () {
                 Navigator.pushNamed(context, '/my-sale-posts');
               },
-              tooltip: 'My Posts',
+              tooltip: _t('sale_my_posts', 'আমার পোস্ট'),
             ),
           IconButton(
             icon: const Icon(Icons.filter_list_rounded, size: 22),
@@ -679,8 +705,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
               foregroundColor: Colors.white,
               elevation: 4,
               icon: const Icon(Icons.add_rounded, size: 20),
-              label: const Text('Post Ad',
-                  style: TextStyle(
+              label: Text(_t('sale_post_ad', 'বিজ্ঞাপন দিন'),
+                  style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.1)),
@@ -718,9 +744,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Showing results for',
-                  style: TextStyle(
+                Text(
+                  _t('sale_showing_results_for', 'এই এলাকার রেজাল্ট দেখছেন'),
+                  style: const TextStyle(
                       fontSize: 9,
                       color: Colors.white70,
                       fontWeight: FontWeight.w500),
@@ -804,7 +830,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             ),
                           ),
                           TextSpan(
-                            text: ' টি বিজ্ঞাপন',
+                            text: ' ${_t('sale_ads_count_suffix', 'টি বিজ্ঞাপন')}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade700,
@@ -950,12 +976,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       const SizedBox(width: 4),
                       Text(
                         _sortBy == 'newest'
-                            ? 'Newest'
+                            ? _t('sale_sort_newest', 'নতুন')
                             : _sortBy == 'oldest'
-                                ? 'Oldest'
+                                ? _t('sale_sort_oldest', 'পুরাতন')
                                 : _sortBy == 'price_low'
-                                    ? 'Price: Low'
-                                    : 'Price: High',
+                                    ? _t('sale_sort_price_low', 'কম দাম')
+                                    : _t('sale_sort_price_high', 'বেশি দাম'),
                         style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade700,
@@ -968,22 +994,24 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   ),
                 ),
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                       value: 'newest',
-                      child:
-                          Text('Newest First', style: TextStyle(fontSize: 13))),
-                  const PopupMenuItem(
+                      child: Text(_t('sale_sort_newest_first', 'নতুন আগে'),
+                          style: const TextStyle(fontSize: 13))),
+                  PopupMenuItem(
                       value: 'oldest',
-                      child:
-                          Text('Oldest First', style: TextStyle(fontSize: 13))),
-                  const PopupMenuItem(
+                      child: Text(_t('sale_sort_oldest_first', 'পুরাতন আগে'),
+                          style: const TextStyle(fontSize: 13))),
+                  PopupMenuItem(
                       value: 'price_low',
-                      child: Text('Price: Low to High',
-                          style: TextStyle(fontSize: 13))),
-                  const PopupMenuItem(
+                      child: Text(
+                          _t('sale_sort_price_low_high', 'দাম: কম থেকে বেশি'),
+                          style: const TextStyle(fontSize: 13))),
+                  PopupMenuItem(
                       value: 'price_high',
-                      child: Text('Price: High to Low',
-                          style: TextStyle(fontSize: 13))),
+                      child: Text(
+                          _t('sale_sort_price_high_low', 'দাম: বেশি থেকে কম'),
+                          style: const TextStyle(fontSize: 13))),
                 ],
               ),
             ],
@@ -1022,7 +1050,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   child: Text(
                     _selectedCategoryId != null
                         ? '${_getCategoryName(_selectedCategoryId)}'
-                        : 'সব বিজ্ঞাপন',
+                        : _t('sale_all_ads', 'সব বিজ্ঞাপন'),
                     style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -1040,7 +1068,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${_posts.length} টি',
+                    '${_posts.length} ${_t('sale_count_suffix', 'টি')}',
                     style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,
@@ -1096,18 +1124,18 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       border: Border.all(
                           color: const Color(0xFF10B981).withValues(alpha: 0.4)),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'আরও দেখুন',
-                          style: TextStyle(
+                          _t('sale_see_more', 'আরও দেখুন'),
+                          style: const TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF059669)),
                         ),
-                        SizedBox(width: 4),
-                        Icon(Icons.keyboard_arrow_down_rounded,
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down_rounded,
                             size: 16, color: Color(0xFF059669)),
                       ],
                     ),
@@ -1134,16 +1162,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           color: Color(0xFF10B981), size: 32),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'সব বিজ্ঞাপন দেখা হয়ে গেছে!',
-                      style: TextStyle(
+                    Text(
+                      _t('sale_all_ads_seen', 'সব বিজ্ঞাপন দেখা হয়ে গেছে!'),
+                      style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF1F2937)),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'মোট $_totalCount টি বিজ্ঞাপনের সবগুলো দেখানো হয়েছে',
+                      '${_t('sale_total', 'মোট')} $_totalCount ${_t('sale_all_shown_suffix', 'টি বিজ্ঞাপনের সবগুলোই দেখানো হয়েছে')}',
                       style:
                           TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     ),
@@ -1214,7 +1242,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   color: Colors.grey[400], size: 24),
                               const SizedBox(height: 4),
                               Text(
-                                'No photo\nuploaded',
+                                _t('sale_no_photo_uploaded', 'ছবি দেওয়া\nহয়নি'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontSize: 9,
@@ -1283,7 +1311,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                           .withValues(alpha: 0.3)),
                                 ),
                                 child: Text(
-                                  post.condition.toUpperCase(),
+                                  _conditionLabel(post.condition),
                                   style: const TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w700,
@@ -1412,7 +1440,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       color: Colors.grey.shade400, size: 40),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'No Image',
+                                    _t('sale_no_image', 'ছবি নেই'),
                                     style: TextStyle(
                                         color: Colors.grey.shade500,
                                         fontSize: 10),
@@ -1430,7 +1458,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                     color: Colors.grey.shade400, size: 40),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'No Image',
+                                  _t('sale_no_image', 'ছবি নেই'),
                                   style: TextStyle(
                                       color: Colors.grey.shade500,
                                       fontSize: 10),
@@ -1452,7 +1480,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      post.condition.toUpperCase(),
+                      _conditionLabel(post.condition),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 9,
@@ -1577,7 +1605,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              isSearchResult ? 'No search results found' : 'No listings found',
+              isSearchResult
+                  ? _t('sale_no_search_results', 'সার্চে কিছু পাওয়া যায়নি')
+                  : _t('sale_no_listings', 'কোনো বিজ্ঞাপন পাওয়া যায়নি'),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -1589,10 +1619,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
                 isSearchResult
-                    ? 'No posts found matching "$_searchQuery". Try using different keywords or check the spelling.'
+                    ? '"$_searchQuery" ${_t('sale_no_match_hint', 'দিয়ে কিছু পাওয়া যায়নি। বানানটা দেখে নিন বা অন্য কিছু লিখে খুঁজে দেখুন।')}'
                     : _selectedCategoryId != null
-                        ? 'No listings found in this category. Try selecting a different category or adjusting your filters.'
-                        : 'No listings available at the moment. Check back later for new posts.',
+                        ? _t('sale_empty_category_hint',
+                            'এই ক্যাটাগরিতে এখন কোনো বিজ্ঞাপন নেই। অন্য ক্যাটাগরি দেখুন বা ফিল্টার বদলে দেখুন।')
+                        : _t('sale_empty_hint',
+                            'এই মুহূর্তে কোনো বিজ্ঞাপন নেই। একটু পরে আবার দেখুন।'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 14, color: Colors.grey.shade600, height: 1.5),
@@ -1609,9 +1641,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   _applyFilters();
                 },
                 icon: const Icon(Icons.clear_all, size: 18),
-                label: const Text('Clear search and browse all listings',
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                label: Text(
+                    _t('sale_clear_search_browse',
+                        'সার্চ মুছে সব বিজ্ঞাপন দেখুন'),
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
@@ -1640,9 +1674,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   _applyFilters();
                 },
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Clear Filters',
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                label: Text(_t('sale_clear_filters', 'ফিল্টার ক্লিয়ার করুন'),
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF10B981),
                   side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
@@ -1677,7 +1711,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   color: Colors.amber.shade700, size: 18),
               const SizedBox(width: 6),
               Text(
-                'নতুন অ্যাড হয়েছে',
+                _t('sale_recently_added', 'নতুন অ্যাড হয়েছে'),
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -1908,9 +1942,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
               const Icon(Icons.grid_view_rounded,
                   size: 16, color: Color(0xFF059669)),
               const SizedBox(width: 6),
-              const Text(
-                'ক্যাটাগরি থেকে খুঁজুন',
-                style: TextStyle(
+              Text(
+                _t('sale_browse_by_category', 'ক্যাটাগরি থেকে খুঁজুন'),
+                style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF111827),
@@ -1926,13 +1960,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     });
                     _applyFilters();
                   },
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.close, size: 14, color: Color(0xFF059669)),
-                      SizedBox(width: 2),
-                      Text('সব',
-                          style: TextStyle(
+                      const Icon(Icons.close,
+                          size: 14, color: Color(0xFF059669)),
+                      const SizedBox(width: 2),
+                      Text(_t('sale_all', 'সব'),
+                          style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF059669))),
@@ -2099,17 +2134,27 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   // ── Safe marketplace guide — buying tips + security tips ──
   Widget _buildSafetyGuide() {
-    const buying = [
+    final buying = [
       [
-        'ছবি ভালো করে দেখুন',
-        'পণ্যের সব ছবি ও বিবরণ মনোযোগ দিয়ে দেখে নিন'
+        _t('sale_tip_check_photos', 'ছবি ভালো করে দেখুন'),
+        _t('sale_tip_check_photos_sub',
+            'জিনিসটার সব ছবি আর ডিটেইলস মন দিয়ে দেখে নিন')
       ],
       [
-        'নিরাপদ স্থানে দেখা করুন',
-        'প্রকাশ্য ও পরিচিত জায়গায় বিক্রেতার সাথে দেখা করুন'
+        _t('sale_tip_meet_safe', 'নিরাপদ জায়গায় দেখা করুন'),
+        _t('sale_tip_meet_safe_sub',
+            'খোলামেলা ও পরিচিত জায়গায় বিক্রেতার সাথে দেখা করুন')
       ],
-      ['পণ্য যাচাই করুন', 'টাকা দেওয়ার আগে পণ্য সরাসরি যাচাই করে নিন'],
-      ['পেমেন্টে সতর্ক থাকুন', 'পণ্য বুঝে পাওয়ার পরেই পুরো টাকা পরিশোধ করুন'],
+      [
+        _t('sale_tip_verify_product', 'জিনিস যাচাই করুন'),
+        _t('sale_tip_verify_product_sub',
+            'টাকা দেওয়ার আগে জিনিসটা নিজে হাতে দেখে নিন')
+      ],
+      [
+        _t('sale_tip_payment_care', 'পেমেন্টে সাবধান থাকুন'),
+        _t('sale_tip_payment_care_sub',
+            'জিনিস বুঝে পাওয়ার পরেই পুরো টাকা দিন')
+      ],
     ];
     const buyingIcons = [
       Icons.photo_camera_outlined,
@@ -2155,18 +2200,20 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       size: 19, color: Color(0xFF059669)),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('নিরাপদ কেনাবেচার গাইড',
-                          style: TextStyle(
+                      Text(_t('sale_safe_guide_title', 'নিরাপদ কেনাবেচার গাইড'),
+                          style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFF0F172A))),
-                      SizedBox(height: 2),
-                      Text('কেনাকাটার আগে এই বিষয়গুলো মাথায় রাখুন',
-                          style: TextStyle(
+                      const SizedBox(height: 2),
+                      Text(
+                          _t('sale_safe_guide_sub',
+                              'কেনাকাটার আগে এই বিষয়গুলো মাথায় রাখুন'),
+                          style: const TextStyle(
                               fontSize: 11, color: Color(0xFF64748B))),
                     ],
                   ),
@@ -2176,7 +2223,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           ),
           // Buying tips
           _buildGuideGroup(
-            title: 'কেনাকাটার টিপস',
+            title: _t('sale_buying_tips', 'কেনাকাটার টিপস'),
             titleIcon: Icons.lightbulb_outline,
             titleColor: const Color(0xFF2563EB),
             tintColor: const Color(0xFFEFF6FF),
@@ -2200,13 +2247,22 @@ class _SaleListScreenState extends State<SaleListScreen> {
       ),
       child: Row(
         children: [
-          _trustCell(Icons.sell_outlined, 'ফ্রি বিজ্ঞাপন', 'কোনো খরচ নেই',
+          _trustCell(
+              Icons.sell_outlined,
+              _t('sale_trust_free_ads', 'ফ্রি বিজ্ঞাপন'),
+              _t('sale_trust_free_ads_sub', 'কোনো খরচ নেই'),
               const Color(0xFF059669)),
           _trustDivider(),
-          _trustCell(Icons.verified_user_outlined, 'যাচাইকৃত বিক্রেতা',
-              'বিশ্বস্ত প্রোফাইল', const Color(0xFF2563EB)),
+          _trustCell(
+              Icons.verified_user_outlined,
+              _t('sale_trust_verified_seller', 'ভেরিফাইড বিক্রেতা'),
+              _t('sale_trust_verified_seller_sub', 'ভরসা করার মতো প্রোফাইল'),
+              const Color(0xFF2563EB)),
           _trustDivider(),
-          _trustCell(Icons.lock_outline, 'নিরাপদ লেনদেন', 'সুরক্ষিত কেনাবেচা',
+          _trustCell(
+              Icons.lock_outline,
+              _t('sale_trust_safe_deal', 'নিরাপদ লেনদেন'),
+              _t('sale_trust_safe_deal_sub', 'নিশ্চিন্তে কেনাবেচা'),
               const Color(0xFFB45309)),
         ],
       ),
@@ -2344,9 +2400,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Filters',
-                        style: TextStyle(
+                      Text(
+                        _t('sale_filters', 'ফিল্টার'),
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
@@ -2370,7 +2426,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           _applyFilters();
                           Navigator.pop(context);
                         },
-                        child: const Text('Clear All'),
+                        child: Text(_t('sale_clear_all', 'সব ক্লিয়ার করুন')),
                       ),
                     ],
                   ),
@@ -2385,8 +2441,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             const Icon(Icons.location_on,
                                 size: 18, color: Color(0xFF10B981)),
                             const SizedBox(width: 8),
-                            const Text('Location',
-                                style: TextStyle(
+                            Text(_t('sale_location', 'লোকেশন'),
+                                style: const TextStyle(
                                     fontWeight: FontWeight.w600, fontSize: 16)),
                           ],
                         ),
@@ -2399,15 +2455,17 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               ? _selectedDivision
                               : null,
                           decoration: InputDecoration(
-                            labelText: 'Division',
+                            labelText: _t('sale_division', 'বিভাগ'),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8)),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
                           ),
                           items: [
-                            const DropdownMenuItem<String>(
-                                value: null, child: Text('All Divisions')),
+                            DropdownMenuItem<String>(
+                                value: null,
+                                child: Text(
+                                    _t('sale_all_divisions', 'সব বিভাগ'))),
                             ..._regions.map((region) => DropdownMenuItem(
                                   value: region.nameEng,
                                   child: Text(region.nameEng),
@@ -2438,15 +2496,17 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   ? _selectedDistrict
                                   : null,
                           decoration: InputDecoration(
-                            labelText: 'District',
+                            labelText: _t('sale_district', 'জেলা'),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8)),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
                           ),
                           items: [
-                            const DropdownMenuItem<String>(
-                                value: null, child: Text('All Districts')),
+                            DropdownMenuItem<String>(
+                                value: null,
+                                child:
+                                    Text(_t('sale_all_districts', 'সব জেলা'))),
                             ..._cities.map((city) => DropdownMenuItem(
                                   value: city.nameEng,
                                   child: Text(city.nameEng),
@@ -2477,15 +2537,17 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   ? _selectedArea
                                   : null,
                           decoration: InputDecoration(
-                            labelText: 'Area',
+                            labelText: _t('sale_area', 'এলাকা'),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8)),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
                           ),
                           items: [
-                            const DropdownMenuItem<String>(
-                                value: null, child: Text('All Areas')),
+                            DropdownMenuItem<String>(
+                                value: null,
+                                child:
+                                    Text(_t('sale_all_areas', 'সব এলাকা'))),
                             ..._upazilas.map((upazila) => DropdownMenuItem(
                                   value: upazila.nameEng,
                                   child: Text(upazila.nameEng),
@@ -2510,8 +2572,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               const Icon(Icons.category,
                                   size: 18, color: Color(0xFF10B981)),
                               const SizedBox(width: 8),
-                              const Text('Categories',
-                                  style: TextStyle(
+                              Text(_t('sale_categories', 'ক্যাটাগরি'),
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 16)),
                             ],
@@ -2529,8 +2591,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   dense: true,
                                   leading: const Icon(Icons.apps,
                                       color: Color(0xFF10B981), size: 20),
-                                  title: const Text('All Categories',
-                                      style: TextStyle(
+                                  title: Text(
+                                      _t('sale_all_categories',
+                                          'সব ক্যাটাগরি'),
+                                      style: const TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14)),
                                   trailing: _selectedCategoryId == null
@@ -2737,8 +2801,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         ],
 
                         // Condition Filter
-                        const Text('Condition',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text(_t('sale_condition', 'কন্ডিশন'),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
                         Wrap(
                           spacing: 8,
@@ -2746,8 +2811,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               .map((condition) {
                             final isSelected = _selectedCondition == condition;
                             return FilterChip(
-                              label: Text(
-                                  condition.replaceAll('_', ' ').toUpperCase()),
+                              label: Text(_conditionLabel(condition)),
                               selected: isSelected,
                               onSelected: (selected) {
                                 setModalState(() {
@@ -2763,8 +2827,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         const SizedBox(height: 20),
 
                         // Price Range Filter
-                        const Text('Price Range',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text(_t('sale_price_range', 'দামের রেঞ্জ'),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -2773,7 +2838,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 controller: _minPriceController,
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
-                                  labelText: 'Min Price',
+                                  labelText:
+                                      _t('sale_min_price', 'সর্বনিম্ন দাম'),
                                   prefixText: '৳',
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
@@ -2795,7 +2861,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 controller: _maxPriceController,
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
-                                  labelText: 'Max Price',
+                                  labelText:
+                                      _t('sale_max_price', 'সর্বোচ্চ দাম'),
                                   prefixText: '৳',
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8)),
@@ -2831,7 +2898,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text('Apply Filters'),
+                      child: Text(
+                          _t('sale_apply_filters', 'ফিল্টার অ্যাপ্লাই করুন')),
                     ),
                   ),
                 ],

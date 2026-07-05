@@ -2083,13 +2083,26 @@ def sendOTP(request):
             )
 
     elif method == "email":
-        # Email reset temporarily disabled until SMTP is configured
-        return Response(
-            {
-                "error": "Email reset is temporarily unavailable. Please use phone number."
-            },
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
-        )
+        if not email:
+            return Response(
+                {"error": "Email is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        email = email.strip().lower()
+        if not re.match(r"^[\w\.\+\-]+@[\w\-]+(\.[\w\-]+)+$", email):
+            return Response(
+                {"error": "Please enter a valid email address"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            return Response(
+                {
+                    "error": "No account found with this email. Please check and try again."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
     else:
         return Response(
@@ -2149,23 +2162,57 @@ def sendOTP(request):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    # TODO: Uncomment this section when SMTP is configured
-    # elif method == 'email':
-    #     try:
-    #         from django.core.mail import send_mail
-    #         send_mail(    #             'Password Reset OTP - AdsyClub',
-    #             f'Your AdsyClub password reset OTP is: {otp}\n\nThis code is valid for 10 minutes. Do not share this code with anyone.\n\nIf you did not request this, please ignore this email.',
-    #             settings.DEFAULT_FROM_EMAIL,
-    #             [email],
-    #             fail_silently=False,
-    #         )
-    #         return Response({
-    #             'message': 'OTP sent successfully to your email address',
-    #             'method': 'email',
-    #             'masked_email': email[:2] + '*' * (len(email.split('@')[0]) - 2) + '@' + email.split('@')[1],
-    #         }, status=status.HTTP_200_OK)
-    #     except Exception as e:
-    #         return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif method == "email":
+        try:
+            from base.email_service import _send_email
+
+            subject = "Password Reset OTP - AdsyClub"
+            newline = chr(10)
+            text = (
+                f"Your AdsyClub password reset OTP is: {otp}{newline}{newline}"
+                f"This code is valid for 10 minutes. Do not share it with anyone.{newline}{newline}"
+                "If you did not request this, please ignore this email."
+            )
+            html = f"""
+            <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+              <h2 style="color:#0B8F84;margin:0 0 12px;">AdsyClub</h2>
+              <p style="font-size:14px;color:#334155;">আপনার পাসওয়ার্ড রিসেট কোড:</p>
+              <div style="font-size:30px;font-weight:bold;letter-spacing:8px;color:#0F172A;
+                          background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;
+                          padding:14px 0;text-align:center;margin:14px 0;">{otp}</div>
+              <p style="font-size:13px;color:#64748B;">কোডটা ১০ মিনিট পর্যন্ত কাজ করবে। কারো সাথে শেয়ার করবেন না।</p>
+            </div>
+            """
+            sent = _send_email(subject, email, text, html)
+            if not sent:
+                raise Exception("email send returned falsy")
+
+            user.otp = otp
+            user.save(update_fields=["otp"])
+
+            from django.core.cache import cache
+
+            cache.delete(f"otp_attempts_{email}")
+            local, domain = email.split("@", 1)
+            masked_local = (
+                local[:2] + "*" * max(1, len(local) - 2)
+                if len(local) > 2
+                else local[0] + "**"
+            )
+            return Response(
+                {
+                    "message": "OTP sent successfully to your email address",
+                    "method": "email",
+                    "masked_email": f"{masked_local}@{domain}",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            print(f"Error sending reset OTP email: {e}")
+            return Response(
+                {"error": "Failed to send email. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 @api_view(["POST"])

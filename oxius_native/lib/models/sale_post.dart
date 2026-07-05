@@ -15,6 +15,10 @@ class SalePost {
   final String? district;
   final String? area;
   final String? detailedAddress;
+  final String? phone;
+  // Delivery coverage: [{"division": ...}, {"division":..., "district":...}].
+  // Empty = deliver all over Bangladesh.
+  final List<Map<String, dynamic>> deliveryLocations;
   final String? categoryId;
   final String? categoryName;
   final String? subcategoryId;
@@ -43,6 +47,8 @@ class SalePost {
     this.district,
     this.area,
     this.detailedAddress,
+    this.phone,
+    this.deliveryLocations = const [],
     this.categoryId,
     this.categoryName,
     this.subcategoryId,
@@ -76,6 +82,13 @@ class SalePost {
       district: json['district'] as String?,
       area: json['area'] as String?,
       detailedAddress: json['detailed_address'] as String?,
+      phone: json['phone'] as String?,
+      deliveryLocations: json['delivery_locations'] is List
+          ? (json['delivery_locations'] as List)
+              .whereType<Map>()
+              .map((e) => e.cast<String, dynamic>())
+              .toList()
+          : const [],
       categoryId: json['category']?.toString(),
       categoryName: json['category_name'] as String? ?? 
                     (json['category_details'] != null ? json['category_details']['name'] as String? : null),

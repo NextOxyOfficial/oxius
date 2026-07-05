@@ -7,6 +7,7 @@ import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../services/translation_service.dart';
 import '../widgets/linkify_text.dart';
 import '../widgets/common/adsy_report_sheet.dart';
 import '../widgets/common/adsy_share_sheet.dart';
@@ -30,6 +31,10 @@ class SaleDetailScreen extends StatefulWidget {
 }
 
 class _SaleDetailScreenState extends State<SaleDetailScreen> {
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
+
   late SalePostService _postService;
   SalePost? _post;
   List<SalePost> _similarPosts = [];
@@ -135,7 +140,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       url: 'https://adsyclub.com/sale/${post.slug}',
       imageUrl: imageUrl,
       subject: post.title,
-      eyebrow: 'Sale Listing',
+      eyebrow: _t('sale_listing_eyebrow', 'পুরাতন কেনাবেচা'),
     );
   }
 
@@ -151,7 +156,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          _post?.title ?? 'Listing Details',
+          _post?.title ?? _t('sale_listing_details', 'বিজ্ঞাপনের ডিটেইলস'),
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -201,13 +206,13 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           Icon(Icons.error_outline, size: 80, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
-            'Post not found',
+            _t('sale_post_not_found', 'পোস্টটা পাওয়া যায়নি'),
             style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Go Back'),
+            child: Text(_t('sale_go_back', 'ফিরে যান')),
           ),
         ],
       ),
@@ -226,6 +231,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           if (hasImages) _buildImageGallery(images),
           if (hasImages) const SizedBox(height: 8),
           _buildProductInfoSection(),
+          Container(height: 1, color: Colors.grey.shade200),
+          _buildDeliveryCoverageSection(),
           Container(height: 1, color: Colors.grey.shade200),
           if (_post!.description != null && _post!.description!.isNotEmpty) ...[
             _buildDescriptionSection(),
@@ -428,7 +435,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             ? '${post.division}, ${post.district}, ${post.area}'
             : post.division != null && post.district != null
                 ? '${post.division}, ${post.district}'
-                : 'All Over Bangladesh';
+                : _t('sale_all_over_bangladesh', 'সারা বাংলাদেশ');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -440,7 +447,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                post.price > 0 ? _formatPrice(post.price) : 'Negotiable',
+                post.price > 0
+                    ? _formatPrice(post.price)
+                    : _t('sale_negotiable', 'দামাদামি করা যাবে'),
                 style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
@@ -459,9 +468,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(color: const Color(0xFFFDE68A)),
                   ),
-                  child: const Text(
-                    'Negotiable',
-                    style: TextStyle(
+                  child: Text(
+                    _t('sale_negotiable', 'দামাদামি করা যাবে'),
+                    style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFFB45309)),
@@ -541,13 +550,13 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 onTap: _openReportSheet,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.flag_outlined,
+                  children: [
+                    const Icon(Icons.flag_outlined,
                         size: 13, color: Color(0xFFDC2626)),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      'Report',
-                      style: TextStyle(
+                      _t('sale_report', 'রিপোর্ট করুন'),
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFFDC2626),
                         fontWeight: FontWeight.w500,
@@ -566,16 +575,25 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             children: [
               _buildSpecTile(
                   Icons.shield_rounded,
-                  'Condition',
-                  _capitalizeCondition(post.condition),
+                  _t('sale_condition', 'কন্ডিশন'),
+                  _conditionLabel(post.condition),
                   const Color(0xFFF59E0B)),
-              _buildSpecTile(Icons.category_rounded, 'Category',
-                  post.categoryName ?? 'N/A', const Color(0xFF10B981)),
+              _buildSpecTile(
+                  Icons.category_rounded,
+                  _t('sale_category', 'ক্যাটাগরি'),
+                  post.categoryName ?? _t('sale_not_available', 'নেই'),
+                  const Color(0xFF10B981)),
               if (post.subcategoryName != null)
-                _buildSpecTile(Icons.layers_rounded, 'Sub-category',
-                    post.subcategoryName!, const Color(0xFF3B82F6)),
-              _buildSpecTile(Icons.local_shipping_rounded, 'Delivery',
-                  deliveryLocation, const Color(0xFFEF4444)),
+                _buildSpecTile(
+                    Icons.layers_rounded,
+                    _t('sale_subcategory', 'সাব-ক্যাটাগরি'),
+                    post.subcategoryName!,
+                    const Color(0xFF3B82F6)),
+              _buildSpecTile(
+                  Icons.local_shipping_rounded,
+                  _t('sale_delivery', 'ডেলিভারি'),
+                  deliveryLocation,
+                  const Color(0xFFEF4444)),
             ],
           ),
         ],
@@ -631,10 +649,25 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     }).join(' ');
   }
 
-  String _capitalizeCondition(String condition) {
-    return condition.split('_').map((word) {
-      return word[0].toUpperCase() + word.substring(1);
-    }).join(' ');
+  String _conditionLabel(String condition) {
+    switch (condition) {
+      case 'brand-new':
+      case 'new':
+        return _t('sale_condition_brand_new', 'একদম নতুন');
+      case 'like-new':
+      case 'like_new':
+        return _t('sale_condition_like_new', 'নতুনের মতো');
+      case 'good':
+        return _t('sale_condition_good', 'ভালো');
+      case 'fair':
+        return _t('sale_condition_fair', 'মোটামুটি');
+      case 'for-parts':
+        return _t('sale_condition_for_parts', 'পার্টসের জন্য');
+      case 'poor':
+        return _t('sale_condition_poor', 'পুরনো');
+      default:
+        return condition.replaceAll('-', ' ').replaceAll('_', ' ');
+    }
   }
 
   String _stripHtmlTags(String htmlText) {
@@ -654,6 +687,98 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     return text;
   }
 
+  /// Where the seller delivers. Empty list = all over Bangladesh.
+  Widget _buildDeliveryCoverageSection() {
+    final locations = _post!.deliveryLocations;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.local_shipping_outlined,
+                  size: 17, color: Color(0xFF059669)),
+              const SizedBox(width: 6),
+              Text(
+                _t('sale_delivers_to', 'যেসব জায়গায় ডেলিভারি হয়'),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (locations.isEmpty)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFA7F3D0)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.public_rounded,
+                      size: 14, color: Color(0xFF059669)),
+                  const SizedBox(width: 5),
+                  Text(
+                    _t('sale_delivers_all_bd', 'সারা বাংলাদেশে'),
+                    style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF065F46)),
+                  ),
+                ],
+              ),
+            )
+          else
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: locations.map((loc) {
+                final division = (loc['division'] ?? '').toString();
+                final district = (loc['district'] ?? '').toString();
+                final label = district.isNotEmpty
+                    ? '$district, $division'
+                    : '$division (${_t('sale_dl_whole_division', 'পুরো বিভাগ')})';
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECFDF5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFA7F3D0)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.location_on_rounded,
+                          size: 13, color: Color(0xFF059669)),
+                      const SizedBox(width: 4),
+                      Text(
+                        label,
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF065F46)),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDescriptionSection() {
     final post = _post!;
     if (post.description == null || post.description!.isEmpty) {
@@ -665,9 +790,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Description',
-            style: TextStyle(
+          Text(
+            _t('sale_description', 'ডিটেইলস'),
+            style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: Color(0xFF111827),
@@ -712,12 +837,13 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.shield_rounded, color: Color(0xFFF59E0B), size: 18),
-              SizedBox(width: 8),
+            children: [
+              const Icon(Icons.shield_rounded,
+                  color: Color(0xFFF59E0B), size: 18),
+              const SizedBox(width: 8),
               Text(
-                'নিরাপত্তা পরামর্শ',
-                style: TextStyle(
+                _t('sale_safety_tips_title', 'নিরাপত্তার টিপস'),
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF92400E),
@@ -727,13 +853,18 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          _buildSafetyTip('পরিচিত ও জনবহুল স্থানে দেখা করুন'),
-          _buildSafetyTip('পণ্য ভালোভাবে দেখে ও যাচাই করে কিনুন'),
-          _buildSafetyTip('পণ্য হাতে পাওয়ার আগে টাকা পরিশোধ করবেন না'),
-          _buildSafetyTip('অগ্রিম বিকাশ/নগদ পাঠানোর অনুরোধ থেকে সতর্ক থাকুন'),
-          _buildSafetyTip(
-              'অপরিচিত লিংকে ক্লিক করা ও ব্যক্তিগত তথ্য শেয়ার থেকে বিরত থাকুন'),
-          _buildSafetyTip('প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান'),
+          _buildSafetyTip(_t('sale_safety_tip_meet',
+              'পরিচিত আর লোকজন আছে এমন জায়গায় দেখা করুন')),
+          _buildSafetyTip(_t('sale_safety_tip_verify',
+              'জিনিসটা ভালো করে দেখে ও যাচাই করে কিনুন')),
+          _buildSafetyTip(_t('sale_safety_tip_no_advance',
+              'জিনিস হাতে পাওয়ার আগে টাকা দেবেন না')),
+          _buildSafetyTip(_t('sale_safety_tip_bkash',
+              'আগেই বিকাশ/নগদে টাকা চাইলে সাবধান হোন')),
+          _buildSafetyTip(_t('sale_safety_tip_links',
+              'অচেনা লিংকে ক্লিক করবেন না, নিজের তথ্যও শেয়ার করবেন না')),
+          _buildSafetyTip(_t('sale_safety_tip_police',
+              'প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান')),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -743,14 +874,15 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               border: Border.all(color: const Color(0xFFFCA5A5)),
             ),
             child: Row(
-              children: const [
-                Icon(Icons.phone_in_talk_rounded,
+              children: [
+                const Icon(Icons.phone_in_talk_rounded,
                     size: 15, color: Color(0xFFDC2626)),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'জরুরি সহায়তার জন্য ৯৯৯ নম্বরে কল করুন',
-                    style: TextStyle(
+                    _t('sale_emergency_call',
+                        'জরুরি দরকারে ৯৯৯ নম্বরে কল করুন'),
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFFDC2626),
@@ -805,9 +937,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Seller Information',
-            style: TextStyle(
+          Text(
+            _t('sale_seller_info', 'বিক্রেতার তথ্য'),
+            style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: Color(0xFF111827),
@@ -924,8 +1056,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                             height: 1),
                       ),
                       const SizedBox(height: 2),
-                      const Text('Listings',
-                          style: TextStyle(
+                      Text(_t('sale_listings', 'টি বিজ্ঞাপন'),
+                          style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF6B7280),
                               fontWeight: FontWeight.w500)),
@@ -970,10 +1102,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Similar Listings',
-                  style: TextStyle(
+                  _t('sale_similar_listings', 'এরকম আরও বিজ্ঞাপন'),
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF111827),
@@ -983,9 +1115,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               ),
               TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/sale'),
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
+                child: Text(
+                  _t('sale_view_all', 'সব দেখুন'),
+                  style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF10B981)),
@@ -1026,7 +1158,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     final hasImage = post.images != null && post.images!.isNotEmpty;
     final location = post.division != null && post.district != null
         ? '${post.division}, ${post.district}'
-        : 'Bangladesh';
+        : _t('sale_bangladesh', 'বাংলাদেশ');
 
     return InkWell(
       onTap: () {
@@ -1108,7 +1240,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      post.price > 0 ? _formatPrice(post.price) : 'Negotiable',
+                      post.price > 0
+                    ? _formatPrice(post.price)
+                    : _t('sale_negotiable', 'দামাদামি করা যাবে'),
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
@@ -1157,19 +1291,25 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                             mode: LaunchMode.externalApplication);
                       } catch (_) {
                         if (mounted) {
-                          AdsyToast.error(context, 'Could not open phone dialer');
+                          AdsyToast.error(
+                              context,
+                              _t('sale_dialer_failed',
+                                  'ফোনের ডায়ালার খোলা গেল না'));
                         }
                       }
                     } else {
                       if (mounted) {
-                        AdsyToast.info(context, 'Phone number not available');
+                        AdsyToast.info(
+                            context,
+                            _t('sale_phone_not_available',
+                                'ফোন নাম্বার পাওয়া যায়নি'));
                       }
                     }
                   },
                   icon: const Icon(Icons.phone_rounded, size: 18),
-                  label: const Text('Call Seller',
-                      style:
-                          TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                  label: Text(_t('sale_call_seller', 'কল করুন'),
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w700)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
@@ -1210,8 +1350,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(width: 8),
-                    const Text('Chat Now',
-                        style: TextStyle(
+                    Text(_t('sale_chat_now', 'চ্যাট করুন'),
+                        style: const TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w700)),
                   ],
                 ),
@@ -1230,10 +1370,11 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
 
     AdsyReportSheet.show(
       context,
-      title: 'Report Listing',
-      prompt: 'Please select a reason for reporting this listing.',
+      title: _t('sale_report_listing', 'বিজ্ঞাপনটা রিপোর্ট করুন'),
+      prompt: _t('sale_report_prompt', 'কেন রিপোর্ট করছেন সেটা বেছে নিন।'),
       options: AdsyReportSheet.saleOptions,
-      successMessage: 'Thank you for reporting. We will review this listing.',
+      successMessage: _t('sale_report_success',
+          'রিপোর্ট করার জন্য ধন্যবাদ। আমরা বিজ্ঞাপনটা দেখে ব্যবস্থা নেব।'),
       onSubmit: (option, details) {
         return _postService.reportPost(
           slug,
@@ -1283,7 +1424,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           _showLoginRequiredDialog();
         }
       } else if (mounted) {
-        AdsyToast.error(context, 'Failed to open chat. Please try again.');
+        AdsyToast.error(context,
+            _t('sale_chat_open_failed', 'চ্যাট খোলা গেল না, আবার চেষ্টা করুন।'));
       }
     }
   }
@@ -1308,10 +1450,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Login Required',
-                style: TextStyle(
+                _t('sale_login_required', 'লগইন করতে হবে'),
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1319,22 +1461,24 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'You need to be logged in to chat with the seller.',
-              style: TextStyle(
+              _t('sale_login_required_msg',
+                  'বিক্রেতার সাথে চ্যাট করতে হলে আগে লগইন করতে হবে।'),
+              style: const TextStyle(
                 fontSize: 14,
                 color: Color(0xFF6B7280),
                 height: 1.5,
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              'Please login or create an account to continue.',
-              style: TextStyle(
+              _t('sale_login_or_signup',
+                  'লগইন করুন বা নতুন একাউন্ট খুলে নিন।'),
+              style: const TextStyle(
                 fontSize: 14,
                 color: Color(0xFF6B7280),
                 height: 1.5,
@@ -1345,9 +1489,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
+            child: Text(
+              _t('sale_cancel', 'ক্যান্সেল'),
+              style: const TextStyle(
                 color: Color(0xFF6B7280),
                 fontWeight: FontWeight.w600,
               ),
@@ -1366,9 +1510,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              'Login',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            child: Text(
+              _t('sale_login', 'লগইন'),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],

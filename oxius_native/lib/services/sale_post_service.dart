@@ -145,7 +145,10 @@ class SalePostService {
   Future<SalePost?> fetchPostBySlug(String slug) async {
     try {
       final uri = Uri.parse('$baseUrl/sale/posts/$slug/');
-      final response = await client.get(uri, headers: await _getHeaders());
+      // Send auth when available so an owner can open their own sold/pending
+      // post (guests simply get no Authorization header).
+      final response =
+          await client.get(uri, headers: await _getHeaders(needsAuth: true));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -278,6 +281,29 @@ class SalePostService {
     } catch (e) {
       debugPrint('Error marking post as sold: $e');
       rethrow; // Rethrow to show actual error in UI
+    }
+  }
+
+  /// Switch a post between 'active' and 'sold' (owner only).
+  Future<SalePost?> changeStatus(String slug, String newStatus) async {
+    try {
+      final uri = Uri.parse('$baseUrl/sale/posts/$slug/change_status/');
+      final response = await client.post(
+        uri,
+        headers: await _getHeaders(needsAuth: true),
+        body: json.encode({'status': newStatus}),
+      );
+
+      debugPrint('Change status response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        return SalePost.fromJson(json.decode(response.body));
+      }
+      debugPrint('Change status failed: ${response.body}');
+      return null;
+    } catch (e) {
+      debugPrint('Error changing post status: $e');
+      return null;
     }
   }
 

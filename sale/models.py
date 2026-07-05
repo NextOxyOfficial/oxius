@@ -176,6 +176,9 @@ class SalePost(models.Model):
     district = models.CharField(max_length=100, blank=True, null=True)
     area = models.CharField(max_length=100, blank=True, null=True)
     detailed_address = models.TextField(blank=True, null=True)
+    # Where the seller can deliver: list of {"division": "...", "district": "..."}
+    # entries (district optional). Empty list = all over Bangladesh.
+    delivery_locations = models.JSONField(default=list, blank=True)
 
     # Contact information
     phone = models.CharField(max_length=15)
@@ -239,12 +242,10 @@ class SalePost(models.Model):
             except Exception:
                 pass
 
-        # Ad approved (pending -> active): now live.
-        if (
-            previous_status
-            and previous_status != self.status
-            and self.status == "active"
-        ):
+        # Ad approved (pending -> active): now live. Only a real moderation
+        # approval — a seller re-activating a sold ad must NOT re-trigger the
+        # "approved" email/notice (it also made the request block on SMTP).
+        if previous_status == "pending" and self.status == "active":
             # In-app notice + push (via the AdminNotice post_save signal).
             if self.user_id:
                 try:

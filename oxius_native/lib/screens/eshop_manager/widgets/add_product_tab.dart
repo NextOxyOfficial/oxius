@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import '../../../services/translation_service.dart';
+import '../../../utils/image_compressor.dart';
 import '../../../widgets/ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
@@ -274,8 +275,18 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
     for (var file in pickedFiles) {
       if (_images.length >= 5) break;
 
-      final bytes = await file.readAsBytes();
-      final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      // Compress before encoding (fallback to original bytes on failure)
+      final compressed = await ImageCompressor.compressToBase64(
+        file,
+        targetSize: 80 * 1024,
+      );
+      final String base64Image;
+      if (compressed != null) {
+        base64Image = compressed;
+      } else {
+        final bytes = await file.readAsBytes();
+        base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      }
       setState(() => _images.add(base64Image));
     }
   }

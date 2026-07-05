@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
+import '../utils/image_compressor.dart';
 import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -143,8 +144,14 @@ class _PostGigScreenState extends State<PostGigScreen> {
           return;
         }
 
+        // Compress before encoding (fallback to original bytes on failure)
+        final compressed = await ImageCompressor.compressFromBytes(
+          bytes,
+          targetSize: 80 * 1024,
+        );
+
         // Convert to base64
-        final base64String = base64Encode(bytes);
+        final base64String = base64Encode(compressed ?? bytes);
 
         setState(() {
           _uploadedImages.add('data:image/jpeg;base64,$base64String');
