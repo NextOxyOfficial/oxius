@@ -31,7 +31,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
 
   // Palette pulled from the AdsyClub login illustration — brand teal accents
   // over a pale lavender-white sky.
-  static const _pageBackgroundColor = Color(0xFFF3F4FB);
+  static const _pageBackgroundColor = Color(0xFFEDEFFA);
   static const _surfaceColor = Colors.white;
   static const _cardBorderColor = Color(0xFFDDE3F5);
   static const _primaryColor = Color(0xFF10B5A5);
@@ -386,18 +386,37 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       backgroundColor: _pageBackgroundColor,
       body: Stack(
         children: [
+          // Page background: a soft vertical wash that CONTINUES the
+          // illustration's fade downward, so the area under the (uncropped)
+          // scene never looks abruptly cut.
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFEBF0F9),
+                    Color(0xFFDFE9F4),
+                    Color(0xFFD0E6EF),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
+                ),
+              ),
+            ),
+          ),
           SingleChildScrollView(
             padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Branded illustration banner. The artwork's scene (logo,
-                // tagline, shop + people) ends ~80% down with a white fade
-                // below; clip the fade away so the form sits right under.
+                // Branded illustration. The scene (logo, tagline, shop + people)
+                // ends ~60% down — clip exactly there so no content is cut, and
+                // the gradient page background below flows on from the fade.
                 ClipRect(
                   child: Align(
                     alignment: Alignment.topCenter,
-                    heightFactor: 0.80,
+                    heightFactor: 0.60,
                     child: Image.asset(
                       'assets/images/login_bg.png',
                       width: double.infinity,
@@ -408,9 +427,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                 ),
                 // Pull the form up onto the illustration's white fade tail.
                 Transform.translate(
-                  offset: const Offset(0, -30),
+                  offset: const Offset(0, -14),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 20),
+                    padding: const EdgeInsets.fromLTRB(22, 4, 22, 20),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 440),
