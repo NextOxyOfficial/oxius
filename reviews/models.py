@@ -21,6 +21,9 @@ class Review(models.Model):
     is_verified_purchase = models.BooleanField(default=False, help_text="Whether this review is from a verified purchase")
     is_approved = models.BooleanField(default=True, help_text="Whether this review is approved by admin")
     helpful_count = models.PositiveIntegerField(default=0)
+    # Seller / store owner reply to this review
+    seller_response = models.TextField(blank=True, null=True, help_text="Store owner's reply to this review")
+    seller_response_at = models.DateTimeField(blank=True, null=True, help_text="When the store owner replied")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/eshop_manager_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -21,6 +22,10 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
   final _formKey = GlobalKey<FormState>();
   final _storeNameController = TextEditingController();
   final _storeUsernameController = TextEditingController();
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   bool _isSubmitting = false;
   bool _isCheckingUsername = false;
@@ -61,8 +66,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   ?.map((e) => e.toString())
                   .toList() ??
               [];
-          _usernameError =
-              _usernameAvailable ? null : 'This username is already taken';
+          _usernameError = _usernameAvailable
+              ? null
+              : _t('eshop_username_taken', 'এই ইউজারনেম আগেই নেওয়া হয়ে গেছে');
         });
       }
     } catch (e) {
@@ -96,7 +102,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
     }
 
     if (_usernameChecked && !_usernameAvailable) {
-      AdsyToast.error(context, 'Please choose an available username');
+      AdsyToast.error(
+          context, _t('eshop_choose_available_username', 'একটা খালি ইউজারনেম বেছে নিন'));
       return;
     }
 
@@ -136,9 +143,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Store Created Successfully!',
-                  style: TextStyle(
+                Text(
+                  _t('eshop_store_created_success', 'স্টোর সফলভাবে তৈরি হয়ে গেছে!'),
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF111827),
@@ -147,7 +154,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Your store "$storeName" has been created. You can now start adding products.',
+                  _t('eshop_store_created_detail',
+                      'আপনার "$storeName" স্টোরটা তৈরি হয়ে গেছে। এখন প্রোডাক্ট অ্যাড করা শুরু করতে পারেন।'),
                   style: const TextStyle(
                     fontSize: 13,
                     color: Color(0xFF6B7280),
@@ -169,9 +177,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Go to Store Dashboard',
-                  style: TextStyle(
+                child: Text(
+                  _t('eshop_go_to_store_dashboard', 'স্টোর ড্যাশবোর্ডে যান'),
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -183,7 +191,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'স্টোর তৈরি করা যায়নি');
+        AdsyToast.error(
+            context, _t('eshop_store_create_failed', 'স্টোর তৈরি করা গেল না'));
       }
     } finally {
       if (mounted) {
@@ -219,9 +228,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Create Your Store',
-                      style: TextStyle(
+                    Text(
+                      _t('eshop_create_your_store', 'আপনার স্টোর তৈরি করুন'),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF111827),
@@ -230,9 +239,10 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Set up your online store and start selling your products',
-                      style: TextStyle(
+                    Text(
+                      _t('eshop_create_store_subtitle',
+                          'আপনার অনলাইন স্টোর সেট করুন আর প্রোডাক্ট বিক্রি করা শুরু করুন'),
+                      style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFF6B7280),
                         height: 1.5,
@@ -265,9 +275,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Store Name
-                      const Text(
-                        'Store Name',
-                        style: TextStyle(
+                      Text(
+                        _t('eshop_store_name_label', 'স্টোরের নাম'),
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF374151),
@@ -277,7 +287,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       TextFormField(
                         controller: _storeNameController,
                         decoration: InputDecoration(
-                          hintText: 'Enter your business name',
+                          hintText: _t('eshop_store_name_hint',
+                              'আপনার ব্যবসার নাম লিখুন'),
                           hintStyle: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade400,
@@ -308,7 +319,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         style: const TextStyle(fontSize: 13),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Store name is required';
+                            return _t('eshop_store_name_required',
+                                'স্টোরের নাম লাগবে');
                           }
                           return null;
                         },
@@ -316,9 +328,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       const SizedBox(height: 20),
 
                       // Store Username
-                      const Text(
-                        'Store Username',
-                        style: TextStyle(
+                      Text(
+                        _t('eshop_store_username_label', 'স্টোরের ইউজারনেম'),
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF374151),
@@ -328,7 +340,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       TextFormField(
                         controller: _storeUsernameController,
                         decoration: InputDecoration(
-                          hintText: 'Enter your store username',
+                          hintText: _t('eshop_store_username_hint',
+                              'আপনার স্টোরের ইউজারনেম লিখুন'),
                           hintStyle: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade400,
@@ -387,10 +400,12 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         onEditingComplete: _checkUsernameAvailability,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Store username is required';
+                            return _t('eshop_store_username_required',
+                                'স্টোরের ইউজারনেম লাগবে');
                           }
                           if (value.length < 3) {
-                            return 'Username must be at least 3 characters';
+                            return _t('eshop_username_min_length',
+                                'ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে');
                           }
                           if (_usernameError != null) {
                             return _usernameError;
@@ -426,8 +441,10 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                               Expanded(
                                 child: Text(
                                   _usernameAvailable
-                                      ? 'Username is available!'
-                                      : 'This username is already taken',
+                                      ? _t('eshop_username_available',
+                                          'ইউজারনেমটা খালি আছে!')
+                                      : _t('eshop_username_taken',
+                                          'এই ইউজারনেম আগেই নেওয়া হয়ে গেছে'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -445,7 +462,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       if (_usernameSuggestions.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
-                          'Try one of these instead:',
+                          _t('eshop_try_these_instead',
+                              'এগুলোর একটা ট্রাই করে দেখুন:'),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey.shade600,
@@ -498,7 +516,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Your store URL will be:',
+                              _t('eshop_store_url_will_be',
+                                  'আপনার স্টোরের URL হবে:'),
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey.shade600,
@@ -516,7 +535,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                 ),
                                 Text(
                                   _storeUsernameController.text.isEmpty
-                                      ? 'your-store'
+                                      ? _t('eshop_store_url_placeholder',
+                                          'your-store')
                                       : _storeUsernameController.text,
                                   style: const TextStyle(
                                     fontSize: 12,
@@ -557,9 +577,10 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                     ),
                                   ),
                                 )
-                              : const Text(
-                                  'Create Store',
-                                  style: TextStyle(
+                              : Text(
+                                  _t('eshop_create_store_button',
+                                      'স্টোর তৈরি করুন'),
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),

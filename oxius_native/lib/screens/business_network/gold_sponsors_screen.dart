@@ -5,6 +5,7 @@ import '../../services/gold_sponsor_service.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'become_gold_sponsor_screen.dart';
 
 class GoldSponsorsScreen extends StatefulWidget {
   const GoldSponsorsScreen({super.key});
@@ -180,6 +181,21 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
               ],
             ),
           ),
+          // Apply / become a sponsor
+          InkWell(
+            onTap: _openBecomeSponsor,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
+            ),
+          ),
+          const SizedBox(width: 8),
           Container(
             width: 38,
             height: 38,
@@ -190,6 +206,21 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             child: const Icon(Icons.workspace_premium, color: Colors.white),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openBecomeSponsor() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.94,
+          child: const BecomeGoldSponsorScreen(),
+        ),
       ),
     );
   }

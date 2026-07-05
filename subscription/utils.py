@@ -53,6 +53,11 @@ def sync_user_subscription_state(user, now=None, trigger='request'):
     now = now or timezone.now()
     expired_count = 0
     products_affected = 0
+    # Pro state BEFORE this sync. Product activation is only touched on a real
+    # transition (non-pro -> pro or pro -> non-pro); in steady state we must NOT
+    # bulk-override is_active, otherwise a seller's manual per-product
+    # active/inactive choice is stomped on every request.
+    was_pro = bool(getattr(user, 'is_pro', False))
 
     expired_subscriptions = Subscription.objects.select_related('plan').filter(
         user=user,
@@ -86,12 +91,14 @@ def sync_user_subscription_state(user, now=None, trigger='request'):
             updates.append('pro_validity')
         if updates:
             user.save(update_fields=updates)
-        result = manage_user_products_activation(
-            user,
-            activate=True,
-            reason=f'Active paid subscription sync via {trigger}',
-        )
-        products_affected += result.get('products_affected', 0)
+        # Only reactivate products when the user just transitioned into pro.
+        if not was_pro:
+            result = manage_user_products_activation(
+                user,
+                activate=True,
+                reason=f'Active paid subscription sync via {trigger}',
+            )
+            products_affected += result.get('products_affected', 0)
         return {
             'is_pro_active': True,
             'expired_subscriptions': expired_count,
@@ -99,12 +106,28 @@ def sync_user_subscription_state(user, now=None, trigger='request'):
         }
 
     if user.is_pro and user.pro_validity is None:
-        result = manage_user_products_activation(
-            user,
-            activate=True,
-            reason=f'Legacy pro access sync via {trigger}',
-        )
-        products_affected += result.get('products_affected', 0)
+        # Legacy/manual pro. Only bulk-activate on the transition into pro; in
+        # steady state leave the seller's manual per-product choices intact.
+        if not was_pro:
+            result = manage_user_products_activation(
+                user,
+                activate=True,
+                reason=f'Legacy pro access sync via {trigger}',
+            )
+            products_affected += result.get('products_affected', 0)
+        return {
+            'is_pro_active': True,
+            'expired_subscriptions': expired_count,
+            'products_affected': products_affected,
+        }
+
+    if user.is_pro and user.pro_validity and user.pro_validity > now:
+        # Pro purchased through the legacy flow (base.Subscription — the one
+        # the app's /subscribe/ endpoint actually uses). It sets is_pro and a
+        # future pro_validity but never creates a row in this app's
+        # Subscription table, so it must be honored here until the validity
+        # date passes — otherwise a real purchase gets stripped on the very
+        # next request.
         return {
             'is_pro_active': True,
             'expired_subscriptions': expired_count,
@@ -116,12 +139,17 @@ def sync_user_subscription_state(user, now=None, trigger='request'):
         user.pro_validity = None
         user.save(update_fields=['is_pro', 'pro_validity'])
 
-    result = manage_user_products_activation(
-        user,
-        activate=False,
-        reason=f'No active paid subscription via {trigger}',
-    )
-    products_affected += result.get('products_affected', 0)
+    # Only deactivate products on the transition OUT of pro. In steady-state
+    # non-pro we do NOT keep re-deactivating on every request, so a seller's
+    # manual toggles are no longer stomped (public visibility is still gated by
+    # public_product_queryset, which requires an active pro owner).
+    if was_pro:
+        result = manage_user_products_activation(
+            user,
+            activate=False,
+            reason=f'No active paid subscription via {trigger}',
+        )
+        products_affected += result.get('products_affected', 0)
     return {
         'is_pro_active': False,
         'expired_subscriptions': expired_count,
@@ -168,16 +196,17 @@ def expire_due_subscriptions(now=None, trigger='system'):
     legacy_count = 0
     legacy_results = []
 
-    # Reconcile EVERY store flagged pro with a tracked validity (pro_validity set):
-    # if it has no active *paid* subscription backing it, expire it. This catches
-    # not only date-expired ones (pro_validity <= now) but also stores whose paid
-    # plan was cancelled/downgraded to Free while pro_validity still pointed to a
-    # future date — those never tripped the date-based check, so their products
-    # kept showing in the public feed. Manual/legacy pro (pro_validity IS NULL) is
-    # deliberately left untouched.
+    # Reconcile stores whose tracked validity has actually passed
+    # (pro_validity <= now). A FUTURE pro_validity is honored as-is: the live
+    # purchase flow (base.Subscription via /subscribe/) sets it without
+    # creating a row in this app's Subscription table, so requiring such a row
+    # here would strip pro from genuinely paid stores. Cancellations in this
+    # app already downgrade the user directly in Subscription.cancel().
+    # Manual/legacy pro (pro_validity IS NULL) is deliberately left untouched.
     legacy_expired_users = User.objects.filter(
         is_pro=True,
         pro_validity__isnull=False,
+        pro_validity__lte=now,
     )
 
     for user in legacy_expired_users:

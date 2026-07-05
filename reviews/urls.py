@@ -20,10 +20,15 @@ urlpatterns = [
          name='review-detail'),
     
     # Review helpful votes
-    path('reviews/<uuid:review_id>/helpful/', 
-         views.toggle_review_helpful, 
+    path('reviews/<uuid:review_id>/helpful/',
+         views.toggle_review_helpful,
          name='toggle-review-helpful'),
-    
+
+    # Store owner reply to a review
+    path('reviews/<uuid:review_id>/reply/',
+         views.reply_to_review,
+         name='reply-to-review'),
+
     # User's review for a specific product
     path('products/<uuid:product_id>/my-review/', 
          views.user_review_for_product, 

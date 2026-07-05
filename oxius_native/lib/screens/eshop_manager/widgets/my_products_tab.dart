@@ -4,12 +4,14 @@ import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../../services/translation_service.dart';
+import '../../product_details_screen.dart';
 
 class MyProductsTab extends StatefulWidget {
   final List<ShopProduct> products;
   final int productLimit;
   final int totalProducts;
-  final VoidCallback onRefresh;
+  final Future<void> Function() onRefresh;
   final VoidCallback onProductUpdated;
   final VoidCallback onProductDeleted;
   final bool hasMore;
@@ -36,6 +38,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
   bool _isProcessing = false;
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   @override
   void initState() {
@@ -128,36 +133,30 @@ class _MyProductsTabState extends State<MyProductsTab> {
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.edit_rounded,
-                          color: Color(0xFF10B981),
-                          size: 20,
-                        ),
+                      const Icon(
+                        Icons.edit_rounded,
+                        color: Color(0xFF10B981),
+                        size: 24,
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Edit Product',
-                              style: TextStyle(
+                              _t('eshop_edit_product', 'প্রোডাক্ট এডিট'),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF111827),
                                 letterSpacing: -0.2,
                               ),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 2),
                             Text(
-                              'Update product details and status',
-                              style: TextStyle(
+                              _t('eshop_edit_product_subtitle',
+                                  'প্রোডাক্টের ডিটেইলস আর স্ট্যাটাস আপডেট করুন'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF6B7280),
                               ),
@@ -181,9 +180,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Product Status Toggle
-                      const Text(
-                        'Product Status',
-                        style: TextStyle(
+                      Text(
+                        _t('eshop_product_status', 'প্রোডাক্ট স্ট্যাটাস'),
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF374151),
@@ -194,7 +193,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                         children: [
                           _buildStatusChip(
                             'active',
-                            'Active',
+                            _t('eshop_status_active', 'অ্যাক্টিভ'),
                             Icons.check_circle_rounded,
                             selectedStatus == 'active',
                             () =>
@@ -203,7 +202,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                           const SizedBox(width: 8),
                           _buildStatusChip(
                             'inactive',
-                            'Inactive',
+                            _t('eshop_status_inactive', 'ইনঅ্যাক্টিভ'),
                             Icons.cancel_rounded,
                             selectedStatus == 'inactive',
                             () => setSheetState(
@@ -212,7 +211,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                           const SizedBox(width: 8),
                           _buildStatusChip(
                             'out-of-stock',
-                            'Out of Stock',
+                            _t('eshop_status_out_of_stock', 'স্টক আউট'),
                             Icons.inventory_2_rounded,
                             selectedStatus == 'out-of-stock',
                             () => setSheetState(
@@ -223,12 +222,15 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       const SizedBox(height: 20),
 
                       // Product Name
-                      _buildTextField('Product Name', nameController,
+                      _buildTextField(
+                          _t('eshop_product_name', 'প্রোডাক্টের নাম'),
+                          nameController,
                           required: true),
                       const SizedBox(height: 16),
 
                       // Description
-                      _buildTextField('Description', descController,
+                      _buildTextField(
+                          _t('eshop_description', 'ডিসক্রিপশন'), descController,
                           maxLines: 3),
                       const SizedBox(height: 16),
 
@@ -237,7 +239,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                         children: [
                           Expanded(
                             child: _buildTextField(
-                              'Price (৳)',
+                              _t('eshop_price_taka', 'প্রাইস (৳)'),
                               priceController,
                               keyboardType: TextInputType.number,
                               required: true,
@@ -246,7 +248,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildTextField(
-                              'Stock',
+                              _t('eshop_stock', 'স্টক'),
                               stockController,
                               keyboardType: TextInputType.number,
                               required: true,
@@ -272,9 +274,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                 ),
                                 side: BorderSide(color: Colors.grey.shade300),
                               ),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
+                              child: Text(
+                                _t('eshop_cancel', 'ক্যান্সেল'),
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF6B7280),
@@ -291,7 +293,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                   : () async {
                                       if (nameController.text.trim().isEmpty) {
                                         _showSnackBar(
-                                            'Product name is required',
+                                            _t('eshop_name_required',
+                                                'প্রোডাক্টের নাম দিতে হবে'),
                                             isError: true);
                                         return;
                                       }
@@ -333,8 +336,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
                                       if (result['success'] == true) {
                                         Navigator.pop(context);
-                                        _showSnackBar(
-                                            'Product updated successfully');
+                                        _showSnackBar(_t(
+                                            'eshop_product_updated',
+                                            'প্রোডাক্ট আপডেট হয়ে গেছে'));
                                         final updatedStock =
                                             selectedStatus == 'out-of-stock'
                                                 ? 0
@@ -386,7 +390,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                       } else {
                                         _showSnackBar(
                                             result['message'] ??
-                                                'Failed to update',
+                                                _t('eshop_update_failed',
+                                                    'আপডেট করা যায়নি'),
                                             isError: true);
                                       }
                                     },
@@ -410,15 +415,17 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                             Colors.white),
                                       ),
                                     )
-                                  : const Row(
+                                  : Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.save_rounded, size: 18),
-                                        SizedBox(width: 8),
+                                        const Icon(Icons.save_rounded,
+                                            size: 18),
+                                        const SizedBox(width: 8),
                                         Text(
-                                          'Save Changes',
-                                          style: TextStyle(
+                                          _t('eshop_save_changes',
+                                              'সেভ করুন'),
+                                          style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -522,24 +529,28 @@ class _MyProductsTabState extends State<MyProductsTab> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_rounded, color: Color(0xFFEF4444), size: 24),
-            SizedBox(width: 8),
+            const Icon(Icons.warning_rounded,
+                color: Color(0xFFEF4444), size: 24),
+            const SizedBox(width: 8),
             Text(
-              'Delete Product',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              _t('eshop_delete_product', 'প্রোডাক্ট ডিলিট'),
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ],
         ),
         content: Text(
-          'Are you sure you want to delete "${product.name}"? This action cannot be undone.',
+          _t('eshop_delete_confirm',
+                  'আপনি কি "{name}" ডিলিট করতে চান? এটা আর ফেরত আনা যাবে না।')
+              .replaceFirst('{name}', product.name),
           style: const TextStyle(fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(_t('eshop_cancel', 'ক্যান্সেল')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -552,10 +563,13 @@ class _MyProductsTabState extends State<MyProductsTab> {
               setState(() => _isProcessing = false);
 
               if (success) {
-                _showSnackBar('Product deleted successfully');
+                _showSnackBar(
+                    _t('eshop_product_deleted', 'প্রোডাক্ট ডিলিট হয়ে গেছে'));
                 widget.onProductDeleted();
               } else {
-                _showSnackBar('Failed to delete product', isError: true);
+                _showSnackBar(
+                    _t('eshop_delete_failed', 'প্রোডাক্ট ডিলিট করা যায়নি'),
+                    isError: true);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -565,9 +579,103 @@ class _MyProductsTabState extends State<MyProductsTab> {
                   borderRadius: BorderRadius.circular(6)),
               elevation: 0,
             ),
-            child: const Text('Delete'),
+            child: Text(_t('eshop_delete', 'ডিলিট')),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openProduct(ShopProduct product) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProductDetailsScreen(
+          product: {
+            'id': product.id,
+            'name': product.name,
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleActive(ShopProduct product) async {
+    final makeActive = product.status == 'inactive';
+    final newStatus = makeActive ? 'active' : 'inactive';
+
+    // Optimistic local update
+    final index = widget.products.indexWhere((p) => p.id == product.id);
+    if (index == -1) return;
+    final displayStatus = makeActive
+        ? (product.stock <= 0 ? 'out-of-stock' : 'active')
+        : 'inactive';
+    setState(() {
+      widget.products[index] = ShopProduct(
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        stock: product.stock,
+        status: displayStatus,
+        image: product.image,
+        imageDetails: product.imageDetails,
+        featuredImage: product.featuredImage,
+        categoryId: product.categoryId,
+        categoryName: product.categoryName,
+        createdAt: product.createdAt,
+        updatedAt: DateTime.now(),
+        sellerId: product.sellerId,
+        sellerName: product.sellerName,
+        views: product.views,
+      );
+    });
+
+    final result = await EshopManagerService.updateProduct(
+      productId: product.id,
+      status: newStatus,
+    );
+
+    if (!mounted) return;
+    if (result['success'] == true) {
+      _showSnackBar(makeActive
+          ? _t('eshop_product_activated', 'প্রোডাক্ট অ্যাক্টিভ করা হয়েছে')
+          : _t('eshop_product_deactivated', 'প্রোডাক্ট ইনঅ্যাক্টিভ করা হয়েছে'));
+      widget.onProductUpdated();
+    } else {
+      // Revert on failure
+      setState(() => widget.products[index] = product);
+      _showSnackBar(
+          result['message'] ?? _t('eshop_update_failed', 'আপডেট করা যায়নি'),
+          isError: true);
+    }
+  }
+
+  Widget _actionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -591,14 +699,18 @@ class _MyProductsTabState extends State<MyProductsTab> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterChip('all', 'All', widget.products.length),
+                _buildFilterChip('all', _t('eshop_filter_all', 'সব'),
+                    widget.products.length),
                 const SizedBox(width: 6),
-                _buildFilterChip('active', 'Active', _activeCount),
+                _buildFilterChip('active',
+                    _t('eshop_status_active', 'অ্যাক্টিভ'), _activeCount),
                 const SizedBox(width: 6),
-                _buildFilterChip('inactive', 'Inactive', _inactiveCount),
+                _buildFilterChip('inactive',
+                    _t('eshop_status_inactive', 'ইনঅ্যাক্টিভ'), _inactiveCount),
                 const SizedBox(width: 6),
-                _buildFilterChip(
-                    'out-of-stock', 'Out of Stock', _outOfStockCount),
+                _buildFilterChip('out-of-stock',
+                    _t('eshop_status_out_of_stock', 'স্টক আউট'),
+                    _outOfStockCount),
               ],
             ),
           ),
@@ -606,15 +718,32 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
         // Products List
         Expanded(
-          child: _filteredProducts.isEmpty
-              ? _buildEmptyState()
+          child: AdsyRefreshIndicator(
+            onRefresh: widget.onRefresh,
+            color: const Color(0xFF10B981),
+            child: _filteredProducts.isEmpty
+              ? ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: _buildEmptyState(),
+                    ),
+                  ],
+                )
               : Column(
                   children: [
                     Expanded(
-                      child: ListView.builder(
+                      child: ListView.separated(
                         controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(2, 4, 2, 12),
                         itemCount: _filteredProducts.length,
+                        separatorBuilder: (context, index) => const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Color(0xFFF1F5F9),
+                        ),
                         itemBuilder: (context, index) {
                           return _buildProductListItem(
                               _filteredProducts[index]);
@@ -624,10 +753,10 @@ class _MyProductsTabState extends State<MyProductsTab> {
                     if (_isLoadingMore)
                       Container(
                         padding: const EdgeInsets.all(12),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               width: 16,
                               height: 16,
                               child: AdsyLoadingIndicator(
@@ -636,10 +765,11 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                     AlwaysStoppedAnimation(Color(0xFF10B981)),
                               ),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Text(
-                              'Loading more products...',
-                              style: TextStyle(
+                              _t('eshop_loading_more',
+                                  'আরও প্রোডাক্ট লোড হচ্ছে...'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF6B7280),
                               ),
@@ -649,6 +779,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       ),
                   ],
                 ),
+          ),
         ),
       ],
     );
@@ -707,23 +838,18 @@ class _MyProductsTabState extends State<MyProductsTab> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.inventory_2_outlined,
-              size: 48,
-              color: Colors.grey.shade400,
-            ),
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 56,
+            color: Colors.grey.shade400,
           ),
           const SizedBox(height: 16),
           Text(
             _selectedFilter == 'all'
-                ? 'No products yet'
-                : 'No $_selectedFilter products',
+                ? _t('eshop_no_products_yet', 'এখনো কোনো প্রোডাক্ট নেই')
+                : _t('eshop_no_products_in_filter',
+                        'এই ফিল্টারে কোনো প্রোডাক্ট নেই')
+                    .replaceFirst('{filter}', _selectedFilter),
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -732,7 +858,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Add products to start selling',
+            _t('eshop_add_products_hint',
+                'বিক্রি শুরু করতে প্রোডাক্ট অ্যাড করুন'),
             style: TextStyle(
               fontSize: 13,
               color: Colors.grey.shade600,
@@ -749,89 +876,100 @@ class _MyProductsTabState extends State<MyProductsTab> {
             ? product.imageDetails!.first.image
             : product.image);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-            ),
-            child: SizedBox(
-              width: 100,
-              height: 100,
-              child: imageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Center(
-                          child: AdsyLoadingIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation(Color(0xFF10B981)),
+    final isActive = product.status != 'inactive';
+
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () => _openProduct(product),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: SizedBox(
+                  width: 78,
+                  height: 78,
+                  child: imageUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey.shade100,
+                            child: const Center(
+                              child: AdsyLoadingIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation(Color(0xFF10B981)),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey.shade100,
+                            child: const Icon(
+                                Icons.image_not_supported_rounded,
+                                size: 28),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey.shade100,
+                          child: const Icon(Icons.image_outlined, size: 28),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Status Badge & Name & Active toggle
+                    Row(
+                      children: [
+                        _buildStatusBadge(product.status),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _openProduct(product),
+                            behavior: HitTestBehavior.opaque,
+                            child: Text(
+                              product.name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF111827),
+                                height: 1.25,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Icon(Icons.image_not_supported_rounded,
-                            size: 32),
-                      ),
-                    )
-                  : Container(
-                      color: Colors.grey.shade100,
-                      child: const Icon(Icons.image_outlined, size: 32),
+                        SizedBox(
+                          height: 24,
+                          child: Transform.scale(
+                            scale: 0.7,
+                            alignment: Alignment.centerRight,
+                            child: Switch(
+                              value: isActive,
+                              onChanged: (_) => _toggleActive(product),
+                              activeThumbColor: Colors.white,
+                              activeTrackColor: const Color(0xFF10B981),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-            ),
-          ),
+                    const SizedBox(height: 4),
 
-          // Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Status Badge & Name
-                  Row(
-                    children: [
-                      _buildStatusBadge(product.status),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF111827),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Price & Stock & Views
-                  Row(
+                    // Price & Stock & Views
+                    Row(
                     children: [
                       Text(
                         '৳${product.price.toStringAsFixed(2)}',
@@ -896,58 +1034,36 @@ class _MyProductsTabState extends State<MyProductsTab> {
                   // Actions
                   Row(
                     children: [
-                      InkWell(
+                      _actionButton(
+                        icon: Icons.edit_outlined,
+                        label: _t('eshop_edit', 'এডিট'),
+                        color: const Color(0xFF059669),
                         onTap: () => _showEditDialog(product),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.edit_rounded,
-                                  size: 14, color: Colors.white),
-                              SizedBox(width: 4),
-                              Text(
-                                'Edit',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
-                      const SizedBox(width: 6),
-                      InkWell(
+                      const SizedBox(width: 4),
+                      _actionButton(
+                        icon: Icons.delete_outline,
+                        label: _t('eshop_delete', 'ডিলিট'),
+                        color: const Color(0xFFDC2626),
                         onTap: () => _showDeleteDialog(product),
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(
-                            Icons.delete_rounded,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ),
+                      ),
+                      const Spacer(),
+                      _actionButton(
+                        icon: Icons.visibility_outlined,
+                        label: _t('eshop_view', 'দেখুন'),
+                        color: const Color(0xFF2563EB),
+                        onTap: () => _openProduct(product),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
+    ),
+  );
   }
 
 
@@ -981,8 +1097,12 @@ class _MyProductsTabState extends State<MyProductsTab> {
       ),
       child: Text(
         status == 'out-of-stock'
-            ? 'Out of Stock'
-            : status[0].toUpperCase() + status.substring(1),
+            ? _t('eshop_status_out_of_stock', 'স্টক আউট')
+            : status == 'active'
+                ? _t('eshop_status_active', 'অ্যাক্টিভ')
+                : status == 'inactive'
+                    ? _t('eshop_status_inactive', 'ইনঅ্যাক্টিভ')
+                    : status[0].toUpperCase() + status.substring(1),
         style: TextStyle(
           fontSize: 9,
           fontWeight: FontWeight.w600,

@@ -3,6 +3,7 @@ import '../../../services/eshop_manager_service.dart';
 import '../../../services/auth_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../../services/translation_service.dart';
 
 class BuySlotsBottomSheet extends StatefulWidget {
   final int currentProductCount;
@@ -26,6 +27,10 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
   bool _isLoading = true;
   bool _isPurchasing = false;
   double _userBalance = 0;
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   @override
   void initState() {
@@ -73,8 +78,10 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
             : _selectedPackage!['price'] as double;
 
     if (_userBalance < price) {
-      AdsyToast.error(context,
-          'Insufficient balance. You need ৳${price.toStringAsFixed(0)}');
+      AdsyToast.error(
+          context,
+          _t('eshop_buyslots_need_balance',
+              'ব্যালেন্স যথেষ্ট নয়। আপনার লাগবে ৳${price.toStringAsFixed(0)}'));
       return;
     }
 
@@ -91,13 +98,18 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
     if (result['success'] == true) {
       if (mounted) {
         Navigator.pop(context);
-        AdsyToast.success(context,
-            'Successfully purchased ${_selectedPackage!['slots']} slot(s)!');
+        AdsyToast.success(
+            context,
+            _t('eshop_buyslots_purchase_success',
+                '${_selectedPackage!['slots']} টা স্লট কেনা হয়ে গেছে!'));
         widget.onPurchaseSuccess();
       }
     } else {
       if (mounted) {
-        AdsyToast.error(context, result['message'] ?? 'Purchase failed');
+        AdsyToast.error(
+            context,
+            result['message'] ??
+                _t('eshop_buyslots_purchase_failed', 'পারচেজ হয়নি'));
       }
     }
   }
@@ -133,26 +145,19 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.shopping_cart_rounded,
-                    color: Color(0xFF10B981),
-                    size: 20,
-                  ),
+                const Icon(
+                  Icons.shopping_cart_rounded,
+                  color: Color(0xFF10B981),
+                  size: 26,
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Buy Product Slots',
-                        style: TextStyle(
+                        _t('eshop_buyslots_title', 'প্রোডাক্ট স্লট কিনুন'),
+                        style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF111827),
@@ -160,8 +165,9 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                         ),
                       ),
                       Text(
-                        'Expand your store capacity',
-                        style: TextStyle(
+                        _t('eshop_buyslots_subtitle',
+                            'আপনার স্টোরের ক্যাপাসিটি বাড়ান'),
+                        style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF6B7280),
                         ),
@@ -203,7 +209,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                   size: 48, color: Colors.grey.shade300),
                               const SizedBox(height: 12),
                               Text(
-                                'No packages available',
+                                _t('eshop_buyslots_no_packages',
+                                    'কোনো প্যাকেজ নেই'),
                                 style: TextStyle(
                                     fontSize: 13, color: Colors.grey.shade600),
                               ),
@@ -212,7 +219,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                         ),
                       )
                     : SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.fromLTRB(2, 20, 2, 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -232,7 +239,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
-                                      'Using ${widget.currentProductCount}/${widget.productLimit} slots',
+                                      _t('eshop_buyslots_using_slots',
+                                          '${widget.currentProductCount}/${widget.productLimit} স্লট ব্যবহার হচ্ছে'),
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFF065F46),
@@ -253,7 +261,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                     color: Color(0xFF6B7280)),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'Balance:',
+                                  _t('eshop_buyslots_balance_label',
+                                      'ব্যালেন্স:'),
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey.shade600),
@@ -273,8 +282,10 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                       context, '/deposit-withdraw'),
                                   icon: const Icon(Icons.add_circle_outline,
                                       size: 14),
-                                  label: const Text('Add Funds',
-                                      style: TextStyle(fontSize: 11)),
+                                  label: Text(
+                                      _t('eshop_buyslots_add_funds',
+                                          'টাকা অ্যাড করুন'),
+                                      style: const TextStyle(fontSize: 11)),
                                   style: TextButton.styleFrom(
                                     foregroundColor: const Color(0xFF10B981),
                                     padding: const EdgeInsets.symmetric(
@@ -370,7 +381,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                                 Row(
                                                   children: [
                                                     Text(
-                                                      '${pkg['slots']} Slots',
+                                                      _t('eshop_buyslots_slots_count',
+                                                          '${pkg['slots']} স্লট'),
                                                       style: const TextStyle(
                                                         fontSize: 14,
                                                         fontWeight:
@@ -396,9 +408,10 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                                               BorderRadius
                                                                   .circular(4),
                                                         ),
-                                                        child: const Text(
-                                                          'BEST',
-                                                          style: TextStyle(
+                                                        child: Text(
+                                                          _t('eshop_buyslots_best_pill',
+                                                              'বেস্ট'),
+                                                          style: const TextStyle(
                                                             fontSize: 8,
                                                             fontWeight:
                                                                 FontWeight.w800,
@@ -412,7 +425,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Text(
-                                                  'Add ${pkg['slots']} more products',
+                                                  _t('eshop_buyslots_add_more_products',
+                                                      'আরও ${pkg['slots']} টা প্রোডাক্ট অ্যাড করুন'),
                                                   style: TextStyle(
                                                       fontSize: 11,
                                                       color:
@@ -513,7 +527,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'Insufficient balance. Please add funds.',
+                                        _t('eshop_buyslots_low_balance_warning',
+                                            'ব্যালেন্স যথেষ্ট নয়। টাকা অ্যাড করুন।'),
                                         style: TextStyle(
                                             fontSize: 11,
                                             color: Colors.red.shade900),
@@ -547,8 +562,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('Cancel',
-                          style: TextStyle(
+                      child: Text(_t('eshop_buyslots_cancel', 'ক্যান্সেল'),
+                          style: const TextStyle(
                               fontSize: 13, fontWeight: FontWeight.w600)),
                     ),
                   ),
@@ -587,9 +602,10 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                     AlwaysStoppedAnimation(Colors.white),
                               ),
                             )
-                          : const Text(
-                              'Purchase Now',
-                              style: TextStyle(
+                          : Text(
+                              _t('eshop_buyslots_purchase_now',
+                                  'এখনই কিনুন'),
+                              style: const TextStyle(
                                   fontSize: 13, fontWeight: FontWeight.w700),
                             ),
                     ),

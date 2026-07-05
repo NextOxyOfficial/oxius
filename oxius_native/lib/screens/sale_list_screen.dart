@@ -2171,28 +2171,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFA7F3D0)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle,
-                          size: 13, color: Color(0xFF059669)),
-                      SizedBox(width: 3),
-                      Text('যাচাইকৃত',
-                          style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF047857))),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),

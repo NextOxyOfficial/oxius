@@ -70,8 +70,8 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
           constraints.hasBoundedHeight ? constraints.maxHeight : 42,
         );
         final size = (widget.size ?? boundedMax).clamp(14.0, 46.0).toDouble();
-        final logoSize = (size * 0.66).clamp(14.0, 30.0).toDouble();
-        final dotSize = (size * 0.12).clamp(2.2, 4.8).toDouble();
+        final ringStroke = (size * 0.088).clamp(2.4, 4.2).toDouble();
+        final logoSize = (size * 0.50).clamp(12.0, 24.0).toDouble();
 
         return SizedBox(
           width: size,
@@ -79,52 +79,46 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, _) {
+              final determinate = widget.value != null;
+              // Gentle breathing of the logo, synced to the rotation.
+              final pulse = determinate
+                  ? 1.0
+                  : 0.94 +
+                      0.06 *
+                          (0.5 +
+                              0.5 *
+                                  math.sin(_controller.value * math.pi * 2));
               return Stack(
                 alignment: Alignment.center,
                 children: [
+                  // Rotating sweep-gradient comet ring
                   Transform.rotate(
-                    angle: _controller.value * math.pi * 2,
-                    child: material.CircularProgressIndicator(
-                      value: widget.value,
-                      backgroundColor: widget.backgroundColor,
-                      color: color.withValues(alpha: 0.18),
-                      strokeWidth: math.max(1.4, widget.strokeWidth * 0.72),
-                      strokeAlign: widget.strokeAlign,
-                      strokeCap: widget.strokeCap ?? StrokeCap.round,
-                      semanticsLabel: widget.semanticsLabel,
-                      semanticsValue: widget.semanticsValue,
-                    ),
-                  ),
-                  Image.asset(
-                    'assets/images/favicon.png',
-                    width: logoSize,
-                    height: logoSize,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.autorenew_rounded,
-                      size: logoSize,
-                      color: color,
-                    ),
-                  ),
-                  ...List.generate(3, (index) {
-                    final angle =
-                        (_controller.value * math.pi * 2) + (index * 2.09);
-                    final radius = size * 0.38;
-                    return Transform.translate(
-                      offset: Offset(
-                          math.cos(angle) * radius, math.sin(angle) * radius),
-                      child: Container(
-                        width: dotSize,
-                        height: dotSize,
-                        decoration: BoxDecoration(
-                          color: color.withValues(
-                            alpha: index == 0 ? 1 : (0.42 + index * 0.18),
-                          ),
-                          shape: BoxShape.circle,
-                        ),
+                    angle:
+                        determinate ? 0 : _controller.value * math.pi * 2,
+                    child: CustomPaint(
+                      size: Size(size, size),
+                      painter: _SweepRingPainter(
+                        color: color,
+                        strokeWidth: ringStroke,
+                        progress: widget.value,
                       ),
-                    );
-                  }),
+                    ),
+                  ),
+                  // Center logo with a subtle pulse
+                  Transform.scale(
+                    scale: pulse,
+                    child: Image.asset(
+                      'assets/images/favicon.png',
+                      width: logoSize,
+                      height: logoSize,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.storefront_rounded,
+                        size: logoSize,
+                        color: color,
+                      ),
+                    ),
+                  ),
                 ],
               );
             },
@@ -143,6 +137,78 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
 
     return child;
   }
+}
+
+/// Draws the spinner ring. Indeterminate = a comet-style sweep-gradient arc
+/// (transparent tail → solid rounded head). Determinate = a faint full track
+/// plus a solid progress arc from the top.
+class _SweepRingPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double? progress;
+
+  _SweepRingPainter({
+    required this.color,
+    required this.strokeWidth,
+    this.progress,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (math.min(size.width, size.height) - strokeWidth) / 2;
+    if (radius <= 0) return;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    if (progress != null) {
+      final track = Paint()
+        ..color = color.withValues(alpha: 0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+      canvas.drawCircle(center, radius, track);
+
+      final arc = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+      canvas.drawArc(
+        rect,
+        -math.pi / 2,
+        progress!.clamp(0.0, 1.0) * math.pi * 2,
+        false,
+        arc,
+      );
+      return;
+    }
+
+    // Indeterminate comet arc.
+    const sweep = math.pi * 2 * 0.80;
+    final gradient = SweepGradient(
+      startAngle: 0,
+      endAngle: sweep,
+      colors: [
+        color.withValues(alpha: 0.0),
+        color.withValues(alpha: 0.85),
+        color,
+      ],
+      stops: const [0.0, 0.7, 1.0],
+      tileMode: TileMode.clamp,
+    );
+    final paint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(rect, 0, sweep, false, paint);
+  }
+
+  @override
+  bool shouldRepaint(_SweepRingPainter old) =>
+      old.color != color ||
+      old.strokeWidth != strokeWidth ||
+      old.progress != progress;
 }
 
 class AdsyRefreshIndicator extends StatefulWidget {

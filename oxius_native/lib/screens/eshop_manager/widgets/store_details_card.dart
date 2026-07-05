@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
+import '../../../services/translation_service.dart';
 import '../../../widgets/ios_web_redirect_screen.dart';
 import 'buy_slots_bottom_sheet.dart';
+import '../../../services/auth_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -30,7 +32,11 @@ class StoreDetailsCard extends StatefulWidget {
 }
 
 class _StoreDetailsCardState extends State<StoreDetailsCard> {
-  bool _isExpanded = false;
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) => _i18n.translate(key, fallback: fallback);
+
+  // Store details are always fully shown now (no collapse).
+  final bool _isExpanded = true;
   bool _isEditing = false;
   bool _isSaving = false;
   bool _copied = false;
@@ -60,12 +66,16 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
 
   Future<void> _saveChanges() async {
     if (_nameController.text.trim().isEmpty) {
-      _showSnackBar('Store name is required', isError: true);
+      _showSnackBar(_t('eshop_store_name_required', 'স্টোরের নাম দিতে হবে'),
+          isError: true);
       return;
     }
 
     if (_nameController.text.trim().length < 2) {
-      _showSnackBar('Store name must be at least 2 characters', isError: true);
+      _showSnackBar(
+          _t('eshop_store_name_min_length',
+              'স্টোরের নাম কমপক্ষে ২ অক্ষরের হতে হবে'),
+          isError: true);
       return;
     }
 
@@ -82,10 +92,12 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
 
     if (result['success'] == true) {
       setState(() => _isEditing = false);
-      _showSnackBar('Store updated successfully');
+      _showSnackBar(_t('eshop_store_updated', 'স্টোর আপডেট হয়ে গেছে'));
       widget.onStoreUpdated();
     } else {
-      _showSnackBar(result['message'] ?? 'Failed to update store',
+      _showSnackBar(
+          result['message'] ??
+              _t('eshop_store_update_failed', 'স্টোর আপডেট করা যায়নি'),
           isError: true);
     }
   }
@@ -118,7 +130,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
   }
 
   String _getLastOrderDate() {
-    if (widget.orders.isEmpty) return 'No orders yet';
+    if (widget.orders.isEmpty) {
+      return _t('eshop_no_orders_yet', 'এখনও কোনো অর্ডার নেই');
+    }
 
     final sortedOrders = [...widget.orders];
     sortedOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -128,11 +142,11 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
     final difference = now.difference(lastOrder);
 
     if (difference.inDays == 0) {
-      return 'Today';
+      return _t('eshop_last_order_today', 'আজকে');
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return _t('eshop_last_order_yesterday', 'গতকাল');
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+      return _t('eshop_last_order_days_ago', '${difference.inDays} দিন আগে');
     } else {
       return '${lastOrder.day}/${lastOrder.month}/${lastOrder.year}';
     }
@@ -147,7 +161,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
     final remainingSlots = widget.productLimit - actualProductCount;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -162,9 +176,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
       ),
       child: Column(
         children: [
-          // Header
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
+          // Header (non-collapsible — details are always shown)
+          Material(
+            color: Colors.transparent,
             child: Container(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               decoration: BoxDecoration(
@@ -183,10 +197,10 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   const Icon(Icons.store_rounded,
                       color: Colors.white, size: 20),
                   const SizedBox(width: 8),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'My Store Details',
-                      style: TextStyle(
+                      _t('eshop_my_store_details', 'আমার স্টোরের ডিটেইলস'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -202,23 +216,15 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                         color: Colors.yellow.shade600,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        'Editing',
-                        style: TextStyle(
+                      child: Text(
+                        _t('eshop_editing', 'এডিট করছেন'),
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                       ),
                     ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    _isExpanded
-                        ? Icons.expand_less_rounded
-                        : Icons.expand_more_rounded,
-                    color: Colors.white,
-                    size: 22,
-                  ),
                   if (!_isEditing) ...[
                     const SizedBox(width: 4),
                     InkWell(
@@ -258,15 +264,15 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                                       AlwaysStoppedAnimation(Color(0xFF10B981)),
                                 ),
                               )
-                            : const Row(
+                            : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.check_rounded,
+                                  const Icon(Icons.check_rounded,
                                       color: Color(0xFF10B981), size: 14),
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    'Save',
-                                    style: TextStyle(
+                                    _t('eshop_save', 'সেভ'),
+                                    style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: Color(0xFF10B981),
@@ -304,10 +310,11 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
               padding: const EdgeInsets.all(12),
               child: Column(
                 children: [
+                  if (!_isEditing) _buildStoreOverview(),
                   // Store Name
                   _buildInfoRow(
                     icon: Icons.store_rounded,
-                    label: 'Shop Name',
+                    label: _t('eshop_shop_name', 'স্টোরের নাম'),
                     isRequired: true,
                     child: _isEditing
                         ? TextField(
@@ -316,7 +323,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             style: const TextStyle(
                                 fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
-                              hintText: 'Enter shop name',
+                              hintText: _t('eshop_enter_shop_name',
+                                  'স্টোরের নাম লিখুন'),
                               hintStyle: TextStyle(color: Colors.grey.shade400),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 8),
@@ -351,7 +359,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   // Store URL
                   _buildInfoRow(
                     icon: Icons.link_rounded,
-                    label: 'Store URL',
+                    label: _t('eshop_store_url', 'স্টোর URL'),
                     child: Row(
                       children: [
                         Expanded(
@@ -398,11 +406,12 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                     ),
                   ),
                   if (!_isEditing)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 36, top: 2),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 36, top: 2),
                       child: Text(
-                        'URL cannot be changed',
-                        style: TextStyle(
+                        _t('eshop_url_cannot_change',
+                            'URL চেঞ্জ করা যাবে না'),
+                        style: const TextStyle(
                           fontSize: 10,
                           color: Color(0xFF9CA3AF),
                           fontStyle: FontStyle.italic,
@@ -414,14 +423,15 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   // Store Address
                   _buildInfoRow(
                     icon: Icons.location_on_rounded,
-                    label: 'Shop Address',
+                    label: _t('eshop_shop_address', 'স্টোরের ঠিকানা'),
                     child: _isEditing
                         ? TextField(
                             controller: _addressController,
                             enabled: !_isSaving,
                             style: const TextStyle(fontSize: 13),
                             decoration: InputDecoration(
-                              hintText: 'Enter shop address',
+                              hintText: _t('eshop_enter_shop_address',
+                                  'স্টোরের ঠিকানা লিখুন'),
                               hintStyle: TextStyle(color: Colors.grey.shade400),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 8),
@@ -443,7 +453,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             ),
                           )
                         : Text(
-                            widget.storeDetails.storeAddress ?? 'Not set',
+                            widget.storeDetails.storeAddress ??
+                                _t('eshop_not_set', 'দেওয়া হয়নি'),
                             style: TextStyle(
                               fontSize: 13,
                               color: widget.storeDetails.storeAddress != null
@@ -457,7 +468,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   // Description
                   _buildInfoRow(
                     icon: Icons.description_rounded,
-                    label: 'Description',
+                    label: _t('eshop_description', 'ডিসক্রিপশন'),
                     child: _isEditing
                         ? TextField(
                             controller: _descriptionController,
@@ -466,7 +477,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             maxLength: 500,
                             style: const TextStyle(fontSize: 13),
                             decoration: InputDecoration(
-                              hintText: 'Enter a brief description...',
+                              hintText: _t('eshop_enter_description',
+                                  'ছোট একটা ডিসক্রিপশন লিখুন...'),
                               hintStyle: TextStyle(color: Colors.grey.shade400),
                               contentPadding: const EdgeInsets.all(10),
                               border: OutlineInputBorder(
@@ -488,7 +500,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                           )
                         : Text(
                             widget.storeDetails.storeDescription ??
-                                'No description available',
+                                _t('eshop_no_description',
+                                    'কোনো ডিসক্রিপশন নেই'),
                             style: TextStyle(
                               fontSize: 13,
                               color:
@@ -528,16 +541,16 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Text(
-                  'Store Active',
-                  style: TextStyle(
+                Text(
+                  _t('eshop_store_active', 'স্টোর অ্যাক্টিভ'),
+                  style: const TextStyle(
                     fontSize: 11,
                     color: Color(0xFF6B7280),
                   ),
                 ),
                 const Spacer(),
                 Text(
-                  'Slots: ',
+                  _t('eshop_slots_label', 'স্লট: '),
                   style: const TextStyle(
                     fontSize: 11,
                     color: Color(0xFF6B7280),
@@ -563,10 +576,10 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const IOSWebRedirectScreen(
-                              title: 'Product Slots',
-                              description:
-                                  'This feature is not available in this version of the app.',
+                            builder: (context) => IOSWebRedirectScreen(
+                              title: _t('eshop_product_slots', 'প্রোডাক্ট স্লট'),
+                              description: _t('eshop_feature_unavailable',
+                                  'এই ফিচারটা অ্যাপের এই ভার্সনে নেই।'),
                               webPath: 'shop-manager',
                               hideWebRedirect: true,
                             ),
@@ -601,9 +614,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             color: Color(0xFF10B981),
                           ),
                           const SizedBox(width: 3),
-                          const Text(
-                            'Buy More',
-                            style: TextStyle(
+                          Text(
+                            _t('eshop_buy_more', 'আরও কিনুন'),
+                            style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF10B981),
@@ -624,7 +637,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Last order: ${_getLastOrderDate()}',
+                  '${_t('eshop_last_order', 'লাস্ট অর্ডার')}: ${_getLastOrderDate()}',
                   style: const TextStyle(
                     fontSize: 11,
                     color: Color(0xFF6B7280),
@@ -633,6 +646,92 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  String _fmtDate(DateTime? d) {
+    if (d == null) return '—';
+    const months = [
+      'জানু', 'ফেব', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+      'জুলাই', 'আগস্ট', 'সেপ্ট', 'অক্টো', 'নভে', 'ডিসে'
+    ];
+    return '${d.day} ${months[(d.month - 1).clamp(0, 11)]} ${d.year}';
+  }
+
+  Widget _ovTile(String label, String value, Color color) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+          const SizedBox(height: 3),
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 13.5, fontWeight: FontWeight.w800, color: color)),
+        ],
+      ),
+    );
+  }
+
+  // Professional store overview — status, slots, orders, revenue, membership
+  // and Pro renewal date, always visible at the top of the details.
+  Widget _buildStoreOverview() {
+    final actualProductCount = widget.totalProducts > 0
+        ? widget.totalProducts
+        : widget.products.length;
+    final orders = widget.orders.length;
+    final revenue = widget.orders
+        .where((o) => o.orderStatus == 'delivered')
+        .fold<double>(0, (s, o) => s + o.total);
+    final active = widget.storeDetails.isActive;
+    final renewal = AuthService.currentUser?.proValidity;
+    const divider = Padding(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      child: Divider(height: 1, color: Color(0xFFECEFF3)),
+    );
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE9EDF2)),
+      ),
+      child: Column(
+        children: [
+          Row(children: [
+            _ovTile(
+                _t('eshop_ov_store_status', 'স্টোর স্ট্যাটাস'),
+                active
+                    ? _t('eshop_ov_active', 'অ্যাক্টিভ')
+                    : _t('eshop_ov_inactive', 'ইনঅ্যাক্টিভ'),
+                active ? const Color(0xFF059669) : const Color(0xFF94A3B8)),
+            _ovTile(
+                _t('eshop_ov_product_slots', 'প্রোডাক্ট স্লট'),
+                '$actualProductCount / ${widget.productLimit}',
+                const Color(0xFF6366F1)),
+          ]),
+          divider,
+          Row(children: [
+            _ovTile(_t('eshop_ov_total_orders', 'টোটাল অর্ডার'),
+                '$orders টি', const Color(0xFF2563EB)),
+            _ovTile(_t('eshop_ov_total_income', 'টোটাল ইনকাম'),
+                '৳${revenue.toStringAsFixed(0)}', const Color(0xFF059669)),
+          ]),
+          divider,
+          Row(children: [
+            _ovTile(
+                _t('eshop_ov_joined_date', 'জয়েন করেছেন'),
+                _fmtDate(widget.storeDetails.createdAt),
+                const Color(0xFF475569)),
+            _ovTile(_t('eshop_ov_renew_date', 'রিনিউ ডেট'), _fmtDate(renewal),
+                const Color(0xFFB45309)),
+          ]),
         ],
       ),
     );
@@ -647,14 +746,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF10B981).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(icon, size: 16, color: const Color(0xFF10B981)),
-        ),
+        Icon(icon, size: 22, color: const Color(0xFF10B981)),
         const SizedBox(width: 10),
         Expanded(
           child: Column(

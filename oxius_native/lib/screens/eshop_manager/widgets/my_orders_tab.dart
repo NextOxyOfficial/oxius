@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
+import '../../../services/translation_service.dart';
+import 'edit_order_sheet.dart';
 
 class MyOrdersTab extends StatefulWidget {
   final List<ShopOrder> orders;
-  final VoidCallback onRefresh;
+  final List<ShopProduct> products;
+  final Future<void> Function() onRefresh;
 
   const MyOrdersTab({
     super.key,
     required this.orders,
+    this.products = const [],
     required this.onRefresh,
   });
 
@@ -18,6 +23,9 @@ class MyOrdersTab extends StatefulWidget {
 }
 
 class _MyOrdersTabState extends State<MyOrdersTab> {
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) => _i18n.translate(key, fallback: fallback);
+
   String _selectedFilter = 'all';
 
   List<ShopOrder> get _filteredOrders {
@@ -28,6 +36,19 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
   int get _pendingCount => widget.orders.where((o) => o.orderStatus == 'pending').length;
   int get _processingCount => widget.orders.where((o) => o.orderStatus == 'processing').length;
   int get _deliveredCount => widget.orders.where((o) => o.orderStatus == 'delivered').length;
+
+  void _showEditOrder(ShopOrder order) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => EditOrderSheet(
+        order: order,
+        products: widget.products,
+        onSaved: () async => widget.onRefresh(),
+      ),
+    );
+  }
 
   Future<void> _updateOrderStatus(String orderId, String newStatus) async {
     debugPrint('📦 Updating order $orderId to status: $newStatus');
@@ -60,24 +81,24 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
         }
       });
       
-      _showSnackBar('Order status updated to ${_getStatusLabel(newStatus)}');
+      _showSnackBar('${_t('eshop_order_status_updated_to', 'অর্ডার স্ট্যাটাস আপডেট হয়েছে')} ${_getStatusLabel(newStatus)}');
       // Also refresh from backend to ensure consistency
       widget.onRefresh();
     } else {
-      _showSnackBar('Failed to update order status', isError: true);
+      _showSnackBar(_t('eshop_order_status_update_failed', 'অর্ডার স্ট্যাটাস আপডেট করা যায়নি'), isError: true);
     }
   }
 
   String _getStatusLabel(String status) {
     switch (status) {
       case 'pending':
-        return 'Pending';
+        return _t('eshop_status_pending', 'পেন্ডিং');
       case 'processing':
-        return 'Processing';
+        return _t('eshop_status_processing', 'প্রসেসিং');
       case 'delivered':
-        return 'Delivered';
+        return _t('eshop_status_delivered', 'ডেলিভারড');
       case 'cancelled':
-        return 'Cancelled';
+        return _t('eshop_status_cancelled', 'ক্যান্সেল');
       default:
         return status;
     }
@@ -102,13 +123,13 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterChip('all', 'All', widget.orders.length),
+                _buildFilterChip('all', _t('eshop_filter_all', 'সব'), widget.orders.length),
                 const SizedBox(width: 6),
-                _buildFilterChip('pending', 'Pending', _pendingCount),
+                _buildFilterChip('pending', _t('eshop_status_pending', 'পেন্ডিং'), _pendingCount),
                 const SizedBox(width: 6),
-                _buildFilterChip('processing', 'Processing', _processingCount),
+                _buildFilterChip('processing', _t('eshop_status_processing', 'প্রসেসিং'), _processingCount),
                 const SizedBox(width: 6),
-                _buildFilterChip('delivered', 'Delivered', _deliveredCount),
+                _buildFilterChip('delivered', _t('eshop_status_delivered', 'ডেলিভারড'), _deliveredCount),
               ],
             ),
           ),
@@ -116,15 +137,33 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
 
         // Orders List
         Expanded(
-          child: _filteredOrders.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  itemCount: _filteredOrders.length,
-                  itemBuilder: (context, index) {
-                    return _buildOrderCard(_filteredOrders[index]);
-                  },
-                ),
+          child: AdsyRefreshIndicator(
+            onRefresh: widget.onRefresh,
+            color: const Color(0xFF10B981),
+            child: _filteredOrders.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: _buildEmptyState(),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(2, 4, 2, 12),
+                    itemCount: _filteredOrders.length,
+                    separatorBuilder: (context, index) => const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFF1F5F9),
+                    ),
+                    itemBuilder: (context, index) {
+                      return _buildOrderCard(_filteredOrders[index]);
+                    },
+                  ),
+          ),
         ),
       ],
     );
@@ -181,21 +220,16 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.shopping_bag_outlined,
-              size: 48,
-              color: Colors.grey.shade400,
-            ),
+          Icon(
+            Icons.shopping_bag_outlined,
+            size: 56,
+            color: Colors.grey.shade400,
           ),
           const SizedBox(height: 16),
           Text(
-            _selectedFilter == 'all' ? 'No orders yet' : 'No $_selectedFilter orders',
+            _selectedFilter == 'all'
+                ? _t('eshop_no_orders_yet', 'এখনো কোনো অর্ডার নেই')
+                : '${_getStatusLabel(_selectedFilter)} ${_t('eshop_no_orders_of_status', 'অর্ডার নেই')}',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -204,7 +238,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Orders will appear here when customers make purchases',
+            _t('eshop_orders_appear_hint', 'কাস্টমার কিনলে অর্ডার এখানে দেখা যাবে'),
             style: TextStyle(
               fontSize: 13,
               color: Colors.grey.shade600,
@@ -217,57 +251,38 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
   }
 
   Widget _buildOrderCard(ShopOrder order) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Order #${order.orderNumber ?? order.id.substring(0, 8)}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () => _showOrderDetails(order),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header row: order number + status
+              Row(
+                children: [
+                  Text(
+                    '${_t('eshop_order_hash', 'অর্ডার')} #${order.orderNumber ?? order.id.substring(0, 8)}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
                   ),
-                ),
-                const Spacer(),
-                _buildStatusBadge(order.orderStatus),
-              ],
-            ),
-          ),
+                  const Spacer(),
+                  _buildStatusBadge(order.orderStatus),
+                ],
+              ),
+              const SizedBox(height: 8),
 
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Customer Name and Date in same row
-                Row(
+              // Body content
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Customer Name and Date in same row
+                  Row(
                   children: [
                     if (order.customerName != null) ...[
                       const Icon(Icons.person_rounded, size: 14, color: Color(0xFF6B7280)),
@@ -332,7 +347,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     Padding(
                       padding: const EdgeInsets.only(left: 10),
                       child: Text(
-                        '+${order.items!.length - 2} more',
+                        '+${order.items!.length - 2} ${_t('eshop_more_items', 'আরও')}',
                         style: const TextStyle(
                           fontSize: 10,
                           color: Color(0xFF9CA3AF),
@@ -342,21 +357,13 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     ),
                 ],
               ],
-            ),
-          ),
-
-          // Total and Buttons row
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10),
               ),
-            ),
-            child: Row(
-              children: [
+
+              const SizedBox(height: 10),
+
+              // Total and action buttons row
+              Row(
+                children: [
                 // Total Amount
                 const Icon(Icons.attach_money_rounded, size: 16, color: Color(0xFF10B981)),
                 const SizedBox(width: 4),
@@ -369,6 +376,21 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                   ),
                 ),
                 const Spacer(),
+                // Edit Order Items Button (icon only)
+                InkWell(
+                  onTap: () => _showEditOrder(order),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(Icons.edit_note_rounded,
+                        size: 16, color: Color(0xFF475569)),
+                  ),
+                ),
+                const SizedBox(width: 6),
                 // Details Button
                 InkWell(
                   onTap: () => _showOrderDetails(order),
@@ -381,12 +403,12 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.info_outline_rounded, size: 14, color: Colors.white),
-                        SizedBox(width: 4),
+                      children: [
+                        const Icon(Icons.info_outline_rounded, size: 14, color: Colors.white),
+                        const SizedBox(width: 4),
                         Text(
-                          'Details',
-                          style: TextStyle(
+                          _t('eshop_details', 'ডিটেইলস'),
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -409,12 +431,12 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.white),
-                        SizedBox(width: 4),
+                      children: [
+                        const Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.white),
+                        const SizedBox(width: 4),
                         Text(
-                          'Status',
-                          style: TextStyle(
+                          _t('eshop_status', 'স্ট্যাটাস'),
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -424,10 +446,11 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     ),
                   ),
                 ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -476,7 +499,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
           Icon(icon, size: 12, color: textColor),
           const SizedBox(width: 4),
           Text(
-            status[0].toUpperCase() + status.substring(1),
+            _getStatusLabel(status),
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -523,26 +546,19 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.receipt_long_rounded,
-                        color: Color(0xFF3B82F6),
-                        size: 20,
-                      ),
+                    const Icon(
+                      Icons.receipt_long_rounded,
+                      color: Color(0xFF3B82F6),
+                      size: 24,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Order Details',
-                            style: TextStyle(
+                          Text(
+                            _t('eshop_order_details', 'অর্ডার ডিটেইলস'),
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF111827),
@@ -550,7 +566,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Order #${order.orderNumber ?? order.id.substring(0, 8)}',
+                            '${_t('eshop_order_hash', 'অর্ডার')} #${order.orderNumber ?? order.id.substring(0, 8)}',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFF6B7280),
@@ -578,9 +594,9 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     // Status Badge
                     Row(
                       children: [
-                        const Text(
-                          'Status:',
-                          style: TextStyle(
+                        Text(
+                          '${_t('eshop_status', 'স্ট্যাটাস')}:',
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF6B7280),
@@ -594,15 +610,15 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
 
                     // Customer Information
                     _buildDetailSection(
-                      'Customer Information',
+                      _t('eshop_customer_information', 'কাস্টমার ইনফরমেশন'),
                       Icons.person_rounded,
                       [
                         if (order.customerName != null)
-                          _buildDetailRow('Name', order.customerName!),
+                          _buildDetailRow(_t('eshop_name', 'নাম'), order.customerName!),
                         if (order.customerEmail != null)
-                          _buildDetailRow('Email', order.customerEmail!),
+                          _buildDetailRow(_t('eshop_email', 'ইমেইল'), order.customerEmail!),
                         if (order.customerPhone != null)
-                          _buildDetailRow('Phone', order.customerPhone!),
+                          _buildDetailRow(_t('eshop_phone', 'ফোন'), order.customerPhone!),
                       ],
                     ),
 
@@ -611,10 +627,10 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     // Shipping Address
                     if (order.shippingAddress != null)
                       _buildDetailSection(
-                        'Shipping Address',
+                        _t('eshop_shipping_address', 'শিপিং ঠিকানা'),
                         Icons.location_on_rounded,
                         [
-                          _buildDetailRow('Address', order.shippingAddress!),
+                          _buildDetailRow(_t('eshop_address', 'ঠিকানা'), order.shippingAddress!),
                         ],
                       ),
 
@@ -622,7 +638,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
 
                     // Order Items
                     _buildDetailSection(
-                      'Order Items (${order.items?.length ?? 0})',
+                      '${_t('eshop_order_items', 'অর্ডার আইটেম')} (${order.items?.length ?? 0})',
                       Icons.shopping_bag_rounded,
                       [
                         if (order.items != null && order.items!.isNotEmpty)
@@ -634,12 +650,12 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
 
                     // Payment & Total
                     _buildDetailSection(
-                      'Payment Information',
+                      _t('eshop_payment_information', 'পেমেন্ট ইনফরমেশন'),
                       Icons.payment_rounded,
                       [
-                        _buildDetailRow('Payment Method', order.paymentMethod ?? 'N/A'),
+                        _buildDetailRow(_t('eshop_payment_method', 'পেমেন্ট মেথড'), order.paymentMethod ?? _t('eshop_na', 'নেই')),
                         _buildDetailRow(
-                          'Total Amount',
+                          _t('eshop_total_amount', 'টোটাল অ্যামাউন্ট'),
                           '৳${order.total.toStringAsFixed(2)}',
                           isHighlighted: true,
                         ),
@@ -658,10 +674,10 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                       ),
                       child: Column(
                         children: [
-                          _buildDetailRow('Order Date', _formatDate(order.createdAt)),
+                          _buildDetailRow(_t('eshop_order_date', 'অর্ডার ডেট'), _formatDate(order.createdAt)),
                           if (order.updatedAt != null) ...[
                             const SizedBox(height: 8),
-                            _buildDetailRow('Last Updated', _formatDate(order.updatedAt!)),
+                            _buildDetailRow(_t('eshop_last_updated', 'লাস্ট আপডেট'), _formatDate(order.updatedAt!)),
                           ],
                         ],
                       ),
@@ -797,7 +813,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                 Row(
                   children: [
                     Text(
-                      'Qty: ${item.quantity}',
+                      '${_t('eshop_qty', 'কোয়ান্টিটি')}: ${item.quantity}',
                       style: const TextStyle(
                         fontSize: 11,
                         color: Color(0xFF6B7280),
@@ -861,26 +877,19 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
               ),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.swap_horiz_rounded,
-                      color: Color(0xFF10B981),
-                      size: 20,
-                    ),
+                  const Icon(
+                    Icons.swap_horiz_rounded,
+                    color: Color(0xFF10B981),
+                    size: 24,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Change Order Status',
-                          style: TextStyle(
+                        Text(
+                          _t('eshop_change_order_status', 'অর্ডার স্ট্যাটাস আপডেট'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF111827),
@@ -888,7 +897,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Order #${order.orderNumber ?? order.id.substring(0, 8)}',
+                          '${_t('eshop_order_hash', 'অর্ডার')} #${order.orderNumber ?? order.id.substring(0, 8)}',
                           style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF6B7280),
@@ -915,8 +924,8 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     context,
                     order,
                     'pending',
-                    'Pending',
-                    'Order is awaiting acceptance',
+                    _t('eshop_status_pending', 'পেন্ডিং'),
+                    _t('eshop_status_pending_desc', 'অর্ডার অ্যাকসেপ্ট করার অপেক্ষায়'),
                     Icons.schedule_rounded,
                     const Color(0xFFF59E0B),
                   ),
@@ -925,8 +934,8 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     context,
                     order,
                     'processing',
-                    'Processing',
-                    'Order is being prepared',
+                    _t('eshop_status_processing', 'প্রসেসিং'),
+                    _t('eshop_status_processing_desc', 'অর্ডার রেডি করা হচ্ছে'),
                     Icons.autorenew_rounded,
                     const Color(0xFF3B82F6),
                   ),
@@ -935,8 +944,8 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     context,
                     order,
                     'delivered',
-                    'Delivered',
-                    'Order has been delivered',
+                    _t('eshop_status_delivered', 'ডেলিভারড'),
+                    _t('eshop_status_delivered_desc', 'অর্ডার ডেলিভারি হয়ে গেছে'),
                     Icons.check_circle_rounded,
                     const Color(0xFF10B981),
                   ),
@@ -945,8 +954,8 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     context,
                     order,
                     'cancelled',
-                    'Cancelled',
-                    'Order has been cancelled',
+                    _t('eshop_status_cancelled', 'ক্যান্সেল'),
+                    _t('eshop_status_cancelled_desc', 'অর্ডার ক্যান্সেল করা হয়েছে'),
                     Icons.cancel_rounded,
                     const Color(0xFFEF4444),
                   ),
@@ -990,14 +999,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
+            Icon(icon, color: color, size: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1021,9 +1023,9 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                             color: color,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            'Current',
-                            style: TextStyle(
+                          child: Text(
+                            _t('eshop_current', 'এখন'),
+                            style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -1062,11 +1064,11 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Today at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+      return '${_t('eshop_today_at', 'আজকে')} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return _t('eshop_yesterday', 'গতকাল');
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+      return '${difference.inDays} ${_t('eshop_days_ago', 'দিন আগে')}';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }

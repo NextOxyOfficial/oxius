@@ -69,7 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isHomePopupOpen = false;
 
   // Header animation
-  bool _isHeaderVisible = true;
+  // ValueNotifier (not setState): toggling header visibility during scroll
+  // must repaint ONLY the header overlay. A setState here rebuilt the entire
+  // homepage Column mid-scroll, dropping frames ("shaking") on low-end devices.
+  final ValueNotifier<bool> _isHeaderVisible = ValueNotifier<bool>(true);
   double _lastScrollPosition = 0;
 
   // Double-tap back to exit
@@ -404,21 +407,14 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    // Check if user is scrolling down or up
+    // Check if user is scrolling down or up. Setting the notifier repaints
+    // only the header overlay (ValueListenableBuilder) — never the sections.
     if (scrollDelta > 0 && currentScrollPosition > 100) {
       // Scrolling down - hide header
-      if (_isHeaderVisible) {
-        setState(() {
-          _isHeaderVisible = false;
-        });
-      }
+      _isHeaderVisible.value = false;
     } else if (scrollDelta < 0) {
       // Scrolling up - show header
-      if (!_isHeaderVisible) {
-        setState(() {
-          _isHeaderVisible = true;
-        });
-      }
+      _isHeaderVisible.value = true;
     }
 
     _lastScrollPosition = currentScrollPosition;
@@ -430,6 +426,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _messageCountTimer?.cancel();
     _scrollController.dispose();
     _scrollService.dispose();
+    _isHeaderVisible.dispose();
     super.dispose();
   }
 
@@ -625,19 +622,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Animated Header positioned at top with proper elevation
+              // Animated Header positioned at top with proper elevation.
+              // ValueListenableBuilder scopes the show/hide repaint to this
+              // overlay only — the heavy section Column below never rebuilds.
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  transform: Matrix4.translationValues(
-                    0,
-                    _isHeaderVisible ? 0 : -(topPadding + 56.0),
-                    0,
-                  ),
-                  curve: Curves.easeInOut,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _isHeaderVisible,
+                  builder: (context, headerVisible, child) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      transform: Matrix4.translationValues(
+                        0,
+                        headerVisible ? 0 : -(topPadding + 56.0),
+                        0,
+                      ),
+                      curve: Curves.easeInOut,
+                      child: child,
+                    );
+                  },
                   child: Material(
                     elevation: 4,
                     shadowColor: Colors.black.withValues(alpha: 0.15),

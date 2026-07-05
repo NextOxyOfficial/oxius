@@ -36,6 +36,7 @@ class User {
   final String? storeUsername;
   final String? storeName;
   final int? productLimit;
+  final DateTime? proValidity;
   final int profileCompletion;
   final List<Map<String, dynamic>> missingSteps;
   // True when first name, last name, phone and date of birth are all set.
@@ -69,6 +70,7 @@ class User {
     this.storeUsername,
     this.storeName,
     this.productLimit,
+    this.proValidity,
     this.profileCompletion = 100,
     this.missingSteps = const [],
     this.mandatoryProfileComplete = true,
@@ -128,6 +130,9 @@ class User {
       storeUsername: json['store_username'],
       storeName: json['store_name'],
       productLimit: json['product_limit'],
+      proValidity: json['pro_validity'] != null
+          ? DateTime.tryParse(json['pro_validity'].toString())
+          : null,
       profileCompletion: json['profile_completion'] is num
           ? (json['profile_completion'] as num).toInt()
           : int.tryParse(json['profile_completion']?.toString() ?? '') ?? 100,

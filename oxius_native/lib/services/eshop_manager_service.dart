@@ -630,6 +630,47 @@ class EshopManagerService {
     }
   }
 
+  /// Add / remove / re-quantify items on an existing order.
+  /// [items] is a list of `{'product': id, 'quantity': int}` — quantity 0
+  /// removes the item, a new product id adds it, others update the quantity.
+  static Future<Map<String, dynamic>> updateOrderItems({
+    required String orderId,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/orders/$orderId/update/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'items': items}),
+      );
+
+      debugPrint('📦 Update order items response: ${response.statusCode}');
+      debugPrint('📦 Update order items body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true, 'data': json.decode(response.body)};
+      }
+      // Surface the backend's specific reason when available.
+      String? message;
+      try {
+        final err = json.decode(response.body);
+        if (err is Map) {
+          message = (err['error'] ?? err['detail'] ?? err['message'])?.toString();
+        }
+      } catch (_) {}
+      return {'success': false, 'message': message};
+    } catch (e) {
+      debugPrint('❌ Error updating order items: $e');
+      return {'success': false, 'message': null};
+    }
+  }
+
   /// Check store username availability
   static Future<Map<String, dynamic>> checkStoreUsername(String username) async {
     try {

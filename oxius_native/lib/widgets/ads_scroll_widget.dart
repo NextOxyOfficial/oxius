@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/classified_post.dart';
@@ -24,82 +23,16 @@ class AdsScrollWidget extends StatefulWidget {
 
 class _AdsScrollWidgetState extends State<AdsScrollWidget> {
   final ScrollController _scrollController = ScrollController();
-  Timer? _autoScrollTimer;
-  bool _isPaused = false;
-  double _scrollSpeed = 1.0;
 
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeAutoScroll();
-  }
+  // Auto-scroll removed: a continuous Timer.periodic(40ms) + jumpTo carousel
+  // forced constant relayout/repaint of the horizontal list, made the post
+  // images appear to "reload", and stuttered/shook the whole homepage on
+  // low-end devices. The carousel is now a smooth, user-scrolled list.
 
   @override
   void dispose() {
-    _autoScrollTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _initializeAutoScroll() {
-    if (widget.ads == null || widget.ads!.isEmpty) return;
-
-    // Adjust card width based on screen size
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      final screenWidth = MediaQuery.of(context).size.width;
-      setState(() {
-        if (screenWidth < 600) {
-          // Mobile: ~42% of screen width minus padding for 2 cards visible
-          (screenWidth - 48) * 0.42;
-          _scrollSpeed = 0.6;
-        } else if (screenWidth < 1024) {
-          // Tablet: ~28% of screen width for 3 cards visible
-          (screenWidth - 48) * 0.28;
-          _scrollSpeed = 0.8;
-        } else {
-          // Desktop: ~19% of screen width for 4-5 cards visible
-          (screenWidth - 48) * 0.19;
-          _scrollSpeed = 1.0;
-        }
-      });
-
-      _startAutoScroll();
-    });
-  }
-
-  void _startAutoScroll() {
-    _autoScrollTimer?.cancel();
-
-    if (widget.ads == null || widget.ads!.isEmpty) return;
-
-    _autoScrollTimer =
-        Timer.periodic(const Duration(milliseconds: 40), (timer) {
-      if (_isPaused || !_scrollController.hasClients) return;
-
-      final maxScroll = _scrollController.position.maxScrollExtent;
-      final currentScroll = _scrollController.offset;
-
-      // Auto-scroll forward
-      double newPosition = currentScroll + _scrollSpeed;
-
-      // Loop back to start when reaching the end
-      if (newPosition >= maxScroll) {
-        newPosition = 0;
-      }
-
-      _scrollController.jumpTo(newPosition);
-    });
-  }
-
-  void _pauseAutoScroll() {
-    setState(() => _isPaused = true);
-  }
-
-  void _resumeAutoScroll() {
-    setState(() => _isPaused = false);
   }
 
   String _formatPrice(double price) {
@@ -152,17 +85,6 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
               .take(10)
               .toList()
           : widget.ads!;
-
-      // Create duplicates for infinite scroll effect
-      final duplicatedAds = <ClassifiedPost>[];
-      final duplicateCount = displayAds.length <= 5
-          ? 6
-          : displayAds.length <= 8
-              ? 4
-              : 3;
-      for (int i = 0; i < duplicateCount; i++) {
-        duplicatedAds.addAll(displayAds);
-      }
 
       return LayoutBuilder(
         builder: (context, constraints) {
@@ -221,23 +143,18 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
 
                 const SizedBox(height: 4),
 
-                // Scrolling ads carousel
-                GestureDetector(
-                  onPanStart: (_) => _pauseAutoScroll(),
-                  onPanEnd: (_) => _resumeAutoScroll(),
-                  child: SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      scrollDirection: Axis.horizontal,
-                      physics: const ClampingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      itemCount: duplicatedAds.length,
-                      itemBuilder: (context, index) {
-                        final ad = duplicatedAds[index];
-                        return _buildAdCard(ad, cardWidth);
-                      },
-                    ),
+                // Recent posts carousel — smooth, user-scrolled (no auto-scroll)
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    itemCount: displayAds.length,
+                    itemBuilder: (context, index) {
+                      return _buildAdCard(displayAds[index], cardWidth);
+                    },
                   ),
                 ),
 
@@ -303,6 +220,8 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                       height: 110,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      memCacheWidth: 360,
+                      fadeInDuration: const Duration(milliseconds: 150),
                       placeholder: (context, url) => Container(
                         color: Colors.grey.shade200,
                         child: const Center(

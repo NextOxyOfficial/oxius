@@ -58,29 +58,10 @@ class EshopManagerScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Icon
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF2563EB).withValues(alpha: 0.2),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.store_rounded,
-                    size: 40,
-                    color: Colors.white,
-                  ),
+                const Icon(
+                  Icons.store_rounded,
+                  size: 48,
+                  color: Color(0xFF2563EB),
                 ),
                 const SizedBox(height: 20),
 
@@ -277,18 +258,10 @@ class EshopManagerScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: const Color(0xFF2563EB),
-            ),
+          Icon(
+            icon,
+            size: 18,
+            color: const Color(0xFF2563EB),
           ),
           const SizedBox(width: 10),
           Expanded(

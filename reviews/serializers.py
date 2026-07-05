@@ -33,16 +33,20 @@ class ReviewSerializer(serializers.ModelSerializer):
     reviewer_name = serializers.ReadOnlyField()
     is_helpful = serializers.SerializerMethodField()
     formatted_date = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Review
         fields = [
             'id', 'product', 'user', 'rating', 'title', 'comment',
             'is_verified_purchase', 'is_approved', 'helpful_count',
             'reviewer_name', 'is_helpful', 'formatted_date',
+            'seller_response', 'seller_response_at',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['helpful_count', 'is_verified_purchase', 'created_at', 'updated_at']
+        read_only_fields = [
+            'helpful_count', 'is_verified_purchase', 'created_at', 'updated_at',
+            'seller_response', 'seller_response_at',
+        ]
     
     def get_is_helpful(self, obj):
         """Check if current user found this review helpful"""

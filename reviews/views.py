@@ -205,6 +205,49 @@ def store_reviews_count(request):
     return Response({'count': count})
 
 
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def reply_to_review(request, review_id):
+    """
+    Store owner replies to (POST) or clears the reply on (DELETE) a review
+    left on one of their own products.
+    """
+    review = get_object_or_404(
+        Review.objects.select_related('product', 'user'), id=review_id
+    )
+
+    # Only the owner of the reviewed product may reply.
+    if review.product.owner_id != request.user.id:
+        return Response(
+            {'error': 'You can only reply to reviews on your own products.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if request.method == 'DELETE':
+        review.seller_response = None
+        review.seller_response_at = None
+        review.save(update_fields=['seller_response', 'seller_response_at'])
+        return Response(
+            ReviewSerializer(review, context={'request': request}).data
+        )
+
+    # POST — create or update the reply
+    text = (request.data.get('seller_response') or '').strip()
+    if not text:
+        return Response(
+            {'error': 'Reply text is required.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    from django.utils import timezone
+    review.seller_response = text
+    review.seller_response_at = timezone.now()
+    review.save(update_fields=['seller_response', 'seller_response_at'])
+    return Response(
+        ReviewSerializer(review, context={'request': request}).data
+    )
+
+
 @api_view(['GET'])
 def public_store_reviews_count(request, store_username):
     """

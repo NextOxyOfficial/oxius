@@ -4,12 +4,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
+import '../../../services/translation_service.dart';
 import '../../../widgets/ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 const _indigo = Color(0xFF6366F1);
-const _violet = Color(0xFF8B5CF6);
 const _emerald = Color(0xFF10B981);
 const _slate50 = Color(0xFFF8FAFC);
 const _slate100 = Color(0xFFF1F5F9);
@@ -38,6 +38,9 @@ class AddProductTab extends StatefulWidget {
 }
 
 class _AddProductTabState extends State<AddProductTab> {
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) => _i18n.translate(key, fallback: fallback);
+
   void _showAddProductBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -67,22 +70,15 @@ class _AddProductTabState extends State<AddProductTab> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.add_circle_rounded,
-              size: 64,
-              color: Color(0xFF10B981),
-            ),
+          const Icon(
+            Icons.add_circle_rounded,
+            size: 64,
+            color: Color(0xFF10B981),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Add New Product',
-            style: TextStyle(
+          Text(
+            _t('eshop_add_new_product', 'নতুন প্রোডাক্ট অ্যাড করুন'),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: Color(0xFF111827),
@@ -91,7 +87,7 @@ class _AddProductTabState extends State<AddProductTab> {
           ),
           const SizedBox(height: 12),
           Text(
-            'You can add $remainingSlots more product${remainingSlots > 1 ? 's' : ''}',
+            _t('eshop_can_add_more', 'আপনি আরও $remainingSlots টা প্রোডাক্ট অ্যাড করতে পারবেন'),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -101,9 +97,9 @@ class _AddProductTabState extends State<AddProductTab> {
           ElevatedButton.icon(
             onPressed: _showAddProductBottomSheet,
             icon: const Icon(Icons.add_rounded, size: 20),
-            label: const Text(
-              'Add Product',
-              style: TextStyle(
+            label: Text(
+              _t('eshop_add_product', 'প্রোডাক্ট অ্যাড করুন'),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -130,22 +126,15 @@ class _AddProductTabState extends State<AddProductTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFEE2E2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.warning_rounded,
-                size: 48,
-                color: Color(0xFFEF4444),
-              ),
+            const Icon(
+              Icons.warning_rounded,
+              size: 48,
+              color: Color(0xFFEF4444),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Product Limit Reached',
-              style: TextStyle(
+            Text(
+              _t('eshop_product_limit_reached', 'প্রোডাক্ট লিমিট শেষ'),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF111827),
@@ -154,8 +143,10 @@ class _AddProductTabState extends State<AddProductTab> {
             const SizedBox(height: 12),
             Text(
               isIOSPlatform
-                  ? 'You have reached the maximum limit of ${widget.productLimit} products. Please contact support to increase your limit.'
-                  : 'You have reached the maximum limit of ${widget.productLimit} products. Buy additional product slots to list more products.',
+                  ? _t('eshop_limit_reached_ios',
+                      'আপনি সর্বোচ্চ ${widget.productLimit} টা প্রোডাক্টের লিমিটে পৌঁছে গেছেন। লিমিট বাড়াতে সাপোর্টে যোগাযোগ করুন।')
+                  : _t('eshop_limit_reached_android',
+                      'আপনি সর্বোচ্চ ${widget.productLimit} টা প্রোডাক্টের লিমিটে পৌঁছে গেছেন। আরও প্রোডাক্ট দিতে এক্সট্রা স্লট কিনুন।'),
               style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFF6B7280),
@@ -188,6 +179,9 @@ class AddProductBottomSheet extends StatefulWidget {
 }
 
 class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) => _i18n.translate(key, fallback: fallback);
+
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -234,7 +228,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
           _categories = [];
           _isLoadingCategories = false;
         });
-        AdsyToast.error(context, 'Failed to load categories');
+        AdsyToast.error(context, _t('eshop_categories_load_failed', 'ক্যাটাগরি লোড করা যায়নি'));
       }
     }
   }
@@ -270,7 +264,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
 
   Future<void> _pickImages() async {
     if (_images.length >= 5) {
-      AdsyToast.warning(context, 'Maximum 5 images allowed');
+      AdsyToast.warning(context, _t('eshop_max_5_images', 'সর্বোচ্চ ৫টা ছবি অ্যাড করা যাবে'));
       return;
     }
 
@@ -327,22 +321,10 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [_indigo, _violet],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.category_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
+                            const Icon(
+                              Icons.category_rounded,
+                              color: _indigo,
+                              size: 24,
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -350,7 +332,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Select Categories',
+                                    _t('eshop_select_categories', 'ক্যাটাগরি সিলেক্ট করুন'),
                                     style: GoogleFonts.inter(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
@@ -359,7 +341,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Choose one or more categories for this product.',
+                                    _t('eshop_choose_categories_hint', 'এই প্রোডাক্টের জন্য এক বা একাধিক ক্যাটাগরি বেছে নিন।'),
                                     style: GoogleFonts.inter(
                                       fontSize: 11,
                                       color: _slate500,
@@ -400,7 +382,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                              '${_categories.length} available',
+                              _t('eshop_categories_available', '${_categories.length} টা আছে'),
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -418,7 +400,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                '${localSelected.length} selected',
+                                _t('eshop_categories_selected_count', '${localSelected.length} টা সিলেক্ট'),
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -445,23 +427,14 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Container(
-                                        width: 42,
-                                        height: 42,
-                                        decoration: BoxDecoration(
-                                          color: _slate100,
-                                          borderRadius:
-                                              BorderRadius.circular(14),
-                                        ),
-                                        child: const Icon(
-                                          Icons.category_outlined,
-                                          color: _slate500,
-                                          size: 20,
-                                        ),
+                                      const Icon(
+                                        Icons.category_outlined,
+                                        color: _slate500,
+                                        size: 26,
                                       ),
                                       const SizedBox(height: 10),
                                       Text(
-                                        'No categories available',
+                                        _t('eshop_no_categories', 'কোনো ক্যাটাগরি নেই'),
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w700,
@@ -470,7 +443,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Try again after categories are loaded.',
+                                        _t('eshop_categories_try_again', 'ক্যাটাগরি লোড হওয়ার পর আবার চেষ্টা করুন।'),
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.inter(
                                           fontSize: 11,
@@ -493,7 +466,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 6),
                                     child: _buildCategoryDialogTile(
-                                      name: cat['name'] ?? 'Unknown',
+                                      name: cat['name'] ?? _t('eshop_unknown', 'অজানা'),
                                       isSelected: isSelected,
                                       onTap: () {
                                         setDialogState(() {
@@ -525,7 +498,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                 ),
                               ),
                               child: Text(
-                                'Cancel',
+                                _t('eshop_cancel', 'ক্যান্সেল'),
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -554,7 +527,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                 ),
                               ),
                               child: Text(
-                                'Done',
+                                _t('eshop_done', 'হয়ে গেছে'),
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -579,12 +552,12 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedCategories.isEmpty) {
-      AdsyToast.warning(context, 'Please select at least one category');
+      AdsyToast.warning(context, _t('eshop_select_one_category', 'অন্তত একটা ক্যাটাগরি সিলেক্ট করুন'));
       return;
     }
 
     if (_deliveryMethod.isEmpty) {
-      AdsyToast.warning(context, 'Please select a delivery method');
+      AdsyToast.warning(context, _t('eshop_select_delivery_method', 'একটা ডেলিভারি মেথড সিলেক্ট করুন'));
       return;
     }
 
@@ -639,13 +612,13 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
     if (result['success'] == true) {
       if (mounted) {
         Navigator.pop(context);
-        AdsyToast.success(context, 'Product added successfully!');
+        AdsyToast.success(context, _t('eshop_product_added_success', 'প্রোডাক্ট অ্যাড হয়ে গেছে!'));
         widget.onProductAdded();
       }
     } else {
       if (mounted) {
         // Extract error details
-        String errorMessage = result['message'] ?? 'Failed to add product';
+        String errorMessage = result['message'] ?? _t('eshop_product_add_failed', 'প্রোডাক্ট অ্যাড করা যায়নি');
         final errors = result['errors'];
 
         // Check if it's a product limit error
@@ -670,10 +643,10 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Product Limit Reached',
-                        style: TextStyle(
+                        _t('eshop_product_limit_reached', 'প্রোডাক্ট লিমিট শেষ'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -687,7 +660,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                   children: [
                     Text(
                       errors['message'] ??
-                          'You have reached your product limit.',
+                          _t('eshop_reached_product_limit', 'আপনি আপনার প্রোডাক্ট লিমিটে পৌঁছে গেছেন।'),
                       style: const TextStyle(fontSize: 14, height: 1.5),
                     ),
                     const SizedBox(height: 16),
@@ -708,7 +681,8 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Current: ${errors['current_count']} / ${errors['limit']} products',
+                              _t('eshop_current_count_label',
+                                  'এখন: ${errors['current_count']} / ${errors['limit']} টা প্রোডাক্ট'),
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -725,7 +699,9 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(
-                      isIOSPlatform ? 'Close' : 'Cancel',
+                      isIOSPlatform
+                          ? _t('eshop_close', 'বন্ধ করুন')
+                          : _t('eshop_cancel', 'ক্যান্সেল'),
                       style: const TextStyle(color: Color(0xFF6B7280)),
                     ),
                   ),
@@ -737,7 +713,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                         // The parent screen should show buy slots option
                       },
                       icon: const Icon(Icons.add_shopping_cart, size: 18),
-                      label: const Text('Buy More Slots'),
+                      label: Text(_t('eshop_buy_more_slots', 'আরও স্লট কিনুন')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,
@@ -809,29 +785,10 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [_indigo, _violet],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _indigo.withValues(alpha: 0.22),
-                                blurRadius: 14,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.inventory_2_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                        const Icon(
+                          Icons.inventory_2_rounded,
+                          color: _indigo,
+                          size: 26,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -839,7 +796,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Add New Product',
+                                _t('eshop_add_new_product', 'নতুন প্রোডাক্ট অ্যাড করুন'),
                                 style: GoogleFonts.inter(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w800,
@@ -849,7 +806,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Create a product listing for your shop manager catalog.',
+                                _t('eshop_add_product_subtitle', 'আপনার শপ ম্যানেজার ক্যাটালগে একটা প্রোডাক্ট লিস্ট করুন।'),
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   color: _slate500,
@@ -884,7 +841,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                         Expanded(
                           child: _buildHeaderStat(
                             icon: Icons.sell_outlined,
-                            label: 'Slots left',
+                            label: _t('eshop_slots_left', 'বাকি স্লট'),
                             value: '$remainingSlots',
                             tint: _indigo,
                           ),
@@ -893,7 +850,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                         Expanded(
                           child: _buildHeaderStat(
                             icon: Icons.grid_view_rounded,
-                            label: 'Used',
+                            label: _t('eshop_used', 'ব্যবহৃত'),
                             value:
                                 '${widget.currentProductCount}/${widget.productLimit}',
                             tint: _emerald,
@@ -910,22 +867,23 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                 key: _formKey,
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
+                  padding: const EdgeInsets.fromLTRB(2, 0, 2, 14),
                   children: [
                     _buildFormSection(
-                      title: 'Basic information',
-                      subtitle: 'Name, category, keywords and descriptions.',
+                      title: _t('eshop_basic_info', 'বেসিক ইনফো'),
+                      subtitle: _t('eshop_basic_info_subtitle', 'নাম, ক্যাটাগরি, কিওয়ার্ড আর ডিসক্রিপশন।'),
                       icon: Icons.info_rounded,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildTextField(
-                            label: 'Product Name',
+                            label: _t('eshop_product_name', 'প্রোডাক্টের নাম'),
                             controller: _nameController,
                             required: true,
-                            hint: 'Enter product name',
-                            validator: (v) =>
-                                v?.trim().isEmpty == true ? 'Required' : null,
+                            hint: _t('eshop_product_name_hint', 'প্রোডাক্টের নাম লিখুন'),
+                            validator: (v) => v?.trim().isEmpty == true
+                                ? _t('eshop_required', 'লাগবে')
+                                : null,
                           ),
                           const SizedBox(height: 12),
                           _buildCategorySelector(),
@@ -933,34 +891,35 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                           _buildKeywordsEditor(),
                           const SizedBox(height: 12),
                           _buildTextField(
-                            label: 'Description',
+                            label: _t('eshop_description', 'ডিসক্রিপশন'),
                             controller: _descriptionController,
                             minLines: 3,
                             maxLines: 6,
-                            hint: 'Describe your product',
+                            hint: _t('eshop_description_hint', 'আপনার প্রোডাক্ট সম্পর্কে লিখুন'),
                           ),
                           const SizedBox(height: 12),
                           _buildTextField(
-                            label: 'Short Description',
+                            label: _t('eshop_short_description', 'শর্ট ডিসক্রিপশন'),
                             controller: _shortDescController,
                             maxLines: 2,
-                            hint: 'Brief overview (150 characters max)',
+                            hint: _t('eshop_short_description_hint', 'সংক্ষেপে লিখুন (সর্বোচ্চ ১৫০ ক্যারেক্টার)'),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 12),
                     _buildFormSection(
-                      title: 'Media gallery',
-                      subtitle:
-                          'Add up to 5 product images for better conversion.',
+                      title: _t('eshop_media_gallery', 'ছবির গ্যালারি'),
+                      subtitle: _t('eshop_media_gallery_subtitle',
+                          'বেশি বিক্রির জন্য সর্বোচ্চ ৫টা প্রোডাক্টের ছবি অ্যাড করুন।'),
                       icon: Icons.photo_library_rounded,
                       child: _buildMediaGallery(),
                     ),
                     const SizedBox(height: 12),
                     _buildFormSection(
-                      title: 'Pricing & inventory',
-                      subtitle: 'Set clear prices and keep stock accurate.',
+                      title: _t('eshop_pricing_inventory', 'প্রাইস ও স্টক'),
+                      subtitle: _t('eshop_pricing_inventory_subtitle',
+                          'প্রাইস ঠিকঠাক দিন আর স্টক আপডেট রাখুন।'),
                       icon: Icons.payments_rounded,
                       child: Column(
                         children: [
@@ -968,20 +927,20 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                             children: [
                               Expanded(
                                 child: _buildTextField(
-                                  label: 'Regular Price',
+                                  label: _t('eshop_regular_price', 'রেগুলার প্রাইস'),
                                   controller: _regularPriceController,
                                   required: true,
                                   keyboardType: TextInputType.number,
                                   hint: '1000',
                                   validator: (v) => v?.trim().isEmpty == true
-                                      ? 'Required'
+                                      ? _t('eshop_required', 'লাগবে')
                                       : null,
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _buildTextField(
-                                  label: 'Sale Price',
+                                  label: _t('eshop_sale_price', 'সেল প্রাইস'),
                                   controller: _salePriceController,
                                   keyboardType: TextInputType.number,
                                   hint: '800',
@@ -991,34 +950,36 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                           ),
                           const SizedBox(height: 12),
                           _buildTextField(
-                            label: 'Stock Quantity',
+                            label: _t('eshop_stock_quantity', 'স্টক কোয়ান্টিটি'),
                             controller: _stockController,
                             required: true,
                             keyboardType: TextInputType.number,
                             hint: '50',
-                            validator: (v) =>
-                                v?.trim().isEmpty == true ? 'Required' : null,
+                            validator: (v) => v?.trim().isEmpty == true
+                                ? _t('eshop_required', 'লাগবে')
+                                : null,
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 12),
                     _buildFormSection(
-                      title: 'Delivery information',
-                      subtitle: 'Configure product weight and shipping method.',
+                      title: _t('eshop_delivery_info', 'ডেলিভারি ইনফো'),
+                      subtitle: _t('eshop_delivery_info_subtitle',
+                          'প্রোডাক্টের ওজন আর শিপিং মেথড সেট করুন।'),
                       icon: Icons.local_shipping_rounded,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildTextField(
-                            label: 'Weight (kg)',
+                            label: _t('eshop_weight_kg', 'ওজন (কেজি)'),
                             controller: _weightController,
                             keyboardType: TextInputType.number,
                             hint: '1.5',
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Delivery Method *',
+                            _t('eshop_delivery_method', 'ডেলিভারি মেথড *'),
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -1033,19 +994,19 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                             child: Column(
                               children: [
                                 _buildDeliveryOption(
-                                  title:
-                                      'Free Delivery All Over Bangladesh',
+                                  title: _t('eshop_free_delivery_all_bd',
+                                      'সারা বাংলাদেশে ফ্রি ডেলিভারি'),
                                   value: 'free',
-                                  subtitle:
-                                      'Show customers that nationwide delivery is included.',
+                                  subtitle: _t('eshop_free_delivery_subtitle',
+                                      'কাস্টমারকে দেখান যে সারা দেশে ডেলিভারি ফ্রি।'),
                                 ),
                                 const SizedBox(height: 8),
                                 _buildDeliveryOption(
-                                  title:
-                                      'Standard Shipping (Location Based)',
+                                  title: _t('eshop_standard_shipping',
+                                      'স্ট্যান্ডার্ড শিপিং (লোকেশন অনুযায়ী)'),
                                   value: 'standard',
-                                  subtitle:
-                                      'Set separate charges for Dhaka and outside Dhaka.',
+                                  subtitle: _t('eshop_standard_shipping_subtitle',
+                                      'ঢাকা আর ঢাকার বাইরের জন্য আলাদা চার্জ দিন।'),
                                 ),
                               ],
                             ),
@@ -1056,7 +1017,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                               children: [
                                 Expanded(
                                   child: _buildTextField(
-                                    label: 'Inside Dhaka Rate',
+                                    label: _t('eshop_inside_dhaka_rate', 'ঢাকার ভিতরে রেট'),
                                     controller: _insideDhakaController,
                                     keyboardType: TextInputType.number,
                                     hint: '100',
@@ -1065,7 +1026,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: _buildTextField(
-                                    label: 'Outside Dhaka Rate',
+                                    label: _t('eshop_outside_dhaka_rate', 'ঢাকার বাইরে রেট'),
                                     controller: _outsideDhakaController,
                                     keyboardType: TextInputType.number,
                                     hint: '150',
@@ -1117,7 +1078,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                               const Icon(Icons.check_circle_rounded, size: 20),
                               const SizedBox(width: 6),
                               Text(
-                                'Add Product',
+                                _t('eshop_add_product', 'প্রোডাক্ট অ্যাড করুন'),
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
@@ -1149,15 +1110,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Icon(icon, size: 15, color: tint),
-          ),
+          Icon(icon, size: 20, color: tint),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -1208,19 +1161,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
         children: [
           Row(
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [accent, _violet],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, size: 17, color: Colors.white),
-              ),
+              Icon(icon, size: 22, color: accent),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -1260,7 +1201,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Category *',
+          _t('eshop_category', 'ক্যাটাগরি *'),
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -1292,25 +1233,18 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        width: 26,
-                        height: 26,
-                        decoration: BoxDecoration(
-                          color: _slate100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.category_outlined,
-                          size: 15,
-                          color: _slate500,
-                        ),
+                      const Icon(
+                        Icons.category_outlined,
+                        size: 20,
+                        color: _slate500,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _selectedCategories.isEmpty
-                              ? 'Select categories'
-                              : '${_selectedCategories.length} categories selected',
+                              ? _t('eshop_select_categories_placeholder', 'ক্যাটাগরি সিলেক্ট করুন')
+                              : _t('eshop_n_categories_selected',
+                                  '${_selectedCategories.length} টা ক্যাটাগরি সিলেক্ট করা'),
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             color: _selectedCategories.isEmpty
@@ -1334,7 +1268,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
             children: _selectedCategories.map((catId) {
               final cat = _categories.firstWhere(
                 (c) => c['id'].toString() == catId,
-                orElse: () => {'id': catId, 'name': 'Unknown'},
+                orElse: () => {'id': catId, 'name': _t('eshop_unknown', 'অজানা')},
               );
               return Chip(
                 label: Text(
@@ -1423,7 +1357,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    'Selected',
+                    _t('eshop_selected', 'সিলেক্ট করা'),
                     style: GoogleFonts.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -1443,7 +1377,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Keywords (Optional)',
+          _t('eshop_keywords_optional', 'কিওয়ার্ড (অপশনাল)'),
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -1457,7 +1391,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
               child: TextField(
                 controller: _keywordController,
                 decoration: InputDecoration(
-                  hintText: 'Add keyword',
+                  hintText: _t('eshop_add_keyword', 'কিওয়ার্ড অ্যাড করুন'),
                   hintStyle: GoogleFonts.inter(color: _slate400, fontSize: 12),
                   filled: true,
                   fillColor: Colors.white,
@@ -1496,7 +1430,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                   ),
                 ),
                 child: Text(
-                  'Add',
+                  _t('eshop_add', 'অ্যাড'),
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -1599,19 +1533,11 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.add_photo_alternate_outlined,
-                        color: _indigo, size: 16),
-                  ),
+                  const Icon(Icons.add_photo_alternate_outlined,
+                      color: _indigo, size: 22),
                   const SizedBox(height: 6),
                   Text(
-                    'Add image',
+                    _t('eshop_add_image', 'ছবি অ্যাড করুন'),
                     style: GoogleFonts.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,

@@ -3018,7 +3018,17 @@ class ProductByIdView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         """Allow public reads but restrict mutations to the owner/admin scope."""
         if self.request.method in ["GET", "HEAD", "OPTIONS"]:
-            return public_product_queryset(Product.objects.all())
+            base = public_product_queryset(Product.objects.all())
+            user = getattr(self.request, "user", None)
+            if user and user.is_authenticated:
+                # Owners (and staff) can always view their own products — even
+                # when not publicly listed (inactive / non-pro) — so they can
+                # preview exactly how the product page looks.
+                own = Product.objects.filter(owner=user)
+                if user.is_staff:
+                    own = Product.objects.all()
+                return (base | own).distinct()
+            return base
         return Product.objects.filter(owner=self.request.user)
 
     def update(self, request, *args, **kwargs):
@@ -3641,6 +3651,15 @@ class StoreProductsListView(generics.ListAPIView):
             status=status.HTTP_403_FORBIDDEN,
         )
 
+    def _is_store_manager(self, request, store_owner):
+        """The store owner (or staff) previewing their own storefront."""
+        user = getattr(request, "user", None)
+        return bool(
+            user
+            and user.is_authenticated
+            and (user.pk == store_owner.pk or user.is_staff)
+        )
+
     def list(self, request, *args, **kwargs):
         store_identity = self.kwargs.get("store_username")
         store_owner = User.objects.filter(
@@ -3652,7 +3671,9 @@ class StoreProductsListView(generics.ListAPIView):
         sync_user_subscription_state(store_owner, trigger='store-products')
         store_owner.refresh_from_db(fields=['is_pro', 'pro_validity'])
 
-        if not has_current_pro_access(store_owner):
+        if not has_current_pro_access(store_owner) and not self._is_store_manager(
+            request, store_owner
+        ):
             return self._subscription_expired_response()
 
         return super().list(request, *args, **kwargs)
@@ -3668,6 +3689,13 @@ class StoreProductsListView(generics.ListAPIView):
         ).first()
         if not store_owner:
             return Product.objects.none()
+
+        # Owner/staff preview: show the store's active products even when the
+        # store isn't publicly listed (e.g. subscription lapsed).
+        if self._is_store_manager(self.request, store_owner):
+            return Product.objects.filter(
+                owner=store_owner, is_active=True
+            ).order_by("-created_at")
 
         return public_product_queryset(Product.objects.filter(owner=store_owner)).order_by(
             "-created_at"
@@ -4234,9 +4262,10 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         order=order, product_id=product_id
                     ).first()
 
-                    product = public_product_queryset(Product.objects.all()).get(
-                        id=product_id
-                    )
+                    # Seller is manually editing their own order here, so allow
+                    # any of their products (including inactive/out-of-stock),
+                    # not just publicly-listed ones.
+                    product = Product.objects.get(id=product_id)
                     unit_price = Decimal(
                         str(
                             product.sale_price
@@ -4350,14 +4379,14 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
             # Use the order's user as the buyer, not the currently logged in user
             buyer = order.user
             if total_additional_amount > 0:
-                # Handle additional payment needed
-                if order.payment_method == "balance":
-                    if buyer.balance < total_additional_amount:
-                        return Response(
-                            {"error": "Insufficient balance for additional items"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
+                # Handle additional payment needed. This is a seller-side manual
+                # order edit, so an insufficient buyer balance must NOT block the
+                # edit — we simply skip the wallet settlement in that case and
+                # still persist the item/total changes.
+                if (
+                    order.payment_method == "balance"
+                    and buyer.balance >= total_additional_amount
+                ):
                     # Deduct additional amount from buyer's balance
                     buyer.balance -= total_additional_amount
                     buyer.save()  # Create transaction record for the buyer's payment

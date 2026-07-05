@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import 'auth_service.dart';
 import 'package:flutter/foundation.dart';
 
 class StoreSubscriptionExpiredException implements Exception {
@@ -366,14 +367,15 @@ class EshopService {
       );
     }
 
+    // Include auth when available so an owner can preview their own product
+    // even if it isn't publicly listed (inactive / non-pro store).
+    final headers = await _authAwareHeaders();
+
     for (final uri in candidates) {
       try {
         final response = await http.get(
           uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
+          headers: headers,
         ).timeout(const Duration(seconds: 10));
 
         if (response.statusCode != 200) {
@@ -409,16 +411,27 @@ class EshopService {
     return null;
   }
 
+  /// Standard JSON headers, with the auth token attached when available so
+  /// store owners can preview their own (non-public) store/products.
+  static Future<Map<String, String>> _authAwareHeaders() async {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    try {
+      final token = await AuthService.getValidToken();
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+    } catch (_) {}
+    return headers;
+  }
+
   static Future<Map<String, dynamic>?> fetchStoreDetails(
       String storeIdentity) async {
     try {
       final uri = Uri.parse('$baseUrl/store/$storeIdentity/');
       final response = await http.get(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: await _authAwareHeaders(),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
@@ -458,10 +471,7 @@ class EshopService {
       );
       final response = await http.get(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: await _authAwareHeaders(),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
