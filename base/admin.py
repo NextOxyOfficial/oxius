@@ -1813,3 +1813,12 @@ class ProPricingAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(PopularSearch)
+class PopularSearchAdmin(admin.ModelAdmin):
+    """Search suggestion chips shown in the app's search sheet."""
+    list_display = ('keyword', 'is_active', 'order', 'created_at')
+    list_editable = ('is_active', 'order')
+    search_fields = ('keyword',)
+    list_filter = ('is_active',)

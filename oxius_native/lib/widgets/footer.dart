@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../screens/eshop_screen.dart';
@@ -171,16 +172,11 @@ class _AppFooterState extends State<AppFooter>
   Widget _buildMainFooter(BuildContext context, bool isMobile) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [const Color(0xFFF8FAFC), const Color(0xFFF1F5F9)],
-        ),
-        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFF1F5F9), width: 1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 16),
         child: Column(
           children: [
             // Logo and tagline
@@ -198,7 +194,7 @@ class _AppFooterState extends State<AppFooter>
             // Divider
             Container(
               height: 1,
-              margin: const EdgeInsets.symmetric(horizontal: 12),
+              margin: const EdgeInsets.symmetric(horizontal: 2),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -227,12 +223,7 @@ class _AppFooterState extends State<AppFooter>
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'জয়েন হন • আয় করুন • সেবা খুঁজুন',
-            style: AppFonts.roboto(
-              fontSize: 13,
-              color: Colors.grey.shade500,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.3,
-            ),
+            style: AppText.caption(),
             textAlign: TextAlign.center,
           ),
         ),
@@ -264,20 +255,11 @@ class _AppFooterState extends State<AppFooter>
             child: InkWell(
               onTap: () => _handleNavigation(context, link['route']!),
               borderRadius: BorderRadius.circular(6),
-              child: Container(
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.grey.shade200, width: 0.5),
-                ),
                 child: Text(
                   link['title']!,
-                  style: AppFonts.roboto(
-                    fontSize: 13,
-                    color: const Color(0xFF374151),
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppText.linkText(color: AppText.secondary),
                 ),
               ),
             ),
@@ -332,24 +314,13 @@ class _AppFooterState extends State<AppFooter>
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.78),
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: color.withValues(alpha: 0.22)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.035),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -357,11 +328,7 @@ class _AppFooterState extends State<AppFooter>
               const SizedBox(width: 7),
               Text(
                 label,
-                style: AppFonts.roboto(
-                  fontSize: 12,
-                  color: const Color(0xFF334155),
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppText.meta(color: AppText.secondary),
               ),
             ],
           ),
@@ -381,12 +348,7 @@ class _AppFooterState extends State<AppFooter>
             const SizedBox(width: 4),
             Text(
               'নিরাপদ পেমেন্ট',
-              style: AppFonts.roboto(
-                fontSize: 9,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade500,
-                letterSpacing: 0.2,
-              ),
+              style: AppText.meta(),
             ),
           ],
         ),
@@ -459,11 +421,7 @@ class _AppFooterState extends State<AppFooter>
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
               'শর্তাবলী',
-              style: AppFonts.roboto(
-                fontSize: 11,
-                color: Colors.grey.shade500,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppText.linkText(color: AppText.tertiary),
             ),
           ),
         ),
@@ -475,11 +433,7 @@ class _AppFooterState extends State<AppFooter>
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
               'গোপনীয়তা নীতি',
-              style: AppFonts.roboto(
-                fontSize: 11,
-                color: Colors.grey.shade500,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppText.linkText(color: AppText.tertiary),
             ),
           ),
         ),
@@ -574,11 +528,7 @@ class _AppFooterState extends State<AppFooter>
         children: [
           Text(
             'Developed with ❤️ by Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
-            style: AppFonts.roboto(
-              fontSize: 13,
-              color: Colors.grey.shade400,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppText.meta(),
           ),
         ],
       ),

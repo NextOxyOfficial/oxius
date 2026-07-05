@@ -21,6 +21,7 @@ import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../theme/app_text.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
 import '../services/home_popup_service.dart';
@@ -571,14 +572,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       // 2. Gold Sponsors - existing business network sponsor slider
                       Padding(
                         key: ValueKey('gold-sponsors-$_homeRefreshEpoch'),
-                        padding: EdgeInsets.fromLTRB(4, 2, 4, 2),
-                        child: GoldSponsorsSlider(margin: EdgeInsets.zero),
+                        // Section self-pads 12px horizontally — keep only vertical
+                        // gap here so all sections align to the same 12px gutter.
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: const GoldSponsorsSlider(margin: EdgeInsets.zero),
                       ),
 
                       // 3. Sale Category - eShop product categories
                       SaleCategory(
                         key: ValueKey('sale-category-$_homeRefreshEpoch'),
-                        margin: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                        margin: const EdgeInsets.only(bottom: 4),
                       ),
 
                       // 4. Food Zone Section - FoodPanda style food listings
@@ -598,15 +601,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // 6. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
                       if (_isLoadingPosts)
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 4),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Center(
+                        const Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 24, horizontal: 12),
+                          child: Center(
                             child: AdsyLoadingIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 Color(0xFF10B981),
@@ -620,30 +618,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           sectionTitle: t('recent_post'),
                         )
                       else
-                        // Debug: Show message if no posts
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 4),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        // Flat empty state (no card) when there are no posts.
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 24, horizontal: 12),
                           child: Center(
                             child: Column(
                               children: [
-                                const Icon(Icons.info_outline,
-                                    size: 40, color: Colors.grey),
+                                Icon(Icons.info_outline,
+                                    size: 36, color: Colors.grey.shade400),
                                 const SizedBox(height: 8),
                                 Text(
                                   t('no_recent_posts'),
-                                  style: TextStyle(color: Colors.grey.shade600),
-                                ),
-                                Text(
-                                  '${t('posts_loaded')}: ${_recentPosts?.length ?? 0}',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade500,
-                                      fontSize: 12),
+                                  style: AppText.bodyText(),
                                 ),
                               ],
                             ),

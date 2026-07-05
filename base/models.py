@@ -2034,3 +2034,20 @@ class ProPricing(models.Model):
 
     def __str__(self):
         return f"Pro: regular {self.regular_price}, now {self.effective_monthly_price}"
+
+
+class PopularSearch(models.Model):
+    """Admin-managed search suggestion chips shown in the app's search sheet."""
+
+    keyword = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text="Lower shows first")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "created_at"]
+        verbose_name = "Popular search"
+        verbose_name_plural = "Popular searches"
+
+    def __str__(self):
+        return self.keyword

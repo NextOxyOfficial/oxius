@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/image_utils.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
@@ -277,35 +278,13 @@ class _HeroBannerState extends State<HeroBanner> {
     );
   }
 
-  // Professional card that wraps the services with a clean header
+  // Flat services grid — sits directly on the page background (no card).
   Widget _buildServicesSection() {
-    return Container(
-      // Mobile-only margin
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Grid area
-          Padding(
-            padding: const EdgeInsets.only(top: 2, bottom: 8),
-            child: _buildMobileServicesGrid(
-              margin: EdgeInsets.zero,
-            ),
-          ),
-        ],
+    return Padding(
+      // Consistent horizontal page padding; flat, no decoration.
+      padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+      child: _buildMobileServicesGrid(
+        margin: EdgeInsets.zero,
       ),
     );
   }
@@ -450,12 +429,7 @@ class _HeroBannerState extends State<HeroBanner> {
           key: ValueKey('${item.id}_${item.displayTitle}'),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF111827),
-            height: 1.2,
-          ),
+          style: AppText.cardTitle(),
         ),
       ),
     );
@@ -489,7 +463,7 @@ class _HeroBannerState extends State<HeroBanner> {
 
   Widget _buildTickerLabel(String title) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -519,15 +493,7 @@ class _HeroBannerState extends State<HeroBanner> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.grey.shade800,
-                    ) ??
-                TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade800,
-                ),
+            style: AppText.sectionTitle(),
           ),
         ],
       ),
@@ -629,8 +595,7 @@ class _HeroBannerState extends State<HeroBanner> {
                               const SizedBox(height: 8),
                               Text(
                                 'Image failed to load',
-                                style: TextStyle(
-                                    color: Colors.grey.shade600, fontSize: 12),
+                                style: AppText.caption(),
                               ),
                             ],
                           ),
@@ -1199,13 +1164,7 @@ class _ServiceTileState extends State<_ServiceTile>
             Text(
               widget.label,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.1,
-                color: labelColor,
-                height: 1.2,
-              ),
+              style: AppText.tileLabel(color: labelColor),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

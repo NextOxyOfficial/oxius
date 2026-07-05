@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -249,97 +249,43 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
 
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.grey.shade50,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.shade100),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Header with accent line
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey.shade100),
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(2, 0, 2, 10),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      Icons.access_time,
+                      size: 20,
+                      color: Colors.green.shade600,
+                    ),
                   ),
-                ),
-                child: Stack(
-                  children: [
-                    // Gradient accent line
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 2,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF10B981), // emerald-500
-                              Color(0xFF3B82F6), // blue-500
-                              Color(0xFF8B5CF6), // purple-500
-                            ],
-                          ),
-                        ),
-                      ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Recent Posts', // Changed from Recent Ads to Recent Posts
+                      style: AppText.sectionTitle(),
                     ),
-
-                    // Header content
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Icon(
-                              Icons.access_time,
-                              size: 20,
-                              color: Colors.green.shade600,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Recent Posts', // Changed from Recent Ads to Recent Posts
-                              style: AppFonts.roboto(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
+            const Divider(
+              height: 1,
+              thickness: 1,
+              color: Color(0xFFF1F5F9),
+            ),
 
-              // Carousel content
-              GestureDetector(
+            // Carousel content
+            GestureDetector(
                 onPanStart: (details) {
                   _isUserInteracting = true;
                   _startX = details.globalPosition.dx;
@@ -375,7 +321,8 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                   onExit: (_) => _resumeAutoScroll(),
                   child: Container(
                     height: 220, // Fixed height for card + padding
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 2, vertical: 14),
                     child: ListView.builder(
                       controller: _scrollController,
                       scrollDirection: Axis.horizontal,
@@ -405,7 +352,6 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
               ),
             ],
           ),
-        ),
       );
     } catch (e) {
       // Return a fallback widget if there's any error
@@ -427,10 +373,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
             const SizedBox(height: 8),
             Text(
               'Unable to load ads',
-              style: AppFonts.roboto(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: AppText.bodyText(),
             ),
           ],
         ),
@@ -446,14 +389,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: Border.all(color: const Color(0xFFF1F5F9)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,11 +440,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                       ),
                       child: Text(
                         '\u09f3${_formatPrice(ad['price'])}',
-                        style: AppFonts.roboto(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: AppText.badge(),
                       ),
                     ),
                   ),
@@ -525,12 +457,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                     // Title
                     Text(
                       _formatTitle(ad),
-                      style: AppFonts.roboto(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                        height: 1.3,
-                      ),
+                      style: AppText.tileLabel(),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -550,11 +477,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         Expanded(
                           child: Text(
                             _formatLocation(ad),
-                            style: AppFonts.roboto(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                              height: 1.2,
-                            ),
+                            style: AppText.meta(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -577,11 +500,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         Flexible(
                           child: Text(
                             _formatDate(ad['created_at']?.toString()),
-                            style: AppFonts.roboto(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                              height: 1.2,
-                            ),
+                            style: AppText.meta(),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -614,10 +533,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
               const SizedBox(height: 4),
               Text(
                 'Ad unavailable',
-                style: AppFonts.roboto(
-                  fontSize: 10,
-                  color: Colors.grey.shade500,
-                ),
+                style: AppText.caption(),
               ),
             ],
           ),

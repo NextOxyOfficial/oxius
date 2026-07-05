@@ -60,17 +60,19 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
   List<ClassifiedCategory> _filteredCategories = [];
   List<Map<String, dynamic>> _searchedPosts = [];
 
-  // Animated "typing" placeholder suggestions.
-  static const List<String> _hintSuggestions = [
+  // Typing-hint fallback while the backend list hasn't loaded (or is empty).
+  static const List<String> _fallbackHintSuggestions = [
     'সেলুন ও বিউটি সার্ভিস',
     'এসি ও ফ্রিজ সার্ভিসিং',
     'ইলেকট্রিক কাজ',
     'ঘর পরিষ্কার সার্ভিস',
-    'গাড়ি মেরামত',
-    'প্লাম্বিং সার্ভিস',
-    'ওয়েব ডেভেলপমেন্ট',
-    'রিয়েল এস্টেট এজেন্ট',
   ];
+  // Admin-managed suggestions from /popular-searches/ — the ONLY source for
+  // the "জনপ্রিয় খোঁজ" chips in the search sheet.
+  List<String> _popularSearches = [];
+  // What the animated hint cycles through.
+  List<String> get _hintSuggestions =>
+      _popularSearches.isNotEmpty ? _popularSearches : _fallbackHintSuggestions;
   Timer? _hintTimer;
   int _hintPhraseIndex = 0;
   int _hintCharIndex = 0;
@@ -85,9 +87,35 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
     _ts.addListener(_onLangChanged);
     _focusNode.addListener(_onFocusChanged);
     _tickHint();
+    _loadPopularSearches();
 
     if (widget.showCategories && widget.categoryService != null) {
       _loadCategories();
+    }
+  }
+
+  Future<void> _loadPopularSearches() async {
+    try {
+      final response = await http
+          .get(Uri.parse('${ApiService.baseUrl}/popular-searches/'))
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode != 200) return;
+      final data = json.decode(response.body);
+      final List raw = data is Map ? (data['results'] ?? []) : (data as List);
+      final words = raw
+          .map((e) => e.toString().trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+      if (!mounted || words.isEmpty) return;
+      setState(() {
+        _popularSearches = words;
+        // Restart the hint cycle safely on the new list.
+        _hintPhraseIndex = 0;
+        _hintCharIndex = 0;
+        _hintDeleting = false;
+      });
+    } catch (_) {
+      // Keep the fallback hints; chips section simply stays hidden.
     }
   }
 
@@ -1044,6 +1072,11 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       );
 
   Widget _sheetSuggestions(ValueChanged<String> onPick) {
+    // Chips come ONLY from the admin-managed /popular-searches/ list; when the
+    // backend has none, the whole section stays hidden.
+    if (_popularSearches.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
@@ -1052,7 +1085,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _hintSuggestions
+          children: _popularSearches
               .map((s) => ActionChip(
                     label: Text(s,
                         style: AppFonts.inter(

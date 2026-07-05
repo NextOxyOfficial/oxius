@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:oxius_native/theme/app_text.dart';
 import '../services/translation_service.dart';
 import '../services/api_service.dart';
@@ -141,62 +140,44 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         .clamp(0, _categories.length);
 
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 4 : 12,
-        vertical: 8,
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFE5E7EB),
-              ),
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 4, 2, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Title gets a 6px effective screen inset (2 outer + 4 here)
                 Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    isMobile ? 12 : 16,
-                    isMobile ? 14 : 16,
-                    isMobile ? 12 : 16,
-                    0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(isMobile),
-                      const SizedBox(height: 10),
-                      ClassifiedSearchBar(
-                        onSearch: _onSearch,
-                        margin: EdgeInsets.zero,
-                        embedded: true,
-                      ),
-                    ],
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: _buildHeader(isMobile),
                 ),
-                const SizedBox(height: 6),
-                ClassifiedCategoriesGrid(
-                  categories: categoriesToShow,
-                  selectedId: _selectedCategoryId,
-                  onTap: _onCategoryTap,
-                  isLoading: _loadingCategories,
-                  margin: const EdgeInsets.fromLTRB(0, 0, 0, 6),
-                  trailingTile: hasMoreCategories && !_loadingCategories
-                      ? _buildSeeMoreTile(
-                          isMobile: isMobile,
-                          remainingCount: remainingCount,
-                        )
-                      : null,
+                const SizedBox(height: 10),
+                ClassifiedSearchBar(
+                  onSearch: _onSearch,
+                  margin: EdgeInsets.zero,
+                  embedded: true,
                 ),
-                SizedBox(height: isMobile ? 10 : 12),
               ],
             ),
           ),
+          const SizedBox(height: 6),
+          ClassifiedCategoriesGrid(
+            categories: categoriesToShow,
+            selectedId: _selectedCategoryId,
+            onTap: _onCategoryTap,
+            isLoading: _loadingCategories,
+            margin: const EdgeInsets.fromLTRB(2, 0, 2, 6),
+            trailingTile: hasMoreCategories && !_loadingCategories
+                ? _buildSeeMoreTile(
+                    isMobile: isMobile,
+                    remainingCount: remainingCount,
+                  )
+                : null,
+          ),
+          SizedBox(height: isMobile ? 10 : 12),
         ],
       ),
     );
@@ -304,12 +285,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
               child: Text(
                 label,
                 textAlign: TextAlign.center,
-                style: AppFonts.roboto(
-                  fontSize: compact ? 11.2 : 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0891B2),
-                  height: 1.22,
-                ),
+                style: AppText.tileLabel(color: const Color(0xFF0891B2)),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -354,12 +330,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                   Text(
                     _translationService.t('post_free_ad',
                         fallback: 'Post Free Service'),
-                    style: AppFonts.roboto(
-                      fontSize: isMobile ? 11.5 : 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF059669),
-                      letterSpacing: -0.1,
-                    ),
+                    style: AppText.linkText(color: const Color(0xFF059669)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
@@ -388,10 +359,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                   'loading_services',
                   fallback: 'Loading services...',
                 ),
-                style: AppFonts.roboto(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                ),
+                style: AppText.bodyText(),
               ),
             ],
           ),
@@ -484,22 +452,13 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                             title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: AppFonts.roboto(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                              height: 1.3,
-                            ),
+                            style: AppText.cardTitle(),
                           ),
                           const SizedBox(height: 6),
                           if (price != null && price.isNotEmpty)
                             Text(
                               price,
-                              style: AppFonts.roboto(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF10B981),
-                              ),
+                              style: AppText.price(),
                             ),
                           const SizedBox(height: 4),
                           Row(
@@ -519,10 +478,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                                       .toString(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppFonts.roboto(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
+                                  style: AppText.cardSubtitle(),
                                 ),
                               ),
                             ],

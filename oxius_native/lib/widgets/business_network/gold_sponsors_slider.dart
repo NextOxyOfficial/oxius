@@ -62,20 +62,12 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
     // Always show the container - never hide it completely
     return Container(
       margin: widget.margin ?? const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.amber.shade50, Colors.yellow.shade50],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade100, width: 0.5),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Column(
         children: [
-          // Header
+          // Header — 6px effective screen-side inset (2 outer + 4 here)
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
             child: Row(
               children: [
                 Container(
@@ -128,7 +120,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
               height: 138,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: EdgeInsets.zero,
                 itemCount: _sponsors.take(5).length,
                 itemBuilder: (context, index) {
                   final sponsor = _sponsors[index];
@@ -147,7 +139,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
       height: 138,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: EdgeInsets.zero,
         itemCount: 5,
         itemBuilder: (context, index) {
           return Container(
@@ -185,10 +177,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       child: Text(
         'No sponsors available at the moment',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey.shade600,
-        ),
+        style: AppText.caption(),
         textAlign: TextAlign.center,
       ),
     );
@@ -273,12 +262,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                height: 1.2,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF78350F),
-              ),
+              style: AppText.tileLabel(color: const Color(0xFF78350F)),
             ),
           ],
         ),
@@ -362,15 +346,9 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 12.5,
-                color: onTap != null
-                    ? Colors.amber.shade800
-                    : const Color(0xFF475569),
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-                decoration: TextDecoration.none,
-              ),
+              style: AppText.bodyStrong(
+                color: onTap != null ? Colors.amber.shade800 : null,
+              ).copyWith(fontSize: 12.5, decoration: TextDecoration.none),
             ),
           ),
         ],
@@ -411,13 +389,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                   children: [
                     Text(
                       widget.sponsor.businessName,
-                      style: const TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        height: 1.12,
-                        letterSpacing: -0.2,
-                      ),
+                      style: AppText.sectionTitle().copyWith(fontSize: 17),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -429,11 +401,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                         Expanded(
                           child: Text(
                             '${_formatViews(widget.sponsor.views)} views',
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppText.meta(),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

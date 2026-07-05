@@ -176,9 +176,9 @@ class _EshopSectionState extends State<EshopSection> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 4 : 16,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 2,
         vertical: 8,
       ),
       child: Column(
@@ -216,10 +216,9 @@ class _EshopSectionState extends State<EshopSection> {
 
   Widget _buildHeader(bool isMobile) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 24,
-        vertical: isMobile ? 12 : 16,
-      ),
+      // 6px effective screen-side inset (2 outer + 4 here), matching the
+      // other homepage section titles
+      padding: EdgeInsets.fromLTRB(4, isMobile ? 8 : 12, 4, isMobile ? 8 : 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -298,11 +297,7 @@ class _EshopSectionState extends State<EshopSection> {
                   Text(
                     _translationService.t('browse_eshop',
                         fallback: 'Browse eShop'),
-                    style: AppFonts.poppins(
-                      fontSize: isMobile ? 12 : 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF7C3AED),
-                    ),
+                    style: AppText.button(color: const Color(0xFF7C3AED)),
                   ),
                 ],
               ],
@@ -340,10 +335,7 @@ class _EshopSectionState extends State<EshopSection> {
             Text(
               _translationService.t('no_products_found',
                   fallback: 'No products found'),
-              style: AppFonts.roboto(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: AppText.cardSubtitle(),
             ),
           ],
         ),

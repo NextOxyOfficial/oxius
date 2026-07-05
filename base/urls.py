@@ -186,6 +186,8 @@ urlpatterns = [
     # subscription
     path("subscribe/", subscribeToPro, name="subscribe"),
     path("pro-pricing/", pro_pricing, name="pro-pricing"),
+    # search suggestion chips (admin-managed)
+    path("popular-searches/", popular_searches, name="popular-searches"),
     # sms and otp
     path("send-sms/", smsSend),
     path("send-otp/", sendOTP),

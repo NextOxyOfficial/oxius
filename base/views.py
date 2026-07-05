@@ -2642,6 +2642,18 @@ def pro_pricing(request):
     })
 
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def popular_searches(request):
+    """Admin-managed search suggestion chips for the app's search sheet."""
+    keywords = list(
+        PopularSearch.objects.filter(is_active=True).values_list(
+            "keyword", flat=True
+        )
+    )
+    return Response({"results": keywords})
+
+
 @api_view(["POST"])
 def set_new_password(request):
     method = request.data.get("method")

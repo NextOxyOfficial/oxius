@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/classified_post.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class FoodZoneCard extends StatelessWidget {
@@ -26,13 +27,10 @@ class FoodZoneCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(
+            color: const Color(0xFFF1F5F9),
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,12 +130,7 @@ class FoodZoneCard extends StatelessWidget {
                     // Title
                     Text(
                       post.title,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F2937),
-                        height: 1.2,
-                      ),
+                      style: AppText.cardTitle().copyWith(fontSize: 12),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -157,10 +150,7 @@ class FoodZoneCard extends StatelessWidget {
                               [post.upazila, post.city]
                                   .where((e) => e != null && e.isNotEmpty)
                                   .join(', '),
-                              style: const TextStyle(
-                                fontSize: 9,
-                                color: Color(0xFF9CA3AF),
-                              ),
+                              style: AppText.meta(),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -174,19 +164,14 @@ class FoodZoneCard extends StatelessWidget {
                         if (post.price != null && post.price! > 0)
                           Text(
                             '৳${post.price!.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFFE91E63),
-                            ),
+                            style: AppText.price(
+                              color: const Color(0xFFE91E63),
+                            ).copyWith(fontSize: 13),
                           )
                         else
-                          const Text(
+                          Text(
                             'Contact for price',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF6B7280),
-                            ),
+                            style: AppText.caption(),
                           ),
                       ],
                     ),

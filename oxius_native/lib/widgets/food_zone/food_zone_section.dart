@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import '../../models/classified_post.dart';
 import '../../services/food_zone_service.dart';
 import '../../services/translation_service.dart';
@@ -69,21 +70,13 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header — 6px screen-side inset
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -102,20 +95,14 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                         Text(
                           _translationService.t('food_zone',
                               fallback: 'ফুড জোন'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFE91E63),
-                            letterSpacing: -0.3,
+                          style: AppText.sectionTitle(
+                            color: const Color(0xFFE91E63),
                           ),
                         ),
                         Text(
                           _translationService.t('food_zone_subtitle',
                               fallback: 'আপনার কাছের মজাদার খাবার'),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[600],
-                          ),
+                          style: AppText.sectionSubtitle(),
                         ),
                       ],
                     ),
@@ -132,10 +119,8 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                       children: [
                         Text(
                           _translationService.t('see_all', fallback: 'সব দেখুন'),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFFE91E63),
+                          style: AppText.linkText(
+                            color: const Color(0xFFE91E63),
                           ),
                         ),
                         const SizedBox(width: 3),
@@ -155,10 +140,10 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
           
           // Posts List
           SizedBox(
-              height: 195,
+              height: 200,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                padding: const EdgeInsets.symmetric(horizontal: 2),
                 itemCount: _posts.length,
                 itemBuilder: (context, index) {
                   final post = _posts[index];

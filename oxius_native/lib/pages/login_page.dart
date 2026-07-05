@@ -29,13 +29,13 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
   String _t(String key, String fallback) =>
       _i18n.translate(key, fallback: fallback);
 
-  // Palette pulled from the login illustration (soft periwinkle/indigo with
-  // teal accents on a pale blue sky).
-  static const _pageBackgroundColor = Color(0xFFF0F3FC);
+  // Palette pulled from the AdsyClub login illustration — brand teal accents
+  // over a pale lavender-white sky.
+  static const _pageBackgroundColor = Color(0xFFF3F4FB);
   static const _surfaceColor = Colors.white;
   static const _cardBorderColor = Color(0xFFDDE3F5);
-  static const _primaryColor = Color(0xFF5B67E8);
-  static const _primaryDarkColor = Color(0xFF4149C8);
+  static const _primaryColor = Color(0xFF10B5A5);
+  static const _primaryDarkColor = Color(0xFF0B8F84);
   static const _headingTextColor = Color(0xFF1E2749);
   static const _bodyTextColor = Color(0xFF4A5578);
   static const _mutedTextColor = Color(0xFF7C87A8);
@@ -391,13 +391,13 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Branded illustration banner. The artwork (941×1672) has a
-                // tall near-white fade at the bottom; clip it away so only the
-                // scene + a little fade shows and the form can sit right under.
+                // Branded illustration banner. The artwork's scene (logo,
+                // tagline, shop + people) ends ~80% down with a white fade
+                // below; clip the fade away so the form sits right under.
                 ClipRect(
                   child: Align(
                     alignment: Alignment.topCenter,
-                    heightFactor: 0.58,
+                    heightFactor: 0.80,
                     child: Image.asset(
                       'assets/images/login_bg.png',
                       width: double.infinity,
@@ -410,7 +410,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                 Transform.translate(
                   offset: const Offset(0, -30),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
+                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 20),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 440),
@@ -481,7 +481,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           // Top bar (back button + secure chip) floating over the illustration.
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
+              padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
               child: _buildTopBar(),
             ),
           ),
@@ -518,7 +518,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           decoration: BoxDecoration(
             color: _primaryColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: const Color(0xFFCFE0FF)),
+            border: Border.all(color: const Color(0xFFBDE8E2)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

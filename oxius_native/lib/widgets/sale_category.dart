@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import '../services/translation_service.dart';
 import '../services/sale_service.dart';
 import '../services/category_icon_mapping.dart';
@@ -275,10 +276,7 @@ class _SaleCategoryState extends State<SaleCategory> {
 
     return Container(
       margin: widget.margin,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Column(
         children: [
           // Header Section
@@ -301,19 +299,8 @@ class _SaleCategoryState extends State<SaleCategory> {
     final screenWidth = MediaQuery.of(context).size.width;
     
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.01,
-        vertical: 8,
-      ),
-      padding: EdgeInsets.all(screenWidth * 0.025),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
-      ),
+      // 6px effective screen-side inset (2 outer + 4 here)
+      margin: const EdgeInsets.fromLTRB(4, 8, 4, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -337,11 +324,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     Text(
                       _translationService.t('sale_marketplace_title',
                           fallback: 'পুরোনো কেনাবেচা মার্কেটপ্লেস'),
-                      style: AppFonts.roboto(
-                        fontSize: screenWidth * 0.042,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.grey.shade800,
-                      ),
+                      style: AppText.sectionTitle(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -349,10 +332,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     Text(
                       _translationService.t('sale_marketplace_subtitle',
                           fallback: 'পুরোনো জিনিস সহজে কেনাবেচা করুন'),
-                      style: AppFonts.roboto(
-                        fontSize: screenWidth * 0.028,
-                        color: Colors.grey.shade600,
-                      ),
+                      style: AppText.sectionSubtitle(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -488,11 +468,9 @@ class _SaleCategoryState extends State<SaleCategory> {
   }
 
   Widget _buildBannerSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        children: [
-          ClipRRect(
+    return Column(
+      children: [
+        ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: SizedBox(
               height: 80,
@@ -510,8 +488,7 @@ class _SaleCategoryState extends State<SaleCategory> {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildBannerTile({required int index}) {
@@ -543,7 +520,7 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildCategoriesSection(bool isMobile) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -573,12 +550,10 @@ class _SaleCategoryState extends State<SaleCategory> {
                     const SizedBox(height: 4),
                     Text(
                       category['name'] ?? category['category'] ?? 'Category',
-                      style: AppFonts.roboto(
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected 
+                      style: AppText.tileLabel(
+                        color: isSelected
                             ? const Color(0xFF10B981)
-                            : Colors.grey.shade700,
+                            : null,
                       ),
                     ),
                   ],
@@ -602,21 +577,17 @@ class _SaleCategoryState extends State<SaleCategory> {
       return _buildNoProductsFound();
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        children: [
-          // Section header
-          Row(
+    return Column(
+      children: [
+          // Section header — 6px effective screen-side inset (2 outer + 4 here)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 getSelectedCategoryName(),
-                style: AppFonts.roboto(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
+                style: AppText.sectionTitle(),
               ),
               TextButton(
                 onPressed: () {
@@ -634,10 +605,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                   children: [
                     Text(
                       _translationService.t('view_all', fallback: 'View All'),
-                      style: AppFonts.roboto(
-                        fontSize: 12,
-                        color: const Color(0xFF10B981),
-                      ),
+                      style: AppText.linkText(color: const Color(0xFF10B981)),
                     ),
                     const Icon(
                       Icons.chevron_right,
@@ -648,10 +616,11 @@ class _SaleCategoryState extends State<SaleCategory> {
                 ),
               ),
             ],
+            ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Products grid
           if (isMobile)
             _buildMobileProductsList(products)
@@ -660,8 +629,7 @@ class _SaleCategoryState extends State<SaleCategory> {
           
           const SizedBox(height: 16),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildMobileProductsList(List<dynamic> products) {
@@ -741,11 +709,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                           ),
                           child: Text(
                             _formatPrice(product['price'], product['negotiable'] == true),
-                            style: AppFonts.roboto(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                            style: AppText.price(color: Colors.white).copyWith(fontSize: 10),
                           ),
                         ),
                       ),
@@ -762,12 +726,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                         // Title
                         Text(
                           product['title'] ?? '',
-                          style: AppFonts.roboto(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade800,
-                            height: 1.3,
-                          ),
+                          style: AppText.cardTitle().copyWith(fontSize: 12),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -786,11 +745,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                             Expanded(
                               child: Text(
                                 _formatLocation(product),
-                                style: AppFonts.roboto(
-                                  fontSize: 10,
-                                  color: Colors.grey.shade600,
-                                  height: 1.2,
-                                ),
+                                style: AppText.caption(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -813,20 +768,14 @@ class _SaleCategoryState extends State<SaleCategory> {
                                 ),
                                 child: Text(
                                   product['condition'] ?? '',
-                                  style: AppFonts.roboto(
-                                    fontSize: 9,
-                                    color: Colors.grey.shade600,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: AppText.meta(color: Colors.grey.shade600)
+                                      .copyWith(fontSize: 9),
                                 ),
                               ),
                             const Spacer(),
                             Text(
                               _relativeDate(product['created_at']),
-                              style: AppFonts.roboto(
-                                fontSize: 9,
-                                color: Colors.grey.shade500,
-                              ),
+                              style: AppText.meta().copyWith(fontSize: 9),
                             ),
                           ],
                         ),
@@ -896,21 +845,14 @@ class _SaleCategoryState extends State<SaleCategory> {
                     children: [
                       Text(
                         product['title'] ?? '',
-                        style: AppFonts.roboto(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppText.cardTitle(),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const Spacer(),
                       Text(
                         _formatPrice(product['price'], product['negotiable'] == true),
-                        style: AppFonts.roboto(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF10B981),
-                        ),
+                        style: AppText.price(color: const Color(0xFF10B981)),
                       ),
                     ],
                   ),
@@ -987,19 +929,12 @@ class _SaleCategoryState extends State<SaleCategory> {
           const SizedBox(height: 16),
           Text(
             _translationService.t('no_listings_found', fallback: 'No listings found'),
-            style: AppFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-            ),
+            style: AppText.cardTitle(color: Colors.grey.shade600),
           ),
           const SizedBox(height: 8),
           Text(
             _translationService.t('no_items_currently_listed', fallback: 'No items currently listed in this category'),
-            style: AppFonts.roboto(
-              fontSize: 12,
-              color: Colors.grey.shade500,
-            ),
+            style: AppText.caption(),
             textAlign: TextAlign.center,
           ),
         ],

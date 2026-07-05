@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
@@ -26,7 +27,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   static const Color _violet = Color(0xFF8B5CF6);
   static const Color _emerald = Color(0xFF10B981);
   static const Color _emeraldDark = Color(0xFF059669);
-  static const Color _slate50 = Color(0xFFF8FAFC);
   static const Color _slate100 = Color(0xFFF1F5F9);
   static const Color _slate200 = Color(0xFFE2E8F0);
   static const Color _slate400 = Color(0xFF94A3B8);
@@ -330,12 +330,13 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      // Regular section screen-side padding: 4px
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         children: [
-          // Compact Title
+          // Compact Title — 6px effective screen inset (4 outer + 2 here)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(2, 8, 2, 8),
             child: Row(
               children: [
                 const Icon(
@@ -346,11 +347,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 const SizedBox(width: 8),
                 Text(
                   _translationService.t('micro_gigs', fallback: 'Micro Gigs'),
-                  style: AppFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: _slate800,
-                  ),
+                  style: AppText.sectionTitle(),
                 ),
                 const SizedBox(width: 6),
                 Container(
@@ -362,11 +359,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                   child: Text(
                     _translationService.t('quick_earn', fallback: 'Quick Earn'),
-                    style: AppFonts.roboto(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: _violet,
-                    ),
+                    style: AppText.badge(color: _violet),
                   ),
                 ),
               ],
@@ -382,25 +375,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
 
           const SizedBox(height: 4),
 
-          // Main Card
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: _slate200,
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
-          ),
+          // Main content (flat)
+          isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
         ],
       ),
     );
@@ -430,11 +406,10 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         // Left Sidebar - Categories
         Container(
           width: 240,
-          decoration: BoxDecoration(
-            color: _slate50.withValues(alpha: 0.9),
+          decoration: const BoxDecoration(
             border: Border(
               right: BorderSide(
-                color: _slate200,
+                color: Color(0xFFF1F5F9),
                 width: 1,
               ),
             ),
@@ -457,40 +432,38 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
 
   Widget _buildMobileCategoriesDropdown() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-      decoration: BoxDecoration(
-        color: _slate50.withValues(alpha: 0.9),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 12),
+      decoration: const BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: _slate200),
+          bottom: BorderSide(color: Color(0xFFF1F5F9)),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: _indigo.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
+          // Title — 6px effective screen inset (4 outer + 2 here)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Row(
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: _indigo.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(Icons.category_outlined,
+                      size: 13, color: _indigo),
                 ),
-                child: const Icon(Icons.category_outlined,
-                    size: 13, color: _indigo),
-              ),
-              const SizedBox(width: 7),
-              Text(
-                _translationService.t('all_category',
-                    fallback: 'All Categories'),
-                style: AppFonts.roboto(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: _slate800,
+                const SizedBox(width: 7),
+                Text(
+                  _translationService.t('all_category',
+                      fallback: 'All Categories'),
+                  style: AppText.cardTitle(),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -500,11 +473,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               initialValue: _selectedCategory,
               icon: const Icon(Icons.keyboard_arrow_down_rounded,
                   size: 20, color: _slate500),
-              style: AppFonts.roboto(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: _slate800,
-              ),
+              style: AppText.bodyText(color: _slate800),
               decoration: InputDecoration(
                 isDense: true,
                 filled: true,
@@ -556,10 +525,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         ListTile(
           title: Text(
             _translationService.t('all_category', fallback: 'All Categories'),
-            style: AppFonts.roboto(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
+            style: AppText.cardTitle(),
           ),
           onTap: () => _filterByCategory(null),
           selected: _selectedCategory == null,
@@ -579,11 +545,9 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               return ListTile(
                 title: Text(
                   category['category'] ?? '',
-                  style: AppFonts.roboto(
-                    fontSize: 14,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
-                  ),
+                  style: isSelected
+                      ? AppText.cardTitle()
+                      : AppText.cardSubtitle(color: AppText.secondary),
                 ),
                 trailing: Container(
                   padding:
@@ -594,11 +558,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                   child: Text(
                     '${category['active']}',
-                    style: AppFonts.roboto(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.green.shade700,
-                    ),
+                    style: AppText.meta(color: Colors.green.shade700),
                   ),
                 ),
                 onTap: () => _filterByCategory(category['id'].toString()),
@@ -616,10 +576,10 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          decoration: BoxDecoration(
-            color: _slate50.withValues(alpha: 0.8),
-            border: Border(bottom: BorderSide(color: _slate200)),
+          // Header — 6px effective screen inset (4 outer + 2 here)
+          padding: const EdgeInsets.fromLTRB(2, 12, 2, 10),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,11 +601,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                     child: Text(
                       _translationService.t('available_gigs',
                           fallback: 'Available Gigs'),
-                      style: AppFonts.roboto(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: _slate800,
-                      ),
+                      style: AppText.cardTitle(),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -658,11 +614,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                     ),
                     child: Text(
                       _paginatedGigs.length.toString(),
-                      style: AppFonts.roboto(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: _indigo,
-                      ),
+                      style: AppText.meta(color: _indigo),
                     ),
                   ),
                 ],
@@ -677,7 +629,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         ),
         if (_loadError != null)
           Container(
-            margin: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            margin: const EdgeInsets.fromLTRB(2, 10, 2, 4),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: _violet.withValues(alpha: 0.08),
@@ -692,11 +644,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 Expanded(
                   child: Text(
                     _loadError!,
-                    style: AppFonts.roboto(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: _slate800,
-                    ),
+                    style: AppText.cardSubtitle(color: _slate800),
                   ),
                 ),
                 TextButton(
@@ -709,11 +657,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                   child: Text(
                     _translationService.t('retry', fallback: 'Retry'),
-                    style: AppFonts.roboto(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: _indigo,
-                    ),
+                    style: AppText.linkText(color: _indigo),
                   ),
                 ),
               ],
@@ -741,11 +685,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                           'no_gigs_available',
                           fallback: 'No gigs available',
                         ),
-                  style: AppFonts.roboto(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: _slate500,
-                  ),
+                  style: AppText.cardSubtitle(color: _slate500),
                 ),
                 if (_filterStatus == 'completed') ...[
                   const SizedBox(height: 8),
@@ -774,8 +714,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _paginatedGigs.length,
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            separatorBuilder: (context, index) => const Divider(
+              height: 1,
+              thickness: 1,
+              color: Color(0xFFF1F5F9),
+            ),
             itemBuilder: (context, index) =>
                 _buildGigCard(_paginatedGigs[index]),
           ),
@@ -857,20 +801,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     final slotsLeft =
         (requiredQty - filledQty) > 0 ? (requiredQty - filledQty) : 0;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _slate200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
       child: Column(
         children: [
           Row(
@@ -903,11 +835,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   children: [
                     Text(
                       title,
-                      style: AppFonts.roboto(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: _slate800,
-                      ),
+                      style: AppText.cardTitle(),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -931,11 +859,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                               const SizedBox(width: 4),
                               Text(
                                 '$filledQty/$requiredQty',
-                                style: AppFonts.roboto(
-                                  fontSize: 11,
-                                  color: _emeraldDark,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: AppText.meta(color: _emeraldDark),
                               ),
                             ],
                           ),
@@ -955,11 +879,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                               const SizedBox(width: 4),
                               Text(
                                 _formatDate(createdAt),
-                                style: AppFonts.roboto(
-                                  fontSize: 11,
-                                  color: _slate500,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: AppText.meta(color: _slate500),
                               ),
                             ],
                           ),
@@ -975,11 +895,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                             slotsLeft > 0
                                 ? '$slotsLeft slots left'
                                 : 'Filling soon',
-                            style: AppFonts.roboto(
-                              fontSize: 11,
-                              color: _indigo,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppText.meta(color: _indigo),
                           ),
                         ),
                       ],
@@ -1015,11 +931,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
                 child: Text(
                   '৳$price',
-                  style: AppFonts.roboto(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: _indigo,
-                  ),
+                  style: AppText.price(color: _indigo),
                 ),
               ),
               SizedBox(
@@ -1094,10 +1006,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           // Results Info
           Text(
             'Page $_currentPage of $_totalPages  •  Showing ${(_currentPage - 1) * _itemsPerPage + 1}-${(_currentPage * _itemsPerPage).clamp(0, _totalCount)} of $_totalCount gigs',
-            style: AppFonts.roboto(
-              fontSize: 11,
-              color: Colors.grey.shade500,
-            ),
+            style: AppText.meta(),
             textAlign: TextAlign.center,
           ),
         ],

@@ -43,8 +43,8 @@ class AppText {
   /// Section heading inside a page (e.g. "My Services", "Gold Sponsors").
   static TextStyle sectionTitle({Color? color}) => AppFonts.roboto(
         fontSize: 16.5,
-        fontWeight: FontWeight.w800,
-        color: color ?? primary,
+        fontWeight: FontWeight.w700,
+        color: color ?? secondary,
         letterSpacing: -0.3,
         height: 1.25,
       );
@@ -60,8 +60,8 @@ class AppText {
   /// Title of a card / list item.
   static TextStyle cardTitle({Color? color}) => AppFonts.roboto(
         fontSize: 14,
-        fontWeight: FontWeight.w700,
-        color: color ?? primary,
+        fontWeight: FontWeight.w600,
+        color: color ?? secondary,
         letterSpacing: -0.1,
         height: 1.3,
       );
@@ -115,8 +115,8 @@ class AppText {
   /// Grid / chip tile label under an icon.
   static TextStyle tileLabel({Color? color}) => AppFonts.roboto(
         fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: color ?? secondary,
+        fontWeight: FontWeight.w500,
+        color: color ?? body,
         letterSpacing: -0.1,
         height: 1.2,
       );
