@@ -2569,6 +2569,20 @@ def subscribeToPro(request):
             user=user, months=months, total=total_decimal
         )
 
+        # Purchasing Pro is a definite transition into pro access, so reactivate
+        # the seller's products (they may have been deactivated during a prior
+        # non-pro spell). base.Subscription.save() only flips the user flags.
+        try:
+            from subscription.utils import manage_user_products_activation
+
+            manage_user_products_activation(
+                user,
+                activate=True,
+                reason="Pro subscription purchased",
+            )
+        except Exception as e:  # never block the purchase on this
+            print(f"Error activating products after purchase: {str(e)}")
+
         # Referral commission for first-time subscribers
         commission_processed = False
         if is_first_time and user.refer:

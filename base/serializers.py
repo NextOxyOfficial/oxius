@@ -1,3 +1,5 @@
+import re
+
 from cities_light.models import City, Country, Region
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -516,28 +518,54 @@ class AdminNoticeSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+    # Accept an email, username OR phone number as the login identifier, so this
+    # is a plain CharField (an EmailField would reject phone numbers outright).
+    email = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+
+    @staticmethod
+    def _phone_candidates(identifier):
+        """Build the phone formats a user might have typed for a BD number.
+
+        Users store `+8801957045438` but usually type `01957045438`. We accept
+        any of: local (01957045438), with country code (8801957045438),
+        with + (+8801957045438), and match a stored number that ends with the
+        11-digit national part."""
+        digits = re.sub(r"\D", "", identifier or "")
+        candidates = set()
+        national = None
+        if digits:
+            candidates.add(digits)
+            if digits.startswith("88") and len(digits) >= 13:
+                national = digits[2:]
+            elif digits.startswith("0") and len(digits) == 11:
+                national = digits
+            elif len(digits) == 10 and digits.startswith("1"):
+                national = "0" + digits
+            if national:
+                candidates.update(
+                    {national, "88" + national, "+88" + national}
+                )
+        return candidates, national
 
     def validate(self, attrs):
         identifier = (attrs.get("email") or "").strip()
         password = attrs.get("password") or ""
 
-        # Authenticate the user by email and password
-        # user = authenticate(email=email, password=password)
-
-        # if user is None:
-        #     raise serializers.ValidationError('Invalid email or password.')
-
-        # Get user model
         User = get_user_model()
 
         if not identifier or not password:
             raise serializers.ValidationError("Email and password are required.")
 
-        user = User.objects.filter(
-            Q(email__iexact=identifier) | Q(username__iexact=identifier) | Q(phone=identifier)
-        ).first()
+        lookup = Q(email__iexact=identifier) | Q(username__iexact=identifier)
+        candidates, national = self._phone_candidates(identifier)
+        for candidate in candidates:
+            lookup |= Q(phone=candidate)
+        # A stored number like +8801957045438 ends with the national 01957045438.
+        if national:
+            lookup |= Q(phone__endswith=national)
+
+        user = User.objects.filter(lookup).first()
 
         if not user:
             raise serializers.ValidationError("Invalid email or password.")

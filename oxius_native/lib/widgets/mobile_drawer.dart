@@ -438,7 +438,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     iconColor: const Color(0xFF64748B),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/support');
+                      // Help center (FAQ), not the AdsyConnect support tab.
+                      Navigator.pushNamed(context, '/faq');
                     },
                   ),
                 ],

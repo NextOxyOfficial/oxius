@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import '../services/translation_service.dart';
 import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
@@ -238,25 +239,15 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
           onTap: () => Navigator.pushNamed(context, '/classified'),
           child: Text(
             title,
-            style: AppFonts.roboto(
-              fontSize: isMobile ? 19 : 22,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF155E75),
-              letterSpacing: -0.5,
-            ),
+            style: AppText.sectionTitle(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 3),
         Text(
           subtitle,
-          style: AppFonts.roboto(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey.shade700,
-            height: 1.4,
-          ),
+          style: AppText.sectionSubtitle(),
         ),
       ],
     );

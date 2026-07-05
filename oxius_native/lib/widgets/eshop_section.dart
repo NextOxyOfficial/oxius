@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
 import '../screens/eshop_screen.dart';
@@ -241,12 +242,7 @@ class _EshopSectionState extends State<EshopSection> {
                         Flexible(
                           child: Text(
                             _translationService.t('eshop', fallback: 'eShop'),
-                            style: AppFonts.poppins(
-                              fontSize: isMobile ? 20 : 24,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1F2937),
-                              letterSpacing: .2,
-                            ),
+                            style: AppText.sectionTitle(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

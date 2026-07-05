@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import '../services/classified_category_service.dart';
 import '../services/category_icon_mapping.dart';
 
@@ -172,13 +173,8 @@ class _CategoryTileState extends State<_CategoryTile> {
                     decoration: BoxDecoration(
                       color: widget.isSelected
                           ? highlightColor.withValues(alpha: 0.10)
-                          : const Color(0xFFF8FAFC),
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: widget.isSelected
-                            ? highlightColor.withValues(alpha: 0.20)
-                            : const Color(0xFFE2E8F0),
-                      ),
                     ),
                     child: Center(
                       child: _CategoryImage(
@@ -194,14 +190,11 @@ class _CategoryTileState extends State<_CategoryTile> {
                     child: Text(
                       widget.category.title,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: compact ? 11.2 : 12.5,
+                      style: AppText.tileLabel(color: labelColor).copyWith(
+                        fontSize: compact ? 11.2 : 12,
                         fontWeight: widget.isSelected
                             ? FontWeight.w700
                             : FontWeight.w600,
-                        letterSpacing: -0.1,
-                        color: labelColor,
-                        height: 1.22,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

@@ -16,6 +16,7 @@ import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/app_fonts.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/dob_picker.dart';
 
 enum _SettingsTab { profile, privacy, security }
 
@@ -245,16 +246,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _pickDob() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDob ?? DateTime(now.year - 18, now.month, now.day),
-      firstDate: DateTime(1900),
-      lastDate: now,
+    final picked = await showDobPicker(
+      context,
+      initial: _selectedDob,
+      accent: _primaryColor,
     );
     if (picked != null && mounted) {
       setState(() => _selectedDob = picked);
     }
+  }
+
+  int _calculateAge(DateTime dob) {
+    final today = DateTime.now();
+    var age = today.year - dob.year;
+    final birthdayThisYear = DateTime(today.year, dob.month, dob.day);
+    if (today.isBefore(birthdayThisYear)) age--;
+    return age;
   }
 
   Future<void> _loadDivisions() async {
@@ -1465,7 +1472,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icons.cake_outlined,
               child: Column(
                 children: [
-                  _buildDobField(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 3, child: _buildDobField()),
+                      const SizedBox(width: 10),
+                      Expanded(flex: 2, child: _buildAgeDisplay()),
+                    ],
+                  ),
                   const SizedBox(height: 10),
                   _buildGenderField(),
                 ],
@@ -2602,6 +2616,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fontSize: 14,
             color: display.isEmpty ? _mutedTextColor : _headingTextColor,
           ),
+        ),
+      ),
+    );
+  }
+
+  // Auto-derived age (no input box) — updates when the date of birth changes.
+  Widget _buildAgeDisplay() {
+    final age = _selectedDob != null ? _calculateAge(_selectedDob!) : null;
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: 'Age',
+        labelStyle: AppFonts.roboto(
+            fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
+        prefixIcon: const Icon(Icons.event_available_outlined,
+            color: _primaryColor, size: 20),
+        filled: false,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(vertical: 4),
+      ),
+      child: Text(
+        age != null ? '$age years' : '—',
+        style: AppFonts.roboto(
+          fontSize: 14,
+          fontWeight: age != null ? FontWeight.w700 : FontWeight.w500,
+          color: age != null ? _headingTextColor : _mutedTextColor,
         ),
       ),
     );

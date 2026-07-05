@@ -6,6 +6,7 @@ import '../services/fcm_service.dart';
 import '../utils/network_error_handler.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/terms_and_conditions_screen.dart';
+import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/profile_completion_sheet.dart';
@@ -24,16 +25,20 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  static const _pageBackgroundColor = Color(0xFFF3F7FC);
-  static const _surfaceColor = Color(0xFFFFFFFF);
-  static const _softSurfaceColor = Color(0xFFF8FBFF);
-  static const _cardBorderColor = Color(0xFFDCE6F2);
-  static const _primaryColor = Color(0xFF1D4ED8);
-  static const _primaryDarkColor = Color(0xFF163B8C);
-  static const _primarySoftColor = Color(0xFFEAF2FF);
-  static const _headingTextColor = Color(0xFF0F172A);
-  static const _bodyTextColor = Color(0xFF475569);
-  static const _mutedTextColor = Color(0xFF64748B);
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
+
+  // Palette pulled from the login illustration (soft periwinkle/indigo with
+  // teal accents on a pale blue sky).
+  static const _pageBackgroundColor = Color(0xFFF0F3FC);
+  static const _surfaceColor = Colors.white;
+  static const _cardBorderColor = Color(0xFFDDE3F5);
+  static const _primaryColor = Color(0xFF5B67E8);
+  static const _primaryDarkColor = Color(0xFF4149C8);
+  static const _headingTextColor = Color(0xFF1E2749);
+  static const _bodyTextColor = Color(0xFF4A5578);
+  static const _mutedTextColor = Color(0xFF7C87A8);
   static const _linkTextColor = _primaryColor;
 
   bool _isLoading = false;
@@ -82,7 +87,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);
 
         if (mounted) {
-          AdsyToast.success(context, 'Login Successful!');
+          AdsyToast.success(
+              context, _t('login_success', 'লগইন হয়ে গেছে!'));
 
           await Future.delayed(const Duration(milliseconds: 300));
 
@@ -101,7 +107,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         } else {
           // Authentication error (wrong credentials, etc.)
           setState(() {
-            _errorMessage = 'Invalid email or password';
+            _errorMessage = _t(
+                'login_invalid_credentials', 'ইমেইল বা পাসওয়ার্ড ঠিক নেই');
           });
         }
       }
@@ -176,7 +183,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);
 
         if (mounted) {
-          AdsyToast.success(context, 'Login Successful!');
+          AdsyToast.success(
+              context, _t('login_success', 'লগইন হয়ে গেছে!'));
 
           await Future.delayed(const Duration(milliseconds: 300));
           if (mounted) {
@@ -189,7 +197,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         setState(() {
           _errorMessage = NetworkErrorHandler.isNetworkError(e)
               ? NetworkErrorHandler.getErrorMessage(e)
-              : 'Could not sign in with $provider. Please try again.';
+              : _t('login_social_failed',
+                      '{provider} দিয়ে লগইন করা গেল না। আবার চেষ্টা করুন।')
+                  .replaceFirst('{provider}', provider);
         });
       }
     } finally {
@@ -372,138 +382,151 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-
     return Scaffold(
       backgroundColor: _pageBackgroundColor,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned(
-              top: -120,
-              right: -60,
-              child: Container(
-                width: 260,
-                height: 260,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      _primaryColor.withValues(alpha: 0.12),
-                      _primaryColor.withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 310,
-              left: -90,
-              child: Container(
-                width: 240,
-                height: 240,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF0EA5E9).withValues(alpha: 0.10),
-                      const Color(0xFF0EA5E9).withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 460),
-                  child: Column(
-                    children: [
-                      _buildAuthCard(isMobile),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAuthCard(bool isMobile) {
-    return Container(
-      width: double.infinity,
-      padding:
-          EdgeInsets.fromLTRB(isMobile ? 14 : 18, 14, isMobile ? 14 : 18, 18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_surfaceColor, _softSurfaceColor],
-        ),
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryDarkColor.withValues(alpha: 0.08),
-            blurRadius: 34,
-            offset: const Offset(0, 18),
-          ),
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.9),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: Stack(
         children: [
-          _buildTopBar(),
-          const SizedBox(height: 14),
-          _buildLoginCard(),
-          const SizedBox(height: 16),
-          _buildFooter(),
+          SingleChildScrollView(
+            padding: EdgeInsets.zero,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Branded illustration banner. The artwork (941×1672) has a
+                // tall near-white fade at the bottom; clip it away so only the
+                // scene + a little fade shows and the form can sit right under.
+                ClipRect(
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    heightFactor: 0.58,
+                    child: Image.asset(
+                      'assets/images/login_bg.png',
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                      errorBuilder: (_, __, ___) => const SizedBox(height: 24),
+                    ),
+                  ),
+                ),
+                // Pull the form up onto the illustration's white fade tail.
+                Transform.translate(
+                  offset: const Offset(0, -30),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildHeading(),
+                            const SizedBox(height: 20),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (_errorMessage.isNotEmpty)
+                                    _buildErrorBanner(),
+                                  _buildEmailField(),
+                                  const SizedBox(height: 12),
+                                  _buildPasswordField(),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () => Navigator.pushNamed(
+                                    context, '/reset-password'),
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  foregroundColor: _linkTextColor,
+                                ),
+                                child: Text(
+                                  _t('login_forgot', 'পাসওয়ার্ড ভুলে গেছেন?'),
+                                  style: AppFonts.roboto(
+                                    fontSize: 12.5,
+                                    color: _linkTextColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildSignInButton(),
+                            const SizedBox(height: 22),
+                            _buildSocialDivider(),
+                            const SizedBox(height: 14),
+                            SocialLoginButtons(
+                              enabled: !_isLoading,
+                              onProvider: _handleSocialLogin,
+                            ),
+                            const SizedBox(height: 24),
+                            _buildCreateAccountRow(),
+                            const SizedBox(height: 14),
+                            _buildFooter(),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Top bar (back button + secure chip) floating over the illustration.
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
+              child: _buildTopBar(),
+            ),
+          ),
         ],
       ),
     );
   }
 
+  // Top bar: professional back button (top-left) + a reassurance chip.
   Widget _buildTopBar() {
     return Row(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: _surfaceColor,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _cardBorderColor),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded,
-                color: _headingTextColor, size: 20),
-            onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
-            padding: const EdgeInsets.all(10),
-            constraints: const BoxConstraints(),
+        Material(
+          color: _surfaceColor,
+          borderRadius: BorderRadius.circular(13),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(13),
+            onTap: () => Navigator.of(context).pushReplacementNamed('/'),
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(color: _cardBorderColor),
+              ),
+              child: const Icon(Icons.arrow_back_rounded,
+                  color: _headingTextColor, size: 20),
+            ),
           ),
         ),
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: _primarySoftColor,
+            color: _primaryColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: const Color(0xFFCFE0FF)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.verified_user_rounded,
-                  size: 16, color: _primaryColor),
+              const Icon(Icons.lock_rounded, size: 14, color: _primaryColor),
               const SizedBox(width: 6),
               Text(
-                'Secure login',
+                _t('login_secure_badge', 'নিরাপদ লগইন'),
                 style: AppFonts.roboto(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
@@ -517,241 +540,144 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     );
   }
 
-  Widget _buildLoginCard() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-      decoration: BoxDecoration(
-        color: _surfaceColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _cardBorderColor),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryDarkColor.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+  Widget _buildHeading() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _t('login_welcome', 'আবার স্বাগতম'),
+          style: AppFonts.roboto(
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+            color: _headingTextColor.withValues(alpha: 0.85),
+            letterSpacing: -0.3,
           ),
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Account sign in',
-              style: AppFonts.roboto(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: _headingTextColor,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Use your registered email and password to continue to your workspace.',
-              style: AppFonts.roboto(
-                fontSize: 12.5,
-                color: _bodyTextColor,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 18),
-            if (_errorMessage.isNotEmpty) _buildErrorBanner(),
-            _buildInputLabel('Email Address'),
-            const SizedBox(height: 8),
-            _buildEmailField(),
-            const SizedBox(height: 16),
-            _buildInputLabel('Password'),
-            const SizedBox(height: 8),
-            _buildPasswordField(),
-            const SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/reset-password'),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  foregroundColor: _linkTextColor,
-                ),
-                child: Text(
-                  'Forgot password?',
-                  style: AppFonts.roboto(
-                    fontSize: 12,
-                    color: _linkTextColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            SizedBox(
-              height: 54,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [_primaryDarkColor, _primaryColor],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _primaryColor.withValues(alpha: 0.24),
-                      blurRadius: 18,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.transparent,
-                    disabledForegroundColor: Colors.white70,
-                    shadowColor: Colors.transparent,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: AdsyLoadingIndicator(
-                            strokeWidth: 2.4,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.login_rounded, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Sign In',
-                              style: AppFonts.roboto(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Container(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFEFF4FF), Color(0xFFF8FBFF)],
-                ),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFCFE0FF)),
-                boxShadow: [
-                  BoxShadow(
-                    color: _primaryColor.withValues(alpha: 0.10),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'OR CONTINUE WITH',
-                    style: AppFonts.roboto(
-                      fontSize: 10.5,
-                      color: _mutedTextColor,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SocialLoginButtons(
-                    enabled: !_isLoading,
-                    onProvider: _handleSocialLogin,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Expanded(
-                    child:
-                        Divider(color: const Color(0xFFD8E1EA), thickness: 1)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    'NEW HERE?',
-                    style: AppFonts.roboto(
-                      fontSize: 10.5,
-                      color: _mutedTextColor,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ),
-                Expanded(
-                    child:
-                        Divider(color: const Color(0xFFD8E1EA), thickness: 1)),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Container(
-              decoration: BoxDecoration(
-                color: _softSurfaceColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _cardBorderColor),
-              ),
-              child: TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/register'),
-                style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  foregroundColor: _headingTextColor,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Create a new account',
-                      style: AppFonts.roboto(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: _headingTextColor,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_rounded,
-                        size: 18, color: _primaryColor),
-                  ],
-                ),
-              ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          _t('login_subtitle',
+              'চালিয়ে যেতে আপনার AdsyClub অ্যাকাউন্টে লগইন করুন'),
+          style: AppFonts.roboto(
+            fontSize: 13.5,
+            color: _bodyTextColor,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSignInButton() {
+    return SizedBox(
+      height: 52,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [_primaryDarkColor, _primaryColor],
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: _primaryColor.withValues(alpha: 0.30),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
+        ),
+        child: ElevatedButton(
+          onPressed: _isLoading ? null : _handleLogin,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: Colors.transparent,
+            disabledForegroundColor: Colors.white70,
+            shadowColor: Colors.transparent,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: _isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: AdsyLoadingIndicator(
+                    strokeWidth: 2.4,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Text(
+                  _t('login_sign_in', 'লগইন করুন'),
+                  style: AppFonts.roboto(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
         ),
       ),
     );
   }
 
+  Widget _buildSocialDivider() {
+    return Row(
+      children: [
+        const Expanded(
+            child: Divider(color: Color(0xFFD5DCF0), thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            _t('login_or_continue', 'অথবা লগইন করুন'),
+            style: AppFonts.roboto(
+              fontSize: 10.5,
+              color: _mutedTextColor,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+        const Expanded(
+            child: Divider(color: Color(0xFFD5DCF0), thickness: 1)),
+      ],
+    );
+  }
+
+  Widget _buildCreateAccountRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          _t('login_new_here', 'AdsyClub-এ নতুন?'),
+          style: AppFonts.roboto(
+            fontSize: 13,
+            color: _bodyTextColor,
+          ),
+        ),
+        const SizedBox(width: 6),
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/register'),
+          child: Text(
+            _t('login_create_account', 'অ্যাকাউন্ট খুলুন'),
+            style: AppFonts.roboto(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: _primaryColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildErrorBanner() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFFECACA)),
       ),
       child: Row(
@@ -774,17 +700,6 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     );
   }
 
-  Widget _buildInputLabel(String label) {
-    return Text(
-      label,
-      style: AppFonts.roboto(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: _bodyTextColor,
-      ),
-    );
-  }
-
   Widget _buildEmailField() {
     return TextFormField(
       controller: _emailController,
@@ -795,33 +710,44 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
-        hintText: 'Enter your email',
+        hintText: _t('login_identifier_hint', 'ইমেইল বা ফোন নম্বর'),
         hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
         prefixIconConstraints:
-            const BoxConstraints(minWidth: 54, minHeight: 44),
-        prefixIcon: const Icon(Icons.alternate_email_rounded,
+            const BoxConstraints(minWidth: 50, minHeight: 44),
+        prefixIcon: const Icon(Icons.person_outline_rounded,
             color: _primaryColor, size: 18),
         filled: true,
         fillColor: _surfaceColor,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: _cardBorderColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _primaryColor, width: 1.8),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _primaryColor, width: 1.6),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Email is required';
-        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-          return 'Please enter a valid email';
+        final v = (value ?? '').trim();
+        if (v.isEmpty) {
+          return _t('login_identifier_required', 'ইমেইল বা ফোন নম্বর দিন');
+        }
+        final isEmail =
+            RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v);
+        // Accept BD phone: 01XXXXXXXXX, 8801XXXXXXXXX, +8801XXXXXXXXX.
+        final digits = v.replaceAll(RegExp(r'\D'), '');
+        final isPhone = RegExp(r'^(?:\+?88)?01[3-9]\d{8}$').hasMatch(v) ||
+            (digits.length == 11 && digits.startsWith('01')) ||
+            (digits.length == 13 && digits.startsWith('8801'));
+        if (!isEmail && !isPhone) {
+          return _t('login_identifier_invalid',
+              'ঠিকঠাক ইমেইল বা ফোন নম্বর দিন');
         }
         return null;
       },
@@ -838,10 +764,10 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
-        hintText: 'Enter your password',
+        hintText: _t('login_password_hint', 'পাসওয়ার্ড'),
         hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
         prefixIconConstraints:
-            const BoxConstraints(minWidth: 54, minHeight: 44),
+            const BoxConstraints(minWidth: 50, minHeight: 44),
         prefixIcon: const Icon(Icons.lock_outline_rounded,
             color: _primaryColor, size: 18),
         suffixIcon: IconButton(
@@ -857,83 +783,56 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         filled: true,
         fillColor: _surfaceColor,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: _cardBorderColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _primaryColor, width: 1.8),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _primaryColor, width: 1.6),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Password is required';
+        if (value == null || value.isEmpty) {
+          return _t('login_password_required', 'পাসওয়ার্ড দিন');
+        }
         return null;
       },
     );
   }
 
   Widget _buildFooter() {
-    return Column(
+    TextStyle tiny([Color? c]) => AppFonts.roboto(
+          fontSize: 10.5,
+          color: c ?? _mutedTextColor,
+        );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          '© 2026 AdsyClub. All rights reserved.',
-          style: AppFonts.roboto(
-            fontSize: 10.5,
-            color: _mutedTextColor,
+        Text('© 2026 AdsyClub', style: tiny()),
+        Text('  •  ', style: tiny()),
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
           ),
+          child: Text(_t('login_privacy', 'প্রাইভেসি'),
+              style: tiny(_bodyTextColor)),
         ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PrivacyPolicyScreen(),
-                  ),
-                );
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              ),
-              child: Text(
-                'Privacy',
-                style: AppFonts.roboto(
-                  fontSize: 10.5,
-                  color: _bodyTextColor,
-                ),
-              ),
-            ),
-            const Text('•', style: TextStyle(color: _mutedTextColor)),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const TermsAndConditionsScreen(),
-                  ),
-                );
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              ),
-              child: Text(
-                'Terms',
-                style: AppFonts.roboto(
-                  fontSize: 10.5,
-                  color: _bodyTextColor,
-                ),
-              ),
-            ),
-          ],
+        Text('  •  ', style: tiny()),
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => const TermsAndConditionsScreen()),
+          ),
+          child: Text(_t('login_terms', 'শর্তাবলী'),
+              style: tiny(_bodyTextColor)),
         ),
       ],
     );

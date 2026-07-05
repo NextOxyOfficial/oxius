@@ -836,25 +836,18 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     const slate = Color(0xFF64748B);
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () => _selectSection(4),
-        borderRadius: BorderRadius.circular(16),
         child: Ink(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFEAEEF3)),
-            boxShadow: [
-              BoxShadow(
-                color: dark.withValues(alpha: 0.045),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
-              ),
-            ],
+            border: Border(
+              top: BorderSide(color: Color(0xFFE9EDF2)),
+              bottom: BorderSide(color: Color(0xFFE9EDF2)),
+            ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
             child: Row(
               children: [
                 // Store avatar — shop icon (no background)
@@ -1000,11 +993,13 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
   Widget _dashProductStatus(int active, int outOfStock, int total) {
     final inactive = (total - active - outOfStock).clamp(0, total);
     return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE9EDF2)),
+        border: Border(
+          top: BorderSide(color: Color(0xFFE9EDF2)),
+          bottom: BorderSide(color: Color(0xFFE9EDF2)),
+        ),
       ),
       child: Column(
         children: [
@@ -1068,10 +1063,12 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 26),
         alignment: Alignment.center,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE9EDF2)),
+          border: Border(
+            top: BorderSide(color: Color(0xFFE9EDF2)),
+            bottom: BorderSide(color: Color(0xFFE9EDF2)),
+          ),
         ),
         child: Column(
           children: [
@@ -1089,10 +1086,12 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     }
     final recent = _orders.take(3).toList();
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE9EDF2)),
+        border: Border(
+          top: BorderSide(color: Color(0xFFE9EDF2)),
+          bottom: BorderSide(color: Color(0xFFE9EDF2)),
+        ),
       ),
       child: Column(
         children: [

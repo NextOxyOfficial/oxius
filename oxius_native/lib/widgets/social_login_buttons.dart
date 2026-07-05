@@ -37,7 +37,7 @@ class SocialLoginButtons extends StatelessWidget {
             SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Temporarily unavailable',
+                'এখন পাওয়া যাচ্ছে না',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,
@@ -75,7 +75,8 @@ class _GoogleButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          minimumSize: const Size.fromHeight(52),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           backgroundColor: Colors.white,
           side: const BorderSide(color: Color(0xFFDCE6F2), width: 1.4),
           shape: RoundedRectangleBorder(
@@ -132,7 +133,8 @@ class _FacebookButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          minimumSize: const Size.fromHeight(52),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           backgroundColor: _fbBlue,
           foregroundColor: Colors.white,
           disabledBackgroundColor: _disabledBg,

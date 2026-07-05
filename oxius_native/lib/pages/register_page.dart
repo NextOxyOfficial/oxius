@@ -9,11 +9,13 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/fcm_service.dart';
 import '../services/geo_service.dart';
+import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/profile_completion_sheet.dart';
 import '../widgets/social_login_buttons.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/dob_picker.dart';
 
 class RegisterPage extends StatefulWidget {
   final String? referralCode;
@@ -27,7 +29,6 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   static const _pageBackgroundColor = Color(0xFFF3F7FC);
   static const _surfaceColor = Color(0xFFFFFFFF);
-  static const _softSurfaceColor = Color(0xFFF8FBFF);
   static const _cardBorderColor = Color(0xFFDCE6F2);
   static const _primaryColor = Color(0xFF1D4ED8);
   static const _primaryDarkColor = Color(0xFF163B8C);
@@ -42,6 +43,10 @@ class _RegisterPageState extends State<RegisterPage> {
   String? _errorMessage;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -171,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Failed to pick image. Please try again.'),
+            content: Text(_t('reg_image_failed', 'ছবি নেওয়া গেল না। আবার চেষ্টা করুন।')),
             backgroundColor: Colors.orange,
             duration: const Duration(seconds: 3),
             action: SnackBarAction(
@@ -199,65 +204,65 @@ class _RegisterPageState extends State<RegisterPage> {
     var isValid = true;
 
     if (_firstNameController.text.trim().isEmpty) {
-      _errors['first_name'] = 'First name is required';
+      _errors['first_name'] = _t('reg_err_first', 'প্রথম নাম দিন');
       isValid = false;
     }
 
     if (_lastNameController.text.trim().isEmpty) {
-      _errors['last_name'] = 'Last name is required';
+      _errors['last_name'] = _t('reg_err_last', 'শেষ নাম দিন');
       isValid = false;
     }
 
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      _errors['email'] = 'Email is required';
+      _errors['email'] = _t('reg_err_email_req', 'ইমেইল দিন');
       isValid = false;
     } else if (!RegExp(r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      _errors['email'] = 'Enter a valid email address';
+      _errors['email'] = _t('reg_err_email_invalid', 'সঠিক একটা ইমেইল দিন');
       isValid = false;
     }
 
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
-      _errors['phone'] = 'Phone is required';
+      _errors['phone'] = _t('reg_err_phone_req', 'ফোন নম্বর দিন');
       isValid = false;
     } else if (!RegExp(r'^(?:\+?88)?01[3-9]\d{8}$').hasMatch(phone)) {
-      _errors['phone'] = 'Invalid phone number';
+      _errors['phone'] = _t('reg_err_phone_invalid', 'ফোন নম্বরটা ঠিক নেই');
       isValid = false;
     }
 
     if (_passwordController.text.isEmpty) {
-      _errors['password'] = 'Password is required';
+      _errors['password'] = _t('reg_err_pw_req', 'পাসওয়ার্ড দিন');
       isValid = false;
     } else if (_passwordController.text.length < 6) {
-      _errors['password'] = 'Password must be at least 6 characters';
+      _errors['password'] = _t('reg_err_pw_len', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
       isValid = false;
     }
 
     if (_confirmPasswordController.text.isEmpty) {
-      _errors['confirm_password'] = 'Confirm password is required';
+      _errors['confirm_password'] = _t('reg_err_cpw_req', 'পাসওয়ার্ড আবার দিন');
       isValid = false;
     } else if (_confirmPasswordController.text != _passwordController.text) {
-      _errors['confirm_password'] = 'Passwords do not match';
+      _errors['confirm_password'] = _t('reg_err_pw_mismatch', 'দুটো পাসওয়ার্ড এক হয়নি');
       isValid = false;
     }
 
     if (_selectedDateOfBirth == null) {
-      _errors['date_of_birth'] = 'Date of birth is required';
+      _errors['date_of_birth'] = _t('reg_err_dob', 'জন্ম তারিখ দিন');
       isValid = false;
     }
 
     final age = _ageController.text.trim();
     if (age.isEmpty) {
-      _errors['age'] = 'Age is required';
+      _errors['age'] = _t('reg_err_age_req', 'বয়স দরকার');
       isValid = false;
     } else if (!RegExp(r'^\d+$').hasMatch(age)) {
-      _errors['age'] = 'Invalid age';
+      _errors['age'] = _t('reg_err_age_invalid', 'বয়সটা ঠিক নেই');
       isValid = false;
     }
 
     if (_gender.isEmpty) {
-      _errors['gender'] = 'Gender is required';
+      _errors['gender'] = _t('reg_err_gender', 'জেন্ডার বাছুন');
       isValid = false;
     }
 
@@ -283,14 +288,10 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _pickDateOfBirth() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate:
-          _selectedDateOfBirth ?? DateTime(now.year - 18, now.month, now.day),
-      firstDate: DateTime(1900),
-      lastDate: now,
-      helpText: 'Select date of birth',
+    final picked = await showDobPicker(
+      context,
+      initial: _selectedDateOfBirth,
+      accent: _primaryColor,
     );
 
     if (picked == null) return;
@@ -361,7 +362,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Welcome to AdsyClub!',
+                      _t('reg_welcome', 'AdsyClub-এ স্বাগতম!'),
                       style: AppFonts.roboto(color: Colors.white),
                     ),
                   ),
@@ -450,7 +451,9 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _errorMessage = NetworkErrorHandler.isNetworkError(e)
               ? NetworkErrorHandler.getErrorMessage(e)
-              : 'Could not sign up with $provider. Please try again.';
+              : _t('reg_social_failed',
+                      '{provider} দিয়ে সাইন আপ করা গেল না। আবার চেষ্টা করুন।')
+                  .replaceFirst('{provider}', provider);
         });
       }
     } finally {
@@ -517,38 +520,18 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildAuthCard(bool isMobile) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(8, 14, 8, 18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_surfaceColor, _softSurfaceColor],
-        ),
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryDarkColor.withValues(alpha: 0.08),
-            blurRadius: 34,
-            offset: const Offset(0, 18),
-          ),
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.9),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
+    // Flat, plain-page layout (no wrapping card) — matches the login screen.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTopBar(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 22),
           _buildSocialQuickSignup(),
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
           _buildRegistrationCard(isMobile),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           _buildFooter(),
         ],
       ),
@@ -558,33 +541,15 @@ class _RegisterPageState extends State<RegisterPage> {
   /// Highlighted social sign-up section shown at the very top of the register
   /// screen so users see the one-tap options the moment they land on the page.
   Widget _buildSocialQuickSignup() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFEFF4FF), Color(0xFFF8FBFF)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFCFE0FF)),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryColor.withValues(alpha: 0.10),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: _primaryColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFCFE0FF)),
                 ),
@@ -597,7 +562,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sign up in seconds',
+                      _t('reg_quick_title', 'সেকেন্ডেই সাইন আপ'),
                       style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -607,7 +572,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Use your Google or Facebook account',
+                      _t('reg_quick_sub', 'Google বা Facebook দিয়ে সাইন আপ করুন'),
                       style: AppFonts.roboto(
                         fontSize: 11.5,
                         color: _bodyTextColor,
@@ -632,7 +597,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  'OR REGISTER WITH EMAIL',
+                  _t('reg_or_email', 'অথবা ইমেইল দিয়ে সাইন আপ করুন'),
                   style: AppFonts.roboto(
                     fontSize: 10.5,
                     color: const Color(0xFF64748B),
@@ -647,7 +612,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ],
           ),
         ],
-      ),
     );
   }
 
@@ -687,7 +651,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   size: 16, color: _primaryColor),
               const SizedBox(width: 6),
               Text(
-                'Secured signup',
+                _t('reg_secure_badge', 'নিরাপদ সাইনআপ'),
                 style: AppFonts.roboto(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
@@ -702,25 +666,11 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildRegistrationCard(bool isMobile) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
-      decoration: BoxDecoration(
-        color: _surfaceColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _cardBorderColor),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryDarkColor.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
           Text(
-            'Registration details',
+            _t('reg_details_title', 'রেজিস্ট্রেশনের তথ্য'),
             style: AppFonts.roboto(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -730,7 +680,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Fill out the form below to create your account in one step.',
+            _t('reg_details_sub', 'নিচের ফর্মটা পূরণ করে এক ধাপেই অ্যাকাউন্ট খুলুন।'),
             style: AppFonts.roboto(
               fontSize: 12.5,
               color: _bodyTextColor,
@@ -745,22 +695,22 @@ class _RegisterPageState extends State<RegisterPage> {
           _buildPhotoCard(isMobile),
           const SizedBox(height: 18),
           _buildSectionHeader(
-            'Personal details',
-            'These details are required to create and secure your account.',
+            _t('reg_personal', 'ব্যক্তিগত তথ্য'),
+            _t('reg_personal_sub', 'অ্যাকাউন্ট খুলতে আর নিরাপদ রাখতে এই তথ্যগুলো লাগবে।'),
           ),
           const SizedBox(height: 12),
           _buildTwoColumnRow(
             isMobile: isMobile,
             left: _buildTextField(
-              label: 'First Name',
-              hintText: 'Enter first name',
+              label: _t('reg_first_name', 'নামের প্রথম অংশ'),
+              hintText: _t('reg_first_name_hint', 'প্রথম নাম লিখুন'),
               controller: _firstNameController,
               icon: Icons.person_outline_rounded,
               error: _errors['first_name'],
             ),
             right: _buildTextField(
-              label: 'Last Name',
-              hintText: 'Enter last name',
+              label: _t('reg_last_name', 'নামের শেষ অংশ'),
+              hintText: _t('reg_last_name_hint', 'শেষ নাম লিখুন'),
               controller: _lastNameController,
               icon: Icons.badge_outlined,
               error: _errors['last_name'],
@@ -768,8 +718,8 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            label: 'Email Address',
-            hintText: 'Enter your email',
+            label: _t('reg_email', 'ইমেইল অ্যাড্রেস'),
+            hintText: _t('reg_email_hint', 'আপনার ইমেইল লিখুন'),
             controller: _emailController,
             icon: Icons.alternate_email_rounded,
             keyboardType: TextInputType.emailAddress,
@@ -777,8 +727,8 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            label: 'Phone Number',
-            hintText: 'Enter your phone number',
+            label: _t('reg_phone', 'ফোন নম্বর'),
+            hintText: _t('reg_phone_hint', 'আপনার ফোন নম্বর লিখুন'),
             controller: _phoneController,
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
@@ -788,37 +738,36 @@ class _RegisterPageState extends State<RegisterPage> {
           _buildTwoColumnRow(
             isMobile: isMobile,
             left: _buildDateField(
-              label: 'Date of Birth',
-              hintText: 'Select birth date',
+              label: _t('reg_dob', 'জন্ম তারিখ'),
+              hintText: _t('reg_dob_hint', 'জন্ম তারিখ বাছুন'),
               controller: _dateOfBirthController,
               icon: Icons.event_outlined,
               error: _errors['date_of_birth'],
               onTap: _pickDateOfBirth,
             ),
-            right: _buildTextField(
-              label: 'Age',
-              hintText: 'Auto-filled',
-              controller: _ageController,
-              icon: Icons.cake_outlined,
-              keyboardType: TextInputType.number,
-              readOnly: true,
-              error: _errors['age'],
-            ),
+            right: _buildAgeDisplay(),
           ),
           const SizedBox(height: 12),
           _buildDropdownField(
-            label: 'Gender',
-            hintText: 'Select gender',
+            label: _t('reg_gender', 'জেন্ডার'),
+            hintText: _t('reg_gender_hint', 'জেন্ডার বাছুন'),
             icon: Icons.wc_rounded,
             value: _gender.isEmpty ? null : _gender,
+            // Stored/submitted value stays canonical English; only the label is
+            // shown in Bangla so the backend keeps getting Male/Female/Others.
             items: const ['Male', 'Female', 'Others'],
+            displayLabels: {
+              'Male': _t('reg_male', 'পুরুষ'),
+              'Female': _t('reg_female', 'মহিলা'),
+              'Others': _t('reg_others', 'অন্যান্য'),
+            },
             onChanged: (value) => setState(() => _gender = value ?? ''),
             error: _errors['gender'],
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            label: 'Password',
-            hintText: 'Create a password',
+            label: _t('reg_password', 'পাসওয়ার্ড'),
+            hintText: _t('reg_password_hint', 'একটা পাসওয়ার্ড বানান'),
             controller: _passwordController,
             icon: Icons.lock_outline_rounded,
             isPassword: true,
@@ -829,8 +778,8 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            label: 'Confirm Password',
-            hintText: 'Re-enter your password',
+            label: _t('reg_confirm_password', 'পাসওয়ার্ড আবার দিন'),
+            hintText: _t('reg_confirm_password_hint', 'পাসওয়ার্ডটা আবার লিখুন'),
             controller: _confirmPasswordController,
             icon: Icons.verified_user_outlined,
             isPassword: true,
@@ -841,13 +790,13 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 18),
           _buildSectionHeader(
-            'Location and referral',
-            'These details are optional, but they help personalize your profile.',
+            _t('reg_location', 'ঠিকানা ও রেফারেল'),
+            _t('reg_location_sub', 'এগুলো দেওয়া বাধ্যতামূলক না, তবে দিলে প্রোফাইলটা আরও সুন্দর হবে।'),
           ),
           const SizedBox(height: 12),
           _buildDropdownField(
-            label: 'Region / State',
-            hintText: 'Choose your region',
+            label: _t('reg_region', 'বিভাগ / অঞ্চল'),
+            hintText: _t('reg_region_hint', 'আপনার অঞ্চল বাছুন'),
             icon: Icons.map_outlined,
             value: _selectedRegion,
             items: _regions.map((item) => item['name_eng'] as String).toList(),
@@ -862,8 +811,8 @@ class _RegisterPageState extends State<RegisterPage> {
           _buildTwoColumnRow(
             isMobile: isMobile,
             left: _buildDropdownField(
-              label: 'City',
-              hintText: 'Choose city',
+              label: _t('reg_city', 'জেলা / শহর'),
+              hintText: _t('reg_city_hint', 'শহর বাছুন'),
               icon: Icons.location_city_outlined,
               value: _selectedCity,
               items: _cities.map((item) => item['name_eng'] as String).toList(),
@@ -875,8 +824,8 @@ class _RegisterPageState extends State<RegisterPage> {
               },
             ),
             right: _buildDropdownField(
-              label: 'Area / Upazila',
-              hintText: 'Choose area',
+              label: _t('reg_area', 'এলাকা / উপজেলা'),
+              hintText: _t('reg_area_hint', 'এলাকা বাছুন'),
               icon: Icons.pin_drop_outlined,
               value: _selectedUpazila,
               items:
@@ -888,22 +837,22 @@ class _RegisterPageState extends State<RegisterPage> {
           _buildTwoColumnRow(
             isMobile: isMobile,
             left: _buildTextField(
-              label: 'Postal Code',
-              hintText: 'Enter postal code',
+              label: _t('reg_postal', 'পোস্টাল কোড'),
+              hintText: _t('reg_postal_hint', 'পোস্টাল কোড লিখুন'),
               controller: _zipController,
               icon: Icons.markunread_mailbox_outlined,
             ),
             right: _buildTextField(
-              label: 'Referral Code',
-              hintText: 'Optional referral code',
+              label: _t('reg_referral', 'রেফারেল কোড'),
+              hintText: _t('reg_referral_hint', 'রেফারেল কোড থাকলে দিন'),
               controller: _referralController,
               icon: Icons.card_giftcard_outlined,
             ),
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            label: 'Full Address',
-            hintText: 'Enter your address',
+            label: _t('reg_address', 'পুরো ঠিকানা'),
+            hintText: _t('reg_address_hint', 'আপনার ঠিকানা লিখুন'),
             controller: _addressController,
             icon: Icons.home_outlined,
             maxLines: 3,
@@ -924,7 +873,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'By continuing, you confirm that your information is accurate and your account credentials will be kept secure.',
+                    _t('reg_info_note', 'সাইন আপ করলে আপনি নিশ্চিত করছেন যে আপনার তথ্য সঠিক এবং আপনার অ্যাকাউন্টের তথ্য নিরাপদ রাখা হবে।'),
                     style: AppFonts.roboto(
                       fontSize: 11.8,
                       color: _primaryDarkColor,
@@ -983,7 +932,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           const Icon(Icons.rocket_launch_rounded, size: 18),
                           const SizedBox(width: 8),
                           Text(
-                            'Create Account',
+                            _t('reg_create_account', 'অ্যাকাউন্ট খুলুন'),
                             style: AppFonts.roboto(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -996,18 +945,12 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ],
-      ),
     );
   }
 
   Widget _buildPhotoCard(bool isMobile) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _softSurfaceColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: _cardBorderColor),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: isMobile
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,7 +1027,7 @@ class _RegisterPageState extends State<RegisterPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Profile photo',
+          _t('reg_photo_title', 'প্রোফাইল ছবি'),
           style: AppFonts.roboto(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -1093,7 +1036,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Optional. Add a clear photo to make your profile look complete.',
+          _t('reg_photo_sub', 'ইচ্ছে হলে একটা পরিষ্কার ছবি দিন, প্রোফাইলটা সম্পূর্ণ দেখাবে।'),
           style: AppFonts.roboto(
             fontSize: 12,
             color: _bodyTextColor,
@@ -1118,8 +1061,8 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               child: Text(
                 _profileImageBytes != null || _profileImageFile != null
-                    ? 'Change Photo'
-                    : 'Upload Photo',
+                    ? _t('reg_change_photo', 'ছবি বদলান')
+                    : _t('reg_upload_photo', 'ছবি আপলোড করুন'),
                 style: AppFonts.roboto(
                     fontSize: 12.5, fontWeight: FontWeight.w600),
               ),
@@ -1377,6 +1320,7 @@ class _RegisterPageState extends State<RegisterPage> {
     required String? value,
     required ValueChanged<String?> onChanged,
     String? error,
+    Map<String, String>? displayLabels,
   }) {
     // De-duplicate items: the geo data can return the same name twice (e.g. two
     // "Dhaka" rows), which makes DropdownButton assert "2 or more items with the
@@ -1440,7 +1384,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 (item) => DropdownMenuItem<String>(
                   value: item,
                   child: Text(
-                    item,
+                    displayLabels?[item] ?? item,
                     style: AppFonts.roboto(
                         fontSize: 13.5, color: _headingTextColor),
                     overflow: TextOverflow.ellipsis,
@@ -1469,6 +1413,40 @@ class _RegisterPageState extends State<RegisterPage> {
     return Icon(icon, color: _primaryColor, size: 18);
   }
 
+  // Age is auto-derived from the date of birth — show it as plain text (no
+  // input box) since the user never types here.
+  Widget _buildAgeDisplay() {
+    final age = _ageController.text.trim();
+    final hasAge = age.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInputLabel(_t('reg_age', 'বয়স')),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 52,
+          child: Row(
+            children: [
+              const Icon(Icons.cake_outlined, color: _primaryColor, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                hasAge
+                    ? _t('reg_age_years', '{age} বছর')
+                        .replaceFirst('{age}', age)
+                    : _t('reg_age_auto', 'অটো'),
+                style: AppFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: hasAge ? FontWeight.w700 : FontWeight.w500,
+                  color: hasAge ? _headingTextColor : _mutedTextColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildFooter() {
     return Center(
       child: TextButton(
@@ -1478,7 +1456,7 @@ class _RegisterPageState extends State<RegisterPage> {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         ),
         child: Text(
-          'Already have an account? Sign In',
+          _t('reg_have_account', 'আগে থেকেই অ্যাকাউন্ট আছে? লগইন করুন'),
           style: AppFonts.roboto(
             fontSize: 12.5,
             color: _primaryColor,

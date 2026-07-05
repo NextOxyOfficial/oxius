@@ -60,6 +60,23 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
   List<ClassifiedCategory> _filteredCategories = [];
   List<Map<String, dynamic>> _searchedPosts = [];
 
+  // Animated "typing" placeholder suggestions.
+  static const List<String> _hintSuggestions = [
+    'সেলুন ও বিউটি সার্ভিস',
+    'এসি ও ফ্রিজ সার্ভিসিং',
+    'ইলেকট্রিক কাজ',
+    'ঘর পরিষ্কার সার্ভিস',
+    'গাড়ি মেরামত',
+    'প্লাম্বিং সার্ভিস',
+    'ওয়েব ডেভেলপমেন্ট',
+    'রিয়েল এস্টেট এজেন্ট',
+  ];
+  Timer? _hintTimer;
+  int _hintPhraseIndex = 0;
+  int _hintCharIndex = 0;
+  bool _hintDeleting = false;
+  String _animatedHint = '';
+
   @override
   void initState() {
     super.initState();
@@ -67,15 +84,46 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
     _lastQuery = widget.initialValue;
     _ts.addListener(_onLangChanged);
     _focusNode.addListener(_onFocusChanged);
+    _tickHint();
 
     if (widget.showCategories && widget.categoryService != null) {
       _loadCategories();
     }
   }
 
+  void _tickHint() {
+    if (!mounted) return;
+    final phrase = _hintSuggestions[_hintPhraseIndex];
+    final total = phrase.characters.length;
+    int delay = 85;
+    if (!_hintDeleting) {
+      _hintCharIndex++;
+      if (_hintCharIndex >= total) {
+        _hintCharIndex = total;
+        _hintDeleting = true;
+        delay = 1500; // hold on the full phrase
+      }
+    } else {
+      _hintCharIndex--;
+      if (_hintCharIndex <= 0) {
+        _hintCharIndex = 0;
+        _hintDeleting = false;
+        _hintPhraseIndex = (_hintPhraseIndex + 1) % _hintSuggestions.length;
+        delay = 400;
+      } else {
+        delay = 40;
+      }
+    }
+    setState(() {
+      _animatedHint = phrase.characters.take(_hintCharIndex).toString();
+    });
+    _hintTimer = Timer(Duration(milliseconds: delay), _tickHint);
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
+    _hintTimer?.cancel();
     _removeOverlay();
     _ts.removeListener(_onLangChanged);
     _focusNode.removeListener(_onFocusChanged);
@@ -766,6 +814,278 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
     );
   }
 
+  // ── Bottom-sheet search (used by the embedded "My Services" bar) ──
+  Future<void> _openSearchSheet() async {
+    _removeOverlay();
+    final sheetController = TextEditingController(text: _controller.text);
+    Timer? sheetDebounce;
+    List<ClassifiedCategory> cats = [];
+    List<Map<String, dynamic>> posts = [];
+    bool loading = false;
+    String query = sheetController.text.trim();
+
+    void go(BuildContext ctx, String route, Map<String, dynamic> args) {
+      Navigator.pop(ctx);
+      Navigator.pushNamed(context, route, arguments: args);
+    }
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (sheetCtx, setSheet) {
+            Future<void> runSearch(String value) async {
+              final trimmed = value.trim();
+              query = trimmed;
+              if (trimmed.isEmpty) {
+                setSheet(() {
+                  cats = [];
+                  posts = [];
+                  loading = false;
+                });
+                return;
+              }
+              setSheet(() => loading = true);
+              final c = await _searchCategories(trimmed);
+              final p = await _searchPosts(trimmed, page: 1);
+              if (!sheetCtx.mounted) return;
+              setSheet(() {
+                cats = c.take(6).toList();
+                posts = (p['results'] as List).cast<Map<String, dynamic>>();
+                loading = false;
+              });
+            }
+
+            void onChanged(String v) {
+              sheetDebounce?.cancel();
+              setSheet(() => query = v.trim());
+              sheetDebounce =
+                  Timer(const Duration(milliseconds: 350), () => runSearch(v));
+            }
+
+            return Padding(
+              padding:
+                  EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+              child: DraggableScrollableSheet(
+                initialChildSize: 0.92,
+                minChildSize: 0.5,
+                maxChildSize: 0.95,
+                expand: false,
+                builder: (_, scrollController) => Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                        child: TextField(
+                          controller: sheetController,
+                          autofocus: true,
+                          textInputAction: TextInputAction.search,
+                          onChanged: onChanged,
+                          onSubmitted: runSearch,
+                          style: AppFonts.inter(
+                              fontSize: 15, color: const Color(0xFF111827)),
+                          decoration: InputDecoration(
+                            hintText: _ts.t('classified_search_placeholder',
+                                fallback: 'সেবা বা ক্যাটাগরি খুঁজুন...'),
+                            prefixIcon: const Icon(Icons.search_rounded,
+                                color: Color(0xFF06B6D4)),
+                            suffixIcon: query.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.close_rounded,
+                                        size: 20),
+                                    onPressed: () {
+                                      sheetController.clear();
+                                      onChanged('');
+                                    },
+                                  )
+                                : null,
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFF06B6D4), width: 1.4),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: loading
+                            ? const Center(
+                                child: AdsyLoadingIndicator(
+                                    color: Color(0xFF06B6D4)))
+                            : query.isEmpty
+                                ? _sheetSuggestions((s) {
+                                    sheetController.text = s;
+                                    onChanged(s);
+                                    runSearch(s);
+                                  })
+                                : (cats.isEmpty && posts.isEmpty)
+                                    ? _sheetEmpty()
+                                    : ListView(
+                                        controller: scrollController,
+                                        padding: const EdgeInsets.only(bottom: 24),
+                                        children: [
+                                          if (cats.isNotEmpty) ...[
+                                            _sheetSectionLabel(_ts.t(
+                                                'categories',
+                                                fallback: 'ক্যাটাগরি')),
+                                            ...cats.map((c) => ListTile(
+                                                  leading: const Icon(
+                                                      Icons.category_rounded,
+                                                      color: Color(0xFF06B6D4)),
+                                                  title: Text(c.title,
+                                                      style: AppFonts.inter(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w500)),
+                                                  trailing: const Icon(
+                                                      Icons
+                                                          .arrow_forward_ios_rounded,
+                                                      size: 12),
+                                                  onTap: () => go(
+                                                      sheetCtx,
+                                                      '/classified-category',
+                                                      {
+                                                        'categoryId': c.id,
+                                                        'categoryTitle': c.title,
+                                                      }),
+                                                )),
+                                          ],
+                                          if (posts.isNotEmpty) ...[
+                                            _sheetSectionLabel(_ts.t('posts',
+                                                fallback: 'পোস্ট')),
+                                            ...posts.map((p) => ListTile(
+                                                  leading: const Icon(
+                                                      Icons
+                                                          .article_outlined,
+                                                      color: Color(0xFF10B981)),
+                                                  title: Text(
+                                                      p['title']?.toString() ??
+                                                          '',
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: AppFonts.inter(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w500)),
+                                                  subtitle: p['category_name'] !=
+                                                          null
+                                                      ? Text(
+                                                          p['category_name']
+                                                              .toString(),
+                                                          style: AppFonts.inter(
+                                                              fontSize: 11,
+                                                              color: Colors
+                                                                  .grey.shade600))
+                                                      : null,
+                                                  onTap: () => go(
+                                                      sheetCtx,
+                                                      '/classified-post-details',
+                                                      {
+                                                        'postId': p['id']
+                                                                ?.toString() ??
+                                                            '',
+                                                        'postSlug': p['slug']
+                                                                ?.toString() ??
+                                                            '',
+                                                      }),
+                                                )),
+                                          ],
+                                        ],
+                                      ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    sheetDebounce?.cancel();
+    sheetController.dispose();
+  }
+
+  Widget _sheetSectionLabel(String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        child: Text(text,
+            style: AppFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF64748B))),
+      );
+
+  Widget _sheetSuggestions(ValueChanged<String> onPick) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        _sheetSectionLabel(_ts.t('popular_searches', fallback: 'জনপ্রিয় খোঁজ')),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _hintSuggestions
+              .map((s) => ActionChip(
+                    label: Text(s,
+                        style: AppFonts.inter(
+                            fontSize: 12.5, color: const Color(0xFF0F766E))),
+                    backgroundColor: const Color(0xFFECFEFF),
+                    side: const BorderSide(color: Color(0xFFA5F3FC)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999)),
+                    onPressed: () => onPick(s),
+                  ))
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _sheetEmpty() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
+          const SizedBox(height: 10),
+          Text(_ts.t('no_results', fallback: 'কিছু পাওয়া যায়নি'),
+              style: AppFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF64748B))),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
@@ -795,7 +1115,9 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
             child: TextField(
               controller: _controller,
               focusNode: _focusNode,
-              onChanged: _onChanged,
+              onChanged: widget.embedded ? null : _onChanged,
+              readOnly: widget.embedded,
+              onTap: widget.embedded ? _openSearchSheet : null,
               textInputAction: TextInputAction.search,
               style: AppFonts.inter(
                 fontSize: isMobile ? 15 : 16,
@@ -846,7 +1168,9 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                             tooltip: clearLabel,
                           )
                         : null,
-                hintText: placeholder,
+                hintText: hasQuery
+                    ? placeholder
+                    : (_animatedHint.isEmpty ? placeholder : '$_animatedHint|'),
                 hintStyle: AppFonts.inter(
                   color: Colors.grey.shade400,
                   fontSize: isMobile ? 15 : 16,

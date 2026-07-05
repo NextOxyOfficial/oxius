@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/theme/app_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import 'package:flutter_html/flutter_html.dart';
@@ -88,13 +89,9 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                   child: const Icon(Icons.star, size: 14, color: Colors.white),
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Gold Sponsors',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFD97706),
-                  ),
+                  style: AppText.sectionTitle(color: const Color(0xFFB45309)),
                 ),
                 const Spacer(),
                 GestureDetector(
@@ -110,11 +107,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                     children: [
                       Text(
                         'View All',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.amber.shade700,
-                        ),
+                        style: AppText.linkText(color: Colors.amber.shade700),
                       ),
                       Icon(Icons.chevron_right,
                           size: 16, color: Colors.amber.shade700),

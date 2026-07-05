@@ -19,6 +19,8 @@ import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
 import '../services/home_popup_service.dart';
@@ -204,12 +206,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     try {
-      final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
-
-      int totalUnread = 0;
-      for (var room in chatRooms) {
-        totalUnread += (room['unread_count'] as int?) ?? 0;
-      }
+      // AdsyConnect header icon shows the combined unread across all three
+      // inbox tabs: chats + updates (admin notices) + support tickets.
+      final results = await Future.wait([
+        _fetchChatUnread(),
+        _fetchUpdatesUnread(),
+        _fetchSupportUnread(),
+      ]);
+      final totalUnread = results.fold<int>(0, (s, c) => s + c);
 
       if (mounted && !_disposed) {
         setState(() {
@@ -220,6 +224,53 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       debugPrint('Error fetching unread count: $e');
+    }
+  }
+
+  Future<int> _fetchChatUnread() async {
+    try {
+      final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
+      int total = 0;
+      for (var room in chatRooms) {
+        total += (room['unread_count'] as int?) ?? 0;
+      }
+      return total;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Unread admin notices (the "Updates" tab).
+  Future<int> _fetchUpdatesUnread() async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse(ApiService.getApiUrl('admin-notice/?page=1')),
+        headers: headers,
+      );
+      if (response.statusCode != 200) return 0;
+      final data = json.decode(response.body);
+      final List items = data is List ? data : (data['results'] ?? []);
+      return items.where((n) => (n['is_read'] ?? false) != true).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Support tickets with unread replies (the "Support" tab).
+  Future<int> _fetchSupportUnread() async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse(ApiService.getApiUrl('tickets/?page=1')),
+        headers: headers,
+      );
+      if (response.statusCode != 200) return 0;
+      final data = json.decode(response.body);
+      final List items = data is List ? data : (data['results'] ?? []);
+      return items.where((t) => (t['is_unread'] ?? false) == true).length;
+    } catch (_) {
+      return 0;
     }
   }
 
@@ -2005,27 +2056,32 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = userState.currentUser;
 
     if (!isAuthenticated || user == null) {
-      // Guest user - show login button
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/login'),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
+      // Guest user - show login button (no background, icon + label)
+      return GestureDetector(
+        onTap: () => Navigator.pushNamed(context, '/login'),
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
                 Icons.person_outline_rounded,
-                color: Colors.white,
+                color: Color(0xFF3B82F6),
                 size: 22,
               ),
-            ),
+              const SizedBox(width: 6),
+              const Text(
+                'Login/Signup',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       );
     }
 
