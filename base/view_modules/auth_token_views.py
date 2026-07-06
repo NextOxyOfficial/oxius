@@ -48,14 +48,21 @@ def exchange_web_login_token(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def login_as_view(request):
+    # Staff-only impersonation: the caller must already be an authenticated
+    # staff user AND re-confirm their own credentials. Never expose this to
+    # unauthenticated clients — it would act as a password oracle.
+    if not request.user.is_staff:
+        return Response({"error": "Staff access required"}, status=403)
+
     username = request.data.get("username")
     password = request.data.get("password")
     login_as = request.data.get("login_as")
 
     user = authenticate(username=username, password=password)
 
-    if user is not None and user.is_staff:
+    if user is not None and user.is_staff and user == request.user:
         try:
             login_as_user = User.objects.get(username=login_as)
             refresh = RefreshToken.for_user(login_as_user)

@@ -1,6 +1,14 @@
-venv
-__pycache__
-.vscode
+# ── Python / Django ──────────────────────────────
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+*.sqlite3
+*.log
+*.sql
+*.dump
+staticfiles/
 media
 /media
 /media/*
@@ -9,13 +17,47 @@ shurjopay_live.log
 */shurjopay_live.log
 base/shurjopay_live.log
 
-# Firebase credentials - NEVER commit these!
+# ── Credentials & keys — NEVER commit these! ─────
 firebase-adminsdk.json
 *firebase-adminsdk*.json
 serviceAccountKey.json
 *serviceAccountKey*.json
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.keystore
+key.properties
+!key.properties.template
 
-# Environment variables
+# ── Environment variables ────────────────────────
 .env
 .env.local
 .env.*.local
+
+# ── Node / Nuxt ──────────────────────────────────
+node_modules/
+.nuxt/
+.output/
+dist/
+
+# ── Flutter / Android / iOS ──────────────────────
+.dart_tool/
+**/build/
+.gradle/
+*.apk
+*.aab
+*.ipa
+hs_err_*.log
+
+# ── IDE / editor ─────────────────────────────────
+.vscode
+.idea/
+*.iml
+*.swp
+*.swo
+
+# ── OS junk ──────────────────────────────────────
+.DS_Store
+Thumbs.db
