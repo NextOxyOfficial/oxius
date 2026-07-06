@@ -255,11 +255,14 @@ else:
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "adsyclub",
-        "USER": "postgres",
-        "PASSWORD": "pgPass7431",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": os.getenv("DB_NAME", "adsyclub"),
+        "USER": os.getenv("DB_USER", "postgres"),
+        # Secrets read from the environment. The literal fallback keeps existing
+        # deploys working until DB_PASSWORD is set in the server env; ROTATE the
+        # password and set it in env, then delete the fallback.
+        "PASSWORD": os.getenv("DB_PASSWORD", "pgPass7431"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "5432"),
         # Reuse Postgres connections across requests instead of opening a new
         # one for every API call (saved ~50-100ms per request). Health check
         # ensures stale connections are replaced.
@@ -610,8 +613,10 @@ GUEST_NUDGE_PER_RUN_CAP = 500             # anti-burst: max guest pushes per run
 # registers — it does not stop after the 6 messages.
 
 # ShurjoPay Settings
-SP_USERNAME = "lyriczsoft"
-SP_PASSWORD = "lyrikskdzprvz&ud"
+# ShurjoPay credentials — read from env. ROTATE at the gateway, set the new
+# values in the server env, then remove these literal fallbacks.
+SP_USERNAME = os.getenv("SP_USERNAME", "lyriczsoft")
+SP_PASSWORD = os.getenv("SP_PASSWORD", "lyrikskdzprvz&ud")
 SP_ENDPOINT = "https://engine.shurjopayment.com"
 SP_RETURN = "https://adsyclub.com/verify-payment"
 SP_CANCEL = "https://adsyclub.com/deposit-withdraw/"

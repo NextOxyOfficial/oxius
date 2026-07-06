@@ -1,5 +1,7 @@
 // E-Learning Models for Flutter App
 
+import '../services/translation_service.dart';
+
 class Batch {
   final String id;
   final String name;
@@ -258,6 +260,23 @@ class VideoLesson {
       'updated_at': updatedAt.toIso8601String(),
     };
   }
+
+  // Prefer Bangla content when the app language is Bangla and it exists.
+  bool get _preferBn =>
+      TranslationService().currentLanguage.toLowerCase().startsWith('bn');
+
+  String get displayTitle =>
+      (_preferBn && (titleBn?.trim().isNotEmpty ?? false)) ? titleBn!.trim() : title;
+
+  String get displayDescription =>
+      (_preferBn && (descriptionBn?.trim().isNotEmpty ?? false))
+          ? descriptionBn!.trim()
+          : description;
+
+  String get displayLessonName =>
+      (_preferBn && (lessonNameBn?.trim().isNotEmpty ?? false))
+          ? lessonNameBn!.trim()
+          : lessonName;
 
   // Extract YouTube video ID from URL
   String? getYoutubeId() {

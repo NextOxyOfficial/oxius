@@ -1,5 +1,40 @@
 from django.contrib import admin
-from .models import Batch, Division, Subject, VideoLesson
+from django.utils.html import format_html
+from .models import Batch, Division, Subject, VideoLesson, ElearningBanner
+
+
+@admin.register(ElearningBanner)
+class ElearningBannerAdmin(admin.ModelAdmin):
+    list_display = ('preview', 'title', 'link_type', 'link_url', 'display_order', 'is_active')
+    list_display_links = ('preview', 'title')
+    list_filter = ('is_active', 'link_type')
+    list_editable = ('display_order', 'is_active')
+    search_fields = ('title', 'link_url')
+    ordering = ('display_order', '-created_at')
+    readonly_fields = ('created_at', 'updated_at', 'preview')
+    fieldsets = (
+        (None, {'fields': ('title', 'image', 'preview')}),
+        ('Tap action', {
+            'fields': ('link_type', 'link_url'),
+            'description': "Choose what happens when a user taps the slide. "
+                           "Internal: an app route like /elearning or /eshop. "
+                           "External: a full URL like https://example.com.",
+        }),
+        ('Display', {'fields': ('display_order', 'is_active')}),
+        ('Meta', {'fields': ('created_at', 'updated_at')}),
+    )
+
+    def preview(self, obj):
+        if obj.image:
+            try:
+                return format_html(
+                    '<img src="{}" style="height:44px;border-radius:6px;object-fit:cover;" />',
+                    obj.image.url,
+                )
+            except ValueError:
+                return '—'
+        return '—'
+    preview.short_description = 'Preview'
 
 
 @admin.register(Batch)

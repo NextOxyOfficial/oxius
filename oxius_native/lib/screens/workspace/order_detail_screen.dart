@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/api_service.dart';
+import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -13,6 +14,9 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   Map<String, dynamic>? _order;
   bool _isLoading = true;
@@ -72,9 +76,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Order Details',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+        title: Text(
+          _t('workspace_order_details', 'অর্ডারের বিবরণ'),
+          style: const TextStyle(
+              color: Colors.black87, fontWeight: FontWeight.w600),
         ),
       ),
       body: _isLoading
@@ -118,9 +123,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Order ID',
-                          style: TextStyle(
+                        Text(
+                          _t('workspace_order_id', 'অর্ডার আইডি'),
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
                           ),
@@ -146,9 +151,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Total Amount',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    Text(
+                      _t('workspace_total_amount', 'মোট টাকা'),
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     Text(
                       '৳$price',
@@ -183,9 +188,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Gig',
-                    style: TextStyle(
+                  Text(
+                    _t('workspace_gig', 'গিগ'),
+                    style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
@@ -215,7 +220,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          gig['title'] ?? 'Gig Title',
+                          gig['title'] ??
+                              _t('workspace_gig_title', 'গিগ টাইটেল'),
                           style: const TextStyle(
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
@@ -242,7 +248,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Order details will be available once the order is loaded from the server.',
+                    _t('workspace_order_details_loading',
+                        'সার্ভার থেকে অর্ডার লোড হলে বিস্তারিত দেখা যাবে।'),
                     style: TextStyle(
                       color: Colors.blue[700],
                       fontSize: 13,
@@ -266,27 +273,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       case 'pending':
         bgColor = Colors.orange.withValues(alpha: 0.1);
         textColor = Colors.orange;
-        label = 'Pending';
+        label = _t('workspace_pending', 'অপেক্ষমাণ');
         break;
       case 'in_progress':
         bgColor = Colors.blue.withValues(alpha: 0.1);
         textColor = Colors.blue;
-        label = 'In Progress';
+        label = _t('workspace_in_progress', 'চলছে');
         break;
       case 'delivered':
         bgColor = Colors.purple.withValues(alpha: 0.1);
         textColor = Colors.purple;
-        label = 'Delivered';
+        label = _t('workspace_delivered', 'ডেলিভারি হয়েছে');
         break;
       case 'completed':
         bgColor = Colors.green.withValues(alpha: 0.1);
         textColor = Colors.green;
-        label = 'Completed';
+        label = _t('workspace_completed', 'সম্পন্ন');
         break;
       case 'cancelled':
         bgColor = Colors.red.withValues(alpha: 0.1);
         textColor = Colors.red;
-        label = 'Cancelled';
+        label = _t('workspace_cancelled', 'বাতিল');
         break;
       default:
         bgColor = Colors.grey.withValues(alpha: 0.1);
@@ -318,20 +325,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
-          const Text(
-            'Failed to load order',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          Text(
+            _t('workspace_order_load_failed', 'অর্ডার লোড করা যায়নি'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           Text(
-            _error ?? 'Unknown error',
+            _error ?? _t('workspace_unknown_error', 'অজানা সমস্যা'),
             style: TextStyle(color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _loadOrderDetails,
-            child: const Text('Retry'),
+            child: Text(_t('workspace_retry', 'আবার চেষ্টা করুন')),
           ),
         ],
       ),

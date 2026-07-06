@@ -17,6 +17,7 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import '../../widgets/business_network/user_suggestions_card.dart';
 import '../../widgets/business_network/sponsored_products_card.dart';
+import '../../widgets/business_network/feed_discovery_cards.dart';
 import '../../widgets/common/adsy_loading.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
@@ -32,6 +33,8 @@ class BusinessNetworkScreen extends StatefulWidget {
 }
 
 class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
+  // The interleaved feed layout (posts + injected cards), recomputed each build.
+  List<_FeedSlot> _feedSlots = const [];
   List<BusinessNetworkPost> _posts = [];
   List<Map<String, dynamic>> _shuffledSponsoredProducts = [];
   bool _isLoading = true;
@@ -345,35 +348,38 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       i % 5 != 0 &&
       i % 10 != 0;
 
-  int _countAdSlots(int postCount) {
-    if (!_feedAdsActive) return 0;
-    int n = 0;
-    for (int i = 1; i <= postCount; i++) {
-      if (_isAdSlot(i)) n++;
+  // Single source of truth for the interleaved feed. Both the item count and
+  // each item are read off this list, so injected cards can never desync from
+  // the post positions. Discovery cards (micro gigs / news / workspace gigs)
+  // are woven in at spaced, mostly-non-colliding offsets so the feed stays
+  // informative without feeling spammy; empty ones render as zero-height.
+  List<_FeedSlot> _composeSlots(List<BusinessNetworkPost> posts) {
+    final slots = <_FeedSlot>[const _FeedSlot(_FeedSlotType.topHeader)];
+    int sponsoredSlot = 0;
+    for (int i = 0; i < posts.length; i++) {
+      if (i > 0 && i % 10 == 0 && AuthService.isAuthenticated) {
+        slots.add(const _FeedSlot(_FeedSlotType.userSuggestions));
+      }
+      if (i > 0 && i % 5 == 0 && i % 10 != 0) {
+        slots.add(_FeedSlot(_FeedSlotType.sponsored, slotIndex: sponsoredSlot++));
+      }
+      if (_isAdSlot(i)) {
+        slots.add(_FeedSlot(_FeedSlotType.nativeAd, slotIndex: i));
+      }
+      // Discovery rows — different periods/offsets keep them apart.
+      if (i > 0 && i % 7 == 3) {
+        slots.add(const _FeedSlot(_FeedSlotType.microGigs));
+      }
+      if (i > 0 && i % 9 == 6) {
+        slots.add(const _FeedSlot(_FeedSlotType.news));
+      }
+      if (i > 0 && i % 11 == 8) {
+        slots.add(const _FeedSlot(_FeedSlotType.workspaceGigs));
+      }
+      slots.add(_FeedSlot(_FeedSlotType.post, postIndex: i));
     }
-    return n;
-  }
-
-  int _calculateTotalItems(List<BusinessNetworkPost> visiblePosts) {
-    int total = visiblePosts.length + 1; // +1 for gold sponsors at top
-
-    // Add user suggestions cards (every 10th post) - only for logged in users
-    if (AuthService.isAuthenticated) {
-      final suggestionsCount = (visiblePosts.length / 10).floor();
-      total += suggestionsCount;
-    }
-
-    // Add sponsored product cards (every 5th post)
-    final productsCount = (visiblePosts.length / 5).floor();
-    total += productsCount;
-
-    // Add MAX native ad slots (server-controlled frequency)
-    total += _countAdSlots(visiblePosts.length);
-
-    // +1 for loading/end indicator
-    total += 1;
-
-    return total;
+    slots.add(const _FeedSlot(_FeedSlotType.footer));
+    return slots;
   }
 
   @override
@@ -522,6 +528,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     final visiblePosts = _getVisiblePosts();
+    // Compose the interleaved feed once per build (cheap), then drive both the
+    // item count and each item off it.
+    _feedSlots = _composeSlots(visiblePosts);
     final topPadding = MediaQuery.of(context).padding.top;
     final headerHeight = topPadding + kToolbarHeight;
 
@@ -573,12 +582,13 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                                     1,
                                     isMobile ? 80 : 16,
                                   ),
-                                  itemCount: _calculateTotalItems(visiblePosts),
+                                  itemCount: _feedSlots.length,
                                   itemBuilder: (context, index) {
                                     // RepaintBoundary isolates each card so one
                                     // card repainting doesn't repaint the list.
                                     return RepaintBoundary(
-                                      child: _buildFeedItem(index, visiblePosts),
+                                      child: _buildFeedSlot(
+                                          _feedSlots[index], visiblePosts),
                                     );
                                   },
                                 ),
@@ -731,49 +741,35 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     );
   }
 
-  Widget _buildFeedItem(int index, List<BusinessNetworkPost> visiblePosts) {
-    // Show Gold Sponsors + tabs at the top (index 0)
-    if (index == 0) {
-      return _buildFeedTopHeader();
-    }
+  Widget _buildFeedSlot(
+      _FeedSlot slot, List<BusinessNetworkPost> visiblePosts) {
+    switch (slot.type) {
+      case _FeedSlotType.topHeader:
+        return _buildFeedTopHeader();
 
-    // Calculate actual post position considering injected cards
-    int currentIndex = 1; // Start after gold sponsors
-    int sponsoredSlotIndex = 0;
+      case _FeedSlotType.userSuggestions:
+        return const UserSuggestionsCard();
 
-    for (int i = 0; i < visiblePosts.length; i++) {
-      // Check if we should inject user suggestions (every 10th post) - only for logged in users
-      if (i > 0 && i % 10 == 0 && AuthService.isAuthenticated) {
-        if (currentIndex == index) {
-          return const UserSuggestionsCard();
-        }
-        currentIndex++;
-      }
+      case _FeedSlotType.sponsored:
+        return SponsoredProductsCard(
+          key: ValueKey('sponsored_products_${slot.slotIndex}'),
+          products: _getSponsoredProductsForSlot(slot.slotIndex ?? 0, 3),
+        );
 
-      // Check if we should inject sponsored products (every 5th post)
-      if (i > 0 && i % 5 == 0 && i % 10 != 0) {
-        // Don't overlap with suggestions
-        if (currentIndex == index) {
-          return SponsoredProductsCard(
-            key: ValueKey('sponsored_products_$sponsoredSlotIndex'),
-            products: _getSponsoredProductsForSlot(sponsoredSlotIndex, 3),
-          );
-        }
-        sponsoredSlotIndex++;
-        currentIndex++;
-      }
+      case _FeedSlotType.nativeAd:
+        return FeedNativeAdCard(key: ValueKey('feed_ad_${slot.slotIndex}'));
 
-      // MAX native ad slot (server-controlled: every N posts)
-      if (_isAdSlot(i)) {
-        if (currentIndex == index) {
-          return FeedNativeAdCard(key: ValueKey('feed_ad_$i'));
-        }
-        currentIndex++;
-      }
+      case _FeedSlotType.microGigs:
+        return const FeedMicroGigsCard();
 
-      // Show the post
-      if (currentIndex == index) {
-        final post = visiblePosts[i];
+      case _FeedSlotType.news:
+        return const FeedNewsCard();
+
+      case _FeedSlotType.workspaceGigs:
+        return const FeedWorkspaceGigsCard();
+
+      case _FeedSlotType.post:
+        final post = visiblePosts[slot.postIndex!];
         return PostCard(
           key: ValueKey('post_${post.id}'),
           post: post,
@@ -783,18 +779,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           onPostDeleted: () => _handlePostDeletedByPostId(post.id),
           onUserBlocked: _handleUserBlocked,
         );
-      }
-      currentIndex++;
-    }
 
-    // Show loading or end indicator after all posts
-    if (_isLoadingMore) {
-      return _buildLoadingMoreIndicator();
-    } else if (!_hasMore && visiblePosts.isNotEmpty) {
-      return _buildEndOfFeedIndicator();
+      case _FeedSlotType.footer:
+        if (_isLoadingMore) return _buildLoadingMoreIndicator();
+        if (!_hasMore && visiblePosts.isNotEmpty) {
+          return _buildEndOfFeedIndicator();
+        }
+        return const SizedBox(height: 80);
     }
-
-    return const SizedBox(height: 80);
   }
 
   Widget _buildRefreshableState({
@@ -1190,4 +1182,26 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       });
     });
   }
+}
+
+/// The kinds of rows the interleaved feed can render.
+enum _FeedSlotType {
+  topHeader,
+  post,
+  userSuggestions,
+  sponsored,
+  nativeAd,
+  microGigs,
+  news,
+  workspaceGigs,
+  footer,
+}
+
+/// A single resolved feed row: its type plus the index it maps to.
+class _FeedSlot {
+  final _FeedSlotType type;
+  final int? postIndex; // for a post row
+  final int? slotIndex; // for sponsored / native-ad rows
+
+  const _FeedSlot(this.type, {this.postIndex, this.slotIndex});
 }

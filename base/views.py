@@ -55,13 +55,30 @@ from subscription.utils import (
 
 
 # move this function to util later
-def base64ToFile(base64_data):
+# Hard cap on a single decoded upload. The app already compresses to ~80 KB;
+# this generous ceiling only blocks abusive/oversized payloads that could
+# otherwise OOM the worker (DATA_UPLOAD_MAX_MEMORY_SIZE is very high).
+MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB
+
+
+def base64ToFile(base64_data, max_bytes=MAX_UPLOAD_BYTES):
     # Remove the prefix if it exists (e.g., "data:image/png;base64,")
-    if base64_data.startswith("data:image"):
+    if isinstance(base64_data, str) and base64_data.startswith("data:image"):
         base64_data = base64_data.split("base64,")[1]
+
+    # Reject BEFORE allocating: a base64 string is ~4/3 of its decoded size.
+    approx_bytes = (len(base64_data) * 3) // 4
+    if approx_bytes > max_bytes:
+        raise ValidationError(
+            {"image": f"Image too large (max {max_bytes // (1024 * 1024)} MB)."}
+        )
 
     # Decode the Base64 string into bytes
     file_data = base64.b64decode(base64_data)
+    if len(file_data) > max_bytes:
+        raise ValidationError(
+            {"image": f"Image too large (max {max_bytes // (1024 * 1024)} MB)."}
+        )
 
     # Create a Django ContentFile object from the bytes
     file = ContentFile(file_data)
@@ -571,7 +588,10 @@ def update_nid(request):
 
 class PersonRetrieveView(generics.RetrieveAPIView):
     queryset = User.objects.all()
-    # permission_classes = [IsAuthenticated]
+    # Must be logged in — otherwise anyone could enumerate accounts by
+    # email/phone and scrape every user's profile. The app always sends the
+    # auth token when viewing profiles.
+    permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
     lookup_field = "id"
 
@@ -2183,7 +2203,7 @@ def sendOTP(request):
               <p style="font-size:13px;color:#64748B;">কোডটা ১০ মিনিট পর্যন্ত কাজ করবে। কারো সাথে শেয়ার করবেন না।</p>
             </div>
             """
-            sent = _send_email(subject, email, text, html)
+            sent = _send_email(subject, email, text, html, wait=True)
             if not sent:
                 raise Exception("email send returned falsy")
 
@@ -3823,40 +3843,64 @@ class ProductCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # ORDER VIEWS
 class OrderListCreate(generics.ListCreateAPIView):
-    """List all orders or create a new order"""
+    """List the current user's orders, or create a new order."""
 
-    queryset = Order.objects.all().order_by("-created_at")
     serializer_class = OrderSerializer
     search_fields = ["id", "user__email", "phone"]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = Order.objects.all().order_by("-created_at")
+        # Staff (admin dashboards) see everything; everyone else only their own.
+        if self.request.user.is_staff:
+            return qs
+        return qs.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class OrderDetail(generics.RetrieveUpdateDestroyAPIView):
-    """Retrieve, update or delete an order"""
+    """Retrieve, update or delete one of the current user's orders."""
 
-    queryset = Order.objects.all()
     serializer_class = OrderSerializer
     lookup_field = "id"
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
 
 
 class OrderSearch(generics.ListAPIView):
-    """Search for an order by ID"""
+    """Search for one of the current user's orders by ID."""
 
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         order_id = self.request.query_params.get("id")
-        if order_id:
-            return Order.objects.filter(id=order_id)
-        return Order.objects.none()
+        if not order_id:
+            return Order.objects.none()
+        qs = Order.objects.filter(id=order_id)
+        if self.request.user.is_staff:
+            return qs
+        return qs.filter(user=self.request.user)
 
 
 class UserOrdersList(generics.ListAPIView):
-    """List all orders for a specific user"""
+    """List all orders for a specific user (self or staff only)."""
 
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
+        user = self.request.user
+        # Prevent enumerating other users' orders via the URL id.
+        if not user.is_staff and str(user.id) != str(user_id):
+            return Order.objects.none()
         return Order.objects.filter(user__id=user_id).order_by("-created_at")
 
 
@@ -3864,41 +3908,60 @@ class UserOrdersList(generics.ListAPIView):
 
 
 class OrderItemListCreate(generics.ListCreateAPIView):
-    """List all order items or create a new order item"""
+    """List the current user's order items, or create one."""
 
-    queryset = OrderItem.objects.all().order_by("-created_at")
     serializer_class = OrderItemSerializer
     search_fields = ["id", "product__name"]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = OrderItem.objects.all().order_by("-created_at")
+        if self.request.user.is_staff:
+            return qs
+        return qs.filter(order__user=self.request.user)
 
 
 class OrderItemDetail(generics.RetrieveUpdateDestroyAPIView):
-    """Retrieve, update or delete an order item"""
+    """Retrieve, update or delete one of the current user's order items."""
 
-    queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
     lookup_field = "id"
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return OrderItem.objects.all()
+        return OrderItem.objects.filter(order__user=self.request.user)
 
 
 class OrderItemSearch(generics.ListAPIView):
-    """Search for an order item by ID"""
+    """Search for one of the current user's order items by ID."""
 
     serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         item_id = self.request.query_params.get("id")
-        if item_id:
-            return OrderItem.objects.filter(id=item_id)
-        return OrderItem.objects.none()
+        if not item_id:
+            return OrderItem.objects.none()
+        qs = OrderItem.objects.filter(id=item_id)
+        if self.request.user.is_staff:
+            return qs
+        return qs.filter(order__user=self.request.user)
 
 
 class OrderItemsByOrder(generics.ListAPIView):
-    """List all items for a specific order"""
+    """List items for one of the current user's orders."""
 
     serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         order_id = self.kwargs.get("order_id")
-        return OrderItem.objects.filter(order__id=order_id)
+        qs = OrderItem.objects.filter(order__id=order_id)
+        if self.request.user.is_staff:
+            return qs
+        return qs.filter(order__user=self.request.user)
 
 
 # COMPLEX OPERATIONS

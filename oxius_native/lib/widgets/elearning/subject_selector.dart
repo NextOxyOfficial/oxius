@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/elearning_models.dart';
 import '../../services/elearning_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../services/translation_service.dart';
+import 'elearning_step_header.dart';
 
 class SubjectSelector extends StatefulWidget {
   final String? batch;
@@ -30,13 +32,13 @@ class _SubjectSelectorState extends State<SubjectSelector> {
   static const _slate500 = Color(0xFF64748B);
   static const _slate800 = Color(0xFF1E293B);
   static const _indigo = Color(0xFF6366F1);
-  static const _violet = Color(0xFF8B5CF6);
+
+  final TranslationService _i18n = TranslationService();
 
   List<Subject> _subjects = [];
   bool _loading = false;
   String? _error;
 
-  // Color options for subjects
   final List<Map<String, Color>> _colorOptions = [
     {'bg': Colors.blue.shade100, 'text': Colors.blue.shade600},
     {'bg': Colors.green.shade100, 'text': Colors.green.shade600},
@@ -64,32 +66,28 @@ class _SubjectSelectorState extends State<SubjectSelector> {
       if (widget.division != null) {
         _loadSubjects();
       } else {
-        setState(() {
-          _subjects = [];
-        });
+        setState(() => _subjects = []);
       }
     }
   }
 
   Future<void> _loadSubjects() async {
     if (widget.division == null) return;
-
     try {
       setState(() {
         _loading = true;
         _error = null;
       });
-
       final subjects =
           await ElearningService.fetchSubjectsForDivision(widget.division!);
-
       setState(() {
         _subjects = subjects;
         _loading = false;
       });
     } catch (e) {
       setState(() {
-        _error = 'Failed to load subjects. Please try again.';
+        _error = _i18n.t('el_error_subjects',
+            fallback: 'Failed to load subjects. Please try again.');
         _loading = false;
       });
     }
@@ -101,16 +99,10 @@ class _SubjectSelectorState extends State<SubjectSelector> {
 
   Subject? get _selectedSubjectItem {
     final code = widget.selectedSubject;
-    if (code == null) {
-      return null;
-    }
-
+    if (code == null) return null;
     for (final subject in _subjects) {
-      if (subject.code == code) {
-        return subject;
-      }
+      if (subject.code == code) return subject;
     }
-
     return null;
   }
 
@@ -121,286 +113,177 @@ class _SubjectSelectorState extends State<SubjectSelector> {
     final selectedSubject = _selectedSubjectItem;
     final isCollapsed = !widget.isExpanded && selectedSubject != null;
 
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      padding: const EdgeInsets.all(14),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: isCollapsed ? widget.onTapExpand : null,
-            borderRadius: BorderRadius.circular(14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_indigo, _violet],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.menu_book_rounded,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Choose subject',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: _slate800,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Open the exact lesson track',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: _slate500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: _indigo.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'Step 3/4',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: _indigo,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    if (isCollapsed) ...[
-                      const SizedBox(width: 8),
-                      const Icon(Icons.expand_more_rounded,
-                          size: 18, color: _slate500),
-                    ],
-                  ],
-                ),
-              ],
-            ),
+          ElearningStepHeader(
+            number: 3,
+            title: _i18n.t('el_choose_subject', fallback: 'Choose subject'),
+            subtitle: _i18n.t('el_subject_sub',
+                fallback: 'Open the exact lesson track'),
+            icon: Icons.menu_book_rounded,
+            isActive: widget.isExpanded,
+            isDone: selectedSubject != null,
+            collapsedValue: selectedSubject?.name,
+            onTapExpand: widget.onTapExpand,
           ),
-          const SizedBox(height: 12),
-
-          // Loading state
-          if (_loading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32.0),
-                child: AdsyLoadingIndicator(),
-              ),
-            ),
-
-          // Error state
-          if (_error != null)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                border: Border.all(color: Colors.red.shade200),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    _error!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.red.shade700,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _loadSubjects,
-                    child: const Text('Try Again'),
-                  ),
-                ],
-              ),
-            ),
-
-          // Empty state
-          if (!_loading && _error == null && _subjects.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.menu_book,
-                      size: 40,
-                      color: Colors.grey.shade300,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'No subjects found',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
+          if (!isCollapsed) ...[
+            const SizedBox(height: 14),
+            if (_loading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: AdsyLoadingIndicator(),
                 ),
               ),
-            ),
-
-          if (!_loading && _error == null && isCollapsed)
-            _buildCollapsedSummary(selectedSubject),
-
-          if (!_loading &&
-              _error == null &&
-              _subjects.isNotEmpty &&
-              !isCollapsed)
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _subjects.length,
-              separatorBuilder: (context, index) =>
-                  Divider(color: _slate200, height: 1),
-              itemBuilder: (context, index) {
-                final subject = _subjects[index];
-                final isSelected = widget.selectedSubject == subject.code;
-                final colors = _getSubjectColors(index);
-
-                return InkWell(
-                  onTap: () => widget.onSelectSubject(subject.code),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: colors['bg'],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.menu_book_rounded,
-                            size: 18,
-                            color: colors['text'],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                subject.name,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isSelected ? _indigo : _slate800,
-                                ),
-                              ),
-                              if (subject.description.isNotEmpty) ...[
-                                const SizedBox(height: 3),
-                                Text(
-                                  subject.description,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    height: 1.4,
-                                    color: _slate500,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (isSelected)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 8, top: 2),
-                            child: Icon(Icons.check_circle_rounded,
-                                size: 18, color: _indigo),
-                          ),
-                      ],
-                    ),
+            if (_error != null) _buildError(),
+            if (!_loading && _error == null && _subjects.isEmpty)
+              _buildEmpty(
+                  _i18n.t('el_no_subjects', fallback: 'No subjects found')),
+            if (!_loading && _error == null && _subjects.isNotEmpty)
+              SizedBox(
+                height: 132,
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context)
+                      .copyWith(scrollbars: false),
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.zero,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: _subjects.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, index) {
+                      final subject = _subjects[index];
+                      final isSelected =
+                          widget.selectedSubject == subject.code;
+                      return _buildTile(subject, isSelected, index);
+                    },
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildCollapsedSummary(Subject subject) {
-    final colors = _getSubjectColors(_subjects.indexOf(subject));
+  Widget _buildEmpty(String label) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            Icon(Icons.menu_book_rounded,
+                size: 36, color: Colors.grey.shade300),
+            const SizedBox(height: 8),
+            Text(label,
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+          ],
+        ),
+      ),
+    );
+  }
 
+  Widget _buildError() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        border: Border.all(color: Colors.red.shade200),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: colors['bg'],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.menu_book_rounded,
-              size: 18,
-              color: colors['text'],
-            ),
+          Text(
+            _error!,
+            style: TextStyle(fontSize: 14, color: Colors.red.shade700),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _loadSubjects,
+            child: Text(_i18n.t('el_try_again', fallback: 'Try Again')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTile(Subject subject, bool isSelected, int index) {
+    final colors = _getSubjectColors(index);
+    return GestureDetector(
+      onTap: () => widget.onSelectSubject(subject.code),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: 150,
+        height: 130,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? _indigo.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? _indigo : _slate200,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  subject.name,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: _slate800,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colors['bg'],
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  child: Icon(Icons.menu_book_rounded,
+                      size: 20, color: colors['text']),
                 ),
-                if (subject.description.isNotEmpty)
-                  Text(
-                    subject.description,
-                    style: const TextStyle(fontSize: 11, color: _slate500),
+                if (isSelected)
+                  const Icon(Icons.check_circle_rounded,
+                      size: 22, color: _indigo)
+                else
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _slate200, width: 1.5),
+                    ),
                   ),
               ],
             ),
-          ),
-          TextButton(
-            onPressed: widget.onTapExpand,
-            child: const Text('Change'),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              subject.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? _indigo : _slate800,
+              ),
+            ),
+            if (subject.description.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(
+                subject.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  height: 1.35,
+                  color: _slate500,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

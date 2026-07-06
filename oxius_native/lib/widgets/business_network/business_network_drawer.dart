@@ -1,6 +1,7 @@
 ﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/auth_service.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../utils/payment_policy.dart';
@@ -283,10 +284,11 @@ class BusinessNetworkDrawer extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: img != null && img.isNotEmpty
-          ? Image.network(
-              img,
+          ? CachedNetworkImage(
+              imageUrl: img,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _avatarFallback(initials),
+              memCacheWidth: 128,
+              errorWidget: (_, __, ___) => _avatarFallback(initials),
             )
           : _avatarFallback(initials),
     );

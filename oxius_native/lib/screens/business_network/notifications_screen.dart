@@ -54,8 +54,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     // Only show loading indicator on initial load
     if (isInitial) {
       setState(() => _isLoading = true);
-    } else {
-    }
+    } else {}
 
     try {
       final result = await NotificationService.getNotifications(page: 1);
@@ -107,24 +106,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
         // Show error message
         if (!isInitial) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.error_outline,
-                      color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  const Text('Failed to refresh notifications'),
-                ],
-              ),
-              backgroundColor: const Color(0xFFEF4444),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 3),
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-          );
+          AdsyToast.error(context, 'Failed to refresh notifications');
         }
       }
     }

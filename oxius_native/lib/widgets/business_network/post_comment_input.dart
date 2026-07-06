@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
@@ -200,10 +201,11 @@ class _PostCommentInputState extends State<PostCommentInput> {
                 final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
 
                 if (avatarUrl.isNotEmpty) {
-                  return Image.network(
-                    avatarUrl,
+                  return CachedNetworkImage(
+                    imageUrl: avatarUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
+                    memCacheWidth: 128,
+                    errorWidget: (context, url, error) {
                       return Container(
                         color: Colors.grey.shade100,
                         child: Icon(
@@ -349,10 +351,11 @@ class _PostCommentInputState extends State<PostCommentInput> {
                                     AppConfig.getAbsoluteUrl(data['photo']);
 
                                 if (avatarUrl.isNotEmpty) {
-                                  return Image.network(
-                                    avatarUrl,
+                                  return CachedNetworkImage(
+                                    imageUrl: avatarUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
+                                    memCacheWidth: 128,
+                                    errorWidget: (context, url, error) {
                                       return Icon(
                                         Icons.person,
                                         color: Colors.grey.shade400,

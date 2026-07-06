@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/time_utils.dart';
 import '../../screens/business_network/profile_screen.dart';
@@ -43,33 +44,22 @@ class PostHeader extends StatelessWidget {
     }
 
     if (avatarUrl.isNotEmpty) {
-      return Image.network(
-        avatarUrl,
+      return CachedNetworkImage(
+        imageUrl: avatarUrl,
         fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            color: Colors.grey.shade100,
-            child: Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: AdsyLoadingIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                      : null,
-                  strokeWidth: 2,
-                  color: Colors.grey.shade400,
-                ),
-              ),
+        memCacheWidth: 128, // avatars are tiny — decode small
+        placeholder: (context, url) => Container(
+          color: Colors.grey.shade100,
+          child: Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: AdsyLoadingIndicator(
+                  strokeWidth: 2, color: Colors.grey.shade400),
             ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          debugPrint('Error loading avatar for ${post.user.name}: $error');
-          return _buildDefaultAvatar();
-        },
+          ),
+        ),
+        errorWidget: (context, url, error) => _buildDefaultAvatar(),
       );
     }
 

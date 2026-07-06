@@ -4,10 +4,12 @@ import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/adsyconnect_service.dart';
+import '../../services/translation_service.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../wallet/wallet_screen.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class GigDetailScreen extends StatefulWidget {
   final String gigId;
@@ -22,6 +24,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   final WorkspaceService _workspaceService = WorkspaceService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _requirementsController = TextEditingController();
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   Map<String, dynamic>? _gig;
   List<Map<String, dynamic>> _reviews = [];
@@ -89,11 +95,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         setState(() {
           _userBalance = user.balance;
         });
-        _showSnackBar('Balance updated: ৳${_userBalance.toStringAsFixed(2)}',
+        _showSnackBar(
+            '${_t('workspace_balance_updated', 'ব্যালেন্স আপডেট হয়েছে')}: ৳${_userBalance.toStringAsFixed(2)}',
             Colors.green);
       }
     } catch (e) {
-      _showSnackBar('Failed to refresh balance', Colors.red);
+      _showSnackBar(
+          _t('workspace_balance_refresh_failed',
+              'ব্যালেন্স রিফ্রেশ করা যায়নি'),
+          Colors.red);
     } finally {
       if (mounted) setState(() => _isRefreshingBalance = false);
     }
@@ -107,8 +117,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           _buyerFeePercent =
               double.tryParse(fees['buyer_fee_percent']?.toString() ?? '') ??
                   2.5;
-          double.tryParse(fees['seller_fee_percent']?.toString() ?? '') ??
-                  2.5;
+          double.tryParse(fees['seller_fee_percent']?.toString() ?? '') ?? 2.5;
           _feesEnabled = fees['fees_enabled'] ?? true;
         });
       }
@@ -160,7 +169,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showSnackBar('Failed to load gig: $e', Colors.red);
+        _showSnackBar(
+            '${_t('workspace_gig_load_failed', 'গিগ লোড করা যায়নি')}: $e',
+            Colors.red);
       }
     }
   }
@@ -256,9 +267,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
+    if (color == Colors.green) {
+      AdsyToast.success(context, message);
+    } else if (color == Colors.red) {
+      AdsyToast.error(context, message);
+    } else if (color == Colors.orange) {
+      AdsyToast.warning(context, message);
+    } else {
+      AdsyToast.info(context, message);
+    }
   }
 
   void _startOrder() {
@@ -293,12 +310,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           _orderStep = 3;
           _isPlacingOrder = false;
         });
-        _showSnackBar('Order placed successfully!', Colors.green);
+        _showSnackBar(
+            _t('workspace_order_placed', 'অর্ডার হয়ে গেছে!'), Colors.green);
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isPlacingOrder = false);
-        _showSnackBar('Failed to place order: $e', Colors.red);
+        _showSnackBar(
+            '${_t('workspace_order_place_failed', 'অর্ডার করা যায়নি')}: $e',
+            Colors.red);
       }
     }
   }
@@ -308,13 +328,18 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
     // Check authentication first
     if (!AuthService.isAuthenticated) {
-      _showSnackBar('Please login to contact the seller', Colors.orange);
+      _showSnackBar(
+          _t('workspace_login_to_contact',
+              'সেলারের সাথে যোগাযোগ করতে লগইন করুন'),
+          Colors.orange);
       return;
     }
 
     final sellerId = _gig!['user']?['id']?.toString();
     if (sellerId == null) {
-      _showSnackBar('Seller information not available', Colors.red);
+      _showSnackBar(
+          _t('workspace_seller_info_unavailable', 'সেলারের তথ্য পাওয়া যায়নি'),
+          Colors.red);
       return;
     }
 
@@ -353,7 +378,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     } catch (e) {
       // Close loading indicator
       if (mounted) Navigator.pop(context);
-      _showSnackBar('Failed to open chat: $e', Colors.red);
+      _showSnackBar(
+          '${_t('workspace_chat_open_failed', 'চ্যাট খোলা যায়নি')}: $e',
+          Colors.red);
     }
   }
 
@@ -376,14 +403,14 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   }
 
   String _getCategoryLabel(String? category) {
-    const labels = {
-      'design': 'Design & Creative',
-      'development': 'Programming & Tech',
-      'writing': 'Writing & Translation',
-      'marketing': 'Digital Marketing',
-      'business': 'Business & Consulting',
+    final labels = {
+      'design': _t('workspace_cat_design', 'ডিজাইন ও ক্রিয়েটিভ'),
+      'development': _t('workspace_cat_development', 'প্রোগ্রামিং ও টেক'),
+      'writing': _t('workspace_cat_writing', 'লেখা ও অনুবাদ'),
+      'marketing': _t('workspace_cat_marketing', 'ডিজিটাল মার্কেটিং'),
+      'business': _t('workspace_cat_business', 'বিজনেস ও কনসালটিং'),
     };
-    return labels[category] ?? 'Other';
+    return labels[category] ?? _t('workspace_cat_other', 'অন্যান্য');
   }
 
   List<String> _getGigFeatures() {
@@ -482,19 +509,28 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   }
 
   String _getActiveStatus(String? updatedAt) {
-    if (updatedAt == null) return 'Active';
+    final active = _t('workspace_active', 'চালু');
+    if (updatedAt == null) return active;
 
     try {
       final updated = DateTime.parse(updatedAt);
       final diff = DateTime.now().difference(updated);
 
-      if (diff.inMinutes < 5) return 'Active now';
-      if (diff.inMinutes < 60) return 'Active ${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return 'Active ${diff.inHours}h ago';
-      if (diff.inDays < 7) return 'Active ${diff.inDays}d ago';
-      return 'Active this week';
+      if (diff.inMinutes < 5) {
+        return _t('workspace_active_now', 'এখন চালু');
+      }
+      if (diff.inMinutes < 60) {
+        return '$active ${diff.inMinutes}${_t('workspace_min_ago', 'মি আগে')}';
+      }
+      if (diff.inHours < 24) {
+        return '$active ${diff.inHours}${_t('workspace_hour_ago', 'ঘ আগে')}';
+      }
+      if (diff.inDays < 7) {
+        return '$active ${diff.inDays}${_t('workspace_day_ago', 'দি আগে')}';
+      }
+      return _t('workspace_active_week', 'এই সপ্তাহে চালু');
     } catch (e) {
-      return 'Active';
+      return active;
     }
   }
 
@@ -505,14 +541,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       final date = DateTime.parse(dateString);
       final diff = DateTime.now().difference(date);
 
-      if (diff.inDays == 0) return 'Today';
-      if (diff.inDays == 1) return 'Yesterday';
-      if (diff.inDays < 7) return '${diff.inDays} day${diff.inDays == 1 ? '' : 's'} ago';
+      if (diff.inDays == 0) return _t('workspace_today', 'আজ');
+      if (diff.inDays == 1) return _t('workspace_yesterday', 'গতকাল');
+      if (diff.inDays < 7) {
+        return '${diff.inDays} ${_t('workspace_days_ago', 'দিন আগে')}';
+      }
       if (diff.inDays < 30) {
-        return '${(diff.inDays / 7).floor()} week${diff.inDays >= 14 ? 's' : ''} ago';
+        return '${(diff.inDays / 7).floor()} ${_t('workspace_weeks_ago', 'সপ্তাহ আগে')}';
       }
       if (diff.inDays < 365) {
-        return '${(diff.inDays / 30).floor()} month${diff.inDays >= 60 ? 's' : ''} ago';
+        return '${(diff.inDays / 30).floor()} ${_t('workspace_months_ago', 'মাস আগে')}';
       }
       return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
@@ -537,9 +575,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Gig Details',
-          style: TextStyle(
+        title: Text(
+          _t('workspace_gig_details', 'গিগের বিবরণ'),
+          style: const TextStyle(
               color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 16),
         ),
         actions: [
@@ -610,9 +648,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 const SizedBox(height: 14),
 
                 // Description
-                const Text('About This Gig',
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                Text(_t('workspace_about_gig', 'এই গিগ সম্পর্কে'),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 Text(
                   _gig!['description'] ?? '',
@@ -622,9 +660,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 const SizedBox(height: 14),
 
                 // What You'll Get
-                const Text("What You'll Get:",
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                Text(_t('workspace_what_you_get', 'যা যা পাবেন:'),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 ..._getGigFeatures().map((feature) => Padding(
                       padding: const EdgeInsets.only(bottom: 7),
@@ -646,9 +684,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 const SizedBox(height: 14),
 
                 // Skills & Expertise
-                const Text('Skills & Expertise:',
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                Text(_t('workspace_skills_expertise', 'দক্ষতা ও অভিজ্ঞতা:'),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -658,7 +696,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(skill,
@@ -901,10 +940,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                               TextStyle(color: Colors.grey[600], fontSize: 11)),
                       GestureDetector(
                         onTap: _scrollToReviews,
-                        child: Text('($reviewsCount reviews)',
+                        child: Text(
+                            '($reviewsCount ${_t('workspace_reviews', 'রিভিউ')})',
                             style: const TextStyle(
-                                color: Color(0xFF8B5CF6),
-                                fontSize: 11,)),
+                              color: Color(0xFF8B5CF6),
+                              fontSize: 11,
+                            )),
                       ),
                     ],
                   ),
@@ -943,7 +984,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                 color: Colors.black87)),
                       ],
                     ),
-                    Text('Starting price',
+                    Text(_t('workspace_starting_price', 'শুরুর দাম'),
                         style:
                             TextStyle(color: Colors.grey[600], fontSize: 11)),
                   ],
@@ -953,11 +994,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               Expanded(
                 child: Column(
                   children: [
-                    _buildPackageRow(
-                        'Delivery', '${_gig!['delivery_time'] ?? 3} days'),
-                    _buildPackageRow('Revisions', '${_gig!['revisions'] ?? 2}'),
-                    _buildPackageRow(
-                        'Category', _getCategoryLabel(_gig!['category'])),
+                    _buildPackageRow(_t('workspace_delivery', 'ডেলিভারি'),
+                        '${_gig!['delivery_time'] ?? 3} ${_t('workspace_days', 'দিন')}'),
+                    _buildPackageRow(_t('workspace_revisions', 'রিভিশন'),
+                        '${_gig!['revisions'] ?? 2}'),
+                    _buildPackageRow(_t('workspace_category', 'ক্যাটাগরি'),
+                        _getCategoryLabel(_gig!['category']),
+                        isCategory: true),
                   ],
                 ),
               ),
@@ -981,7 +1024,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: Text('Order (৳${_gigPrice.toStringAsFixed(0)})',
+                    child: Text(
+                        '${_t('workspace_order', 'অর্ডার')} (৳${_gigPrice.toStringAsFixed(0)})',
                         style: const TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600)),
                   ),
@@ -1004,7 +1048,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                             errorBuilder: (c, e, s) =>
                                 const Icon(Icons.chat, size: 18)),
                         const SizedBox(width: 6),
-                        const Text('Contact', style: TextStyle(fontSize: 13)),
+                        Text(_t('workspace_contact', 'যোগাযোগ'),
+                            style: const TextStyle(fontSize: 13)),
                       ],
                     ),
                   ),
@@ -1022,9 +1067,11 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   const Icon(Icons.info_outline,
                       size: 16, color: Color(0xFF8B5CF6)),
                   const SizedBox(width: 8),
-                  const Expanded(
-                      child: Text('This is your gig. Manage it from My Gigs.',
-                          style: TextStyle(
+                  Expanded(
+                      child: Text(
+                          _t('workspace_own_gig_notice',
+                              'এটি আপনার গিগ। আমার গিগ থেকে ম্যানেজ করুন।'),
+                          style: const TextStyle(
                               fontSize: 12, color: Color(0xFF8B5CF6)))),
                 ],
               ),
@@ -1040,17 +1087,17 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         // Progress Steps
         Row(
           children: [
-            _buildOrderStep(1, 'Review'),
+            _buildOrderStep(1, _t('workspace_step_review', 'রিভিউ')),
             Expanded(
                 child: Container(
                     height: 2,
                     color: _orderStep > 1 ? Colors.green : Colors.grey[300])),
-            _buildOrderStep(2, 'Payment'),
+            _buildOrderStep(2, _t('workspace_step_payment', 'পেমেন্ট')),
             Expanded(
                 child: Container(
                     height: 2,
                     color: _orderStep > 2 ? Colors.green : Colors.grey[300])),
-            _buildOrderStep(3, 'Complete'),
+            _buildOrderStep(3, _t('workspace_step_complete', 'সম্পন্ন')),
           ],
         ),
         const SizedBox(height: 16),
@@ -1109,27 +1156,30 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
           child: Column(
             children: [
-              _buildSummaryRow(
-                  'Gig', _truncateTitle(_gig!['title']?.toString() ?? '', 25)),
-              _buildSummaryRow(
-                  'Delivery', '${_gig!['delivery_time'] ?? 3} days'),
-              _buildSummaryRow('Revisions', '${_gig!['revisions'] ?? 2}'),
+              _buildSummaryRow(_t('workspace_gig', 'গিগ'),
+                  _truncateTitle(_gig!['title']?.toString() ?? '', 25)),
+              _buildSummaryRow(_t('workspace_delivery', 'ডেলিভারি'),
+                  '${_gig!['delivery_time'] ?? 3} ${_t('workspace_days', 'দিন')}'),
+              _buildSummaryRow(_t('workspace_revisions', 'রিভিশন'),
+                  '${_gig!['revisions'] ?? 2}'),
               const Divider(height: 16),
-              _buildSummaryRow('Total', '৳${_gigPrice.toStringAsFixed(2)}',
+              _buildSummaryRow(_t('workspace_total', 'মোট'),
+                  '৳${_gigPrice.toStringAsFixed(2)}',
                   isBold: true),
             ],
           ),
         ),
         const SizedBox(height: 12),
-        const Text('Requirements (Optional)',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(_t('workspace_requirements_optional', 'প্রয়োজনীয়তা (ঐচ্ছিক)'),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         TextField(
           controller: _requirementsController,
           maxLines: 3,
           style: const TextStyle(fontSize: 13),
           decoration: InputDecoration(
-            hintText: 'Describe your requirements...',
+            hintText:
+                _t('workspace_requirements_hint', 'আপনার চাহিদা লিখুন...'),
             hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             contentPadding: const EdgeInsets.all(10),
@@ -1143,7 +1193,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 onPressed: _cancelOrder,
                 style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10)),
-                child: const Text('Cancel', style: TextStyle(fontSize: 13)),
+                child: Text(_t('workspace_cancel', 'ক্যান্সেল'),
+                    style: const TextStyle(fontSize: 13)),
               ),
             ),
             const SizedBox(width: 10),
@@ -1154,8 +1205,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   backgroundColor: const Color(0xFF8B5CF6),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                child: const Text('Continue',
-                    style: TextStyle(fontSize: 13, color: Colors.white)),
+                child: Text(_t('workspace_continue', 'পরবর্তী'),
+                    style: const TextStyle(fontSize: 13, color: Colors.white)),
               ),
             ),
           ],
@@ -1182,9 +1233,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Your Balance',
+                  Text(_t('workspace_your_balance', 'আপনার ব্যালেন্স'),
                       style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9), fontSize: 11)),
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 11)),
                   const SizedBox(height: 2),
                   Text('৳${_userBalance.toStringAsFixed(2)}',
                       style: const TextStyle(
@@ -1222,14 +1274,14 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
           child: Column(
             children: [
+              _buildSummaryRow(_t('workspace_order_amount', 'অর্ডারের টাকা'),
+                  '৳${_gigPrice.toStringAsFixed(2)}'),
               _buildSummaryRow(
-                  'Order Amount', '৳${_gigPrice.toStringAsFixed(2)}'),
-              _buildSummaryRow(
-                  'Service Fee (${_formatFeePercent(_buyerFeePercent)}%)',
+                  '${_t('workspace_service_fee', 'সার্ভিস ফি')} (${_formatFeePercent(_buyerFeePercent)}%)',
                   '৳${_serviceFee.toStringAsFixed(2)}'),
               const Divider(height: 16),
-              _buildSummaryRow(
-                  'Total to Pay', '৳${_totalToPay.toStringAsFixed(2)}',
+              _buildSummaryRow(_t('workspace_total_to_pay', 'মোট দিতে হবে'),
+                  '৳${_totalToPay.toStringAsFixed(2)}',
                   isBold: true),
             ],
           ),
@@ -1252,7 +1304,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     Icon(Icons.warning, size: 16, color: Colors.red[700]),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text('Insufficient Balance',
+                      child: Text(
+                          _t('workspace_insufficient_balance',
+                              'ব্যালেন্স যথেষ্ট নয়'),
                           style: TextStyle(
                               fontWeight: FontWeight.w600,
                               color: Colors.red[800],
@@ -1270,8 +1324,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                           color: const Color(0xFF8B5CF6),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text('Add Funds',
-                            style: TextStyle(
+                        child: Text(_t('workspace_add_funds', 'টাকা যোগ করুন'),
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600)),
@@ -1280,7 +1334,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('You need ৳${_balanceShortfall.toStringAsFixed(2)} more',
+                Text(
+                    '${_t('workspace_you_need', 'আপনার আরও দরকার')} ৳${_balanceShortfall.toStringAsFixed(2)}',
                     style: TextStyle(color: Colors.red[600], fontSize: 11)),
               ],
             ),
@@ -1295,7 +1350,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 Icon(Icons.info_outline, size: 14, color: Colors.blue[700]),
                 const SizedBox(width: 6),
                 Text(
-                    'Balance after payment: ৳${_balanceAfterPayment.toStringAsFixed(2)}',
+                    '${_t('workspace_balance_after', 'পেমেন্টের পর ব্যালেন্স')}: ৳${_balanceAfterPayment.toStringAsFixed(2)}',
                     style: TextStyle(fontSize: 11, color: Colors.blue[800])),
               ],
             ),
@@ -1308,7 +1363,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             Icon(Icons.shield, size: 14, color: Colors.green[600]),
             const SizedBox(width: 6),
             Expanded(
-                child: Text('Payment held in escrow until completion',
+                child: Text(
+                    _t('workspace_escrow_notice',
+                        'কাজ শেষ না হওয়া পর্যন্ত টাকা এসক্রোতে রাখা থাকবে'),
                     style: TextStyle(fontSize: 10, color: Colors.grey[600]))),
           ],
         ),
@@ -1322,7 +1379,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 onPressed: () => setState(() => _orderStep = 1),
                 style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10)),
-                child: const Text('Back', style: TextStyle(fontSize: 13)),
+                child: Text(_t('workspace_back', 'পেছনে'),
+                    style: const TextStyle(fontSize: 13)),
               ),
             ),
             const SizedBox(width: 10),
@@ -1343,7 +1401,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                         height: 16,
                         child: AdsyLoadingIndicator(
                             strokeWidth: 2, color: Colors.white))
-                    : Text('Pay ৳${_totalToPay.toStringAsFixed(2)}',
+                    : Text(
+                        '${_t('workspace_pay', 'পে')} ৳${_totalToPay.toStringAsFixed(2)}',
                         style:
                             const TextStyle(fontSize: 13, color: Colors.white)),
               ),
@@ -1365,10 +1424,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           child: const Icon(Icons.check, size: 32, color: Colors.green),
         ),
         const SizedBox(height: 12),
-        const Text('Order Placed!',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(_t('workspace_order_placed', 'অর্ডার হয়ে গেছে!'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text('Payment successful. Seller notified.',
+        Text(
+            _t('workspace_payment_success',
+                'পেমেন্ট সফল। সেলারকে জানানো হয়েছে।'),
             style: TextStyle(color: Colors.grey[600], fontSize: 12)),
         const SizedBox(height: 12),
         Container(
@@ -1378,13 +1439,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           child: Column(
             children: [
               _buildSummaryRow(
-                  'Order ID',
+                  _t('workspace_order_id', 'অর্ডার আইডি'),
                   _orderResult?['order']?['id']
                           ?.toString()
                           .substring(0, 8)
                           .toUpperCase() ??
                       'N/A'),
-              _buildSummaryRow('New Balance',
+              _buildSummaryRow(_t('workspace_new_balance', 'নতুন ব্যালেন্স'),
                   '৳${_orderResult?['payment']?['new_balance']?.toString() ?? '0'}'),
             ],
           ),
@@ -1397,7 +1458,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 onPressed: _cancelOrder,
                 style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10)),
-                child: const Text('Close', style: TextStyle(fontSize: 13)),
+                child: Text(_t('workspace_close', 'বন্ধ করুন'),
+                    style: const TextStyle(fontSize: 13)),
               ),
             ),
             const SizedBox(width: 10),
@@ -1411,8 +1473,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   backgroundColor: const Color(0xFF8B5CF6),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                child: const Text('View Order',
-                    style: TextStyle(fontSize: 13, color: Colors.white)),
+                child: Text(_t('workspace_view_order', 'অর্ডার দেখুন'),
+                    style: const TextStyle(fontSize: 13, color: Colors.white)),
               ),
             ),
           ],
@@ -1445,12 +1507,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildTrustItem(Icons.visibility,
-              '${_formatViewCount(_gig!['views_count'] ?? 0)} views'),
+              '${_formatViewCount(_gig!['views_count'] ?? 0)} ${_t('workspace_views', 'ভিউ')}'),
           _buildTrustItem(
               Icons.access_time, _getActiveStatus(_gig!['updated_at'])),
           GestureDetector(
             onTap: _handleShare,
-            child: _buildTrustItem(Icons.share, 'Share'),
+            child:
+                _buildTrustItem(Icons.share, _t('workspace_share', 'শেয়ার')),
           ),
         ],
       ),
@@ -1477,12 +1540,14 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Similar Gigs',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text(_t('workspace_similar_gigs', 'একই ধরনের গিগ'),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600)),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
-                child: const Text('View All',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF8B5CF6))),
+                child: Text(_t('workspace_view_all', 'সব দেখুন'),
+                    style: const TextStyle(
+                        fontSize: 12, color: Color(0xFF8B5CF6))),
               ),
             ],
           ),
@@ -1658,14 +1723,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Reviews ($_totalReviewsCount)',
+              Text('${_t('workspace_reviews', 'রিভিউ')} ($_totalReviewsCount)',
                   style: const TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
               Row(
                 children: [
                   const Icon(Icons.star, size: 16, color: Colors.amber),
                   const SizedBox(width: 4),
-                  Text('${(_gig!['rating'] ?? 0).toStringAsFixed(1)} out of 5',
+                  Text(
+                      '${(_gig!['rating'] ?? 0).toStringAsFixed(1)} ${_t('workspace_out_of_5', '৫-এর মধ্যে')}',
                       style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                 ],
               ),
@@ -1682,13 +1748,14 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 children: [
                   Icon(Icons.star_border, size: 40, color: Colors.grey[400]),
                   const SizedBox(height: 8),
-                  Text('No reviews yet',
+                  Text(_t('workspace_no_reviews', 'এখনো কোনো রিভিউ নেই'),
                       style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
             )
           else ...[
-            Text('Showing ${_reviews.length} of $_totalReviewsCount reviews',
+            Text(
+                '$_totalReviewsCount ${_t('workspace_reviews', 'রিভিউ')}-এর মধ্যে ${_reviews.length} দেখানো হচ্ছে',
                 style: TextStyle(fontSize: 11, color: Colors.grey[500])),
             const SizedBox(height: 8),
             ..._reviews.map((review) => _buildReviewCard(review)),
@@ -1702,7 +1769,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                           height: 16,
                           child: AdsyLoadingIndicator(strokeWidth: 2))
                       : Text(
-                          'See More (${_totalReviewsCount - _reviews.length} remaining)',
+                          '${_t('workspace_see_more', 'আরও দেখুন')} (${_totalReviewsCount - _reviews.length} ${_t('workspace_remaining', 'বাকি')})',
                           style: const TextStyle(fontSize: 12)),
                 ),
               ),
@@ -1712,7 +1779,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     );
   }
 
-  Widget _buildPackageRow(String label, String value) {
+  Widget _buildPackageRow(String label, String value,
+      {bool isCategory = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -1723,9 +1791,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               style: TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 11,
-                  color: label == 'Category'
-                      ? const Color(0xFF8B5CF6)
-                      : Colors.black87)),
+                  color:
+                      isCategory ? const Color(0xFF8B5CF6) : Colors.black87)),
         ],
       ),
     );
@@ -1762,7 +1829,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(user?['name'] ?? 'Anonymous',
+                        Text(
+                            user?['name'] ??
+                                _t('workspace_anonymous', 'অজ্ঞাত'),
                             style: const TextStyle(
                                 fontWeight: FontWeight.w500, fontSize: 12)),
                         if (user?['kyc'] == true)
@@ -1843,7 +1912,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Starting at',
+                Text(_t('workspace_starting_at', 'শুরু'),
                     style: TextStyle(color: Colors.grey[500], fontSize: 10)),
                 Text('৳${_gigPrice.toStringAsFixed(0)}',
                     style: const TextStyle(
@@ -1864,9 +1933,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                       borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
-                child: const Text('Order Now',
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                child: Text(_t('workspace_order_now', 'এখনই অর্ডার করুন'),
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -1882,15 +1951,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         children: [
           Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
-          const Text('Gig not found',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(_t('workspace_gig_not_found', 'গিগ পাওয়া যায়নি'),
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text('This gig may have been removed',
+          Text(_t('workspace_gig_removed', 'গিগটি হয়তো সরিয়ে ফেলা হয়েছে'),
               style: TextStyle(color: Colors.grey[500])),
           const SizedBox(height: 24),
           ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Go Back')),
+              child: Text(_t('workspace_go_back', 'ফিরে যান'))),
         ],
       ),
     );

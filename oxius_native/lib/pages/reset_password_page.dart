@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
 import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -57,11 +58,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   String _getStepDescription() {
     switch (_currentStep) {
       case 1:
-        return _t('reset_step1_desc',
-            'রিসেট কোড পেতে আপনার ফোন নম্বরটা দিন');
+        return _t('reset_step1_desc', 'রিসেট কোড পেতে আপনার ফোন নম্বরটা দিন');
       case 2:
-        return _t('reset_step2_desc',
-            'আমরা যে কোডটা পাঠিয়েছি সেটা এখানে লিখুন');
+        return _t(
+            'reset_step2_desc', 'আমরা যে কোডটা পাঠিয়েছি সেটা এখানে লিখুন');
       case 3:
         return _t('reset_step3_desc', 'একটা নতুন পাসওয়ার্ড বানান');
       default:
@@ -116,14 +116,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     }
     setState(() => _isLoading = true);
     try {
-      final result = await AuthService.sendOtp(
-          method: _method, phone: _contactValue);
+      final result =
+          await AuthService.sendOtp(method: _method, phone: _contactValue);
       if (mounted) {
         setState(() {
           _maskedContact =
               result['masked_phone'] ?? result['masked_email'] ?? '';
-          _successMessage = result['message'] ??
-              _t('reset_code_sent', 'কোড পাঠানো হয়েছে');
+          _successMessage =
+              result['message'] ?? _t('reset_code_sent', 'কোড পাঠানো হয়েছে');
           _currentStep = 2;
           _isLoading = false;
         });
@@ -142,21 +142,19 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Future<void> _handleVerifyOtp() async {
     _clearMessages();
     if (_otpController.text.length != 6) {
-      setState(() => _errorMessage =
-          _t('reset_invalid_code', 'সঠিক ৬ ডিজিটের কোড দিন'));
+      setState(() =>
+          _errorMessage = _t('reset_invalid_code', 'সঠিক ৬ ডিজিটের কোড দিন'));
       return;
     }
     setState(() => _isLoading = true);
     try {
       final result = await AuthService.verifyOtp(
-          method: _method,
-          phone: _contactValue,
-          otp: _otpController.text);
+          method: _method, phone: _contactValue, otp: _otpController.text);
       if (mounted) {
         setState(() {
           _resetToken = result['token'] ?? '';
-          _successMessage = result['message'] ??
-              _t('reset_code_verified', 'কোড ঠিক আছে');
+          _successMessage =
+              result['message'] ?? _t('reset_code_verified', 'কোড ঠিক আছে');
           _currentStep = 3;
           _isLoading = false;
         });
@@ -175,14 +173,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     _clearMessages();
     if (!_isPasswordValid) {
       if (_newPasswordController.text.length < 8) {
-        setState(() => _errorMessage = _t(
-            'reset_pw_min', 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।'));
+        setState(() => _errorMessage =
+            _t('reset_pw_min', 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।'));
       } else if (!RegExp(r'[A-Z]').hasMatch(_newPasswordController.text)) {
-        setState(() => _errorMessage = _t('reset_pw_upper',
-            'পাসওয়ার্ডে অন্তত একটা বড় হাতের অক্ষর দিন।'));
-      } else if (!RegExp(r'[0-9]').hasMatch(_newPasswordController.text)) {
         setState(() => _errorMessage = _t(
-            'reset_pw_number', 'পাসওয়ার্ডে অন্তত একটা সংখ্যা দিন।'));
+            'reset_pw_upper', 'পাসওয়ার্ডে অন্তত একটা বড় হাতের অক্ষর দিন।'));
+      } else if (!RegExp(r'[0-9]').hasMatch(_newPasswordController.text)) {
+        setState(() => _errorMessage =
+            _t('reset_pw_number', 'পাসওয়ার্ডে অন্তত একটা সংখ্যা দিন।'));
       } else if (_newPasswordController.text !=
           _confirmPasswordController.text) {
         setState(() => _errorMessage =
@@ -195,8 +193,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       final result = await AuthService.resetPassword(
           token: _resetToken, newPassword: _newPasswordController.text);
       if (mounted) {
-        final msg = result['message'] ??
-            _t('reset_success', 'পাসওয়ার্ড বদলে গেছে!');
+        final msg =
+            result['message'] ?? _t('reset_success', 'পাসওয়ার্ড বদলে গেছে!');
         _showSuccessSnack(msg);
         if (result['auto_login'] == true && result['tokens'] != null) {
           final userState = UserStateService();
@@ -225,16 +223,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   void _showSuccessSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Row(children: [
-          const Icon(Icons.check_circle, color: Colors.white),
-          const SizedBox(width: 8),
-          Expanded(child: Text(message, style: AppFonts.roboto()))
-        ]),
-        backgroundColor: const Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))));
+    AdsyToast.success(context, message);
   }
 
   Future<void> _handleResendOtp() async {
@@ -464,12 +453,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           color: isError ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: isError
-                  ? const Color(0xFFFECACA)
-                  : const Color(0xFFBBF7D0)),
+              color:
+                  isError ? const Color(0xFFFECACA) : const Color(0xFFBBF7D0)),
         ),
         child: Row(children: [
-          Icon(isError ? Icons.error_outline_rounded : Icons.check_circle_outline,
+          Icon(
+              isError
+                  ? Icons.error_outline_rounded
+                  : Icons.check_circle_outline,
               color:
                   isError ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
               size: 18),
@@ -514,8 +505,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon,
-                  size: 16,
-                  color: selected ? _primaryColor : _mutedTextColor),
+                  size: 16, color: selected ? _primaryColor : _mutedTextColor),
               const SizedBox(width: 6),
               Text(
                 label,
@@ -736,11 +726,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       : _strengthColor(strength))),
         ]),
         const SizedBox(height: 12),
-        _buildPasswordRequirement(
-            _t('reset_req_length', 'কমপক্ষে ৮ অক্ষর'),
+        _buildPasswordRequirement(_t('reset_req_length', 'কমপক্ষে ৮ অক্ষর'),
             _newPasswordController.text.length >= 8),
-        _buildPasswordRequirement(
-            _t('reset_req_upper', 'একটা বড় হাতের অক্ষর'),
+        _buildPasswordRequirement(_t('reset_req_upper', 'একটা বড় হাতের অক্ষর'),
             RegExp(r'[A-Z]').hasMatch(_newPasswordController.text)),
         _buildPasswordRequirement(_t('reset_req_number', 'একটা সংখ্যা'),
             RegExp(r'[0-9]').hasMatch(_newPasswordController.text)),
@@ -796,8 +784,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   Widget _buildNavigation() => Center(
         child: TextButton(
-          onPressed: () =>
-              Navigator.of(context).pushReplacementNamed('/login'),
+          onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
           child: Text(
             _t('reset_back_to_login', 'লগইনে ফিরে যান'),
             style: AppFonts.roboto(
@@ -896,8 +883,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             disabledForegroundColor: Colors.white,
             shadowColor: Colors.transparent,
             elevation: 0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           child: _isLoading
               ? const SizedBox(

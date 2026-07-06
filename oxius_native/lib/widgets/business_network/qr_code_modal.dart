@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../config/app_config.dart';
 import '../../utils/download_open_utils.dart';
 import '../common/adsy_share_sheet.dart';
-import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class QrCodeModal extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -53,25 +53,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
     try {
       // Show loading
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: AdsyLoadingIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text('Generating QR code...'),
-              ],
-            ),
-            duration: Duration(seconds: 3),
-          ),
-        );
+        AdsyToast.info(context, 'Generating QR code...');
       }
 
       // Wait a frame for the snackbar to show
@@ -148,22 +130,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text('কিছু একটা সমস্যা হয়েছে'),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
       }
     }
   }

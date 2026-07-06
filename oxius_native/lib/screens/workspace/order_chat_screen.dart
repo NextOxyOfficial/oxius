@@ -6,6 +6,7 @@ import '../../services/workspace_service.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class OrderChatScreen extends StatefulWidget {
@@ -31,6 +32,10 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _imagePicker = ImagePicker();
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   List<Map<String, dynamic>> _messages = [];
   bool _isLoading = true;
@@ -167,7 +172,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
         NetworkErrorHandler.showErrorSnackbar(
           context,
           'Failed to send message',
-          customMessage: 'Unable to send message',
+          customMessage: _t('workspace_msg_send_failed', 'মেসেজ পাঠানো যায়নি'),
         );
       }
     }
@@ -197,7 +202,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
           NetworkErrorHandler.showErrorSnackbar(
             context,
             'Failed to send image',
-            customMessage: 'Unable to send image',
+            customMessage: _t('workspace_img_send_failed', 'ছবি পাঠানো যায়নি'),
           );
         }
       }
@@ -211,7 +216,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
       final now = DateTime.now();
       final diff = now.difference(date);
 
-      if (diff.inSeconds < 60) return 'now';
+      if (diff.inSeconds < 60) return _t('workspace_now', 'এখন');
       if (diff.inMinutes < 60) return '${diff.inMinutes}m';
       if (diff.inHours < 24) return '${diff.inHours}h';
       if (diff.inDays < 7) return '${diff.inDays}d';
@@ -254,7 +259,8 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                     children: [
                       Flexible(
                         child: Text(
-                          widget.otherUser['name'] ?? 'Chat',
+                          widget.otherUser['name'] ??
+                              _t('workspace_chat', 'চ্যাট'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -272,7 +278,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                     ],
                   ),
                   Text(
-                    'Order #${widget.orderNumber}',
+                    '${_t('workspace_order', 'অর্ডার')} #${widget.orderNumber}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -317,7 +323,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
           Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[300]),
           const SizedBox(height: 16),
           Text(
-            'No messages yet',
+            _t('workspace_no_messages', 'এখনো কোনো মেসেজ নেই'),
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
@@ -325,7 +331,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Start the conversation about this order',
+            _t('workspace_start_conversation', 'এই অর্ডার নিয়ে কথা শুরু করুন'),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[400],
@@ -535,12 +541,12 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                 child: TextField(
                   controller: _messageController,
                   enabled: !_isSending,
-                  decoration: const InputDecoration(
-                    hintText: 'Type a message...',
-                    hintStyle: TextStyle(color: Colors.grey),
+                  decoration: InputDecoration(
+                    hintText: _t('workspace_type_message', 'মেসেজ লিখুন...'),
+                    hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                   ),
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendMessage(),

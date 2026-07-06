@@ -599,12 +599,11 @@ class _PostCardState extends State<PostCard> {
 
     final success = await BusinessNetworkService.blockUser(userId);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? 'User blocked' : 'Failed to block user'),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
+      if (success) {
+        AdsyToast.success(context, 'User blocked');
+      } else {
+        AdsyToast.error(context, 'Failed to block user');
+      }
       if (success) {
         widget.onUserBlocked?.call(userId);
         widget.onPostDeleted?.call(); // Remove post from feed

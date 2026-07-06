@@ -7,6 +7,7 @@ import '../services/translation_service.dart';
 import '../widgets/api_error_ui.dart';
 import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class CreateSalePostScreen extends StatefulWidget {
   const CreateSalePostScreen({super.key});
@@ -186,8 +187,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
 
   Future<void> _pickImage() async {
     if (_imageBase64List.where((img) => img != null).length >= 8) {
-      _showErrorSnackBar(
-          _t('sale_max_images', 'সর্বোচ্চ ৮টা ছবি দেওয়া যাবে'));
+      _showErrorSnackBar(_t('sale_max_images', 'সর্বোচ্চ ৮টা ছবি দেওয়া যাবে'));
       return;
     }
 
@@ -234,8 +234,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                     _t('sale_image_uploaded', 'ছবি আপলোড হয়ে গেছে!'));
               } else {
                 debugPrint('Failed to decode base64 bytes');
-                _showErrorSnackBar(_t(
-                    'sale_image_process_failed', 'ছবিটা প্রসেস করা গেল না'));
+                _showErrorSnackBar(
+                    _t('sale_image_process_failed', 'ছবিটা প্রসেস করা গেল না'));
               }
             } catch (decodeError) {
               debugPrint('Error decoding base64: $decodeError');
@@ -283,8 +283,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
 
     // Validate category
     if (_selectedCategory == null) {
-      _showErrorSnackBar(
-          _t('sale_select_category', 'একটা ক্যাটাগরি বেছে নিন'));
+      _showErrorSnackBar(_t('sale_select_category', 'একটা ক্যাটাগরি বেছে নিন'));
       return;
     }
 
@@ -377,8 +376,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       final result = await _salePostService.createSalePost(postData);
 
       if (result != null && mounted) {
-        _showSuccessSnackBar(
-            _t('sale_post_created', 'আপনার পোস্ট হয়ে গেছে!'));
+        _showSuccessSnackBar(_t('sale_post_created', 'আপনার পোস্ট হয়ে গেছে!'));
         Navigator.pop(context, true); // Return true to indicate success
       } else {
         _showErrorSnackBar(_t('sale_post_failed', 'পোস্ট করা গেল না'));
@@ -396,35 +394,11 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AdsyToast.error(context, message);
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: const Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AdsyToast.success(context, message);
   }
 
   @override
@@ -476,10 +450,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             isDense: true,
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
-            labelStyle:
-                const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-            hintStyle:
-                const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+            labelStyle: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
             prefixIconColor: const Color(0xFF94A3B8),
             counterStyle:
                 const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
@@ -510,109 +482,105 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           ),
         ),
         child: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            // Basic Details Section
-            _buildSection(
-              title: _t('sale_basic_details', 'মূল তথ্য'),
-              subtitle: _t('sale_basic_details_sub',
-                  'ভালো টাইটেল দিলে ক্রেতা সহজে খুঁজে পাবে'),
-              icon: Icons.document_scanner_outlined,
-              children: [
-                _buildCategoryDropdown(),
-                if (_childCategories.isNotEmpty) ...[
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              // Basic Details Section
+              _buildSection(
+                title: _t('sale_basic_details', 'মূল তথ্য'),
+                subtitle: _t('sale_basic_details_sub',
+                    'ভালো টাইটেল দিলে ক্রেতা সহজে খুঁজে পাবে'),
+                icon: Icons.document_scanner_outlined,
+                children: [
+                  _buildCategoryDropdown(),
+                  if (_childCategories.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    _buildChildCategoryDropdown(),
+                  ],
                   const SizedBox(height: 8),
-                  _buildChildCategoryDropdown(),
+                  _buildTitleField(),
+                  const SizedBox(height: 8),
+                  _buildDescriptionField(),
                 ],
-                const SizedBox(height: 8),
-                _buildTitleField(),
-                const SizedBox(height: 8),
-                _buildDescriptionField(),
-              ],
-            ),
+              ),
 
+              // Pricing & Condition Section
+              _buildSection(
+                title: _t('sale_pricing_condition', 'দাম ও কন্ডিশন'),
+                subtitle: _t('sale_pricing_sub',
+                    'ন্যায্য দাম দিন — দামাদামির অপশনও রাখতে পারেন'),
+                icon: Icons.attach_money_rounded,
+                children: [
+                  _buildConditionSelection(),
+                  const SizedBox(height: 8),
+                  _buildPriceField(),
+                ],
+              ),
 
-            // Pricing & Condition Section
-            _buildSection(
-              title: _t('sale_pricing_condition', 'দাম ও কন্ডিশন'),
-              subtitle: _t('sale_pricing_sub',
-                  'ন্যায্য দাম দিন — দামাদামির অপশনও রাখতে পারেন'),
-              icon: Icons.attach_money_rounded,
-              children: [
-                _buildConditionSelection(),
-                const SizedBox(height: 8),
-                _buildPriceField(),
-              ],
-            ),
+              // Upload Photos Section
+              _buildSection(
+                title: _t('sale_upload_photos', 'ছবি আপলোড করুন'),
+                subtitle: _t('sale_photos_sub',
+                    'পরিষ্কার ছবি দিলে বিক্রির সম্ভাবনা অনেক বাড়ে'),
+                icon: Icons.photo_camera_outlined,
+                children: [
+                  _buildImageUpload(),
+                ],
+              ),
 
+              // Item location Section
+              _buildSection(
+                title: _t('sale_item_location', 'পণ্যটা কোথায় আছে'),
+                subtitle: _t('sale_item_location_sub',
+                    'ক্রেতা কাছাকাছি খোঁজে — সঠিক লোকেশন দিন'),
+                icon: Icons.location_on_outlined,
+                children: [
+                  _buildLocationFields(),
+                  const SizedBox(height: 8),
+                  _buildAddressField(),
+                ],
+              ),
 
-            // Upload Photos Section
-            _buildSection(
-              title: _t('sale_upload_photos', 'ছবি আপলোড করুন'),
-              subtitle: _t('sale_photos_sub',
-                  'পরিষ্কার ছবি দিলে বিক্রির সম্ভাবনা অনেক বাড়ে'),
-              icon: Icons.photo_camera_outlined,
-              children: [
-                _buildImageUpload(),
-              ],
-            ),
+              // Delivery coverage Section
+              _buildSection(
+                title: _t(
+                    'sale_delivery_coverage', 'কোথায় কোথায় ডেলিভারি দেবেন'),
+                subtitle: _t('sale_delivery_coverage_sub',
+                    'এক বা একাধিক বিভাগ/জেলা যোগ করতে পারবেন'),
+                icon: Icons.local_shipping_outlined,
+                children: [
+                  _buildDeliveryCoverage(),
+                ],
+              ),
 
+              // Contact Information Section
+              _buildSection(
+                title: _t('sale_contact_info', 'যোগাযোগের তথ্য'),
+                subtitle: _t('sale_contact_sub',
+                    'আগ্রহী ক্রেতা এই নাম্বারে যোগাযোগ করবে'),
+                icon: Icons.phone_outlined,
+                children: [
+                  _buildPhoneField(),
+                  const SizedBox(height: 8),
+                  _buildEmailField(),
+                ],
+              ),
 
-            // Item location Section
-            _buildSection(
-              title: _t('sale_item_location', 'পণ্যটা কোথায় আছে'),
-              subtitle: _t('sale_item_location_sub',
-                  'ক্রেতা কাছাকাছি খোঁজে — সঠিক লোকেশন দিন'),
-              icon: Icons.location_on_outlined,
-              children: [
-                _buildLocationFields(),
-                const SizedBox(height: 8),
-                _buildAddressField(),
-              ],
-            ),
+              const SizedBox(height: 8),
 
+              // Terms Section
+              _buildTermsSection(),
 
-            // Delivery coverage Section
-            _buildSection(
-              title: _t('sale_delivery_coverage', 'কোথায় কোথায় ডেলিভারি দেবেন'),
-              subtitle: _t('sale_delivery_coverage_sub',
-                  'এক বা একাধিক বিভাগ/জেলা যোগ করতে পারবেন'),
-              icon: Icons.local_shipping_outlined,
-              children: [
-                _buildDeliveryCoverage(),
-              ],
-            ),
+              const SizedBox(height: 16),
 
+              // Submit Button
+              _buildSubmitButton(),
 
-            // Contact Information Section
-            _buildSection(
-              title: _t('sale_contact_info', 'যোগাযোগের তথ্য'),
-              subtitle: _t('sale_contact_sub',
-                  'আগ্রহী ক্রেতা এই নাম্বারে যোগাযোগ করবে'),
-              icon: Icons.phone_outlined,
-              children: [
-                _buildPhoneField(),
-                const SizedBox(height: 8),
-                _buildEmailField(),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            // Terms Section
-            _buildTermsSection(),
-
-            const SizedBox(height: 16),
-
-            // Submit Button
-            _buildSubmitButton(),
-
-            // Safe area bottom padding for devices with gesture navigation
-            SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
-          ],
-        ),
+              // Safe area bottom padding for devices with gesture navigation
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
+            ],
+          ),
         ),
       ),
     );
@@ -696,7 +664,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           _loadChildCategories(value);
         }
       },
-      validator: (value) => value == null && _checkSubmit ? _t('sale_required', 'এটা দিতে হবে') : null,
+      validator: (value) => value == null && _checkSubmit
+          ? _t('sale_required', 'এটা দিতে হবে')
+          : null,
     );
   }
 
@@ -742,8 +712,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       controller: _descriptionController,
       decoration: InputDecoration(
         labelText: '${_t('sale_description', 'ডিটেইলস')} *',
-        hintText:
-            _t('sale_description_hint', 'জিনিসটার খুঁটিনাটি সব লিখুন'),
+        hintText: _t('sale_description_hint', 'জিনিসটার খুঁটিনাটি সব লিখুন'),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         counterText: '${_descriptionController.text.length}/1000',
       ),
@@ -777,8 +746,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                   _selectedCondition = isSelected ? null : condition['value']),
               borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 11, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF10B981)
@@ -795,9 +764,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isSelected
-                        ? Colors.white
-                        : const Color(0xFF64748B),
+                    color: isSelected ? Colors.white : const Color(0xFF64748B),
                   ),
                 ),
               ),
@@ -846,8 +813,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           onTap: () => setState(() => _isNegotiable = !_isNegotiable),
           borderRadius: BorderRadius.circular(10),
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
               color: _isNegotiable
                   ? const Color(0xFFECFDF5)
@@ -1138,7 +1104,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                   : null,
             ),
             const SizedBox(width: 10),
-            Icon(icon, size: 19, color: selected ? green : const Color(0xFF94A3B8)),
+            Icon(icon,
+                size: 19, color: selected ? green : const Color(0xFF94A3B8)),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -1155,8 +1122,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: Color(0xFF64748B)),
+                    style:
+                        const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                   ),
                 ],
               ),
@@ -1176,8 +1143,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           selected: _deliverAllBd,
           icon: Icons.public_rounded,
           title: _t('sale_deliver_all_bd', 'সারা বাংলাদেশে ডেলিভারি'),
-          subtitle: _t('sale_deliver_all_bd_sub',
-              'দেশের যেকোনো জায়গায় পাঠাতে পারবেন'),
+          subtitle: _t(
+              'sale_deliver_all_bd_sub', 'দেশের যেকোনো জায়গায় পাঠাতে পারবেন'),
           onTap: () => setState(() => _deliverAllBd = true),
         ),
         const SizedBox(height: 8),
@@ -1185,8 +1152,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           selected: !_deliverAllBd,
           icon: Icons.pin_drop_rounded,
           title: _t('sale_deliver_custom', 'নির্দিষ্ট এলাকায় ডেলিভারি'),
-          subtitle: _t('sale_deliver_custom_sub',
-              'এক বা একাধিক বিভাগ/জেলা বেছে দিন'),
+          subtitle:
+              _t('sale_deliver_custom_sub', 'এক বা একাধিক বিভাগ/জেলা বেছে দিন'),
           onTap: () => setState(() => _deliverAllBd = false),
         ),
 
@@ -1321,8 +1288,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       isDense: true,
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -1460,8 +1426,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       controller: _addressController,
       decoration: InputDecoration(
         labelText: '${_t('sale_detailed_address', 'পুরো ঠিকানা')} *',
-        hintText:
-            _t('sale_address_hint', 'ঠিকানাটা একটু খুলে লিখুন...'),
+        hintText: _t('sale_address_hint', 'ঠিকানাটা একটু খুলে লিখুন...'),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         prefixIcon: const Icon(Icons.home_outlined, size: 20),
       ),

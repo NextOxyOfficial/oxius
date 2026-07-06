@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
+import '../../services/translation_service.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -16,6 +17,10 @@ class _AllGigsTabState extends State<AllGigsTab> {
   final WorkspaceService _workspaceService = WorkspaceService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   List<Map<String, dynamic>> _gigs = [];
   List<Map<String, dynamic>> _categories = [];
@@ -144,7 +149,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                     controller: _searchController,
                     style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Search gigs...',
+                      hintText: _t('workspace_search_gigs', 'গিগ খুঁজুন...'),
                       hintStyle:
                           TextStyle(fontSize: 15, color: Colors.grey[400]),
                       prefixIcon:
@@ -184,7 +189,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      _buildFilterChip('All', null),
+                      _buildFilterChip(_t('workspace_all', 'সব'), null),
                       ..._categories.map((cat) => _buildFilterChip(
                             cat['label'] ?? cat['name'] ?? '',
                             cat['value']?.toString() ?? cat['id']?.toString(),
@@ -422,7 +427,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
           Icon(Icons.work_off, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No gigs found',
+            _t('workspace_no_gigs_found', 'কোনো গিগ পাওয়া যায়নি'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -431,7 +436,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your filters or search',
+            _t('workspace_adjust_filters', 'ফিল্টার বা সার্চ একটু বদলে দেখুন'),
             style: TextStyle(color: Colors.grey[500]),
           ),
         ],

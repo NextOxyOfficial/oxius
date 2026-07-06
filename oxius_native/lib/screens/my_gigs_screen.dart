@@ -453,7 +453,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         final gigStatus = _getGigStatus(gig);
         final isActive = _isGigActive(gig);
 
-        debugPrint('Gig: ${gig['title']}, Status: $gigStatus, Active: $isActive');
+        debugPrint(
+            'Gig: ${gig['title']}, Status: $gigStatus, Active: $isActive');
 
         switch (_selectedFilter) {
           case 'live':
@@ -514,7 +515,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           // Refresh gigs
           _loadUserGigs();
         } else {
-          AdsyToast.error(context,
+          AdsyToast.error(
+              context,
               'Failed to ${action == "completed" ? "stop" : value ? "activate" : "pause"} gig');
         }
       }
@@ -595,14 +597,13 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   if (mounted) {
                     // The dialog context was popped above — use the State's
                     // context for the snackbar.
-                    ScaffoldMessenger.of(this.context).showSnackBar(
-                      SnackBar(
-                        content: Text(success
-                            ? 'Gig quantity increased successfully'
-                            : 'Failed to increase quantity'),
-                        backgroundColor: success ? Colors.green : Colors.red,
-                      ),
-                    );
+                    if (success) {
+                      AdsyToast.success(
+                          this.context, 'Gig quantity increased successfully');
+                    } else {
+                      AdsyToast.error(
+                          this.context, 'Failed to increase quantity');
+                    }
                     if (success) {
                       _loadUserGigs();
                     }
@@ -751,14 +752,12 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   // The dialog was dismissed before the await — use the
                   // State's context for the snackbars.
                   ScaffoldMessenger.of(this.context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(this.context).showSnackBar(
-                    SnackBar(
-                      content: Text(success
-                          ? 'Gig resubmitted successfully! Waiting for approval.'
-                          : 'Failed to resubmit gig'),
-                      backgroundColor: success ? Colors.green : Colors.red,
-                    ),
-                  );
+                  if (success) {
+                    AdsyToast.success(this.context,
+                        'Gig resubmitted successfully! Waiting for approval.');
+                  } else {
+                    AdsyToast.error(this.context, 'Failed to resubmit gig');
+                  }
                   if (success) {
                     // Reload the gigs to reflect the new status
                     await _loadUserGigs();

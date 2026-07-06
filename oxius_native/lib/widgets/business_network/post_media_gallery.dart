@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../models/business_network_models.dart';
+
+const Map<String, String> _kMediaHeaders = {'User-Agent': 'OxiUsFlutter/1.0'};
 
 class PostMediaGallery extends StatelessWidget {
   final List<PostMedia> media;
@@ -97,14 +100,18 @@ class PostMediaGallery extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.network(
-          imageUrl,
-          headers: const {
-            'User-Agent': 'OxiUsFlutter/1.0',
-          },
+        // Disk + memory cached, decoded at a capped width so full-res photos
+        // never blow up memory or re-download on every scroll.
+        CachedNetworkImage(
+          imageUrl: imageUrl,
+          httpHeaders: _kMediaHeaders,
           fit: fit,
           width: double.infinity,
-          errorBuilder: (context, error, stackTrace) {
+          memCacheWidth: 1080,
+          fadeInDuration: const Duration(milliseconds: 120),
+          placeholder: (context, url) =>
+              Container(color: Colors.grey.shade200),
+          errorWidget: (context, url, error) {
             return Container(
               color: Colors.grey.shade200,
               child: Center(
@@ -169,30 +176,14 @@ class PostMediaGallery extends StatelessWidget {
   }
 
   Widget _buildSingleVideo(BuildContext context, int index) {
-    final item = media[index];
-    return ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxHeight: 500,
-        minHeight: 200,
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _AutoPlaySingleVideoPreview(
-            media: item,
-          ),
-          Positioned.fill(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => onMediaTap(index),
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-            ),
-          ),
-        ],
-      ),
+    // The preview sizes ITSELF to the video's aspect ratio (clamped), exactly
+    // like a single image — no fixed box, so wide videos no longer show dark
+    // letterbox bars.
+    return _AutoPlaySingleVideoPreview(
+      media: media[index],
+      minHeight: 200,
+      maxHeight: 520,
+      onTap: () => onMediaTap(index),
     );
   }
 
@@ -520,12 +511,9 @@ class _AdaptiveAspectRatioBoxState extends State<_AdaptiveAspectRatioBox> {
     final url = widget.imageUrl.trim();
     if (url.isEmpty) return;
 
-    final provider = NetworkImage(
-      url,
-      headers: const {
-        'User-Agent': 'OxiUsFlutter/1.0',
-      },
-    );
+    // Reuse the SAME cached image the tile displays, so measuring the aspect
+    // ratio doesn't trigger a second network fetch of the photo.
+    final provider = CachedNetworkImageProvider(url, headers: _kMediaHeaders);
 
     final stream = provider.resolve(const ImageConfiguration());
     _stream = stream;
@@ -579,8 +567,16 @@ class _AdaptiveAspectRatioBoxState extends State<_AdaptiveAspectRatioBox> {
 
 class _AutoPlaySingleVideoPreview extends StatefulWidget {
   final PostMedia media;
+  final double minHeight;
+  final double maxHeight;
+  final VoidCallback? onTap;
 
-  const _AutoPlaySingleVideoPreview({required this.media});
+  const _AutoPlaySingleVideoPreview({
+    required this.media,
+    this.minHeight = 200,
+    this.maxHeight = 520,
+    this.onTap,
+  });
 
   @override
   State<_AutoPlaySingleVideoPreview> createState() => _AutoPlaySingleVideoPreviewState();
@@ -589,13 +585,18 @@ class _AutoPlaySingleVideoPreview extends StatefulWidget {
 class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
+  // Aspect ratio measured from the thumbnail so the box is sized correctly even
+  // before the video controller finishes initializing.
+  double? _thumbAspect;
   bool _hasError = false;
   bool _isVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _init();
+    // Only measure the thumbnail up front (cheap). The heavy video controller
+    // is created lazily the first time the tile scrolls near the viewport.
+    _resolveThumbAspect();
   }
 
   @override
@@ -605,11 +606,30 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
       _disposeController();
       _isInitialized = false;
       _hasError = false;
-      _init();
+      _thumbAspect = null;
+      _resolveThumbAspect();
+      if (_isVisible) _init();
     }
   }
 
+  void _resolveThumbAspect() {
+    final url = widget.media.bestThumbnailUrl.trim();
+    if (url.isEmpty) return;
+    final provider = CachedNetworkImageProvider(url, headers: _kMediaHeaders);
+    final stream = provider.resolve(const ImageConfiguration());
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener((info, _) {
+      final img = info.image;
+      if (img.height != 0 && mounted) {
+        setState(() => _thumbAspect = img.width / img.height);
+      }
+      stream.removeListener(listener);
+    }, onError: (_, __) => stream.removeListener(listener));
+    stream.addListener(listener);
+  }
+
   Future<void> _init() async {
+    if (_controller != null) return; // already initializing/initialized
     try {
       final url = widget.media.bestUrl;
       if (url.isEmpty) {
@@ -630,7 +650,10 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
       await controller.setLooping(true);
       await controller.setVolume(1.0);
 
-      if (!mounted) return;
+      if (!mounted) {
+        controller.dispose();
+        return;
+      }
       setState(() {
         _isInitialized = true;
         _hasError = false;
@@ -670,108 +693,130 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
     super.dispose();
   }
 
+  /// Best-known aspect ratio: the initialized video's, else the thumbnail's,
+  /// else a sensible 16:9 default.
+  double get _aspect {
+    final c = _controller;
+    if (c != null && _isInitialized && c.value.aspectRatio > 0) {
+      return c.value.aspectRatio;
+    }
+    return (_thumbAspect != null && _thumbAspect! > 0) ? _thumbAspect! : 16 / 9;
+  }
+
   @override
   Widget build(BuildContext context) {
     final thumbUrl = widget.media.bestThumbnailUrl;
     final c = _controller;
 
-    Widget thumbFallback() {
-      return Container(
-        color: Colors.grey.shade300,
-        child: Center(
-          child: Icon(
-            Icons.play_circle_fill_rounded,
-            size: 48,
-            color: Colors.black.withValues(alpha: 0.35),
+    final stack = Stack(
+      fit: StackFit.expand,
+      children: [
+        Container(color: Colors.black),
+        // Poster (cover-fills the box, no letterbox).
+        if (thumbUrl.isNotEmpty)
+          CachedNetworkImage(
+            imageUrl: thumbUrl,
+            httpHeaders: _kMediaHeaders,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorWidget: (context, url, error) => const SizedBox.shrink(),
+          ),
+        // Video, cover-filled so it exactly covers the box (matches images).
+        if (!_hasError && _isInitialized && c != null)
+          ClipRect(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              clipBehavior: Clip.hardEdge,
+              child: SizedBox(
+                width: c.value.size.width,
+                height: c.value.size.height,
+                child: VideoPlayer(c),
+              ),
+            ),
+          ),
+        if (_hasError)
+          Center(
+            child: Icon(
+              Icons.play_circle_fill_rounded,
+              size: 48,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
+          ),
+        // Play affordance while the video hasn't started.
+        if (!_hasError && !(_isInitialized && (c?.value.isPlaying ?? false)))
+          Center(
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.40),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.play_arrow_rounded,
+                  color: Colors.white, size: 32),
+            ),
+          ),
+        Positioned(
+          top: 8,
+          left: 8,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+            child: const Icon(Icons.videocam_rounded,
+                color: Colors.white, size: 12),
           ),
         ),
-      );
-    }
+        if (widget.onTap != null)
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: widget.onTap,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+            ),
+          ),
+      ],
+    );
 
     return VisibilityDetector(
       key: ValueKey('bn_autoplay_${widget.media.id}_${widget.media.bestUrl}'),
       onVisibilityChanged: (info) {
-        final nextVisible = info.visibleFraction >= 0.65;
-        if (nextVisible == _isVisible) return;
-
-        setState(() {
-          _isVisible = nextVisible;
-        });
-        _updatePlayback();
+        if (!mounted) return;
+        final frac = info.visibleFraction;
+        // Create the controller lazily the moment the tile enters the viewport.
+        if (frac > 0 && _controller == null && !_hasError) {
+          _init();
+        }
+        final nextVisible = frac >= 0.6;
+        if (nextVisible != _isVisible) {
+          setState(() => _isVisible = nextVisible);
+          _updatePlayback();
+        }
+        // Free the decoder once the tile is fully off-screen (memory + battery).
+        if (frac == 0 && _controller != null) {
+          _disposeController();
+          setState(() => _isInitialized = false);
+        }
       },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          thumbFallback(),
-          if (thumbUrl.isNotEmpty)
-            Image.network(
-              thumbUrl,
-              headers: const {
-                'User-Agent': 'OxiUsFlutter/1.0',
-              },
-              fit: BoxFit.contain,
-              width: double.infinity,
-              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-            ),
-          if (_hasError)
-            Center(
-              child: Icon(
-                Icons.play_circle_fill_rounded,
-                size: 48,
-                color: Colors.white.withValues(alpha: 0.9),
-              ),
-            )
-          else if (!_isInitialized || c == null)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 10,
-                      width: 160,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      height: 10,
-                      width: 92,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            Center(
-              child: AspectRatio(
-                aspectRatio: c.value.aspectRatio,
-                child: VideoPlayer(c),
-              ),
-            ),
-          Positioned(
-            top: 8,
-            left: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-              ),
-              child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
-            ),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxW = constraints.maxWidth;
+          var ratio = _aspect;
+          final expectedH = maxW / ratio;
+          if (expectedH > widget.maxHeight) {
+            ratio = maxW / widget.maxHeight;
+          } else if (expectedH < widget.minHeight) {
+            ratio = maxW / widget.minHeight;
+          }
+          return AspectRatio(aspectRatio: ratio, child: stack);
+        },
       ),
     );
   }

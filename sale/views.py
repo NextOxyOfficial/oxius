@@ -20,14 +20,25 @@ from .serializers import *
 logger = logging.getLogger(__name__)
 
 
+MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB per image
+
+
 def base64ToFile(base64_data):
-    """Convert base64 image data to Django ContentFile"""
+    """Convert base64 image data to Django ContentFile (size-capped)."""
+    from rest_framework.exceptions import ValidationError
+
     # Remove the prefix if it exists (e.g., "data:image/png;base64,")
-    if base64_data.startswith("data:image"):
+    if isinstance(base64_data, str) and base64_data.startswith("data:image"):
         base64_data = base64_data.split("base64,")[1]
+
+    # Reject oversized payloads before decoding (base64 ~= 4/3 of raw bytes).
+    if (len(base64_data) * 3) // 4 > MAX_UPLOAD_BYTES:
+        raise ValidationError({"image": "Image too large (max 8 MB)."})
 
     # Decode the Base64 string into bytes
     file_data = base64.b64decode(base64_data)
+    if len(file_data) > MAX_UPLOAD_BYTES:
+        raise ValidationError({"image": "Image too large (max 8 MB)."})
 
     # Create a Django ContentFile object from the bytes
     file = ContentFile(file_data)

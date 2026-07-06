@@ -1,5 +1,25 @@
 from rest_framework import serializers
-from .models import Batch, Division, Subject, VideoLesson
+from .models import Batch, Division, Subject, VideoLesson, ElearningBanner
+
+
+class ElearningBannerSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ElearningBanner
+        fields = ['id', 'title', 'image', 'link_type', 'link_url', 'display_order']
+
+    def get_image(self, obj):
+        if not obj.image:
+            return ''
+        try:
+            url = obj.image.url
+        except ValueError:
+            return ''
+        request = self.context.get('request')
+        if request is not None and url.startswith('/'):
+            return request.build_absolute_uri(url)
+        return url
 
 
 class BatchSerializer(serializers.ModelSerializer):

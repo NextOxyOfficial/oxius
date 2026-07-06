@@ -1011,6 +1011,12 @@ class BusinessNetworkPostRetrieveUpdateDestroyView(
     serializer_class = BusinessNetworkPostSerializer
     lookup_field = "id"
 
+    def get_serializer_context(self):
+        # Single-post detail view: send the full comment thread + all likers.
+        ctx = super().get_serializer_context()
+        ctx["full_detail"] = True
+        return ctx
+
     def get_permissions(self):
         if self.request.method == "GET":
             return []

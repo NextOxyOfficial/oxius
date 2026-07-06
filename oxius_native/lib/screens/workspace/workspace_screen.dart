@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
+import '../../services/translation_service.dart';
 import 'all_gigs_tab.dart';
 import 'my_gigs_tab.dart';
 import 'orders_received_tab.dart';
@@ -33,6 +34,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final WorkspaceService _workspaceService = WorkspaceService();
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   List<Map<String, dynamic>> _banners = [];
   int _currentBannerIndex = 0;
@@ -117,7 +122,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Workspaces',
+                    _t('workspace_title', 'ওয়ার্কস্পেস'),
                     style: GoogleFonts.inter(
                       color: _slate800,
                       fontWeight: FontWeight.w800,
@@ -159,17 +164,17 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                     tabAlignment: TabAlignment.start,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                     padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
-                    tabs: const [
+                    tabs: [
                       Tab(
                         height: 40,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.explore_rounded, size: 15),
-                              SizedBox(width: 5),
-                              Text('All Gigs'),
+                              const Icon(Icons.explore_rounded, size: 15),
+                              const SizedBox(width: 5),
+                              Text(_t('workspace_tab_all_gigs', 'সব গিগ')),
                             ],
                           ),
                         ),
@@ -177,13 +182,14 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                       Tab(
                         height: 40,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.person_outline_rounded, size: 15),
-                              SizedBox(width: 5),
-                              Text('My Gigs'),
+                              const Icon(Icons.person_outline_rounded,
+                                  size: 15),
+                              const SizedBox(width: 5),
+                              Text(_t('workspace_tab_my_gigs', 'আমার গিগ')),
                             ],
                           ),
                         ),
@@ -191,13 +197,14 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                       Tab(
                         height: 40,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.inbox_rounded, size: 15),
-                              SizedBox(width: 5),
-                              Text('Orders Received'),
+                              const Icon(Icons.inbox_rounded, size: 15),
+                              const SizedBox(width: 5),
+                              Text(_t('workspace_tab_orders_received',
+                                  'আসা অর্ডার')),
                             ],
                           ),
                         ),
@@ -205,13 +212,14 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                       Tab(
                         height: 40,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.shopping_bag_outlined, size: 15),
-                              SizedBox(width: 5),
-                              Text('Gigs Ordered'),
+                              const Icon(Icons.shopping_bag_outlined, size: 15),
+                              const SizedBox(width: 5),
+                              Text(_t('workspace_tab_gigs_ordered',
+                                  'অর্ডার করা গিগ')),
                             ],
                           ),
                         ),
@@ -219,13 +227,14 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                       Tab(
                         height: 40,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.add_circle_outline_rounded, size: 15),
-                              SizedBox(width: 5),
-                              Text('Post a Gig'),
+                              const Icon(Icons.add_circle_outline_rounded,
+                                  size: 15),
+                              const SizedBox(width: 5),
+                              Text(_t('workspace_tab_post_gig', 'গিগ দিন')),
                             ],
                           ),
                         ),

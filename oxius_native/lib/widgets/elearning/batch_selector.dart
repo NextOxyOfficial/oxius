@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/elearning_models.dart';
 import '../../services/elearning_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../services/translation_service.dart';
+import 'elearning_step_header.dart';
 
 class BatchSelector extends StatefulWidget {
   final String? selectedBatch;
@@ -26,7 +28,8 @@ class _BatchSelectorState extends State<BatchSelector> {
   static const _slate500 = Color(0xFF64748B);
   static const _slate800 = Color(0xFF1E293B);
   static const _indigo = Color(0xFF6366F1);
-  static const _violet = Color(0xFF8B5CF6);
+
+  final TranslationService _i18n = TranslationService();
 
   List<Batch> _batches = [];
   bool _loading = true;
@@ -53,7 +56,8 @@ class _BatchSelectorState extends State<BatchSelector> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Failed to load batches. Please try again.';
+        _error = _i18n.t('el_error_batches',
+            fallback: 'Failed to load batches. Please try again.');
         _loading = false;
       });
     }
@@ -79,16 +83,10 @@ class _BatchSelectorState extends State<BatchSelector> {
 
   Batch? get _selectedBatchItem {
     final code = widget.selectedBatch;
-    if (code == null) {
-      return null;
-    }
-
+    if (code == null) return null;
     for (final batch in _batches) {
-      if (batch.code == code) {
-        return batch;
-      }
+      if (batch.code == code) return batch;
     }
-
     return null;
   }
 
@@ -97,255 +95,158 @@ class _BatchSelectorState extends State<BatchSelector> {
     final selectedBatch = _selectedBatchItem;
     final isCollapsed = !widget.isExpanded && selectedBatch != null;
 
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      padding: const EdgeInsets.all(14),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: isCollapsed ? widget.onTapExpand : null,
-            borderRadius: BorderRadius.circular(14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_indigo, _violet],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.school_rounded,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Choose batch',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: _slate800,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Start with your academic level',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: _slate500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: _indigo.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'Step 1/4',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: _indigo,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    if (isCollapsed) ...[
-                      const SizedBox(width: 8),
-                      const Icon(Icons.expand_more_rounded,
-                          size: 18, color: _slate500),
-                    ],
-                  ],
-                ),
-              ],
-            ),
+          ElearningStepHeader(
+            number: 1,
+            title: _i18n.t('el_choose_batch', fallback: 'Choose batch'),
+            subtitle: _i18n.t('el_batch_sub',
+                fallback: 'Start with your academic level'),
+            icon: Icons.school_rounded,
+            isActive: widget.isExpanded,
+            isDone: selectedBatch != null,
+            collapsedValue: selectedBatch?.name,
+            onTapExpand: widget.onTapExpand,
           ),
-          const SizedBox(height: 12),
-
-          // Loading state
-          if (_loading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32.0),
-                child: AdsyLoadingIndicator(),
+          if (!isCollapsed) ...[
+            const SizedBox(height: 14),
+            if (_loading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: AdsyLoadingIndicator(),
+                ),
               ),
-            ),
-
-          // Error state
-          if (_error != null)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                border: Border.all(color: Colors.red.shade200),
-                borderRadius: BorderRadius.circular(8),
+            if (_error != null) _buildError(),
+            if (!_loading && _error == null)
+              SizedBox(
+                height: 132,
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context)
+                      .copyWith(scrollbars: false),
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.zero,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: _batches.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, index) {
+                      final batch = _batches[index];
+                      final isSelected = widget.selectedBatch == batch.code;
+                      return _buildBatchTile(batch, isSelected);
+                    },
+                  ),
+                ),
               ),
-              child: Column(
-                children: [
-                  Text(
-                    _error!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.red.shade700,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _loadBatches,
-                    child: const Text('Try Again'),
-                  ),
-                ],
-              ),
-            ),
-
-          if (!_loading && _error == null && isCollapsed)
-            _buildCollapsedSummary(selectedBatch),
-
-          if (!_loading && _error == null && !isCollapsed)
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _batches.length,
-              separatorBuilder: (context, index) =>
-                  Divider(color: _slate200, height: 1),
-              itemBuilder: (context, index) {
-                final batch = _batches[index];
-                final isSelected = widget.selectedBatch == batch.code;
-
-                return InkWell(
-                  onTap: () => widget.onSelectBatch(batch.code),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: _getBatchColor(batch.name),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.menu_book_rounded,
-                            size: 18,
-                            color: _getBatchTextColor(batch.name),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                batch.name,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isSelected ? _indigo : _slate800,
-                                ),
-                              ),
-                              if (batch.description.isNotEmpty) ...[
-                                const SizedBox(height: 3),
-                                Text(
-                                  batch.description,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    height: 1.4,
-                                    color: _slate500,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (isSelected)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 8, top: 2),
-                            child: Icon(Icons.check_circle_rounded,
-                                size: 18, color: _indigo),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildCollapsedSummary(Batch batch) {
+  Widget _buildError() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        border: Border.all(color: Colors.red.shade200),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
         children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: _getBatchColor(batch.name),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.menu_book_rounded,
-              size: 18,
-              color: _getBatchTextColor(batch.name),
-            ),
+          Text(
+            _error!,
+            style: TextStyle(fontSize: 14, color: Colors.red.shade700),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _loadBatches,
+            child: Text(_i18n.t('el_try_again', fallback: 'Try Again')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBatchTile(Batch batch, bool isSelected) {
+    return GestureDetector(
+      onTap: () => widget.onSelectBatch(batch.code),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: 150,
+        height: 130,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? _indigo.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? _indigo : _slate200,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  batch.name,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: _slate800,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _getBatchColor(batch.name),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    size: 20,
+                    color: _getBatchTextColor(batch.name),
                   ),
                 ),
-                if (batch.description.isNotEmpty)
-                  Text(
-                    batch.description,
-                    style: const TextStyle(fontSize: 11, color: _slate500),
+                if (isSelected)
+                  const Icon(Icons.check_circle_rounded,
+                      size: 22, color: _indigo)
+                else
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _slate200, width: 1.5),
+                    ),
                   ),
               ],
             ),
-          ),
-          TextButton(
-            onPressed: widget.onTapExpand,
-            child: const Text('Change'),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              batch.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? _indigo : _slate800,
+              ),
+            ),
+            if (batch.description.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(
+                batch.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  height: 1.35,
+                  color: _slate500,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

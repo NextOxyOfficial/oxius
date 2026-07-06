@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../models/elearning_models.dart';
 import '../../services/elearning_service.dart';
+import '../../services/translation_service.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final VideoLesson video;
@@ -107,7 +108,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              widget.video.title,
+              widget.video.displayTitle,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -136,7 +137,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.video.title,
+                                widget.video.displayTitle,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -153,7 +154,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '${widget.video.viewsCount} views',
+                                    '${widget.video.viewsCount} ${TranslationService().t('el_views', fallback: 'views')}',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.grey.shade600,
@@ -175,7 +176,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                   ),
                                 ],
                               ),
-                              if (widget.video.description.isNotEmpty) ...[
+                              if (widget.video.displayDescription.isNotEmpty) ...[
                                 const SizedBox(height: 12),
                                 Container(
                                   padding: const EdgeInsets.all(12),
@@ -184,7 +185,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    widget.video.description,
+                                    widget.video.displayDescription,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey.shade700,

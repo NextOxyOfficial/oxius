@@ -465,12 +465,11 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? 'User blocked' : 'Failed to block user'),
-        backgroundColor: success ? Colors.green : Colors.red,
-      ),
-    );
+    if (success) {
+      AdsyToast.success(context, 'User blocked');
+    } else {
+      AdsyToast.error(context, 'Failed to block user');
+    }
   }
 
   Future<void> _unblockProfileUser() async {
@@ -510,12 +509,11 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? 'User unblocked' : 'Failed to unblock user'),
-        backgroundColor: success ? Colors.green : Colors.red,
-      ),
-    );
+    if (success) {
+      AdsyToast.success(context, 'User unblocked');
+    } else {
+      AdsyToast.error(context, 'Failed to unblock user');
+    }
 
     if (success) {
       // Reload the profile so the now-visible posts/feed come back.

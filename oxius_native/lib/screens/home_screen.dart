@@ -344,24 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Show offline indicator
           if (NetworkErrorHandler.isNetworkError(e)) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    const Icon(Icons.wifi_off_rounded,
-                        color: Colors.white, size: 16),
-                    const SizedBox(width: 8),
-                    const Text('Showing cached content',
-                        style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-                backgroundColor: const Color(0xFF6B7280),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6)),
-                duration: const Duration(seconds: 3),
-              ),
-            );
+            AdsyToast.info(context, 'Showing cached content');
           }
         } else {
           setState(() {
@@ -575,7 +558,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Section self-pads 12px horizontally — keep only vertical
                         // gap here so all sections align to the same 12px gutter.
                         padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: const GoldSponsorsSlider(margin: EdgeInsets.zero),
+                        child:
+                            const GoldSponsorsSlider(margin: EdgeInsets.zero),
                       ),
 
                       // 3. Sale Category - eShop product categories
@@ -754,8 +738,8 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.white.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(12), // rounded-xl
           border: Border.all(
-            color:
-                const Color(0xFFCBD5E1).withValues(alpha: 0.5), // border-slate-200/50
+            color: const Color(0xFFCBD5E1)
+                .withValues(alpha: 0.5), // border-slate-200/50
             width: 1,
           ),
           boxShadow: [
@@ -1041,7 +1025,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: const Color(0xFFC4B5FD).withValues(alpha: 0.8),
+                            color:
+                                const Color(0xFFC4B5FD).withValues(alpha: 0.8),
                           ),
                         ),
                         child: const Center(
@@ -1239,7 +1224,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: const Color(0xFFC7D2FE).withValues(alpha: 0.5)),
+                            color:
+                                const Color(0xFFC7D2FE).withValues(alpha: 0.5)),
                       ),
                       child: const Icon(
                         Icons.shield_outlined,
@@ -1359,13 +1345,7 @@ class _HomeScreenState extends State<HomeScreen> {
             break;
           default:
             debugPrint('❌ Unknown navigation key: $key');
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${t('navigate_to')} ${t(key)}'),
-                backgroundColor: color,
-                duration: const Duration(seconds: 1),
-              ),
-            );
+            AdsyToast.info(context, '${t('navigate_to')} ${t(key)}');
         }
       },
       borderRadius: BorderRadius.circular(16),
@@ -1665,73 +1645,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Check if widget is still mounted before showing snackbar
             if (!mounted || !context.mounted) {
-              debugPrint('⚠️ Widget not mounted after dialog, cancelling logout');
+              debugPrint(
+                  '⚠️ Widget not mounted after dialog, cancelling logout');
               return;
             }
 
             // Show professional loading message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
-                          child: AdsyLoadingIndicator(
-                            strokeWidth: 2.5,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'Logging out...',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Please wait a moment',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.white.withValues(alpha: 0.8),
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                backgroundColor: const Color(0xFF6366F1),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                margin: const EdgeInsets.all(16),
-                elevation: 6,
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            AdsyToast.info(context, 'Logging out...');
 
             try {
               debugPrint('🔄 EMERGENCY LOGOUT - Clearing all data manually...');
@@ -1773,132 +1693,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 debugPrint('✅ Navigation completed');
 
                 // Show professional success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check_circle_rounded,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Logged out successfully',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'See you again soon!',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    backgroundColor: const Color(0xFF10B981),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.all(16),
-                    elevation: 6,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                AdsyToast.success(context, 'Logged out successfully');
               }
             } catch (e) {
               debugPrint('❌ LOGOUT ERROR: $e');
               debugPrint('Stack trace: ${StackTrace.current}');
               // Show professional error message if logout fails
               if (mounted && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.error_outline_rounded,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Logout failed',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Please try again',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    backgroundColor: const Color(0xFFEF4444),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.all(16),
-                    elevation: 6,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
+                AdsyToast.error(context, 'Logout failed. Please try again');
               }
             }
           } else if (confirmed == false) {
@@ -2340,6 +2142,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-
 }

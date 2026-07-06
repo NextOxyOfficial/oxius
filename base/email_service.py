@@ -360,8 +360,21 @@ def _valid_email_syntax(email):
         return False
 
 
-def _send_email(subject, to_email, text_content, html_content):
-    """Send email with HTML and plain text fallback"""
+def _send_email(subject, to_email, text_content, html_content, wait=False):
+    """Send email with HTML and plain text fallback.
+
+    By default the actual SMTP send runs on a background thread and this
+    returns True immediately, so notification emails (transfers, deposits,
+    withdrawals, gig orders, KYC, post-approved, …) never block the HTTP
+    request — each send opens its own SMTP connection (~1-2s). Pass wait=True
+    only where the caller needs the real delivery result: OTP / password reset,
+    the admin "send test email" action, and flows that persist a sent flag.
+    """
+    if not wait:
+        _dispatch_async(
+            _send_email, subject, to_email, text_content, html_content, wait=True
+        )
+        return True
     try:
         email_settings = _get_email_settings()
         
@@ -594,7 +607,7 @@ def send_ceo_welcome_email(user):
 {_founder_signature_html()}
 """
     html = _base_template(subject, body)
-    ok = _send_email(subject, user.email, text, html)
+    ok = _send_email(subject, user.email, text, html, wait=True)
     # Remember a successful delivery so the one-time backfill never re-sends it.
     if ok:
         try:
@@ -1424,7 +1437,7 @@ def send_test_email(to_email=None):
 """
 
     html = _base_template(subject, body)
-    return _send_email(subject, to_email, "Test email from AdsyClub", html)
+    return _send_email(subject, to_email, "Test email from AdsyClub", html, wait=True)
 
 
 # ============================================================

@@ -9,7 +9,8 @@ from django.core.cache import cache
 from django.shortcuts import render
 import requests
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from shurjopay_plugin import *
 
@@ -263,6 +264,7 @@ def _build_engine(return_url=None, cancel_url=None):
 
 engine = _build_engine()
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def verifyPayment(request):
     # Extracting query parameters
     required_params = [
@@ -301,13 +303,14 @@ def verifyPayment(request):
         )
     
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def makePayment(request):
     # Extracting query parameters
     required_params = [
-        'amount', 'order_id', 'currency', 'customer_name', 
+        'amount', 'order_id', 'currency', 'customer_name',
         'customer_address', 'customer_phone', 'customer_city', 'customer_post_code'
     ]
-    
+
     # Check if all required parameters are provided
     missing_params = [param for param in required_params if param not in request.query_params]
     if missing_params:
@@ -315,7 +318,21 @@ def makePayment(request):
             {"error": f"Missing mandatory parameters: {', '.join(missing_params)}"},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
+    # Sanity-check the amount server-side (this is a wallet top-up — the user
+    # deposits their own money, and the wallet is later credited from the
+    # gateway-confirmed received_amount, not this value — but still reject junk
+    # and absurd values to stop gateway abuse).
+    try:
+        amt = Decimal(str(request.query_params.get('amount'))).quantize(Decimal("0.01"))
+    except (InvalidOperation, TypeError, ValueError):
+        return Response({"error": "Invalid amount"}, status=status.HTTP_400_BAD_REQUEST)
+    if amt <= 0 or amt > Decimal("500000"):
+        return Response(
+            {"error": "Amount must be between 1 and 500000"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     try:
         return_url = request.query_params.get('return_url')
         cancel_url = request.query_params.get('cancel_url')

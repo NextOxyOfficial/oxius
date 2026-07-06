@@ -59,8 +59,11 @@ class _WalletScreenState extends State<WalletScreen> {
   void initState() {
     super.initState();
     _checkAuthentication();
-    _loadBalance();
-    _loadTransactions();
+    // Balance and transactions are independent — load them concurrently.
+    Future.wait([
+      _loadBalance(),
+      _loadTransactions(),
+    ]);
     _resumePendingPaymentIfNeeded();
 
     // Add scroll listener for pagination
@@ -178,10 +181,14 @@ class _WalletScreenState extends State<WalletScreen> {
     });
 
     try {
-      final sent = await WalletService.getTransactions(
-          page: _sentPage, pageSize: _pageSize);
-      final received = await WalletService.getReceivedTransfers(
-          page: _receivedPage, pageSize: _pageSize);
+      // Sent and received fetches are independent — run them concurrently.
+      final results = await Future.wait([
+        WalletService.getTransactions(page: _sentPage, pageSize: _pageSize),
+        WalletService.getReceivedTransfers(
+            page: _receivedPage, pageSize: _pageSize),
+      ]);
+      final sent = results[0];
+      final received = results[1];
 
       if (mounted) {
         setState(() {

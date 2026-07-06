@@ -1346,20 +1346,16 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                 Navigator.pop(sheetContext, true);
                               } else {
                                 setSheetState(() => saving = false);
-                                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Could not update the problem'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
+                                AdsyToast.error(sheetContext,
+                                    'Could not update the problem');
                               }
                             },
                       child: saving
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
+                                size: 18,
                                 strokeWidth: 2,
                                 color: Colors.white,
                               ),

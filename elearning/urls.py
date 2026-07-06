@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
+router.register(r'banners', views.ElearningBannerViewSet)
 router.register(r'batches', views.BatchViewSet)
 router.register(r'divisions', views.DivisionViewSet)
 router.register(r'subjects', views.SubjectViewSet)

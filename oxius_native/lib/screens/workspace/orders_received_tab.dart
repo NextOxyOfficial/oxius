@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
+import '../../services/translation_service.dart';
 import 'order_chat_screen.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -17,18 +18,23 @@ class OrdersReceivedTab extends StatefulWidget {
 class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
   final WorkspaceService _workspaceService = WorkspaceService();
 
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
+
   List<Map<String, dynamic>> _orders = [];
   bool _isLoading = true;
   String _selectedFilter = 'all';
 
-  final Map<String, String> _statusFilters = {
-    'all': 'All',
-    'pending': 'Pending',
-    'in_progress': 'In Progress',
-    'delivered': 'Delivered',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled',
-  };
+  // Keys are raw status VALUES sent to API; labels are display-only.
+  Map<String, String> get _statusFilters => {
+        'all': _t('workspace_all', 'সব'),
+        'pending': _t('workspace_pending', 'অপেক্ষমাণ'),
+        'in_progress': _t('workspace_in_progress', 'চলছে'),
+        'delivered': _t('workspace_delivered', 'ডেলিভারি হয়েছে'),
+        'completed': _t('workspace_completed', 'সম্পন্ন'),
+        'cancelled': _t('workspace_cancelled', 'বাতিল'),
+      };
 
   @override
   void initState() {
@@ -87,7 +93,22 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
     if (success) {
       _loadOrders();
       if (mounted) {
-        AdsyToast.info(context, 'Order ${action.replaceAll('_', ' ')}');
+        String msg;
+        switch (action) {
+          case 'accept':
+            msg = _t('workspace_order_accepted', 'অর্ডার গ্রহণ করা হয়েছে');
+            break;
+          case 'reject':
+            msg = _t(
+                'workspace_order_declined', 'অর্ডার প্রত্যাখ্যান করা হয়েছে');
+            break;
+          case 'deliver':
+            msg = _t('workspace_order_delivered', 'অর্ডার ডেলিভারি হয়েছে');
+            break;
+          default:
+            msg = _t('workspace_order_updated', 'অর্ডার আপডেট হয়েছে');
+        }
+        AdsyToast.info(context, msg);
       }
     }
   }
@@ -134,9 +155,9 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                       Icon(Icons.report_problem,
                           color: Colors.orange[700], size: 20),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Raise a Dispute',
-                        style: TextStyle(
+                      Text(
+                        _t('workspace_raise_dispute', 'ডিসপিউট করুন'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -145,7 +166,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Select a reason and provide details.',
+                    _t('workspace_dispute_select_reason',
+                        'একটি কারণ বেছে নিয়ে বিস্তারিত লিখুন।'),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 14),
@@ -155,7 +177,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                     isDense: true,
                     style: const TextStyle(fontSize: 13, color: Colors.black87),
                     decoration: InputDecoration(
-                      labelText: 'Reason',
+                      labelText: _t('workspace_reason', 'কারণ'),
                       labelStyle: const TextStyle(fontSize: 13),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -181,9 +203,10 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                     maxLines: 3,
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
-                      labelText: 'Description',
+                      labelText: _t('workspace_description', 'বিবরণ'),
                       labelStyle: const TextStyle(fontSize: 13),
-                      hintText: 'Describe your issue (min 20 chars)',
+                      hintText: _t('workspace_dispute_hint',
+                          'সমস্যাটি লিখুন (অন্তত ২০ অক্ষর)'),
                       hintStyle:
                           TextStyle(fontSize: 12, color: Colors.grey[400]),
                       border: OutlineInputBorder(
@@ -206,8 +229,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text('Cancel',
-                              style: TextStyle(fontSize: 13)),
+                          child: Text(_t('workspace_cancel', 'ক্যান্সেল'),
+                              style: const TextStyle(fontSize: 13)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -215,12 +238,17 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                         child: ElevatedButton(
                           onPressed: () {
                             if (selectedReason == null) {
-                              AdsyToast.warning(context, 'Please select a reason');
+                              AdsyToast.warning(
+                                  context,
+                                  _t('workspace_select_reason',
+                                      'একটি কারণ বেছে নিন'));
                               return;
                             }
                             if (descriptionController.text.trim().length < 20) {
-                              AdsyToast.info(context,
-                                  'Description must be at least 20 characters');
+                              AdsyToast.info(
+                                  context,
+                                  _t('workspace_desc_min_chars',
+                                      'বিবরণ অন্তত ২০ অক্ষরের হতে হবে'));
                               return;
                             }
                             Navigator.pop(context, true);
@@ -233,8 +261,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text('Submit',
-                              style: TextStyle(fontSize: 13)),
+                          child: Text(_t('workspace_submit', 'সাবমিট'),
+                              style: const TextStyle(fontSize: 13)),
                         ),
                       ),
                     ],
@@ -257,11 +285,15 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
       if (mounted) {
         if (response['success'] == true) {
           AdsyToast.success(
-              context, response['message'] ?? 'Dispute raised successfully');
+              context,
+              response['message'] ??
+                  _t('workspace_dispute_raised', 'ডিসপিউট জমা হয়েছে'));
           _loadOrders();
         } else {
           AdsyToast.error(
-              context, response['error'] ?? 'Failed to raise dispute');
+              context,
+              response['error'] ??
+                  _t('workspace_dispute_failed', 'ডিসপিউট জমা দেওয়া যায়নি'));
         }
       }
     }
@@ -420,7 +452,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                                   gigId: gig?['id']?.toString() ?? '')),
                         ),
                         child: Text(
-                          gig?['title'] ?? 'Unknown Gig',
+                          gig?['title'] ??
+                              _t('workspace_unknown_gig', 'অজানা গিগ'),
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
@@ -450,7 +483,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              'from ${buyer?['name'] ?? 'Unknown'}',
+                              '${_t('workspace_from', 'থেকে')} ${buyer?['name'] ?? _t('workspace_unknown', 'অজানা')}',
                               style: TextStyle(
                                   fontSize: 13, color: Colors.grey[600]),
                               overflow: TextOverflow.ellipsis,
@@ -564,7 +597,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                   height: 16,
                 ),
                 const SizedBox(width: 4),
-                const Text('Chat', style: TextStyle(fontSize: 12)),
+                Text(_t('workspace_chat', 'চ্যাট'),
+                    style: const TextStyle(fontSize: 12)),
               ],
             ),
           ),
@@ -611,7 +645,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
-          child: const Text('Accept', style: TextStyle(fontSize: 12)),
+          child: Text(_t('workspace_accept', 'গ্রহণ করুন'),
+              style: const TextStyle(fontSize: 12)),
         ),
       );
       buttons.add(const SizedBox(width: 6));
@@ -627,7 +662,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
-          child: const Text('Decline', style: TextStyle(fontSize: 12)),
+          child: Text(_t('workspace_decline', 'প্রত্যাখ্যান'),
+              style: const TextStyle(fontSize: 12)),
         ),
       );
     } else if (status == 'in_progress' || status == 'revision') {
@@ -644,7 +680,10 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
-          child: Text(status == 'revision' ? 'Re-deliver' : 'Deliver',
+          child: Text(
+              status == 'revision'
+                  ? _t('workspace_redeliver', 'আবার ডেলিভার')
+                  : _t('workspace_deliver', 'ডেলিভার'),
               style: const TextStyle(fontSize: 12)),
         ),
       );
@@ -662,7 +701,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
-          child: const Text('Dispute', style: TextStyle(fontSize: 12)),
+          child: Text(_t('workspace_dispute', 'ডিসপিউট'),
+              style: const TextStyle(fontSize: 12)),
         ),
       );
     } else if (status == 'disputed') {
@@ -680,7 +720,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
               Icon(Icons.warning_amber, size: 12, color: Colors.red[700]),
               const SizedBox(width: 4),
               Text(
-                'Disputed',
+                _t('workspace_disputed', 'ডিসপিউটে আছে'),
                 style: TextStyle(
                   color: Colors.red[700],
                   fontWeight: FontWeight.w500,
@@ -705,32 +745,32 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
       case 'pending':
         bgColor = Colors.orange.withValues(alpha: 0.1);
         textColor = Colors.orange;
-        label = 'Pending';
+        label = _t('workspace_pending', 'অপেক্ষমাণ');
         break;
       case 'in_progress':
         bgColor = Colors.blue.withValues(alpha: 0.1);
         textColor = Colors.blue;
-        label = 'In Progress';
+        label = _t('workspace_in_progress', 'চলছে');
         break;
       case 'delivered':
         bgColor = Colors.purple.withValues(alpha: 0.1);
         textColor = Colors.purple;
-        label = 'Delivered';
+        label = _t('workspace_delivered', 'ডেলিভারি হয়েছে');
         break;
       case 'completed':
         bgColor = Colors.green.withValues(alpha: 0.1);
         textColor = Colors.green;
-        label = 'Completed';
+        label = _t('workspace_completed', 'সম্পন্ন');
         break;
       case 'cancelled':
         bgColor = Colors.red.withValues(alpha: 0.1);
         textColor = Colors.red;
-        label = 'Cancelled';
+        label = _t('workspace_cancelled', 'বাতিল');
         break;
       case 'disputed':
         bgColor = Colors.deepOrange.withValues(alpha: 0.1);
         textColor = Colors.deepOrange;
-        label = 'Disputed';
+        label = _t('workspace_disputed', 'ডিসপিউটে আছে');
         break;
       default:
         bgColor = Colors.grey.withValues(alpha: 0.1);
@@ -772,7 +812,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
           Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No orders received',
+            _t('workspace_no_orders_received', 'কোনো অর্ডার আসেনি'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -781,7 +821,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Orders from buyers will appear here',
+            _t('workspace_buyer_orders_appear',
+                'বায়ারদের অর্ডার এখানে দেখা যাবে'),
             style: TextStyle(color: Colors.grey[500]),
           ),
         ],

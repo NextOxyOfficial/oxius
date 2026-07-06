@@ -7,6 +7,7 @@ import '../../services/rideshare_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/rideshare_drawer.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class RideshareVehiclesScreen extends StatefulWidget {
   const RideshareVehiclesScreen({super.key});
@@ -168,26 +169,11 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: isError ? _danger : _success,
-        content: Text(
-          message,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        margin: const EdgeInsets.all(12),
-      ),
-    );
+    if (isError) {
+      AdsyToast.error(context, message);
+    } else {
+      AdsyToast.success(context, message);
+    }
   }
 
   void _showContactSupportDialog() {
@@ -964,8 +950,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       decoration: BoxDecoration(
         color: _card,
         borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: isDefault ? _primary.withValues(alpha: 0.18) : _line),
+        border: Border.all(
+            color: isDefault ? _primary.withValues(alpha: 0.18) : _line),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),

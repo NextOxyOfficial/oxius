@@ -13,6 +13,7 @@ import '../services/auth_service.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../services/geo_location_service.dart';
 import '../services/settings_service.dart';
+import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/app_fonts.dart';
 import '../utils/image_compressor.dart';
@@ -45,6 +46,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   static const _mutedTextColor = Color(0xFF64748B);
   static const _dangerColor = Color(0xFFDC2626);
   static const _warningColor = Color(0xFFF59E0B);
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   final _profileFormKey = GlobalKey<FormState>();
   final _securityFormKey = GlobalKey<FormState>();
@@ -192,7 +197,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } catch (_) {
       if (mounted) {
-        _showSnackBar('Failed to load settings', isError: true);
+        _showSnackBar(
+            _t('settings_load_failed', 'সেটিংস আনা গেল না'),
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -277,7 +284,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _divisions = divisions);
     } catch (_) {
       if (mounted) {
-        _showSnackBar('Failed to load divisions', isError: true);
+        _showSnackBar(
+            _t('settings_divisions_load_failed', 'বিভাগ আনা গেল না'),
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -308,7 +317,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _cities = cities);
     } catch (_) {
       if (mounted) {
-        _showSnackBar('Failed to load cities', isError: true);
+        _showSnackBar(
+            _t('settings_cities_load_failed', 'শহর আনা গেল না'),
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -337,7 +348,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _upazilas = upazilas);
     } catch (_) {
       if (mounted) {
-        _showSnackBar('Failed to load upazilas', isError: true);
+        _showSnackBar(
+            _t('settings_upazilas_load_failed', 'উপজেলা আনা গেল না'),
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -483,7 +496,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return emptyLabel;
     }
 
-    return isPublic ? normalized : 'Hidden on Business Network profile';
+    return isPublic
+        ? normalized
+        : _t('settings_hidden_on_profile',
+            'বিজনেস নেটওয়ার্ক প্রোফাইলে দেখানো হবে না');
   }
 
   Future<void> _refreshUserCaches() async {
@@ -561,12 +577,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   _buildImageSourceAction(
                     icon: Icons.photo_library_outlined,
-                    label: 'Choose from gallery',
+                    label: _t('settings_choose_from_gallery',
+                        'গ্যালারি থেকে বাছুন'),
                     onTap: () => Navigator.of(context).pop(ImageSource.gallery),
                   ),
                   _buildImageSourceAction(
                     icon: Icons.camera_alt_outlined,
-                    label: 'Take photo',
+                    label: _t('settings_take_photo', 'ছবি তুলুন'),
                     onTap: () => Navigator.of(context).pop(ImageSource.camera),
                   ),
                   const SizedBox(height: 8),
@@ -668,14 +685,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           result['data'] is Map<String, dynamic>) {
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
-          successMessage: 'Profile updated successfully',
+          successMessage: _t('settings_profile_updated', 'প্রোফাইল আপডেট হয়েছে'),
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to update profile',
+        _showSnackBar(
+            result['message'] ??
+                _t('settings_profile_update_failed',
+                    'প্রোফাইল আপডেট করা গেল না'),
             isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to update profile', isError: true);
+      _showSnackBar(
+          _t('settings_profile_update_failed', 'প্রোফাইল আপডেট করা গেল না'),
+          isError: true);
     } finally {
       if (mounted) {
         setState(() => _isSavingProfile = false);
@@ -710,14 +732,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           result['data'] is Map<String, dynamic>) {
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
-          successMessage: 'Business Network privacy updated',
+          successMessage: _t('settings_privacy_updated',
+              'বিজনেস নেটওয়ার্ক প্রাইভেসি আপডেট হয়েছে'),
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to update privacy',
+        _showSnackBar(
+            result['message'] ??
+                _t('settings_privacy_update_failed',
+                    'প্রাইভেসি আপডেট করা গেল না'),
             isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to update privacy', isError: true);
+      _showSnackBar(
+          _t('settings_privacy_update_failed', 'প্রাইভেসি আপডেট করা গেল না'),
+          isError: true);
     } finally {
       if (mounted) {
         setState(() => _isSavingPrivacy = false);
@@ -743,13 +771,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _newPasswordController.clear();
         _confirmPasswordController.clear();
         setState(() {});
-        _showSnackBar(result['message'] ?? 'Password changed successfully');
+        _showSnackBar(result['message'] ??
+            _t('settings_password_changed', 'পাসওয়ার্ড বদলে গেছে'));
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to change password',
+        _showSnackBar(
+            result['message'] ??
+                _t('settings_password_change_failed',
+                    'পাসওয়ার্ড বদলানো গেল না'),
             isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to change password', isError: true);
+      _showSnackBar(
+          _t('settings_password_change_failed', 'পাসওয়ার্ড বদলানো গেল না'),
+          isError: true);
     } finally {
       if (mounted) {
         setState(() => _isChangingPassword = false);
@@ -773,7 +807,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icon(Icons.warning_amber_rounded, color: _dangerColor, size: 24),
               const SizedBox(width: 8),
               Text(
-                'Delete Account',
+                _t('settings_delete_account', 'অ্যাকাউন্ট ডিলিট'),
                 style: AppFonts.roboto(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -786,13 +820,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'This will permanently delete your account and all associated data. This action cannot be undone.',
+                _t('settings_delete_account_warning',
+                    'এতে আপনার অ্যাকাউন্ট আর সব ডেটা একদম মুছে যাবে। এটা আর ফেরানো যাবে না।'),
                 style: AppFonts.roboto(
                     fontSize: 14, color: _bodyTextColor, height: 1.5),
               ),
               const SizedBox(height: 16),
               Text(
-                'Enter your password to confirm:',
+                _t('settings_delete_confirm_password',
+                    'নিশ্চিত করতে পাসওয়ার্ড দিন:'),
                 style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -803,7 +839,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller: passwordController,
                 obscureText: !showPassword,
                 decoration: InputDecoration(
-                  hintText: 'Your current password',
+                  hintText: _t('settings_current_password_hint',
+                      'আপনার বর্তমান পাসওয়ার্ড'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10)),
                   suffixIcon: IconButton(
@@ -819,13 +856,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancel',
+              child: Text(_t('settings_cancel', 'ক্যান্সেল'),
                   style: AppFonts.roboto(fontWeight: FontWeight.w600)),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: FilledButton.styleFrom(backgroundColor: _dangerColor),
-              child: Text('Delete',
+              child: Text(_t('settings_delete', 'ডিলিট'),
                   style: AppFonts.roboto(fontWeight: FontWeight.w600)),
             ),
           ],
@@ -839,7 +876,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     if (passwordController.text.trim().isEmpty) {
-      _showSnackBar('Password is required', isError: true);
+      _showSnackBar(
+          _t('settings_password_required', 'পাসওয়ার্ড দিতে হবে'),
+          isError: true);
       passwordController.dispose();
       return;
     }
@@ -859,11 +898,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
         }
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to delete account',
+        _showSnackBar(
+            result['message'] ??
+                _t('settings_delete_account_failed',
+                    'অ্যাকাউন্ট ডিলিট করা গেল না'),
             isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to delete account. Please try again.',
+      _showSnackBar(
+          _t('settings_delete_account_failed_retry',
+              'অ্যাকাউন্ট ডিলিট করা গেল না। আবার চেষ্টা করুন।'),
           isError: true);
     } finally {
       passwordController.dispose();
@@ -876,7 +920,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _pickProfileImage() async {
     await _pickAndUploadImage(
       fieldName: 'image',
-      successMessage: 'Profile photo updated',
+      successMessage: _t('settings_profile_photo_updated', 'প্রোফাইল ছবি আপডেট হয়েছে'),
       targetWidth: 1080,
       quality: 94,
       maxFileSizeBytes: 6 * 1024 * 1024,
@@ -887,7 +931,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _pickBannerImage() async {
     await _pickAndUploadImage(
       fieldName: 'store_banner',
-      successMessage: 'Store banner updated',
+      successMessage: _t('settings_banner_updated', 'ব্যানার আপডেট হয়েছে'),
       targetWidth: 1400,
       quality: 82,
       maxFileSizeBytes: 8 * 1024 * 1024,
@@ -909,7 +953,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final picker = ImagePicker();
     final source = await _selectImageSource(
-      title: fieldName == 'image' ? 'Profile photo' : 'Banner image',
+      title: fieldName == 'image'
+          ? _t('settings_profile_photo', 'প্রোফাইল ছবি')
+          : _t('settings_banner_image', 'ব্যানার ছবি'),
     );
 
     if (source == null) {
@@ -941,13 +987,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       if (bytes.length > maxFileSizeBytes) {
-        _showSnackBar('Selected image is too large', isError: true);
+        _showSnackBar(
+            _t('settings_image_too_large', 'ছবিটা অনেক বড়'),
+            isError: true);
         return;
       }
 
       final decoded = img.decodeImage(bytes);
       if (decoded == null) {
-        _showSnackBar('Failed to process selected image', isError: true);
+        _showSnackBar(
+            _t('settings_image_process_failed', 'ছবিটা প্রসেস করা গেল না'),
+            isError: true);
         return;
       }
 
@@ -989,11 +1039,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           successMessage: successMessage,
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to upload image',
+        _showSnackBar(
+            result['message'] ??
+                _t('settings_image_upload_failed', 'ছবি আপলোড করা গেল না'),
             isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to upload image', isError: true);
+      _showSnackBar(
+          _t('settings_image_upload_failed', 'ছবি আপলোড করা গেল না'),
+          isError: true);
     } finally {
       if (mounted) {
         setState(() => _isUploadingMedia = false);
@@ -1023,10 +1077,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     final confirmed = await _confirmAction(
-      title: 'Remove profile photo?',
-      message:
-          'Your profile will fall back to the default avatar until you upload a new photo.',
-      actionLabel: 'Remove',
+      title: _t('settings_remove_photo_title', 'প্রোফাইল ছবি সরাবেন?'),
+      message: _t('settings_remove_photo_message',
+          'নতুন ছবি না দেওয়া পর্যন্ত আপনার প্রোফাইলে ডিফল্ট ছবি থাকবে।'),
+      actionLabel: _t('settings_remove', 'সরান'),
     );
     if (!confirmed) {
       return;
@@ -1044,12 +1098,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
         await _loadUserProfile();
         await _refreshUserCaches();
-        _showSnackBar('Profile photo removed');
+        _showSnackBar(_t('settings_photo_removed', 'প্রোফাইল ছবি সরানো হয়েছে'));
       } else {
-        _showSnackBar('Failed to remove profile photo', isError: true);
+        _showSnackBar(
+            _t('settings_photo_remove_failed', 'প্রোফাইল ছবি সরানো গেল না'),
+            isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to remove profile photo', isError: true);
+      _showSnackBar(
+          _t('settings_photo_remove_failed', 'প্রোফাইল ছবি সরানো গেল না'),
+          isError: true);
     } finally {
       if (mounted) {
         setState(() => _isUploadingMedia = false);
@@ -1063,9 +1121,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     final confirmed = await _confirmAction(
-      title: 'Remove banner image?',
-      message: 'This will clear your business banner from the profile header.',
-      actionLabel: 'Remove',
+      title: _t('settings_remove_banner_title', 'ব্যানার ছবি সরাবেন?'),
+      message: _t('settings_remove_banner_message',
+          'এতে প্রোফাইল হেডার থেকে আপনার ব্যানারটি সরে যাবে।'),
+      actionLabel: _t('settings_remove', 'সরান'),
     );
     if (!confirmed) {
       return;
@@ -1087,14 +1146,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
-          successMessage: 'Banner removed',
+          successMessage: _t('settings_banner_removed', 'ব্যানার সরানো হয়েছে'),
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to remove banner',
+        _showSnackBar(
+            result['message'] ??
+                _t('settings_banner_remove_failed', 'ব্যানার সরানো গেল না'),
             isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to remove banner', isError: true);
+      _showSnackBar(
+          _t('settings_banner_remove_failed', 'ব্যানার সরানো গেল না'),
+          isError: true);
     } finally {
       if (mounted) {
         setState(() => _isUploadingMedia = false);
@@ -1130,7 +1193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
-                'Cancel',
+                _t('settings_cancel', 'ক্যান্সেল'),
                 style: AppFonts.roboto(
                     fontWeight: FontWeight.w600, color: _mutedTextColor),
               ),
@@ -1236,7 +1299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(width: 10),
           Text(
-            'Settings',
+            _t('settings_title', 'সেটিংস'),
             style: AppFonts.roboto(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -1274,16 +1337,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           children: [
             Expanded(
-                child: _buildTabChip(
-                    _SettingsTab.profile, 'Profile', Icons.badge_rounded)),
+                child: _buildTabChip(_SettingsTab.profile,
+                    _t('settings_tab_profile', 'প্রোফাইল'),
+                    Icons.badge_rounded)),
             const SizedBox(width: 6),
             Expanded(
-                child: _buildTabChip(_SettingsTab.privacy, 'Privacy',
+                child: _buildTabChip(_SettingsTab.privacy,
+                    _t('settings_tab_privacy', 'প্রাইভেসি'),
                     Icons.privacy_tip_rounded)),
             const SizedBox(width: 6),
             Expanded(
-                child: _buildTabChip(
-                    _SettingsTab.security, 'Security', Icons.lock_rounded)),
+                child: _buildTabChip(_SettingsTab.security,
+                    _t('settings_tab_security', 'সিকিউরিটি'),
+                    Icons.lock_rounded)),
           ],
         ),
       ),
@@ -1361,7 +1427,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     size: 42, color: _primaryColor),
                 const SizedBox(height: 14),
                 Text(
-                  'Unable to load settings',
+                  _t('settings_unable_to_load', 'সেটিংস আনা গেল না'),
                   style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -1370,7 +1436,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Try loading your account again. If the problem continues, check authentication and network status.',
+                  _t('settings_unable_to_load_message',
+                      'আবার একবার চেষ্টা করুন। সমস্যা থাকলে লগইন আর ইন্টারনেট কানেকশন দেখে নিন।'),
                   textAlign: TextAlign.center,
                   style: AppFonts.roboto(
                       fontSize: 13, color: _bodyTextColor, height: 1.5),
@@ -1386,7 +1453,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         borderRadius: BorderRadius.circular(14)),
                   ),
                   child: Text(
-                    'Retry',
+                    _t('settings_retry', 'আবার চেষ্টা করুন'),
                     style: AppFonts.roboto(fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -1419,37 +1486,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildInfoNotice(
                 icon: Icons.verified_user_rounded,
                 color: _warningColor,
-                title: 'KYC lock active',
-                message:
-                    'After KYC verification, name and address details are locked. Other profile details remain editable.',
+                title: _t('settings_kyc_lock_title', 'KYC লক চালু আছে'),
+                message: _t('settings_kyc_lock_message',
+                    'KYC ভেরিফিকেশনের পর নাম আর ঠিকানা লক হয়ে যায়। বাকি তথ্য এডিট করা যাবে।'),
               ),
               const SizedBox(height: 10),
             ],
             _buildSectionCard(
-              title: 'Identity & contact',
-              subtitle: 'Basic account details.',
+              title: _t('settings_identity_contact', 'পরিচয় ও যোগাযোগ'),
+              subtitle: _t('settings_identity_contact_sub',
+                  'অ্যাকাউন্টের বেসিক তথ্য।'),
               icon: Icons.person_outline_rounded,
               child: Column(
                 children: [
                   _buildResponsivePair(
                     left: _buildTextField(
                       controller: _firstNameController,
-                      label: 'First name',
-                      hintText: 'Enter your first name',
+                      label: _t('settings_first_name', 'নামের প্রথম অংশ'),
+                      hintText:
+                          _t('settings_first_name_hint', 'নামের প্রথম অংশ লিখুন'),
                       icon: Icons.badge_outlined,
                       enabled: !_isKycLocked,
                       validator: (value) => _normalized(value).isEmpty
-                          ? 'First name is required'
+                          ? _t('settings_first_name_required',
+                              'নামের প্রথম অংশ দিতে হবে')
                           : null,
                     ),
                     right: _buildTextField(
                       controller: _lastNameController,
-                      label: 'Last name',
-                      hintText: 'Enter your last name',
+                      label: _t('settings_last_name', 'নামের শেষ অংশ'),
+                      hintText:
+                          _t('settings_last_name_hint', 'নামের শেষ অংশ লিখুন'),
                       icon: Icons.person_outline_rounded,
                       enabled: !_isKycLocked,
                       validator: (value) => _normalized(value).isEmpty
-                          ? 'Last name is required'
+                          ? _t('settings_last_name_required',
+                              'নামের শেষ অংশ দিতে হবে')
                           : null,
                     ),
                   ),
@@ -1457,14 +1529,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildResponsivePair(
                     left: _buildTextField(
                       controller: _emailController,
-                      label: 'Email address',
-                      hintText: 'Primary account email',
+                      label: _t('settings_email', 'ইমেইল'),
+                      hintText: _t('settings_email_hint',
+                          'অ্যাকাউন্টের মূল ইমেইল'),
                       icon: Icons.alternate_email_rounded,
                       enabled: false,
                     ),
                     right: _buildTextField(
                       controller: _phoneController,
-                      label: 'Phone number',
+                      label: _t('settings_phone', 'ফোন নম্বর'),
                       hintText: '01XXXXXXXXX',
                       icon: Icons.phone_outlined,
                       enabled: !_isKycLocked,
@@ -1476,8 +1549,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             _buildSectionCard(
-              title: 'Personal details',
-              subtitle: 'Date of birth and gender.',
+              title: _t('settings_personal_details', 'ব্যক্তিগত তথ্য'),
+              subtitle:
+                  _t('settings_personal_details_sub', 'জন্ম তারিখ ও লিঙ্গ।'),
               icon: Icons.cake_outlined,
               child: Column(
                 children: [
@@ -1496,15 +1570,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             _buildSectionCard(
-              title: 'Location details',
-              subtitle: 'Address and area info.',
+              title: _t('settings_location_details', 'ঠিকানার তথ্য'),
+              subtitle:
+                  _t('settings_location_details_sub', 'ঠিকানা ও এলাকার তথ্য।'),
               icon: Icons.map_outlined,
               child: Column(
                 children: [
                   _buildTextField(
                     controller: _addressController,
-                    label: 'Address',
-                    hintText: 'House, road, area, landmark',
+                    label: _t('settings_address', 'ঠিকানা'),
+                    hintText: _t('settings_address_hint',
+                        'বাসা, রোড, এলাকা, ল্যান্ডমার্ক'),
                     icon: Icons.home_outlined,
                     enabled: !_isKycLocked,
                     maxLines: 2,
@@ -1512,8 +1588,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 10),
                   _buildResponsivePair(
                     left: _buildDropdownField(
-                      label: 'Division',
-                      hintText: 'Select division',
+                      label: _t('settings_division', 'বিভাগ'),
+                      hintText: _t('settings_division_hint', 'বিভাগ বাছুন'),
                       icon: Icons.flag_outlined,
                       value: _selectedDivision,
                       items: _divisions.map((item) => item.nameEng).toList(),
@@ -1527,8 +1603,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                     right: _buildDropdownField(
-                      label: 'City',
-                      hintText: 'Select city',
+                      label: _t('settings_city', 'শহর'),
+                      hintText: _t('settings_city_hint', 'শহর বাছুন'),
                       icon: Icons.location_city_outlined,
                       value: _selectedCity,
                       items: _cities.map((item) => item.nameEng).toList(),
@@ -1545,8 +1621,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 10),
                   _buildResponsivePair(
                     left: _buildDropdownField(
-                      label: 'Upazila / area',
-                      hintText: 'Select upazila',
+                      label: _t('settings_upazila', 'উপজেলা / এলাকা'),
+                      hintText: _t('settings_upazila_hint', 'উপজেলা বাছুন'),
                       icon: Icons.place_outlined,
                       value: _selectedUpazila,
                       items: _upazilas.map((item) => item.nameEng).toList(),
@@ -1557,8 +1633,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     right: _buildTextField(
                       controller: _zipController,
-                      label: 'Postal code',
-                      hintText: 'ZIP / postal code',
+                      label: _t('settings_postal_code', 'পোস্টাল কোড'),
+                      hintText:
+                          _t('settings_postal_code_hint', 'জিপ / পোস্টাল কোড'),
                       icon: Icons.markunread_mailbox_outlined,
                       enabled: !_isKycLocked,
                       keyboardType: TextInputType.number,
@@ -1569,29 +1646,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             _buildSectionCard(
-              title: 'Professional details',
-              subtitle: 'Business and social links.',
+              title: _t('settings_professional_details', 'পেশাগত তথ্য'),
+              subtitle: _t('settings_professional_details_sub',
+                  'বিজনেস আর সোশ্যাল লিংক।'),
               icon: Icons.work_outline_rounded,
               child: Column(
                 children: [
                   _buildResponsivePair(
                     left: _buildTextField(
                       controller: _professionController,
-                      label: 'Profession',
-                      hintText: 'Designer, retailer, consultant...',
+                      label: _t('settings_profession', 'পেশা'),
+                      hintText: _t('settings_profession_hint',
+                          'ডিজাইনার, দোকানদার, কনসালট্যান্ট...'),
                       icon: Icons.work_outline_rounded,
                     ),
                     right: _buildTextField(
                       controller: _companyController,
-                      label: 'Company / brand',
-                      hintText: 'Business or brand name',
+                      label: _t('settings_company', 'কোম্পানি / ব্র্যান্ড'),
+                      hintText: _t('settings_company_hint',
+                          'বিজনেস বা ব্র্যান্ডের নাম'),
                       icon: Icons.apartment_rounded,
                     ),
                   ),
                   const SizedBox(height: 10),
                   _buildTextField(
                     controller: _websiteController,
-                    label: 'Website',
+                    label: _t('settings_website', 'ওয়েবসাইট'),
                     hintText: 'https://yourwebsite.com',
                     icon: Icons.language_rounded,
                     keyboardType: TextInputType.url,
@@ -1600,15 +1680,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildResponsivePair(
                     left: _buildTextField(
                       controller: _facebookController,
-                      label: 'Facebook',
-                      hintText: 'Facebook profile or page link',
+                      label: _t('settings_facebook', 'ফেসবুক'),
+                      hintText: _t('settings_facebook_hint',
+                          'ফেসবুক প্রোফাইল বা পেজের লিংক'),
                       icon: Icons.facebook_rounded,
                       keyboardType: TextInputType.url,
                     ),
                     right: _buildTextField(
                       controller: _instagramController,
-                      label: 'Instagram',
-                      hintText: 'Instagram profile link',
+                      label: _t('settings_instagram', 'ইনস্টাগ্রাম'),
+                      hintText: _t('settings_instagram_hint',
+                          'ইনস্টাগ্রাম প্রোফাইলের লিংক'),
                       icon: Icons.camera_alt_outlined,
                       keyboardType: TextInputType.url,
                     ),
@@ -1616,8 +1698,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 10),
                   _buildTextField(
                     controller: _whatsappController,
-                    label: 'WhatsApp',
-                    hintText: 'WhatsApp number or wa.me link',
+                    label: _t('settings_whatsapp', 'হোয়াটসঅ্যাপ'),
+                    hintText: _t('settings_whatsapp_hint',
+                        'হোয়াটসঅ্যাপ নম্বর বা wa.me লিংক'),
                     icon: Icons.chat_bubble_outline_rounded,
                   ),
                 ],
@@ -1625,14 +1708,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             _buildSectionCard(
-              title: 'About you',
-              subtitle: 'Short profile summary.',
+              title: _t('settings_about_you', 'আপনার সম্পর্কে'),
+              subtitle: _t('settings_about_you_sub', 'সংক্ষিপ্ত পরিচিতি।'),
               icon: Icons.edit_note_rounded,
               child: _buildTextField(
                 controller: _aboutController,
-                label: 'Bio / about',
-                hintText:
-                    'Describe your work, business focus, and what people can expect from your profile.',
+                label: _t('settings_bio', 'বায়ো / পরিচিতি'),
+                hintText: _t('settings_bio_hint',
+                    'আপনার কাজ, বিজনেস আর প্রোফাইলে মানুষ কী পাবে সেটা লিখুন।'),
                 icon: Icons.subject_rounded,
                 maxLines: 5,
               ),
@@ -1640,8 +1723,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 14),
             _buildPrimaryButton(
               label: _hasProfileChanges
-                  ? 'Save profile changes'
-                  : 'Profile is up to date',
+                  ? _t('settings_save_profile', 'প্রোফাইল সেভ করুন')
+                  : _t('settings_profile_up_to_date', 'প্রোফাইল আপডেটেড আছে'),
               icon: Icons.save_rounded,
               isBusy: _isSavingProfile,
               enabled: _hasProfileChanges && !_isSavingProfile,
@@ -1658,8 +1741,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isPhotoTab = _activeMediaTab == _ProfileMediaTab.photo;
 
     return _buildSectionCard(
-      title: 'Profile media',
-      subtitle: 'Manage photo and banner in one place.',
+      title: _t('settings_profile_media', 'প্রোফাইল ছবি ও ব্যানার'),
+      subtitle: _t('settings_profile_media_sub',
+          'ছবি আর ব্যানার একজায়গায় ঠিক করুন।'),
       icon: Icons.photo_library_outlined,
       child: Column(
         children: [
@@ -1674,7 +1758,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Expanded(
                   child: _buildMediaTabChip(
                     tab: _ProfileMediaTab.photo,
-                    label: 'Photo',
+                    label: _t('settings_photo', 'ছবি'),
                     icon: Icons.person_rounded,
                   ),
                 ),
@@ -1682,7 +1766,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Expanded(
                   child: _buildMediaTabChip(
                     tab: _ProfileMediaTab.banner,
-                    label: 'Banner',
+                    label: _t('settings_banner', 'ব্যানার'),
                     icon: Icons.photo_size_select_large_rounded,
                   ),
                 ),
@@ -1695,8 +1779,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: isPhotoTab
                 ? _buildCompactMediaPanel(
                     key: const ValueKey('profile-photo-panel'),
-                    title: 'Profile photo',
-                    subtitle: 'Shown in the app and profile.',
+                    title: _t('settings_profile_photo', 'প্রোফাইল ছবি'),
+                    subtitle: _t('settings_profile_photo_sub',
+                        'অ্যাপ আর প্রোফাইলে দেখা যাবে।'),
                     preview: Container(
                       width: 78,
                       height: 78,
@@ -1718,12 +1803,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     primaryLabel:
                         profile.image != null && profile.image!.isNotEmpty
-                            ? 'Change photo'
-                            : 'Upload photo',
+                            ? _t('settings_change_photo', 'ছবি বদলান')
+                            : _t('settings_upload_photo', 'ছবি আপলোড করুন'),
                     primaryAction: _pickProfileImage,
                     secondaryLabel:
                         profile.image != null && profile.image!.isNotEmpty
-                            ? 'Remove'
+                            ? _t('settings_remove', 'সরান')
                             : null,
                     secondaryAction:
                         profile.image != null && profile.image!.isNotEmpty
@@ -1732,8 +1817,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   )
                 : _buildCompactMediaPanel(
                     key: const ValueKey('profile-banner-panel'),
-                    title: 'Business banner',
-                    subtitle: 'Wide cover for your public profile.',
+                    title: _t('settings_business_banner', 'বিজনেস ব্যানার'),
+                    subtitle: _t('settings_business_banner_sub',
+                        'আপনার পাবলিক প্রোফাইলের চওড়া কভার।'),
                     preview: Container(
                       height: 90,
                       decoration: BoxDecoration(
@@ -1758,12 +1844,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     primaryLabel: profile.storeBanner != null &&
                             profile.storeBanner!.isNotEmpty
-                        ? 'Change banner'
-                        : 'Upload banner',
+                        ? _t('settings_change_banner', 'ব্যানার বদলান')
+                        : _t('settings_upload_banner', 'ব্যানার আপলোড করুন'),
                     primaryAction: _pickBannerImage,
                     secondaryLabel: profile.storeBanner != null &&
                             profile.storeBanner!.isNotEmpty
-                        ? 'Remove'
+                        ? _t('settings_remove', 'সরান')
                         : null,
                     secondaryAction: profile.storeBanner != null &&
                             profile.storeBanner!.isNotEmpty
@@ -1935,17 +2021,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         children: [
           _buildSectionCard(
-            title: 'Contact visibility',
-            subtitle:
-                'Control how core contact details appear on your Business Network profile.',
+            title: _t('settings_contact_visibility', 'যোগাযোগের দৃশ্যমানতা'),
+            subtitle: _t('settings_contact_visibility_sub',
+                'বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার যোগাযোগের তথ্য কীভাবে দেখাবে ঠিক করুন।'),
             icon: Icons.visibility_outlined,
             child: Column(
               children: [
                 _buildPrivacyTile(
                   icon: Icons.alternate_email_rounded,
-                  title: 'Show email address',
-                  description:
-                      'Allow people to see your full email on your Business Network profile.',
+                  title: _t('settings_show_email', 'ইমেইল দেখান'),
+                  description: _t('settings_show_email_desc',
+                      'বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার পুরো ইমেইল সবাইকে দেখতে দিন।'),
                   previewLabel: _maskEmail(profile.email, emailPublic),
                   value: emailPublic,
                   onChanged: (value) {
@@ -1957,11 +2043,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.phone_outlined,
-                  title: 'Show phone number',
-                  description:
-                      'Display your contact number to network visitors and potential leads.',
+                  title: _t('settings_show_phone', 'ফোন নম্বর দেখান'),
+                  description: _t('settings_show_phone_desc',
+                      'প্রোফাইলে আসা মানুষ আর সম্ভাব্য কাস্টমারদের আপনার নম্বর দেখান।'),
                   previewLabel: phonePreview.isEmpty
-                      ? 'No phone added yet'
+                      ? _t('settings_no_phone', 'এখনও ফোন নম্বর দেওয়া হয়নি')
                       : phonePreview,
                   value: phonePublic,
                   onChanged: (value) {
@@ -1975,20 +2061,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 10),
           _buildSectionCard(
-            title: 'Professional profile fields',
-            subtitle: 'Set visibility for each business detail separately.',
+            title: _t('settings_professional_fields', 'পেশাগত প্রোফাইল ফিল্ড'),
+            subtitle: _t('settings_professional_fields_sub',
+                'প্রতিটি বিজনেস তথ্যের দৃশ্যমানতা আলাদা করে ঠিক করুন।'),
             icon: Icons.work_outline_rounded,
             child: Column(
               children: [
                 _buildPrivacyTile(
                   icon: Icons.badge_outlined,
-                  title: 'Show profession',
-                  description:
-                      'Display your profession or role under your name.',
+                  title: _t('settings_show_profession', 'পেশা দেখান'),
+                  description: _t('settings_show_profession_desc',
+                      'নামের নিচে আপনার পেশা বা পদ দেখান।'),
                   previewLabel: _visibilityPreview(
                     profile.profession,
                     professionPublic,
-                    emptyLabel: 'No profession added yet',
+                    emptyLabel:
+                        _t('settings_no_profession', 'এখনও পেশা দেওয়া হয়নি'),
                   ),
                   value: professionPublic,
                   onChanged: (value) {
@@ -2001,13 +2089,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.business_rounded,
-                  title: 'Show company / brand',
-                  description:
-                      'Keep your company or brand visible on the profile summary.',
+                  title: _t('settings_show_company', 'কোম্পানি / ব্র্যান্ড দেখান'),
+                  description: _t('settings_show_company_desc',
+                      'প্রোফাইল সামারিতে আপনার কোম্পানি বা ব্র্যান্ড দেখান।'),
                   previewLabel: _visibilityPreview(
                     profile.company,
                     companyPublic,
-                    emptyLabel: 'No company added yet',
+                    emptyLabel:
+                        _t('settings_no_company', 'এখনও কোম্পানি দেওয়া হয়নি'),
                   ),
                   value: companyPublic,
                   onChanged: (value) {
@@ -2020,13 +2109,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.language_rounded,
-                  title: 'Show website',
-                  description:
-                      'Let visitors open your business website directly from the profile.',
+                  title: _t('settings_show_website', 'ওয়েবসাইট দেখান'),
+                  description: _t('settings_show_website_desc',
+                      'প্রোফাইল থেকেই সরাসরি আপনার বিজনেস ওয়েবসাইট খুলতে দিন।'),
                   previewLabel: _visibilityPreview(
                     profile.website,
                     websitePublic,
-                    emptyLabel: 'No website added yet',
+                    emptyLabel:
+                        _t('settings_no_website', 'এখনও ওয়েবসাইট দেওয়া হয়নি'),
                   ),
                   value: websitePublic,
                   onChanged: (value) {
@@ -2039,13 +2129,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.facebook_rounded,
-                  title: 'Show Facebook link',
-                  description:
-                      'Make your Facebook page or profile link public.',
+                  title: _t('settings_show_facebook', 'ফেসবুক লিংক দেখান'),
+                  description: _t('settings_show_facebook_desc',
+                      'আপনার ফেসবুক পেজ বা প্রোফাইলের লিংক সবাইকে দেখান।'),
                   previewLabel: _visibilityPreview(
                     profile.faceLink,
                     facebookPublic,
-                    emptyLabel: 'No Facebook link added yet',
+                    emptyLabel: _t(
+                        'settings_no_facebook', 'এখনও ফেসবুক লিংক দেওয়া হয়নি'),
                   ),
                   value: facebookPublic,
                   onChanged: (value) {
@@ -2058,13 +2149,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.camera_alt_outlined,
-                  title: 'Show Instagram link',
-                  description:
-                      'Display your Instagram profile link in the contact section.',
+                  title: _t('settings_show_instagram', 'ইনস্টাগ্রাম লিংক দেখান'),
+                  description: _t('settings_show_instagram_desc',
+                      'যোগাযোগ অংশে আপনার ইনস্টাগ্রাম প্রোফাইলের লিংক দেখান।'),
                   previewLabel: _visibilityPreview(
                     profile.instagramLink,
                     instagramPublic,
-                    emptyLabel: 'No Instagram link added yet',
+                    emptyLabel: _t('settings_no_instagram',
+                        'এখনও ইনস্টাগ্রাম লিংক দেওয়া হয়নি'),
                   ),
                   value: instagramPublic,
                   onChanged: (value) {
@@ -2077,13 +2169,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.chat_bubble_outline_rounded,
-                  title: 'Show WhatsApp link',
-                  description:
-                      'Allow direct WhatsApp contact from your Business Network profile.',
+                  title: _t('settings_show_whatsapp', 'হোয়াটসঅ্যাপ লিংক দেখান'),
+                  description: _t('settings_show_whatsapp_desc',
+                      'বিজনেস নেটওয়ার্ক প্রোফাইল থেকে সরাসরি হোয়াটসঅ্যাপে যোগাযোগ করতে দিন।'),
                   previewLabel: _visibilityPreview(
                     profile.whatsappLink,
                     whatsappPublic,
-                    emptyLabel: 'No WhatsApp contact added yet',
+                    emptyLabel: _t('settings_no_whatsapp',
+                        'এখনও হোয়াটসঅ্যাপ দেওয়া হয়নি'),
                   ),
                   value: whatsappPublic,
                   onChanged: (value) {
@@ -2096,13 +2189,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.subject_rounded,
-                  title: 'Show bio / about',
-                  description:
-                      'Control whether your profile summary and business intro are visible.',
+                  title: _t('settings_show_bio', 'বায়ো / পরিচিতি দেখান'),
+                  description: _t('settings_show_bio_desc',
+                      'আপনার প্রোফাইল সামারি আর বিজনেস পরিচিতি দেখাবে কিনা ঠিক করুন।'),
                   previewLabel: _visibilityPreview(
                     profile.about,
                     aboutPublic,
-                    emptyLabel: 'No bio added yet',
+                    emptyLabel: _t('settings_no_bio', 'এখনও বায়ো দেওয়া হয়নি'),
                   ),
                   value: aboutPublic,
                   onChanged: (value) {
@@ -2117,8 +2210,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 14),
           _buildPrimaryButton(
             label: _hasPrivacyChanges
-                ? 'Apply privacy settings'
-                : 'Privacy is up to date',
+                ? _t('settings_apply_privacy', 'প্রাইভেসি সেটিংস সেভ করুন')
+                : _t('settings_privacy_up_to_date', 'প্রাইভেসি আপডেটেড আছে'),
             icon: Icons.shield_outlined,
             isBusy: _isSavingPrivacy,
             enabled: _hasPrivacyChanges && !_isSavingPrivacy,
@@ -2202,30 +2295,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           children: [
             _buildSectionCard(
-              title: 'Change password',
-              subtitle: 'Use at least 8 characters.',
+              title: _t('settings_change_password', 'পাসওয়ার্ড বদলান'),
+              subtitle:
+                  _t('settings_change_password_sub', 'অন্তত ৮ অক্ষর দিন।'),
               icon: Icons.password_rounded,
               child: Column(
                 children: [
                   _buildTextField(
                     controller: _oldPasswordController,
-                    label: 'Current password',
-                    hintText: 'Enter current password',
+                    label: _t('settings_current_password', 'বর্তমান পাসওয়ার্ড'),
+                    hintText: _t('settings_current_password_input',
+                        'বর্তমান পাসওয়ার্ড দিন'),
                     icon: Icons.lock_outline_rounded,
                     isPassword: true,
                     isVisible: _showOldPassword,
                     onToggleVisibility: () =>
                         setState(() => _showOldPassword = !_showOldPassword),
                     validator: (value) => _normalized(value).isEmpty
-                        ? 'Current password is required'
+                        ? _t('settings_current_password_required',
+                            'বর্তমান পাসওয়ার্ড দিতে হবে')
                         : null,
                   ),
                   const SizedBox(height: 10),
                   _buildResponsivePair(
                     left: _buildTextField(
                       controller: _newPasswordController,
-                      label: 'New password',
-                      hintText: 'Create a strong password',
+                      label: _t('settings_new_password', 'নতুন পাসওয়ার্ড'),
+                      hintText: _t('settings_new_password_hint',
+                          'একটা শক্ত পাসওয়ার্ড দিন'),
                       icon: Icons.lock_reset_rounded,
                       isPassword: true,
                       isVisible: _showNewPassword,
@@ -2233,18 +2330,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() => _showNewPassword = !_showNewPassword),
                       validator: (value) {
                         if (_normalized(value).isEmpty) {
-                          return 'New password is required';
+                          return _t('settings_new_password_required',
+                              'নতুন পাসওয়ার্ড দিতে হবে');
                         }
                         if ((value ?? '').length < 8) {
-                          return 'Minimum 8 characters required';
+                          return _t('settings_min_8_chars',
+                              'অন্তত ৮ অক্ষর দিতে হবে');
                         }
                         return null;
                       },
                     ),
                     right: _buildTextField(
                       controller: _confirmPasswordController,
-                      label: 'Confirm password',
-                      hintText: 'Re-enter the new password',
+                      label:
+                          _t('settings_confirm_password', 'পাসওয়ার্ড নিশ্চিত করুন'),
+                      hintText: _t('settings_confirm_password_hint',
+                          'নতুন পাসওয়ার্ডটা আবার দিন'),
                       icon: Icons.verified_user_outlined,
                       isPassword: true,
                       isVisible: _showConfirmPassword,
@@ -2252,10 +2353,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           () => _showConfirmPassword = !_showConfirmPassword),
                       validator: (value) {
                         if (_normalized(value).isEmpty) {
-                          return 'Please confirm the password';
+                          return _t('settings_confirm_password_required',
+                              'পাসওয়ার্ডটা নিশ্চিত করুন');
                         }
                         if ((value ?? '') != _newPasswordController.text) {
-                          return 'Passwords do not match';
+                          return _t('settings_passwords_no_match',
+                              'পাসওয়ার্ড মিলছে না');
                         }
                         return null;
                       },
@@ -2268,7 +2371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 14),
             _buildPrimaryButton(
-              label: 'Change password',
+              label: _t('settings_change_password', 'পাসওয়ার্ড বদলান'),
               icon: Icons.lock_reset_rounded,
               isBusy: _isChangingPassword,
               enabled: !_isChangingPassword,
@@ -2298,7 +2401,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             color: _dangerColor, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          'Danger Zone',
+                          _t('settings_danger_zone', 'ডেঞ্জার জোন'),
                           style: AppFonts.roboto(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -2313,7 +2416,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Delete Account',
+                          _t('settings_delete_account', 'অ্যাকাউন্ট ডিলিট'),
                           style: AppFonts.roboto(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -2321,7 +2424,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Permanently delete your account and all associated data. This cannot be undone.',
+                          _t('settings_delete_account_desc',
+                              'আপনার অ্যাকাউন্ট আর সব ডেটা একদম মুছে যাবে। এটা আর ফেরানো যাবে না।'),
                           style: AppFonts.roboto(
                               fontSize: 13, color: _bodyTextColor, height: 1.4),
                         ),
@@ -2341,8 +2445,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     size: 18),
                             label: Text(
                               _isDeletingAccount
-                                  ? 'Deleting...'
-                                  : 'Delete My Account',
+                                  ? _t('settings_deleting', 'ডিলিট হচ্ছে...')
+                                  : _t('settings_delete_my_account',
+                                      'আমার অ্যাকাউন্ট ডিলিট করুন'),
                               style: AppFonts.roboto(
                                   fontSize: 14, fontWeight: FontWeight.w600),
                             ),
@@ -2391,7 +2496,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildPasswordStrengthCard() {
-    final labels = ['Too weak', 'Fair', 'Strong', 'Excellent'];
+    final labels = [
+      _t('settings_pw_too_weak', 'খুব দুর্বল'),
+      _t('settings_pw_fair', 'মোটামুটি'),
+      _t('settings_pw_strong', 'শক্ত'),
+      _t('settings_pw_excellent', 'দারুণ'),
+    ];
     final colors = [
       const Color(0xFFE5E7EB),
       const Color(0xFFEF4444),
@@ -2410,7 +2520,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Password strength',
+            _t('settings_password_strength', 'পাসওয়ার্ডের শক্তি'),
             style: AppFonts.roboto(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -2583,8 +2693,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildGenderField() {
     return _buildDropdownField(
-      label: 'Gender',
-      hintText: 'Select gender',
+      label: _t('settings_gender', 'লিঙ্গ'),
+      hintText: _t('settings_gender_hint', 'লিঙ্গ বাছুন'),
       icon: Icons.wc_outlined,
       value: _matchedGender,
       items: _genderOptions,
@@ -2601,7 +2711,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       borderRadius: BorderRadius.circular(14),
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: 'Date of birth',
+          labelText: _t('settings_dob', 'জন্ম তারিখ'),
           labelStyle: AppFonts.roboto(
               fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
           prefixIcon: const Icon(Icons.cake_outlined,
@@ -2620,7 +2730,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         child: Text(
-          display.isEmpty ? 'Select your date of birth' : display,
+          display.isEmpty
+              ? _t('settings_dob_hint', 'জন্ম তারিখ বাছুন')
+              : display,
           style: AppFonts.roboto(
             fontSize: 14,
             color: display.isEmpty ? _mutedTextColor : _headingTextColor,
@@ -2635,7 +2747,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final age = _selectedDob != null ? _calculateAge(_selectedDob!) : null;
     return InputDecorator(
       decoration: InputDecoration(
-        labelText: 'Age',
+        labelText: _t('settings_age', 'বয়স'),
         labelStyle: AppFonts.roboto(
             fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
         prefixIcon: const Icon(Icons.event_available_outlined,
@@ -2647,7 +2759,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         contentPadding: const EdgeInsets.symmetric(vertical: 4),
       ),
       child: Text(
-        age != null ? '$age years' : '—',
+        age != null ? '$age ${_t('settings_years', 'বছর')}' : '—',
         style: AppFonts.roboto(
           fontSize: 14,
           fontWeight: age != null ? FontWeight.w700 : FontWeight.w500,

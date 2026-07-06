@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -328,10 +329,11 @@ class _DrawerNewsState extends State<DrawerNews> {
         children: [
           // Image
           imageUrl.isNotEmpty
-              ? Image.network(
-                  imageUrl,
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
+                  memCacheWidth: 720,
+                  errorWidget: (context, url, error) {
                     return Container(
                       color: Colors.grey.shade100,
                       child:

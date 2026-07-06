@@ -2,9 +2,19 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Batch, Division, Subject, VideoLesson
-from .serializers import BatchSerializer, DivisionSerializer, SubjectSerializer, VideoLessonSerializer
+from .models import Batch, Division, Subject, VideoLesson, ElearningBanner
+from .serializers import (
+    BatchSerializer, DivisionSerializer, SubjectSerializer, VideoLessonSerializer,
+    ElearningBannerSerializer,
+)
 from subscription.utils import public_product_queryset
+
+
+class ElearningBannerViewSet(viewsets.ReadOnlyModelViewSet):
+    """Public, admin-managed promotional slides for the eLearning slider."""
+    queryset = ElearningBanner.objects.filter(is_active=True)
+    serializer_class = ElearningBannerSerializer
+    pagination_class = None
 
 
 class BatchViewSet(viewsets.ReadOnlyModelViewSet):

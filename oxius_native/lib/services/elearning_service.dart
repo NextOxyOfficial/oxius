@@ -49,6 +49,37 @@ class ElearningService {
     }
   }
 
+  /// Fetch active promotional banners for the eLearning slider.
+  static Future<List<Map<String, dynamic>>> fetchBanners() async {
+    const cacheKey = 'elearning_banners';
+
+    final cached = _getFromCache<List<Map<String, dynamic>>>(cacheKey);
+    if (cached != null) {
+      return cached;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/elearning/banners/'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        final List<dynamic> data =
+            decoded is List ? decoded : (decoded['results'] ?? []);
+        final banners = data.map((e) => e as Map<String, dynamic>).toList();
+        _setCache(cacheKey, banners);
+        return banners;
+      } else {
+        throw Exception('Failed to load banners: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching eLearning banners: $e');
+      return [];
+    }
+  }
+
   /// Fetch all batches
   static Future<List<Batch>> fetchBatches() async {
     const cacheKey = 'batches';

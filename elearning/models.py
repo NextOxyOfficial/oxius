@@ -10,6 +10,58 @@ User = get_user_model()
 
 
 
+class ElearningBanner(models.Model):
+    """A promotional slide shown in the eLearning banner slider.
+
+    Fully admin-managed: upload an image, optionally attach a link that opens
+    an internal app route (e.g. /elearning) or an external URL.
+    """
+
+    LINK_TYPE_CHOICES = [
+        ("none", _("No link (image only)")),
+        ("internal", _("Internal app page")),
+        ("external", _("External website")),
+    ]
+
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    title = models.CharField(_("Title"), max_length=200, blank=True,
+                             help_text="Optional caption/label (for admin reference).")
+    image = models.ImageField(_("Image"), upload_to="elearning/banners/")
+    link_type = models.CharField(_("Link Type"), max_length=20,
+                                 choices=LINK_TYPE_CHOICES, default="none")
+    link_url = models.CharField(
+        _("Link"), max_length=500, blank=True,
+        help_text="Internal route (e.g. /elearning, /eshop) or external URL (https://...). "
+                  "Leave empty for an image-only slide.")
+    display_order = models.PositiveIntegerField(_("Display Order"), default=0)
+    is_active = models.BooleanField(_("Active"), default=True)
+    created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
+
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if ElearningBanner.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = _("eLearning Banner")
+        verbose_name_plural = _("eLearning Banners")
+        ordering = ["display_order", "-created_at"]
+
+    def __str__(self):
+        return self.title or f"Banner {self.id}"
+
+
 class Batch(models.Model):
     """Model representing an educational batch like SSC, HSC, etc."""
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)

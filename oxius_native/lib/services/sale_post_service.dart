@@ -1,26 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/sale_post.dart';
 import '../utils/api_error.dart';
+import 'auth_service.dart';
 import 'package:flutter/foundation.dart';
 
 class SalePostService {
   final String baseUrl;
   final http.Client client;
 
-  static const String _tokenKey = 'adsyclub_token';
-
   SalePostService({
     required this.baseUrl,
     http.Client? client,
   }) : client = client ?? http.Client();
 
-  /// Get authentication token
+  /// Get authentication token (auto-refreshes if expired)
   Future<String?> _getAuthToken() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_tokenKey);
+      return await AuthService.getValidToken();
     } catch (e) {
       debugPrint('Error getting auth token: $e');
       return null;

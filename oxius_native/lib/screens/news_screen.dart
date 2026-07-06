@@ -242,7 +242,8 @@ class _NewsScreenState extends State<NewsScreen> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadInitialData,
-                        child: const Text('Retry'),
+                        child: Text(_t('news_retry',
+                            en: 'Retry', bn: 'আবার চেষ্টা করুন')),
                       ),
                     ],
                   ),
@@ -505,8 +506,11 @@ class _NewsScreenState extends State<NewsScreen> {
                                                 BorderRadius.circular(8),
                                           ),
                                         ),
-                                        child: const Text('Load More',
-                                            style: TextStyle(
+                                        child: Text(
+                                            _t('news_load_more',
+                                                en: 'Load More',
+                                                bn: 'আরও দেখুন'),
+                                            style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600)),
                                       ),

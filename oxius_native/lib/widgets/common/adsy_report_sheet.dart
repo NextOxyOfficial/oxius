@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'adsy_loading.dart';
+import 'adsy_toast.dart';
 
 class AdsyReportOption {
   final String label;
@@ -107,7 +108,6 @@ class _AdsyReportSheetContentState extends State<_AdsyReportSheetContent> {
     if (option == null || _isSubmitting) return;
 
     setState(() => _isSubmitting = true);
-    final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
     final success = await widget.onSubmit(option, _detailsController.text);
@@ -116,13 +116,11 @@ class _AdsyReportSheetContentState extends State<_AdsyReportSheetContent> {
     setState(() => _isSubmitting = false);
     navigator.pop();
 
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(success ? widget.successMessage : widget.failureMessage),
-        backgroundColor:
-            success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-      ),
-    );
+    if (success) {
+      AdsyToast.success(context, widget.successMessage);
+    } else {
+      AdsyToast.error(context, widget.failureMessage);
+    }
   }
 
   @override

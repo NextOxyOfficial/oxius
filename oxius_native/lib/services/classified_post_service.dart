@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/classified_post.dart';
 import '../models/geo_location.dart';
 import '../models/classified_post_form.dart';
+import 'auth_service.dart';
 import 'package:flutter/foundation.dart';
 
 class ClassifiedPostServiceException implements Exception {
@@ -19,18 +19,15 @@ class ClassifiedPostService {
   final String baseUrl;
   final http.Client client;
 
-  static const String _tokenKey = 'adsyclub_token';
-
   ClassifiedPostService({
     required this.baseUrl,
     http.Client? client,
   }) : client = client ?? http.Client();
 
-  /// Get authentication token from shared preferences
+  /// Get authentication token (auto-refreshes if expired)
   Future<String?> _getAuthToken() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_tokenKey);
+      return await AuthService.getValidToken();
     } catch (e) {
       debugPrint('Error getting auth token: $e');
       return null;

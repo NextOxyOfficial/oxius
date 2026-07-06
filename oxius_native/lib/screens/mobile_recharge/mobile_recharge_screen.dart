@@ -23,6 +23,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   final ScrollController _scrollController = ScrollController();
 
   String t(String key) => _translationService.translate(key);
+  String _t(String key, String fallback) =>
+      _translationService.translate(key, fallback: fallback);
 
   String _selectedOperator = 'all';
   String _activeFilter = 'all';
@@ -128,13 +130,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     ]);
   }
 
-  final List<Map<String, String>> _filters = [
-    {'value': 'all', 'label': 'All'},
-    {'value': 'balance', 'label': 'Balance'},
-    {'value': 'data', 'label': 'Data'},
-    {'value': 'voice', 'label': 'Voice'},
-    {'value': 'combo', 'label': 'Combo'},
-  ];
+  List<Map<String, String>> get _filters => [
+        {'value': 'all', 'label': _t('recharge_filter_all', 'সব')},
+        {'value': 'balance', 'label': _t('recharge_filter_balance', 'ব্যালেন্স')},
+        {'value': 'data', 'label': _t('recharge_filter_data', 'ডেটা')},
+        {'value': 'voice', 'label': _t('recharge_filter_voice', 'ভয়েস')},
+        {'value': 'combo', 'label': _t('recharge_filter_combo', 'কম্বো')},
+      ];
 
   List<Map<String, dynamic>> get _popularPackages {
     return _packages.where((p) => p['popular'] == true).toList();
@@ -205,9 +207,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'Mobile Recharge',
-                                          style: TextStyle(
+                                        Text(
+                                          _t('recharge_title', 'মোবাইল রিচার্জ'),
+                                          style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF111827),
@@ -217,7 +219,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                         if (_walletBalance != null &&
                                             !_isBalanceLoading)
                                           Text(
-                                            'Balance: ৳${_walletBalance!.balance.toStringAsFixed(2)}',
+                                            '${_t('recharge_balance', 'ব্যালেন্স')}: ৳${_walletBalance!.balance.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: Color(0xFF10B981),
@@ -257,7 +259,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  t('popular_packages'),
+                                  _t('popular_packages', 'জনপ্রিয় প্যাকেজ'),
                                   style: TextStyle(
                                     fontSize: isSmallMobile ? 18 : 20,
                                     fontWeight: FontWeight.w600,
@@ -268,7 +270,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   onPressed: () => _openRechargeHistory(),
                                   icon: const Icon(Icons.history_rounded,
                                       size: 18),
-                                  label: const Text('History'),
+                                  label: Text(_t('recharge_history', 'হিস্ট্রি')),
                                   style: TextButton.styleFrom(
                                     foregroundColor: const Color(0xFF3B82F6),
                                     padding: const EdgeInsets.symmetric(
@@ -286,7 +288,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
                             // All Packages
                             Text(
-                              t('all_packages'),
+                              _t('all_packages', 'সব প্যাকেজ'),
                               style: TextStyle(
                                 fontSize: isSmallMobile ? 18 : 20,
                                 fontWeight: FontWeight.w600,
@@ -347,9 +349,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
               const Icon(Icons.sim_card_rounded,
                   size: 16, color: Color(0xFF10B981)),
               const SizedBox(width: 6),
-              const Text(
-                'Select Operator',
-                style: TextStyle(
+              Text(
+                _t('recharge_select_operator', 'অপারেটর বাছুন'),
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF111827),
@@ -536,7 +538,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'No packages available',
+                _t('recharge_no_packages', 'কোনো প্যাকেজ নেই'),
                 style: TextStyle(
                   fontSize: isSmallMobile ? 16 : 18,
                   color: const Color(0xFF111827),
@@ -546,8 +548,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
               const SizedBox(height: 8),
               Text(
                 _selectedOperator == 'all' && _activeFilter == 'all'
-                    ? 'No packages found in the database'
-                    : 'Try changing your filters',
+                    ? _t('recharge_no_packages_db', 'ডেটাবেজে কোনো প্যাকেজ পাওয়া যায়নি')
+                    : _t('recharge_try_filters', 'ফিল্টার বদলে দেখুন'),
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey.shade600,
@@ -636,7 +638,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Popular',
+                            _t('recharge_popular', 'জনপ্রিয়'),
                             style: TextStyle(
                               fontSize: isSmallMobile ? 9 : 10,
                               fontWeight: FontWeight.w500,
@@ -738,7 +740,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       const Icon(Icons.bolt, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        t('recharge_now'),
+                        _t('recharge_now', 'রিচার্জ করুন'),
                         style: TextStyle(
                           fontSize: isSmallMobile ? 12 : 13,
                           fontWeight: FontWeight.w600,
@@ -841,10 +843,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     if (!AuthService.isAuthenticated) {
       LoginPromptDialog.show(
         context,
-        action: 'recharge your mobile',
-        customTitle: 'Login Required',
-        customMessage:
-            'Please login first to continue with this mobile recharge package.',
+        action: _t('recharge_action_recharge', 'মোবাইল রিচার্জ করতে'),
+        customTitle: _t('recharge_login_required', 'লগইন করতে হবে'),
+        customMessage: _t('recharge_login_message',
+            'এই রিচার্জ প্যাকেজটি নিতে আগে লগইন করুন।'),
         icon: Icons.phone_android_rounded,
       );
       return;
@@ -857,9 +859,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     if (!AuthService.isAuthenticated) {
       LoginPromptDialog.show(
         context,
-        action: 'view recharge history',
-        customTitle: 'Login Required',
-        customMessage: 'Please login to view your mobile recharge history.',
+        action: _t('recharge_action_history', 'রিচার্জ হিস্ট্রি দেখতে'),
+        customTitle: _t('recharge_login_required', 'লগইন করতে হবে'),
+        customMessage: _t('recharge_history_login_message',
+            'আপনার রিচার্জ হিস্ট্রি দেখতে লগইন করুন।'),
         icon: Icons.history_rounded,
       );
       return;
@@ -921,23 +924,23 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           const Icon(Icons.bolt, color: Colors.white, size: 24),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Confirm Recharge',
-                            style: TextStyle(
+                            _t('recharge_confirm_title', 'রিচার্জ নিশ্চিত করুন'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                               letterSpacing: -0.3,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
-                            'Review and submit',
-                            style: TextStyle(
+                            _t('recharge_review_submit', 'দেখে নিয়ে সাবমিট করুন'),
+                            style: const TextStyle(
                               fontSize: 12,
                               color: Colors.white70,
                             ),
@@ -982,9 +985,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Available Balance',
-                                    style: TextStyle(
+                                  Text(
+                                    _t('recharge_available_balance',
+                                        'ব্যালেন্স আছে'),
+                                    style: const TextStyle(
                                         fontSize: 11, color: Color(0xFF6B7280)),
                                   ),
                                   Text(
@@ -1005,9 +1009,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       const SizedBox(height: 16),
 
                       // Package Details
-                      const Text(
-                        'Package Details',
-                        style: TextStyle(
+                      Text(
+                        _t('recharge_package_details', 'প্যাকেজের বিবরণ'),
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF111827),
@@ -1023,22 +1027,22 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                         child: Column(
                           children: [
-                            _buildDetailRow('Type',
+                            _buildDetailRow(_t('recharge_type', 'ধরন'),
                                 _capitalizeFirst(package['type'] ?? 'N/A')),
                             const Divider(height: 16),
-                            _buildDetailRow('Amount',
+                            _buildDetailRow(_t('recharge_amount', 'টাকার পরিমাণ'),
                                 '৳${packagePrice.toStringAsFixed(0)}'),
                             const Divider(height: 16),
-                            _buildDetailRow(
-                                'Data', package['data']?.toString() ?? 'N/A'),
+                            _buildDetailRow(_t('recharge_data', 'ডেটা'),
+                                package['data']?.toString() ?? 'N/A'),
                             const Divider(height: 16),
-                            _buildDetailRow('Validity',
+                            _buildDetailRow(_t('recharge_validity', 'মেয়াদ'),
                                 package['validity']?.toString() ?? 'N/A'),
                             if (package['calls'] != null &&
                                 package['calls'] != 'N/A') ...[
                               const Divider(height: 16),
-                              _buildDetailRow(
-                                  'Calls', package['calls'].toString()),
+                              _buildDetailRow(_t('recharge_calls', 'কল'),
+                                  package['calls'].toString()),
                             ],
                           ],
                         ),
@@ -1057,15 +1061,16 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           ),
                           child: Column(
                             children: [
-                              const Row(
+                              Row(
                                 children: [
-                                  Icon(Icons.warning_amber_rounded,
+                                  const Icon(Icons.warning_amber_rounded,
                                       color: Color(0xFFDC2626), size: 20),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'Insufficient balance for this recharge',
-                                      style: TextStyle(
+                                      _t('recharge_insufficient_balance',
+                                          'এই রিচার্জের জন্য ব্যালেন্স যথেষ্ট নয়'),
+                                      style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFFDC2626),
@@ -1076,7 +1081,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'You need ৳${packagePrice.toStringAsFixed(2)} but have ৳${userBalance.toStringAsFixed(2)}',
+                                '${_t('recharge_you_need', 'লাগবে')} ৳${packagePrice.toStringAsFixed(2)}, ${_t('recharge_you_have', 'আছে')} ৳${userBalance.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF991B1B),
@@ -1092,7 +1097,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                         context, '/deposit-withdraw');
                                   },
                                   icon: const Icon(Icons.add_rounded, size: 18),
-                                  label: const Text('Add Funds'),
+                                  label: Text(_t('recharge_add_funds', 'টাকা যোগ করুন')),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF10B981),
                                     foregroundColor: Colors.white,
@@ -1108,9 +1113,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           ),
                         )
                       else ...[
-                        const Text(
-                          'Mobile Number',
-                          style: TextStyle(
+                        Text(
+                          _t('recharge_mobile_number', 'মোবাইল নম্বর'),
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF111827),
@@ -1154,7 +1159,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Enter Bangladeshi mobile number only',
+                          _t('recharge_bd_number_only',
+                              'শুধু বাংলাদেশি মোবাইল নম্বর দিন'),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey.shade600,
@@ -1186,9 +1192,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             ),
                             side: BorderSide(color: Colors.grey.shade300),
                           ),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(
+                          child: Text(
+                            _t('recharge_cancel', 'ক্যান্সেল'),
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF6B7280),
@@ -1228,7 +1234,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                         size: 18),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Confirm Recharge',
+                                      _t('recharge_confirm_button',
+                                          'রিচার্জ নিশ্চিত করুন'),
                                       style: TextStyle(
                                         fontSize: isSmallScreen ? 13 : 14,
                                         fontWeight: FontWeight.w600,
@@ -1275,9 +1282,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     if (!AuthService.isAuthenticated) {
       LoginPromptDialog.show(
         context,
-        action: 'recharge your mobile',
-        customTitle: 'Login Required',
-        customMessage: 'Please login first to complete this recharge.',
+        action: _t('recharge_action_recharge', 'মোবাইল রিচার্জ করতে'),
+        customTitle: _t('recharge_login_required', 'লগইন করতে হবে'),
+        customMessage: _t('recharge_complete_login_message',
+            'এই রিচার্জ সম্পন্ন করতে আগে লগইন করুন।'),
         icon: Icons.phone_android_rounded,
       );
       return;
@@ -1286,7 +1294,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     // Validate phone number
     final phoneRegex = RegExp(r'^(?:\+?88)?01[3-9]\d{8}$');
     if (!phoneRegex.hasMatch(_phoneController.text)) {
-      AdsyToast.warning(context, 'Please enter a valid Bangladesh mobile number');
+      AdsyToast.warning(
+          context,
+          _t('recharge_invalid_number',
+              'সঠিক বাংলাদেশি মোবাইল নম্বর দিন'));
       return;
     }
 
@@ -1313,15 +1324,20 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         Navigator.pop(context);
 
         if (result['success'] == true) {
-          AdsyToast.success(context, result['message'] ?? 'Recharge successful!');
+          AdsyToast.success(
+              context,
+              result['message'] ??
+                  _t('recharge_success', 'রিচার্জ হয়ে গেছে!'));
           _phoneController.clear();
         } else {
-          AdsyToast.error(context, result['message'] ?? 'Recharge failed');
+          AdsyToast.error(context,
+              result['message'] ?? _t('recharge_failed', 'রিচার্জ ব্যর্থ হয়েছে'));
         }
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'রিচার্জ ব্যর্থ হয়েছে');
+        AdsyToast.error(
+            context, _t('recharge_failed', 'রিচার্জ ব্যর্থ হয়েছে'));
       }
     } finally {
       if (mounted) {
@@ -1375,9 +1391,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
-                      'Recharge History',
-                      style: TextStyle(
+                    Text(
+                      _t('recharge_history_title', 'রিচার্জ হিস্ট্রি'),
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF111827),
@@ -1447,7 +1463,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Failed to load history',
+                                _t('recharge_history_load_failed',
+                                    'হিস্ট্রি আনা গেল না'),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -1491,7 +1508,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'No recharge history',
+                              _t('recharge_no_history', 'কোনো রিচার্জ হিস্ট্রি নেই'),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -1500,7 +1517,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Your recharges will appear here',
+                              _t('recharge_history_empty_hint',
+                                  'আপনার রিচার্জ এখানে দেখা যাবে'),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade500,

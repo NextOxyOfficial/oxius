@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../services/api_service.dart';
@@ -150,12 +151,13 @@ class _DrawerContributorsState extends State<DrawerContributors> {
                         // Avatar
                         ClipOval(
                           child: avatarUrl != null
-                              ? Image.network(
-                                  avatarUrl,
+                              ? CachedNetworkImage(
+                                  imageUrl: avatarUrl,
                                   width: 24,
                                   height: 24,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _avatarPlaceholder(),
+                                  memCacheWidth: 128,
+                                  errorWidget: (_, __, ___) => _avatarPlaceholder(),
                                 )
                               : _avatarPlaceholder(),
                         ),

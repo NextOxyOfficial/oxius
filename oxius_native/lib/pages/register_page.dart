@@ -16,6 +16,7 @@ import '../utils/network_error_handler.dart';
 import '../widgets/profile_completion_sheet.dart';
 import '../widgets/social_login_buttons.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/dob_picker.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -163,8 +164,9 @@ class _RegisterPageState extends State<RegisterPage> {
         targetSize: 80 * 1024,
       );
       final bytes = compressed ?? await pickedFile.readAsBytes();
-      final mimeType =
-          compressed != null ? 'image/jpeg' : (pickedFile.mimeType ?? 'image/jpeg');
+      final mimeType = compressed != null
+          ? 'image/jpeg'
+          : (pickedFile.mimeType ?? 'image/jpeg');
 
       setState(() {
         _profileImageBytes = bytes;
@@ -183,7 +185,8 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_t('reg_image_failed', 'ছবি নেওয়া গেল না। আবার চেষ্টা করুন।')),
+            content: Text(
+                _t('reg_image_failed', 'ছবি নেওয়া গেল না। আবার চেষ্টা করুন।')),
             backgroundColor: Colors.orange,
             duration: const Duration(seconds: 3),
             action: SnackBarAction(
@@ -242,15 +245,18 @@ class _RegisterPageState extends State<RegisterPage> {
       _errors['password'] = _t('reg_err_pw_req', 'পাসওয়ার্ড দিন');
       isValid = false;
     } else if (_passwordController.text.length < 6) {
-      _errors['password'] = _t('reg_err_pw_len', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
+      _errors['password'] =
+          _t('reg_err_pw_len', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
       isValid = false;
     }
 
     if (_confirmPasswordController.text.isEmpty) {
-      _errors['confirm_password'] = _t('reg_err_cpw_req', 'পাসওয়ার্ড আবার দিন');
+      _errors['confirm_password'] =
+          _t('reg_err_cpw_req', 'পাসওয়ার্ড আবার দিন');
       isValid = false;
     } else if (_confirmPasswordController.text != _passwordController.text) {
-      _errors['confirm_password'] = _t('reg_err_pw_mismatch', 'দুটো পাসওয়ার্ড এক হয়নি');
+      _errors['confirm_password'] =
+          _t('reg_err_pw_mismatch', 'দুটো পাসওয়ার্ড এক হয়নি');
       isValid = false;
     }
 
@@ -361,28 +367,7 @@ class _RegisterPageState extends State<RegisterPage> {
           userState.updateUser(loginResult.user);
           ProfileCompletionSheet.markPendingIfNeeded(loginResult.user);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.celebration_rounded, color: Colors.white),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _t('reg_welcome', 'AdsyClub-এ স্বাগতম!'),
-                      style: AppFonts.roboto(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFF10B981),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              duration: const Duration(seconds: 4),
-            ),
-          );
+          AdsyToast.success(context, _t('reg_welcome', 'AdsyClub-এ স্বাগতম!'));
 
           await Future.delayed(const Duration(milliseconds: 500));
           if (mounted) {
@@ -449,7 +434,8 @@ class _RegisterPageState extends State<RegisterPage> {
         if (mounted) {
           await Future.delayed(const Duration(milliseconds: 300));
           if (mounted) {
-            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil('/', (route) => false);
           }
         }
       }
@@ -551,74 +537,75 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: _primaryColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFCFE0FF)),
-                ),
-                child: const Icon(Icons.bolt_rounded,
-                    color: _primaryColor, size: 18),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFCFE0FF)),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _t('reg_quick_title', 'সেকেন্ডেই সাইন আপ'),
-                      style: AppFonts.roboto(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: _headingTextColor,
-                        letterSpacing: -0.2,
-                      ),
+              child: const Icon(Icons.bolt_rounded,
+                  color: _primaryColor, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _t('reg_quick_title', 'সেকেন্ডেই সাইন আপ'),
+                    style: AppFonts.roboto(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: _headingTextColor,
+                      letterSpacing: -0.2,
                     ),
-                    const SizedBox(height: 1),
-                    Text(
-                      _t('reg_quick_sub', 'Google বা Facebook দিয়ে সাইন আপ করুন'),
-                      style: AppFonts.roboto(
-                        fontSize: 11.5,
-                        color: _bodyTextColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          SocialLoginButtons(
-            enabled: !_isLoading,
-            onProvider: _handleSocialRegister,
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              const Expanded(
-                child: Divider(color: Color(0xFFD8E1EA), thickness: 1),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  _t('reg_or_email', 'অথবা ইমেইল দিয়ে সাইন আপ করুন'),
-                  style: AppFonts.roboto(
-                    fontSize: 10.5,
-                    color: const Color(0xFF64748B),
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
                   ),
+                  const SizedBox(height: 1),
+                  Text(
+                    _t('reg_quick_sub',
+                        'Google বা Facebook দিয়ে সাইন আপ করুন'),
+                    style: AppFonts.roboto(
+                      fontSize: 11.5,
+                      color: _bodyTextColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SocialLoginButtons(
+          enabled: !_isLoading,
+          onProvider: _handleSocialRegister,
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            const Expanded(
+              child: Divider(color: Color(0xFFD8E1EA), thickness: 1),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                _t('reg_or_email', 'অথবা ইমেইল দিয়ে সাইন আপ করুন'),
+                style: AppFonts.roboto(
+                  fontSize: 10.5,
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
                 ),
               ),
-              const Expanded(
-                child: Divider(color: Color(0xFFD8E1EA), thickness: 1),
-              ),
-            ],
-          ),
-        ],
+            ),
+            const Expanded(
+              child: Divider(color: Color(0xFFD8E1EA), thickness: 1),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -676,282 +663,284 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-          Text(
-            _t('reg_details_title', 'রেজিস্ট্রেশনের তথ্য'),
-            style: AppFonts.roboto(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: _headingTextColor,
-              letterSpacing: -0.3,
-            ),
+        Text(
+          _t('reg_details_title', 'রেজিস্ট্রেশনের তথ্য'),
+          style: AppFonts.roboto(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: _headingTextColor,
+            letterSpacing: -0.3,
           ),
-          const SizedBox(height: 4),
-          Text(
-            _t('reg_details_sub', 'নিচের ফর্মটা পূরণ করে এক ধাপেই অ্যাকাউন্ট খুলুন।'),
-            style: AppFonts.roboto(
-              fontSize: 12.5,
-              color: _bodyTextColor,
-              height: 1.4,
-            ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          _t('reg_details_sub',
+              'নিচের ফর্মটা পূরণ করে এক ধাপেই অ্যাকাউন্ট খুলুন।'),
+          style: AppFonts.roboto(
+            fontSize: 12.5,
+            color: _bodyTextColor,
+            height: 1.4,
           ),
+        ),
+        const SizedBox(height: 16),
+        if (_errorMessage != null) ...[
+          _buildErrorBanner(),
           const SizedBox(height: 16),
-          if (_errorMessage != null) ...[
-            _buildErrorBanner(),
-            const SizedBox(height: 16),
-          ],
-          _buildPhotoCard(isMobile),
-          const SizedBox(height: 18),
-          _buildSectionHeader(
-            _t('reg_personal', 'ব্যক্তিগত তথ্য'),
-            _t('reg_personal_sub', 'অ্যাকাউন্ট খুলতে আর নিরাপদ রাখতে এই তথ্যগুলো লাগবে।'),
+        ],
+        _buildPhotoCard(isMobile),
+        const SizedBox(height: 18),
+        _buildSectionHeader(
+          _t('reg_personal', 'ব্যক্তিগত তথ্য'),
+          _t('reg_personal_sub',
+              'অ্যাকাউন্ট খুলতে আর নিরাপদ রাখতে এই তথ্যগুলো লাগবে।'),
+        ),
+        const SizedBox(height: 12),
+        _buildTwoColumnRow(
+          isMobile: isMobile,
+          left: _buildTextField(
+            label: _t('reg_first_name', 'নামের প্রথম অংশ'),
+            hintText: _t('reg_first_name_hint', 'প্রথম নাম লিখুন'),
+            controller: _firstNameController,
+            icon: Icons.person_outline_rounded,
+            error: _errors['first_name'],
           ),
-          const SizedBox(height: 12),
-          _buildTwoColumnRow(
-            isMobile: isMobile,
-            left: _buildTextField(
-              label: _t('reg_first_name', 'নামের প্রথম অংশ'),
-              hintText: _t('reg_first_name_hint', 'প্রথম নাম লিখুন'),
-              controller: _firstNameController,
-              icon: Icons.person_outline_rounded,
-              error: _errors['first_name'],
-            ),
-            right: _buildTextField(
-              label: _t('reg_last_name', 'নামের শেষ অংশ'),
-              hintText: _t('reg_last_name_hint', 'শেষ নাম লিখুন'),
-              controller: _lastNameController,
-              icon: Icons.badge_outlined,
-              error: _errors['last_name'],
-            ),
+          right: _buildTextField(
+            label: _t('reg_last_name', 'নামের শেষ অংশ'),
+            hintText: _t('reg_last_name_hint', 'শেষ নাম লিখুন'),
+            controller: _lastNameController,
+            icon: Icons.badge_outlined,
+            error: _errors['last_name'],
           ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            label: _t('reg_email', 'ইমেইল অ্যাড্রেস'),
-            hintText: _t('reg_email_hint', 'আপনার ইমেইল লিখুন'),
-            controller: _emailController,
-            icon: Icons.alternate_email_rounded,
-            keyboardType: TextInputType.emailAddress,
-            error: _errors['email'],
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          label: _t('reg_email', 'ইমেইল অ্যাড্রেস'),
+          hintText: _t('reg_email_hint', 'আপনার ইমেইল লিখুন'),
+          controller: _emailController,
+          icon: Icons.alternate_email_rounded,
+          keyboardType: TextInputType.emailAddress,
+          error: _errors['email'],
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          label: _t('reg_phone', 'ফোন নম্বর'),
+          hintText: _t('reg_phone_hint', 'আপনার ফোন নম্বর লিখুন'),
+          controller: _phoneController,
+          icon: Icons.phone_outlined,
+          keyboardType: TextInputType.phone,
+          error: _errors['phone'],
+        ),
+        const SizedBox(height: 12),
+        _buildTwoColumnRow(
+          isMobile: isMobile,
+          left: _buildDateField(
+            label: _t('reg_dob', 'জন্ম তারিখ'),
+            hintText: _t('reg_dob_hint', 'জন্ম তারিখ বাছুন'),
+            controller: _dateOfBirthController,
+            icon: Icons.event_outlined,
+            error: _errors['date_of_birth'],
+            onTap: _pickDateOfBirth,
           ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            label: _t('reg_phone', 'ফোন নম্বর'),
-            hintText: _t('reg_phone_hint', 'আপনার ফোন নম্বর লিখুন'),
-            controller: _phoneController,
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-            error: _errors['phone'],
-          ),
-          const SizedBox(height: 12),
-          _buildTwoColumnRow(
-            isMobile: isMobile,
-            left: _buildDateField(
-              label: _t('reg_dob', 'জন্ম তারিখ'),
-              hintText: _t('reg_dob_hint', 'জন্ম তারিখ বাছুন'),
-              controller: _dateOfBirthController,
-              icon: Icons.event_outlined,
-              error: _errors['date_of_birth'],
-              onTap: _pickDateOfBirth,
-            ),
-            right: _buildAgeDisplay(),
-          ),
-          const SizedBox(height: 12),
-          _buildDropdownField(
-            label: _t('reg_gender', 'জেন্ডার'),
-            hintText: _t('reg_gender_hint', 'জেন্ডার বাছুন'),
-            icon: Icons.wc_rounded,
-            value: _gender.isEmpty ? null : _gender,
-            // Stored/submitted value stays canonical English; only the label is
-            // shown in Bangla so the backend keeps getting Male/Female/Others.
-            items: const ['Male', 'Female', 'Others'],
-            displayLabels: {
-              'Male': _t('reg_male', 'পুরুষ'),
-              'Female': _t('reg_female', 'মহিলা'),
-              'Others': _t('reg_others', 'অন্যান্য'),
-            },
-            onChanged: (value) => setState(() => _gender = value ?? ''),
-            error: _errors['gender'],
-          ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            label: _t('reg_password', 'পাসওয়ার্ড'),
-            hintText: _t('reg_password_hint', 'একটা পাসওয়ার্ড বানান'),
-            controller: _passwordController,
-            icon: Icons.lock_outline_rounded,
-            isPassword: true,
-            isVisible: _showPassword,
-            onToggleVisibility: () =>
-                setState(() => _showPassword = !_showPassword),
-            error: _errors['password'],
-          ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            label: _t('reg_confirm_password', 'পাসওয়ার্ড আবার দিন'),
-            hintText: _t('reg_confirm_password_hint', 'পাসওয়ার্ডটা আবার লিখুন'),
-            controller: _confirmPasswordController,
-            icon: Icons.verified_user_outlined,
-            isPassword: true,
-            isVisible: _showConfirmPassword,
-            onToggleVisibility: () =>
-                setState(() => _showConfirmPassword = !_showConfirmPassword),
-            error: _errors['confirm_password'],
-          ),
-          const SizedBox(height: 18),
-          _buildSectionHeader(
-            _t('reg_location', 'ঠিকানা ও রেফারেল'),
-            _t('reg_location_sub', 'এগুলো দেওয়া বাধ্যতামূলক না, তবে দিলে প্রোফাইলটা আরও সুন্দর হবে।'),
-          ),
-          const SizedBox(height: 12),
-          _buildDropdownField(
-            label: _t('reg_region', 'বিভাগ / অঞ্চল'),
-            hintText: _t('reg_region_hint', 'আপনার অঞ্চল বাছুন'),
-            icon: Icons.map_outlined,
-            value: _selectedRegion,
-            items: _regions.map((item) => item['name_eng'] as String).toList(),
+          right: _buildAgeDisplay(),
+        ),
+        const SizedBox(height: 12),
+        _buildDropdownField(
+          label: _t('reg_gender', 'জেন্ডার'),
+          hintText: _t('reg_gender_hint', 'জেন্ডার বাছুন'),
+          icon: Icons.wc_rounded,
+          value: _gender.isEmpty ? null : _gender,
+          // Stored/submitted value stays canonical English; only the label is
+          // shown in Bangla so the backend keeps getting Male/Female/Others.
+          items: const ['Male', 'Female', 'Others'],
+          displayLabels: {
+            'Male': _t('reg_male', 'পুরুষ'),
+            'Female': _t('reg_female', 'মহিলা'),
+            'Others': _t('reg_others', 'অন্যান্য'),
+          },
+          onChanged: (value) => setState(() => _gender = value ?? ''),
+          error: _errors['gender'],
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          label: _t('reg_password', 'পাসওয়ার্ড'),
+          hintText: _t('reg_password_hint', 'একটা পাসওয়ার্ড বানান'),
+          controller: _passwordController,
+          icon: Icons.lock_outline_rounded,
+          isPassword: true,
+          isVisible: _showPassword,
+          onToggleVisibility: () =>
+              setState(() => _showPassword = !_showPassword),
+          error: _errors['password'],
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          label: _t('reg_confirm_password', 'পাসওয়ার্ড আবার দিন'),
+          hintText: _t('reg_confirm_password_hint', 'পাসওয়ার্ডটা আবার লিখুন'),
+          controller: _confirmPasswordController,
+          icon: Icons.verified_user_outlined,
+          isPassword: true,
+          isVisible: _showConfirmPassword,
+          onToggleVisibility: () =>
+              setState(() => _showConfirmPassword = !_showConfirmPassword),
+          error: _errors['confirm_password'],
+        ),
+        const SizedBox(height: 18),
+        _buildSectionHeader(
+          _t('reg_location', 'ঠিকানা ও রেফারেল'),
+          _t('reg_location_sub',
+              'এগুলো দেওয়া বাধ্যতামূলক না, তবে দিলে প্রোফাইলটা আরও সুন্দর হবে।'),
+        ),
+        const SizedBox(height: 12),
+        _buildDropdownField(
+          label: _t('reg_region', 'বিভাগ / অঞ্চল'),
+          hintText: _t('reg_region_hint', 'আপনার অঞ্চল বাছুন'),
+          icon: Icons.map_outlined,
+          value: _selectedRegion,
+          items: _regions.map((item) => item['name_eng'] as String).toList(),
+          onChanged: (value) {
+            setState(() => _selectedRegion = value);
+            if (value != null) {
+              _loadCities(value);
+            }
+          },
+        ),
+        const SizedBox(height: 12),
+        _buildTwoColumnRow(
+          isMobile: isMobile,
+          left: _buildDropdownField(
+            label: _t('reg_city', 'জেলা / শহর'),
+            hintText: _t('reg_city_hint', 'শহর বাছুন'),
+            icon: Icons.location_city_outlined,
+            value: _selectedCity,
+            items: _cities.map((item) => item['name_eng'] as String).toList(),
             onChanged: (value) {
-              setState(() => _selectedRegion = value);
+              setState(() => _selectedCity = value);
               if (value != null) {
-                _loadCities(value);
+                _loadUpazilas(value);
               }
             },
           ),
-          const SizedBox(height: 12),
-          _buildTwoColumnRow(
-            isMobile: isMobile,
-            left: _buildDropdownField(
-              label: _t('reg_city', 'জেলা / শহর'),
-              hintText: _t('reg_city_hint', 'শহর বাছুন'),
-              icon: Icons.location_city_outlined,
-              value: _selectedCity,
-              items: _cities.map((item) => item['name_eng'] as String).toList(),
-              onChanged: (value) {
-                setState(() => _selectedCity = value);
-                if (value != null) {
-                  _loadUpazilas(value);
-                }
-              },
-            ),
-            right: _buildDropdownField(
-              label: _t('reg_area', 'এলাকা / উপজেলা'),
-              hintText: _t('reg_area_hint', 'এলাকা বাছুন'),
-              icon: Icons.pin_drop_outlined,
-              value: _selectedUpazila,
-              items:
-                  _upazilas.map((item) => item['name_eng'] as String).toList(),
-              onChanged: (value) => setState(() => _selectedUpazila = value),
-            ),
+          right: _buildDropdownField(
+            label: _t('reg_area', 'এলাকা / উপজেলা'),
+            hintText: _t('reg_area_hint', 'এলাকা বাছুন'),
+            icon: Icons.pin_drop_outlined,
+            value: _selectedUpazila,
+            items: _upazilas.map((item) => item['name_eng'] as String).toList(),
+            onChanged: (value) => setState(() => _selectedUpazila = value),
           ),
-          const SizedBox(height: 12),
-          _buildTwoColumnRow(
-            isMobile: isMobile,
-            left: _buildTextField(
-              label: _t('reg_postal', 'পোস্টাল কোড'),
-              hintText: _t('reg_postal_hint', 'পোস্টাল কোড লিখুন'),
-              controller: _zipController,
-              icon: Icons.markunread_mailbox_outlined,
-            ),
-            right: _buildTextField(
-              label: _t('reg_referral', 'রেফারেল কোড'),
-              hintText: _t('reg_referral_hint', 'রেফারেল কোড থাকলে দিন'),
-              controller: _referralController,
-              icon: Icons.card_giftcard_outlined,
-            ),
+        ),
+        const SizedBox(height: 12),
+        _buildTwoColumnRow(
+          isMobile: isMobile,
+          left: _buildTextField(
+            label: _t('reg_postal', 'পোস্টাল কোড'),
+            hintText: _t('reg_postal_hint', 'পোস্টাল কোড লিখুন'),
+            controller: _zipController,
+            icon: Icons.markunread_mailbox_outlined,
           ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            label: _t('reg_address', 'পুরো ঠিকানা'),
-            hintText: _t('reg_address_hint', 'আপনার ঠিকানা লিখুন'),
-            controller: _addressController,
-            icon: Icons.home_outlined,
-            maxLines: 3,
+          right: _buildTextField(
+            label: _t('reg_referral', 'রেফারেল কোড'),
+            hintText: _t('reg_referral_hint', 'রেফারেল কোড থাকলে দিন'),
+            controller: _referralController,
+            icon: Icons.card_giftcard_outlined,
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _primarySoftColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFD7E5FF)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.info_outline_rounded,
-                    size: 18, color: _primaryColor),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    _t('reg_info_note', 'সাইন আপ করলে আপনি নিশ্চিত করছেন যে আপনার তথ্য সঠিক এবং আপনার অ্যাকাউন্টের তথ্য নিরাপদ রাখা হবে।'),
-                    style: AppFonts.roboto(
-                      fontSize: 11.8,
-                      color: _primaryDarkColor,
-                      height: 1.45,
-                    ),
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          label: _t('reg_address', 'পুরো ঠিকানা'),
+          hintText: _t('reg_address_hint', 'আপনার ঠিকানা লিখুন'),
+          controller: _addressController,
+          icon: Icons.home_outlined,
+          maxLines: 3,
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: _primarySoftColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFD7E5FF)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.info_outline_rounded,
+                  size: 18, color: _primaryColor),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _t('reg_info_note',
+                      'সাইন আপ করলে আপনি নিশ্চিত করছেন যে আপনার তথ্য সঠিক এবং আপনার অ্যাকাউন্টের তথ্য নিরাপদ রাখা হবে।'),
+                  style: AppFonts.roboto(
+                    fontSize: 11.8,
+                    color: _primaryDarkColor,
+                    height: 1.45,
                   ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        SizedBox(
+          height: 54,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [_primaryDarkColor, _primaryColor],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: _primaryColor.withValues(alpha: 0.24),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            height: 54,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [_primaryDarkColor, _primaryColor],
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _handleSubmit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.transparent,
+                disabledForegroundColor: Colors.white70,
+                shadowColor: Colors.transparent,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: _primaryColor.withValues(alpha: 0.24),
-                    blurRadius: 18,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
               ),
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.transparent,
-                  disabledForegroundColor: Colors.white70,
-                  shadowColor: Colors.transparent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: AdsyLoadingIndicator(
-                          strokeWidth: 2.4,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.rocket_launch_rounded, size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            _t('reg_create_account', 'অ্যাকাউন্ট খুলুন'),
-                            style: AppFonts.roboto(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ],
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: AdsyLoadingIndicator(
+                        strokeWidth: 2.4,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-              ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.rocket_launch_rounded, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          _t('reg_create_account', 'অ্যাকাউন্ট খুলুন'),
+                          style: AppFonts.roboto(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
@@ -1043,7 +1032,8 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         const SizedBox(height: 4),
         Text(
-          _t('reg_photo_sub', 'ইচ্ছে হলে একটা পরিষ্কার ছবি দিন, প্রোফাইলটা সম্পূর্ণ দেখাবে।'),
+          _t('reg_photo_sub',
+              'ইচ্ছে হলে একটা পরিষ্কার ছবি দিন, প্রোফাইলটা সম্পূর্ণ দেখাবে।'),
           style: AppFonts.roboto(
             fontSize: 12,
             color: _bodyTextColor,

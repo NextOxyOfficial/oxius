@@ -201,28 +201,31 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
         
         return author_data
 
+    # In the feed/list, popular posts would otherwise ship EVERY comment and
+    # EVERY like inline — hundreds of KB per post. The app only needs a small
+    # comment preview there (full list + all likers load on the post-detail
+    # screen), and it derives like state from is_liked/like_count, not the
+    # array. So we cap in list responses and only send everything when a view
+    # explicitly asks via context {"full_detail": True}.
+    FEED_COMMENT_PREVIEW = 6
+
     def get_post_comments(self, obj):
-        """Get post comments with context for follow status"""
+        """Post comments — capped in the feed, full on the detail screen."""
+        qs = obj.post_comments.all()
+        if not self.context.get("full_detail"):
+            qs = qs[: self.FEED_COMMENT_PREVIEW]
         return BusinessNetworkPostCommentSerializer(
-            obj.post_comments.all(), many=True, context=self.context
+            qs, many=True, context=self.context
         ).data
 
     def get_post_likes(self, obj):
-        # Return all likes without artificial device-based limitations
-        request = self.context.get("request")
-        device_level = (
-            getattr(request, "query_params", {}).get("device_level", "medium")
-            if request
-            else "medium"
-        )
-
-        if device_level == "low":
-            return []  # No detailed likes for low-end devices to save bandwidth
-        else:
-            # Return all likes for medium and high-end devices
-            return BusinessNetworkPostLikeSerializer(
-                obj.post_likes.all(), many=True, context=self.context
-            ).data
+        # Only the detail screen needs the full liker list; the feed uses
+        # like_count + is_liked, so skip the array there to shrink the payload.
+        if not self.context.get("full_detail"):
+            return []
+        return BusinessNetworkPostLikeSerializer(
+            obj.post_likes.all(), many=True, context=self.context
+        ).data
 
     def get_like_count(self, obj):
         return obj.post_likes.count()

@@ -34,8 +34,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   bool _autoRenewLoaded = false;
   bool? _hasActivePro; // server-confirmed paid-Pro status (null until loaded)
   int _selectedMonths = 1;
-  int _monthlyPrice = 149;     // effective (discounted) monthly price
-  int _regularPrice = 299;     // normal monthly price (struck-through)
+  int _monthlyPrice = 149; // effective (discounted) monthly price
+  int _regularPrice = 299; // normal monthly price (struck-through)
   int _yearlyDiscount = 289;
   bool _discountActive = true;
 
@@ -98,13 +98,11 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     });
     final msg = (result?['message'] ?? '').toString();
     if (msg.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor: _autoRenew ? _mint : const Color(0xFF64748B),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (_autoRenew) {
+        AdsyToast.success(context, msg);
+      } else {
+        AdsyToast.info(context, msg);
+      }
     }
   }
 
@@ -117,7 +115,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     try {
       final refreshed = await _userState.refreshUser();
       if (!refreshed && mounted && _userState.isAuthenticated) {
-        AdsyToast.error(context, 'Could not refresh balance. Please try again.');
+        AdsyToast.error(
+            context, 'Could not refresh balance. Please try again.');
       }
     } finally {
       if (mounted) {
@@ -302,15 +301,12 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                 Text(
                   'অটো-রিনিউ',
                   style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                      color: _ink),
+                      fontSize: 14.5, fontWeight: FontWeight.w700, color: _ink),
                 ),
                 SizedBox(height: 2),
                 Text(
                   'মেয়াদ শেষে Adsy Pay ব্যালেন্স থেকে স্বয়ংক্রিয়ভাবে রিনিউ হবে।',
-                  style:
-                      TextStyle(fontSize: 11.5, color: _muted, height: 1.35),
+                  style: TextStyle(fontSize: 11.5, color: _muted, height: 1.35),
                 ),
               ],
             ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/workspace_service.dart';
+import '../../services/translation_service.dart';
 import '../../utils/network_error_handler.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
@@ -32,6 +33,10 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
   final WorkspaceService _workspaceService = WorkspaceService();
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   // Controllers
   final TextEditingController _titleController = TextEditingController();
@@ -174,7 +179,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
         for (var image in images) {
           if (_selectedImages.length >= 5) {
             if (mounted) {
-              AdsyToast.info(context, 'Maximum 5 images allowed');
+              AdsyToast.info(context,
+                  _t('workspace_max_5_images', 'সর্বোচ্চ ৫টি ছবি দেওয়া যাবে'));
             }
             break;
           }
@@ -185,7 +191,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           // Check file size (5MB max)
           if (bytes.length > 5 * 1024 * 1024) {
             if (mounted) {
-              AdsyToast.info(context, '${image.name} is too large. Max 5MB');
+              AdsyToast.info(context,
+                  '${image.name} ${_t('workspace_image_too_large', 'অনেক বড়। সর্বোচ্চ ৫MB')}');
             }
             continue;
           }
@@ -204,7 +211,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
         NetworkErrorHandler.showErrorSnackbar(
           context,
           e,
-          customMessage: 'Unable to pick images',
+          customMessage:
+              _t('workspace_pick_images_failed', 'ছবি বেছে নেওয়া যায়নি'),
         );
       }
     }
@@ -317,12 +325,14 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedCategory == null) {
-      AdsyToast.warning(context, 'Please select a category');
+      AdsyToast.warning(
+          context, _t('workspace_select_category', 'একটি ক্যাটাগরি বেছে নিন'));
       return;
     }
 
     if (_selectedImages.isEmpty) {
-      AdsyToast.warning(context, 'Please add at least one image');
+      AdsyToast.warning(
+          context, _t('workspace_add_one_image', 'অন্তত একটি ছবি দিন'));
       return;
     }
 
@@ -332,7 +342,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
         .toList();
 
     if (validFeatures.length < 3) {
-      AdsyToast.warning(context, 'Please add at least 3 features');
+      AdsyToast.warning(
+          context, _t('workspace_add_3_features', 'অন্তত ৩টি ফিচার দিন'));
       return;
     }
 
@@ -356,14 +367,16 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
       if (mounted) {
         final gigTitle = _titleController.text.trim();
 
-        AdsyToast.success(context, '"$gigTitle" submitted for review!');
+        AdsyToast.success(context,
+            '"$gigTitle" ${_t('workspace_submitted_for_review', 'রিভিউর জন্য জমা হয়েছে!')}');
 
         _resetForm();
         widget.onGigCreated?.call();
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'গিগ তৈরি করা যায়নি');
+        AdsyToast.error(
+            context, _t('workspace_gig_create_failed', 'গিগ তৈরি করা যায়নি'));
       }
     } finally {
       if (mounted) {
@@ -456,7 +469,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Post a professional gig',
+                      _t('workspace_post_pro_gig', 'পেশাদার গিগ দিন'),
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -465,7 +478,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Keep the offer clear, compact, and aligned with the gigs marketplace style.',
+                      _t('workspace_post_pro_gig_sub',
+                          'অফারটি পরিষ্কার, ছোট আর মার্কেটপ্লেসের সাথে মানানসই রাখুন।'),
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         height: 1.35,
@@ -483,7 +497,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
               Expanded(
                 child: _buildHeroStat(
                   icon: Icons.photo_library_outlined,
-                  label: 'Images',
+                  label: _t('workspace_images', 'ছবি'),
                   value: '${_selectedImages.length}/5',
                   tint: _indigo,
                 ),
@@ -492,8 +506,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
               Expanded(
                 child: _buildHeroStat(
                   icon: Icons.checklist_rounded,
-                  label: 'Features',
-                  value: '$activeFeatures ready',
+                  label: _t('workspace_features', 'ফিচার'),
+                  value: '$activeFeatures ${_t('workspace_ready', 'রেডি')}',
                   tint: _emerald,
                 ),
               ),
@@ -560,9 +574,9 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
 
   Widget _buildImagesSection() {
     return _buildSectionCard(
-      title: 'Gig gallery',
-      subtitle:
-          'Upload up to 5 polished preview images. The first one becomes the cover.',
+      title: _t('workspace_gig_gallery', 'গিগ গ্যালারি'),
+      subtitle: _t('workspace_gig_gallery_sub',
+          'সর্বোচ্চ ৫টি সুন্দর প্রিভিউ ছবি দিন। প্রথমটি কভার হবে।'),
       icon: Icons.photo_library_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -618,7 +632,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Add',
+                              _t('workspace_add', 'যোগ'),
                               style: GoogleFonts.inter(
                                 color: _slate700,
                                 fontSize: 10,
@@ -663,7 +677,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                              'Main',
+                              _t('workspace_main', 'মেইন'),
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontSize: 9,
@@ -706,7 +720,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                'Set as main',
+                                _t('workspace_set_as_main', 'মেইন করুন'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
@@ -725,7 +739,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Recommended size 1280x720px. Cleaner previews generally convert better.',
+            _t('workspace_image_size_hint',
+                'সাইজ ১২৮০x৭২০px রাখলে ভালো। পরিষ্কার প্রিভিউ বেশি কাজ করে।'),
             style: GoogleFonts.inter(
               color: _slate500,
               fontSize: 11,
@@ -739,33 +754,35 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
 
   Widget _buildDetailsSection() {
     return _buildSectionCard(
-      title: 'Gig details',
-      subtitle:
-          'Set the positioning, price point, and service description clearly.',
+      title: _t('workspace_gig_details_title', 'গিগের বিবরণ'),
+      subtitle: _t('workspace_gig_details_sub',
+          'পজিশনিং, দাম আর সার্ভিসের বর্ণনা পরিষ্কারভাবে দিন।'),
       icon: Icons.description_outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTextField(
-            label: 'Gig Title',
+            label: _t('workspace_gig_title_label', 'গিগ টাইটেল'),
             controller: _titleController,
-            hintText: 'I will design a professional logo for your business',
+            hintText: _t('workspace_gig_title_hint',
+                'আমি আপনার ব্যবসার জন্য পেশাদার লোগো ডিজাইন করব'),
             isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter a title';
+                return _t('workspace_enter_title', 'একটি টাইটেল দিন');
               }
               return null;
             },
           ),
           const SizedBox(height: 4),
           Text(
-            'Lead with a promise buyers can understand in one glance.',
+            _t('workspace_title_helper',
+                'একনজরে বোঝা যায় এমন একটি প্রতিশ্রুতি দিয়ে শুরু করুন।'),
             style: GoogleFonts.inter(color: _slate500, fontSize: 11),
           ),
           const SizedBox(height: 12),
           _buildDropdownField(
-            label: 'Category',
+            label: _t('workspace_category', 'ক্যাটাগরি'),
             value: _selectedCategory,
             isRequired: true,
             items: _categories.map((cat) {
@@ -782,42 +799,48 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
               );
             }).toList(),
             onChanged: (value) => setState(() => _selectedCategory = value),
-            validator: (value) => value == null ? 'Required' : null,
+            validator: (value) =>
+                value == null ? _t('workspace_required', 'আবশ্যক') : null,
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            label: 'Price (৳)',
+            label: _t('workspace_price_label', 'দাম (৳)'),
             controller: _priceController,
             keyboardType: TextInputType.number,
             hintText: '500',
             prefixText: '৳ ',
             isRequired: true,
             validator: (value) {
-              if (value == null || value.trim().isEmpty) return 'Required';
+              if (value == null || value.trim().isEmpty) {
+                return _t('workspace_required', 'আবশ্যক');
+              }
               final price = double.tryParse(value.trim());
-              if (price == null || price < 5) return 'Min ৳5';
+              if (price == null || price < 5) {
+                return _t('workspace_min_price', 'কমপক্ষে ৳৫');
+              }
               return null;
             },
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            label: 'Description',
+            label: _t('workspace_description', 'বিবরণ'),
             controller: _descriptionController,
             minLines: 4,
             maxLines: 7,
-            hintText:
-                'Describe what buyers will receive, how you work, and what makes your offer different.',
+            hintText: _t('workspace_description_hint',
+                'বায়াররা কী পাবে, আপনি কীভাবে কাজ করেন আর আপনার অফার কেন আলাদা তা লিখুন।'),
             isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter a description';
+                return _t('workspace_enter_description', 'একটি বিবরণ দিন');
               }
               return null;
             },
           ),
           const SizedBox(height: 4),
           Text(
-            'Aim for a concise but complete description buyers can trust quickly.',
+            _t('workspace_description_helper',
+                'ছোট কিন্তু পূর্ণাঙ্গ বিবরণ দিন যাতে বায়াররা সহজে ভরসা পায়।'),
             style: GoogleFonts.inter(color: _slate500, fontSize: 11),
           ),
         ],
@@ -827,9 +850,9 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
 
   Widget _buildSkillsSection() {
     return _buildSectionCard(
-      title: 'Skills & expertise',
-      subtitle:
-          'Attach relevant tags so your gig fits the right buyers and search results.',
+      title: _t('workspace_skills_title', 'দক্ষতা ও অভিজ্ঞতা'),
+      subtitle: _t('workspace_skills_sub',
+          'প্রাসঙ্গিক ট্যাগ দিন যাতে গিগটি সঠিক বায়ার ও সার্চে আসে।'),
       icon: Icons.auto_awesome_motion_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -845,7 +868,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: _buildInputDecoration(
-                    hintText: 'e.g. Logo Design, Photoshop',
+                    hintText:
+                        _t('workspace_skill_hint', 'যেমন: লোগো ডিজাইন, ফটোশপ'),
                   ),
                   onSubmitted: (_) => _addSkill(),
                 ),
@@ -904,7 +928,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           if (_suggestedSkills.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
-              'Suggested skills',
+              _t('workspace_suggested_skills', 'সাজেস্ট করা দক্ষতা'),
               style: GoogleFonts.inter(
                 color: _slate500,
                 fontSize: 11,
@@ -944,7 +968,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           ],
           const SizedBox(height: 6),
           Text(
-            'Add up to 10 skills. Press Enter or use the plus button.',
+            _t('workspace_skills_helper',
+                'সর্বোচ্চ ১০টি দক্ষতা দিন। এন্টার চাপুন বা প্লাস বাটন ব্যবহার করুন।'),
             style: GoogleFonts.inter(color: _slate500, fontSize: 11),
           ),
         ],
@@ -954,9 +979,9 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
 
   Widget _buildDeliverySection() {
     return _buildSectionCard(
-      title: 'Delivery & revisions',
-      subtitle:
-          'Set realistic turnaround and revision limits buyers can rely on.',
+      title: _t('workspace_delivery_title', 'ডেলিভারি ও রিভিশন'),
+      subtitle: _t('workspace_delivery_sub',
+          'বায়াররা ভরসা করতে পারে এমন বাস্তবসম্মত সময় ও রিভিশন সীমা দিন।'),
       icon: Icons.schedule_rounded,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -966,7 +991,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
             return Column(
               children: [
                 _buildDropdownField(
-                  label: 'Delivery Time',
+                  label: _t('workspace_delivery_time', 'ডেলিভারি সময়'),
                   value: _selectedDeliveryTime,
                   items: _deliveryTimes.map((time) {
                     return DropdownMenuItem(
@@ -982,7 +1007,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildDropdownField(
-                  label: 'Revisions',
+                  label: _t('workspace_revisions', 'রিভিশন'),
                   value: _selectedRevisions,
                   items: _revisionOptions.map((rev) {
                     return DropdownMenuItem(
@@ -1004,7 +1029,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
             children: [
               Expanded(
                 child: _buildDropdownField(
-                  label: 'Delivery Time',
+                  label: _t('workspace_delivery_time', 'ডেলিভারি সময়'),
                   value: _selectedDeliveryTime,
                   items: _deliveryTimes.map((time) {
                     return DropdownMenuItem(
@@ -1022,7 +1047,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: _buildDropdownField(
-                  label: 'Revisions',
+                  label: _t('workspace_revisions', 'রিভিশন'),
                   value: _selectedRevisions,
                   items: _revisionOptions.map((rev) {
                     return DropdownMenuItem(
@@ -1046,9 +1071,9 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
 
   Widget _buildFeaturesSection() {
     return _buildSectionCard(
-      title: 'What buyers will get',
-      subtitle:
-          'List the exact deliverables buyers should expect from this service.',
+      title: _t('workspace_features_title', 'বায়াররা যা পাবে'),
+      subtitle: _t('workspace_features_sub',
+          'এই সার্ভিস থেকে বায়াররা ঠিক কী কী পাবে তা লিখুন।'),
       icon: Icons.checklist_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,7 +1109,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                       decoration: _buildInputDecoration(
-                        hintText: 'e.g. High-quality logo design',
+                        hintText: _t('workspace_feature_hint',
+                            'যেমন: হাই-কোয়ালিটি লোগো ডিজাইন'),
                       ),
                     ),
                   ),
@@ -1138,7 +1164,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                   const Icon(Icons.add_rounded, color: _slate700, size: 18),
                   const SizedBox(width: 6),
                   Text(
-                    'Add feature',
+                    _t('workspace_add_feature', 'ফিচার যোগ করুন'),
                     style: GoogleFonts.inter(
                       color: _slate700,
                       fontWeight: FontWeight.w700,
@@ -1151,7 +1177,8 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Add at least 3 concrete deliverables buyers can verify easily.',
+            _t('workspace_features_helper',
+                'অন্তত ৩টি নির্দিষ্ট ডেলিভারেবল দিন যা বায়াররা সহজে যাচাই করতে পারে।'),
             style: GoogleFonts.inter(color: _slate500, fontSize: 11),
           ),
         ],
@@ -1398,7 +1425,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                 ),
               ),
               child: Text(
-                'Reset',
+                _t('workspace_reset', 'রিসেট'),
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -1438,7 +1465,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                           const Icon(Icons.send_rounded, size: 18),
                           const SizedBox(width: 6),
                           Text(
-                            'Create Gig',
+                            _t('workspace_create_gig', 'গিগ তৈরি করুন'),
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,

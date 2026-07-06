@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
 import '../../services/business_network_service.dart';
 import '../../widgets/common/adsy_loading.dart';
+import '../../widgets/common/adsy_toast.dart';
 import 'profile_screen.dart';
 
 class BlockedUsersScreen extends StatefulWidget {
@@ -76,12 +77,11 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? 'User unblocked' : 'Failed to unblock user'),
-        backgroundColor: success ? Colors.green : Colors.red,
-      ),
-    );
+    if (success) {
+      AdsyToast.success(context, 'User unblocked');
+    } else {
+      AdsyToast.error(context, 'Failed to unblock user');
+    }
   }
 
   @override

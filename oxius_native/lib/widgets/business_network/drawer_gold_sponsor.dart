@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
 import '../../utils/html_content_utils.dart';
@@ -41,7 +42,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
           _totalViews = response['total_views'] ?? 0;
           _expiringCount = 0;
           final sponsors = response['featured_sponsors'] as List? ?? [];
-          _sponsors = sponsors.map((s) => Map<String, dynamic>.from(s)).toList();
+          _sponsors =
+              sponsors.map((s) => Map<String, dynamic>.from(s)).toList();
         });
       }
     } catch (_) {
@@ -61,7 +63,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
           child: Row(
             children: [
-              Icon(Icons.workspace_premium_rounded, size: 11, color: Colors.amber.shade600),
+              Icon(Icons.workspace_premium_rounded,
+                  size: 11, color: Colors.amber.shade600),
               const SizedBox(width: 4),
               Text(
                 'GOLD SPONSORS',
@@ -85,7 +88,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.amber.shade100),
           ),
-          child: widget.isLoggedIn ? _buildLoggedInContent() : _buildLoginPrompt(),
+          child:
+              widget.isLoggedIn ? _buildLoggedInContent() : _buildLoginPrompt(),
         ),
       ],
     );
@@ -102,7 +106,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
             const SizedBox(width: 6),
             _buildStatChip('Views', _formatViews(_totalViews), _isLoading),
             const SizedBox(width: 6),
-            _buildStatChip('Expiring', _expiringCount.toString(), _isLoading, isWarning: _expiringCount > 0),
+            _buildStatChip('Expiring', _expiringCount.toString(), _isLoading,
+                isWarning: _expiringCount > 0),
           ],
         ),
 
@@ -151,7 +156,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               child: InkWell(
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const BecomeGoldSponsorScreen()),
+                  MaterialPageRoute(
+                      builder: (_) => const BecomeGoldSponsorScreen()),
                 ),
                 borderRadius: BorderRadius.circular(7),
                 child: const Padding(
@@ -163,7 +169,10 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                       SizedBox(width: 5),
                       Text(
                         'Become Gold Sponsor',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
                       ),
                     ],
                   ),
@@ -179,7 +188,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
   Widget _buildLoginPrompt() {
     return Row(
       children: [
-        Icon(Icons.workspace_premium_rounded, size: 20, color: Colors.amber.shade500),
+        Icon(Icons.workspace_premium_rounded,
+            size: 20, color: Colors.amber.shade500),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -198,7 +208,10 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               padding: EdgeInsets.symmetric(horizontal: 9, vertical: 6),
               child: Text(
                 'Login',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
               ),
             ),
           ),
@@ -207,7 +220,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
     );
   }
 
-  Widget _buildStatChip(String label, String value, bool isLoading, {bool isWarning = false}) {
+  Widget _buildStatChip(String label, String value, bool isLoading,
+      {bool isWarning = false}) {
     final color = isWarning ? Colors.orange.shade600 : Colors.amber.shade700;
     return Expanded(
       child: Container(
@@ -215,7 +229,9 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: isWarning ? Colors.orange.shade200 : Colors.amber.shade200),
+          border: Border.all(
+              color:
+                  isWarning ? Colors.orange.shade200 : Colors.amber.shade200),
         ),
         child: Column(
           children: [
@@ -229,9 +245,12 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                 ),
               )
             else
-              Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+              Text(value,
+                  style: TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w700, color: color)),
             const SizedBox(height: 1),
-            Text(label, style: TextStyle(fontSize: 9, color: Colors.grey.shade500)),
+            Text(label,
+                style: TextStyle(fontSize: 9, color: Colors.grey.shade500)),
           ],
         ),
       ),
@@ -257,7 +276,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
   Widget _buildSponsorsList() {
     return Column(
       children: _sponsors.map((sponsor) {
-        final name = _plainSponsorText(sponsor['name'], fallback: 'Unnamed Sponsor');
+        final name =
+            _plainSponsorText(sponsor['name'], fallback: 'Unnamed Sponsor');
         final status = sponsor['status'] as String?;
         return Container(
           margin: const EdgeInsets.only(bottom: 5),
@@ -271,24 +291,33 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: Image.network(
-                  sponsor['image'] ?? '',
-                  width: 20,
-                  height: 20,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 20,
-                    height: 20,
-                    color: Colors.amber.shade100,
-                    child: const Icon(Icons.business, size: 12),
-                  ),
-                ),
+                child: (sponsor['image'] ?? '').toString().isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: sponsor['image'],
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 128,
+                        errorWidget: (_, __, ___) => Container(
+                          width: 20,
+                          height: 20,
+                          color: Colors.amber.shade100,
+                          child: const Icon(Icons.business, size: 12),
+                        ),
+                      )
+                    : Container(
+                        width: 20,
+                        height: 20,
+                        color: Colors.amber.shade100,
+                        child: const Icon(Icons.business, size: 12),
+                      ),
               ),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
                   name,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w500),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -301,7 +330,10 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                 ),
                 child: Text(
                   _getStatusText(status),
-                  style: TextStyle(fontSize: 9, color: _getStatusColor(status), fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      fontSize: 9,
+                      color: _getStatusColor(status),
+                      fontWeight: FontWeight.w600),
                 ),
               ),
               // Manage my sponsorship. Edit is temporarily hidden (2026-06,
@@ -312,7 +344,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                 height: 24,
                 child: PopupMenuButton<String>(
                   padding: EdgeInsets.zero,
-                  icon: Icon(Icons.more_vert, size: 15, color: Colors.grey.shade500),
+                  icon: Icon(Icons.more_vert,
+                      size: 15, color: Colors.grey.shade500),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -326,9 +359,12 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                       height: 40,
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                          Icon(Icons.delete_outline,
+                              size: 16, color: Colors.red),
                           SizedBox(width: 8),
-                          Text('Delete', style: TextStyle(fontSize: 13, color: Colors.red)),
+                          Text('Delete',
+                              style:
+                                  TextStyle(fontSize: 13, color: Colors.red)),
                         ],
                       ),
                     ),
@@ -360,8 +396,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
 
     final nameController = TextEditingController(
         text: _plainSponsorText(full['business_name'] ?? full['name']));
-    final descController = TextEditingController(
-        text: _plainSponsorText(full['description']));
+    final descController =
+        TextEditingController(text: _plainSponsorText(full['description']));
     bool saving = false;
 
     final saved = await showModalBottomSheet<bool>(
@@ -463,12 +499,8 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                                 Navigator.pop(sheetContext, true);
                               } else {
                                 setSheetState(() => saving = false);
-                                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Could not update sponsorship'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
+                                AdsyToast.error(sheetContext,
+                                    'Could not update sponsorship');
                               }
                             },
                       child: saving
@@ -547,21 +579,31 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
 
   String _getStatusText(String? status) {
     switch (status?.toLowerCase()) {
-      case 'active': return 'Active';
-      case 'pending': return 'Pending';
-      case 'expired': return 'Expired';
-      case 'rejected': return 'Rejected';
-      default: return 'Unknown';
+      case 'active':
+        return 'Active';
+      case 'pending':
+        return 'Pending';
+      case 'expired':
+        return 'Expired';
+      case 'rejected':
+        return 'Rejected';
+      default:
+        return 'Unknown';
     }
   }
 
   Color _getStatusColor(String? status) {
     switch (status?.toLowerCase()) {
-      case 'active': return Colors.green.shade600;
-      case 'pending': return Colors.orange.shade600;
-      case 'expired': return Colors.red.shade600;
-      case 'rejected': return Colors.red.shade600;
-      default: return Colors.grey.shade600;
+      case 'active':
+        return Colors.green.shade600;
+      case 'pending':
+        return Colors.orange.shade600;
+      case 'expired':
+        return Colors.red.shade600;
+      case 'rejected':
+        return Colors.red.shade600;
+      default:
+        return Colors.grey.shade600;
     }
   }
 }

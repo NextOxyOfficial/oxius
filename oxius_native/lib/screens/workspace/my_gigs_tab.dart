@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
+import '../../services/translation_service.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
@@ -16,6 +17,10 @@ class MyGigsTab extends StatefulWidget {
 
 class _MyGigsTabState extends State<MyGigsTab> {
   final WorkspaceService _workspaceService = WorkspaceService();
+
+  final TranslationService _i18n = TranslationService();
+  String _t(String key, String fallback) =>
+      _i18n.translate(key, fallback: fallback);
 
   List<Map<String, dynamic>> _gigs = [];
   bool _isLoading = true;
@@ -69,12 +74,18 @@ class _MyGigsTabState extends State<MyGigsTab> {
     if (success) {
       _loadMyGigs();
       if (mounted) {
-        AdsyToast.success(context,
-            'Gig ${newStatus == 'active' ? 'activated' : 'paused'} successfully');
+        AdsyToast.success(
+            context,
+            newStatus == 'active'
+                ? _t('workspace_gig_activated', 'গিগ চালু হয়েছে')
+                : _t('workspace_gig_paused', 'গিগ পজ করা হয়েছে'));
       }
     } else {
       if (mounted) {
-        AdsyToast.error(context, 'Failed to update gig status');
+        AdsyToast.error(
+            context,
+            _t('workspace_gig_status_failed',
+                'গিগের স্ট্যাটাস আপডেট করা যায়নি'));
       }
     }
   }
@@ -83,18 +94,18 @@ class _MyGigsTabState extends State<MyGigsTab> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Gig'),
-        content: const Text(
-            'Are you sure you want to delete this gig? This action cannot be undone.'),
+        title: Text(_t('workspace_delete_gig', 'গিগ ডিলিট করবেন?')),
+        content: Text(_t('workspace_delete_gig_confirm',
+            'এই গিগটি ডিলিট করতে চান? এটা আর ফেরানো যাবে না।')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(_t('workspace_cancel', 'ক্যান্সেল')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(_t('workspace_delete', 'ডিলিট')),
           ),
         ],
       ),
@@ -105,7 +116,8 @@ class _MyGigsTabState extends State<MyGigsTab> {
       if (success) {
         _loadMyGigs();
         if (mounted) {
-          AdsyToast.success(context, 'Gig deleted successfully');
+          AdsyToast.success(
+              context, _t('workspace_gig_deleted', 'গিগ ডিলিট হয়েছে'));
         }
       }
     }
@@ -123,13 +135,14 @@ class _MyGigsTabState extends State<MyGigsTab> {
             color: Colors.white,
             child: Row(
               children: [
-                _buildFilterButton('All', 'all'),
+                _buildFilterButton(_t('workspace_all', 'সব'), 'all'),
                 const SizedBox(width: 6),
-                _buildFilterButton('Active', 'active'),
+                _buildFilterButton(_t('workspace_active', 'চালু'), 'active'),
                 const SizedBox(width: 6),
-                _buildFilterButton('Paused', 'paused'),
+                _buildFilterButton(_t('workspace_paused', 'পজ'), 'paused'),
                 const SizedBox(width: 6),
-                _buildFilterButton('Pending', 'pending'),
+                _buildFilterButton(
+                    _t('workspace_pending', 'অপেক্ষমাণ'), 'pending'),
               ],
             ),
           ),
@@ -292,52 +305,56 @@ class _MyGigsTabState extends State<MyGigsTab> {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
                   height: 36,
                   child: Row(
                     children: [
-                      Icon(Icons.edit, size: 16),
-                      SizedBox(width: 8),
-                      Text('Edit', style: TextStyle(fontSize: 13)),
+                      const Icon(Icons.edit, size: 16),
+                      const SizedBox(width: 8),
+                      Text(_t('workspace_edit', 'এডিট'),
+                          style: const TextStyle(fontSize: 13)),
                     ],
                   ),
                 ),
                 if (status == 'active')
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'pause',
                     height: 36,
                     child: Row(
                       children: [
-                        Icon(Icons.pause, size: 16),
-                        SizedBox(width: 8),
-                        Text('Pause', style: TextStyle(fontSize: 13)),
+                        const Icon(Icons.pause, size: 16),
+                        const SizedBox(width: 8),
+                        Text(_t('workspace_pause', 'পজ'),
+                            style: const TextStyle(fontSize: 13)),
                       ],
                     ),
                   ),
                 if (status == 'paused')
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'activate',
                     height: 36,
                     child: Row(
                       children: [
-                        Icon(Icons.play_arrow, size: 16, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text('Activate',
-                            style:
-                                TextStyle(color: Colors.green, fontSize: 13)),
+                        const Icon(Icons.play_arrow,
+                            size: 16, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Text(_t('workspace_activate', 'চালু করুন'),
+                            style: const TextStyle(
+                                color: Colors.green, fontSize: 13)),
                       ],
                     ),
                   ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   height: 36,
                   child: Row(
                     children: [
-                      Icon(Icons.delete, size: 16, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Delete',
-                          style: TextStyle(color: Colors.red, fontSize: 13)),
+                      const Icon(Icons.delete, size: 16, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Text(_t('workspace_delete', 'ডিলিট'),
+                          style:
+                              const TextStyle(color: Colors.red, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -365,19 +382,19 @@ class _MyGigsTabState extends State<MyGigsTab> {
     switch (status) {
       case 'active':
         bgColor = Colors.green;
-        label = 'Active';
+        label = _t('workspace_active', 'চালু');
         break;
       case 'paused':
         bgColor = Colors.grey[700]!;
-        label = 'Paused';
+        label = _t('workspace_paused', 'পজ');
         break;
       case 'pending':
         bgColor = Colors.orange;
-        label = 'Pending';
+        label = _t('workspace_pending', 'অপেক্ষমাণ');
         break;
       case 'rejected':
         bgColor = Colors.red;
-        label = 'Rejected';
+        label = _t('workspace_rejected', 'বাতিল');
         break;
       default:
         bgColor = Colors.grey;
@@ -409,7 +426,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
           Icon(Icons.work_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No gigs yet',
+            _t('workspace_no_gigs_yet', 'এখনো কোনো গিগ নেই'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -418,7 +435,8 @@ class _MyGigsTabState extends State<MyGigsTab> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Create your first gig to start earning',
+            _t('workspace_create_first_gig',
+                'আয় শুরু করতে প্রথম গিগটি তৈরি করুন'),
             style: TextStyle(color: Colors.grey[500]),
           ),
           const SizedBox(height: 24),
@@ -427,7 +445,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
               // Navigate to create gig tab
             },
             icon: const Icon(Icons.add),
-            label: const Text('Create a Gig'),
+            label: Text(_t('workspace_create_a_gig', 'গিগ তৈরি করুন')),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF8B5CF6),
               foregroundColor: Colors.white,
