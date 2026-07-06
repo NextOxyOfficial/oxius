@@ -30,7 +30,9 @@ except ImportError:
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-"
+# Production key lives in the server .env (SECRET_KEY=...); this fallback is
+# for local development only and must never be used in production.
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-only-do-not-use-in-prod")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Driven by env var so production turns DEBUG OFF automatically.
@@ -257,10 +259,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": os.getenv("DB_NAME", "adsyclub"),
         "USER": os.getenv("DB_USER", "postgres"),
-        # Secrets read from the environment. The literal fallback keeps existing
-        # deploys working until DB_PASSWORD is set in the server env; ROTATE the
-        # password and set it in env, then delete the fallback.
-        "PASSWORD": os.getenv("DB_PASSWORD", "pgPass7431"),
+        # Secret comes from the environment (.env on the server) — no literal
+        # fallback so credentials never live in the repo.
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": os.getenv("DB_PORT", "5432"),
         # Reuse Postgres connections across requests instead of opening a new
@@ -490,7 +491,7 @@ APNS_ENVIRONMENT = os.getenv("APNS_ENVIRONMENT", "production")
 # If AGORA_APP_CERTIFICATE is empty the app continues to use Agora's no-token
 # mode. When a certificate is configured, native clients must request scoped
 # RTC tokens from the backend before joining a channel.
-AGORA_APP_ID = os.getenv("AGORA_APP_ID", "9eba1a50633041d08dbe75b0fde2ed8a")
+AGORA_APP_ID = os.getenv("AGORA_APP_ID", "")
 AGORA_APP_CERTIFICATE = os.getenv("AGORA_APP_CERTIFICATE", "")
 AGORA_TOKEN_EXPIRE_SECONDS = int(os.getenv("AGORA_TOKEN_EXPIRE_SECONDS", "3600"))
 
@@ -613,17 +614,16 @@ GUEST_NUDGE_PER_RUN_CAP = 500             # anti-burst: max guest pushes per run
 # registers — it does not stop after the 6 messages.
 
 # ShurjoPay Settings
-# ShurjoPay credentials — read from env. ROTATE at the gateway, set the new
-# values in the server env, then remove these literal fallbacks.
-SP_USERNAME = os.getenv("SP_USERNAME", "lyriczsoft")
-SP_PASSWORD = os.getenv("SP_PASSWORD", "lyrikskdzprvz&ud")
+# ShurjoPay credentials — read from env (.env on the server); never hardcoded.
+SP_USERNAME = os.getenv("SP_USERNAME", "")
+SP_PASSWORD = os.getenv("SP_PASSWORD", "")
 SP_ENDPOINT = "https://engine.shurjopayment.com"
 SP_RETURN = "https://adsyclub.com/verify-payment"
 SP_CANCEL = "https://adsyclub.com/deposit-withdraw/"
 SP_PREFIX = "ADSYCLUB_"
 
 # sms settings
-API_SMS = os.getenv("API_SMS", "SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd")
+API_SMS = os.getenv("API_SMS", "")
 SMS_SENDER_ID = os.getenv("SMS_SENDER_ID", "8809617626171")
 
 # Email Configuration (SMTP)
