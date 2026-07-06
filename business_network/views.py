@@ -816,6 +816,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 "tags",
                 "post_likes__user",
                 "post_comments__author",
+                "post_followers__user",
             )
             # Time-decayed global engagement ("hotness") from the denormalized
             # counters — no COUNT join needed. Gravity decay so fresh activity

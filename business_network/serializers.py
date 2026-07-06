@@ -1,8 +1,16 @@
 from rest_framework import serializers
 
-from base.serializers import UserSerializer
+from base.serializers import UserSerializer, viewer_relation_sets
 
 from .models import *
+
+
+def _is_following(context, user_id):
+    """Follow status from the request-scoped relation sets (1 query per
+    request) instead of one EXISTS query per serialized author/liker."""
+    request = context.get("request") if context else None
+    rel = viewer_relation_sets(request)
+    return user_id in rel["following"] if rel is not None else False
 
 
 class BusinessNetworkPostTagSerializer(serializers.ModelSerializer):
@@ -35,18 +43,10 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
 
     def get_author_details(self, obj):
         """Get author details with follow status"""
-        author_data = UserSerializer(obj.author).data
-        
-        # Add follow status if request user is authenticated
-        request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            is_following = BusinessNetworkFollowerModel.objects.filter(
-                follower=request.user, following=obj.author
-            ).exists()
-            author_data["isFollowing"] = is_following
-        else:
-            author_data["isFollowing"] = False
-        
+        # Pass the context so UserSerializer's per-request memo kicks in —
+        # the same author across many comments costs one stats lookup, not N.
+        author_data = UserSerializer(obj.author, context=self.context).data
+        author_data["isFollowing"] = _is_following(self.context, obj.author_id)
         return author_data
 
     def get_formatted_content(self, obj):
@@ -119,18 +119,8 @@ class BusinessNetworkPostLikeSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
     def get_user_details(self, obj):
-        user_data = UserSerializer(obj.user).data
-
-        # Add follow status if request user is authenticated
-        request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            is_following = BusinessNetworkFollowerModel.objects.filter(
-                follower=request.user, following=obj.user
-            ).exists()
-            user_data["isFollowing"] = is_following
-        else:
-            user_data["isFollowing"] = False
-
+        user_data = UserSerializer(obj.user, context=self.context).data
+        user_data["isFollowing"] = _is_following(self.context, obj.user_id)
         return user_data
 
 
@@ -187,18 +177,8 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
 
     def get_author_details(self, obj):
         """Get author details with follow status"""
-        author_data = UserSerializer(obj.author).data
-        
-        # Add follow status if request user is authenticated
-        request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            is_following = BusinessNetworkFollowerModel.objects.filter(
-                follower=request.user, following=obj.author
-            ).exists()
-            author_data["isFollowing"] = is_following
-        else:
-            author_data["isFollowing"] = False
-        
+        author_data = UserSerializer(obj.author, context=self.context).data
+        author_data["isFollowing"] = _is_following(self.context, obj.author_id)
         return author_data
 
     # In the feed/list, popular posts would otherwise ship EVERY comment and
@@ -227,28 +207,53 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             obj.post_likes.all(), many=True, context=self.context
         ).data
 
+    # Counts reuse the view's prefetch_related cache when present (feed lists
+    # prefetch these relations), so a 20-post page costs 0 extra COUNT
+    # queries; detail views without a prefetch still fall back to COUNT.
+    def _prefetched(self, obj, name):
+        cache = getattr(obj, "_prefetched_objects_cache", None)
+        return cache.get(name) if cache else None
+
     def get_like_count(self, obj):
-        return obj.post_likes.count()
+        likes = self._prefetched(obj, "post_likes")
+        return len(likes) if likes is not None else obj.post_likes.count()
 
     def get_comment_count(self, obj):
-        return obj.post_comments.count()
+        comments = self._prefetched(obj, "post_comments")
+        return len(comments) if comments is not None else obj.post_comments.count()
 
     def get_follower_count(self, obj):
-        return obj.post_followers.count()
-    
+        followers = self._prefetched(obj, "post_followers")
+        return (
+            len(followers) if followers is not None else obj.post_followers.count()
+        )
+
     def get_is_liked(self, obj):
         """Check if the current user has liked this post"""
         request = self.context.get("request")
         if request and request.user.is_authenticated:
+            likes = self._prefetched(obj, "post_likes")
+            if likes is not None:
+                return any(like.user_id == request.user.id for like in likes)
             return obj.post_likes.filter(user=request.user).exists()
         return False
-    
+
     def get_is_saved(self, obj):
-        """Check if the current user has saved this post"""
+        """Check if the current user has saved this post — answered from a
+        per-request set of saved post ids (1 query per request, not per post)."""
         request = self.context.get("request")
         if request and request.user.is_authenticated:
-            from .models import UserSavedPosts
-            return UserSavedPosts.objects.filter(user=request.user, post=obj).exists()
+            saved = getattr(request, "_bn_saved_post_ids", None)
+            if saved is None:
+                from .models import UserSavedPosts
+
+                saved = set(
+                    UserSavedPosts.objects.filter(user=request.user).values_list(
+                        "post_id", flat=True
+                    )
+                )
+                request._bn_saved_post_ids = saved
+            return obj.id in saved
         return False
 
 

@@ -100,6 +100,41 @@ class ProfileCompletionMixin(serializers.Serializer):
         )
 
 
+def viewer_relation_sets(request):
+    """Sets of user ids the viewer follows / has blocked / is blocked by —
+    built once per request (3 queries total, not 3 per serialized user).
+    Memoized on the request object so every serializer sharing the request
+    (including business_network's nested author/liker details) reuses them.
+    Returns None for anonymous/missing requests."""
+    if request is None or not getattr(request, "user", None) or not request.user.is_authenticated:
+        return None
+    memo = getattr(request, "_user_serializer_memo", None)
+    if memo is None:
+        memo = {"stats": {}, "rel": None}
+        request._user_serializer_memo = memo
+    if memo["rel"] is None:
+        from adsyconnect.models import BlockedUser
+
+        memo["rel"] = {
+            "following": set(
+                BusinessNetworkFollowerModel.objects.filter(
+                    follower=request.user
+                ).values_list("following_id", flat=True)
+            ),
+            "blocked_by_me": set(
+                BlockedUser.objects.filter(blocker=request.user).values_list(
+                    "blocked_id", flat=True
+                )
+            ),
+            "blocked_by_them": set(
+                BlockedUser.objects.filter(blocked=request.user).values_list(
+                    "blocker_id", flat=True
+                )
+            ),
+        }
+    return memo["rel"]
+
+
 class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
@@ -122,71 +157,98 @@ class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
         }
         depth = 1
 
-    def get_post_count(self, obj):
-        return BusinessNetworkPost.objects.filter(author=obj).count()
+    # ── N+1 mitigation ────────────────────────────────────────────────
+    # This serializer is nested inside posts, comments and like lists, so a
+    # single feed page can serialize the same author dozens of times. All
+    # per-user stats are memoized on the request object (shared by every
+    # UserSerializer instance that receives the same context), and the
+    # viewer-relationship checks (following/blocked) are answered from sets
+    # loaded once per request instead of one query per user.
 
-    def get_follower_count(self, obj):
-        return BusinessNetworkFollowerModel.objects.filter(following=obj).count()
+    def _request_memo(self):
+        request = self.context.get("request") if self.context else None
+        if request is None:
+            return None, None
+        memo = getattr(request, "_user_serializer_memo", None)
+        if memo is None:
+            memo = {"stats": {}, "rel": None}
+            request._user_serializer_memo = memo
+        return request, memo
 
-    def get_follow_count(self, obj):
-        return BusinessNetworkFollowerModel.objects.filter(follower=obj).count()
-    
-    def get_followers_count(self, obj):
-        """Alias for follower_count - people following this user"""
-        return self.get_follower_count(obj)
-    
-    def get_following_count(self, obj):
-        """Alias for follow_count - people this user is following"""
-        return self.get_follow_count(obj)
-    
-    def get_is_following(self, obj):
-        """Check if the current user is following this user"""
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return BusinessNetworkFollowerModel.objects.filter(
-                follower=request.user,
-                following=obj
-            ).exists()
-        return False
+    def _user_stats(self, obj):
+        """Counts + rating for one user — 4 queries per DISTINCT user per
+        request (was 8+ duplicated queries per occurrence)."""
+        request, memo = self._request_memo()
+        if memo is not None and obj.pk in memo["stats"]:
+            return memo["stats"][obj.pk]
 
-    def get_is_blocked_by_me(self, obj):
-        """True if the current user has blocked this profile's user."""
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            from adsyconnect.models import BlockedUser
-            return BlockedUser.objects.filter(
-                blocker=request.user,
-                blocked=obj,
-            ).exists()
-        return False
-
-    def get_is_blocked_by_them(self, obj):
-        """True if this profile's user has blocked the current user."""
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            from adsyconnect.models import BlockedUser
-            return BlockedUser.objects.filter(
-                blocker=obj,
-                blocked=request.user,
-            ).exists()
-        return False
-
-    def get_sale_post_count(self, obj):
-        # Only count active sale posts, not pending or other statuses
-        return SalePost.objects.filter(user=obj, status="active").count()
-
-    def get_rating(self, obj):
-        """Calculate the average rating for this store from reviews on their products"""
-        from django.db.models import Avg
+        from django.db.models import Avg, Count
 
         from reviews.models import Review
 
-        # Get all reviews for products owned by this store
+        follow_counts = BusinessNetworkFollowerModel.objects.aggregate(
+            followers=Count("id", filter=Q(following=obj)),
+            following=Count("id", filter=Q(follower=obj)),
+        )
         avg_rating = Review.objects.filter(
             product__owner=obj, is_approved=True
         ).aggregate(Avg("rating"))["rating__avg"]
+        stats = {
+            "post_count": BusinessNetworkPost.objects.filter(author=obj).count(),
+            "follower_count": follow_counts["followers"] or 0,
+            "follow_count": follow_counts["following"] or 0,
+            "sale_post_count": SalePost.objects.filter(
+                user=obj, status="active"
+            ).count(),
+            "rating": round(avg_rating, 1) if avg_rating else 0.0,
+        }
+        if memo is not None:
+            memo["stats"][obj.pk] = stats
+        return stats
 
-        return round(avg_rating, 1) if avg_rating else 0.0
+    def _viewer_rel(self):
+        request = self.context.get("request") if self.context else None
+        return viewer_relation_sets(request)
+
+    def get_post_count(self, obj):
+        return self._user_stats(obj)["post_count"]
+
+    def get_follower_count(self, obj):
+        return self._user_stats(obj)["follower_count"]
+
+    def get_follow_count(self, obj):
+        return self._user_stats(obj)["follow_count"]
+
+    def get_followers_count(self, obj):
+        """Alias for follower_count - people following this user"""
+        return self._user_stats(obj)["follower_count"]
+
+    def get_following_count(self, obj):
+        """Alias for follow_count - people this user is following"""
+        return self._user_stats(obj)["follow_count"]
+
+    def get_is_following(self, obj):
+        """Check if the current user is following this user"""
+        rel = self._viewer_rel()
+        return obj.pk in rel["following"] if rel is not None else False
+
+    def get_is_blocked_by_me(self, obj):
+        """True if the current user has blocked this profile's user."""
+        rel = self._viewer_rel()
+        return obj.pk in rel["blocked_by_me"] if rel is not None else False
+
+    def get_is_blocked_by_them(self, obj):
+        """True if this profile's user has blocked the current user."""
+        rel = self._viewer_rel()
+        return obj.pk in rel["blocked_by_them"] if rel is not None else False
+
+    def get_sale_post_count(self, obj):
+        # Only count active sale posts, not pending or other statuses
+        return self._user_stats(obj)["sale_post_count"]
+
+    def get_rating(self, obj):
+        """Average rating for this store from reviews on their products."""
+        return self._user_stats(obj)["rating"]
 
     def validate_email(self, value):
         value = (value or "").strip()
