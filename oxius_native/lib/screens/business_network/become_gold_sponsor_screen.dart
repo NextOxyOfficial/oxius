@@ -226,6 +226,13 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Guard: without packages, firstWhere's orElse (_packages.first) would
+    // throw a StateError on the empty list and crash the submit.
+    if (_packages.isEmpty || _selectedPackageId == null) {
+      setState(() => _error = 'Please select a sponsorship package.');
+      return;
+    }
+
     // Check balance
     final selectedPackage = _packages.firstWhere(
       (p) => p.id == _selectedPackageId,
@@ -355,12 +362,18 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Become a Gold Sponsor'),
-        backgroundColor: Colors.amber.shade500,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Become a Gold Sponsor',
+          style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: _ink,
+        elevation: 0.5,
+        surfaceTintColor: Colors.white,
       ),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(4, 16, 4, 16),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
         child: Form(
           key: _formKey,
           child: Column(
@@ -370,11 +383,9 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.amber.shade50, Colors.yellow.shade50],
-                  ),
+                  color: const Color(0xFFFFFBEB),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.shade200),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,98 +418,118 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               const SizedBox(height: 24),
 
               // Business Name
+              _fieldLabel('Business Name', required: true),
               TextFormField(
                 controller: _businessNameController,
-                decoration: InputDecoration(
-                  labelText: 'Business Name *',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Required' : null,
+                style: const TextStyle(fontSize: 15, color: _ink),
+                textCapitalization: TextCapitalization.words,
+                decoration: _dec(hint: 'e.g. Rahim Traders'),
+                validator: (value) => (value?.trim().isEmpty ?? true)
+                    ? 'Business name is required'
+                    : null,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Business Description
+              _fieldLabel('Business Description', required: true),
               TextFormField(
                 controller: _businessDescController,
                 maxLines: 3,
                 maxLength: 200,
-                decoration: InputDecoration(
-                  labelText: 'Business Description *',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  helperText: 'Max 200 characters',
-                ),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Required' : null,
+                style: const TextStyle(fontSize: 15, color: _ink),
+                decoration: _dec(
+                    hint: 'What does your business do? (max 200 characters)'),
+                validator: (value) => (value?.trim().isEmpty ?? true)
+                    ? 'Description is required'
+                    : null,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Contact Email
+              _fieldLabel('Contact Email', required: true),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: 'Contact Email *',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
+                style: const TextStyle(fontSize: 15, color: _ink),
+                decoration: _dec(hint: 'name@example.com'),
                 validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Required';
-                  if (!value!.contains('@')) return 'Invalid email';
+                  final v = value?.trim() ?? '';
+                  if (v.isEmpty) return 'Email is required';
+                  final ok =
+                      RegExp(r'^[\w.+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$')
+                          .hasMatch(v);
+                  if (!ok) return 'Enter a valid email address';
                   return null;
                 },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Phone Number
+              _fieldLabel('Phone Number', required: true),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number *',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Required' : null,
+                style: const TextStyle(fontSize: 15, color: _ink),
+                decoration: _dec(hint: '01XXXXXXXXX'),
+                validator: (value) {
+                  final v = (value ?? '').replaceAll(RegExp(r'[\s-]'), '');
+                  if (v.isEmpty) return 'Phone number is required';
+                  if (!RegExp(r'^(\+?88)?01[3-9]\d{8}$').hasMatch(v)) {
+                    return 'Enter a valid Bangladeshi phone number';
+                  }
+                  return null;
+                },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Website
+              _fieldLabel('Website URL'),
               TextFormField(
                 controller: _websiteController,
-                decoration: InputDecoration(
-                  labelText: 'Website URL',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
+                keyboardType: TextInputType.url,
+                style: const TextStyle(fontSize: 15, color: _ink),
+                decoration: _dec(hint: 'https://yourbusiness.com (optional)'),
+                validator: (value) {
+                  final v = value?.trim() ?? '';
+                  if (v.isEmpty) return null;
+                  if (!v.contains('.')) return 'Enter a valid URL';
+                  return null;
+                },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Profile URL
+              _fieldLabel('Profile URL'),
               TextFormField(
                 controller: _profileUrlController,
-                decoration: InputDecoration(
-                  labelText: 'Profile URL',
-                  helperText:
-                      'Users will be redirected here when clicking "Visit Sponsor\'s Profile"',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                keyboardType: TextInputType.url,
+                style: const TextStyle(fontSize: 15, color: _ink),
+                decoration: _dec(
+                  hint: 'Link to your page or profile (optional)',
+                  helper:
+                      "Users will be redirected here when clicking 'Visit Sponsor\'s Profile'",
                 ),
+                validator: (value) {
+                  final v = value?.trim() ?? '';
+                  if (v.isEmpty) return null;
+                  if (!v.contains('.')) return 'Enter a valid URL';
+                  return null;
+                },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Logo Upload
-              Text('Business Logo',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Business Logo',
+                  style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      color: _ink)),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -564,9 +595,11 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Promotional Banners (Optional)',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  const Text('Promotional Banners (Optional)',
+                      style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: _ink)),
                   Text('${_banners.length}/$_maxBanners',
                       style: TextStyle(color: Colors.grey.shade600)),
                 ],
@@ -597,29 +630,37 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
 
               // Balance Card
               Container(
-                padding: const EdgeInsets.all(16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue.shade200),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _line),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Your Current Balance:',
-                        style: TextStyle(color: Colors.blue.shade800)),
+                    const Icon(Icons.account_balance_wallet_outlined,
+                        size: 19, color: _muted),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text('Your Current Balance',
+                          style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: _muted)),
+                    ),
                     _isLoadingBalance
                         ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 18,
+                            height: 18,
                             child: AdsyLoadingIndicator(strokeWidth: 2),
                           )
                         : Text(
                             '৳${_userBalance.toStringAsFixed(0)}',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue.shade900),
+                            style: const TextStyle(
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w800,
+                                color: _ink),
                           ),
                   ],
                 ),
@@ -628,8 +669,11 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               const SizedBox(height: 16),
 
               // Package Selection
-              Text('Select Sponsorship Package *',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Select Sponsorship Package *',
+                  style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      color: _ink)),
               const SizedBox(height: 12),
 
               if (_isLoadingPackages)
@@ -719,15 +763,16 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               // Submit Button
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: _isLoading || _success ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber.shade500,
+                    backgroundColor: const Color(0xFFF59E0B),
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     disabledBackgroundColor: Colors.grey.shade300,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -755,6 +800,55 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   static const Color _muted = Color(0xFF6B7280);
   static const Color _line = Color(0xFFE5E7EB);
 
+  /// One decoration for every input so sizes/borders stay identical:
+  /// white fill, neutral hairline, amber focus, red error.
+  InputDecoration _dec({String? hint, String? helper}) {
+    OutlineInputBorder b(Color c, [double w = 1]) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: c, width: w),
+        );
+    return InputDecoration(
+      hintText: hint,
+      helperText: helper,
+      helperMaxLines: 2,
+      hintStyle: const TextStyle(
+          fontSize: 14.5,
+          color: Color(0xFF9CA3AF),
+          fontWeight: FontWeight.w400),
+      helperStyle: const TextStyle(fontSize: 12, color: _muted),
+      filled: true,
+      fillColor: Colors.white,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      border: b(_line),
+      enabledBorder: b(_line),
+      focusedBorder: b(_amber, 1.4),
+      errorBorder: b(const Color(0xFFEF4444)),
+      focusedErrorBorder: b(const Color(0xFFEF4444), 1.4),
+    );
+  }
+
+  /// Field label above the input — clearer than floating labels and the
+  /// required mark stays visible while typing.
+  Widget _fieldLabel(String text, {bool required = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text.rich(
+        TextSpan(
+          text: text,
+          style: const TextStyle(
+              fontSize: 13.5, fontWeight: FontWeight.w600, color: _ink),
+          children: required
+              ? const [
+                  TextSpan(
+                      text: ' *', style: TextStyle(color: Color(0xFFEF4444)))
+                ]
+              : const [],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLocationSection() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -774,13 +868,16 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 decoration: BoxDecoration(
                     color: const Color(0xFFFEF3C7),
                     borderRadius: BorderRadius.circular(8)),
-                child: const Icon(Icons.location_on_rounded, size: 18, color: _amber),
+                child: const Icon(Icons.location_on_rounded,
+                    size: 18, color: _amber),
               ),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text('Where should your ad show?',
                     style: TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700, color: _ink)),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: _ink)),
               ),
             ],
           ),
@@ -859,7 +956,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(icon,
-                    size: 18, color: selected ? _amber : const Color(0xFF9CA3AF)),
+                    size: 18,
+                    color: selected ? _amber : const Color(0xFF9CA3AF)),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(label,
@@ -913,7 +1011,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                     fontSize: 13, fontWeight: FontWeight.w600, color: _amber)),
             const SizedBox(width: 8),
             Text('${_locations.length}/$_maxLocations',
-                style: const TextStyle(fontSize: 11.5, color: Color(0xFF9CA3AF))),
+                style:
+                    const TextStyle(fontSize: 11.5, color: Color(0xFF9CA3AF))),
           ],
         ),
       ),
@@ -921,13 +1020,15 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   }
 
   Widget _priceSummary() {
-    final showFullNote = !_targetAllBangladesh &&
-        _distinctDivisionCount > _maxDiscountDivisions;
+    final showFullNote =
+        !_targetAllBangladesh && _distinctDivisionCount > _maxDiscountDivisions;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _discountEligible ? const Color(0xFFECFDF5) : const Color(0xFFF9FAFB),
+        color: _discountEligible
+            ? const Color(0xFFECFDF5)
+            : const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
             color: _discountEligible ? const Color(0xFFA7F3D0) : _line),
@@ -937,7 +1038,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         children: [
           Row(
             children: [
-              const Text('You pay', style: TextStyle(fontSize: 12.5, color: _muted)),
+              const Text('You pay',
+                  style: TextStyle(fontSize: 12.5, color: _muted)),
               const Spacer(),
               if (_discountEligible) ...[
                 Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
@@ -954,7 +1056,9 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               ] else
                 Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _ink)),
             ],
           ),
           if (_discountEligible)
@@ -1020,14 +1124,17 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               const SizedBox(width: 8),
               const Text('Target location',
                   style: TextStyle(
-                      fontSize: 11.5, fontWeight: FontWeight.w600, color: _muted)),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: _muted)),
               const Spacer(),
               InkWell(
                 onTap: () => setState(() => _locations.remove(loc)),
                 borderRadius: BorderRadius.circular(20),
                 child: const Padding(
                   padding: EdgeInsets.all(2),
-                  child: Icon(Icons.close_rounded, size: 17, color: Color(0xFFEF4444)),
+                  child: Icon(Icons.close_rounded,
+                      size: 17, color: Color(0xFFEF4444)),
                 ),
               ),
             ],
@@ -1106,7 +1213,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         isDense: true,
         filled: true,
         fillColor: enabled ? Colors.white : const Color(0xFFF1F5F9),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         enabledBorder: border(_line),
         disabledBorder: border(_line),
         focusedBorder: border(_amber, 1.4),

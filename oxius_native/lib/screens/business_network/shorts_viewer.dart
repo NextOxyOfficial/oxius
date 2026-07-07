@@ -1611,8 +1611,13 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                 ),
                               ),
                             ],
-                            // Reels-style inline follow, right beside the name.
-                            if (!_isOwnPost()) ...[
+                            // Inline follow beside the name. Hidden entirely
+                            // when the data already says we follow them; after
+                            // a tap it reads "Following" for this session only
+                            // (next load the API reports is_following=true and
+                            // the button simply doesn't render).
+                            if (!_isOwnPost() &&
+                                !widget.post.user.isFollowing) ...[
                               const TextSpan(text: '  '),
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.middle,
@@ -1633,7 +1638,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                       ),
                                     ),
                                     child: Text(
-                                      _isFollowing ? 'ফলো করছেন' : 'ফলো করুন',
+                                      _isFollowing ? 'Following' : 'Follow',
                                       style: TextStyle(
                                         color: Colors.white.withValues(
                                             alpha: _isFollowing ? 0.7 : 1.0),
