@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../widgets/location_disclosure_dialog.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -218,7 +219,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     return int.tryParse(value?.toString() ?? '') ?? fallback;
   }
 
-
   int _targetedRemainingSeconds(Ride ride, {DateTime? now}) {
     if (_currentTargetedDriverName(ride).isEmpty) return 0;
 
@@ -425,6 +425,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
+        // Play Policy prominent disclosure (foreground use) before OS prompt.
+        if (!mounted) return;
+        final consented =
+            await LocationDisclosure.ensure(context, background: false);
+        if (!consented) {
+          _showError('রাইড শেয়ার ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।');
+          return;
+        }
         permission = await Geolocator.requestPermission();
       }
 
@@ -792,6 +800,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       // Check permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
+        // Play Policy prominent disclosure (foreground use) before OS prompt.
+        if (!mounted) return;
+        final consented =
+            await LocationDisclosure.ensure(context, background: false);
+        if (!consented) {
+          setState(() => _locationGranted = false);
+          _showError('রাইড শেয়ার ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।');
+          return;
+        }
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           if (mounted) {
@@ -1696,8 +1713,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           'রাইড কমপ্লিট। ড্রাইভারকে নগদ পরিশোধ করুন।',
       'ride complete and wallet payment confirmed.':
           'রাইড কমপ্লিট এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।',
-      'you already have an active ride.':
-          'আপনার ইতিমধ্যে একটি রাইড চলছে।',
+      'you already have an active ride.': 'আপনার ইতিমধ্যে একটি রাইড চলছে।',
       'ride requested successfully.': 'রাইড রিকোয়েস্ট সফলভাবে করা হয়েছে।',
       'no drivers available. ride cancelled automatically.':
           'কোনো ড্রাইভার পাওয়া যায়নি। রাইড স্বয়ংক্রিয়ভাবে বাতিল হয়েছে।',

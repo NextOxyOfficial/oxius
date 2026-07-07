@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
@@ -222,8 +221,7 @@ Future<void> _bootstrap(UserStateService userState) async {
     // Register this device as a guest so it can receive registration-
     // conversion pushes. _sendTokenToBackend falls back to the no-auth guest
     // endpoint when there's no session; the token is claimed on login.
-    await _safeInit(
-        'FCM guest token', () => FCMService.syncTokenWithBackend());
+    await _safeInit('FCM guest token', () => FCMService.syncTokenWithBackend());
   }
 }
 
@@ -339,12 +337,12 @@ class MyApp extends StatelessWidget {
                   ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
               useMaterial3: true,
               textTheme: AppFonts.robotoTextTheme(),
-              // Smooth, consistent navigation: the same horizontal slide
-              // (with back-swipe support) on every screen and platform,
-              // replacing Android's abrupt zoom-fade. Built via a helper with
-              // ZERO const anywhere — Codemagic's Dart front-end kept
-              // rejecting const builders in this position.
-              pageTransitionsTheme: _slidePageTransitions(),
+              // NOTE: a custom pageTransitionsTheme (CupertinoPageTransitions
+              // on all platforms) was removed — Codemagic's Flutter toolchain
+              // repeatedly failed the iOS archive on it ("Method not found:
+              // CupertinoPageTransitionsBuilder" / "Not a constant
+              // expression"). Default platform transitions are used instead;
+              // the app-wide bounce scroll (scrollBehavior above) stays.
               // Softer tap feedback than M3's sparkle — reads calmer.
               splashFactory: InkRipple.splashFactory,
               appBarTheme: const AppBarTheme(
@@ -727,8 +725,7 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) {
-    return const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics());
+    return const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
   }
 
   @override
@@ -736,14 +733,4 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
       BuildContext context, Widget child, ScrollableDetails details) {
     return child;
   }
-}
-
-/// Cupertino slide transitions for every platform, constructed at runtime —
-/// intentionally no `const` anywhere (see pageTransitionsTheme call site).
-PageTransitionsTheme _slidePageTransitions() {
-  final builders = <TargetPlatform, PageTransitionsBuilder>{};
-  for (final platform in TargetPlatform.values) {
-    builders[platform] = CupertinoPageTransitionsBuilder();
-  }
-  return PageTransitionsTheme(builders: builders);
 }

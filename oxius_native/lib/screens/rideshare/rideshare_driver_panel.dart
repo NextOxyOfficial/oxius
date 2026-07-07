@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../widgets/location_disclosure_dialog.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -631,6 +632,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
+        // Play Policy: show prominent disclosure (background use) BEFORE the
+        // OS prompt. Driver mode streams live location, incl. in background.
+        if (!mounted) return false;
+        final consented =
+            await LocationDisclosure.ensure(context, background: true);
+        if (!consented) {
+          _showError('ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।');
+          return false;
+        }
         permission = await Geolocator.requestPermission();
       }
 
