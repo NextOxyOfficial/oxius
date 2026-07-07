@@ -120,15 +120,10 @@ class _PostCommentInputState extends State<PostCommentInput> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF10B981).withValues(alpha: 0.08),
-                  const Color(0xFF059669).withValues(alpha: 0.05),
-                ],
-              ),
+              color: const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                color: const Color(0xFFE2E8F0),
                 width: 1,
               ),
             ),

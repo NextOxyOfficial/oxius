@@ -356,6 +356,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   List<_FeedSlot> _composeSlots(List<BusinessNetworkPost> posts) {
     final slots = <_FeedSlot>[const _FeedSlot(_FeedSlotType.topHeader)];
     int sponsoredSlot = 0;
+    int newsSlot = 0;
     for (int i = 0; i < posts.length; i++) {
       if (i > 0 && i % 10 == 0 && AuthService.isAuthenticated) {
         slots.add(const _FeedSlot(_FeedSlotType.userSuggestions));
@@ -371,7 +372,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         slots.add(const _FeedSlot(_FeedSlotType.microGigs));
       }
       if (i > 0 && i % 9 == 6) {
-        slots.add(const _FeedSlot(_FeedSlotType.news));
+        // slotIndex → which story this occurrence shows (rotates the list).
+        slots.add(_FeedSlot(_FeedSlotType.news, slotIndex: newsSlot++));
       }
       if (i > 0 && i % 11 == 8) {
         slots.add(const _FeedSlot(_FeedSlotType.workspaceGigs));
@@ -753,7 +755,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       case _FeedSlotType.sponsored:
         return SponsoredProductsCard(
           key: ValueKey('sponsored_products_${slot.slotIndex}'),
-          products: _getSponsoredProductsForSlot(slot.slotIndex ?? 0, 3),
+          // Carousel row — hand it more products than the old 2-up grid.
+          products: _getSponsoredProductsForSlot(slot.slotIndex ?? 0, 8),
         );
 
       case _FeedSlotType.nativeAd:
@@ -763,7 +766,11 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         return const FeedMicroGigsCard();
 
       case _FeedSlotType.news:
-        return const FeedNewsCard();
+        // Different story per slot so scrolling shows fresh news each time.
+        return FeedNewsCard(
+          key: ValueKey('feed_news_${slot.slotIndex}'),
+          index: slot.slotIndex ?? 0,
+        );
 
       case _FeedSlotType.workspaceGigs:
         return const FeedWorkspaceGigsCard();

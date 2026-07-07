@@ -192,7 +192,9 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
+                                color: Colors.white,
+                                border:
+                                    Border.all(color: const Color(0xFFE2E8F0)),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Icon(
@@ -236,12 +238,7 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                             widthFactor: _getPercentage(tag) / 100,
                             child: Container(
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.blue.shade400,
-                                    Colors.blue.shade600
-                                  ],
-                                ),
+                                color: Colors.blue.shade500,
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
@@ -352,33 +349,33 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
       ),
       child: Column(
         children: [
-          // Header
+          // Header — standard sheet header: white, bottom hairline, dark text.
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade600, Colors.indigo.shade600],
-              ),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border:
+                  Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.tag_rounded, color: Colors.white, size: 24),
+                Icon(Icons.tag_rounded, color: Colors.blue.shade600, size: 22),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Text(
                     'Top 100 Trending Hashtags',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16.5,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded, color: Colors.white),
+                  icon: const Icon(Icons.close_rounded,
+                      color: Color(0xFF64748B)),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),

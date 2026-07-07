@@ -102,6 +102,33 @@ class MentionParser {
     return ids;
   }
 
+  /// One canonical mention rendering for every surface (post title, content,
+  /// comments). Standard social-app treatment: plain semibold link-blue text,
+  /// no filled chip — it reads as a tappable entity without decoration.
+  static WidgetSpan _mentionChipSpan(
+    String mentionName,
+    Function(String)? onMentionTap, {
+    double fontSize = 12.5,
+  }) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.baseline,
+      baseline: TextBaseline.alphabetic,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onMentionTap?.call(mentionName),
+        child: Text(
+          '@$mentionName',
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF2563EB),
+            height: 1.3,
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Parse text and return a list of TextSpans with mentions styled as chips
   static List<InlineSpan> parseTextWithMentions(
     String text,
@@ -133,41 +160,8 @@ class MentionParser {
       // Add mention as a styled chip
       final mentionName =
           (match.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
-      spans.add(WidgetSpan(
-        alignment: PlaceholderAlignment.baseline,
-        baseline: TextBaseline.alphabetic,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => onMentionTap?.call(mentionName),
-          child: Container(
-            margin: const EdgeInsets.only(left: 2, right: 1),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.blue.shade50.withValues(alpha: 0.8),
-                  Colors.purple.shade50.withValues(alpha: 0.8),
-                ],
-              ),
-              border: Border.all(
-                color: Colors.blue.shade200.withValues(alpha: 0.6),
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '@$mentionName',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: Colors.blue.shade700,
-                height: 1.15,
-                letterSpacing: 0.1,
-              ),
-            ),
-          ),
-        ),
-      ));
+      spans.add(_mentionChipSpan(mentionName, onMentionTap,
+          fontSize: plainStyle.fontSize ?? 15));
 
       lastIndex = match.end;
     }
@@ -185,41 +179,8 @@ class MentionParser {
 
         final mentionName =
             (match.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
-        spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.baseline,
-          baseline: TextBaseline.alphabetic,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => onMentionTap?.call(mentionName),
-            child: Container(
-              margin: const EdgeInsets.only(left: 1, right: 0),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.blue.shade50.withValues(alpha: 0.8),
-                    Colors.purple.shade50.withValues(alpha: 0.8),
-                  ],
-                ),
-                border: Border.all(
-                  color: Colors.blue.shade200.withValues(alpha: 0.6),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '@$mentionName',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
-                  height: 1.15,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ),
-          ),
-        ));
+        spans.add(_mentionChipSpan(mentionName, onMentionTap,
+            fontSize: plainStyle.fontSize ?? 15));
 
         localLast = match.end;
       }
@@ -273,41 +234,8 @@ class MentionParser {
       if (mentionMatch != null) {
         final mentionName =
             (mentionMatch.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
-        spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.baseline,
-          baseline: TextBaseline.alphabetic,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => onMentionTap?.call(mentionName),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1.5),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.blue.shade50.withValues(alpha: 0.8),
-                    Colors.purple.shade50.withValues(alpha: 0.8),
-                  ],
-                ),
-                border: Border.all(
-                  color: Colors.blue.shade200.withValues(alpha: 0.6),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '@$mentionName',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
-                  height: 1.15,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ),
-          ),
-        ));
+        spans.add(_mentionChipSpan(mentionName, onMentionTap,
+            fontSize: normalStyle.fontSize ?? 13));
 
         index = mentionMatch.end;
         continue;

@@ -32,9 +32,10 @@ class FeedDiscoveryItem {
 
 /// Reusable horizontal "discovery" section shown between feed posts
 /// (micro gigs / news / workspace gigs). Mirrors the sponsored-products look.
+/// Deliberately restrained: neutral bordered surfaces, accent used only for
+/// the icon and links — no gradient fills.
 class FeedDiscoveryCard extends StatelessWidget {
   final IconData icon;
-  final List<Color> gradient;
   final Color accent;
   final String title;
   final VoidCallback onSeeAll;
@@ -43,7 +44,6 @@ class FeedDiscoveryCard extends StatelessWidget {
   const FeedDiscoveryCard({
     super.key,
     required this.icon,
-    required this.gradient,
     required this.accent,
     required this.title,
     required this.onSeeAll,
@@ -73,10 +73,11 @@ class FeedDiscoveryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: gradient),
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, size: 15, color: Colors.white),
+                  child: Icon(icon, size: 15, color: accent),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -207,14 +208,9 @@ class FeedDiscoveryCard extends StatelessWidget {
 
   Widget _iconTile() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient.map((c) => c.withValues(alpha: 0.16)).toList(),
-        ),
-      ),
-      child: Center(child: Icon(icon, size: 30, color: accent)),
+      color: const Color(0xFFF1F5F9),
+      child: const Center(
+          child: Icon(Icons.image_outlined, size: 28, color: Color(0xFF94A3B8))),
     );
   }
 }
@@ -268,7 +264,6 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
     if (_gigs.isEmpty) return const SizedBox.shrink();
     return FeedDiscoveryCard(
       icon: Icons.bolt_rounded,
-      gradient: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
       accent: const Color(0xFF6366F1),
       title: 'নতুন গিগস — সহজে ইনকাম',
       onSeeAll: () => Navigator.push(context,
@@ -292,8 +287,12 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
 // ── News ────────────────────────────────────────────────────────────────────
 final _newsStore = _DiscoveryStore<NewsPost>();
 
+/// One news story rendered like a regular feed post (full-width image, title
+/// underneath, "আরো পড়ুন") so it blends into the scroll instead of reading
+/// as a promo carousel. Each feed slot shows a different story via [index].
 class FeedNewsCard extends StatefulWidget {
-  const FeedNewsCard({super.key});
+  final int index;
+  const FeedNewsCard({super.key, this.index = 0});
   @override
   State<FeedNewsCard> createState() => _FeedNewsCardState();
 }
@@ -308,7 +307,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
       final res = await NewsService.getPosts(page: 1);
       return res.results;
     }).then((v) {
-      if (mounted) setState(() => _posts = v.take(8).toList());
+      if (mounted) setState(() => _posts = v.take(10).toList());
     });
   }
 
@@ -317,25 +316,133 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
     return raw.startsWith('http') ? raw : '${AppConfig.mediaBaseUrl}$raw';
   }
 
+  static const _accent = Color(0xFF2563EB);
+
   @override
   Widget build(BuildContext context) {
     if (_posts.isEmpty) return const SizedBox.shrink();
-    return FeedDiscoveryCard(
-      icon: Icons.newspaper_rounded,
-      gradient: const [Color(0xFF0EA5E9), Color(0xFF2563EB)],
-      accent: const Color(0xFF2563EB),
-      title: 'সর্বশেষ খবর',
-      onSeeAll: () => Navigator.pushNamed(context, '/adsy-news'),
-      items: _posts
-          .map((p) => FeedDiscoveryItem(
-                title: p.title,
-                imageUrl: _img(p.image),
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => NewsDetailScreen(slug: p.slug))),
-              ))
-          .toList(),
+    final post = _posts[widget.index % _posts.length];
+    final img = _img(post.image);
+
+    void openStory() => Navigator.push(context,
+        MaterialPageRoute(builder: (_) => NewsDetailScreen(slug: post.slug)));
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEDF0F5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header — same anatomy as a post header, branded as news.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 10, 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.newspaper_rounded,
+                      size: 15, color: _accent),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'এডসি নিউজ',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/adsy-news'),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    child: Row(
+                      children: [
+                        Text('সব খবর',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _accent)),
+                        Icon(Icons.chevron_right_rounded,
+                            size: 16, color: _accent),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Full-width image like a post's media.
+          if (img.isNotEmpty)
+            GestureDetector(
+              onTap: openStory,
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: CachedNetworkImage(
+                  imageUrl: img,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 1080,
+                  placeholder: (c, u) =>
+                      Container(color: const Color(0xFFF1F5F9)),
+                  errorWidget: (c, u, e) =>
+                      Container(color: const Color(0xFFF1F5F9)),
+                ),
+              ),
+            ),
+          // Title below the image, post-style.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            child: GestureDetector(
+              onTap: openStory,
+              child: Text(
+                post.title,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ),
+          // Read-more action.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 2, 12, 12),
+            child: GestureDetector(
+              onTap: openStory,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'আরো পড়ুন',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _accent,
+                    ),
+                  ),
+                  SizedBox(width: 2),
+                  Icon(Icons.arrow_forward_rounded, size: 15, color: _accent),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -373,8 +480,7 @@ class _FeedWorkspaceGigsCardState extends State<FeedWorkspaceGigsCard> {
   Widget build(BuildContext context) {
     if (_gigs.isEmpty) return const SizedBox.shrink();
     return FeedDiscoveryCard(
-      icon: Icons.work_rounded,
-      gradient: const [Color(0xFF059669), Color(0xFF10B981)],
+      icon: Icons.work_outline_rounded,
       accent: const Color(0xFF059669),
       title: 'ওয়ার্কস্পেস গিগস',
       onSeeAll: () => Navigator.push(context,

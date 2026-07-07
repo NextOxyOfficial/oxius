@@ -1000,12 +1000,7 @@ class _CommentItemState extends State<_CommentItem> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.pink.shade50.withValues(alpha: 0.7),
-                            Colors.purple.shade50.withValues(alpha: 0.7),
-                          ],
-                        ),
+                        color: Colors.pink.shade50.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(10),
                         border:
                             Border.all(color: Colors.pink.shade200, width: 1),

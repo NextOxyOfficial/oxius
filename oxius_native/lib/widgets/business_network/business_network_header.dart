@@ -260,7 +260,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             label: 'AdsyClub',
             icon: Icons.bar_chart_rounded,
             gradient: LinearGradient(
-              colors: [Colors.blue.shade500, Colors.indigo.shade600],
+              colors: [Colors.blue.shade600, Colors.blue.shade600],
             ),
             onTap: () {
               Navigator.pushNamed(context, '/eshop');
@@ -275,7 +275,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             label: 'AdsyNews',
             icon: Icons.newspaper,
             gradient: LinearGradient(
-              colors: [Colors.amber.shade500, Colors.orange.shade600],
+              colors: [Colors.amber.shade600, Colors.amber.shade600],
             ),
             onTap: () {
               Navigator.pushNamed(context, '/adsy-news');
@@ -326,9 +326,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                      ),
+                      color: const Color(0xFFEF4444),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1.5),
                     ),
@@ -523,9 +521,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.indigo.shade500, Colors.purple.shade600],
-                ),
+                color: Colors.indigo.shade600,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(

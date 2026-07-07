@@ -73,12 +73,12 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.amber.shade500, Colors.yellow.shade500],
-                    ),
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Icon(Icons.star, size: 14, color: Colors.white),
+                  child:
+                      Icon(Icons.star, size: 14, color: Colors.amber.shade600),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -198,14 +198,12 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                   height: 68,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Colors.amber.shade400, Colors.yellow.shade400],
-                    ),
+                    color: const Color(0xFFF59E0B),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.amber.withValues(alpha: 0.3),
+                        color: Colors.amber.withValues(alpha: 0.25),
                         blurRadius: 8,
-                        spreadRadius: 2,
+                        spreadRadius: 1,
                       ),
                     ],
                   ),
@@ -242,10 +240,8 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                   right: 0,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.amber.shade500, Colors.yellow.shade500],
-                      ),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF59E0B),
                       shape: BoxShape.circle,
                     ),
                     child:
@@ -1035,12 +1031,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 15),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.amber.shade500,
-                                      Colors.orange.shade500,
-                                    ],
-                                  ),
+                                  color: const Color(0xFFF59E0B),
                                   borderRadius: BorderRadius.circular(14),
                                   boxShadow: [
                                     BoxShadow(
@@ -1085,8 +1076,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Colors.amber.shade500, Colors.orange.shade400]),
+        color: const Color(0xFFF59E0B),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -1121,16 +1111,10 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
 
   Widget _bannerFallback() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.amber.shade300, Colors.orange.shade400],
-        ),
-      ),
-      child: Center(
+      decoration: const BoxDecoration(color: Color(0xFFFEF3C7)),
+      child: const Center(
         child: Icon(Icons.workspace_premium_rounded,
-            size: 54, color: Colors.white.withValues(alpha: 0.85)),
+            size: 54, color: Color(0xFFD97706)),
       ),
     );
   }

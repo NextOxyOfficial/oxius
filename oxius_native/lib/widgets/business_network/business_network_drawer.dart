@@ -220,12 +220,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
                                     vertical: 1,
                                   ),
                                   decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFFF59E0B),
-                                        Color(0xFFFBBF24),
-                                      ],
-                                    ),
+                                    color: const Color(0xFFF59E0B),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Text(

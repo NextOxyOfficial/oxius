@@ -5,6 +5,8 @@ import '../../config/app_config.dart';
 import '../../screens/business_network/profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
+/// "People you may know" as a horizontal discovery row — same visual system
+/// as the workspace-gigs / micro-gigs cards so the feed feels consistent.
 class UserSuggestionsCard extends StatefulWidget {
   final VoidCallback? onRefresh;
 
@@ -24,6 +26,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
   bool _isRefreshing = false;
   final Map<String, bool> _followingStates = {};
   final Map<String, bool> _followingPending = {};
+
+  static const _accent = Color(0xFF3B82F6);
 
   @override
   void initState() {
@@ -58,13 +62,10 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
       return;
     }
 
-    // Show random 2-3 users from all suggestions
-    final isMobile = MediaQuery.of(context).size.width < 768;
-    final count = isMobile ? 2 : 3;
-
+    // Horizontal row — show up to 10, shuffled for variety.
     final shuffled = List<Map<String, dynamic>>.from(_allSuggestions)
       ..shuffle();
-    _displayedSuggestions = shuffled.take(count).toList();
+    _displayedSuggestions = shuffled.take(10).toList();
   }
 
   Future<void> _handleRefresh() async {
@@ -101,25 +102,9 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
       if (success && mounted) {
         setState(() {
           if (!isFollowing) {
-            // User was followed - remove from suggestions list
-            _allSuggestions.removeWhere((u) => u['id'].toString() == userId);
-            _displayedSuggestions
-                .removeWhere((u) => u['id'].toString() == userId);
-
-            // If we have more suggestions, add a new one to display
-            if (_displayedSuggestions.length < 2 &&
-                _allSuggestions.isNotEmpty) {
-              final remaining = _allSuggestions
-                  .where((u) => !_displayedSuggestions
-                      .any((d) => d['id'].toString() == u['id'].toString()))
-                  .toList();
-              if (remaining.isNotEmpty) {
-                remaining.shuffle();
-                _displayedSuggestions.add(remaining.first);
-              }
-            }
+            // Followed — mark the chip; keep the tile so the row doesn't jump.
+            _followingStates[userId] = true;
           } else {
-            // User was unfollowed - just update state
             _followingStates[userId] = false;
           }
         });
@@ -148,202 +133,130 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
     return '$firstName $lastName'.trim();
   }
 
+  String _getImageUrl(String? imageUrl) {
+    return AppConfig.getAbsoluteUrl(imageUrl);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    if (!_isLoading && _displayedSuggestions.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            Colors.blue.shade50.withValues(alpha: 0.3),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.shade100, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
-          ),
-        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEDF0F5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with modern gradient
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.blue.shade600,
-                  Colors.blue.shade700,
-                ],
-              ),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
+          // Header — matches the discovery-card system.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 10, 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.people,
-                          size: 16, color: Colors.white),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'People you may know',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _isLoading || _isRefreshing ? null : _handleRefresh,
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                     borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      child: _isLoading || _isRefreshing
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: AdsyLoadingIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(Icons.refresh_rounded,
-                              size: 18, color: Colors.white),
+                  ),
+                  child: const Icon(Icons.person_add_alt_1_rounded,
+                      size: 15, color: _accent),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'পরিচিত হতে পারেন',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                      letterSpacing: -0.2,
                     ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _isLoading || _isRefreshing ? null : _handleRefresh,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    child: _isLoading || _isRefreshing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: AdsyLoadingIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(_accent),
+                            ),
+                          )
+                        : const Icon(Icons.refresh_rounded,
+                            size: 18, color: _accent),
                   ),
                 ),
               ],
             ),
           ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(4),
+          // Horizontal tiles
+          SizedBox(
+            height: 190,
             child: _isLoading
-                ? _buildLoadingState(isMobile)
-                : _displayedSuggestions.isEmpty
-                    ? _buildEmptyState()
-                    : _buildSuggestionsList(isMobile),
+                ? _buildLoadingRow()
+                : ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: _displayedSuggestions.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, i) =>
+                        _buildUserTile(_displayedSuggestions[i]),
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLoadingState(bool isMobile) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = isMobile ? 2 : 3;
-        const crossAxisSpacing = 4.0;
-        const mainAxisSpacing = 4.0;
-
-        final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-        final available =
-            (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
-        final cellWidth =
-            (available / crossAxisCount).clamp(0.0, double.infinity);
-
-        // Square image (height == width) + details section
-        final detailsHeight = isMobile ? 104.0 : 118.0;
-
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          // Explicit zero padding: nested grids otherwise inherit the ambient
-          // MediaQuery insets, which rendered as phantom gaps on devices.
-          padding: EdgeInsets.zero,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisExtent: cellWidth + detailsHeight,
-            crossAxisSpacing: crossAxisSpacing,
-            mainAxisSpacing: mainAxisSpacing,
-          ),
-          itemCount: isMobile ? 2 : 3,
-          itemBuilder: (context, index) {
-            return Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.grey.shade200),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: isMobile ? 96 : 144,
-                    height: isMobile ? 96 : 144,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 16,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 12,
-                    width: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Center(
+  Widget _buildLoadingRow() {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      itemCount: 4,
+      separatorBuilder: (_, __) => const SizedBox(width: 10),
+      itemBuilder: (context, i) => SizedBox(
+        width: 128,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.people_outline, size: 48, color: Colors.grey.shade400),
-            const SizedBox(height: 12),
-            Text(
-              'No suggestions available',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
+            Container(
+              width: 128,
+              height: 104,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              height: 12,
+              width: 96,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Container(
+              height: 10,
+              width: 64,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
           ],
@@ -352,265 +265,146 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
     );
   }
 
-  Widget _buildSuggestionsList(bool isMobile) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = isMobile ? 2 : 3;
-        const crossAxisSpacing = 4.0;
-        const mainAxisSpacing = 4.0;
-
-        final hasAnyProfession = _displayedSuggestions.any((u) {
-          final v = (u['profession'] ?? '').toString().trim();
-          return v.isNotEmpty;
-        });
-        final hasAnyMutual = _displayedSuggestions.any((u) {
-          final n =
-              int.tryParse((u['mutual_connections'] ?? 0).toString()) ?? 0;
-          return n > 0;
-        });
-
-        final baseDetails = isMobile ? 74.0 : 78.0;
-        final professionExtra =
-            hasAnyProfession ? (isMobile ? 14.0 : 14.0) : 0.0;
-        final mutualExtra = hasAnyMutual ? (isMobile ? 21.0 : 21.0) : 0.0;
-        final detailsHeight = baseDetails + professionExtra + mutualExtra;
-
-        final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-        final available =
-            (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
-        final cellWidth =
-            (available / crossAxisCount).clamp(0.0, double.infinity);
-
-        // Square image (height == width) + a details block that grows with
-        // the device's text scale so taller glyphs don't overflow the cell.
-        final ts =
-            MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.6);
-        final scaledDetails = detailsHeight + 4.0 + (ts - 1.0) * 56.0;
-
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          // Explicit zero padding: nested grids otherwise inherit the ambient
-          // MediaQuery insets, which rendered as phantom gaps on devices.
-          padding: EdgeInsets.zero,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisExtent: cellWidth + scaledDetails,
-            crossAxisSpacing: crossAxisSpacing,
-            mainAxisSpacing: mainAxisSpacing,
-          ),
-          itemCount: _displayedSuggestions.length,
-          itemBuilder: (context, index) {
-            final user = _displayedSuggestions[index];
-            return _buildUserCard(user, isMobile);
-          },
-        );
-      },
-    );
-  }
-
-  String _getImageUrl(String? imageUrl) {
-    // Use AppConfig.getAbsoluteUrl() which correctly uses mediaBaseUrl
-    // This avoids /api/media/ issue and uses correct /media/ path
-    return AppConfig.getAbsoluteUrl(imageUrl);
-  }
-
-  Widget _buildUserCard(Map<String, dynamic> user, bool isMobile) {
+  Widget _buildUserTile(Map<String, dynamic> user) {
     final userId = (user['id'] ?? '').toString();
     final isFollowing = _followingStates[userId] ?? false;
     final isPending = _followingPending[userId] ?? false;
-    final rawImageUrl = user['image']?.toString();
-    final imageUrl = _getImageUrl(rawImageUrl);
+    final imageUrl = _getImageUrl(user['image']?.toString());
+    final profession = (user['profession'] ?? '').toString().trim();
     final mutualConnections =
         int.tryParse((user['mutual_connections'] ?? 0).toString()) ?? 0;
 
-    // Debug logging
-    if (rawImageUrl != null && rawImageUrl.isNotEmpty) {
-      debugPrint('📸 User: ${user['first_name']} ${user['last_name']}');
-      debugPrint('🔗 Raw URL: $rawImageUrl');
-      debugPrint('🌐 Absolute URL: $imageUrl');
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          // Navigate to user's profile
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProfileScreen(userId: userId),
+    return SizedBox(
+      width: 128,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar — tappable to profile.
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: userId),
+              ),
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade50, width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blue.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              // Profile image - full width
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: imageUrl.isNotEmpty
-                      ? AppImage.network(
-                          imageUrl,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: _buildPlaceholderImage(isMobile),
-                          errorWidget: _buildPlaceholderImage(isMobile),
-                        )
-                      : _buildPlaceholderImage(isMobile),
-                ),
-              ),
-
-              const SizedBox(height: 6),
-
-              // User name
-              Text(
-                _getUserDisplayName(user),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1F2937),
-                  letterSpacing: 0.2,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-
-              // Profession
-              if (user['profession'] != null &&
-                  user['profession'].toString().isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  user['profession'].toString(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-
-              // Mutual connections
-              if (mutualConnections > 0) ...[
-                const SizedBox(height: 3),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '$mutualConnections mutual',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.blue.shade700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-
-              const Spacer(),
-
-              const SizedBox(height: 6),
-
-              // Follow button
-              SizedBox(
-                width: double.infinity,
-                height: isMobile ? 28 : 32,
-                child: ElevatedButton(
-                  onPressed: isPending ? null : () => _toggleFollow(user),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isFollowing ? Colors.white : Colors.blue.shade600,
-                    foregroundColor:
-                        isFollowing ? Colors.blue.shade700 : Colors.white,
-                    elevation: 0,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: isFollowing
-                          ? BorderSide(color: Colors.blue.shade200, width: 1.5)
-                          : BorderSide.none,
-                    ),
-                    shadowColor: isFollowing
-                        ? Colors.transparent
-                        : Colors.blue.withValues(alpha: 0.3),
-                  ),
-                  child: isPending
-                      ? SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: AdsyLoadingIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(
-                              isFollowing ? Colors.blue.shade700 : Colors.white,
-                            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 128,
+                height: 104,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    imageUrl.isNotEmpty
+                        ? AppImage.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: _placeholder(),
+                            errorWidget: _placeholder(),
+                          )
+                        : _placeholder(),
+                    if (mutualConnections > 0)
+                      Positioned(
+                        bottom: 6,
+                        left: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.62),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                        )
-                      : Text(
-                          isFollowing ? 'Following' : 'Follow',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.2,
+                          child: Text(
+                            '$mutualConnections পারস্পরিক',
+                            style: const TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white),
                           ),
                         ),
+                      ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 6),
+          Text(
+            _getUserDisplayName(user),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1F2937),
+              height: 1.25,
+            ),
+          ),
+          if (profession.isNotEmpty) ...[
+            const SizedBox(height: 1),
+            Text(
+              profession,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF6B7280)),
+            ),
+          ],
+          const Spacer(),
+          // Follow button — compact pill, full tile width.
+          SizedBox(
+            width: double.infinity,
+            height: 28,
+            child: ElevatedButton(
+              onPressed: isPending ? null : () => _toggleFollow(user),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isFollowing ? Colors.white : _accent,
+                foregroundColor:
+                    isFollowing ? _accent : Colors.white,
+                elevation: 0,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  side: isFollowing
+                      ? const BorderSide(color: Color(0xFFBFDBFE), width: 1.2)
+                      : BorderSide.none,
+                ),
+              ),
+              child: isPending
+                  ? SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: AdsyLoadingIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(
+                          isFollowing ? _accent : Colors.white,
+                        ),
+                      ),
+                    )
+                  : Text(
+                      isFollowing ? 'ফলো করছেন' : 'ফলো করুন',
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildPlaceholderImage(bool isMobile) {
+  Widget _placeholder() {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade100,
-            Colors.blue.shade50,
-          ],
-        ),
-      ),
-      child: Icon(
-        Icons.person_rounded,
-        size: isMobile ? 48 : 64,
-        color: Colors.blue.shade300,
-      ),
+      color: const Color(0xFFF1F5F9),
+      child: const Icon(Icons.person_rounded,
+          size: 44, color: Color(0xFF94A3B8)),
     );
   }
 }
