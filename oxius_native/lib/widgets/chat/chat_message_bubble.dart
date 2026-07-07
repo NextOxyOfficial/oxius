@@ -345,14 +345,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       width: 28,
       height: 28,
       margin: const EdgeInsets.only(right: 6, bottom: 2),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF3B82F6).withValues(alpha: 0.1),
-            const Color(0xFF6366F1).withValues(alpha: 0.1),
-          ],
-        ),
+        color: Color(0xFFEFF6FF),
       ),
       child: avatarUrl.isEmpty
           ? fallback()
@@ -391,18 +386,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           ? const EdgeInsets.all(3)
           : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        gradient: isMe
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF3B82F6),
-                  Color(0xFF6366F1),
-                  Color(0xFF8B5CF6),
-                ],
-              )
-            : null,
-        color: isMe ? null : Colors.white.withValues(alpha: 0.78),
+        // Messenger-standard surfaces: one solid brand blue for own
+        // messages, quiet gray for received — no gradients.
+        color: isMe ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
         border: widget.isSearchHit
             ? Border.all(
                 color: widget.isCurrentSearchHit
@@ -410,26 +396,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     : const Color(0xFFFBBF24).withValues(alpha: 0.65),
                 width: widget.isCurrentSearchHit ? 2 : 1,
               )
-            : Border.all(
-                color: isMe
-                    ? Colors.white.withValues(alpha: 0.18)
-                    : Colors.white.withValues(alpha: 0.86),
-              ),
+            : null,
         borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(22),
-          topRight: const Radius.circular(22),
-          bottomLeft: Radius.circular(isMe ? 22 : 8),
-          bottomRight: Radius.circular(isMe ? 8 : 22),
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 5),
+          bottomRight: Radius.circular(isMe ? 5 : 18),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: isMe
-                ? const Color(0xFF6366F1).withValues(alpha: 0.10)
-                : Colors.black.withValues(alpha: 0.035),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: isDeleted
           ? _buildDeletedContent(isMe)
@@ -447,7 +420,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         Text(
           'Message removed',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 13.5,
             fontStyle: FontStyle.italic,
             color: isMe ? Colors.white70 : Colors.grey.shade500,
           ),
@@ -515,7 +488,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             maxLines: urlOnly ? 1 : null,
             overflow: urlOnly ? TextOverflow.ellipsis : null,
             style: TextStyle(
-              fontSize: urlOnly ? 11.5 : 15.5,
+              fontSize: urlOnly ? 11.5 : 15,
               color: urlOnly
                   ? (isMe
                       ? Colors.white.withValues(alpha: 0.75)

@@ -1532,10 +1532,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             label: 'QR Code',
             onTap: () {
               if (_userData != null) {
-                showDialog(
-                  context: context,
-                  builder: (context) => QrCodeModal(user: _userData!),
-                );
+                QrCodeModal.show(context, _userData!);
               }
             },
           ),
@@ -1603,10 +1600,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             label: 'QR Code',
             onTap: () {
               if (_userData != null) {
-                showDialog(
-                  context: context,
-                  builder: (context) => QrCodeModal(user: _userData!),
-                );
+                QrCodeModal.show(context, _userData!);
               }
             },
             showBorder: true,

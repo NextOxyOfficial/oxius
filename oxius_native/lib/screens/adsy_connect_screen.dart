@@ -859,7 +859,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     return InkWell(
       onTap: () => unawaited(_openChat(chat)),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
           color: hasUnread
               ? const Color(0xFF3B82F6).withValues(alpha: 0.02)
@@ -878,22 +878,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: 58,
-                  height: 58,
-                  decoration: BoxDecoration(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF3B82F6).withValues(alpha: 0.08),
-                        const Color(0xFF6366F1).withValues(alpha: 0.08),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: hasUnread
-                          ? const Color(0xFF3B82F6).withValues(alpha: 0.25)
-                          : Colors.transparent,
-                      width: 1.5,
-                    ),
+                    color: Color(0xFFEFF6FF),
                   ),
                   child: ClipOval(
                     child: chat['userAvatar'] != null &&
@@ -908,8 +897,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                   chat['userName'][0].toUpperCase(),
                                   style: const TextStyle(
                                     color: Color(0xFF3B82F6),
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               );
@@ -920,40 +909,30 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                               chat['userName'][0].toUpperCase(),
                               style: const TextStyle(
                                 color: Color(0xFF3B82F6),
-                                fontSize: 22,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: isOnline
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFF9CA3AF),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: isOnline
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                                blurRadius: 4,
-                                spreadRadius: 1,
-                              ),
-                            ]
-                          : null,
+                if (isOnline)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 13,
+                      height: 13,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             // User info
             Expanded(
               child: Column(
@@ -968,7 +947,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                               child: Text(
                                 chat['userName'],
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: hasUnread
                                       ? FontWeight.w700
                                       : FontWeight.w600,
@@ -980,21 +959,13 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                             ),
                             if (isTyping) ...[
                               const SizedBox(width: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFF10B981).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'typing',
-                                  style: TextStyle(
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF10B981),
-                                  ),
+                              const Text(
+                                'typing\u2026',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  fontStyle: FontStyle.italic,
+                                  color: Color(0xFF10B981),
                                 ),
                               ),
                             ],
@@ -1005,8 +976,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       Text(
                         _formatTimestamp(chat['timestamp']),
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: hasUnread
+                              ? const Color(0xFF3B82F6)
+                              : Colors.grey.shade500,
                         ),
                       ),
                     ],
@@ -1018,7 +992,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     Text(
                       chat['profession'],
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey.shade500,
                         letterSpacing: -0.1,
@@ -1030,8 +1004,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   Text(
                     chat['lastMessage'],
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w400,
+                      fontSize: 13,
+                      fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                       color: hasUnread
                           ? const Color(0xFF1F2937)
                           : const Color(0xFF6B7280),
@@ -1047,19 +1021,21 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             // Unread badge
             if (hasUnread)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
+                constraints: const BoxConstraints(minWidth: 19),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2.5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF3B82F6),
+                  borderRadius: BorderRadius.all(Radius.circular(999)),
                 ),
                 child: Text(
                   chat['unreadCount'].toString(),
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 9,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
+                    height: 1.1,
                   ),
                 ),
               ),
@@ -1069,18 +1045,13 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     );
   }
 
+  /// Compact messenger-style timestamps: now / 12m / 3h / 6d / 5w.
   String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
-    } else {
-      return 'Just now';
-    }
+    final difference = DateTime.now().difference(timestamp);
+    if (difference.inMinutes < 1) return 'now';
+    if (difference.inHours < 1) return '${difference.inMinutes}m';
+    if (difference.inDays < 1) return '${difference.inHours}h';
+    if (difference.inDays < 7) return '${difference.inDays}d';
+    return '${(difference.inDays / 7).floor()}w';
   }
 }

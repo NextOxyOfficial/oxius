@@ -737,10 +737,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 label: 'QR Code',
                 onTap: () {
                   if (_profileData != null) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => QrCodeModal(user: _profileData!),
-                    );
+                    QrCodeModal.show(context, _profileData!);
                   }
                 },
               ),

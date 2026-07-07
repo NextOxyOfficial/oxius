@@ -677,11 +677,11 @@ class _InboxScreenState extends State<InboxScreen>
               indicatorWeight: 3,
               labelPadding: const EdgeInsets.symmetric(horizontal: 4),
               labelStyle: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: -0.2),
               unselectedLabelStyle: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                   letterSpacing: -0.2),
               tabAlignment: TabAlignment.fill,
@@ -706,20 +706,24 @@ class _InboxScreenState extends State<InboxScreen>
                       if (chatsCount > 0) ...[
                         const SizedBox(width: 4),
                         Container(
+                          constraints: const BoxConstraints(minWidth: 17),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
+                            horizontal: 5,
                             vertical: 2,
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6),
-                            borderRadius: BorderRadius.circular(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF3B82F6),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(999)),
                           ),
                           child: Text(
                             chatsCount.toString(),
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 8,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
+                              height: 1.1,
                             ),
                           ),
                         ),
@@ -738,20 +742,24 @@ class _InboxScreenState extends State<InboxScreen>
                       if (updatesCount > 0) ...[
                         const SizedBox(width: 4),
                         Container(
+                          constraints: const BoxConstraints(minWidth: 17),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
+                            horizontal: 5,
                             vertical: 2,
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
-                            borderRadius: BorderRadius.circular(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEF4444),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(999)),
                           ),
                           child: Text(
                             updatesCount.toString(),
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 8,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
+                              height: 1.1,
                             ),
                           ),
                         ),
@@ -770,20 +778,24 @@ class _InboxScreenState extends State<InboxScreen>
                       if (supportTicketsCount > 0) ...[
                         const SizedBox(width: 4),
                         Container(
+                          constraints: const BoxConstraints(minWidth: 17),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
+                            horizontal: 5,
                             vertical: 2,
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
-                            borderRadius: BorderRadius.circular(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEF4444),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(999)),
                           ),
                           child: Text(
                             supportTicketsCount.toString(),
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 8,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
+                              height: 1.1,
                             ),
                           ),
                         ),

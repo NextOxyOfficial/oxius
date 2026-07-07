@@ -61,13 +61,13 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
   Widget build(BuildContext context) {
     // Always show the container - never hide it completely
     return Container(
-      margin: widget.margin ?? const EdgeInsets.only(bottom: 12),
+      margin: widget.margin ?? const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Column(
         children: [
           // Header — 6px effective screen-side inset (2 outer + 4 here)
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
             child: Row(
               children: [
                 Container(
@@ -116,8 +116,10 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
           else if (_sponsors.isEmpty)
             _buildEmptyContent()
           else
+            // Height matched to the tile's real content (avatar 68 + gap 6 +
+            // 2-line label + paddings) — the old 138 left a dead band below.
             SizedBox(
-              height: 138,
+              height: 116,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.zero,
@@ -128,7 +130,6 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                 },
               ),
             ),
-          const SizedBox(height: 8),
         ],
       ),
     );
@@ -136,7 +137,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
 
   Widget _buildLoadingContent() {
     return SizedBox(
-      height: 138,
+      height: 116,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
