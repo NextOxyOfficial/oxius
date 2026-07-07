@@ -917,7 +917,7 @@ def send_withdraw_email(user, amount, transaction_id, payment_method="", payment
     _info_row("তারিখ", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
 
-{_button("ট্রান্সঅ্যাকশন দেখুন", SITE_URL + "/deposit-withdraw")}
+{_button("ট্রান্সেকশন দেখুন", SITE_URL + "/deposit-withdraw")}
 """
 
     html = _base_template(subject, body, "উইথড্র সাধারণত ২৪–৪৮ ঘণ্টার মধ্যেই হয়ে যায়। কমপ্লিট হলে একটা কনফার্মেশন মেইল পেয়ে যাবেন।")
