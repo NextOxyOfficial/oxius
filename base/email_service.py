@@ -400,7 +400,7 @@ def _service_promo_html(exclude=""):
     return "".join(blocks)
 
 
-def _product_showcase_html(limit=2, heading="আপনার জন্য বাছাই"):
+def _product_showcase_html(limit=2, heading="আপনার জন্য বাছাইকৃত কিছু প্রোডাক্ট"):
     """Real eShop products WITH photos, rendered as a two-card row. Pulled
     live from the catalog at send time — every mail doubles as a storefront."""
     try:
