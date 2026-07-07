@@ -505,6 +505,11 @@ CELERY_TIMEZONE = 'Asia/Dhaka'  # Set your timezone
 CELERY_ENABLE_UTC = True
 
 CELERY_BEAT_SCHEDULE = {
+    "daily-good-morning-push": {
+        "task": "engagement.tasks.send_good_morning_push",
+        # 00:00 UTC == 06:00 Dhaka — the morning greeting broadcast.
+        "schedule": crontab(hour=0, minute=0),
+    },
     "weekly-bn-community-digest": {
         "task": "business_network.tasks.send_weekly_bn_digests",
         # Friday 10:00 Dhaka time — weekend scroll window.

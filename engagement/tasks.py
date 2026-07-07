@@ -662,3 +662,65 @@ def run_guest_nudges(dry_run=False):
     result = {"sent": sent, "dry_run": dry_run, "by_index": dict(by_index)}
     logger.info("run_guest_nudges: %s", result)
     return result
+
+
+@shared_task
+def send_good_morning_push():
+    """Daily 06:00 (Dhaka) good-morning broadcast — a warm start to the day
+    plus a gentle pull into the feed and services. The greeting rotates by
+    weekday so regulars never get the same message two days in a row."""
+    from base.push_notifications import send_push_notification
+
+    # (title, body) per weekday — Monday=0 ... Sunday=6. Each pairs a warm
+    # wish with ONE concrete thing to check inside AdsyClub.
+    greetings = [
+        (
+            "শুভ সকাল! নতুন সপ্তাহ শুরু 🌤️",
+            "আজকের দিনটা দারুণ কাটুক। ফিডে ঢুঁ মেরে দেখুন আপনার নেটওয়ার্কে "
+            "নতুন কী হলো — আর মাইক্রো গিগসে আজকের ইনকামের সুযোগগুলোও রেডি।",
+        ),
+        (
+            "শুভ সকাল! চা হাতে এক নজর ☕",
+            "দিনটা ভালো যাক। এক কাপ চায়ের সাথে ফিডটা দেখে নিন — রাতে আপনার "
+            "পোস্টে কারা লাইক-কমেন্ট করল, জানতে ২ মিনিটও লাগবে না।",
+        ),
+        (
+            "শুভ সকাল! আজ কিছু বিক্রি করবেন? 🌅",
+            "ঘরে অব্যবহৃত জিনিস পড়ে আছে? পুরাতন কেনাবেচায় ছবি তুলে পোস্ট "
+            "করুন — আপনার এলাকার ক্রেতারাই আগে দেখবে। শুভ দিন!",
+        ),
+        (
+            "শুভ সকাল! দিনটা আপনার হোক 🌞",
+            "আজ নতুন কাউকে ফলো করুন, একটা পোস্ট দিন — নেটওয়ার্ক যত বড়, "
+            "সুযোগ তত বেশি। ফিডে আপনার জন্য নতুন সাজেশন অপেক্ষা করছে।",
+        ),
+        (
+            "শুভ সকাল! সপ্তাহ প্রায় শেষ 🌻",
+            "আজকের দিনটা ঝরঝরে কাটুক। eShop-এ নতুন প্রোডাক্ট উঠেছে — "
+            "পছন্দ হলে ক্যাশ অন ডেলিভারিতে ঘরে চলে আসবে।",
+        ),
+        (
+            "শুভ সকাল! ছুটির আমেজে ☀️",
+            "সাপ্তাহিক ছুটি ভালো কাটুক। ফুরসতে ফিডটা ঘুরে দেখুন, আর "
+            "মোবাইল রিচার্জ লাগলে অ্যাপ থেকেই সেরে নিন — ১ মিনিটের কাজ।",
+        ),
+        (
+            "শুভ সকাল! নতুন সপ্তাহের প্রস্তুতি 🌄",
+            "আগামীকাল থেকে নতুন সপ্তাহ — আজই প্রোফাইলটা গুছিয়ে নিন আর "
+            "আমার সেবায় আপনার সার্ভিসটা পোস্ট করে রাখুন। শুভ দিন!",
+        ),
+    ]
+
+    # Beat fires at 00:00 UTC == 06:00 Dhaka; weekday comes from Dhaka's date.
+    dhaka_now = timezone.now() + timedelta(hours=6)
+    title, body = greetings[dhaka_now.weekday() % 7]
+
+    send_push_notification(
+        title=title,
+        body=body,
+        deep_link="https://adsyclub.com/business-network",
+        notification_type="good_morning",
+        broadcast=True,
+    )
+    logger.info("good morning push sent: %s", title)
+    return title

@@ -54,27 +54,27 @@ def _sub_expiring_build(s, u):
     """Subscription-expiring message with a clear expiry date + days remaining,
     so the user knows exactly when and how long is left (professional + clear)."""
     from datetime import datetime, timezone as _tz
-    title = "আপনার Pro সাবস্ক্রিপশনের মেয়াদ শেষ হচ্ছে ⏳"
+    title = "Pro-এর মেয়াদ ফুরিয়ে আসছে ⏳"
     try:
         exp = datetime.fromisoformat(s.pending.get("subscription_expiring"))
         now = datetime.now(_tz.utc) if exp.tzinfo else datetime.now()
         days = (exp - now).days
         date_str = f"{exp.day} {BN_MONTHS[exp.month - 1]} {exp.year}"
         if days <= 0:
-            when = "আজই মেয়াদ শেষ হচ্ছে"
+            when = "মেয়াদ আজই ফুরাচ্ছে"
         elif days == 1:
-            when = "আর মাত্র ১ দিন বাকি"
+            when = "হাতে মাত্র ১ দিন"
         else:
-            when = f"আর মাত্র {days} দিন বাকি"
+            when = f"হাতে আছে {days} দিন"
         body = (
-            f"{_name(u)}, আপনার Pro সাবস্ক্রিপশনের মেয়াদ {date_str} তারিখে শেষ হবে "
-            f"({when})। মেয়াদ শেষ হলে আপনার স্টোর ও Pro সুবিধাগুলো বন্ধ হয়ে যাবে — "
-            "এখনই রিনিউ করে চালু রাখুন।"
+            f"{_name(u)}, {date_str} তারিখে আপনার Pro শেষ হয়ে যাচ্ছে "
+            f"({when})। রিনিউ না করলে স্টোর আর Pro সুবিধাগুলো আটকে যাবে — "
+            "এক মিনিটেই রিনিউ করে নিন।"
         )
     except Exception:
         body = (
-            f"{_name(u)}, আপনার Pro সাবস্ক্রিপশনের মেয়াদ শেষ হচ্ছে। স্টোর ও Pro "
-            "সুবিধাগুলো চালু রাখতে এখনই রিনিউ করুন।"
+            f"{_name(u)}, আপনার Pro-এর মেয়াদ প্রায় শেষ। এক মিনিটে রিনিউ করে "
+            "নিলে স্টোর আর Pro সুবিধা আগের মতোই চলতে থাকবে।"
         )
     return (title, body)
 
@@ -100,9 +100,9 @@ def _area_services_build(s, u):
     if not parts or not area:
         # Should not fire (eligibility guards it), but stay safe.
         return (
-            "আপনার এলাকার সার্ভিস 🛠️",
-            f"{_name(u)}, আপনার আশেপাশে নানা ধরনের সার্ভিস প্রোভাইডার পাওয়া যাচ্ছে — "
-            "‘আমার সেবা’ থেকে এক ক্লিকে যোগাযোগ করুন।",
+            "কাছেই মিলবে দরকারি লোক 🛠️",
+            f"{_name(u)}, ‘আমার সেবা’ খুললেই আপনার আশেপাশের সার্ভিস প্রোভাইডারদের "
+            "তালিকা পেয়ে যাবেন — নম্বর দেখে সরাসরি কল করা যায়।",
         )
     if len(parts) == 1:
         listing = parts[0]
@@ -110,10 +110,10 @@ def _area_services_build(s, u):
         listing = f"{parts[0]} ও {parts[1]}"
     else:
         listing = f"{parts[0]}, {parts[1]} ও {parts[2]}"
-    title = f"{area}-এ আপনার পাশেই সার্ভিস প্রোভাইডার 🛠️"
+    title = f"{area}-এ এখনই ডাকার মতো লোক আছেন 🛠️"
     body = (
-        f"{_name(u)}, {area}-এ এখন {listing} সার্ভিস দিচ্ছেন। দরকার হলে এখনই "
-        "‘আমার সেবা’ থেকে সরাসরি যোগাযোগ করুন — কাছের ও বিশ্বস্ত সার্ভিস প্রোভাইডার।"
+        f"{_name(u)}, এই মুহূর্তে {area}-এ {listing} কাজ নিচ্ছেন। ‘আমার সেবা’-তে "
+        "তাঁদের প্রোফাইল দেখে পছন্দমতো একজনকে সরাসরি কল করে ফেলুন।"
     )
     return (title, body)
 
@@ -127,8 +127,8 @@ CATALOG = [
         deep_link=f"{SITE}/deposit-withdraw",
         eligible=lambda s, u: bool(s.pending.get("kyc")) and _has_balance(s),
         build=lambda s, u: (
-            "৳{} টাকা আপনার একাউন্টে রয়েছে  💰".format(int(float(s.pending["withdrawable_balance"]))),
-            "{}, আপনার ৳{} ব্যালেন্স উইথড্র করার জন্যে রেডি। KYC ভেরিফাই করে এখনই উইথড্র করুন।".format(
+            "৳{} উইথড্রর অপেক্ষায় 💰".format(int(float(s.pending["withdrawable_balance"]))),
+            "{}, আপনার ব্যালেন্সে ৳{} জমে আছে — KYC ভেরিফাই হয়ে গেলেই টাকাটা হাতে পেয়ে যাবেন। আজই সেরে ফেলুন।".format(
                 _name(u), int(float(s.pending["withdrawable_balance"]))
             ),
         ),
@@ -150,8 +150,8 @@ CATALOG = [
         deep_link=f"{SITE}/business-network",
         eligible=lambda s, u: s.lifecycle_stage == "dormant",
         build=lambda s, u: (
-            "আপনাকে মিস করছি, {} 👋".format(_name(u)),
-            "আপনি না থাকার সময় আপনার নেটওয়ার্কে অনেক কিছু হয়েছে — দেখে নিন কী নতুন।",
+            "{}, ফিডে অনেক কিছু জমে গেছে 👋".format(_name(u)),
+            "কদিনে আপনার নেটওয়ার্কে নতুন পোস্ট আর অফার জমেছে — দুই মিনিট ঘুরে দেখলেই সব আপডেট পেয়ে যাবেন।",
         ),
         reliable=False,
     ),
@@ -163,8 +163,8 @@ CATALOG = [
         deep_link=f"{SITE}/business-network",
         eligible=lambda s, u: s.lifecycle_stage == "at_risk",
         build=lambda s, u: (
-            "আপনার নেটওয়ার্কে নতুন পোস্ট 📨",
-            "আপনি যাদের ফলো করেন তারা নতুন আপডেট শেয়ার করেছেন। এক নজরে দেখুন।",
+            "ফলো করা মানুষদের নতুন খবর 📨",
+            "গত কয়েকদিনে তাঁরা কী কী শেয়ার করলেন — ফিডে ঢুকে এক নজরে দেখে নিন।",
         ),
         reliable=False,
     ),
@@ -176,8 +176,8 @@ CATALOG = [
         deep_link=f"{SITE}/business-network",
         eligible=lambda s, u: s.lifecycle_stage in ("new", "onboarding"),
         build=lambda s, u: (
-            "AdsyClub-এ স্বাগতম, {} 🎉".format(_name(u)),
-            "মানুষজনকে ফলো করুন, ফিড ঘুরে দেখুন, আর আয়ের নতুন উপায় খুঁজে নিন।",
+            "চলুন শুরু করা যাক, {} 😊".format(_name(u)),
+            "প্রথম কাজ: পছন্দের কয়েকজনকে ফলো করে ফেলুন — ফিড জমে উঠবে, আর MicroGigs-এ আয়ের রাস্তাও পেয়ে যাবেন।",
         ),
     ),
     # 6) Verify identity (KYC) — unlock withdrawals, selling and full access.
@@ -190,8 +190,8 @@ CATALOG = [
         deep_link=f"{SITE}/my-account",
         eligible=lambda s, u: bool(s.pending.get("kyc")),
         build=lambda s, u: (
-            "পরিচয় যাচাই করে নিন (KYC) ✅",
-            "{}, KYC ভেরিফাই করলে উইথড্র, বিক্রি আর সব সুবিধা আনলক হবে। এখনই ডকুমেন্ট আপলোড করুন।".format(
+            "KYC-টা বাকি রয়ে গেছে 🪪",
+            "{}, NID-র ছবি তুলে দিলেই ৫ মিনিটে KYC হয়ে যায় — তারপর উইথড্র, বিক্রি সবকিছুর দরজা খোলা।".format(
                 _name(u)
             ),
         ),
@@ -204,8 +204,8 @@ CATALOG = [
         deep_link=f"{SITE}/my-account",
         eligible=lambda s, u: bool(s.pending.get("profile_incomplete")),
         build=lambda s, u: (
-            "প্রোফাইল সম্পূর্ণ করুন 📝",
-            "{}, ছবি, নাম আর তথ্য যোগ করে প্রোফাইল সম্পূর্ণ করুন — অন্যরা আপনাকে সহজে খুঁজে পাবে আর বিশ্বাস করবে।".format(
+            "প্রোফাইলটা একটু সাজিয়ে নিন 📸",
+            "{}, একটা ছবি আর দু-লাইন তথ্য বসিয়ে দিন — সার্চে সামনে আসবেন, মানুষও ভরসা পেয়ে যোগাযোগ করবে।".format(
                 _name(u)
             ),
         ),
@@ -232,9 +232,9 @@ CATALOG = [
         deep_link=f"{SITE}/my-account",
         eligible=lambda s, u: bool(s.pending.get("no_location")),
         build=lambda s, u: (
-            "ঠিকানা যোগ করুন 📍",
-            "{}, আপনার এলাকা যোগ করুন — তাহলে আপনার আশেপাশে কারা সার্ভিস দিচ্ছেন "
-            "(ইলেকট্রিশিয়ান, মিস্ত্রি, আরও অনেক) তা আমরা জানিয়ে দিতে পারব।".format(_name(u)),
+            "আপনার এলাকাটা বলে রাখুন 📍",
+            "{}, একবার ঠিকানা সেভ করে রাখলেই কাছের ইলেকট্রিশিয়ান, মিস্ত্রি বা টিউটর "
+            "কারা আছেন — সেই খবর আমরা আগেভাগে আপনাকে জানিয়ে দেব।".format(_name(u)),
         ),
     ),
 ]

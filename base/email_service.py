@@ -299,12 +299,14 @@ def _promo_list_html(items):
 
 
 def _promo_grid_html(items):
-    """Variant B: two tinted cards side by side."""
+    """Variant B: two tinted cards side by side. The inner td carries a fixed
+    height so both cards stay EQUAL even when one description wraps to a
+    second line on narrow phones."""
     cells = "".join(
         f'''<td width="50%" valign="top" style="padding:5px;">
 <a href="{SITE_URL}{path}" style="text-decoration:none;display:block;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;">
-<tr><td style="padding:14px;">
+<tr><td height="78" valign="top" style="padding:14px;height:78px;">
 <div style="color:{color};font-size:14px;font-weight:800;">{title}</div>
 <div style="color:#475569;font-size:12.5px;line-height:1.5;margin-top:4px;">{desc}</div>
 </td></tr></table></a></td>'''
@@ -328,13 +330,68 @@ def _promo_spotlight_html(items):
 </td></tr></table>'''
 
 
+def _bn_pulse_html():
+    """Business Network community strip — list-style, action-first. Appended
+    with the promo so every marketing-carrying mail also pulls the reader
+    back into the community."""
+    rows = [
+        ("#2563EB", "নতুন পোস্ট দিন",
+         "আপনার কাজ বা ভাবনা শেয়ার করুন — নেটওয়ার্ক যত দেখবে, পরিচিতি তত বাড়বে",
+         "/business-network"),
+        ("#0D9488", "পরিচিত হতে পারেন",
+         "ফিডে আপনার জন্য নতুন মানুষদের সাজেশন আছে — ফলো করে নেটওয়ার্ক বড় করুন",
+         "/business-network"),
+        ("#7C3AED", "প্রোফাইল ঝালিয়ে নিন",
+         "ছবি আর পেশা আপডেট থাকলে অন্যরা সহজে খুঁজে পায় ও বিশ্বাস করে",
+         "/settings"),
+    ]
+    items = "".join(
+        f'''<tr><td style="padding:7px 0;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<td width="8" valign="top" style="padding-top:6px;">
+<div style="width:8px;height:8px;border-radius:50%;background-color:{color};font-size:0;">&nbsp;</div>
+</td>
+<td style="padding-left:10px;">
+<a href="{SITE_URL}{path}" style="text-decoration:none;">
+<span style="color:#0F172A;font-size:13.5px;font-weight:700;">{title}</span><br>
+<span style="color:#64748B;font-size:12.5px;line-height:1.55;">{desc}</span></a>
+</td></tr></table></td></tr>'''
+        for color, title, desc, path in rows
+    )
+    return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:18px 0 0;background-color:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;">
+<tr><td style="padding:16px 18px 12px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+<tr><td style="padding:0 0 6px;">
+<span style="color:#0F172A;font-size:14px;font-weight:700;">Business Network-এ আজ</span>
+<a href="{SITE_URL}/business-network" style="float:right;color:#2563EB;font-size:12.5px;font-weight:700;text-decoration:none;">ফিডে যান&nbsp;&#8594;</a>
+</td></tr>
+{items}
+</table>
+</td></tr></table>'''
+
+
 def _service_promo_html(exclude=""):
-    """Cross-sell block appended to transactional mail. The layout is picked
-    at send time from three variants so mails never look templated-identical."""
+    """Cross-sell section appended to transactional mail — intentionally a
+    RICH multi-block body: a 2-card grid, then the remaining services as a
+    keyline list (or a spotlight), then the Business Network pulse strip.
+    Order/choice shuffles at send time so mails never look identical."""
     items = [svc for svc in _PROMO_SERVICES if svc[0] != exclude]
     random.shuffle(items)
-    variant = random.choice([_promo_list_html, _promo_grid_html, _promo_spotlight_html])
-    return variant(items[:3])
+
+    blocks = []
+    if random.random() < 0.5:
+        # grid of 2 + keyline list of the next 3
+        blocks.append(_promo_grid_html(items[:2]))
+        rest = items[2:5]
+        if rest:
+            blocks.append(_promo_list_html(rest))
+    else:
+        # spotlight of 1 + grid of the next 2
+        blocks.append(_promo_spotlight_html(items[:1]))
+        blocks.append(_promo_grid_html(items[1:3]))
+
+    blocks.append(_bn_pulse_html())
+    return "".join(blocks)
 
 
 def _product_showcase_html(limit=2, heading="আপনার জন্য বাছাই"):
