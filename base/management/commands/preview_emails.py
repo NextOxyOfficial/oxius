@@ -32,6 +32,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--to", required=True, help="Recipient inbox")
+        parser.add_argument(
+            "--only",
+            default="",
+            help="Comma-separated template names to send (default: all)",
+        )
 
     def handle(self, *args, **options):
         to = options["to"].strip()
@@ -55,7 +60,11 @@ class Command(BaseCommand):
 
         order = _Obj(
             order_number="AC-2026-0042", total_amount="1250",
-            payment_method="AdsyPay", created_at=None,
+            payment_method="AdsyPay",
+            # Django model display helpers the templates call:
+            get_payment_method_display=lambda: "AdsyPay",
+            get_order_status_display=lambda: "প্রসেসিং",
+            order_status="processing", created_at=None,
             delivery_address="ধানমন্ডি, ঢাকা", phone="01763837367",
         )
         items = [
@@ -110,6 +119,12 @@ class Command(BaseCommand):
             ("support_reply", lambda: es.send_support_reply_email(ticket, "আপনার সমস্যাটা আমরা ঠিক করে দিয়েছি — এখন দেখে নিন।")),
             ("bn_weekly_digest", lambda: es.send_bn_digest_email(user)),
         ]
+
+        only = {
+            n.strip() for n in (options.get("only") or "").split(",") if n.strip()
+        }
+        if only:
+            previews = [(n, f) for n, f in previews if n in only]
 
         sent, failed = [], []
         for name, fire in previews:
