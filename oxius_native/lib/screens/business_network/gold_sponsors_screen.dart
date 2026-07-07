@@ -74,139 +74,92 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF59E0B), Color(0xFFF97316)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                    child: FutureBuilder<List<GoldSponsor>>(
-                      future: _sponsorsFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return _buildLoadingList();
-                        }
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: _buildAppBar(),
+      body: FutureBuilder<List<GoldSponsor>>(
+        future: _sponsorsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildLoadingList();
+          }
 
-                        final sponsors = snapshot.data ?? [];
-                        if (sponsors.isEmpty) {
-                          return _buildEmptyState();
-                        }
+          final sponsors = snapshot.data ?? [];
+          if (sponsors.isEmpty) {
+            return _buildEmptyState();
+          }
 
-                        return AdsyRefreshIndicator(
-                          color: const Color(0xFFD97706),
-                          onRefresh: _refresh,
-                          child: ListView.separated(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(6, 6, 6, 24),
-                            itemCount: sponsors.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 0),
-                            itemBuilder: (context, index) {
-                              return _buildSponsorCard(sponsors[index]);
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+          return AdsyRefreshIndicator(
+            color: const Color(0xFFD97706),
+            onRefresh: _refresh,
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(6, 6, 6, 24),
+              itemCount: sponsors.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 0),
+              itemBuilder: (context, index) {
+                return _buildSponsorCard(sponsors[index]);
+              },
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_rounded,
-                color: Colors.white, size: 22),
-            tooltip: 'Back',
-            onPressed: () => Navigator.pop(context),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Gold Sponsors',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1.05,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Premium partners and exclusive offers',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      foregroundColor: const Color(0xFF0F172A),
+      elevation: 0.5,
+      titleSpacing: 0,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            'Gold Sponsors',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+              height: 1.1,
+              letterSpacing: -0.2,
             ),
           ),
-          // Apply / become a sponsor
-          InkWell(
-            onTap: _openBecomeSponsor,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
+          SizedBox(height: 1),
+          Text(
+            'Premium partners and exclusive offers',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF64748B),
             ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.workspace_premium, color: Colors.white),
           ),
         ],
       ),
+      actions: [
+        // Apply / become a sponsor
+        InkWell(
+          onTap: _openBecomeSponsor,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.add_rounded,
+                color: Color(0xFFD97706), size: 22),
+          ),
+        ),
+        const SizedBox(width: 12),
+      ],
     );
   }
 
@@ -247,7 +200,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(1, 10, 0, 10),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -267,7 +220,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 14.5,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w700,
                                       color: Color(0xFF111827),
                                       height: 1.1,
                                     ),
@@ -311,36 +264,22 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
 
   Widget _buildLogo(String? logo) {
     return Container(
-      width: 60,
-      height: 60,
-      padding: const EdgeInsets.all(2),
+      width: 56,
+      height: 56,
       decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF59E0B), Color(0xFFFACC15)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFF59E0B).withValues(alpha: 0.16),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          color: Colors.white,
-          child: logo != null && logo.trim().isNotEmpty
-              ? Image.network(
-                  logo,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildLogoFallback(),
-                )
-              : _buildLogoFallback(),
-        ),
+        borderRadius: BorderRadius.circular(11),
+        child: logo != null && logo.trim().isNotEmpty
+            ? Image.network(
+                logo,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildLogoFallback(),
+              )
+            : _buildLogoFallback(),
       ),
     );
   }
@@ -417,14 +356,14 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             const Text(
               'View Offer',
               style: TextStyle(
-                color: Color(0xFFF97316),
+                color: Color(0xFFD97706),
                 fontSize: 12,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(width: 4),
             const Icon(Icons.open_in_new_rounded,
-                size: 13, color: Color(0xFFF97316)),
+                size: 13, color: Color(0xFFD97706)),
           ],
         ),
       ),
