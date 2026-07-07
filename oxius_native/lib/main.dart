@@ -331,11 +331,28 @@ class MyApp extends StatelessWidget {
                 ),
               );
             },
+            // App-wide scroll feel: gentle iOS-style bounce everywhere and no
+            // Android stretch/glow — every list in the app scrolls the same.
+            scrollBehavior: const _AppScrollBehavior(),
             theme: ThemeData(
               colorScheme:
                   ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
               useMaterial3: true,
               textTheme: AppFonts.robotoTextTheme(),
+              // Smooth, consistent navigation: the same horizontal slide
+              // (with back-swipe support) on every screen and platform,
+              // replacing Android's abrupt zoom-fade.
+              pageTransitionsTheme: const PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+                },
+              ),
+              // Softer tap feedback than M3's sparkle — reads calmer.
+              splashFactory: InkRipple.splashFactory,
               appBarTheme: const AppBarTheme(
                 systemOverlayStyle: SystemUiOverlayStyle(
                   statusBarColor: Colors.white,
@@ -703,5 +720,24 @@ class _AdsyWebDeepLinkRedirectScreenState
         child: AdsyLoadingIndicator(),
       ),
     );
+  }
+}
+
+/// One scroll personality for the entire app: springy bounce on every
+/// scrollable (feels alive, signals list edges) and no Android stretch
+/// overlay, which visually distorts content.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics());
+  }
+
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
   }
 }
