@@ -116,13 +116,19 @@ class MentionParser {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => onMentionTap?.call(mentionName),
-        child: Text(
-          '@$mentionName',
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF2563EB),
-            height: 1.3,
+        // The delimited mention format stores two spaces after the name and
+        // the regex consumes them, so without this padding the mention and
+        // the following text run together ("@NameText").
+        child: Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: Text(
+            '@$mentionName',
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF2563EB),
+              height: 1.3,
+            ),
           ),
         ),
       ),

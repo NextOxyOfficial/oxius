@@ -997,58 +997,98 @@ class _CommentItemState extends State<_CommentItem> {
                   ],
                   // Comment text or gift comment
                   if (widget.comment.isGiftComment)
+                    // Gift comment: soft rose card with the gift artwork
+                    // ghosted at low opacity on the right.
                     Container(
-                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.pink.shade50.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(10),
-                        border:
-                            Border.all(color: Colors.pink.shade200, width: 1),
+                        color: const Color(0xFFFDF2F8),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFBCFE8)),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Gift label
-                          Row(
-                            children: [
-                              Icon(Icons.card_giftcard,
-                                  size: 14, color: Colors.pink.shade600),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Sent ${widget.comment.diamondAmount ?? 0} diamonds',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.pink.shade700,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              right: -4,
+                              top: -6,
+                              bottom: -6,
+                              child: Opacity(
+                                opacity: 0.15,
+                                child: Transform.rotate(
+                                  angle: -0.22,
+                                  child: Image.asset(
+                                    'assets/icons/gift.png',
+                                    width: 64,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (c, e, s) =>
+                                        const SizedBox.shrink(),
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
-                          if (widget.comment.content.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            () {
-                              final extractedMessage =
-                                  _extractGiftMessage(widget.comment.content);
-                              if (extractedMessage.isNotEmpty) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      extractedMessage,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.grey.shade800,
-                                        height: 1.45,
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(12, 10, 48, 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Gift label
+                                  Row(
+                                    children: [
+                                      Image.asset(
+                                        'assets/icons/gift.png',
+                                        width: 16,
+                                        height: 16,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (c, e, s) => Icon(
+                                            Icons.card_giftcard,
+                                            size: 14,
+                                            color: Colors.pink.shade600),
                                       ),
-                                    ),
-                                    FirstLinkPreview(text: extractedMessage),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Sent ${widget.comment.diamondAmount ?? 0} diamonds 💎',
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFFBE185D),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (widget.comment.content.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    () {
+                                      final extractedMessage =
+                                          _extractGiftMessage(
+                                              widget.comment.content);
+                                      if (extractedMessage.isNotEmpty) {
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              extractedMessage,
+                                              style: TextStyle(
+                                                fontSize: 14.5,
+                                                color: Colors.grey.shade800,
+                                                height: 1.45,
+                                              ),
+                                            ),
+                                            FirstLinkPreview(
+                                                text: extractedMessage),
+                                          ],
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    }(),
                                   ],
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            }(),
+                                ],
+                              ),
+                            ),
                           ],
-                        ],
+                        ),
                       ),
                     )
                   else if (_isEditing)
