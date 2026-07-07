@@ -4,6 +4,7 @@ import 'adsy_connect_chat_interface.dart';
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
+import '../services/deep_link_service.dart';
 import '../widgets/chat_list_skeleton.dart';
 import '../config/app_config.dart';
 import '../utils/network_error_handler.dart';
@@ -140,8 +141,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         DateTime.tryParse((message['created_at'] ?? '').toString()) ??
             DateTime.now();
     final senderId =
-        (message['sender'] is Map ? message['sender']['id'] : null)
-            ?.toString();
+        (message['sender'] is Map ? message['sender']['id'] : null)?.toString();
     final isFromPeer = senderId != null &&
         senderId == (_chatConversations[index]['userId'] ?? '').toString();
 
@@ -264,12 +264,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           _chatConversations.sort((a, b) {
             final ta = a['timestamp'];
             final tb = b['timestamp'];
-            final da = ta is DateTime
-                ? ta
-                : DateTime.fromMillisecondsSinceEpoch(0);
-            final db = tb is DateTime
-                ? tb
-                : DateTime.fromMillisecondsSinceEpoch(0);
+            final da =
+                ta is DateTime ? ta : DateTime.fromMillisecondsSinceEpoch(0);
+            final db =
+                tb is DateTime ? tb : DateTime.fromMillisecondsSinceEpoch(0);
             return db.compareTo(da);
           });
         });
@@ -440,8 +438,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       } else if (messageContent.isEmpty) {
         displayMessage = 'No messages yet';
       } else {
-        displayMessage =
-            _formatReplyPreview(messageContent) ?? messageContent;
+        displayMessage = _formatReplyPreview(messageContent) ?? messageContent;
       }
 
       return {
@@ -603,6 +600,13 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _activeOverlayChatroomId = chatroomId;
     _activeChatOverlay = entry;
     overlay.insert(entry);
+
+    // While this chat overlay is up, internal link taps inside it must close
+    // it first (it sits above the root navigator) so the destination shows on
+    // top instead of hiding behind the chat.
+    DeepLinkService.dismissTransientOverlay = () {
+      _removeActiveChatOverlay(refreshAfterClose: false);
+    };
   }
 
   void _closeActiveChatOverlay() {
@@ -613,6 +617,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final entry = _activeChatOverlay;
     _activeChatOverlay = null;
     _activeOverlayChatroomId = null;
+    // Stop intercepting internal links once no chat overlay is up.
+    DeepLinkService.dismissTransientOverlay = null;
 
     if (entry != null && entry.mounted) {
       entry.remove();

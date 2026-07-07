@@ -23,6 +23,14 @@ class DeepLinkService {
 
   static final DeepLinkService instance = DeepLinkService._();
 
+  /// Transient full-screen surfaces (e.g. the AdsyConnect chat overlay, which
+  /// lives in a root OverlayEntry ABOVE the root navigator) register a
+  /// dismisser here. Internal deep links push onto the ROOT navigator, so
+  /// without this the destination would render UNDER such an overlay and only
+  /// become visible after the user manually closes it. We dismiss the overlay
+  /// first so a tapped link navigates immediately, on top.
+  static VoidCallback? dismissTransientOverlay;
+
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _sub;
   bool _initialized = false;
@@ -110,6 +118,15 @@ class DeepLinkService {
   Future<void> openInternalLink(String link) async {
     var trimmed = link.trim();
     if (trimmed.isEmpty) return;
+
+    // Close any chat/overlay sitting above the root navigator so the
+    // destination we're about to push becomes visible immediately.
+    final dismiss = dismissTransientOverlay;
+    if (dismiss != null) {
+      dismiss();
+      // Let the overlay teardown settle before the root push.
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+    }
 
     trimmed = _withSchemeForAdsyHost(trimmed);
     final parsed = Uri.tryParse(trimmed);
