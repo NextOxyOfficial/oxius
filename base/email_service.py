@@ -420,7 +420,9 @@ def _product_showcase_html(limit=2, heading="আপনার জন্য বা
             if not img_url:
                 continue
             price = prod.sale_price if (prod.sale_price or 0) > 0 else prod.regular_price
-            link = f"{SITE_URL}/eshop/{prod.slug or prod.id}"
+            # /eshop/<x> is the STORE page - the real product page lives at
+            # /product-details/<slug> (same URL the app share sheet uses).
+            link = f"{SITE_URL}/product-details/{prod.slug or prod.id}"
             name = (prod.name or "")[:48]
             cards += f'''<td width="50%" valign="top" style="padding:5px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;background-color:#ffffff;">
