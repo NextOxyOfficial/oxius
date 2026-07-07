@@ -482,6 +482,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           FirstLinkPreview(
             text: text,
             margin: const EdgeInsets.only(bottom: 6),
+            // In chat: no card background (blends into the bubble), text
+            // tuned to the bubble color, tap opens a browser instantly.
+            bare: true,
+            onDark: isMe,
           ),
           LinkifyText(
             text,

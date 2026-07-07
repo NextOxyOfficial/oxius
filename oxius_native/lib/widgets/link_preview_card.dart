@@ -134,11 +134,25 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
 
     // Rich link preview: cover image on top (rounded), then the domain, bold
     // title and short description directly on the bubble — NO surrounding
-    // card background, so the preview reads as part of the message. Tapping
-    // navigates immediately (DeepLinkService dismisses any chat overlay).
+    // card background, so the preview reads as part of the message.
+    // In chat (`bare`) the tap opens a BROWSER instead of the internal
+    // navigator, so it opens instantly without pushing a screen behind the
+    // chat; text colors flip light on a dark (own/blue) bubble.
+    final bare = widget.bare;
+    final onDark = widget.onDark;
+    final domainColor =
+        onDark ? Colors.white.withValues(alpha: 0.75) : const Color(0xFF6B7280);
+    final titleColor =
+        onDark ? Colors.white : const Color(0xFF111827);
+    final descColor =
+        onDark ? Colors.white.withValues(alpha: 0.85) : const Color(0xFF4B5563);
     return InkWell(
       onTap: () {
-        UrlLauncherUtils.launchExternalUrl(data.url);
+        if (bare) {
+          UrlLauncherUtils.launchInBrowser(data.url);
+        } else {
+          UrlLauncherUtils.launchExternalUrl(data.url);
+        }
       },
       borderRadius: BorderRadius.circular(12),
       child: Column(
@@ -190,11 +204,11 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                           domain.toUpperCase(),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.3,
-                            color: Color(0xFF6B7280),
+                            color: domainColor,
                           ),
                         ),
                       if (data.title != null && data.title!.isNotEmpty) ...[
@@ -203,10 +217,10 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                           data.title!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF111827),
+                            color: titleColor,
                             height: 1.25,
                           ),
                         ),
@@ -218,10 +232,10 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                           data.description!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF4B5563),
+                            color: descColor,
                             height: 1.3,
                           ),
                         ),
