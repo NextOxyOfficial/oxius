@@ -279,21 +279,23 @@ _PROMO_SERVICES = [
 _PROMO_HEADING = "AdsyClub-এ আরও যা যা আছে"
 
 
-def _promo_list_html(items):
-    """Variant A: slim rows with a colored keyline per service."""
+def _promo_list_html(items, with_heading=True):
+    """Variant A: clean text rows — service name colored, no keyline bars."""
     rows = "".join(
-        f'''<tr><td style="padding:7px 0;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
-<td width="3" style="background-color:{color};border-radius:3px;font-size:0;">&nbsp;</td>
-<td style="padding:2px 0 2px 12px;">
+        f'''<tr><td style="padding:8px 0;">
 <a href="{SITE_URL}{path}" style="text-decoration:none;">
-<span style="color:#0F172A;font-size:13.5px;font-weight:700;">{title}</span>
+<span style="color:{color};font-size:13.5px;font-weight:700;">{title}</span>
 <span style="color:#64748B;font-size:13px;"> &mdash; {desc}</span></a>
-</td></tr></table></td></tr>'''
+</td></tr>'''
         for key, title, desc, path, color in items
     )
+    heading_html = (
+        f'<tr><td style="padding:16px 0 6px;color:#0F172A;font-size:14px;font-weight:700;">{_PROMO_HEADING}</td></tr>'
+        if with_heading
+        else '<tr><td style="padding:8px 0 0;font-size:0;">&nbsp;</td></tr>'
+    )
     return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;border-top:1px solid #E5E7EB;">
-<tr><td style="padding:16px 0 6px;color:#0F172A;font-size:14px;font-weight:700;">{_PROMO_HEADING}</td></tr>
+{heading_html}
 {rows}
 </table>'''
 
@@ -322,7 +324,7 @@ def _promo_spotlight_html(items):
     """Variant C: one service in a full-width tinted spotlight."""
     key, title, desc, path, color = items[0]
     return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;">
-<tr><td style="background-color:#F8FAFC;border:1px solid #E5E7EB;border-left:4px solid {color};border-radius:12px;padding:16px 18px;">
+<tr><td style="background-color:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;">
 <div style="color:#64748B;font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">AdsyClub</div>
 <div style="color:{color};font-size:16px;font-weight:800;margin-top:3px;">{title}</div>
 <div style="color:#475569;font-size:13px;line-height:1.55;margin-top:4px;">{desc}</div>
@@ -384,7 +386,7 @@ def _service_promo_html(exclude=""):
         blocks.append(_promo_grid_html(items[:2]))
         rest = items[2:5]
         if rest:
-            blocks.append(_promo_list_html(rest))
+            blocks.append(_promo_list_html(rest, with_heading=False))
     else:
         # spotlight of 1 + grid of the next 2
         blocks.append(_promo_spotlight_html(items[:1]))
