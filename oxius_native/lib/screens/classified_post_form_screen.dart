@@ -446,7 +446,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              _isEditMode ? 'Edit Post' : 'Create Post',
+              _isEditMode ? 'পোস্ট এডিট করুন' : 'পোস্ট করুন',
               style: GoogleFonts.inter(
                 color: _slate800,
                 fontSize: 16,
@@ -519,7 +519,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 Text(
                   _isEditMode
                       ? 'Update Your Post'
-                      : 'Create New Classified Post',
+                      : 'নতুন আমার সেবা পোস্ট',
                   style: GoogleFonts.inter(
                     fontSize: isMobile ? 15 : 16,
                     fontWeight: FontWeight.w700,
@@ -528,7 +528,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Add clear details, pricing, location and photos to attract the right buyers fast',
+                  'পরিষ্কার বিবরণ, দাম, লোকেশন আর ছবি দিন — সঠিক ক্রেতা দ্রুত খুঁজে পাবেন',
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -564,7 +564,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         child: Column(
           children: [
             _buildSectionCard(
-              title: 'Basic Details',
+              title: 'মূল তথ্য',
               icon: Icons.description_outlined,
               child: Column(
                 children: [
@@ -572,16 +572,16 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _titleController,
-                    label: 'Post Title',
-                    hint: 'Enter a descriptive title',
+                    label: 'পোস্টের টাইটেল',
+                    hint: 'বর্ণনামূলক একটা টাইটেল লিখুন',
                     required: true,
                     maxLength: 100,
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _instructionsController,
-                    label: 'Description',
-                    hint: 'Provide detailed information',
+                    label: 'বিবরণ',
+                    hint: 'বিস্তারিত তথ্য লিখুন',
                     maxLines: 5,
                     maxLength: 5000,
                   ),
@@ -589,17 +589,17 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               ),
             ),
             _buildSectionCard(
-              title: 'Pricing',
+              title: 'মূল্য',
               icon: Icons.sell_outlined,
               child: _buildPriceSection(),
             ),
             _buildSectionCard(
-              title: 'Location',
+              title: 'লোকেশন',
               icon: Icons.location_on_outlined,
               child: _buildLocationSelector(),
             ),
             _buildSectionCard(
-              title: 'Photos',
+              title: 'ছবি',
               icon: Icons.photo_library_outlined,
               child: _buildImageUploadSection(),
             ),
@@ -678,7 +678,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       children: [
         RichText(
           text: TextSpan(
-            text: 'Category',
+            text: 'ক্যাটাগরি',
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -712,7 +712,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ),
             filled: true,
             fillColor: _slate50,
-            hintText: 'Select a category',
+            hintText: 'ক্যাটাগরি সিলেক্ট করুন',
             hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
             prefixIcon:
                 const Icon(Icons.grid_view_rounded, size: 18, color: _slate400),
@@ -827,7 +827,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Choose a fixed price or mark the post as negotiable.',
+          'নির্দিষ্ট দাম দিন, অথবা দাম আলোচনা সাপেক্ষ হিসেবে রাখুন।',
           style: GoogleFonts.inter(
             fontSize: 12,
             color: _slate500,
@@ -865,7 +865,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Price is negotiable',
+                  'দাম আলোচনা সাপেক্ষ',
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: _slate700,
@@ -887,7 +887,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             style: GoogleFonts.inter(
                 fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
-              hintText: 'Enter price',
+              hintText: 'দাম লিখুন',
               prefixText: '৳ ',
               prefixStyle: GoogleFonts.inter(
                 color: _slate800,
@@ -933,7 +933,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       children: [
         RichText(
           text: TextSpan(
-            text: 'Select your location',
+            text: 'আপনার লোকেশন সিলেক্ট করুন',
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -969,9 +969,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 Expanded(
                   child: Text(
                     _location == null
-                        ? 'Select your location'
+                        ? 'আপনার লোকেশন সিলেক্ট করুন'
                         : _location!.allOverBangladesh
-                            ? 'All over Bangladesh'
+                            ? 'সারা বাংলাদেশ'
                             : [
                                 _location!.upazila,
                                 _location!.city,

@@ -597,7 +597,7 @@ class _ClassifiedCategoryListScreenState
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         title: Text(
-          _categoryDetails?.title ?? 'Classified Ads',
+          _categoryDetails?.title ?? 'আমার সেবা',
           style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,

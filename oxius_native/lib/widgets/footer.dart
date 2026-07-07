@@ -47,7 +47,7 @@ class _AppFooterState extends State<AppFooter>
   // Translation helper (matching Vue.js translations)
   String t(String key) {
     final translations = {
-      'classified_service': 'Classified Service',
+      'classified_service': 'আমার সেবা',
       'earn_money': 'Earn Money',
       'mobile_recharge': 'Mobile Recharge',
       'packeges': 'Packages',

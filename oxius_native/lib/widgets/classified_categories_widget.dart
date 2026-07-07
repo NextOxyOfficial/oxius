@@ -68,7 +68,7 @@ class _ClassifiedCategoriesWidgetState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Classified Categories',
+                'আমার সেবা ক্যাটাগরি',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,

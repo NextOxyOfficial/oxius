@@ -211,7 +211,7 @@ class _ClassifiedPostDetailsScreenState
         url: shareUrl,
         imageUrl: shareImageUrl,
         subject: post.title,
-        eyebrow: 'Classified',
+        eyebrow: 'আমার সেবা',
       ),
     );
   }

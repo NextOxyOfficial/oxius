@@ -83,7 +83,7 @@ class AboutScreen extends StatelessWidget {
             _buildSection(
               'What We Offer',
               [
-                'Classified Advertisements - Post and browse ads across multiple categories',
+                'আমার সেবা - বিভিন্ন ক্যাটাগরিতে বিজ্ঞাপন পোস্ট করুন এবং খুঁজুন',
                 'Business Networking - Connect with professionals and establish partnerships',
                 'Mobile Recharge - Easily recharge mobile credits through our platform',
                 'Earning Opportunities - Multiple ways to generate income',
