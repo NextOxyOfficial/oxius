@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -252,6 +253,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
   bool _isRequestingMore = false;
   final Map<int, int> _mediaViewsOverrides = {};
   final Map<int, VideoPlayerController> _preloadedControllers = {};
+  // Media ids whose controller has been handed over to (and is owned by) a
+  // live page — never re-preload these or we'd stream the same video twice.
+  final Set<int> _pageOwnedMediaIds = {};
 
   @override
   void initState() {
@@ -264,6 +268,13 @@ class _ShortsViewerState extends State<ShortsViewer> {
 
     _currentIndex = _findInitialIndex(widget.initialVideoUrl, _items);
     _pageController = PageController(initialPage: _currentIndex);
+
+    // Start warming neighbours immediately — previously preloading only
+    // began after the FIRST swipe, so the second video always showed a
+    // loading state.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _preloadVideos(_currentIndex);
+    });
   }
 
   int _findInitialIndex(String? initialVideoUrl, List<_ShortItem> items) {
@@ -363,55 +374,64 @@ class _ShortsViewerState extends State<ShortsViewer> {
     _preloadedControllers.clear();
   }
 
+  /// Warm the videos around [currentIndex]: the next two (forward swipes)
+  /// and the previous one (swiping back), all in PARALLEL so the nearest
+  /// neighbour isn't stuck behind a slower download.
   Future<void> _preloadVideos(int currentIndex) async {
-    // Preload next 2 videos
-    for (int i = 1; i <= 2; i++) {
-      final nextIndex = currentIndex + i;
-      if (nextIndex >= _items.length) break;
+    const offsets = [1, 2, -1];
+    final futures = <Future<void>>[];
 
-      final item = _items[nextIndex];
+    for (final off in offsets) {
+      final idx = currentIndex + off;
+      if (idx < 0 || idx >= _items.length) continue;
+
+      final item = _items[idx];
       final mediaId = item.media.id;
 
-      // Skip if already preloaded
       if (_preloadedControllers.containsKey(mediaId)) continue;
+      // A live page already owns a controller for this media.
+      if (_pageOwnedMediaIds.contains(mediaId)) continue;
 
       final url = item.media.bestUrl;
       if (url.isEmpty) continue;
 
-      try {
-        final controller = VideoPlayerController.networkUrl(
-          Uri.parse(url),
-          httpHeaders: const {
-            'User-Agent': 'OxiUsFlutter/1.0',
-          },
-          videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
-        );
+      futures.add(() async {
+        try {
+          final controller = VideoPlayerController.networkUrl(
+            Uri.parse(url),
+            httpHeaders: const {
+              'User-Agent': 'OxiUsFlutter/1.0',
+            },
+            videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+          );
 
-        await controller.initialize();
-        await controller.setLooping(true);
-        await controller.setVolume(0.0); // Muted until active
+          await controller.initialize();
+          await controller.setLooping(true);
+          await controller.setVolume(0.0); // Muted until active
 
-        if (!mounted) {
-          controller.dispose();
-          return;
+          if (!mounted || _pageOwnedMediaIds.contains(mediaId)) {
+            controller.dispose();
+            return;
+          }
+
+          _preloadedControllers[mediaId] = controller;
+        } catch (e) {
+          debugPrint('Failed to preload video at index $idx: $e');
         }
-
-        _preloadedControllers[mediaId] = controller;
-        debugPrint('Preloaded video at index $nextIndex (mediaId: $mediaId)');
-      } catch (e) {
-        debugPrint('Failed to preload video at index $nextIndex: $e');
-      }
+      }());
     }
 
-    // Clean up old preloaded videos (keep only next 2)
+    await Future.wait(futures);
+    if (!mounted) return;
+
+    // Drop warmed videos that fell outside the window.
     final validIds = <int>{};
-    for (int i = 1; i <= 2; i++) {
-      final nextIndex = currentIndex + i;
-      if (nextIndex < _items.length) {
-        validIds.add(_items[nextIndex].media.id);
+    for (final off in offsets) {
+      final idx = currentIndex + off;
+      if (idx >= 0 && idx < _items.length) {
+        validIds.add(_items[idx].media.id);
       }
     }
-
     final toRemove = _preloadedControllers.keys
         .where((id) => !validIds.contains(id))
         .toList();
@@ -446,6 +466,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
           PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
+            // Keeps the adjacent pages alive and pre-built (TikTok-style), so
+            // swiping back/forth never rebuilds a page from scratch.
+            allowImplicitScrolling: true,
             itemCount: _items.length + 1,
             onPageChanged: (i) {
               setState(() {
@@ -486,17 +509,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
 
                 // Show "All Caught Up" page
                 return Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        const Color(0xFF1a1a2e),
-                        const Color(0xFF16213e),
-                        const Color(0xFF0f3460),
-                      ],
-                    ),
-                  ),
+                  color: const Color(0xFF0F172A),
                   child: SafeArea(
                     child: Center(
                       child: Padding(
@@ -508,24 +521,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
                             Container(
                               width: 100,
                               height: 100,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    const Color(0xFF667eea),
-                                    const Color(0xFF764ba2),
-                                  ],
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF667eea)
-                                        .withValues(alpha: 0.4),
-                                    blurRadius: 30,
-                                    spreadRadius: 5,
-                                  ),
-                                ],
+                                color: Color(0xFF6366F1),
                               ),
                               child: const Icon(
                                 Icons.play_circle_filled_rounded,
@@ -567,21 +565,8 @@ class _ShortsViewerState extends State<ShortsViewer> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 32, vertical: 16),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF667eea),
-                                      Color(0xFF764ba2)
-                                    ],
-                                  ),
+                                  color: const Color(0xFF6366F1),
                                   borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF667eea)
-                                          .withValues(alpha: 0.3),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -645,8 +630,13 @@ class _ShortsViewerState extends State<ShortsViewer> {
                   });
                 },
                 onControllerCreated: (controller) {
-                  // Remove from preloaded map once it's being used
+                  // Ownership moves to the page: out of the preload map, and
+                  // marked so we never spin up a duplicate stream for it.
                   _preloadedControllers.remove(item.media.id);
+                  _pageOwnedMediaIds.add(item.media.id);
+                },
+                onControllerDisposed: () {
+                  _pageOwnedMediaIds.remove(item.media.id);
                 },
               );
             },
@@ -718,6 +708,7 @@ class _ShortVideoPage extends StatefulWidget {
   final void Function(BusinessNetworkPost post)? onShare;
   final void Function(int views)? onViewsChanged;
   final void Function(VideoPlayerController controller)? onControllerCreated;
+  final VoidCallback? onControllerDisposed;
 
   const _ShortVideoPage({
     super.key,
@@ -730,6 +721,7 @@ class _ShortVideoPage extends StatefulWidget {
     this.onShare,
     this.onViewsChanged,
     this.onControllerCreated,
+    this.onControllerDisposed,
   });
 
   @override
@@ -832,8 +824,10 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         _controller = widget.preloadedController;
         widget.onControllerCreated?.call(widget.preloadedController!);
 
-        // Controller is already initialized, just set volume and play
-        await _controller!.setVolume(1.0);
+        // Only unmute when this page is actually on screen — with implicit
+        // scrolling the neighbour pages build (and take their controllers)
+        // while still offscreen.
+        await _controller!.setVolume(widget.isActive ? 1.0 : 0.0);
 
         if (!mounted) return;
         setState(() {
@@ -861,7 +855,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
 
       await controller.initialize();
       await controller.setLooping(true);
-      await controller.setVolume(1.0);
+      await controller.setVolume(widget.isActive ? 1.0 : 0.0);
 
       if (!mounted) return;
       setState(() {
@@ -889,10 +883,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   void _disposeController() {
     final c = _controller;
     _controller = null;
-    // Only dispose if it wasn't a preloaded controller
-    // (preloaded controllers are managed by parent)
-    if (c != null && c != widget.preloadedController) {
+    // The page owns whatever controller it holds — preloaded ones are handed
+    // over by the parent (and removed from its map) the moment we take them,
+    // so skipping disposal here leaked a looping decoder per watched video.
+    if (c != null) {
       c.dispose();
+      widget.onControllerDisposed?.call();
     }
   }
 
@@ -1132,6 +1128,82 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     }
   }
 
+  /// TikTok/Reels-style video surface:
+  /// - portrait videos fill the whole screen (cover crop),
+  /// - landscape videos sit centered over a blurred, darkened backdrop so
+  ///   there are never hard black bars.
+  /// A small spinner overlays while the network stream re-buffers.
+  Widget _buildVideoSurface(String thumbUrl) {
+    final controller = _controller!;
+    final ar = controller.value.aspectRatio;
+    final isPortrait = ar <= 0.85;
+
+    Widget video;
+    if (isPortrait) {
+      video = SizedBox.expand(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox(
+            width: controller.value.size.width,
+            height: controller.value.size.height,
+            child: VideoPlayer(controller),
+          ),
+        ),
+      );
+    } else {
+      video = Stack(
+        fit: StackFit.expand,
+        children: [
+          if (thumbUrl.isNotEmpty)
+            ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
+              child: Image.network(
+                thumbUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (c, e, s) => Container(color: Colors.black),
+              ),
+            )
+          else
+            Container(color: Colors.black),
+          Container(color: Colors.black.withValues(alpha: 0.45)),
+          Center(
+            child: AspectRatio(
+              aspectRatio: ar,
+              child: VideoPlayer(controller),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        video,
+        // Re-buffer indicator: only when playing but starved of data.
+        ValueListenableBuilder<VideoPlayerValue>(
+          valueListenable: controller,
+          builder: (context, value, _) {
+            final stalled =
+                value.isBuffering && value.isPlaying && !value.hasError;
+            if (!stalled) return const SizedBox.shrink();
+            return const Center(
+              child: SizedBox(
+                width: 30,
+                height: 30,
+                child: AdsyLoadingIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final post = _post;
@@ -1207,6 +1279,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               ),
             )
           else if (!_isInitialized || _controller == null)
+            // While the video initializes: full-bleed thumbnail (so the frame
+            // is already "there", reels-style) with a small quiet spinner.
             Stack(
               fit: StackFit.expand,
               children: [
@@ -1220,50 +1294,21 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                   )
                 else
                   thumbFallback(),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 10,
-                          width: 180,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Container(
-                          height: 10,
-                          width: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      ],
+                Container(color: Colors.black.withValues(alpha: 0.25)),
+                const Center(
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: AdsyLoadingIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
                 ),
               ],
             )
           else
-            Stack(
-              fit: StackFit.expand,
-              children: [
-                Container(color: Colors.black),
-                Center(
-                  child: AspectRatio(
-                    aspectRatio: _controller!.value.aspectRatio,
-                    child: VideoPlayer(_controller!),
-                  ),
-                ),
-              ],
-            ),
+            _buildVideoSurface(thumbUrl),
           Positioned(
             left: 0,
             right: 0,
@@ -1301,25 +1346,25 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               ),
             ),
           if (_isInitialized && _controller != null)
+            // TikTok-style seekbar: hairline, flush with the bottom edge.
             Positioned(
-              left: 12,
-              right: 12,
-              bottom: 6,
+              left: 0,
+              right: 0,
+              bottom: 0,
               child: SafeArea(
                 top: false,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: SizedBox(
+                  height: 14,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
                     child: VideoProgressIndicator(
                       _controller!,
                       allowScrubbing: true,
+                      padding: const EdgeInsets.only(bottom: 2),
                       colors: VideoProgressColors(
-                        playedColor: const Color(0xFF3B82F6),
+                        playedColor: Colors.white,
                         bufferedColor: Colors.white.withValues(alpha: 0.35),
-                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                        backgroundColor: Colors.white.withValues(alpha: 0.16),
                       ),
                     ),
                   ),
@@ -1327,8 +1372,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               ),
             ),
           Positioned(
-            right: 12,
-            bottom: 96,
+            right: 10,
+            bottom: 104,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1340,13 +1385,13 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                   onTap: _handleLike,
                   applyGrayFill: !post.isLiked,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 _ActionButton(
                   iconPath: 'assets/icons/comments.png',
                   label: _commentsCount.toString(),
                   onTap: _openCommentsSheet,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 if (!_isOwnPost()) ...[
                   _ActionButton(
                     materialIcon: Icons.card_giftcard,
@@ -1356,7 +1401,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                       _openGiftSheet();
                     },
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 18),
                 ],
                 _ActionButton(
                   iconPath: 'assets/icons/share.png',
@@ -1367,9 +1412,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
             ),
           ),
           Positioned(
-            left: 12,
-            right: 80,
-            bottom: 80,
+            left: 14,
+            right: 78,
+            bottom: 84,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -1397,11 +1442,43 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     overflow: TextOverflow.ellipsis,
                     text: TextSpan(
                       children: [
+                        // Reels-style author row: avatar chip before the name.
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.9),
+                                    width: 1.5),
+                              ),
+                              child: ClipOval(
+                                child: ((post.user.avatar ??
+                                                post.user.image) ??
+                                            '')
+                                        .isNotEmpty
+                                    ? Image.network(
+                                        (post.user.avatar ??
+                                            post.user.image)!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (c, e, s) =>
+                                            const _AvatarFallback(),
+                                      )
+                                    : const _AvatarFallback(),
+                              ),
+                            ),
+                          ),
+                        ),
                         TextSpan(
                           text: post.user.name,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 14.5,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1446,30 +1523,30 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                   ),
                 ),
                 if (post.title.isNotEmpty) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
                     post.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.95),
-                      fontSize: 15,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w600,
-                      height: 1.25,
+                      height: 1.35,
                     ),
                   ),
                 ],
                 if (post.content.trim().isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     post.content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 15,
+                      color: Colors.white.withValues(alpha: 0.82),
+                      fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      height: 1.35,
+                      height: 1.4,
                     ),
                   ),
                 ],
@@ -1540,7 +1617,7 @@ class _ActionButton extends StatelessWidget {
                     ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
           SizedBox(
             width: 56,
             child: Text(
@@ -1549,14 +1626,29 @@ class _ActionButton extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.9),
-                fontSize: 14,
+                color: Colors.white.withValues(alpha: 0.92),
+                fontSize: 12.5,
                 fontWeight: FontWeight.w600,
+                shadows: const [
+                  Shadow(color: Colors.black54, blurRadius: 4),
+                ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AvatarFallback extends StatelessWidget {
+  const _AvatarFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF334155),
+      child: const Icon(Icons.person_rounded, size: 20, color: Colors.white70),
     );
   }
 }

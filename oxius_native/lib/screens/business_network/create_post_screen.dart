@@ -642,7 +642,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   letterSpacing: -0.5,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'What\'s on your mind?',
+                  hintText: 'What\'s on your mind? Write a post title...',
                   hintStyle: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
