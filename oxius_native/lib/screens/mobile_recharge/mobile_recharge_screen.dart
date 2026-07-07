@@ -350,7 +350,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   size: 16, color: Color(0xFF10B981)),
               const SizedBox(width: 6),
               Text(
-                _t('recharge_select_operator', 'অপারেটর বাছুন'),
+                _t('recharge_select_operator', 'অপারেটর সিলেক্ট করুন'),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,

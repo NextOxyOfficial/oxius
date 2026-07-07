@@ -578,7 +578,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildImageSourceAction(
                     icon: Icons.photo_library_outlined,
                     label: _t('settings_choose_from_gallery',
-                        'গ্যালারি থেকে বাছুন'),
+                        'গ্যালারি থেকে সিলেক্ট করুন'),
                     onTap: () => Navigator.of(context).pop(ImageSource.gallery),
                   ),
                   _buildImageSourceAction(
@@ -1589,7 +1589,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildResponsivePair(
                     left: _buildDropdownField(
                       label: _t('settings_division', 'বিভাগ'),
-                      hintText: _t('settings_division_hint', 'বিভাগ বাছুন'),
+                      hintText: _t('settings_division_hint', 'বিভাগ সিলেক্ট করুন'),
                       icon: Icons.flag_outlined,
                       value: _selectedDivision,
                       items: _divisions.map((item) => item.nameEng).toList(),
@@ -1604,7 +1604,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     right: _buildDropdownField(
                       label: _t('settings_city', 'শহর'),
-                      hintText: _t('settings_city_hint', 'শহর বাছুন'),
+                      hintText: _t('settings_city_hint', 'শহর সিলেক্ট করুন'),
                       icon: Icons.location_city_outlined,
                       value: _selectedCity,
                       items: _cities.map((item) => item.nameEng).toList(),
@@ -1622,7 +1622,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildResponsivePair(
                     left: _buildDropdownField(
                       label: _t('settings_upazila', 'উপজেলা / এলাকা'),
-                      hintText: _t('settings_upazila_hint', 'উপজেলা বাছুন'),
+                      hintText: _t('settings_upazila_hint', 'উপজেলা সিলেক্ট করুন'),
                       icon: Icons.place_outlined,
                       value: _selectedUpazila,
                       items: _upazilas.map((item) => item.nameEng).toList(),
@@ -2694,7 +2694,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildGenderField() {
     return _buildDropdownField(
       label: _t('settings_gender', 'লিঙ্গ'),
-      hintText: _t('settings_gender_hint', 'লিঙ্গ বাছুন'),
+      hintText: _t('settings_gender_hint', 'লিঙ্গ সিলেক্ট করুন'),
       icon: Icons.wc_outlined,
       value: _matchedGender,
       items: _genderOptions,
@@ -2731,7 +2731,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: Text(
           display.isEmpty
-              ? _t('settings_dob_hint', 'জন্ম তারিখ বাছুন')
+              ? _t('settings_dob_hint', 'জন্ম তারিখ সিলেক্ট করুন')
               : display,
           style: AppFonts.roboto(
             fontSize: 14,

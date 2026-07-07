@@ -275,7 +275,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     if (_gender.isEmpty) {
-      _errors['gender'] = _t('reg_err_gender', 'জেন্ডার বাছুন');
+      _errors['gender'] = _t('reg_err_gender', 'জেন্ডার সিলেক্ট করুন');
       isValid = false;
     }
 
@@ -735,7 +735,7 @@ class _RegisterPageState extends State<RegisterPage> {
           isMobile: isMobile,
           left: _buildDateField(
             label: _t('reg_dob', 'জন্ম তারিখ'),
-            hintText: _t('reg_dob_hint', 'জন্ম তারিখ বাছুন'),
+            hintText: _t('reg_dob_hint', 'জন্ম তারিখ সিলেক্ট করুন'),
             controller: _dateOfBirthController,
             icon: Icons.event_outlined,
             error: _errors['date_of_birth'],
@@ -746,7 +746,7 @@ class _RegisterPageState extends State<RegisterPage> {
         const SizedBox(height: 12),
         _buildDropdownField(
           label: _t('reg_gender', 'জেন্ডার'),
-          hintText: _t('reg_gender_hint', 'জেন্ডার বাছুন'),
+          hintText: _t('reg_gender_hint', 'জেন্ডার সিলেক্ট করুন'),
           icon: Icons.wc_rounded,
           value: _gender.isEmpty ? null : _gender,
           // Stored/submitted value stays canonical English; only the label is
@@ -793,7 +793,7 @@ class _RegisterPageState extends State<RegisterPage> {
         const SizedBox(height: 12),
         _buildDropdownField(
           label: _t('reg_region', 'বিভাগ / অঞ্চল'),
-          hintText: _t('reg_region_hint', 'আপনার অঞ্চল বাছুন'),
+          hintText: _t('reg_region_hint', 'আপনার অঞ্চল সিলেক্ট করুন'),
           icon: Icons.map_outlined,
           value: _selectedRegion,
           items: _regions.map((item) => item['name_eng'] as String).toList(),
@@ -809,7 +809,7 @@ class _RegisterPageState extends State<RegisterPage> {
           isMobile: isMobile,
           left: _buildDropdownField(
             label: _t('reg_city', 'জেলা / শহর'),
-            hintText: _t('reg_city_hint', 'শহর বাছুন'),
+            hintText: _t('reg_city_hint', 'শহর সিলেক্ট করুন'),
             icon: Icons.location_city_outlined,
             value: _selectedCity,
             items: _cities.map((item) => item['name_eng'] as String).toList(),
@@ -822,7 +822,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           right: _buildDropdownField(
             label: _t('reg_area', 'এলাকা / উপজেলা'),
-            hintText: _t('reg_area_hint', 'এলাকা বাছুন'),
+            hintText: _t('reg_area_hint', 'এলাকা সিলেক্ট করুন'),
             icon: Icons.pin_drop_outlined,
             value: _selectedUpazila,
             items: _upazilas.map((item) => item['name_eng'] as String).toList(),
