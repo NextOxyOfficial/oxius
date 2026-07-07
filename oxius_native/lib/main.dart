@@ -341,14 +341,13 @@ class MyApp extends StatelessWidget {
               textTheme: AppFonts.robotoTextTheme(),
               // Smooth, consistent navigation: the same horizontal slide
               // (with back-swipe support) on every screen and platform,
-              // replacing Android's abrupt zoom-fade.
-              pageTransitionsTheme: const PageTransitionsTheme(
-                builders: {
-                  TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-                  TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-                  TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
-                  TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-                  TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+              // replacing Android's abrupt zoom-fade. Explicit `const` on
+              // each builder (and a non-const theme) — Codemagic's older
+              // Dart rejects implicit const inside this map.
+              pageTransitionsTheme: PageTransitionsTheme(
+                builders: <TargetPlatform, PageTransitionsBuilder>{
+                  for (final platform in TargetPlatform.values)
+                    platform: const CupertinoPageTransitionsBuilder(),
                 },
               ),
               // Softer tap feedback than M3's sparkle — reads calmer.
