@@ -1137,3 +1137,42 @@ class GoldSponsorBanner(models.Model):
     
     def __str__(self):
         return f"Banner for {self.sponsor.business_name}"
+
+
+class ContentMonetizationApplication(models.Model):
+    """A creator's application for content monetization.
+
+    Users become eligible at 1,000 followers + 20,000 content views (media
+    views across their posts). Applying requires accepting the Terms &
+    Community Guidelines in the app; admins review applications from the
+    Django admin.
+    """
+
+    REQUIRED_FOLLOWERS = 1000
+    REQUIRED_VIEWS = 20000
+
+    STATUS_CHOICES = [
+        ("pending", "Pending Review"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="monetization_application"
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    # Snapshot of the numbers at the moment of application, for the reviewer.
+    followers_at_apply = models.PositiveIntegerField(default=0)
+    views_at_apply = models.PositiveIntegerField(default=0)
+    terms_accepted = models.BooleanField(default=False)
+    admin_note = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Content Monetization Application"
+        verbose_name_plural = "Content Monetization Applications"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.email or self.user.username} — {self.status}"

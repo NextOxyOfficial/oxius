@@ -237,6 +237,17 @@ urlpatterns = [
         UserHiddenPostsView.as_view(),
         name="user-hidden-posts",
     ),
+    # Content monetization
+    path(
+        "monetization/status/",
+        ContentMonetizationStatusView.as_view(),
+        name="monetization-status",
+    ),
+    path(
+        "monetization/apply/",
+        ContentMonetizationApplyView.as_view(),
+        name="monetization-apply",
+    ),
     # Gold Sponsors endpoints
     path("gold-sponsors/", include("business_network.gold_sponsors.urls")),
 ]

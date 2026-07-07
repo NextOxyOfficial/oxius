@@ -7,6 +7,7 @@ assistant will read. Pure backend; safe to run repeatedly.
 """
 
 import logging
+import random
 from collections import Counter, defaultdict
 from datetime import timedelta
 
@@ -576,6 +577,16 @@ def run_email_engine(dry_run=False):
             # "promo_<feature>_<i>" → feature-appropriate dynamic content
             # (eShop products, rideshare service areas, ...).
             content_feature = key.split("_")[1] if key.count("_") >= 2 else None
+            # Roughly a third of feature emails become the LIVE network
+            # activity mail instead (real posts, mutual faces, feed income) —
+            # real content beats generic copy, capped at once per 2 weeks.
+            prev_bn = last_by_key.get(user.id, {}).get("bn_activity")
+            if (
+                prev_bn is None or prev_bn < now - timedelta(days=14)
+            ) and random.random() < 0.35:
+                key = "bn_activity"
+                title = "আপনার নেটওয়ার্কে যা হচ্ছে — একবার দেখে আসুন"
+                deep_link = "/business-network"
 
         if dry_run:
             plan.append({"user": user.id, "key": key, "title": title})
@@ -583,15 +594,21 @@ def run_email_engine(dry_run=False):
             continue
 
         try:
-            send_engagement_email(
-                user,
-                subject=title,
-                heading=title,
-                body_html=body,
-                button_text="এখনই দেখুন",
-                button_url=deep_link,
-                content_feature=content_feature,
-            )
+            if key == "bn_activity":
+                from base.email_service import send_bn_activity_email
+
+                if not send_bn_activity_email(user):
+                    continue
+            else:
+                send_engagement_email(
+                    user,
+                    subject=title,
+                    heading=title,
+                    body_html=body,
+                    button_text="এখনই দেখুন",
+                    button_url=deep_link,
+                    content_feature=content_feature,
+                )
             NudgeLog.objects.create(
                 user=user,
                 nudge_key=key,

@@ -286,3 +286,44 @@ class GoldSponsorSettingsAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(ContentMonetizationApplication)
+class ContentMonetizationApplicationAdmin(admin.ModelAdmin):
+    """Review queue for content monetization applications."""
+
+    list_display = [
+        "user",
+        "status",
+        "followers_at_apply",
+        "views_at_apply",
+        "terms_accepted",
+        "created_at",
+        "reviewed_at",
+    ]
+    list_filter = ["status", "created_at"]
+    search_fields = ["user__email", "user__username", "user__name", "user__phone"]
+    readonly_fields = [
+        "user",
+        "followers_at_apply",
+        "views_at_apply",
+        "terms_accepted",
+        "created_at",
+    ]
+    actions = ["approve_applications", "reject_applications"]
+
+    @admin.action(description="Approve selected applications")
+    def approve_applications(self, request, queryset):
+        from django.utils import timezone as _tz
+        updated = queryset.exclude(status="approved").update(
+            status="approved", reviewed_at=_tz.now()
+        )
+        self.message_user(request, f"{updated} application(s) approved.", messages.SUCCESS)
+
+    @admin.action(description="Reject selected applications")
+    def reject_applications(self, request, queryset):
+        from django.utils import timezone as _tz
+        updated = queryset.exclude(status="rejected").update(
+            status="rejected", reviewed_at=_tz.now()
+        )
+        self.message_user(request, f"{updated} application(s) rejected.", messages.SUCCESS)

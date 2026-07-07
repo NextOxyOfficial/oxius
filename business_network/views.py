@@ -14,6 +14,7 @@ from django.db.models import (
     IntegerField,
     Q,
     Subquery,
+    Sum,
     Value,
     When,
 )
@@ -2399,3 +2400,106 @@ class UserHiddenPostsView(generics.ListAPIView):
         return BusinessNetworkPost.objects.filter(
             id__in=hidden_post_ids
         ).order_by('-created_at')
+
+
+# ── Content Monetization ────────────────────────────────────────────────────
+
+
+def _monetization_stats(user):
+    """Followers + total content views (media views across the user's posts)."""
+    from .models import (
+        BusinessNetworkFollowerModel,
+        BusinessNetworkMedia,
+        ContentMonetizationApplication,
+    )
+
+    followers = BusinessNetworkFollowerModel.objects.filter(following=user).count()
+    views = (
+        BusinessNetworkMedia.objects.filter(
+            business_network_posts__author=user
+        ).aggregate(total=Sum("views"))["total"]
+        or 0
+    )
+    return followers, views
+
+
+class ContentMonetizationStatusView(APIView):
+    """Progress toward monetization + the state of any existing application."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .models import ContentMonetizationApplication
+
+        followers, views = _monetization_stats(request.user)
+        app = ContentMonetizationApplication.objects.filter(
+            user=request.user
+        ).first()
+        return Response(
+            {
+                "followers": followers,
+                "views": views,
+                "required_followers": ContentMonetizationApplication.REQUIRED_FOLLOWERS,
+                "required_views": ContentMonetizationApplication.REQUIRED_VIEWS,
+                "eligible": (
+                    followers >= ContentMonetizationApplication.REQUIRED_FOLLOWERS
+                    and views >= ContentMonetizationApplication.REQUIRED_VIEWS
+                ),
+                "applied": app is not None,
+                "application_status": app.status if app else None,
+                "applied_at": app.created_at if app else None,
+            }
+        )
+
+
+class ContentMonetizationApplyView(APIView):
+    """Create a monetization application (requires accepted terms + met bar)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from .models import ContentMonetizationApplication
+
+        if ContentMonetizationApplication.objects.filter(user=request.user).exists():
+            return Response(
+                {"error": "You have already applied for content monetization."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not request.data.get("terms_accepted"):
+            return Response(
+                {
+                    "error": "You must accept the Terms & Community Guidelines to apply."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        followers, views = _monetization_stats(request.user)
+        if (
+            followers < ContentMonetizationApplication.REQUIRED_FOLLOWERS
+            or views < ContentMonetizationApplication.REQUIRED_VIEWS
+        ):
+            return Response(
+                {
+                    "error": (
+                        "Not eligible yet — you need "
+                        f"{ContentMonetizationApplication.REQUIRED_FOLLOWERS} followers "
+                        f"and {ContentMonetizationApplication.REQUIRED_VIEWS} views."
+                    ),
+                    "followers": followers,
+                    "views": views,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        app = ContentMonetizationApplication.objects.create(
+            user=request.user,
+            followers_at_apply=followers,
+            views_at_apply=views,
+            terms_accepted=True,
+        )
+        return Response(
+            {
+                "message": "Application submitted — we'll review it shortly.",
+                "application_status": app.status,
+                "applied_at": app.created_at,
+            },
+            status=status.HTTP_201_CREATED,
+        )

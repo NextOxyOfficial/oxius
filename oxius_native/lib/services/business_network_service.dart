@@ -1308,4 +1308,45 @@ class BusinessNetworkService {
       return null;
     }
   }
+
+  /// Content monetization: progress + application state for the current user.
+  static Future<Map<String, dynamic>?> getMonetizationStatus() async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/monetization/status/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error fetching monetization status: $e');
+      return null;
+    }
+  }
+
+  /// Submit a content monetization application (terms must be accepted).
+  /// Returns null on success, or an error message.
+  static Future<String?> applyForMonetization() async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.post(
+        Uri.parse('$_baseUrl/monetization/apply/'),
+        headers: headers,
+        body: json.encode({'terms_accepted': true}),
+      );
+      if (response.statusCode == 201) return null;
+      try {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return (data['error'] ?? 'Failed to submit application').toString();
+      } catch (_) {
+        return 'Failed to submit application';
+      }
+    } catch (e) {
+      debugPrint('Error applying for monetization: $e');
+      return 'Network error — please try again';
+    }
+  }
 }

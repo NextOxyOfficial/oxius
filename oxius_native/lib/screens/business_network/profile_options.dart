@@ -15,6 +15,7 @@ import '../inbox_screen.dart';
 import '../workspace/workspace_screen.dart';
 import '../settings_screen.dart';
 import '../verification_screen.dart';
+import '../../widgets/business_network/monetization_card.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -220,6 +221,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
 
                 // Small gap
                 const SliverToBoxAdapter(child: SizedBox(height: 12)),
+
+                // Content monetization progress / apply / status card
+                const SliverToBoxAdapter(child: MonetizationCard()),
 
                 // Verification Banner
                 if (!isVerified)

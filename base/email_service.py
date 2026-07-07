@@ -2099,3 +2099,168 @@ def send_engagement_email(user, *, subject, heading, body_html,
     footer_note = "আপনি AdsyClub-এর সদস্য বলে এই ইমেইলটি পাচ্ছেন।"
     html = _base_template(subject, body, footer_note)
     return _send_email(subject, email, f"{name}, {heading}", html)
+
+
+def send_bn_activity_email(user):
+    """Live network-activity marketing email — reads like the feed itself:
+    WHO posted this week (real posts with engagement), FACES you may know
+    (ranked by mutual connections), and the earn-while-you-scroll pitch with
+    real micro gig tasks. Sent from the engagement engine as a followup."""
+    if not getattr(user, "email", ""):
+        return False
+    from django.contrib.auth import get_user_model
+    from django.db.models import Count, Q as _Q
+
+    from business_network.models import (
+        BusinessNetworkFollowerModel,
+        BusinessNetworkPost,
+    )
+    from .name_utils import greeting_name
+
+    User = get_user_model()
+    name = greeting_name(user)
+    week_ago = timezone.now() - timedelta(days=7)
+
+    following_ids = list(
+        BusinessNetworkFollowerModel.objects.filter(follower=user)
+        .values_list("following_id", flat=True)
+    )
+
+    # ── Who posted: your network first, popular recent posts as filler ──
+    posts_qs = (
+        BusinessNetworkPost.objects.filter(
+            visibility="public", is_banned=False, created_at__gte=week_ago
+        )
+        .exclude(author=user)
+        .select_related("author")
+    )
+    posts = []
+    if following_ids:
+        posts = list(
+            posts_qs.filter(author_id__in=following_ids).order_by("-created_at")[:3]
+        )
+    if len(posts) < 3:
+        posts += list(
+            posts_qs.exclude(id__in=[p.id for p in posts])
+            .order_by("-like_count", "-created_at")[: 3 - len(posts)]
+        )
+
+    post_rows = ""
+    for p in posts:
+        author = (
+            getattr(p.author, "name", "")
+            or getattr(p.author, "first_name", "")
+            or p.author.username
+        )
+        snippet = " ".join(((p.title or "") or (p.content or "")).split())[:90]
+        if not snippet:
+            snippet = "নতুন একটা পোস্ট শেয়ার করেছেন"
+        stats = []
+        if p.like_count:
+            stats.append(f"{p.like_count} লাইক")
+        if p.comment_count:
+            stats.append(f"{p.comment_count} কমেন্ট")
+        stat_html = ""
+        if stats:
+            joined = " · ".join(stats)
+            stat_html = f'<div style="color:#94A3B8;font-size:11.5px;margin-top:3px;">{joined}</div>'
+        post_rows += f'''<tr><td style="padding:11px 0;border-bottom:1px solid #F1F5F9;">
+<a href="{SITE_URL}/business-network/posts/{p.id}" style="text-decoration:none;">
+<div style="color:#0F172A;font-size:13.5px;font-weight:700;">{author}</div>
+<div style="color:#475569;font-size:13px;line-height:1.5;margin-top:2px;">{snippet}</div>
+{stat_html}
+<div style="color:#2563EB;font-size:12.5px;font-weight:700;margin-top:5px;">পোস্টটি দেখুন&nbsp;&#8594;</div>
+</a></td></tr>'''
+
+    posts_html = ""
+    if post_rows:
+        posts_html = f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:20px 0 0;border-top:1px solid #E5E7EB;">
+<tr>
+<td align="left" style="padding:16px 8px 0 0;color:#0F172A;font-size:14px;font-weight:700;">এই সপ্তাহে নেটওয়ার্কে যা পোস্ট হলো</td>
+<td align="right" style="padding:16px 0 0 8px;white-space:nowrap;"><a href="{SITE_URL}/business-network" style="color:#2563EB;font-size:12.5px;font-weight:700;text-decoration:none;">ফিডে যান&nbsp;&#8594;</a></td>
+</tr></table>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0">{post_rows}</table>'''
+
+    # ── Faces you may know, ranked by mutual connections ──
+    people_html = ""
+    try:
+        if following_ids:
+            candidates = list(
+                User.objects.exclude(id=user.id)
+                .exclude(id__in=following_ids)
+                .filter(is_active=True)
+                .annotate(
+                    mutuals=Count(
+                        "business_network_following",
+                        filter=_Q(
+                            business_network_following__follower_id__in=following_ids
+                        ),
+                    )
+                )
+                .filter(mutuals__gt=0)
+                .order_by("-mutuals")[:4]
+            )
+        else:
+            candidates = []
+        if not candidates:
+            pool = list(
+                User.objects.exclude(id=user.id)
+                .exclude(id__in=following_ids)
+                .exclude(image="")
+                .exclude(image=None)
+                .filter(is_active=True)
+                .order_by("-date_joined")[:12]
+            )
+            random.shuffle(pool)
+            candidates = pool[:4]
+        if candidates:
+            people_html = _people_row_html(candidates, "পরিচিত হতে পারেন")
+            if following_ids:
+                people_html += '''<div style="color:#94A3B8;font-size:12px;margin-top:4px;">আপনি যাঁদের ফলো করেন, তাঁদের নেটওয়ার্কেই আছেন এঁরা — প্রোফাইলে ট্যাপ করে পরিচিত হয়ে নিন।</div>'''
+    except Exception:
+        people_html = ""
+
+    # ── Earn while you scroll: real micro gig tasks ──
+    gigs_html = ""
+    try:
+        from .models import MicroGigPost
+
+        gigs = list(
+            MicroGigPost.objects.filter(
+                active_gig=True, gig_status="approved", stop_gig=False
+            ).order_by("-created_at")[:8]
+        )
+        random.shuffle(gigs)
+        gig_rows = ""
+        for g in gigs[:2]:
+            gtitle = (g.title or "")[:60]
+            gig_rows += f'''<tr><td style="padding:7px 0 0;">
+<a href="{SITE_URL}/micro-gigs" style="text-decoration:none;">
+<span style="color:#0F172A;font-size:12.5px;font-weight:600;">{gtitle}</span>
+<span style="color:#059669;font-size:12.5px;font-weight:800;">&nbsp;&nbsp;৳{g.price}</span>
+</a></td></tr>'''
+        gigs_html = f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:20px 0 0;">
+<tr><td style="background-color:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:14px 18px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<td align="left" style="color:#166534;font-size:14px;font-weight:800;">ফিডে স্ক্রল করতে করতেই ইনকাম</td>
+<td align="right" style="white-space:nowrap;"><a href="{SITE_URL}/micro-gigs" style="color:#059669;font-size:12.5px;font-weight:700;text-decoration:none;">টাস্ক দেখুন&nbsp;&#8594;</a></td>
+</tr></table>
+<div style="color:#374151;font-size:13px;line-height:1.55;margin-top:4px;">Business Network ফিডে স্ক্রল করার সময়ই ছোট ছোট মাইক্রো গিগ টাস্ক পাবেন — কয়েক মিনিটে শেষ করলেই টাকা যোগ হবে আপনার AdsyClub ব্যালেন্সে।</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0">{gig_rows}</table>
+</td></tr></table>'''
+    except Exception:
+        gigs_html = ""
+
+    subject = "আপনার নেটওয়ার্কে যা হচ্ছে — একবার দেখে আসুন"
+    body = f'''
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">প্রিয় <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 4px;">আপনি যখন ব্যস্ত, Business Network তখনও থেমে নেই — নতুন পোস্ট আসছে, নতুন মানুষ যুক্ত হচ্ছেন, আর ফিডে ইনকামের সুযোগও অপেক্ষা করছে। এক নজরে দেখে নিন।</p>
+{posts_html}
+{people_html}
+{gigs_html}
+{_button("ফিডে যান", SITE_URL + "/business-network")}
+'''
+    footer_note = "আপনি AdsyClub-এর সদস্য বলে এই ইমেইলটি পাচ্ছেন।"
+    html = _base_template(subject, body, footer_note)
+    return _send_email(subject, user.email, f"{name}, আপনার নেটওয়ার্কে নতুন পোস্ট আর পরিচিত মুখ অপেক্ষা করছে", html)
+

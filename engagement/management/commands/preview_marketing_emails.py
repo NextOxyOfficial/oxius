@@ -128,6 +128,21 @@ class Command(BaseCommand):
                 self.stdout.write(f"[FAIL] promo:{feature}: {e}")
             time.sleep(1.5)
 
+        # 3) The live network-activity mail (real posts, mutual faces,
+        #    micro gig income pitch).
+        try:
+            from base.email_service import send_bn_activity_email
+
+            if send_bn_activity_email(user):
+                sent.append("bn_activity")
+                self.stdout.write("[sent] bn_activity")
+            else:
+                failed.append(("bn_activity", "returned False"))
+                self.stdout.write("[FAIL] bn_activity: returned False")
+        except Exception as e:
+            failed.append(("bn_activity", str(e)[:120]))
+            self.stdout.write(f"[FAIL] bn_activity: {e}")
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"done — sent {len(sent)}, failed {len(failed)}"
