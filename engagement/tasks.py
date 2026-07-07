@@ -445,6 +445,14 @@ def run_feature_promos():
             ).values_list("nudge_key", flat=True)
         )
         key, title, body, deep_link = pick_promo(exclude_keys=recent)
+        # Personal touch: registered users are greeted by first name.
+        _first = (
+            (getattr(user, "first_name", "") or getattr(user, "name", "") or "")
+            .strip()
+            .split(" ")[0]
+        )
+        if _first:
+            body = f"{_first}, {body}"
         try:
             send_push_notification(
                 title=title,
@@ -666,13 +674,16 @@ def run_guest_nudges(dry_run=False):
 
 @shared_task
 def send_good_morning_push():
-    """Daily 06:00 (Dhaka) good-morning broadcast — a warm start to the day
-    plus a gentle pull into the feed and services. The greeting rotates by
-    weekday so regulars never get the same message two days in a row."""
+    """Daily 06:00 (Dhaka) good-morning push — personalized by NAME for every
+    registered user ("শুভ সকাল, রাহিম!") and a generic greeting for guest
+    devices. The message rotates by weekday so regulars never get the same
+    greeting two days in a row."""
+    import time as _time
+
+    from base.fcm_service import send_fcm_notification_multicast
+    from base.models import FCMToken
     from base.push_notifications import send_push_notification
 
-    # (title, body) per weekday — Monday=0 ... Sunday=6. Each pairs a warm
-    # wish with ONE concrete thing to check inside AdsyClub.
     greetings = [
         (
             "শুভ সকাল! নতুন সপ্তাহ শুরু 🌤️",
@@ -714,13 +725,64 @@ def send_good_morning_push():
     # Beat fires at 00:00 UTC == 06:00 Dhaka; weekday comes from Dhaka's date.
     dhaka_now = timezone.now() + timedelta(hours=6)
     title, body = greetings[dhaka_now.weekday() % 7]
+    deep_link = "https://adsyclub.com/business-network"
 
-    send_push_notification(
-        title=title,
-        body=body,
-        deep_link="https://adsyclub.com/business-network",
-        notification_type="good_morning",
-        broadcast=True,
+    User = get_user_model()
+    user_ids = list(
+        FCMToken.objects.filter(is_active=True, user__isnull=False)
+        .values_list("user_id", flat=True)
+        .distinct()
     )
-    logger.info("good morning push sent: %s", title)
-    return title
+    users = User.objects.filter(id__in=user_ids, is_active=True)
+
+    sent = 0
+    for user in users.iterator(chunk_size=500):
+        first = (
+            (getattr(user, "first_name", "") or getattr(user, "name", "") or "")
+            .strip()
+            .split(" ")[0]
+        )
+        # "শুভ সকাল! ..." -> "শুভ সকাল, রাহিম! ..." for registered users.
+        personal_title = (
+            title.replace("শুভ সকাল!", f"শুভ সকাল, {first}!", 1)
+            if first
+            else title
+        )
+        try:
+            send_push_notification(
+                title=personal_title,
+                body=body,
+                deep_link=deep_link,
+                notification_type="good_morning",
+                users=[user],
+            )
+            sent += 1
+        except Exception:
+            logger.exception("good morning push failed for user %s", user.id)
+        _time.sleep(0.03)  # FCM-friendly pacing over thousands of users
+
+    # Guest devices (no account yet) still get the generic greeting.
+    guest_tokens = list(
+        FCMToken.objects.filter(is_active=True, user__isnull=True)
+        .values_list("token", flat=True)
+    )
+    for i in range(0, len(guest_tokens), 450):
+        chunk = guest_tokens[i : i + 450]
+        try:
+            send_fcm_notification_multicast(
+                chunk,
+                title,
+                body,
+                {
+                    "deep_link": deep_link,
+                    "notification_type": "good_morning",
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                },
+            )
+        except Exception:
+            logger.exception("good morning guest chunk failed")
+
+    logger.info(
+        "good morning push: %s registered, %s guest tokens", sent, len(guest_tokens)
+    )
+    return {"registered": sent, "guests": len(guest_tokens)}
