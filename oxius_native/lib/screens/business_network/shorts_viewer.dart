@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_suggestions_service.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/network_error_handler.dart';
 import '../../widgets/business_network/post_comment_input.dart';
@@ -266,7 +267,15 @@ class _ShortsViewerState extends State<ShortsViewer> {
             .map((m) => _ShortItem(post: p, media: m)))
         .toList();
 
-    _currentIndex = _findInitialIndex(widget.initialVideoUrl, _items);
+    // Randomize the reel for every user/session (TikTok-style discovery):
+    // the tapped video always plays first, everything after it is shuffled.
+    final initial = _findInitialIndex(widget.initialVideoUrl, _items);
+    if (_items.length > 1) {
+      final first = _items.removeAt(initial);
+      _items.shuffle();
+      _items.insert(0, first);
+    }
+    _currentIndex = 0;
     _pageController = PageController(initialPage: _currentIndex);
 
     // Start warming neighbours immediately — previously preloading only
@@ -313,49 +322,38 @@ class _ShortsViewerState extends State<ShortsViewer> {
   @override
   void didUpdateWidget(covariant ShortsViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final nextItems = widget.posts
+    // Merge-only: keep the current (shuffled) order stable and append the
+    // newly fetched videos — themselves shuffled — at the end. Replacing the
+    // list wholesale would both unshuffle it and yank the page under the
+    // user's thumb.
+    final incoming = widget.posts
         .expand((p) => p.media
             .where((m) => m.isVideo)
             .map((m) => _ShortItem(post: p, media: m)))
         .toList();
+    final existingIds = _items.map((e) => e.media.id).toSet();
+    final fresh = incoming
+        .where((e) => !existingIds.contains(e.media.id))
+        .toList()
+      ..shuffle();
+
+    if (fresh.isEmpty) return;
 
     final wasOnEndPage = _currentIndex >= _items.length;
     final oldItemsLength = _items.length;
 
     setState(() {
-      _items
-        ..clear()
-        ..addAll(nextItems);
+      _items.addAll(fresh);
     });
 
-    // If user was on end page and new items were added, stay on end page
-    // Otherwise keep current position
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
       if (wasOnEndPage) {
-        // If new items were loaded, user can continue watching
-        // If no new items, stay on end page
-        if (nextItems.length > oldItemsLength) {
-          // New videos loaded - go to first new video
-          _pageController.jumpToPage(oldItemsLength);
-          setState(() {
-            _currentIndex = oldItemsLength;
-          });
-        } else {
-          // No new videos - stay on end page
-          _pageController.jumpToPage(nextItems.length);
-          setState(() {
-            _currentIndex = nextItems.length;
-          });
-        }
-      } else {
-        // User was watching a video - keep position
-        final target =
-            _currentIndex.clamp(0, _items.isEmpty ? 0 : _items.length - 1);
-        if (_pageController.page?.round() != target) {
-          _pageController.jumpToPage(target);
-        }
+        // User was parked on the end page — slide onto the first new video.
+        _pageController.jumpToPage(oldItemsLength);
+        setState(() {
+          _currentIndex = oldItemsLength;
+        });
       }
     });
   }
@@ -741,6 +739,11 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   late BusinessNetworkPost _post;
   bool _isLiking = false;
   bool _wasPlayingBeforePause = false;
+  bool _captionExpanded = false;
+  bool _isFollowing = false;
+  bool _followBusy = false;
+  bool _showHeartBurst = false;
+  Timer? _heartBurstTimer;
 
   Timer? _viewTimer;
   bool _viewCounted = false;
@@ -752,7 +755,52 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     _post = widget.post;
     _commentsCount = widget.post.commentsCount;
     _viewsCount = widget.media.views;
+    _isFollowing = widget.post.user.isFollowing;
     _init();
+  }
+
+  /// 12500 -> 12.5K, 3400000 -> 3.4M — keeps rail labels tidy.
+  static String _compact(int n) {
+    if (n >= 1000000) {
+      final v = n / 1000000;
+      return '${v.toStringAsFixed(v >= 10 ? 0 : 1)}M';
+    }
+    if (n >= 1000) {
+      final v = n / 1000;
+      return '${v.toStringAsFixed(v >= 10 ? 0 : 1)}K';
+    }
+    return n.toString();
+  }
+
+  Future<void> _handleFollow() async {
+    if (AuthService.currentUser == null) {
+      _showLoginPrompt('follow this user');
+      return;
+    }
+    if (_followBusy || _isFollowing) return;
+    _followBusy = true;
+    setState(() => _isFollowing = true); // optimistic
+    try {
+      final ok = await UserSuggestionsService.followUser(
+          _post.user.uuid ?? _post.user.id.toString());
+      if (!ok && mounted) setState(() => _isFollowing = false);
+    } catch (_) {
+      if (mounted) setState(() => _isFollowing = false);
+    } finally {
+      _followBusy = false;
+    }
+  }
+
+  void _handleDoubleTapLike() {
+    // Instagram/TikTok double-tap: like (never unlike) + heart burst.
+    if (!_post.isLiked) {
+      _handleLike();
+    }
+    _heartBurstTimer?.cancel();
+    setState(() => _showHeartBurst = true);
+    _heartBurstTimer = Timer(const Duration(milliseconds: 650), () {
+      if (mounted) setState(() => _showHeartBurst = false);
+    });
   }
 
   @override
@@ -896,6 +944,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _viewTimer?.cancel();
+    _heartBurstTimer?.cancel();
     _disposeController();
     super.dispose();
   }
@@ -1232,6 +1281,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
 
     return GestureDetector(
       onTap: _togglePlay,
+      onDoubleTap: _handleDoubleTapLike,
       behavior: HitTestBehavior.translucent,
       child: Stack(
         fit: StackFit.expand,
@@ -1315,15 +1365,19 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
             bottom: 0,
             height: 220,
             child: IgnorePointer(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.75),
-                    ],
+              child: AnimatedOpacity(
+                opacity: _showPlayHint ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 180),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.75),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1346,211 +1400,311 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               ),
             ),
           if (_isInitialized && _controller != null)
-            // TikTok-style seekbar: hairline, flush with the bottom edge.
+            // TikTok-style seekbar: hairline while playing; grows into a
+            // grabbable scrub bar when paused (drag to seek back/forward).
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
               child: SafeArea(
                 top: false,
-                child: SizedBox(
-                  height: 14,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  height: _showPlayHint ? 26 : 14,
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: VideoProgressIndicator(
                       _controller!,
                       allowScrubbing: true,
-                      padding: const EdgeInsets.only(bottom: 2),
+                      padding: EdgeInsets.only(
+                          bottom: 3, top: _showPlayHint ? 16 : 8),
                       colors: VideoProgressColors(
                         playedColor: Colors.white,
                         bufferedColor: Colors.white.withValues(alpha: 0.35),
-                        backgroundColor: Colors.white.withValues(alpha: 0.16),
+                        backgroundColor: Colors.white
+                            .withValues(alpha: _showPlayHint ? 0.28 : 0.16),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
+          // Double-tap heart burst (Instagram-style).
+          if (_showHeartBurst)
+            IgnorePointer(
+              child: Center(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.4, end: 1.0),
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutBack,
+                  builder: (context, scale, child) =>
+                      Transform.scale(scale: scale, child: child),
+                  child: const Icon(
+                    Icons.favorite_rounded,
+                    size: 96,
+                    color: Colors.white,
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 24)],
+                  ),
+                ),
+              ),
+            ),
+          // Action rail — fades out while paused so only the video and the
+          // seekbar remain (clean scrub mode).
           Positioned(
             right: 10,
-            bottom: 104,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _ActionButton(
-                  iconPath: post.isLiked
-                      ? 'assets/icons/like.png'
-                      : 'assets/icons/unlike.png',
-                  label: post.likesCount.toString(),
-                  onTap: _handleLike,
-                  applyGrayFill: !post.isLiked,
+            bottom: 64,
+            child: IgnorePointer(
+              ignoring: _showPlayHint,
+              child: AnimatedOpacity(
+                opacity: _showPlayHint ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 180),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!_isOwnPost()) ...[
+                      _FollowRailButton(
+                        avatarUrl: post.user.avatar ?? post.user.image,
+                        isFollowing: _isFollowing,
+                        onFollow: _handleFollow,
+                        onOpenProfile: () {
+                          _controller?.pause();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileScreen(
+                                userId:
+                                    post.user.uuid ?? post.user.id.toString(),
+                              ),
+                            ),
+                          ).then((_) {
+                            if (mounted && widget.isActive) {
+                              _controller?.play();
+                            }
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                    _ActionButton(
+                      iconPath: post.isLiked
+                          ? 'assets/icons/like.png'
+                          : 'assets/icons/unlike.png',
+                      label: _compact(post.likesCount),
+                      onTap: _handleLike,
+                      applyGrayFill: !post.isLiked,
+                    ),
+                    const SizedBox(height: 18),
+                    _ActionButton(
+                      iconPath: 'assets/icons/comments.png',
+                      label: _compact(_commentsCount),
+                      onTap: _openCommentsSheet,
+                    ),
+                    const SizedBox(height: 18),
+                    if (!_isOwnPost()) ...[
+                      _ActionButton(
+                        materialIcon: Icons.card_giftcard,
+                        label: 'Gift',
+                        onTap: () {
+                          // ignore: discarded_futures
+                          _openGiftSheet();
+                        },
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                    _ActionButton(
+                      iconPath: 'assets/icons/share.png',
+                      label: 'Share',
+                      onTap: _handleShare,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 18),
-                _ActionButton(
-                  iconPath: 'assets/icons/comments.png',
-                  label: _commentsCount.toString(),
-                  onTap: _openCommentsSheet,
-                ),
-                const SizedBox(height: 18),
-                if (!_isOwnPost()) ...[
-                  _ActionButton(
-                    materialIcon: Icons.card_giftcard,
-                    label: 'Gift',
-                    onTap: () {
-                      // ignore: discarded_futures
-                      _openGiftSheet();
-                    },
-                  ),
-                  const SizedBox(height: 18),
-                ],
-                _ActionButton(
-                  iconPath: 'assets/icons/share.png',
-                  label: 'Share',
-                  onTap: _handleShare,
-                ),
-              ],
+              ),
             ),
           ),
+          // Author + caption block — hugs the seekbar (no dead band below),
+          // fades out while paused.
           Positioned(
             left: 14,
             right: 78,
-            bottom: 84,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    // Pause video before navigating
-                    _controller?.pause();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfileScreen(
-                          userId: post.user.uuid ?? post.user.id.toString(),
-                        ),
-                      ),
-                    ).then((_) {
-                      // Resume video when returning if still active
-                      if (mounted && widget.isActive) {
-                        _controller?.play();
-                      }
-                    });
-                  },
-                  child: RichText(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      children: [
-                        // Reels-style author row: avatar chip before the name.
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.9),
-                                    width: 1.5),
-                              ),
-                              child: ClipOval(
-                                child: ((post.user.avatar ??
-                                                post.user.image) ??
-                                            '')
-                                        .isNotEmpty
-                                    ? Image.network(
-                                        (post.user.avatar ??
-                                            post.user.image)!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (c, e, s) =>
-                                            const _AvatarFallback(),
-                                      )
-                                    : const _AvatarFallback(),
-                              ),
+            bottom: 22,
+            child: IgnorePointer(
+              ignoring: _showPlayHint,
+              child: AnimatedOpacity(
+                opacity: _showPlayHint ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 180),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        // Pause video before navigating
+                        _controller?.pause();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfileScreen(
+                              userId: post.user.uuid ?? post.user.id.toString(),
                             ),
                           ),
-                        ),
-                        TextSpan(
-                          text: post.user.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        if (post.user.isVerified) ...[
-                          const TextSpan(text: ' '),
-                          const WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Icon(
-                              Icons.verified,
-                              size: 15,
-                              color: Color(0xFF3B82F6),
-                            ),
-                          ),
-                        ],
-                        if (post.user.isPro) ...[
-                          const TextSpan(text: ' '),
-                          WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.indigo.shade600,
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.18)),
-                              ),
-                              child: const Text(
-                                'Pro',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
+                        ).then((_) {
+                          // Resume video when returning if still active
+                          if (mounted && widget.isActive) {
+                            _controller?.play();
+                          }
+                        });
+                      },
+                      child: RichText(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
+                          children: [
+                            // Reels-style author row: avatar chip before the name.
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.9),
+                                        width: 1.5),
+                                  ),
+                                  child: ClipOval(
+                                    child: ((post.user.avatar ??
+                                                    post.user.image) ??
+                                                '')
+                                            .isNotEmpty
+                                        ? Image.network(
+                                            (post.user.avatar ??
+                                                post.user.image)!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (c, e, s) =>
+                                                const _AvatarFallback(),
+                                          )
+                                        : const _AvatarFallback(),
+                                  ),
                                 ),
                               ),
                             ),
+                            TextSpan(
+                              text: post.user.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (post.user.isVerified) ...[
+                              const TextSpan(text: ' '),
+                              const WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: Icon(
+                                  Icons.verified,
+                                  size: 15,
+                                  color: Color(0xFF3B82F6),
+                                ),
+                              ),
+                            ],
+                            if (post.user.isPro) ...[
+                              const TextSpan(text: ' '),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.indigo.shade600,
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.18)),
+                                  ),
+                                  child: const Text(
+                                    'Pro',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (post.title.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        post.title,
+                        maxLines: _captionExpanded ? 4 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.95),
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                    if (post.content.trim().isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      GestureDetector(
+                        onTap: () => setState(
+                            () => _captionExpanded = !_captionExpanded),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: _captionExpanded
+                                ? MediaQuery.of(context).size.height * 0.3
+                                : double.infinity,
                           ),
-                        ],
+                          child: SingleChildScrollView(
+                            physics: _captionExpanded
+                                ? const BouncingScrollPhysics()
+                                : const NeverScrollableScrollPhysics(),
+                            child: Text(
+                              post.content,
+                              maxLines: _captionExpanded ? null : 2,
+                              overflow: _captionExpanded
+                                  ? TextOverflow.visible
+                                  : TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.82),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Long captions get an explicit reels-style toggle.
+                      if (post.content.trim().length > 90 ||
+                          post.title.length > 70) ...[
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => setState(
+                              () => _captionExpanded = !_captionExpanded),
+                          child: Text(
+                            _captionExpanded ? 'কম দেখুন' : 'আরো পড়ুন',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.65),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-                  ),
+                    ],
+                  ],
                 ),
-                if (post.title.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    post.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.95),
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-                if (post.content.trim().isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Text(
-                    post.content,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.82),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
         ],
@@ -1632,6 +1786,79 @@ class _ActionButton extends StatelessWidget {
                 shadows: const [
                   Shadow(color: Colors.black54, blurRadius: 4),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// TikTok-style rail follow control: the author's avatar with a small "+"
+/// badge underneath. Tapping the avatar opens the profile; tapping the badge
+/// follows. The badge flips to a check, then hides once following.
+class _FollowRailButton extends StatelessWidget {
+  final String? avatarUrl;
+  final bool isFollowing;
+  final VoidCallback onFollow;
+  final VoidCallback onOpenProfile;
+
+  const _FollowRailButton({
+    required this.avatarUrl,
+    required this.isFollowing,
+    required this.onFollow,
+    required this.onOpenProfile,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 52,
+      height: 60,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          GestureDetector(
+            onTap: onOpenProfile,
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.6),
+              ),
+              child: ClipOval(
+                child: (avatarUrl ?? '').isNotEmpty
+                    ? Image.network(
+                        avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, s) => const _AvatarFallback(),
+                      )
+                    : const _AvatarFallback(),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            child: GestureDetector(
+              onTap: onFollow,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: isFollowing
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFEF4444),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.2),
+                ),
+                child: Icon(
+                  isFollowing ? Icons.check_rounded : Icons.add_rounded,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
