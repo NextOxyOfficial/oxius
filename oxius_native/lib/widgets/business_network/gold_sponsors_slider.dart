@@ -119,7 +119,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
             // Height matched to the tile's real content (avatar 68 + gap 6 +
             // 2-line label + paddings) — the old 138 left a dead band below.
             SizedBox(
-              height: 116,
+              height: 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.zero,
@@ -137,7 +137,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
 
   Widget _buildLoadingContent() {
     return SizedBox(
-      height: 116,
+      height: 120,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
@@ -252,14 +252,16 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
               ],
             ),
             const SizedBox(height: 6),
-            // Full business name — wraps to a second line instead of
-            // truncating after a few characters.
-            Text(
-              sponsor.businessName,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: AppText.tileLabel(color: const Color(0xFF78350F)),
+            // Full business name — wraps to a second line; Flexible lets it
+            // shrink under large system text scales instead of overflowing.
+            Flexible(
+              child: Text(
+                sponsor.businessName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: AppText.tileLabel(color: const Color(0xFF78350F)),
+              ),
             ),
           ],
         ),
