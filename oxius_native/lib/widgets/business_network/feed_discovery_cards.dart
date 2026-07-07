@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:http/http.dart' as http;
 
+import '../../services/api_service.dart';
 import '../../services/microgig_service.dart';
 import '../../services/news_service.dart';
 import '../../services/workspace_service.dart';
@@ -237,14 +241,20 @@ class _DiscoveryStore<T> {
 // ── Micro gigs ──────────────────────────────────────────────────────────────
 final _microStore = _DiscoveryStore<MicroGig>();
 
+/// One available micro gig shown as an "earn now" card between posts — only
+/// when the user still has uncompleted gigs. Each feed slot rotates to the
+/// next gig via [index].
 class FeedMicroGigsCard extends StatefulWidget {
-  const FeedMicroGigsCard({super.key});
+  final int index;
+  const FeedMicroGigsCard({super.key, this.index = 0});
   @override
   State<FeedMicroGigsCard> createState() => _FeedMicroGigsCardState();
 }
 
 class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
   List<MicroGig> _gigs = const [];
+
+  static const _accent = Color(0xFF6366F1);
 
   @override
   void initState() {
@@ -253,8 +263,8 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
         .load(() => MicrogigService.getMicroGigs(showSubmitted: false))
         .then((v) {
       if (mounted) {
-        setState(() => _gigs =
-            v.where((g) => g.isAvailable).take(8).toList());
+        setState(
+            () => _gigs = v.where((g) => g.isAvailable).take(12).toList());
       }
     });
   }
@@ -262,24 +272,192 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
   @override
   Widget build(BuildContext context) {
     if (_gigs.isEmpty) return const SizedBox.shrink();
-    return FeedDiscoveryCard(
-      icon: Icons.bolt_rounded,
-      accent: const Color(0xFF6366F1),
-      title: 'নতুন গিগস — সহজে ইনকাম',
-      onSeeAll: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => const MicroGigsScreen())),
-      items: _gigs
-          .map((g) => FeedDiscoveryItem(
-                title: g.title,
-                subtitle: '৳${g.price.toStringAsFixed(0)} • কাজ প্রতি',
-                badge: '${g.remainingSlots} স্লট বাকি',
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            GigDetailsScreen(gigSlug: g.slug))),
-              ))
-          .toList(),
+    final gig = _gigs[widget.index % _gigs.length];
+    final categoryImg = gig.categoryDetails?.image ?? '';
+
+    void openGig() => Navigator.push(context,
+        MaterialPageRoute(builder: (_) => GigDetailsScreen(gigSlug: gig.slug)));
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEDF0F5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 10, 10),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child:
+                      const Icon(Icons.bolt_rounded, size: 15, color: _accent),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'টাস্ক কমপ্লিট করে ইনকাম করুন',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const MicroGigsScreen())),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    child: Row(
+                      children: [
+                        Text('সব দেখুন',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _accent)),
+                        Icon(Icons.chevron_right_rounded,
+                            size: 16, color: _accent),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // The gig itself
+          InkWell(
+            onTap: openGig,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category thumb (e.g. Facebook/YouTube logo)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: SizedBox(
+                      width: 46,
+                      height: 46,
+                      child: categoryImg.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: categoryImg,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 120,
+                              placeholder: (c, u) =>
+                                  Container(color: const Color(0xFFF1F5F9)),
+                              errorWidget: (c, u, e) => _thumbFallback(),
+                            )
+                          : _thumbFallback(),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          gig.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                            height: 1.35,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Text(
+                              '৳${gig.price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: _accent,
+                              ),
+                            ),
+                            const Text(
+                              '  •  কাজ প্রতি',
+                              style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF6B7280)),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                    color: const Color(0xFFE2E8F0)),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                '${gig.remainingSlots} স্লট বাকি',
+                                style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF475569)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Earn CTA
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SizedBox(
+              width: double.infinity,
+              height: 34,
+              child: ElevatedButton(
+                onPressed: openGig,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999)),
+                ),
+                child: const Text(
+                  'ইনকাম করুন',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _thumbFallback() {
+    return Container(
+      color: const Color(0xFFF1F5F9),
+      child: const Icon(Icons.bolt_rounded, size: 22, color: Color(0xFF94A3B8)),
     );
   }
 }
@@ -496,6 +674,79 @@ class _FeedWorkspaceGigsCardState extends State<FeedWorkspaceGigsCard> {
               MaterialPageRoute(
                   builder: (_) =>
                       GigDetailScreen(gigId: g['id'].toString()))),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ── পুরাতন কেনাবেচা (sale marketplace) ─────────────────────────────────────
+final _saleStore = _DiscoveryStore<Map<String, dynamic>>();
+
+class FeedSaleCard extends StatefulWidget {
+  const FeedSaleCard({super.key});
+  @override
+  State<FeedSaleCard> createState() => _FeedSaleCardState();
+}
+
+class _FeedSaleCardState extends State<FeedSaleCard> {
+  List<Map<String, dynamic>> _posts = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _saleStore.load(() async {
+      final uri = Uri.parse('${ApiService.baseUrl}/sale/posts/')
+          .replace(queryParameters: {'page': '1'});
+      final resp = await http.get(uri);
+      if (resp.statusCode != 200) return <Map<String, dynamic>>[];
+      final data = json.decode(resp.body);
+      final results = data is Map ? (data['results'] ?? []) : data;
+      return List<Map<String, dynamic>>.from(
+          (results as List).whereType<Map<String, dynamic>>());
+    }).then((v) {
+      if (mounted) setState(() => _posts = v.take(10).toList());
+    });
+  }
+
+  String _img(Map<String, dynamic> p) {
+    final main = (p['main_image'] ?? '').toString();
+    if (main.isNotEmpty) return main;
+    final images = p['images'];
+    if (images is List && images.isNotEmpty && images.first is Map) {
+      return (images.first['image'] ?? '').toString();
+    }
+    return '';
+  }
+
+  String? _place(Map<String, dynamic> p) {
+    final district = (p['district'] ?? '').toString().trim();
+    final division = (p['division'] ?? '').toString().trim();
+    if (district.isNotEmpty) return district;
+    if (division.isNotEmpty) return division;
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_posts.isEmpty) return const SizedBox.shrink();
+    return FeedDiscoveryCard(
+      icon: Icons.sync_alt_rounded,
+      accent: const Color(0xFF0D9488),
+      title: 'পুরাতন কেনাবেচা',
+      onSeeAll: () => Navigator.pushNamed(context, '/sale'),
+      items: _posts.map((p) {
+        final price = (p['price'] ?? '0').toString();
+        final priceNum = double.tryParse(price) ?? 0;
+        final place = _place(p);
+        return FeedDiscoveryItem(
+          title: (p['title'] ?? '').toString(),
+          subtitle: place == null
+              ? '৳${priceNum.toStringAsFixed(0)}'
+              : '৳${priceNum.toStringAsFixed(0)} • $place',
+          imageUrl: _img(p),
+          onTap: () => Navigator.pushNamed(context, '/sale/detail',
+              arguments: {'slug': p['slug'], 'id': p['id']}),
         );
       }).toList(),
     );

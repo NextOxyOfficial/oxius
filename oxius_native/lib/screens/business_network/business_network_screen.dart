@@ -357,6 +357,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final slots = <_FeedSlot>[const _FeedSlot(_FeedSlotType.topHeader)];
     int sponsoredSlot = 0;
     int newsSlot = 0;
+    int microSlot = 0;
     for (int i = 0; i < posts.length; i++) {
       if (i > 0 && i % 10 == 0 && AuthService.isAuthenticated) {
         slots.add(const _FeedSlot(_FeedSlotType.userSuggestions));
@@ -369,7 +370,11 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       }
       // Discovery rows — different periods/offsets keep them apart.
       if (i > 0 && i % 7 == 3) {
-        slots.add(const _FeedSlot(_FeedSlotType.microGigs));
+        // One gig per slot, rotating through the available list.
+        slots.add(_FeedSlot(_FeedSlotType.microGigs, slotIndex: microSlot++));
+      }
+      if (i > 0 && i % 13 == 10) {
+        slots.add(const _FeedSlot(_FeedSlotType.salePosts));
       }
       if (i > 0 && i % 9 == 6) {
         // slotIndex → which story this occurrence shows (rotates the list).
@@ -763,7 +768,13 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         return FeedNativeAdCard(key: ValueKey('feed_ad_${slot.slotIndex}'));
 
       case _FeedSlotType.microGigs:
-        return const FeedMicroGigsCard();
+        return FeedMicroGigsCard(
+          key: ValueKey('feed_microgig_${slot.slotIndex}'),
+          index: slot.slotIndex ?? 0,
+        );
+
+      case _FeedSlotType.salePosts:
+        return const FeedSaleCard();
 
       case _FeedSlotType.news:
         // Different story per slot so scrolling shows fresh news each time.
@@ -1201,6 +1212,7 @@ enum _FeedSlotType {
   microGigs,
   news,
   workspaceGigs,
+  salePosts,
   footer,
 }
 

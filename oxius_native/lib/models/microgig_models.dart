@@ -1,5 +1,5 @@
 class MicroGigUser {
-  final int id;
+  final String id;
   final String name;
   final String? image;
 
@@ -11,7 +11,7 @@ class MicroGigUser {
 
   factory MicroGigUser.fromJson(Map<String, dynamic> json) {
     return MicroGigUser(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       image: json['image'],
     );
@@ -19,7 +19,7 @@ class MicroGigUser {
 }
 
 class MicroGigCategory {
-  final int id;
+  final String id;
   final String title;
   final String? image;
 
@@ -31,7 +31,7 @@ class MicroGigCategory {
 
   factory MicroGigCategory.fromJson(Map<String, dynamic> json) {
     return MicroGigCategory(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       image: json['image'],
     );
@@ -39,7 +39,7 @@ class MicroGigCategory {
 }
 
 class MicroGig {
-  final int id;
+  final String id;
   final String slug;
   final String title;
   final double price;
@@ -73,7 +73,7 @@ class MicroGig {
     }
 
     return MicroGig(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       slug: json['slug'] ?? '',
       title: json['title'] ?? '',
       price: parsePrice(json['price']),
