@@ -355,7 +355,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
-                    'এডসি নিউজ',
+                    'এডজি নিউজ',
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,

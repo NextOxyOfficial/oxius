@@ -203,39 +203,45 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
               ],
             ),
           ),
-          // Horizontal tiles
-          SizedBox(
-            height: 190,
-            child: _isLoading
-                ? _buildLoadingRow()
-                : ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: _displayedSuggestions.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
-                    itemBuilder: (context, i) =>
-                        _buildUserTile(_displayedSuggestions[i]),
-                  ),
-          ),
+          // Horizontal tiles — sized so 2 profiles fit fully and the 3rd
+          // peeks in from the edge, hinting the row scrolls.
+          Builder(builder: (context) {
+            final screenW = MediaQuery.of(context).size.width;
+            final tileW = ((screenW - 34) / 2.35).clamp(120.0, 175.0);
+            final imageH = tileW * 0.81;
+            return SizedBox(
+              height: imageH + 86,
+              child: _isLoading
+                  ? _buildLoadingRow(tileW, imageH)
+                  : ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: _displayedSuggestions.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 10),
+                      itemBuilder: (context, i) => _buildUserTile(
+                          _displayedSuggestions[i], tileW, imageH),
+                    ),
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildLoadingRow() {
+  Widget _buildLoadingRow(double tileW, double imageH) {
     return ListView.separated(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       itemCount: 4,
       separatorBuilder: (_, __) => const SizedBox(width: 10),
       itemBuilder: (context, i) => SizedBox(
-        width: 128,
+        width: tileW,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 128,
-              height: 104,
+              width: tileW,
+              height: imageH,
               decoration: BoxDecoration(
                 color: const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(10),
@@ -265,7 +271,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
     );
   }
 
-  Widget _buildUserTile(Map<String, dynamic> user) {
+  Widget _buildUserTile(Map<String, dynamic> user, double tileW, double imageH) {
     final userId = (user['id'] ?? '').toString();
     final isFollowing = _followingStates[userId] ?? false;
     final isPending = _followingPending[userId] ?? false;
@@ -275,7 +281,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
         int.tryParse((user['mutual_connections'] ?? 0).toString()) ?? 0;
 
     return SizedBox(
-      width: 128,
+      width: tileW,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -290,8 +296,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: SizedBox(
-                width: 128,
-                height: 104,
+                width: tileW,
+                height: imageH,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
