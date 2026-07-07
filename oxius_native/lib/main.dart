@@ -468,9 +468,11 @@ class MyApp extends StatelessWidget {
               } else if (settings.name == '/sale/detail') {
                 final args = settings.arguments as Map<String, dynamic>?;
                 return MaterialPageRoute(
+                  // toString-guard: callers sometimes pass raw API values
+                  // (int ids) — the screen's params are String?.
                   builder: (context) => SaleDetailScreen(
-                    slug: args?['slug'],
-                    id: args?['id'],
+                    slug: args?['slug']?.toString(),
+                    id: args?['id']?.toString(),
                   ),
                 );
               } else if (settings.name == '/my-sale-posts') {

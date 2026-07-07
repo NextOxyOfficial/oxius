@@ -267,7 +267,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
   Future<void> _openStore(String? storeUsername, String storeName) async {
     if (storeUsername == null || storeUsername.isEmpty) {
       AdsyToast.error(
-          context, 'Store information is not available for this product.');
+          context, 'এই প্রোডাক্টের দোকানের তথ্য পাওয়া যায়নি।');
       return;
     }
 
@@ -349,32 +349,60 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     });
   }
 
+  // "আপনার পছন্দ হতে পারে" feeds endlessly: same-category products first,
+  // and when the category runs out it keeps flowing from the full catalog
+  // (deduped) — the section never goes dry after a page of scrolling.
+  bool _similarInCategoryPhase = true;
+  final Set<String> _similarSeenIds = {};
+
+  List<Map<String, dynamic>> _dedupSimilar(List<Map<String, dynamic>> batch) {
+    final currentProductId = _activeProduct['id']?.toString();
+    final fresh = <Map<String, dynamic>>[];
+    for (final p in batch) {
+      final id = p['id']?.toString() ?? '';
+      if (id.isEmpty || id == currentProductId) continue;
+      if (_similarSeenIds.add(id)) fresh.add(p);
+    }
+    return fresh;
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchSimilarPage(int page) {
+    final product = _activeProduct;
+    final categorySlug =
+        _similarInCategoryPhase ? _resolvePrimaryCategorySlug(product) : null;
+    final categoryId =
+        _similarInCategoryPhase ? _resolvePrimaryCategoryId(product) : null;
+    return EshopService.fetchEshopProducts(
+      page: page,
+      pageSize: 12,
+      categorySlug: categorySlug,
+      categoryId: categorySlug == null ? categoryId : null,
+    );
+  }
+
   Future<void> _loadSimilarProducts() async {
     setState(() {
       _similarProductsPage = 1;
       _hasMoreSimilarProducts = true;
+      _similarInCategoryPhase = true;
+      _similarSeenIds.clear();
     });
 
     try {
-      final product = _activeProduct;
-      final categorySlug = _resolvePrimaryCategorySlug(product);
-      final categoryId = _resolvePrimaryCategoryId(product);
-
-      final products = await EshopService.fetchEshopProducts(
-        page: 1,
-        pageSize: 12,
-        categorySlug: categorySlug,
-        categoryId: categorySlug == null ? categoryId : null,
-      );
-
+      final products = await _fetchSimilarPage(1);
+      if (!mounted) return;
       setState(() {
-        // Filter out current product
-        final currentProductId = _activeProduct['id']?.toString();
-        _similarProducts = products
-            .where((p) => p['id']?.toString() != currentProductId)
-            .toList();
-        _hasMoreSimilarProducts = products.length == 12;
+        _similarProducts = _dedupSimilar(products);
+        if (products.length < 12) {
+          // Category exhausted on page one — switch to the full catalog.
+          _similarInCategoryPhase = false;
+          _similarProductsPage = 0;
+        }
       });
+      // Thin first page? top-up from the catalog right away.
+      if (_similarProducts.length < 6 && !_similarInCategoryPhase) {
+        await _loadMoreSimilarProducts();
+      }
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -392,26 +420,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
 
     try {
       final nextPage = _similarProductsPage + 1;
-      final product = _activeProduct;
-      final categorySlug = _resolvePrimaryCategorySlug(product);
-      final categoryId = _resolvePrimaryCategoryId(product);
-
-      final products = await EshopService.fetchEshopProducts(
-        page: nextPage,
-        pageSize: 12,
-        categorySlug: categorySlug,
-        categoryId: categorySlug == null ? categoryId : null,
-      );
-
+      final products = await _fetchSimilarPage(nextPage);
+      if (!mounted) return;
       setState(() {
-        // Filter out current product and add to list
-        final currentProductId = _activeProduct['id']?.toString();
-        final newProducts = products
-            .where((p) => p['id']?.toString() != currentProductId)
-            .toList();
-        _similarProducts.addAll(newProducts);
+        _similarProducts.addAll(_dedupSimilar(products));
         _similarProductsPage = nextPage;
-        _hasMoreSimilarProducts = products.length == 12;
+        if (products.length < 12) {
+          if (_similarInCategoryPhase) {
+            // Category done — continue seamlessly from the full catalog.
+            _similarInCategoryPhase = false;
+            _similarProductsPage = 0;
+          } else {
+            _hasMoreSimilarProducts = false;
+          }
+        }
       });
     } catch (_) {
       if (mounted) {
@@ -551,7 +573,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       context,
       data: AdsyShareData(
         title: productTitle.toString(),
-        description: 'View this product on AdsyClub.',
+        description: 'AdsyClub-এ প্রোডাক্টটা দেখে নিন।',
         url: 'https://adsyclub.com/product-details/$productSlug',
         imageUrl: imageUrl,
         subject: productTitle.toString(),
@@ -714,7 +736,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Product details',
+                      'প্রোডাক্টের বিস্তারিত',
                       style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -722,7 +744,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                       ),
                     ),
                     Text(
-                      'Shop item overview',
+                      'এক নজরে প্রোডাক্টটি',
                       style: AppFonts.roboto(
                         fontSize: 11,
                         color: _slate500,
@@ -861,13 +883,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             children: [
               _buildMetaPill(
                 icon: Icons.inventory_2_outlined,
-                label: stock > 0 ? '$stock in stock' : 'Currently unavailable',
+                label: stock > 0 ? 'স্টকে $stockটা আছে' : 'এখন স্টকে নেই',
                 color: stock > 0 ? _emerald : _rose,
               ),
               if (isFreeDelivery)
                 _buildMetaPill(
                   icon: Icons.local_shipping_outlined,
-                  label: 'Free delivery',
+                  label: 'ফ্রি ডেলিভারি',
                   color: _emerald,
                 ),
               if (views > 0)
@@ -1047,7 +1069,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                           const Icon(Icons.shopping_bag_outlined, size: 16),
                           const SizedBox(width: 6),
                           Text(
-                            stock > 0 ? 'Buy Now' : 'Unavailable',
+                            stock > 0 ? 'এখনই কিনুন' : 'স্টকে নেই',
                             style: AppFonts.roboto(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -1164,7 +1186,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                         right: 14,
                         child: _buildHeroBadge(
                           icon: Icons.local_shipping_outlined,
-                          label: 'Free delivery',
+                          label: 'ফ্রি ডেলিভারি',
                           color: _emerald,
                           background: const Color(0xFFECFDF5),
                         ),
@@ -1221,7 +1243,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('Storefront'),
+          _buildSectionTitle('দোকান'),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1264,7 +1286,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Verified seller profile and store catalog',
+                      'ভেরিফায়েড বিক্রেতা — দোকানের সব প্রোডাক্ট দেখুন',
                       style: AppFonts.roboto(
                         fontSize: 11,
                         color: _slate500,
@@ -1292,7 +1314,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
               ),
               icon: const Icon(Icons.store_mall_directory_outlined, size: 17),
               label: Text(
-                'Open store',
+                'দোকানে যান',
                 style: AppFonts.roboto(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -1313,7 +1335,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('About this product'),
+          _buildSectionTitle('প্রোডাক্ট সম্পর্কে'),
           const SizedBox(height: 8),
           Container(
             height: 42,
@@ -1345,9 +1367,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                 fontWeight: FontWeight.w600,
               ),
               tabs: const [
-                Tab(height: 34, text: 'Overview'),
-                Tab(height: 34, text: 'Delivery'),
-                Tab(height: 34, text: 'Reviews'),
+                Tab(height: 34, text: 'বিবরণ'),
+                Tab(height: 34, text: 'ডেলিভারি'),
+                Tab(height: 34, text: 'রিভিউ'),
               ],
             ),
           ),
@@ -1398,7 +1420,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
               },
             )
           : Text(
-              'No description available',
+              'কোনো বিবরণ দেওয়া নেই',
               style: AppFonts.roboto(
                 fontSize: 12,
                 color: const Color(0xFF9CA3AF),
@@ -1434,7 +1456,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                       size: 16, color: Color(0xFF10B981)),
                   const SizedBox(width: 6),
                   Text(
-                    'Free delivery available',
+                    'ফ্রি ডেলিভারি পাবেন',
                     style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -1444,9 +1466,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                 ],
               ),
             ),
-          _buildDeliveryRow('Inside Dhaka', '৳$feeInsideDhaka'),
-          _buildDeliveryRow('Outside Dhaka', '৳$feeOutsideDhaka'),
-          _buildDeliveryRow('Estimated Time', '3-5 business days'),
+          _buildDeliveryRow('ঢাকার ভেতরে', '৳$feeInsideDhaka'),
+          _buildDeliveryRow('ঢাকার বাইরে', '৳$feeOutsideDhaka'),
+          _buildDeliveryRow('আনুমানিক সময়', '৩-৫ কর্মদিবস'),
         ],
       ),
     );
@@ -1510,7 +1532,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             ),
             const SizedBox(height: 10),
             Text(
-              'No reviews yet',
+              'এখনো কোনো রিভিউ নেই',
               style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -1519,7 +1541,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             ),
             const SizedBox(height: 4),
             Text(
-              'Be the first to review this product and help other buyers.',
+              'প্রথম রিভিউটা আপনিই দিন — অন্য ক্রেতাদের সাহায্য হবে।',
               style: AppFonts.roboto(
                 fontSize: 11,
                 color: const Color(0xFF9CA3AF),
@@ -1602,7 +1624,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
         ),
         icon: const Icon(Icons.edit_outlined, size: 17),
         label: Text(
-          'Write a review',
+          'রিভিউ লিখুন',
           style: AppFonts.roboto(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,
@@ -1742,7 +1764,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                           size: 12, color: Color(0xFF059669)),
                       const SizedBox(width: 4),
                       Text(
-                        'Store reply',
+                        'দোকানের উত্তর',
                         style: AppFonts.roboto(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
@@ -1776,7 +1798,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
 
     if (ownerId != null && ownerId == currentUserId) {
       AdsyToast.warning(
-          context, 'You cannot write a review for your own product.');
+          context, 'নিজের প্রোডাক্টে রিভিউ দেওয়া যায় না।');
       return;
     }
 
@@ -1826,7 +1848,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Write a Review',
+                            'রিভিউ লিখুন',
                             style: AppFonts.roboto(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -1838,7 +1860,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Your Rating',
+                      'আপনার রেটিং',
                       style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -1894,9 +1916,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                         });
                       },
                       decoration: InputDecoration(
-                        labelText: 'Your Review',
+                        labelText: 'আপনার রিভিউ',
                         labelStyle: AppFonts.roboto(fontSize: 12),
-                        hintText: 'Share your experience...',
+                        hintText: 'আপনার অভিজ্ঞতা লিখুন...',
                         hintStyle: AppFonts.roboto(fontSize: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1923,7 +1945,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                               ),
                             ),
                             child: Text(
-                              'Cancel',
+                              'বাতিল',
                               style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -1953,7 +1975,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                                       Navigator.pop(sheetContext);
                                       if (mounted) {
                                         AdsyToast.success(context,
-                                            'Thank you for your review!');
+                                            'রিভিউ দেওয়ার জন্য ধন্যবাদ!');
                                         _loadReviews();
                                       }
                                     } else {
@@ -1963,7 +1985,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                                           sheetContext,
                                           (msg != null && msg.isNotEmpty)
                                               ? msg
-                                              : 'Could not submit your review. Please try again.');
+                                              : 'রিভিউ জমা হয়নি — আবার চেষ্টা করুন।');
                                     }
                                   }
                                 : null,
@@ -1984,7 +2006,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                                         strokeWidth: 2, color: Colors.white),
                                   )
                                 : Text(
-                                    'Submit',
+                                    'জমা দিন',
                                     style: AppFonts.roboto(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
@@ -2013,7 +2035,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('You may also like'),
+          _buildSectionTitle('আপনার পছন্দ হতে পারে'),
           const SizedBox(height: 10),
           LayoutBuilder(
             builder: (context, constraints) {

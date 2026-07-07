@@ -758,8 +758,13 @@ class _FeedSaleCardState extends State<FeedSaleCard> {
               ? '৳${priceNum.toStringAsFixed(0)}'
               : '৳${priceNum.toStringAsFixed(0)} • $place',
           imageUrl: _img(p),
+          // Route params are typed String? — raw map values may be ints and
+          // hard-crash the detail page with a TypeError.
           onTap: () => Navigator.pushNamed(context, '/sale/detail',
-              arguments: {'slug': p['slug'], 'id': p['id']}),
+              arguments: {
+                'slug': p['slug']?.toString(),
+                'id': p['id']?.toString(),
+              }),
         );
       }).toList(),
     );
