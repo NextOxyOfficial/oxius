@@ -73,14 +73,51 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildLoading();
+          // In chat (bare) show nothing while loading — the grey skeleton
+          // read as a stray background box. Elsewhere keep the skeleton.
+          return widget.bare ? const SizedBox.shrink() : _buildLoading();
         }
 
         final data = snapshot.data;
-        if (data == null) return const SizedBox.shrink();
+        if (data == null) {
+          // Bare/chat: a URL-only message hides its raw text and relies on
+          // this widget, so never collapse to nothing — show a minimal
+          // tappable link chip. Non-chat: nothing.
+          return widget.bare ? _buildBareFallback() : const SizedBox.shrink();
+        }
 
         return _buildCard(context, data);
       },
+    );
+  }
+
+  Widget _buildBareFallback() {
+    final onDark = widget.onDark;
+    return InkWell(
+      onTap: () => UrlLauncherUtils.launchExternalUrl(widget.url),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.link_rounded,
+              size: 15,
+              color: onDark
+                  ? Colors.white.withValues(alpha: 0.85)
+                  : const Color(0xFF2563EB)),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              widget.url,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: onDark ? Colors.white : const Color(0xFF2563EB),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -147,13 +184,10 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
     final descColor =
         onDark ? Colors.white.withValues(alpha: 0.85) : const Color(0xFF4B5563);
     return InkWell(
-      onTap: () {
-        if (bare) {
-          UrlLauncherUtils.launchInBrowser(data.url);
-        } else {
-          UrlLauncherUtils.launchExternalUrl(data.url);
-        }
-      },
+      // launchExternalUrl routes correctly: an adsyclub link opens the in-app
+      // screen (via the deep-link navigator, which also closes the chat
+      // overlay), any third-party link opens the browser.
+      onTap: () => UrlLauncherUtils.launchExternalUrl(data.url),
       borderRadius: BorderRadius.circular(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,12 +220,19 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEDF2F7),
+                      // Bare/chat: no filled icon box (it read as a stray
+                      // background); a subtle tint only off-chat.
+                      color: bare
+                          ? Colors.transparent
+                          : const Color(0xFFEDF2F7),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     alignment: Alignment.center,
-                    child: const Icon(Icons.link_rounded,
-                        size: 22, color: Color(0xFF64748B)),
+                    child: Icon(Icons.link_rounded,
+                        size: 22,
+                        color: onDark
+                            ? Colors.white.withValues(alpha: 0.85)
+                            : const Color(0xFF64748B)),
                   ),
                   const SizedBox(width: 10),
                 ],

@@ -481,35 +481,29 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         children: [
           FirstLinkPreview(
             text: text,
-            margin: const EdgeInsets.only(bottom: 6),
+            margin: EdgeInsets.only(bottom: urlOnly ? 0 : 6),
             // In chat: no card background (blends into the bubble), text
-            // tuned to the bubble color, tap opens a browser instantly.
+            // tuned to the bubble color, adsyclub links open in-app and
+            // third-party links open the browser.
             bare: true,
             onDark: isMe,
           ),
-          LinkifyText(
-            text,
-            maxLines: urlOnly ? 1 : null,
-            overflow: urlOnly ? TextOverflow.ellipsis : null,
-            style: TextStyle(
-              fontSize: urlOnly ? 11.5 : 15,
-              color: urlOnly
-                  ? (isMe
-                      ? Colors.white.withValues(alpha: 0.75)
-                      : const Color(0xFF64748B))
-                  : (isMe ? Colors.white : const Color(0xFF1F2937)),
-              height: 1.38,
+          // When the whole message is just a URL, the preview carries the
+          // meaning — don't also print the raw link. Only show the message
+          // text when there's actual text alongside the link.
+          if (!urlOnly)
+            LinkifyText(
+              text,
+              style: TextStyle(
+                fontSize: 15,
+                color: isMe ? Colors.white : const Color(0xFF1F2937),
+                height: 1.38,
+              ),
+              linkStyle: TextStyle(
+                color: isMe ? Colors.white : const Color(0xFF2563EB),
+                decoration: TextDecoration.none,
+              ),
             ),
-            linkStyle: TextStyle(
-              fontSize: urlOnly ? 11.5 : null,
-              color: urlOnly
-                  ? (isMe
-                      ? Colors.white.withValues(alpha: 0.75)
-                      : const Color(0xFF64748B))
-                  : (isMe ? Colors.white : const Color(0xFF2563EB)),
-              decoration: TextDecoration.none,
-            ),
-          ),
           if (isEdited) ...[
             const SizedBox(height: 4),
             Text(
