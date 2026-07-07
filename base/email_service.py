@@ -4,6 +4,8 @@ Professional email templates with white/light gray theme.
 All transactional emails for users and admin notifications.
 """
 import logging
+import random
+from datetime import timedelta
 from email.utils import formataddr, parseaddr
 from smtplib import SMTPRecipientsRefused
 from django.core.mail import send_mail, EmailMultiAlternatives, get_connection
@@ -257,342 +259,167 @@ def _info_table(rows_html):
 
 
 def _button(text, url):
-    """Solid brand CTA button (email-client-safe table markup).
-
-    Re-enabled as part of the marketing/professional-experience pass: every
-    transactional email now carries one clearly useful in-body action
-    (track order / check balance / refer more, etc.). Goes full-width on
-    small screens via the .ec-btn media rule in _base_template."""
-    return f"""<table role="presentation" cellspacing="0" cellpadding="0" class="ec-btn-wrap" style="margin:18px 0 6px;">
-<tr><td class="ec-btn" style="border-radius:10px;background-color:#10B981;">
-<a href="{url}" style="display:inline-block;padding:12px 26px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:10px;">{text}</a>
+    """In-body action as a quiet right-aligned text-and-arrow link — big
+    filled buttons read as generic; this stays professional and scannable."""
+    return f"""<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:14px 0 4px;">
+<tr><td align="right">
+<a href="{url}" style="color:#059669;font-size:14px;font-weight:700;text-decoration:none;">{text}&nbsp;&#8594;</a>
 </td></tr>
 </table>"""
 
 
-def _service_promo_html(exclude=""):
-    """Small cross-sell footer block mentioning AdsyClub services, appended to
-    transactional emails so every mail also markets the platform."""
-    services = [
-        ("eshop", "🛍️ eShop", "দরকারি পণ্য কিনুন সেরা দামে"),
-        ("bn", "🤝 Business Network", "পেশাদারদের সাথে যুক্ত হোন, পোস্ট করুন"),
-        ("earn", "⚡ মাইক্রো গিগস", "ছোট ছোট টাস্ক করে ইনকাম করুন"),
-        ("sheba", "🏷️ আমার সেবা", "বিজ্ঞাপন দিন, ক্রেতা খুঁজুন"),
-        ("recharge", "📱 মোবাইল রিচার্জ", "যেকোনো নম্বরে ইনস্ট্যান্ট রিচার্জ"),
-    ]
-    picked = [s for s in services if s[0] != exclude][:3]
-    items = "".join(
-        f'<tr><td style="padding:6px 0;color:#374151;font-size:13.5px;line-height:1.5;"><strong>{t}</strong> — {d}</td></tr>'
-        for key, t, d in picked
+_PROMO_SERVICES = [
+    ("eshop", "eShop", "\u09a6\u09b0\u0995\u09be\u09b0\u09bf \u09aa\u09a3\u09cd\u09af \u09b8\u09c7\u09b0\u09be \u09a6\u09be\u09ae\u09c7", "/eshop", "#EA580C"),
+    ("bn", "Business Network", "\u09aa\u09c7\u09b6\u09be\u09a6\u09be\u09b0\u09a6\u09c7\u09b0 \u0995\u09ae\u09bf\u0989\u09a8\u09bf\u099f\u09bf \u2014 \u09aa\u09cb\u09b8\u09cd\u099f, \u09ab\u09b2\u09cb, \u09a8\u09c7\u099f\u0993\u09af\u09bc\u09be\u09b0\u09cd\u0995", "/business-network", "#2563EB"),
+    ("earn", "\u09ae\u09be\u0987\u0995\u09cd\u09b0\u09cb \u0997\u09bf\u0997\u09b8", "\u099b\u09cb\u099f \u099b\u09cb\u099f \u099f\u09be\u09b8\u09cd\u0995 \u0995\u09b0\u09c7 \u0987\u09a8\u0995\u09be\u09ae", "/#earn", "#7C3AED"),
+    ("sheba", "\u0986\u09ae\u09be\u09b0 \u09b8\u09c7\u09ac\u09be", "\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8 \u09a6\u09bf\u09a8, \u0995\u09cd\u09b0\u09c7\u09a4\u09be \u0996\u09c1\u0981\u099c\u09c1\u09a8", "/", "#0D9488"),
+    ("recharge", "\u09ae\u09cb\u09ac\u09be\u0987\u09b2 \u09b0\u09bf\u099a\u09be\u09b0\u09cd\u099c", "\u09af\u09c7\u0995\u09cb\u09a8\u09cb \u09a8\u09ae\u09cd\u09ac\u09b0\u09c7 \u0987\u09a8\u09b8\u09cd\u099f\u09cd\u09af\u09be\u09a8\u09cd\u099f \u09b0\u09bf\u099a\u09be\u09b0\u09cd\u099c", "/mobile-recharge", "#DC2626"),
+]
+
+_PROMO_HEADING = "AdsyClub-\u098f \u0986\u09b0\u0993 \u09af\u09be \u09af\u09be \u0986\u099b\u09c7"
+
+
+def _promo_list_html(items):
+    """Variant A: slim rows with a colored keyline per service."""
+    rows = "".join(
+        f'''<tr><td style="padding:7px 0;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<td width="3" style="background-color:{color};border-radius:3px;font-size:0;">&nbsp;</td>
+<td style="padding:2px 0 2px 12px;">
+<a href="{SITE_URL}{path}" style="text-decoration:none;">
+<span style="color:#0F172A;font-size:13.5px;font-weight:700;">{title}</span>
+<span style="color:#64748B;font-size:13px;"> &mdash; {desc}</span></a>
+</td></tr></table></td></tr>'''
+        for key, title, desc, path, color in items
     )
-    return (
-        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" '
-        'style="margin:20px 0 0;border-top:1px solid #E5E7EB;padding-top:14px;">'
-        '<tr><td style="padding:14px 0 4px;color:#0F172A;font-size:14px;font-weight:700;">AdsyClub-এ আরও যা যা আছে</td></tr>'
-        + items +
-        '</table>'
+    return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;border-top:1px solid #E5E7EB;">
+<tr><td style="padding:16px 0 6px;color:#0F172A;font-size:14px;font-weight:700;">{_PROMO_HEADING}</td></tr>
+{rows}
+</table>'''
+
+
+def _promo_grid_html(items):
+    """Variant B: two tinted cards side by side."""
+    cells = "".join(
+        f'''<td width="50%" valign="top" style="padding:5px;">
+<a href="{SITE_URL}{path}" style="text-decoration:none;display:block;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;">
+<tr><td style="padding:14px;">
+<div style="color:{color};font-size:14px;font-weight:800;">{title}</div>
+<div style="color:#475569;font-size:12.5px;line-height:1.5;margin-top:4px;">{desc}</div>
+</td></tr></table></a></td>'''
+        for key, title, desc, path, color in items[:2]
     )
-
-
-def _admin_button(text, url):
-    """A real CTA button — used ONLY in admin notification emails so staff can jump
-    straight to the relevant admin page and act fast (Review KYC, withdrawals,
-    etc.). User-facing emails deliberately use the no-op _button()."""
-    if not text or not url:
-        return ""
-    return (
-        '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:18px auto 6px;">'
-        '<tr><td style="border-radius:10px;background:#059669;">'
-        f'<a href="{url}" style="display:inline-block;padding:12px 28px;color:#ffffff;'
-        f'text-decoration:none;font-size:15px;font-weight:600;border-radius:10px;">{text}</a>'
-        '</td></tr></table>'
-    )
-
-
-def _get_email_settings():
-    """Get email settings from database or fallback to settings.py"""
-    try:
-        from .models import EmailSettings
-        email_settings = EmailSettings.objects.filter(is_active=True).first()
-        if email_settings:
-            return {
-                'host': email_settings.email_host,
-                'port': email_settings.email_port,
-                'use_tls': email_settings.email_use_tls,
-                'host_user': email_settings.email_host_user,
-                'host_password': email_settings.email_host_password,
-                'from_email': email_settings.from_email or f"AdsyClub <{email_settings.email_host_user}>",
-                'admin_email': email_settings.admin_email or email_settings.email_host_user,
-            }
-    except Exception as e:
-        logger.warning(f"Could not load email settings from database: {e}")
-    
-    # Fallback to settings.py
-    return {
-        'host': getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
-        'port': getattr(settings, 'EMAIL_PORT', 587),
-        'use_tls': getattr(settings, 'EMAIL_USE_TLS', True),
-        'host_user': getattr(settings, 'EMAIL_HOST_USER', ''),
-        'host_password': getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
-        'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL', f"AdsyClub <{getattr(settings, 'EMAIL_HOST_USER', '')}>"),
-        'admin_email': getattr(settings, 'ADMIN_EMAIL', ADMIN_EMAIL),
-    }
-
-
-_UNSUB_SALT = "email-unsub-v1"
-
-
-def _norm_email(e):
-    return (e or "").strip().lower()
-
-
-def is_email_suppressed(email):
-    """True if this address has unsubscribed or keeps bouncing."""
-    e = _norm_email(email)
-    if not e:
-        return True
-    try:
-        from .models import EmailSuppression
-        return EmailSuppression.objects.filter(email=e).exists()
-    except Exception:
-        return False
-
-
-def suppress_email(email, reason="bounced", note=""):
-    e = _norm_email(email)
-    if not e:
-        return
-    try:
-        from .models import EmailSuppression
-        EmailSuppression.objects.get_or_create(
-            email=e, defaults={"reason": reason, "note": note[:255]}
-        )
-        logger.info(f"Email suppressed ({reason}): {e}")
-    except Exception as exc:  # never let suppression break a send path
-        logger.warning(f"suppress_email failed for {e}: {exc}")
-
-
-def unsubscribe_token(email):
-    from django.core import signing
-    return signing.dumps(_norm_email(email), salt=_UNSUB_SALT)
-
-
-def email_from_unsub_token(token, max_age=60 * 60 * 24 * 365):
-    from django.core import signing
-    try:
-        return _norm_email(signing.loads(token, salt=_UNSUB_SALT, max_age=max_age))
-    except Exception:
-        return None
-
-
-def _valid_email_syntax(email):
-    from django.core.validators import validate_email
-    from django.core.exceptions import ValidationError
-    try:
-        validate_email((email or "").strip())
-        return True
-    except ValidationError:
-        return False
-
-
-def _send_email(subject, to_email, text_content, html_content, wait=False):
-    """Send email with HTML and plain text fallback.
-
-    By default the actual SMTP send runs on a background thread and this
-    returns True immediately, so notification emails (transfers, deposits,
-    withdrawals, gig orders, KYC, post-approved, …) never block the HTTP
-    request — each send opens its own SMTP connection (~1-2s). Pass wait=True
-    only where the caller needs the real delivery result: OTP / password reset,
-    the admin "send test email" action, and flows that persist a sent flag.
-    """
-    if not wait:
-        _dispatch_async(
-            _send_email, subject, to_email, text_content, html_content, wait=True
-        )
-        return True
-    try:
-        email_settings = _get_email_settings()
-        
-        # Configure email backend dynamically
-        connection = get_connection(
-            host=email_settings['host'],
-            port=email_settings['port'],
-            use_tls=email_settings['use_tls'],
-            username=email_settings['host_user'],
-            password=email_settings['host_password'],
-        )
-        
-        # Show the sender as "AdsyClub <address>" (clean display name).
-        raw_from = email_settings['from_email']
-        from_addr = parseaddr(raw_from)[1] or raw_from
-        from_email = formataddr((SITE_NAME, from_addr))
-
-        # Accept a single address or a list of addresses.
-        recipients = to_email if isinstance(to_email, (list, tuple)) else [to_email]
-        # Drop blanks + syntactically invalid addresses (can't be delivered at all)
-        # and remember those. We intentionally do NOT skip suppressed addresses
-        # here: transactional/security mail (OTP, password reset, KYC, withdraw…)
-        # must always try, since the user may have fixed a previously-bad address.
-        # Marketing/engagement mail skips the suppression list itself before it
-        # ever calls _send_email (see send_engagement_email / the CEO backfill).
-        clean = []
-        for r in recipients:
-            if not r:
-                continue
-            if not _valid_email_syntax(r):
-                suppress_email(r, reason="invalid", note="bad address format")
-                continue
-            clean.append(r)
-        if not clean:
-            return False
-
-        # Swap the donate + unsubscribe placeholders for unique per-recipient
-        # links (single, known recipient only; generic for multi-recipient).
-        single = clean[0] if len(clean) == 1 else None
-        donate_url = _donate_url_for(single or clean)
-        unsub_url = _unsub_url_for(single)
-        html_content = (html_content or "").replace(DONATE_PLACEHOLDER, donate_url).replace(UNSUB_PLACEHOLDER, unsub_url)
-        text_content = (text_content or "").replace(DONATE_PLACEHOLDER, donate_url).replace(UNSUB_PLACEHOLDER, unsub_url)
-
-        msg = EmailMultiAlternatives(
-            subject=subject,
-            body=text_content,
-            from_email=from_email,
-            to=list(clean),
-            connection=connection,
-        )
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-
-        logger.info(f"Email sent: '{subject}' to {clean}")
-        return True
-    except SMTPRecipientsRefused as e:
-        # The server rejected these recipients outright (wrong/nonexistent
-        # address) — stop sending to them forever.
-        try:
-            for bad in (e.recipients or {}).keys():
-                suppress_email(bad, reason="bounced", note="SMTP recipient refused")
-        except Exception:
-            pass
-        logger.error(f"Email refused: '{subject}' to {to_email} - {e}")
-        return False
-    except Exception as e:
-        # Connection/transient errors — NOT the recipient's fault, don't suppress.
-        logger.error(f"Email failed: '{subject}' to {to_email} - {e}")
-        return False
-
-
-def _admin_recipients():
-    """All admin-notification addresses: the primary EmailSettings.admin_email
-    plus every active AdminEmailRecipient row (managers/assistants added from
-    Django admin), deduplicated case-insensitively."""
-    emails = []
-    primary = _get_email_settings().get('admin_email') or ADMIN_EMAIL
-    if primary:
-        emails.append(primary)
-    try:
-        from .models import AdminEmailRecipient
-        extras = AdminEmailRecipient.objects.filter(
-            is_active=True
-        ).values_list('email', flat=True)
-        emails.extend(extras)
-    except Exception as e:  # table missing / db hiccup — never block the email
-        logger.warning(f"Could not load extra admin recipients: {e}")
-    seen, unique = set(), []
-    for e in emails:
-        key = e.strip().lower()
-        if key and key not in seen:
-            seen.add(key)
-            unique.append(e.strip())
-    return unique
-
-
-def _dispatch_async(target, *args, **kwargs):
-    """Fire-and-forget an email off the request thread (each _send_email opens
-    its own SMTP connection, ~1-2s). Used for admin notifications so creating a
-    post/order stays snappy."""
-    import threading
-
-    def _run():
-        try:
-            target(*args, **kwargs)
-        except Exception as exc:  # pragma: no cover
-            logger.error(f"async email dispatch failed: {exc}")
-        finally:
-            try:
-                from django.db import connections
-                connections.close_all()
-            except Exception:
-                pass
-
-    threading.Thread(target=_run, daemon=True).start()
-
-
-def _action_buttons(approve_url, reject_url):
-    """Green Approve + red Reject buttons for admin moderation emails."""
-    return f"""
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px auto 4px;">
-  <tr>
-    <td style="padding:6px;">
-      <a href="{approve_url}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 26px;border-radius:10px;">✅ Approve</a>
-    </td>
-    <td style="padding:6px;">
-      <a href="{reject_url}" style="display:inline-block;background:#dc2626;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 26px;border-radius:10px;">❌ Reject</a>
-    </td>
-  </tr>
+    return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;border-top:1px solid #E5E7EB;">
+<tr><td style="padding:16px 0 4px;color:#0F172A;font-size:14px;font-weight:700;">{_PROMO_HEADING}</td></tr>
 </table>
-<p style="text-align:center;color:#9ca3af;font-size:12px;margin:0 0 4px;">নিরাপত্তার জন্য Approve/Reject করতে admin-এ লগইন থাকতে হবে; এরপর একটি confirm পেজ দেখিয়ে তবেই অ্যাকশন হবে।</p>
-"""
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>{cells}</tr></table>'''
 
 
-def send_admin_moderation_email(*, subject, label, intro, rows, model_key=None,
-                                pk=None, admin_path="", text_summary=""):
-    """Notify the admin of a new item. If model_key+pk are given the email
-    carries one-click Approve / Reject buttons; otherwise it's informational
-    (e.g. a new order) with a link into the admin.
+def _promo_spotlight_html(items):
+    """Variant C: one service in a full-width tinted spotlight."""
+    key, title, desc, path, color = items[0]
+    return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;">
+<tr><td style="background-color:#F8FAFC;border:1px solid #E5E7EB;border-left:4px solid {color};border-radius:12px;padding:16px 18px;">
+<div style="color:#64748B;font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">AdsyClub</div>
+<div style="color:{color};font-size:16px;font-weight:800;margin-top:3px;">{title}</div>
+<div style="color:#475569;font-size:13px;line-height:1.55;margin-top:4px;">{desc}</div>
+<div style="margin-top:8px;"><a href="{SITE_URL}{path}" style="color:{color};font-size:13px;font-weight:700;text-decoration:none;">\u09a6\u09c7\u0996\u09c7 \u09a8\u09bf\u09a8&nbsp;&#8594;</a></div>
+</td></tr></table>'''
 
-    rows: list of (key, value) string pairs shown in the details table.
-    """
-    info = _info_table("".join(_info_row(k, v) for k, v in rows))
 
-    actions = ""
-    if model_key and pk:
-        try:
-            from .moderation import moderation_url
-            actions = _action_buttons(
-                moderation_url(model_key, pk, "approve"),
-                moderation_url(model_key, pk, "reject"),
-            )
-        except Exception as exc:  # pragma: no cover
-            logger.error(f"moderation link build failed: {exc}")
+def _service_promo_html(exclude=""):
+    """Cross-sell block appended to transactional mail. The layout is picked
+    at send time from three variants so mails never look templated-identical."""
+    items = [svc for svc in _PROMO_SERVICES if svc[0] != exclude]
+    random.shuffle(items)
+    variant = random.choice([_promo_list_html, _promo_grid_html, _promo_spotlight_html])
+    return variant(items[:3])
 
-    review = ""
-    if admin_path:
-        review = (
-            f'<p style="text-align:center;margin:10px 0 0;">'
-            f'<a href="{SITE_URL}{admin_path}" style="color:{BRAND_COLOR};font-size:13px;'
-            f'text-decoration:none;">Admin-এ বিস্তারিত দেখুন →</a></p>'
+
+def _product_showcase_html(limit=2, heading="\u0986\u09aa\u09a8\u09be\u09b0 \u099c\u09a8\u09cd\u09af \u09ac\u09be\u099b\u09be\u0987"):
+    """Real eShop products WITH photos, rendered as a two-card row. Pulled
+    live from the catalog at send time — every mail doubles as a storefront."""
+    try:
+        from .models import Product
+
+        candidates = list(
+            Product.objects.filter(is_active=True, image__isnull=False)
+            .distinct()
+            .order_by("-created_at")[:16]
         )
+        if not candidates:
+            return ""
+        picks = random.sample(candidates, min(limit, len(candidates)))
+        cards = ""
+        for prod in picks:
+            media = prod.image.all().first()
+            img_url = ""
+            if media is not None and getattr(media, "image", None):
+                try:
+                    img_url = media.image.url
+                except Exception:
+                    img_url = ""
+            if not img_url:
+                continue
+            price = prod.sale_price if (prod.sale_price or 0) > 0 else prod.regular_price
+            link = f"{SITE_URL}/eshop/{prod.slug or prod.id}"
+            name = (prod.name or "")[:48]
+            cards += f'''<td width="50%" valign="top" style="padding:5px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;background-color:#ffffff;">
+<tr><td><a href="{link}"><img src="{img_url}" width="100%" height="140" alt="{name}" style="display:block;width:100%;height:140px;object-fit:cover;border:0;"></a></td></tr>
+<tr><td style="padding:10px 12px 12px;">
+<a href="{link}" style="text-decoration:none;">
+<div style="color:#0F172A;font-size:13px;font-weight:700;line-height:1.35;">{name}</div>
+<div style="color:#059669;font-size:14px;font-weight:800;margin-top:5px;">\u09f3{price}</div>
+</a></td></tr>
+</table></td>'''
+        if not cards:
+            return ""
+        return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;border-top:1px solid #E5E7EB;">
+<tr><td style="padding:16px 0 4px;">
+<span style="color:#0F172A;font-size:14px;font-weight:700;">{heading}</span>
+<a href="{SITE_URL}/eshop" style="float:right;color:#059669;font-size:12.5px;font-weight:700;text-decoration:none;">\u09b8\u09ac \u09a6\u09c7\u0996\u09c1\u09a8&nbsp;&#8594;</a>
+</td></tr></table>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>{cards}</tr></table>'''
+    except Exception:
+        return ""
 
-    body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{intro}</p>
-{info}
-{actions}
-{review}
-"""
-    html = _base_template(subject, body)
-    # Primary admin + every active AdminEmailRecipient (managers, assistants).
-    return _send_email(subject, _admin_recipients(), text_summary or subject, html)
 
+def _people_row_html(people, heading):
+    """Row of round profile photos + first names — the social layer inside
+    the inbox. Links go straight to each Business Network profile."""
+    cells = ""
+    for u in people[:4]:
+        img_url = ""
+        if getattr(u, "image", None):
+            try:
+                img_url = u.image.url
+            except Exception:
+                img_url = ""
+        if img_url:
+            avatar = f'<img src="{img_url}" width="52" height="52" alt="" style="display:block;width:52px;height:52px;border-radius:50%;object-fit:cover;border:0;">'
+        else:
+            initial = ((getattr(u, "first_name", "") or getattr(u, "username", "") or "?")[:1]).upper()
+            avatar = f'<table role="presentation" cellspacing="0" cellpadding="0"><tr><td width="52" height="52" align="center" style="width:52px;height:52px;border-radius:50%;background-color:#E0E7FF;color:#4338CA;font-size:20px;font-weight:700;">{initial}</td></tr></table>'
+        first = ((getattr(u, "name", "") or getattr(u, "first_name", "") or getattr(u, "username", "") or "").split(" ") or [""])[0][:12]
+        cells += f'''<td align="center" valign="top" style="padding:8px 6px;">
+<a href="{SITE_URL}/business-network/profile/{u.id}" style="text-decoration:none;color:#0F172A;">
+{avatar}
+<div style="font-size:12px;font-weight:600;margin-top:6px;color:#0F172A;">{first}</div>
+</a></td>'''
+    if not cells:
+        return ""
+    return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:18px 0 0;">
+<tr><td style="padding:0 0 4px;color:#0F172A;font-size:14px;font-weight:700;">{heading}</td></tr>
+</table>
+<table role="presentation" cellspacing="0" cellpadding="0"><tr>{cells}</tr></table>'''
 
-# ============================================================
-# USER EMAILS
-# ============================================================
 
 def send_welcome_email(user):
     """Send welcome email to newly registered user"""
     name = user.name or user.first_name or user.username or "there"
-    subject = "AdsyClub-এ স্বাগতম! 🎉"
+    subject = "AdsyClub-এ স্বাগতম!"
     text = f"হ্যালো {name}, AdsyClub-এ স্বাগতম! আপনার অ্যাকাউন্ট রেডি হয়ে গেছে — এখনই ঢুকে ঘুরে দেখুন।"
 
     body = f"""
@@ -615,6 +442,7 @@ def send_welcome_email(user):
 <li><strong>AdsyConnect</strong> – চ্যাট, ভয়েস ও ভিডিও কল</li>
 <li><strong>eLearning</strong> – নতুন স্কিল শিখুন</li>
 </ul>
+{_product_showcase_html(2)}
 """
 
     html = _base_template(subject, body, "এই অ্যাকাউন্টটা যদি আপনি না খুলে থাকেন, আমাদের সাপোর্ট টিমকে জানান।")
@@ -652,7 +480,7 @@ def send_profile_completion_email(user):
 """
     else:
         missing_block = """
-<p style="color:#047857;font-size:15px;line-height:1.6;margin:16px 0;"><strong>দারুণ! আপনার প্রোফাইল ১০০% কমপ্লিট 🎉</strong> এখন AdsyClub-এর সব ফিচার আপনার হাতের মুঠোয়।</p>
+<p style="color:#047857;font-size:15px;line-height:1.6;margin:16px 0;"><strong>দারুণ! আপনার প্রোফাইল ১০০% কমপ্লিট</strong> এখন AdsyClub-এর সব ফিচার আপনার হাতের মুঠোয়।</p>
 """
 
     body = f"""
@@ -773,7 +601,7 @@ def send_deposit_email(user, amount, transaction_id, payment_method=""):
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ডিপোজিট হয়ে গেছে — টাকা ওয়ালেটে যোগ হয়ে গেছে, এখনই ব্যবহার করতে পারবেন 🎉</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার ডিপোজিট হয়ে গেছে — টাকা ওয়ালেটে যোগ হয়ে গেছে, এখনই ব্যবহার করতে পারবেন</p>
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
@@ -784,6 +612,7 @@ def send_deposit_email(user, amount, transaction_id, payment_method=""):
 
 {_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 {_service_promo_html("")}
+{_product_showcase_html(2)}
 """
 
     html = _base_template(subject, body)
@@ -823,7 +652,7 @@ def send_withdraw_approved_email(user, amount, transaction_id):
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">সুখবর! আপনার উইথড্রর অনুরোধ <strong style="color:{BRAND_COLOR};">অ্যাপ্রুভ</strong> হয়ে গেছে — টাকা আপনার অ্যাকাউন্টে পাঠিয়ে দেওয়া হয়েছে 🎉</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">সুখবর! আপনার উইথড্রর অনুরোধ <strong style="color:{BRAND_COLOR};">অ্যাপ্রুভ</strong> হয়ে গেছে — টাকা আপনার অ্যাকাউন্টে পাঠিয়ে দেওয়া হয়েছে</p>
 
 {_info_table(
     _info_row("পরিমাণ", f"৳{amount}") +
@@ -865,7 +694,7 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
     # Email to seller
     seller_body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{seller_name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">দারুণ খবর — আপনার গিগে নতুন একটা অর্ডার এসেছে! 🎉 দ্রুত দেখে নিন।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">দারুণ খবর — আপনার গিগে নতুন একটা অর্ডার এসেছে! দ্রুত দেখে নিন।</p>
 
 {_info_table(
     _info_row("গিগ", gig_title) +
@@ -877,8 +706,8 @@ def send_gig_order_placed_email(buyer, seller, gig_title, amount, order_id):
 
 {_button("অর্ডার রিভিউ করুন", SITE_URL + "/business-network/workspaces")}
 """
-    seller_html = _base_template("নতুন গিগ অর্ডার এসেছে 🎉", seller_body, "২৪ ঘণ্টার মধ্যে অর্ডারটা দেখে অ্যাকসেপ্ট বা ডিক্লাইন করে দিন — ক্রেতা অপেক্ষায় আছেন।")
-    _send_email("নতুন গিগ অর্ডার এসেছে 🎉", seller.email, f"'{gig_title}' গিগে নতুন অর্ডার এসেছে — দেখে নিন।", seller_html)
+    seller_html = _base_template("নতুন গিগ অর্ডার এসেছে", seller_body, "২৪ ঘণ্টার মধ্যে অর্ডারটা দেখে অ্যাকসেপ্ট বা ডিক্লাইন করে দিন — ক্রেতা অপেক্ষায় আছেন।")
+    _send_email("নতুন গিগ অর্ডার এসেছে", seller.email, f"'{gig_title}' গিগে নতুন অর্ডার এসেছে — দেখে নিন।", seller_html)
 
 
 def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
@@ -889,7 +718,7 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
     # Email to buyer
     buyer_body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{buyer_name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার গিগ অর্ডার <strong style="color:{BRAND_COLOR};">কমপ্লিট</strong> হয়ে গেছে, বিক্রেতাকে পেমেন্টও পাঠিয়ে দিয়েছি। কাজটা কেমন লাগল — একটা রিভিউ দিয়ে দিন 🌟</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার গিগ অর্ডার <strong style="color:{BRAND_COLOR};">কমপ্লিট</strong> হয়ে গেছে, বিক্রেতাকে পেমেন্টও পাঠিয়ে দিয়েছি। কাজটা কেমন লাগল — একটা রিভিউ দিয়ে দিন</p>
 
 {_info_table(
     _info_row("গিগ", gig_title) +
@@ -901,13 +730,13 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
 {_button("রিভিউ দিন", SITE_URL + "/business-network/workspaces")}
 {_service_promo_html("earn")}
 """
-    buyer_html = _base_template("গিগ অর্ডার কমপ্লিট হয়ে গেছে 🎉", buyer_body)
-    _send_email("গিগ অর্ডার কমপ্লিট হয়ে গেছে 🎉", buyer.email, f"'{gig_title}' গিগের অর্ডারটা কমপ্লিট হয়ে গেছে — একটা রিভিউ দিয়ে দিন।", buyer_html)
+    buyer_html = _base_template("গিগ অর্ডার কমপ্লিট হয়ে গেছে", buyer_body)
+    _send_email("গিগ অর্ডার কমপ্লিট হয়ে গেছে", buyer.email, f"'{gig_title}' গিগের অর্ডারটা কমপ্লিট হয়ে গেছে — একটা রিভিউ দিয়ে দিন।", buyer_html)
 
     # Email to seller
     seller_body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{seller_name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">কাজ শেষ! গিগ অর্ডারটা কমপ্লিট হয়ে গেছে আর <strong style="color:{BRAND_COLOR};">৳{amount}</strong> আপনার ব্যালেন্সে যোগ হয়ে গেছে 🎉</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">কাজ শেষ! গিগ অর্ডারটা কমপ্লিট হয়ে গেছে আর <strong style="color:{BRAND_COLOR};">৳{amount}</strong> আপনার ব্যালেন্সে যোগ হয়ে গেছে</p>
 
 {_info_table(
     _info_row("গিগ", gig_title) +
@@ -919,8 +748,8 @@ def send_gig_order_completed_email(buyer, seller, gig_title, amount, order_id):
 {_button("ব্যালেন্স দেখুন", SITE_URL + "/deposit-withdraw")}
 {_service_promo_html("earn")}
 """
-    seller_html = _base_template("পেমেন্ট চলে এসেছে 🎉", seller_body)
-    _send_email("পেমেন্ট চলে এসেছে — গিগ কমপ্লিট 🎉", seller.email, f"'{gig_title}' গিগের ৳{amount} আপনার ব্যালেন্সে যোগ হয়ে গেছে।", seller_html)
+    seller_html = _base_template("পেমেন্ট চলে এসেছে", seller_body)
+    _send_email("পেমেন্ট চলে এসেছে — গিগ কমপ্লিট", seller.email, f"'{gig_title}' গিগের ৳{amount} আপনার ব্যালেন্সে যোগ হয়ে গেছে।", seller_html)
 
 
 def send_gig_order_status_email(recipient_user, gig_title, order_id, new_status, actor_name=""):
@@ -959,7 +788,7 @@ def send_gig_order_status_email(recipient_user, gig_title, order_id, new_status,
 def send_kyc_approved_email(user):
     """Email when KYC is approved"""
     name = user.name or user.first_name or user.username
-    subject = "KYC অ্যাপ্রুভ হয়ে গেছে 🎉"
+    subject = "KYC অ্যাপ্রুভ হয়ে গেছে"
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
@@ -1032,7 +861,7 @@ def send_account_suspended_email(user, reason=""):
 def send_account_unsuspended_email(user):
     """Email sent when a suspended account is restored."""
     name = user.name or user.first_name or user.username
-    subject = "আপনার অ্যাকাউন্ট আবার চালু হয়ে গেছে 🎉"
+    subject = "আপনার অ্যাকাউন্ট আবার চালু হয়ে গেছে"
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
@@ -1062,6 +891,7 @@ def send_pro_subscription_email(user, months, amount):
 
 {_button("Pro ফিচার দেখুন", SITE_URL + "/business-network")}
 {_service_promo_html("bn")}
+{_product_showcase_html(2)}
 """
 
     html = _base_template(subject, body)
@@ -1186,7 +1016,7 @@ def send_product_order_email(seller, order, items):
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">দারুণ খবর — আপনার স্টোরে <strong>নতুন অর্ডার</strong> এসেছে! 🎉 দ্রুত দেখে প্রসেস করে ফেলুন।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">দারুণ খবর — আপনার স্টোরে <strong>নতুন অর্ডার</strong> এসেছে! দ্রুত দেখে প্রসেস করে ফেলুন।</p>
 
 {_info_table(
     _info_row("অর্ডার নম্বর", f"#{order.order_number}") +
@@ -1214,7 +1044,7 @@ def send_order_confirmation_email(buyer, order):
     if not email:
         return False
     name = (getattr(buyer, "name", None) if buyer else None) or order.name or "there"
-    subject = f"অর্ডার কনফার্ম হয়ে গেছে — #{order.order_number} 🎉"
+    subject = f"অর্ডার কনফার্ম হয়ে গেছে — #{order.order_number}"
 
     item_rows = ""
     try:
@@ -1243,7 +1073,7 @@ def send_order_confirmation_email(buyer, order):
 
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">অর্ডারের জন্য ধন্যবাদ! 🎉 আপনার অর্ডার কনফার্ম হয়ে গেছে — বিবরণ নিচে দেখে নিন।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">অর্ডারের জন্য ধন্যবাদ! আপনার অর্ডার কনফার্ম হয়ে গেছে — বিবরণ নিচে দেখে নিন।</p>
 
 {_info_table(
     _info_row("অর্ডার নম্বর", f"#{order.order_number}") +
@@ -1257,6 +1087,7 @@ def send_order_confirmation_email(buyer, order):
 
 {_button("অর্ডার ট্র্যাক করুন", SITE_URL + "/order/" + str(order.id))}
 {_service_promo_html("eshop")}
+{_product_showcase_html(2)}
 """
 
     html = _base_template(
@@ -1331,11 +1162,11 @@ def send_post_approved_email(user, title, kind="post", link=""):
     if not user or not user.email:
         return False
     name = user.name or user.first_name or "there"
-    subject = f"আপনার {kind} এখন লাইভ 🎉"
+    subject = f"আপনার {kind} এখন লাইভ"
     text = f"হ্যালো {name}, আপনার {kind} \"{title}\" অ্যাপ্রুভ হয়ে গেছে — এখন AdsyClub-এ লাইভ। সবাই দেখতে পাচ্ছে!"
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">সুখবর — আপনার {kind} <strong>অ্যাপ্রুভ</strong> হয়ে গেছে, এখন AdsyClub-এ লাইভ! 🎉 সবাই এখন দেখতে পাচ্ছে।</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">সুখবর — আপনার {kind} <strong>অ্যাপ্রুভ</strong> হয়ে গেছে, এখন AdsyClub-এ লাইভ! সবাই এখন দেখতে পাচ্ছে।</p>
 
 {_info_table(
     _info_row(kind.capitalize(), title or "—") +
@@ -1774,6 +1605,97 @@ def _engagement_content_html(feature):
         return _engagement_area_cards()
     return ""
 
+
+
+def send_bn_digest_email(user):
+    """Weekly Business Network community digest — the social-network pull:
+    who followed you, how your posts performed, and faces you may know.
+    Every block links back into the app to bring the user home."""
+    if not getattr(user, "email", ""):
+        return False
+    from django.contrib.auth import get_user_model
+    from business_network.models import (
+        BusinessNetworkFollowerModel,
+        BusinessNetworkPostLike,
+    )
+
+    User = get_user_model()
+    name = user.name or user.first_name or user.username or "there"
+    week_ago = timezone.now() - timedelta(days=7)
+
+    follower_rows = list(
+        BusinessNetworkFollowerModel.objects.filter(
+            following=user, created_at__gte=week_ago
+        ).select_related("follower").order_by("-created_at")[:8]
+    )
+    new_followers = [r.follower for r in follower_rows]
+    follower_count = len(follower_rows)
+    likes_count = BusinessNetworkPostLike.objects.filter(
+        post__author=user, created_at__gte=week_ago
+    ).count()
+
+    following_ids = list(
+        BusinessNetworkFollowerModel.objects.filter(follower=user)
+        .values_list("following_id", flat=True)
+    )
+    suggestion_pool = list(
+        User.objects.exclude(id=user.id)
+        .exclude(id__in=following_ids)
+        .exclude(image="")
+        .exclude(image=None)
+        .filter(is_active=True)
+        .order_by("-date_joined")[:20]
+    )
+    random.shuffle(suggestion_pool)
+    suggestions = suggestion_pool[:4]
+
+    subject = "\u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09c7\u099f\u0993\u09af\u09bc\u09be\u09b0\u09cd\u0995\u09c7 \u09af\u09be \u09b9\u09b2\u09cb"
+    text = (
+        f"\u09b9\u09cd\u09af\u09be\u09b2\u09cb {name}, \u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 {follower_count} \u099c\u09a8 \u09a8\u09a4\u09c1\u09a8 \u09ab\u09b2\u09cb\u09af\u09bc\u09be\u09b0 \u098f\u09ac\u0982 \u09aa\u09cb\u09b8\u09cd\u099f\u09c7 {likes_count}\u099f\u09be \u09b2\u09be\u0987\u0995 \u098f\u09b8\u09c7\u099b\u09c7\u0964"
+    )
+
+    stat_cells = f"""<tr>
+<td width="50%" style="padding:5px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#EFF6FF;border-radius:12px;"><tr><td style="padding:14px;text-align:center;">
+<div style="color:#2563EB;font-size:22px;font-weight:800;">{follower_count}</div>
+<div style="color:#475569;font-size:12px;font-weight:600;margin-top:2px;">\u09a8\u09a4\u09c1\u09a8 \u09ab\u09b2\u09cb\u09af\u09bc\u09be\u09b0</div>
+</td></tr></table></td>
+<td width="50%" style="padding:5px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#FDF2F8;border-radius:12px;"><tr><td style="padding:14px;text-align:center;">
+<div style="color:#DB2777;font-size:22px;font-weight:800;">{likes_count}</div>
+<div style="color:#475569;font-size:12px;font-weight:600;margin-top:2px;">\u09aa\u09cb\u09b8\u09cd\u099f\u09c7 \u09b2\u09be\u0987\u0995</div>
+</td></tr></table></td>
+</tr>"""
+
+    followers_block = ""
+    if new_followers:
+        followers_block = _people_row_html(
+            new_followers,
+            "\u09af\u09be\u09b0\u09be \u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u0986\u09aa\u09a8\u09be\u0995\u09c7 \u09ab\u09b2\u09cb \u0995\u09b0\u09b2\u09c7\u09a8",
+        )
+
+    suggestions_block = ""
+    if suggestions:
+        suggestions_block = _people_row_html(
+            suggestions,
+            "\u09aa\u09b0\u09bf\u099a\u09bf\u09a4 \u09b9\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u09a8",
+        )
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">\u09b9\u09cd\u09af\u09be\u09b2\u09cb <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">\u0986\u09aa\u09a8\u09be\u09b0 Business Network \u0995\u09ae\u09bf\u0989\u09a8\u09bf\u099f\u09bf\u09a4\u09c7 \u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u09af\u09be \u09af\u09be \u09b9\u09b2\u09cb \u2014 \u098f\u0995 \u09a8\u099c\u09b0\u09c7 \u09a6\u09c7\u0996\u09c7 \u09a8\u09bf\u09a8\u0964</p>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0">{stat_cells}</table>
+
+{followers_block}
+{suggestions_block}
+
+{_button("\u0995\u09ae\u09bf\u0989\u09a8\u09bf\u099f\u09bf\u09a4\u09c7 \u09ab\u09bf\u09b0\u09c7 \u0986\u09b8\u09c1\u09a8", SITE_URL + "/business-network")}
+{_service_promo_html("bn")}
+"""
+
+    html = _base_template(subject, body)
+    return _send_email(subject, user.email, text, html)
 
 def send_engagement_email(user, *, subject, heading, body_html,
                           button_text="", button_url="", content_feature=None):

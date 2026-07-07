@@ -108,6 +108,7 @@ class Command(BaseCommand):
             ("driver_rejected", lambda: es.send_driver_rejected_email(user, "লাইসেন্সের মেয়াদ শেষ")),
             ("ride_receipt", lambda: es.send_ride_receipt_email(ride)),
             ("support_reply", lambda: es.send_support_reply_email(ticket, "আপনার সমস্যাটা আমরা ঠিক করে দিয়েছি — এখন দেখে নিন।")),
+            ("bn_weekly_digest", lambda: es.send_bn_digest_email(user)),
         ]
 
         sent, failed = [], []

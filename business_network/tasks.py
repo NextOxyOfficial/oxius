@@ -204,3 +204,31 @@ def process_gold_sponsor_lifecycle():
 
     logger.info("process_gold_sponsor_lifecycle: %s", stats)
     return stats
+
+
+@shared_task
+def send_weekly_bn_digests():
+    """Weekly community digest to recently-active users — the social-network
+    style follow-up that pulls people back into Business Network."""
+    import time as _time
+    from datetime import timedelta
+    from django.utils import timezone
+    from django.contrib.auth import get_user_model
+    from base.email_service import send_bn_digest_email
+
+    User = get_user_model()
+    cutoff = timezone.now() - timedelta(days=45)
+    users = (
+        User.objects.filter(is_active=True, last_login__gte=cutoff)
+        .exclude(email="")
+        .exclude(email=None)
+    )
+    sent = 0
+    for user in users.iterator():
+        try:
+            send_bn_digest_email(user)
+            sent += 1
+        except Exception:
+            continue
+        _time.sleep(0.4)  # SMTP-friendly pacing
+    return sent

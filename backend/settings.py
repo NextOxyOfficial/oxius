@@ -505,6 +505,11 @@ CELERY_TIMEZONE = 'Asia/Dhaka'  # Set your timezone
 CELERY_ENABLE_UTC = True
 
 CELERY_BEAT_SCHEDULE = {
+    "weekly-bn-community-digest": {
+        "task": "business_network.tasks.send_weekly_bn_digests",
+        # Friday 10:00 Dhaka time — weekend scroll window.
+        "schedule": crontab(day_of_week="fri", hour=4, minute=0),  # 4am UTC = 10am BDT
+    },
     "auto-approve-tasks": {
         "task": "base.tasks.check_and_auto_approve_tasks",
         "schedule": timedelta(minutes=30),  # Run every 30 minutes
