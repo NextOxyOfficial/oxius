@@ -11,6 +11,7 @@ import '../../screens/business_network/profile_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
+import '../../utils/mention_navigator.dart';
 import '../../utils/business_network_media_downloader.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
@@ -83,22 +84,9 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _handleMentionTap(String mentionName) async {
-    // Search for user by name and navigate to their profile
-    try {
-      final users = await UserSearchService.searchUsers(mentionName);
-      if (users.isNotEmpty && mounted) {
-        final user = users.first;
-        final userId = user.id.toString();
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProfileScreen(userId: userId),
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error navigating to mentioned user: $e');
-    }
+    // Exact-match resolution with an ambiguity chooser — never navigates to
+    // a random same-named profile (the old `results.first` bug).
+    await MentionNavigator.open(context, mentionName);
   }
 
   Future<void> _addComment(String content) async {

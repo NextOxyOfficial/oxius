@@ -8,6 +8,7 @@ import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
+import '../../utils/mention_navigator.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
 import '../../widgets/link_preview_card.dart';
@@ -1254,25 +1255,10 @@ class _CommentItemState extends State<_CommentItem> {
                                 height: 1.45,
                               ),
                               onMentionTap: (username) async {
-                                // Search for user by name to get their ID
-                                try {
-                                  final users =
-                                      await UserSearchService.searchUsers(
-                                          username);
-                                  if (users.isNotEmpty && context.mounted) {
-                                    final user = users.first;
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ProfileScreen(
-                                          userId: user.id.toString(),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  debugPrint('Error finding user: $e');
-                                }
+                                // Exact-match + chooser — never a blind
+                                // first-result navigation.
+                                await MentionNavigator.open(
+                                    context, username);
                               },
                             ),
                           ),
