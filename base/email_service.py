@@ -324,11 +324,13 @@ def _promo_spotlight_html(items):
     """Variant C: one service in a full-width tinted spotlight."""
     key, title, desc, path, color = items[0]
     return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;">
-<tr><td style="background-color:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;">
-<div style="color:#64748B;font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">AdsyClub</div>
-<div style="color:{color};font-size:16px;font-weight:800;margin-top:3px;">{title}</div>
-<div style="color:#475569;font-size:13px;line-height:1.55;margin-top:4px;">{desc}</div>
-<div style="margin-top:8px;"><a href="{SITE_URL}{path}" style="color:{color};font-size:13px;font-weight:700;text-decoration:none;">দেখে নিন&nbsp;&#8594;</a></div>
+<tr><td style="background-color:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;padding:14px 18px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<td align="left" style="color:#64748B;font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">AdsyClub</td>
+<td align="right" style="white-space:nowrap;"><a href="{SITE_URL}{path}" style="color:{color};font-size:12.5px;font-weight:700;text-decoration:none;">দেখে নিন&nbsp;&#8594;</a></td>
+</tr></table>
+<div style="color:{color};font-size:16px;font-weight:800;margin-top:4px;">{title}</div>
+<div style="color:#475569;font-size:13px;line-height:1.55;margin-top:3px;">{desc}</div>
 </td></tr></table>'''
 
 
@@ -364,8 +366,10 @@ def _bn_pulse_html():
 <tr><td style="padding:16px 18px 12px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
 <tr><td style="padding:0 0 6px;">
-<span style="color:#0F172A;font-size:14px;font-weight:700;">Business Network-এ আজ</span>
-<a href="{SITE_URL}/business-network" style="float:right;color:#2563EB;font-size:12.5px;font-weight:700;text-decoration:none;">ফিডে যান&nbsp;&#8594;</a>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<td align="left" style="color:#0F172A;font-size:14px;font-weight:700;">Business Network-এ আজ</td>
+<td align="right" style="white-space:nowrap;"><a href="{SITE_URL}/business-network" style="color:#2563EB;font-size:12.5px;font-weight:700;text-decoration:none;">ফিডে যান&nbsp;&#8594;</a></td>
+</tr></table>
 </td></tr>
 {items}
 </table>
@@ -431,17 +435,17 @@ def _product_showcase_html(limit=2, heading="আপনার জন্য বা
 <tr><td><a href="{link}"><img src="{img_url}" width="100%" height="140" alt="{name}" style="display:block;width:100%;height:140px;object-fit:cover;border:0;"></a></td></tr>
 <tr><td style="padding:10px 12px 12px;">
 <a href="{link}" style="text-decoration:none;">
-<div style="color:#0F172A;font-size:13px;font-weight:700;line-height:1.35;">{name}</div>
+<div style="color:#0F172A;font-size:13px;font-weight:700;line-height:1.35;height:35px;overflow:hidden;">{name}</div>
 <div style="color:#059669;font-size:14px;font-weight:800;margin-top:5px;">৳{price}</div>
 </a></td></tr>
 </table></td>'''
         if not cards:
             return ""
         return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;border-top:1px solid #E5E7EB;">
-<tr><td style="padding:16px 0 4px;">
-<span style="color:#0F172A;font-size:14px;font-weight:700;">{heading}</span>
-<a href="{SITE_URL}/eshop" style="float:right;color:#059669;font-size:12.5px;font-weight:700;text-decoration:none;">সব দেখুন&nbsp;&#8594;</a>
-</td></tr></table>
+<tr>
+<td align="left" style="padding:16px 8px 4px 0;color:#0F172A;font-size:14px;font-weight:700;">{heading}</td>
+<td align="right" style="padding:16px 0 4px 8px;white-space:nowrap;"><a href="{SITE_URL}/eshop" style="color:#059669;font-size:12.5px;font-weight:700;text-decoration:none;">সব দেখুন&nbsp;&#8594;</a></td>
+</tr></table>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>{cards}</tr></table>'''
     except Exception:
         return ""
@@ -2062,14 +2066,11 @@ def send_engagement_email(user, *, subject, heading, body_html,
             '<p style="color:#111827;font-size:16px;line-height:1.5;'
             f'margin:0 0 14px;font-weight:600;">{heading}</p>'
         )
-    # Marketing/followup emails KEEP their action CTA (it's the point of the
-    # email) — the global _button() is disabled for transactional mail, so render
-    # the CTA inline here.
+    # CTA: same quiet right-aligned text+arrow link as transactional mail
+    # (was a big centered gradient button that ate vertical space).
     cta = ""
     if button_text and button_url:
-        cta = (f'<div style="text-align:center;margin:26px 0 4px;">'
-               f'<a href="{button_url}" style="display:inline-block;padding:13px 36px;background:{BRAND_GRADIENT};'
-               f'color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;">{button_text}</a></div>')
+        cta = _button(button_text, button_url)
     # Rich marketing body — same visual system as transactional mail: real
     # eShop product cards, then the varied service cross-sell block and the
     # Business Network pulse strip. Concrete products/services with photos,
