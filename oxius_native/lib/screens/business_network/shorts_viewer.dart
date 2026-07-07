@@ -1461,30 +1461,6 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (!_isOwnPost()) ...[
-                      _FollowRailButton(
-                        avatarUrl: post.user.avatar ?? post.user.image,
-                        isFollowing: _isFollowing,
-                        onFollow: _handleFollow,
-                        onOpenProfile: () {
-                          _controller?.pause();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProfileScreen(
-                                userId:
-                                    post.user.uuid ?? post.user.id.toString(),
-                              ),
-                            ),
-                          ).then((_) {
-                            if (mounted && widget.isActive) {
-                              _controller?.play();
-                            }
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 18),
-                    ],
                     _ActionButton(
                       iconPath: post.isLiked
                           ? 'assets/icons/like.png'
@@ -1630,6 +1606,40 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                       color: Colors.white,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            // Reels-style inline follow, right beside the name.
+                            if (!_isOwnPost()) ...[
+                              const TextSpan(text: '  '),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: GestureDetector(
+                                  onTap: _isFollowing ? null : _handleFollow,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 3.5),
+                                    decoration: BoxDecoration(
+                                      color: _isFollowing
+                                          ? Colors.white.withValues(alpha: 0.14)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(
+                                            alpha: _isFollowing ? 0.25 : 0.85),
+                                        width: 1.1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _isFollowing ? 'ফলো করছেন' : 'ফলো করুন',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                            alpha: _isFollowing ? 0.7 : 1.0),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1786,79 +1796,6 @@ class _ActionButton extends StatelessWidget {
                 shadows: const [
                   Shadow(color: Colors.black54, blurRadius: 4),
                 ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// TikTok-style rail follow control: the author's avatar with a small "+"
-/// badge underneath. Tapping the avatar opens the profile; tapping the badge
-/// follows. The badge flips to a check, then hides once following.
-class _FollowRailButton extends StatelessWidget {
-  final String? avatarUrl;
-  final bool isFollowing;
-  final VoidCallback onFollow;
-  final VoidCallback onOpenProfile;
-
-  const _FollowRailButton({
-    required this.avatarUrl,
-    required this.isFollowing,
-    required this.onFollow,
-    required this.onOpenProfile,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 52,
-      height: 60,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          GestureDetector(
-            onTap: onOpenProfile,
-            child: Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.6),
-              ),
-              child: ClipOval(
-                child: (avatarUrl ?? '').isNotEmpty
-                    ? Image.network(
-                        avatarUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (c, e, s) => const _AvatarFallback(),
-                      )
-                    : const _AvatarFallback(),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            child: GestureDetector(
-              onTap: onFollow,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: isFollowing
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFEF4444),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.2),
-                ),
-                child: Icon(
-                  isFollowing ? Icons.check_rounded : Icons.add_rounded,
-                  size: 14,
-                  color: Colors.white,
-                ),
               ),
             ),
           ),

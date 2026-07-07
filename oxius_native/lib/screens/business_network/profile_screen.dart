@@ -45,6 +45,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   bool _isLoading = true;
+  bool _isLoadingPosts = false;
   Map<String, dynamic>? _userData;
   List<BusinessNetworkPost> _userPosts = [];
   List<BusinessNetworkPost> _savedPosts = [];
@@ -214,25 +215,65 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.dispose();
   }
 
+  /// Session cache: revisiting a profile paints instantly from the last
+  /// fetched data while a background refresh replaces it (SWR pattern).
+  static final Map<String, Map<String, dynamic>> _profileCache = {};
+
   Future<void> _loadProfileData() async {
-    setState(() => _isLoading = true);
+    // 1. Instant paint from cache when we have one.
+    final cached = _profileCache[widget.userId];
+    if (cached != null && _userData == null) {
+      setState(() {
+        _userData = cached;
+        _isFollowing = cached['is_following'] ?? false;
+        _isBlockedProfile = cached['is_blocked_by_me'] ?? false;
+        _isLoading = false;
+        _isLoadingPosts = true;
+      });
+    } else if (_userData == null) {
+      setState(() {
+        _isLoading = true;
+        _isLoadingPosts = true;
+      });
+    } else {
+      setState(() => _isLoadingPosts = true);
+    }
 
+    // 2. Profile and posts in PARALLEL (was serial: two full round-trips
+    //    back to back), and the header renders the moment the profile
+    //    arrives instead of waiting for the posts payload too.
+    final profileFuture = BusinessNetworkService.getUserProfile(widget.userId);
+    final postsFuture = BusinessNetworkService.getUserPosts(widget.userId);
+
+    var profileFailed = false;
     try {
-      // Load user profile data
-      final userData =
-          await BusinessNetworkService.getUserProfile(widget.userId);
-
-      // Load user posts
-      final postsResult =
-          await BusinessNetworkService.getUserPosts(widget.userId);
-
+      final userData = await profileFuture;
+      _profileCache[widget.userId] = userData;
       if (mounted) {
         setState(() {
           _userData = userData;
-          final posts = postsResult['posts'] as List<BusinessNetworkPost>;
           _isFollowing = userData['is_following'] ?? false;
           _isBlockedProfile = userData['is_blocked_by_me'] ?? false;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      profileFailed = true;
+      if (mounted) {
+        setState(() => _isLoading = false);
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          onRetry: () => _loadProfileData(),
+        );
+      }
+    }
 
+    try {
+      final postsResult = await postsFuture;
+      if (mounted) {
+        setState(() {
+          final posts = postsResult['posts'] as List<BusinessNetworkPost>;
           // Update all posts to reflect current follow status
           _userPosts = posts.map((post) {
             return post.copyWith(
@@ -251,19 +292,20 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             );
           }).toList();
-
-          _isLoading = false;
+          _isLoadingPosts = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
-        // Use NetworkErrorHandler for professional error display
-        NetworkErrorHandler.showErrorSnackbar(
-          context,
-          e,
-          onRetry: () => _loadProfileData(),
-        );
+        setState(() => _isLoadingPosts = false);
+        // Don't double-toast when the profile call already surfaced the error.
+        if (!profileFailed) {
+          NetworkErrorHandler.showErrorSnackbar(
+            context,
+            e,
+            onRetry: () => _loadProfileData(),
+          );
+        }
       }
     }
   }
@@ -900,13 +942,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                         // Profile Header
                         _buildProfileHeader(isOwnProfile),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 10),
 
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 4),
                           child: GoldSponsorsSlider(),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 10),
 
                         // Tabs
                         _buildTabs(),
@@ -1792,6 +1834,19 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildPostsTab() {
     if (_userPosts.isEmpty) {
+      if (_isLoadingPosts) {
+        // Posts still streaming in — header is already visible above.
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 40),
+          child: Center(
+            child: SizedBox(
+              width: 26,
+              height: 26,
+              child: AdsyLoadingIndicator(strokeWidth: 2.5),
+            ),
+          ),
+        );
+      }
       return _buildEmptyState('No posts yet', Icons.post_add);
     }
 
