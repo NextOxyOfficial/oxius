@@ -210,7 +210,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             final tileW = ((screenW - 34) / 2.35).clamp(120.0, 175.0);
             final imageH = tileW * 0.81;
             return SizedBox(
-              height: imageH + 86,
+              height: imageH + 100,
               child: _isLoading
                   ? _buildLoadingRow(tileW, imageH)
                   : ListView.separated(
@@ -298,39 +298,14 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
               child: SizedBox(
                 width: tileW,
                 height: imageH,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    imageUrl.isNotEmpty
-                        ? AppImage.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: _placeholder(),
-                            errorWidget: _placeholder(),
-                          )
-                        : _placeholder(),
-                    if (mutualConnections > 0)
-                      Positioned(
-                        bottom: 6,
-                        left: 6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.62),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            '$mutualConnections পারস্পরিক',
-                            style: const TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                child: imageUrl.isNotEmpty
+                    ? AppImage.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: _placeholder(),
+                        errorWidget: _placeholder(),
+                      )
+                    : _placeholder(),
               ),
             ),
           ),
@@ -346,18 +321,25 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
               height: 1.25,
             ),
           ),
-          if (profession.isNotEmpty) ...[
-            const SizedBox(height: 1),
-            Text(
-              profession,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF6B7280)),
+          const SizedBox(height: 1),
+          // Always render the profession slot — an empty gap here read as a
+          // layout bug, so missing data states it explicitly.
+          Text(
+            profession.isNotEmpty ? profession : 'No profession added',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
+              fontStyle:
+                  profession.isNotEmpty ? FontStyle.normal : FontStyle.italic,
+              color: profession.isNotEmpty
+                  ? const Color(0xFF6B7280)
+                  : const Color(0xFF94A3B8),
             ),
-          ],
+          ),
+          const SizedBox(height: 4),
+          _buildMutualRow(user, mutualConnections),
           const Spacer(),
           // Follow button — compact pill, full tile width.
           SizedBox(
@@ -406,11 +388,102 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
     );
   }
 
+  /// Mutual-connection line under the profession: a small overlapping stack
+  /// of up to 3 mutual friends' photos plus "+N", or an explicit
+  /// "No mutual connection" so the slot never sits empty.
+  Widget _buildMutualRow(Map<String, dynamic> user, int mutualCount) {
+    final previewsRaw = user['mutual_preview'];
+    final previews = previewsRaw is List
+        ? previewsRaw.whereType<Map>().take(3).toList()
+        : const <Map>[];
+
+    if (mutualCount <= 0) {
+      return const Text(
+        'No mutual connection',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          fontStyle: FontStyle.italic,
+          color: Color(0xFF94A3B8),
+        ),
+      );
+    }
+
+    final extra = mutualCount - previews.length;
+    return Row(
+      children: [
+        if (previews.isNotEmpty)
+          SizedBox(
+            height: 16,
+            width: 16.0 + (previews.length - 1) * 11.0,
+            child: Stack(
+              children: [
+                for (int i = 0; i < previews.length; i++)
+                  Positioned(
+                    left: i * 11.0,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.2),
+                        color: const Color(0xFFE2E8F0),
+                      ),
+                      child: ClipOval(
+                        child: ((previews[i]['image'] ?? '')
+                                .toString()
+                                .isNotEmpty)
+                            ? AppImage.network(
+                                AppConfig.getAbsoluteUrl(
+                                    previews[i]['image'].toString()),
+                                fit: BoxFit.cover,
+                                placeholder: const _MiniAvatarFallback(),
+                                errorWidget: const _MiniAvatarFallback(),
+                              )
+                            : const _MiniAvatarFallback(),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        if (previews.isNotEmpty) const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            extra > 0 ? '+$extra mutual' : '$mutualCount mutual',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _placeholder() {
     return Container(
       color: const Color(0xFFF1F5F9),
       child: const Icon(Icons.person_rounded,
           size: 44, color: Color(0xFF94A3B8)),
+    );
+  }
+}
+
+class _MiniAvatarFallback extends StatelessWidget {
+  const _MiniAvatarFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFE2E8F0),
+      child: const Icon(Icons.person_rounded,
+          size: 10, color: Color(0xFF94A3B8)),
     );
   }
 }

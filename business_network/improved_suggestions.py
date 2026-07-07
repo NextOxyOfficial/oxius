@@ -207,8 +207,49 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
             
             # Sort by score descending
             final_scores.sort(key=lambda x: x['score'], reverse=True)
-            
+
             suggestions = final_scores[:20]
+
+            # Up to 3 mutual-connection previews (name + photo) per suggestion,
+            # fetched with two batch queries so the app can render the little
+            # overlapping avatar stack ("X, Y +3 mutual") without N+1s.
+            preview_candidate_ids = [
+                s["user"].id for s in suggestions if s["mutual_connections"]
+            ]
+            if preview_candidate_ids:
+                rows = BusinessNetworkFollowerModel.objects.filter(
+                    following_id__in=preview_candidate_ids,
+                    follower_id__in=following_ids,
+                ).values_list("following_id", "follower_id")
+                per_candidate = {}
+                needed_ids = set()
+                for cand_id, mutual_id in rows:
+                    bucket = per_candidate.setdefault(cand_id, [])
+                    if len(bucket) < 3:
+                        bucket.append(mutual_id)
+                        needed_ids.add(mutual_id)
+                mutual_users = {
+                    u.id: u
+                    for u in User.objects.filter(id__in=needed_ids)
+                }
+                for s in suggestions:
+                    previews = []
+                    for mid in per_candidate.get(s["user"].id, []):
+                        mu = mutual_users.get(mid)
+                        if mu is None:
+                            continue
+                        display = (
+                            getattr(mu, "name", "")
+                            or f"{mu.first_name or ''} {mu.last_name or ''}"
+                        ).strip()
+                        previews.append({
+                            "name": display,
+                            "image": mu.image.url if mu.image else None,
+                        })
+                    s["mutual_preview"] = previews
+            for s in suggestions:
+                s.setdefault("mutual_preview", [])
+
             cache.set(cache_key, suggestions, 300)
             return suggestions
             
@@ -250,6 +291,7 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                     'profession': user_obj.profession,
                     'city': user_obj.city,
                     'mutual_connections': item["mutual_connections"],
+                    'mutual_preview': item.get("mutual_preview", []),
                     'suggestion_score': item["score"],
                     'suggestion_reasons': item["reasons"],
                 }

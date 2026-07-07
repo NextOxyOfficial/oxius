@@ -322,22 +322,26 @@ class _EshopSectionState extends State<EshopSection> {
     }
 
     if (_products.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(
-              Icons.shopping_bag_outlined,
-              size: 64,
-              color: Colors.grey.shade400,
+      // A big "No products found" box on the HOME page reads as breakage.
+      // Collapse the grid quietly (categories + browse CTA stay) and offer
+      // a small retry, which also recovers from transient network errors.
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Center(
+          child: TextButton.icon(
+            onPressed: _loadProducts,
+            icon: const Icon(Icons.refresh_rounded,
+                size: 16, color: Color(0xFF64748B)),
+            label: Text(
+              _translationService.t('reload_products',
+                  fallback: 'পণ্য লোড করুন'),
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              _translationService.t('no_products_found',
-                  fallback: 'No products found'),
-              style: AppText.cardSubtitle(),
-            ),
-          ],
+          ),
         ),
       );
     }
