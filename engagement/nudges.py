@@ -15,11 +15,8 @@ SITE = "https://adsyclub.com"
 
 
 def _name(user):
-    n = (getattr(user, "first_name", "") or "").strip()
-    if n:
-        return n
-    n = (getattr(user, "name", "") or "").strip()
-    return n.split(" ")[0] if n else "there"
+    from base.name_utils import greeting_name
+    return greeting_name(user, fallback="there")
 
 
 @dataclass

@@ -16,6 +16,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from .models import NudgeLog, UserEvent, UserState
+from base.name_utils import friendly_first_name
 
 logger = logging.getLogger(__name__)
 
@@ -446,10 +447,9 @@ def run_feature_promos():
         )
         key, title, body, deep_link = pick_promo(exclude_keys=recent)
         # Personal touch: registered users are greeted by first name.
-        _first = (
-            (getattr(user, "first_name", "") or getattr(user, "name", "") or "")
-            .strip()
-            .split(" ")[0]
+        _first = friendly_first_name(
+            getattr(user, "name", "") or getattr(user, "first_name", ""),
+            fallback="",
         )
         if _first:
             body = f"{_first}, {body}"
@@ -777,10 +777,9 @@ def send_good_morning_push():
 
     sent = 0
     for user in users.iterator(chunk_size=500):
-        first = (
-            (getattr(user, "first_name", "") or getattr(user, "name", "") or "")
-            .strip()
-            .split(" ")[0]
+        first = friendly_first_name(
+            getattr(user, "name", "") or getattr(user, "first_name", ""),
+            fallback="",
         )
         # "শুভ সকাল! ..." -> "শুভ সকাল, রাহিম! ..." for registered users.
         personal_title = (

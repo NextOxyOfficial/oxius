@@ -97,6 +97,21 @@ def base64ToFile(base64_data, max_bytes=MAX_UPLOAD_BYTES):
 def register(request):
     data = request.data
 
+    # Reject registrations whose name/username contains vulgar words so no
+    # account can be created with an abusive display name.
+    from .profanity import contains_profanity
+
+    for field in ("name", "first_name", "last_name", "username"):
+        value = data.get(field)
+        if value and contains_profanity(str(value)):
+            return Response(
+                {
+                    "error": "নামে আপত্তিকর শব্দ ব্যবহার করা যাবে না। "
+                    "অনুগ্রহ করে সঠিক নাম দিন।"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
     # Check if user with phone or email already exists
     if User.objects.filter(phone=data.get("phone")).exists():
         return Response(
@@ -349,6 +364,21 @@ def update_user(request, email):
             return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     else:
         user = request.user
+    # Block renaming to a vulgar display name (closes the register-clean-then-
+    # rename loophole).
+    from .profanity import contains_profanity
+
+    for field in ("name", "first_name", "last_name", "username"):
+        value = data.get(field)
+        if value and contains_profanity(str(value)):
+            return Response(
+                {
+                    "message": "নামে আপত্তিকর শব্দ ব্যবহার করা যাবে না।",
+                    "errors": {field: ["আপত্তিকর শব্দ ব্যবহার করা যাবে না।"]},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
     # Remove email from data if it's unchanged
     if "email" in data and data["email"] == user.email:
         data.pop("email")

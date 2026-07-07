@@ -2050,7 +2050,8 @@ def send_engagement_email(user, *, subject, heading, body_html,
     # only — transactional mail does not call this function).
     if is_email_suppressed(email):
         return False
-    name = (getattr(user, "name", None) or getattr(user, "first_name", None) or "বন্ধু")
+    from .name_utils import greeting_name
+    name = greeting_name(user)
     cards = _engagement_content_html(content_feature)
     # The base template already shows `subject` as the big <h2> title at the
     # top, so repeating it as an in-body heading is a duplicate. Only render
@@ -2069,12 +2070,28 @@ def send_engagement_email(user, *, subject, heading, body_html,
         cta = (f'<div style="text-align:center;margin:26px 0 4px;">'
                f'<a href="{button_url}" style="display:inline-block;padding:13px 36px;background:{BRAND_GRADIENT};'
                f'color:#ffffff;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;">{button_text}</a></div>')
+    # Rich marketing body — same visual system as transactional mail: real
+    # eShop product cards, then the varied service cross-sell block and the
+    # Business Network pulse strip. Concrete products/services with photos,
+    # not just a line of counting text. The email's own feature is excluded
+    # from the cross-sell so it doesn't repeat itself.
+    try:
+        showcase = _product_showcase_html(2)
+    except Exception:
+        showcase = ""
+    try:
+        promo = _service_promo_html(exclude=(content_feature or ""))
+    except Exception:
+        promo = ""
+
     body = f"""
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 12px;">প্রিয় <strong>{name}</strong>,</p>
 {heading_html}
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">{body_html}</p>
 {cards}
 {cta}
+{showcase}
+{promo}
 """
     # The base footer already carries a one-click Unsubscribe link, so the note
     # above it just explains why they're getting the email (no duplicate link).
