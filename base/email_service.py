@@ -586,6 +586,65 @@ def send_welcome_email(user):
     return _send_email(subject, user.email, text, html)
 
 
+def send_profile_completion_email(user):
+    """Confirmation mail sent when the user finishes the mandatory profile
+    step (name + phone + date of birth) right after registration. Unlike the
+    welcome mail — which goes out before the phone exists — this one carries
+    the phone number, the live completion percentage and exactly which steps
+    are still left."""
+    from .serializers import compute_profile_completion
+
+    name = user.name or user.first_name or user.username or "there"
+    percentage, missing = compute_profile_completion(user)
+
+    subject = f"প্রোফাইল আপডেট সম্পন্ন — {percentage}% সম্পূর্ণ ✅"
+    text = (
+        f"হ্যালো {name}, আপনার প্রোফাইল সফলভাবে আপডেট হয়েছে। "
+        f"প্রোফাইল এখন {percentage}% সম্পূর্ণ।"
+    )
+
+    if missing:
+        missing_items = "".join(
+            f'<li style="margin:0 0 6px;">{step.get("label", step.get("key", ""))}</li>'
+            for step in missing
+        )
+        missing_block = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:16px 0 8px;"><strong>যা এখনো বাকি আছে:</strong></p>
+<ul style="color:#374151;font-size:14px;line-height:1.7;padding-left:20px;margin:0 0 16px;">
+{missing_items}
+</ul>
+<p style="color:#6B7280;font-size:13.5px;line-height:1.6;margin:0 0 16px;">প্রোফাইল ১০০% সম্পূর্ণ করলে আপনার অ্যাকাউন্ট আরও বিশ্বাসযোগ্য দেখায় এবং {SITE_NAME}-এর সব ফিচার পুরোপুরি ব্যবহার করতে পারবেন।</p>
+"""
+    else:
+        missing_block = """
+<p style="color:#047857;font-size:15px;line-height:1.6;margin:16px 0;"><strong>অভিনন্দন! আপনার প্রোফাইল ১০০% সম্পূর্ণ।</strong> এখন AdsyClub-এর সব ফিচার আপনার হাতের মুঠোয়।</p>
+"""
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">হ্যালো <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">আপনার <strong>{SITE_NAME}</strong> প্রোফাইল সফলভাবে আপডেট হয়েছে। আপনার তথ্যগুলো নিচে দেওয়া হলো:</p>
+
+{_info_table(
+    _info_row("নাম", name) +
+    _info_row("ইমেইল", user.email or "N/A") +
+    _info_row("ফোন", user.phone or "N/A")
+)}
+
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:16px 0 8px;"><strong>প্রোফাইল সম্পূর্ণতা: {percentage}%</strong></p>
+<div style="background:#E5E7EB;border-radius:999px;height:10px;overflow:hidden;margin:0 0 4px;">
+  <div style="background:#10B981;height:10px;width:{percentage}%;border-radius:999px;"></div>
+</div>
+{missing_block}
+"""
+
+    html = _base_template(
+        subject,
+        body,
+        "এই পরিবর্তন যদি আপনি না করে থাকেন, এখনই পাসওয়ার্ড বদলে আমাদের সাপোর্ট টিমকে জানান।",
+    )
+    return _send_email(subject, user.email, text, html)
+
+
 def send_ceo_welcome_email(user):
     """A personal welcome from the CEO — sent to a newly registered user alongside
     the standard welcome email (so a new user gets two: the system welcome + this

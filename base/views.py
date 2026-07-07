@@ -434,6 +434,20 @@ def update_user(request, email):
         )
 
     had_phone = bool(user.phone)  # capture before save to detect a first-time add
+
+    # Mandatory-profile state BEFORE this update: name + phone + date of birth.
+    # Used to fire the one-time profile-completion confirmation email exactly
+    # on the False -> True transition (the post-registration "complete your
+    # profile" step), not on every later settings save.
+    def _mandatory_complete(u):
+        return bool(
+            (u.first_name or "").strip()
+            and (u.last_name or "").strip()
+            and (u.phone or "").strip()
+            and u.date_of_birth
+        )
+
+    was_mandatory_complete = _mandatory_complete(user)
     data["id"] = user.id
     serializer = UserSerializer(user, data=data, partial=True)
 
@@ -445,6 +459,14 @@ def update_user(request, email):
             if not had_phone and user.phone:
                 from .welcome_sms import send_welcome_sms_async
                 send_welcome_sms_async(user.name or user.first_name, user.phone)
+            # Profile just became complete -> confirmation email carrying the
+            # phone number, completion % and the remaining steps (async).
+            if not was_mandatory_complete and _mandatory_complete(user):
+                try:
+                    from .email_service import send_profile_completion_email
+                    send_profile_completion_email(user)
+                except Exception as mail_err:
+                    print(f"profile completion email error: {mail_err}")
             return Response(
                 {"message": "User updated successfully", "data": serializer.data},
                 status=status.HTTP_200_OK,

@@ -141,14 +141,15 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                   Row(
                     children: [
                       Container(
-                        width: 48,
-                        height: 48,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: _primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(14),
+                          color: Colors.white,
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.assignment_ind_rounded,
-                            color: _primary, size: 25),
+                        child: const Icon(Icons.assignment_ind_outlined,
+                            color: _primary, size: 23),
                       ),
                       const SizedBox(width: 12),
                       const Expanded(
@@ -261,7 +262,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
@@ -292,7 +293,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
         hintText: hint,
         hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: Colors.white,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(

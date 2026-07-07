@@ -94,23 +94,43 @@ class ProfileCompletionSheet {
                     Row(
                       children: [
                         Container(
-                          width: 44,
-                          height: 44,
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
-                            color: _primaryColor.withValues(alpha: 0.1),
+                            color: Colors.white,
+                            border:
+                                Border.all(color: const Color(0xFFE2E8F0)),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.account_circle_rounded,
-                              color: _primaryColor, size: 24),
+                          child: const Icon(Icons.account_circle_outlined,
+                              color: _primaryColor, size: 23),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
                           child: Text(
-                            'Complete your profile',
+                            'প্রোফাইল সম্পূর্ণ করুন',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(999),
+                            border:
+                                Border.all(color: const Color(0xFFBFDBFE)),
+                          ),
+                          child: Text(
+                            '$percent%',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: _primaryColor,
                             ),
                           ),
                         ),
@@ -130,7 +150,7 @@ class ProfileCompletionSheet {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Your profile is $percent% complete',
+                      'আপনার প্রোফাইল $percent% সম্পূর্ণ',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -140,7 +160,7 @@ class ProfileCompletionSheet {
                     const SizedBox(height: 16),
                     if (steps.isNotEmpty) ...[
                       const Text(
-                        'A few steps left:',
+                        'যা এখনো বাকি আছে:',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -159,7 +179,9 @@ class ProfileCompletionSheet {
                                 width: 34,
                                 height: 34,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
+                                  color: Colors.white,
+                                  border: Border.all(
+                                      color: const Color(0xFFE2E8F0)),
                                   borderRadius: BorderRadius.circular(9),
                                 ),
                                 child: Icon(_iconForStep(key),
@@ -196,7 +218,7 @@ class ProfileCompletionSheet {
                           ),
                         ),
                         child: const Text(
-                          'Complete Profile',
+                          'প্রোফাইল সম্পূর্ণ করুন',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -211,7 +233,7 @@ class ProfileCompletionSheet {
                       child: TextButton(
                         onPressed: () => Navigator.pop(sheetContext),
                         child: const Text(
-                          'Maybe later',
+                          'পরে করব',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
