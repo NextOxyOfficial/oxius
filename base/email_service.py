@@ -269,14 +269,14 @@ def _button(text, url):
 
 
 _PROMO_SERVICES = [
-    ("eshop", "eShop", "\u09a6\u09b0\u0995\u09be\u09b0\u09bf \u09aa\u09a3\u09cd\u09af \u09b8\u09c7\u09b0\u09be \u09a6\u09be\u09ae\u09c7", "/eshop", "#EA580C"),
-    ("bn", "Business Network", "\u09aa\u09c7\u09b6\u09be\u09a6\u09be\u09b0\u09a6\u09c7\u09b0 \u0995\u09ae\u09bf\u0989\u09a8\u09bf\u099f\u09bf \u2014 \u09aa\u09cb\u09b8\u09cd\u099f, \u09ab\u09b2\u09cb, \u09a8\u09c7\u099f\u0993\u09af\u09bc\u09be\u09b0\u09cd\u0995", "/business-network", "#2563EB"),
-    ("earn", "\u09ae\u09be\u0987\u0995\u09cd\u09b0\u09cb \u0997\u09bf\u0997\u09b8", "\u099b\u09cb\u099f \u099b\u09cb\u099f \u099f\u09be\u09b8\u09cd\u0995 \u0995\u09b0\u09c7 \u0987\u09a8\u0995\u09be\u09ae", "/#earn", "#7C3AED"),
-    ("sheba", "\u0986\u09ae\u09be\u09b0 \u09b8\u09c7\u09ac\u09be", "\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8 \u09a6\u09bf\u09a8, \u0995\u09cd\u09b0\u09c7\u09a4\u09be \u0996\u09c1\u0981\u099c\u09c1\u09a8", "/", "#0D9488"),
-    ("recharge", "\u09ae\u09cb\u09ac\u09be\u0987\u09b2 \u09b0\u09bf\u099a\u09be\u09b0\u09cd\u099c", "\u09af\u09c7\u0995\u09cb\u09a8\u09cb \u09a8\u09ae\u09cd\u09ac\u09b0\u09c7 \u0987\u09a8\u09b8\u09cd\u099f\u09cd\u09af\u09be\u09a8\u09cd\u099f \u09b0\u09bf\u099a\u09be\u09b0\u09cd\u099c", "/mobile-recharge", "#DC2626"),
+    ("eshop", "eShop", "দরকারি পণ্য সেরা দামে", "/eshop", "#EA580C"),
+    ("bn", "Business Network", "পেশাদারদের কমিউনিটি — পোস্ট, ফলো, নেটওয়ার্ক", "/business-network", "#2563EB"),
+    ("earn", "মাইক্রো গিগস", "ছোট ছোট টাস্ক করে ইনকাম", "/#earn", "#7C3AED"),
+    ("sheba", "আমার সেবা", "বিজ্ঞাপন দিন, ক্রেতা খুঁজুন", "/", "#0D9488"),
+    ("recharge", "মোবাইল রিচার্জ", "যেকোনো নম্বরে ইনস্ট্যান্ট রিচার্জ", "/mobile-recharge", "#DC2626"),
 ]
 
-_PROMO_HEADING = "AdsyClub-\u098f \u0986\u09b0\u0993 \u09af\u09be \u09af\u09be \u0986\u099b\u09c7"
+_PROMO_HEADING = "AdsyClub-এ আরও যা যা আছে"
 
 
 def _promo_list_html(items):
@@ -324,7 +324,7 @@ def _promo_spotlight_html(items):
 <div style="color:#64748B;font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">AdsyClub</div>
 <div style="color:{color};font-size:16px;font-weight:800;margin-top:3px;">{title}</div>
 <div style="color:#475569;font-size:13px;line-height:1.55;margin-top:4px;">{desc}</div>
-<div style="margin-top:8px;"><a href="{SITE_URL}{path}" style="color:{color};font-size:13px;font-weight:700;text-decoration:none;">\u09a6\u09c7\u0996\u09c7 \u09a8\u09bf\u09a8&nbsp;&#8594;</a></div>
+<div style="margin-top:8px;"><a href="{SITE_URL}{path}" style="color:{color};font-size:13px;font-weight:700;text-decoration:none;">দেখে নিন&nbsp;&#8594;</a></div>
 </td></tr></table>'''
 
 
@@ -337,7 +337,7 @@ def _service_promo_html(exclude=""):
     return variant(items[:3])
 
 
-def _product_showcase_html(limit=2, heading="\u0986\u09aa\u09a8\u09be\u09b0 \u099c\u09a8\u09cd\u09af \u09ac\u09be\u099b\u09be\u0987"):
+def _product_showcase_html(limit=2, heading="আপনার জন্য বাছাই"):
     """Real eShop products WITH photos, rendered as a two-card row. Pulled
     live from the catalog at send time — every mail doubles as a storefront."""
     try:
@@ -371,7 +371,7 @@ def _product_showcase_html(limit=2, heading="\u0986\u09aa\u09a8\u09be\u09b0 \u09
 <tr><td style="padding:10px 12px 12px;">
 <a href="{link}" style="text-decoration:none;">
 <div style="color:#0F172A;font-size:13px;font-weight:700;line-height:1.35;">{name}</div>
-<div style="color:#059669;font-size:14px;font-weight:800;margin-top:5px;">\u09f3{price}</div>
+<div style="color:#059669;font-size:14px;font-weight:800;margin-top:5px;">৳{price}</div>
 </a></td></tr>
 </table></td>'''
         if not cards:
@@ -379,7 +379,7 @@ def _product_showcase_html(limit=2, heading="\u0986\u09aa\u09a8\u09be\u09b0 \u09
         return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;border-top:1px solid #E5E7EB;">
 <tr><td style="padding:16px 0 4px;">
 <span style="color:#0F172A;font-size:14px;font-weight:700;">{heading}</span>
-<a href="{SITE_URL}/eshop" style="float:right;color:#059669;font-size:12.5px;font-weight:700;text-decoration:none;">\u09b8\u09ac \u09a6\u09c7\u0996\u09c1\u09a8&nbsp;&#8594;</a>
+<a href="{SITE_URL}/eshop" style="float:right;color:#059669;font-size:12.5px;font-weight:700;text-decoration:none;">সব দেখুন&nbsp;&#8594;</a>
 </td></tr></table>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>{cards}</tr></table>'''
     except Exception:
@@ -1649,21 +1649,21 @@ def send_bn_digest_email(user):
     random.shuffle(suggestion_pool)
     suggestions = suggestion_pool[:4]
 
-    subject = "\u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09c7\u099f\u0993\u09af\u09bc\u09be\u09b0\u09cd\u0995\u09c7 \u09af\u09be \u09b9\u09b2\u09cb"
+    subject = "এই সপ্তাহে আপনার নেটওয়ার্কে যা হলো"
     text = (
-        f"\u09b9\u09cd\u09af\u09be\u09b2\u09cb {name}, \u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 {follower_count} \u099c\u09a8 \u09a8\u09a4\u09c1\u09a8 \u09ab\u09b2\u09cb\u09af\u09bc\u09be\u09b0 \u098f\u09ac\u0982 \u09aa\u09cb\u09b8\u09cd\u099f\u09c7 {likes_count}\u099f\u09be \u09b2\u09be\u0987\u0995 \u098f\u09b8\u09c7\u099b\u09c7\u0964"
+        f"হ্যালো {name}, এই সপ্তাহে আপনার {follower_count} জন নতুন ফলোয়ার এবং পোস্টে {likes_count}টা লাইক এসেছে।"
     )
 
     stat_cells = f"""<tr>
 <td width="50%" style="padding:5px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#EFF6FF;border-radius:12px;"><tr><td style="padding:14px;text-align:center;">
 <div style="color:#2563EB;font-size:22px;font-weight:800;">{follower_count}</div>
-<div style="color:#475569;font-size:12px;font-weight:600;margin-top:2px;">\u09a8\u09a4\u09c1\u09a8 \u09ab\u09b2\u09cb\u09af\u09bc\u09be\u09b0</div>
+<div style="color:#475569;font-size:12px;font-weight:600;margin-top:2px;">নতুন ফলোয়ার</div>
 </td></tr></table></td>
 <td width="50%" style="padding:5px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#FDF2F8;border-radius:12px;"><tr><td style="padding:14px;text-align:center;">
 <div style="color:#DB2777;font-size:22px;font-weight:800;">{likes_count}</div>
-<div style="color:#475569;font-size:12px;font-weight:600;margin-top:2px;">\u09aa\u09cb\u09b8\u09cd\u099f\u09c7 \u09b2\u09be\u0987\u0995</div>
+<div style="color:#475569;font-size:12px;font-weight:600;margin-top:2px;">পোস্টে লাইক</div>
 </td></tr></table></td>
 </tr>"""
 
@@ -1671,26 +1671,26 @@ def send_bn_digest_email(user):
     if new_followers:
         followers_block = _people_row_html(
             new_followers,
-            "\u09af\u09be\u09b0\u09be \u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u0986\u09aa\u09a8\u09be\u0995\u09c7 \u09ab\u09b2\u09cb \u0995\u09b0\u09b2\u09c7\u09a8",
+            "যারা এই সপ্তাহে আপনাকে ফলো করলেন",
         )
 
     suggestions_block = ""
     if suggestions:
         suggestions_block = _people_row_html(
             suggestions,
-            "\u09aa\u09b0\u09bf\u099a\u09bf\u09a4 \u09b9\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u09a8",
+            "পরিচিত হতে পারেন",
         )
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">\u09b9\u09cd\u09af\u09be\u09b2\u09cb <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">\u0986\u09aa\u09a8\u09be\u09b0 Business Network \u0995\u09ae\u09bf\u0989\u09a8\u09bf\u099f\u09bf\u09a4\u09c7 \u098f\u0987 \u09b8\u09aa\u09cd\u09a4\u09be\u09b9\u09c7 \u09af\u09be \u09af\u09be \u09b9\u09b2\u09cb \u2014 \u098f\u0995 \u09a8\u099c\u09b0\u09c7 \u09a6\u09c7\u0996\u09c7 \u09a8\u09bf\u09a8\u0964</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">হ্যালো <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">আপনার Business Network কমিউনিটিতে এই সপ্তাহে যা যা হলো — এক নজরে দেখে নিন।</p>
 
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">{stat_cells}</table>
 
 {followers_block}
 {suggestions_block}
 
-{_button("\u0995\u09ae\u09bf\u0989\u09a8\u09bf\u099f\u09bf\u09a4\u09c7 \u09ab\u09bf\u09b0\u09c7 \u0986\u09b8\u09c1\u09a8", SITE_URL + "/business-network")}
+{_button("কমিউনিটিতে ফিরে আসুন", SITE_URL + "/business-network")}
 {_service_promo_html("bn")}
 """
 
