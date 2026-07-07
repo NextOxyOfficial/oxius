@@ -8,10 +8,18 @@ class FirstLinkPreview extends StatelessWidget {
   final String text;
   final EdgeInsetsGeometry margin;
 
+  /// Chat mode: no card background/border (blends into the message bubble),
+  /// text tuned for a dark (own/blue) or light (received) bubble, and the tap
+  /// opens the link in a BROWSER (not the internal deep-link navigator).
+  final bool bare;
+  final bool onDark;
+
   const FirstLinkPreview({
     super.key,
     required this.text,
     this.margin = const EdgeInsets.only(top: 6),
+    this.bare = false,
+    this.onDark = false,
   });
 
   @override
@@ -21,17 +29,21 @@ class FirstLinkPreview extends StatelessWidget {
 
     return Container(
       margin: margin,
-      child: LinkPreviewCard(url: url),
+      child: LinkPreviewCard(url: url, bare: bare, onDark: onDark),
     );
   }
 }
 
 class LinkPreviewCard extends StatefulWidget {
   final String url;
+  final bool bare;
+  final bool onDark;
 
   const LinkPreviewCard({
     super.key,
     required this.url,
+    this.bare = false,
+    this.onDark = false,
   });
 
   @override

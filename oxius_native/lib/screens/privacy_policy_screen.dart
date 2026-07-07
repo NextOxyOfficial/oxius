@@ -152,7 +152,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         
                         _buildSection(
                           '9. Contact Information',
-                          'If you have any questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us at:\n\nEmail: privacy@adsyclub.com\nPhone: +8801896144067\nAddress: H#116, Office Building, Sewria, Kushtia, Bangladesh',
+                          'If you have any questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us at:\n\nEmail: privacy@adsyclub.com\nPhone: +8801896144066\nAddress: H#116, Office Building, Sewria, Kushtia, Bangladesh',
                         ),
                         
                         const SizedBox(height: 32),

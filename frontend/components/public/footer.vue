@@ -441,7 +441,7 @@ const { user } = useAuth();
 const { unreadCount, fetchUnreadCount } = useNotifications(); // Import useNotifications
 const toast = useToast();
 const supportEmail = "support@adsyclub.com";
-const supportPhone = "+8801896144067";
+const supportPhone = "+8801896144066";
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());

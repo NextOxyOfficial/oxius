@@ -1628,7 +1628,7 @@
                             />
                           </svg>
                           <span>{{
-                            adForm.contactInfo || "+8801896144067"
+                            adForm.contactInfo || "+8801896144066"
                           }}</span>
                           <a
                             v-if="adForm.contactInfo"
@@ -1661,7 +1661,7 @@
                             />
                           </svg>
                           <span>{{
-                            adForm.contactInfo || "+8801896144067"
+                            adForm.contactInfo || "+8801896144066"
                           }}</span>
                           <a
                             v-if="adForm.contactInfo"
@@ -2209,8 +2209,8 @@ const adTypeInputTypes = {
 
 const adTypePlaceholders = {
   website: "https://adsyclub.com",
-  whatsapp: "+8801896144067",
-  phone: "+8801896144067",
+  whatsapp: "+8801896144066",
+  phone: "+8801896144066",
   email: "support@adsyclub.com",
 };
 

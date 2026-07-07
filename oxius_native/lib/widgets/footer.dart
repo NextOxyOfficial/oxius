@@ -25,7 +25,7 @@ class AppFooter extends StatefulWidget {
 class _AppFooterState extends State<AppFooter>
     with AutomaticKeepAliveClientMixin {
   static const String _supportEmail = 'support@adsyclub.com';
-  static const String _supportPhone = '+8801896144067';
+  static const String _supportPhone = '+8801896144066';
 
   Map<String, dynamic>? logoData;
   List<dynamic> footerBanners = [];

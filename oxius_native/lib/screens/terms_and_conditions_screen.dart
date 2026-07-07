@@ -152,7 +152,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                         
                         _buildSection(
                           '9. Contact Information',
-                          'If you have any questions, concerns, or feedback regarding these Terms or our Services, please contact us at:\n\nEmail: support@adsyclub.com\nPhone: +8801896144067\nAddress: H#116, Office Building, Sewria, Kushtia, Bangladesh',
+                          'If you have any questions, concerns, or feedback regarding these Terms or our Services, please contact us at:\n\nEmail: support@adsyclub.com\nPhone: +8801896144066\nAddress: H#116, Office Building, Sewria, Kushtia, Bangladesh',
                         ),
                         
                         const SizedBox(height: 32),

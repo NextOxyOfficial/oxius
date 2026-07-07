@@ -341,7 +341,7 @@
 											<UIcon name="i-heroicons-phone" class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3"/>
 											<div>
 												<p class="font-medium text-gray-900 dark:text-white">Phone</p>
-												<p class="text-gray-600 dark:text-gray-300">+8801896144067</p>
+												<p class="text-gray-600 dark:text-gray-300">+8801896144066</p>
 											</div>
 										</div>
 										<div class="flex items-start">

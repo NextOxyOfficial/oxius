@@ -29,6 +29,31 @@ class UrlLauncherUtils {
     }
   }
 
+  /// Always open in a browser (external app, in-app tab fallback) — never the
+  /// internal deep-link navigator. Used from CHAT link previews: routing an
+  /// adsyclub link through openInternalLink there pushed the destination
+  /// UNDER the chat route (it only appeared after backing out). A browser
+  /// launch navigates instantly and never stacks a screen behind the chat.
+  static Future<bool> launchInBrowser(String? url) async {
+    final uri = _normalizeToUri(url);
+    if (uri == null) return false;
+    try {
+      if (!await canLaunchUrl(uri)) return false;
+      final ok = await launchUrl(
+        uri,
+        mode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
+      );
+      if (ok) return true;
+      // Some devices lack a default browser for externalApplication — fall
+      // back to an in-app browser tab so the tap never silently no-ops.
+      return await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Uri? _normalizeToUri(String? raw) {
     if (raw == null) return null;
     var url = raw.trim();

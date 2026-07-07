@@ -8,7 +8,7 @@
             {{ $t("customer_support") }}
           </h1>
           <a
-            href="tel:+8801896144067"
+            href="tel:+8801896144066"
             class="text-slate-300 text-xl max-w-2xl mx-auto block"
             >+8801896144066</a
           >
