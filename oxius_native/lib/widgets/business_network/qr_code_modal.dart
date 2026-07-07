@@ -92,8 +92,15 @@ class _QrCodeModalState extends State<QrCodeModal> {
       await file.writeAsBytes(pngBytes);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
+        // Close the sheet first, then confirm on the underlying screen —
+        // the messenger/context are captured before the pop so the
+        // snackbar (and its Open action) outlive the sheet.
+        final messenger = ScaffoldMessenger.of(context);
+        final rootContext =
+            Navigator.of(context, rootNavigator: true).context;
+        Navigator.of(context).pop();
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(
           SnackBar(
             content: Row(
               children: [
@@ -124,7 +131,9 @@ class _QrCodeModalState extends State<QrCodeModal> {
               label: 'Open',
               textColor: Colors.white,
               onPressed: () {
-                DownloadOpenUtils.openFile(context, filePath);
+                // The sheet's context is gone after pop — use the root
+                // navigator's context so Open works from the snackbar.
+                DownloadOpenUtils.openFile(rootContext, filePath);
               },
             ),
           ),

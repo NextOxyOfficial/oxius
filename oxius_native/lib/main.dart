@@ -341,15 +341,10 @@ class MyApp extends StatelessWidget {
               textTheme: AppFonts.robotoTextTheme(),
               // Smooth, consistent navigation: the same horizontal slide
               // (with back-swipe support) on every screen and platform,
-              // replacing Android's abrupt zoom-fade. Explicit `const` on
-              // each builder (and a non-const theme) — Codemagic's older
-              // Dart rejects implicit const inside this map.
-              pageTransitionsTheme: PageTransitionsTheme(
-                builders: <TargetPlatform, PageTransitionsBuilder>{
-                  for (final platform in TargetPlatform.values)
-                    platform: const CupertinoPageTransitionsBuilder(),
-                },
-              ),
+              // replacing Android's abrupt zoom-fade. Built via a helper with
+              // ZERO const anywhere — Codemagic's Dart front-end kept
+              // rejecting const builders in this position.
+              pageTransitionsTheme: _slidePageTransitions(),
               // Softer tap feedback than M3's sparkle — reads calmer.
               splashFactory: InkRipple.splashFactory,
               appBarTheme: const AppBarTheme(
@@ -739,4 +734,14 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
       BuildContext context, Widget child, ScrollableDetails details) {
     return child;
   }
+}
+
+/// Cupertino slide transitions for every platform, constructed at runtime —
+/// intentionally no `const` anywhere (see pageTransitionsTheme call site).
+PageTransitionsTheme _slidePageTransitions() {
+  final builders = <TargetPlatform, PageTransitionsBuilder>{};
+  for (final platform in TargetPlatform.values) {
+    builders[platform] = CupertinoPageTransitionsBuilder();
+  }
+  return PageTransitionsTheme(builders: builders);
 }

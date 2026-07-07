@@ -23,16 +23,19 @@ class PostActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      // Items carry their own 12px vertical hit-padding now.
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: [
           // Like: the heart toggles the like; the "N likes" label opens a
           // bottom sheet listing everyone who liked this post.
+          // The visual icon is 19px but the tappable area is ~44px — the old
+          // ~27px target made first taps miss ("like is not working").
           InkWell(
             onTap: onLike,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(999),
             child: Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: Image.asset(
                 post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
                 width: 19,
@@ -45,7 +48,7 @@ class PostActions extends StatelessWidget {
             onTap: () => _showLikers(context),
             borderRadius: BorderRadius.circular(8),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
               // Reserve stable width: "1 like" vs "2 likes" otherwise changes
               // the label width and visibly shifts Comments/Share on every
               // like toggle.
@@ -82,9 +85,9 @@ class PostActions extends StatelessWidget {
           if (onSave != null)
             InkWell(
               onTap: onSave,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(999),
               child: Padding(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(12),
                 child: Image.asset(
                   post.isSaved ? 'assets/icons/saved.png' : 'assets/icons/save.png',
                   width: 18,
@@ -135,7 +138,7 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
         child: Row(
           children: [
             Padding(

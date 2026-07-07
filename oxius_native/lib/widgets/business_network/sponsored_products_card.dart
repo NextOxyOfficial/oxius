@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../models/cart_item.dart';
 import '../../config/app_config.dart';
+import '../../screens/product_details_screen.dart';
 import '../../widgets/common/adsy_toast.dart';
 
 /// Sponsored products as a horizontal carousel — same visual language as the
@@ -81,9 +82,10 @@ class SponsoredProductsCard extends StatelessWidget {
               ],
             ),
           ),
-          // Horizontal product tiles
+          // Horizontal product tiles — height matches image 100 + title box
+          // 32 + price row, no dead band above the price.
           SizedBox(
-            height: 208,
+            height: 178,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -91,6 +93,14 @@ class SponsoredProductsCard extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, i) => _ProductTile(
                 product: items[i],
+                // Tile tap -> product details; the কিনুন pill fast-tracks
+                // straight to checkout.
+                onOpen: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProductDetailsScreen(product: items[i]),
+                  ),
+                ),
                 onBuy: () => _navigateToCheckout(context, items[i]),
               ),
             ),
@@ -152,9 +162,11 @@ class SponsoredProductsCard extends StatelessWidget {
 
 class _ProductTile extends StatelessWidget {
   final Map<String, dynamic> product;
+  final VoidCallback onOpen;
   final VoidCallback onBuy;
 
-  const _ProductTile({required this.product, required this.onBuy});
+  const _ProductTile(
+      {required this.product, required this.onOpen, required this.onBuy});
 
   String _imageUrl() {
     final details = product['image_details'];
@@ -187,7 +199,7 @@ class _ProductTile extends StatelessWidget {
     final img = _imageUrl();
 
     return GestureDetector(
-      onTap: onBuy,
+      onTap: onOpen,
       child: SizedBox(
         width: 150,
         child: Column(
@@ -237,18 +249,23 @@ class _ProductTile extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1F2937),
-                height: 1.25,
+            // Fixed two-line box for the title so one-line names don't leave
+            // a floating gap above the price row.
+            SizedBox(
+              height: 32,
+              child: Text(
+                name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F2937),
+                  height: 1.25,
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 6),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -284,20 +301,23 @@ class _ProductTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: const Color(0xFFFED7AA)),
-                  ),
-                  child: const Text(
-                    'কিনুন',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: SponsoredProductsCard._accent,
+                GestureDetector(
+                  onTap: onBuy,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: const Color(0xFFFED7AA)),
+                    ),
+                    child: const Text(
+                      'কিনুন',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: SponsoredProductsCard._accent,
+                      ),
                     ),
                   ),
                 ),

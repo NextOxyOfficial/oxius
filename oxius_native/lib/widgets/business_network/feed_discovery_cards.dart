@@ -259,6 +259,10 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
   @override
   void initState() {
     super.initState();
+    _loadGigs();
+  }
+
+  void _loadGigs() {
     _microStore
         .load(() => MicrogigService.getMicroGigs(showSubmitted: false))
         .then((v) {
@@ -275,8 +279,17 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
     final gig = _gigs[widget.index % _gigs.length];
     final categoryImg = gig.categoryDetails?.image ?? '';
 
-    void openGig() => Navigator.push(context,
-        MaterialPageRoute(builder: (_) => GigDetailsScreen(gigSlug: gig.slug)));
+    Future<void> openGig() async {
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => GigDetailsScreen(gigSlug: gig.slug)));
+      // Back from the gig: refetch so a just-submitted task disappears
+      // instead of keeping its stale "ইনকাম করুন" button in the feed.
+      _microStore.data = null;
+      _microStore.inFlight = null;
+      if (mounted) _loadGigs();
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
