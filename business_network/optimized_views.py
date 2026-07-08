@@ -53,8 +53,9 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
             return (
                 BusinessNetworkPost.objects.select_related("author")
                 .annotate(
-                    like_count=Count("post_likes", distinct=True),
-                    comment_count=Count("post_comments", distinct=True),
+                    # like_count/comment_count are denormalized model fields
+                    # (kept in sync by signals) — annotating them here would
+                    # clash with the field of the same name.
                     follower_count=Count("post_followers", distinct=True),
                 )
                 .order_by("-created_at")
@@ -108,9 +109,8 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
                     default=Value(4),
                     output_field=IntegerField(),
                 ),
-                # Pre-calculate counts to avoid N+1 queries
-                like_count=Count("post_likes", distinct=True),
-                comment_count=Count("post_comments", distinct=True),
+                # like_count/comment_count come from denormalized model
+                # fields; only follower_count needs annotating.
                 follower_count=Count("post_followers", distinct=True),
             )
             .select_related(
@@ -179,9 +179,8 @@ class LightweightBusinessNetworkPostListView(generics.ListAPIView):
     def get_queryset(self):
         # Extremely simplified query for low-end devices
         return (
-            BusinessNetworkPost.objects.annotate(
-                like_count=Count("post_likes"), comment_count=Count("post_comments")
-            )
+            BusinessNetworkPost.objects
+            # like_count/comment_count are denormalized model fields.
             .select_related("author")
             .order_by("-created_at")
         )
