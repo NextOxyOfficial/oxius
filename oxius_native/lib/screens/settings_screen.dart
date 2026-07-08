@@ -37,10 +37,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   static const _softSurfaceColor = Color(0xFFF8FAFF);
   static const _surfaceMutedColor = Color(0xFFF1F5F9);
   static const _cardBorderColor = Color(0xFFE2E8F0);
-  static const _primaryColor = Color(0xFF6366F1);
-  static const _primaryDarkColor = Color(0xFF4F46E5);
-  static const _primaryAccentColor = Color(0xFF8B5CF6);
-  static const _primarySoftColor = Color(0xFFEEF2FF);
+  // Single blue accent shared with the rest of the app — no indigo/purple
+  // gradients (those read as "AI generated").
+  static const _primaryColor = Color(0xFF2563EB);
+  static const _primaryDarkColor = Color(0xFF1D4ED8);
+  static const _primarySoftColor = Color(0xFFEFF6FF);
   static const _headingTextColor = Color(0xFF1E293B);
   static const _bodyTextColor = Color(0xFF475569);
   static const _mutedTextColor = Color(0xFF64748B);
@@ -1284,16 +1285,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [_primaryColor, _primaryAccentColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: _primarySoftColor,
               borderRadius: BorderRadius.circular(9),
             ),
             child: const Icon(
               Icons.settings_rounded,
-              color: Colors.white,
+              color: _primaryColor,
               size: 18,
             ),
           ),
@@ -1364,21 +1361,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
-          gradient: isActive
-              ? const LinearGradient(
-                  colors: [_primaryColor, _primaryAccentColor],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isActive ? null : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          // Native segmented control: the active segment is a white pill
+          // with a soft lift; inactive segments sit flat on the muted track.
+          color: isActive ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: _primaryColor.withValues(alpha: 0.22),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
                   ),
                 ]
               : null,
@@ -1387,14 +1379,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon,
-                size: 16, color: isActive ? Colors.white : _mutedTextColor),
+                size: 16, color: isActive ? _primaryColor : _mutedTextColor),
             const SizedBox(width: 6),
             Text(
               label,
               style: AppFonts.roboto(
                 fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : _mutedTextColor,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                color: isActive ? _primaryColor : _mutedTextColor,
               ),
             ),
           ],
@@ -2943,14 +2935,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           height: 46,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              gradient: enabled
-                  ? const LinearGradient(
-                      colors: [_primaryColor, _primaryAccentColor],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    )
-                  : null,
-              color: enabled ? null : const Color(0xFFE2E8F0),
+              color: enabled ? _primaryColor : const Color(0xFFE2E8F0),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ElevatedButton(
