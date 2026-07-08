@@ -295,17 +295,15 @@ def run_nudge_engine(dry_run=False):
         if n.reliable or lifecycle_enabled
     ]
 
-    # Preload recent nudge history for caps/cooldowns (one query).
-    # PUSH CATALOG nudges only: feature promos and engagement emails keep their
-    # own daily/cooldown accounting, so counting them here silently delayed
-    # high-value nudges (money waiting / KYC / local services) by up to a day
-    # whenever a promo or an email happened to go out first.
+    # Preload recent push history for caps/cooldowns (one query). This engine
+    # is now the SINGLE daily followup: it sends the best activity nudge, or a
+    # feature promo when none applies — so a user gets exactly ONE followup
+    # push a day. `last_any` therefore counts BOTH nudges and promos.
     since = now - timedelta(days=14)
-    last_any = {}                         # user_id -> latest sent_at
+    last_any = {}                         # user_id -> latest followup sent_at
     last_by_key = defaultdict(dict)       # user_id -> {nudge_key: sent_at}
     for uid, key, sent in (
         NudgeLog.objects.filter(sent_at__gte=since, channel="push")
-        .exclude(nudge_key__startswith="promo_")
         .values_list("user_id", "nudge_key", "sent_at")
     ):
         if uid not in last_any or sent > last_any[uid]:
@@ -328,10 +326,18 @@ def run_nudge_engine(dry_run=False):
         user = state.user
         if getattr(user, "is_suspended", False) or not getattr(user, "is_active", True):
             continue
-        # One nudge per user per day.
+        # One followup push per user per day (nudge or promo).
         la = last_any.get(user.id)
         if la and la >= now - timedelta(days=1):
             continue
+
+        # Spread sends across the remaining window so they don't all fire at
+        # the first run of the day. Guaranteed to send by the final run
+        # (runs_remaining hits 1 -> probability 1.0). Skipped in dry-run.
+        if not dry_run:
+            runs_remaining = max(1, end_h - local_hour)
+            if random.random() >= (1.0 / runs_remaining):
+                continue
 
         chosen = None
         for nudge in catalog:
@@ -346,17 +352,36 @@ def run_nudge_engine(dry_run=False):
             except Exception:  # pragma: no cover
                 logger.exception("nudge eligibility failed: %s", nudge.key)
 
-        if not chosen:
-            continue
+        # Decide the payload: the best activity nudge, or a feature promo as
+        # a fallback so every user still gets one useful followup a day.
+        if chosen is not None:
+            try:
+                title, body = chosen.build(state, user)
+            except Exception:  # pragma: no cover
+                logger.exception("nudge build failed: %s", chosen.key)
+                continue
+            send_key, deep_link, ntype = chosen.key, chosen.deep_link, "assistant"
+        else:
+            from .feature_promos import pick_promo
 
-        try:
-            title, body = chosen.build(state, user)
-        except Exception:  # pragma: no cover
-            logger.exception("nudge build failed: %s", chosen.key)
-            continue
+            recent_promos = set(
+                NudgeLog.objects.filter(
+                    user=user,
+                    nudge_key__startswith="promo_",
+                    sent_at__gte=now - timedelta(days=7),
+                ).values_list("nudge_key", flat=True)
+            )
+            send_key, title, body, deep_link = pick_promo(exclude_keys=recent_promos)
+            _first = friendly_first_name(
+                getattr(user, "name", "") or getattr(user, "first_name", ""),
+                fallback="",
+            )
+            if _first:
+                body = f"{_first}, {body}"
+            ntype = "feature"
 
         if dry_run:
-            plan.append({"user": user.id, "nudge": chosen.key, "title": title})
+            plan.append({"user": user.id, "nudge": send_key, "title": title})
             sent += 1
             continue
 
@@ -365,20 +390,20 @@ def run_nudge_engine(dry_run=False):
             send_push_notification(
                 title=title,
                 body=body,
-                deep_link=chosen.deep_link,
-                notification_type="assistant",
+                deep_link=deep_link,
+                notification_type=ntype,
                 users=[user],
             )
             NudgeLog.objects.create(
                 user=user,
-                nudge_key=chosen.key,
+                nudge_key=send_key,
                 channel="push",
                 title=title,
-                deep_link=chosen.deep_link,
+                deep_link=deep_link,
             )
             sent += 1
         except Exception:  # pragma: no cover - never let one send kill the run
-            logger.exception("nudge send failed: %s -> %s", chosen.key, user.id)
+            logger.exception("nudge send failed: %s -> %s", send_key, user.id)
 
     result = {"sent": sent, "dry_run": dry_run, "timestamp": now.isoformat()}
     if dry_run:

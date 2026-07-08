@@ -553,12 +553,12 @@ CELERY_BEAT_SCHEDULE = {
     },
     "run-engagement-nudge-engine": {
         "task": "engagement.tasks.run_nudge_engine",
-        "schedule": timedelta(hours=2),  # Pick + deliver the best nudge per user
+        # Hourly — the single daily followup push (nudge or promo fallback),
+        # gated to one/user/day and spread at random across the 2pm-9pm window.
+        "schedule": timedelta(hours=1),
     },
-    "run-feature-promos": {
-        "task": "engagement.tasks.run_feature_promos",
-        "schedule": timedelta(hours=1),  # Spread ~2 feature promos/user across 9am-9pm
-    },
+    # NOTE: run-feature-promos retired — feature promos are the nudge engine's
+    # fallback now, so users get one followup push a day, not two.
     "run-email-engine": {
         "task": "engagement.tasks.run_email_engine",
         "schedule": timedelta(hours=6),  # helpful + activity emails, cooldown-gated per user
@@ -582,7 +582,9 @@ CELERY_BEAT_SCHEDULE = {
 # at most one per user per day, with per-nudge cooldowns handled in code.
 ENGAGEMENT_NUDGES_ENABLED = True
 ENGAGEMENT_TIMEZONE = "Asia/Dhaka"        # audience timezone for the send window
-ENGAGEMENT_NUDGE_HOURS = (9, 21)          # 9am-9pm in ENGAGEMENT_TIMEZONE
+ENGAGEMENT_NUDGE_HOURS = (14, 21)         # 2pm-9pm in ENGAGEMENT_TIMEZONE — the
+# nudge engine is the SINGLE daily followup push (best activity nudge, or a
+# feature promo when none applies), spread at random across this window.
 # Push costs nothing (FCM) — keep only a runaway safety ceiling (1 crore),
 # effectively unlimited; every eligible user gets their nudge in one run.
 ENGAGEMENT_NUDGE_PER_RUN_CAP = 10000000
@@ -595,8 +597,11 @@ ENGAGEMENT_LIFECYCLE_NUDGES_ENABLED = False
 # Rideshare, MicroGigs, News). ~N varied Bangla promos per user per day, spread
 # at random times across 9am-9pm BDT, no line repeated within a week. Sent to
 # every active user with a device. Flip ENABLED to False to pause instantly.
-ENGAGEMENT_FEATURE_PROMOS_ENABLED = True
-ENGAGEMENT_FEATURE_PROMOS_PER_DAY = 2
+# Feature promos are now delivered by the nudge engine as its fallback (so
+# every user gets exactly ONE followup push a day). The standalone task is
+# disabled to avoid a second daily push.
+ENGAGEMENT_FEATURE_PROMOS_ENABLED = False
+ENGAGEMENT_FEATURE_PROMOS_PER_DAY = 1
 
 # --- Engagement EMAIL engine (the email counterpart of the push brain) ---
 # For each user: emails the best activity nudge (verify KYC, complete profile,
