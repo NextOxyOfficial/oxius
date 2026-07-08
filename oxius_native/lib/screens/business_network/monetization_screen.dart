@@ -126,7 +126,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics()),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+      padding: const EdgeInsets.fromLTRB(2, 16, 2, 28),
       children: [
         _buildStatusHero(),
         const SizedBox(height: 16),

@@ -507,13 +507,16 @@ CELERY_ENABLE_UTC = True
 CELERY_BEAT_SCHEDULE = {
     "daily-good-morning-push": {
         "task": "engagement.tasks.send_good_morning_push",
-        # 00:00 UTC == 06:00 Dhaka — the morning greeting broadcast.
-        "schedule": crontab(hour=0, minute=0),
+        # Crontab is evaluated in CELERY_TIMEZONE (Asia/Dhaka), so hour=6 IS
+        # 06:00 Dhaka. (Was hour=0, which fired at midnight Dhaka — the reason
+        # the morning greeting never arrived in the morning.)
+        "schedule": crontab(hour=6, minute=0),
     },
     "weekly-bn-community-digest": {
         "task": "business_network.tasks.send_weekly_bn_digests",
-        # Friday 10:00 Dhaka time — weekend scroll window.
-        "schedule": crontab(day_of_week="fri", hour=4, minute=0),  # 4am UTC = 10am BDT
+        # Friday 10:00 Dhaka — crontab is Dhaka-time, so hour=10 (was hour=4,
+        # which fired at 4am Dhaka).
+        "schedule": crontab(day_of_week="fri", hour=10, minute=0),
     },
     "auto-approve-tasks": {
         "task": "base.tasks.check_and_auto_approve_tasks",
@@ -569,7 +572,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "generate-zonal-invoices": {
         "task": "zonal.tasks.generate_monthly_zonal_invoices",
-        "schedule": crontab(day_of_month=1, hour=2, minute=0),  # 1st of month, 2am UTC = 8am BDT
+        "schedule": crontab(day_of_month=1, hour=8, minute=0),  # 1st of month, 8am Dhaka (crontab is Dhaka-time)
     },
     "run-guest-nudges": {
         "task": "engagement.tasks.run_guest_nudges",
