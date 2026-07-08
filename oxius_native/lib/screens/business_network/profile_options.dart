@@ -320,7 +320,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                             Navigator.pushNamed(context, '/micro-gigs'),
                       ),
                       _MenuItem(
-                        icon: Icons.workspace_premium_outlined,
+                        icon: Icons.paid_outlined,
                         label: 'Content Monetization',
                         subtitle: 'Track your progress and apply to earn',
                         gradient: const [Color(0xFF7C3AED), Color(0xFF6D28D9)],

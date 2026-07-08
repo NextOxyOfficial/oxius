@@ -86,30 +86,34 @@ class _MonetizationCardState extends State<MonetizationCard> {
   // ── State 1: collapsible "what to complete" checklist ────────────────────
 
   Widget _buildProgressState() {
+    final reqFollowers = _asInt(_status!['required_followers']);
+    final reqViews = _asInt(_status!['required_views']);
+    final reqVideos = _asInt(_status!['required_video_posts']);
+    final reqPhotos = _asInt(_status!['required_image_posts']);
     final reqs = [
       (
         Icons.group_outlined,
-        'Followers',
+        'Gain ${_fullNum(reqFollowers)} followers',
         _asInt(_status!['followers']),
-        _asInt(_status!['required_followers']),
+        reqFollowers,
       ),
       (
         Icons.visibility_outlined,
-        'Content views',
+        'Gain ${_fullNum(reqViews)} content views',
         _asInt(_status!['views']),
-        _asInt(_status!['required_views']),
+        reqViews,
       ),
       (
         Icons.videocam_outlined,
-        'Video posts',
+        'Post ${_fullNum(reqVideos)} videos',
         _asInt(_status!['video_posts']),
-        _asInt(_status!['required_video_posts']),
+        reqVideos,
       ),
       (
         Icons.photo_outlined,
-        'Photo posts',
+        'Post ${_fullNum(reqPhotos)} photos',
         _asInt(_status!['image_posts']),
-        _asInt(_status!['required_image_posts']),
+        reqPhotos,
       ),
     ];
     final metCount = reqs.where((r) => r.$3 >= r.$4).length;
@@ -123,7 +127,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
           onTap: () => setState(() => _expanded = !_expanded),
           child: Row(
             children: [
-              const Icon(Icons.workspace_premium_outlined,
+              const Icon(Icons.monetization_on_outlined,
                   size: 20, color: Color(0xFF7C3AED)),
               const SizedBox(width: 8),
               const Expanded(
@@ -208,60 +212,45 @@ class _MonetizationCardState extends State<MonetizationCard> {
     );
   }
 
-  Widget _progressRow(IconData icon, String label, int current, int required) {
-    final safeRequired = required <= 0 ? 1 : required;
-    final ratio = (current / safeRequired).clamp(0.0, 1.0);
+  // Each requirement as a plain instruction — "Get 1,000 followers" on the
+  // left, the current/goal count on the right — which is easier to grasp
+  // than a progress bar.
+  Widget _progressRow(IconData icon, String goal, int current, int required) {
     final met = current >= required;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon,
-                size: 14,
-                color: met
-                    ? const Color(0xFF059669)
-                    : const Color(0xFF94A3B8)),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF475569),
-                ),
-              ),
-            ),
-            Text(
-              '${_formatCount(current)} / ${_formatCount(required)}',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: met ? const Color(0xFF059669) : const Color(0xFF7C3AED),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Icon(
-              met ? Icons.check_circle_rounded : Icons.circle_outlined,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        children: [
+          Icon(icon,
               size: 15,
-              color: met ? const Color(0xFF059669) : const Color(0xFFCBD5E1),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: ratio,
-            minHeight: 5,
-            backgroundColor: const Color(0xFFF1F5F9),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              met ? const Color(0xFF059669) : const Color(0xFF7C3AED),
+              color: met ? const Color(0xFF059669) : const Color(0xFF94A3B8)),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Text(
+              goal,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF334155),
+              ),
             ),
           ),
-        ),
-      ],
+          Text(
+            '${_formatCount(current)} / ${_formatCount(required)}',
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: met ? const Color(0xFF059669) : const Color(0xFF7C3AED),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Icon(
+            met ? Icons.check_circle_rounded : Icons.circle_outlined,
+            size: 15,
+            color: met ? const Color(0xFF059669) : const Color(0xFFCBD5E1),
+          ),
+        ],
+      ),
     );
   }
 
@@ -273,6 +262,17 @@ class _MonetizationCardState extends State<MonetizationCard> {
           : '${k.toStringAsFixed(1)}K';
     }
     return '$n';
+  }
+
+  // "1000" -> "1,000" for the instruction text.
+  String _fullNum(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
   }
 
   // ── State 2: eligible, show Apply ────────────────────────────────────────

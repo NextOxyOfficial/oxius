@@ -20,13 +20,46 @@ class MonetizationScreen extends StatefulWidget {
 class _MonetizationScreenState extends State<MonetizationScreen> {
   Map<String, dynamic>? _status;
   bool _loading = true;
+  int _tipPage = 0;
+  final PageController _tipController =
+      PageController(viewportFraction: 0.92);
 
   static const _accent = Color(0xFF7C3AED);
+
+  // Useful growth tips shown as a swipeable slider under the hero.
+  static const _tips = [
+    (
+      Icons.groups_rounded,
+      'Grow your audience',
+      'Post consistently and engage with others — genuine followers are the foundation of monetization.'
+    ),
+    (
+      Icons.video_library_rounded,
+      'Mix video & photos',
+      'Share both video and photo posts. Video drives reach; photos keep your profile rich and active.'
+    ),
+    (
+      Icons.visibility_rounded,
+      'Earn more views',
+      'Share your posts, use relevant tags and post at busy hours to boost how many people see your content.'
+    ),
+    (
+      Icons.verified_rounded,
+      'Quality wins',
+      'Original, helpful content gets recommended more — and keeps your monetization healthy long-term.'
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _tipController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -136,8 +169,14 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           const SizedBox(height: 16),
           _buildComingSoon(),
         ] else ...[
+          const SizedBox(height: 4),
+          _buildTipsSlider(),
+          const SizedBox(height: 20),
           _sectionLabel('Requirements'),
           _buildRequirementTiles(),
+          const SizedBox(height: 16),
+          _sectionLabel('Why monetize'),
+          _buildBenefits(),
           const SizedBox(height: 16),
           _sectionLabel('How it works'),
           _buildHowItWorks(),
@@ -186,13 +225,13 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               "Our team is reviewing your application. You'll be notified once a decision is made.";
       }
     } else if (eligible) {
-      icon = Icons.workspace_premium_rounded;
+      icon = Icons.monetization_on_rounded;
       color = _accent;
       title = "You're eligible to apply";
       subtitle =
           'You have met all the requirements. Submit your application below to start earning.';
     } else {
-      icon = Icons.trending_up_rounded;
+      icon = Icons.monetization_on_rounded;
       color = _accent;
       title = 'Grow toward monetization';
       subtitle =
@@ -244,6 +283,173 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ── Tips slider ──────────────────────────────────────────────────────────
+
+  Widget _buildTipsSlider() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 118,
+          child: PageView.builder(
+            controller: _tipController,
+            itemCount: _tips.length,
+            onPageChanged: (i) => setState(() => _tipPage = i),
+            itemBuilder: (context, i) {
+              final tip = _tips[i];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                  decoration: BoxDecoration(
+                    color: _accent.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: _accent.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(tip.$1, size: 21, color: _accent),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              tip.$2,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              tip.$3,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Color(0xFF475569),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < _tips.length; i++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: _tipPage == i ? 18 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: _tipPage == i ? _accent : const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ── Why monetize (benefits) ──────────────────────────────────────────────
+
+  Widget _buildBenefits() {
+    const benefits = [
+      (
+        Icons.payments_outlined,
+        'Earn from your content',
+        'Get paid for the views and engagement your posts and shorts generate.'
+      ),
+      (
+        Icons.insights_outlined,
+        'Creator insights',
+        'Track how your content performs and grow your reach over time.'
+      ),
+      (
+        Icons.workspace_premium_outlined,
+        'Creator recognition',
+        'Monetized creators get priority placement in feeds and discovery.'
+      ),
+    ];
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          for (final b in benefits)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: _accent.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(b.$1, size: 19, color: _accent),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          b.$2,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          b.$3,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF64748B),
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

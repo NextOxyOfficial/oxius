@@ -1427,10 +1427,12 @@ class _RegisterPageState extends State<RegisterPage> {
               const Icon(Icons.cake_outlined, color: _primaryColor, size: 18),
               const SizedBox(width: 10),
               Text(
+                // Before a date of birth is picked, show a neutral placeholder
+                // ("--") instead of an auto-text label — cleaner/more pro.
                 hasAge
                     ? _t('reg_age_years', '{age} বছর')
                         .replaceFirst('{age}', age)
-                    : _t('reg_age_auto', 'অটো'),
+                    : '--',
                 style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: hasAge ? FontWeight.w700 : FontWeight.w500,
