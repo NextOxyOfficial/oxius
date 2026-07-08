@@ -19,6 +19,9 @@ class MonetizationCard extends StatefulWidget {
 class _MonetizationCardState extends State<MonetizationCard> {
   Map<String, dynamic>? _status;
   bool _loading = true;
+  // Progress state is collapsed by default (just the header + arrow) so the
+  // card stays small; tapping the header expands the requirement checklist.
+  bool _expanded = false;
 
   @override
   void initState() {
@@ -46,9 +49,22 @@ class _MonetizationCardState extends State<MonetizationCard> {
     final applied = _status!['applied'] == true;
     final appStatus = (_status!['application_status'] ?? '').toString();
 
+    // Progress state manages its own tap (expand/collapse). The compact
+    // eligible/applied states tap through to the full monetization page.
+    if (!applied && !eligible) {
+      return Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: _buildProgressState(),
+      );
+    }
+
     return GestureDetector(
-      // Tapping the card opens the full monetization page; the Apply button
-      // in the eligible state has its own tap and takes precedence.
       onTap: () async {
         await Navigator.of(context).pushNamed('/monetization');
         if (mounted) _load();
@@ -62,21 +78,14 @@ class _MonetizationCardState extends State<MonetizationCard> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
-        child: applied
-            ? _buildAppliedState(appStatus)
-            : eligible
-                ? _buildEligibleState()
-                : _buildProgressState(),
+        child: applied ? _buildAppliedState(appStatus) : _buildEligibleState(),
       ),
     );
   }
 
-  // ── State 1: what to complete to unlock monetization ─────────────────────
+  // ── State 1: collapsible "what to complete" checklist ────────────────────
 
   Widget _buildProgressState() {
-    // All four requirements shown compactly so the user sees exactly what to
-    // complete — this sits right by the KYC banner as a companion "to unlock"
-    // checklist.
     final reqs = [
       (
         Icons.group_outlined,
@@ -108,48 +117,93 @@ class _MonetizationCardState extends State<MonetizationCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(Icons.workspace_premium_outlined,
-                size: 20, color: Color(0xFF7C3AED)),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'Unlock Content Monetization',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E293B),
+        // Header — tap anywhere on it to expand/collapse the checklist.
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Row(
+            children: [
+              const Icon(Icons.workspace_premium_outlined,
+                  size: 20, color: Color(0xFF7C3AED)),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Unlock Content Monetization',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E293B),
+                  ),
                 ),
               ),
-            ),
-            Text(
-              '$metCount/${reqs.length}',
-              style: const TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF7C3AED),
+              Text(
+                '$metCount/${reqs.length}',
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF7C3AED),
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right_rounded,
-                size: 18, color: Color(0xFFCBD5E1)),
-          ],
-        ),
-        const SizedBox(height: 3),
-        const Text(
-          'Complete these to apply and start earning from your content:',
-          style: TextStyle(
-            fontSize: 11.5,
-            color: Color(0xFF64748B),
-            height: 1.4,
+              const SizedBox(width: 4),
+              AnimatedRotation(
+                turns: _expanded ? 0.5 : 0.0,
+                duration: const Duration(milliseconds: 180),
+                child: const Icon(Icons.keyboard_arrow_down_rounded,
+                    size: 20, color: Color(0xFF94A3B8)),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 10),
-        for (var i = 0; i < reqs.length; i++) ...[
-          if (i > 0) const SizedBox(height: 8),
-          _progressRow(reqs[i].$1, reqs[i].$2, reqs[i].$3, reqs[i].$4),
-        ],
+        // Collapsible checklist body.
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 6),
+              const Text(
+                'Complete these to apply and start earning from your content:',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: Color(0xFF64748B),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 10),
+              for (var i = 0; i < reqs.length; i++) ...[
+                if (i > 0) const SizedBox(height: 8),
+                _progressRow(reqs[i].$1, reqs[i].$2, reqs[i].$3, reqs[i].$4),
+              ],
+              const SizedBox(height: 10),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () async {
+                  await Navigator.of(context).pushNamed('/monetization');
+                  if (mounted) _load();
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'View details',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF7C3AED),
+                      ),
+                    ),
+                    SizedBox(width: 2),
+                    Icon(Icons.arrow_forward_rounded,
+                        size: 14, color: Color(0xFF7C3AED)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          crossFadeState:
+              _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 180),
+        ),
       ],
     );
   }
