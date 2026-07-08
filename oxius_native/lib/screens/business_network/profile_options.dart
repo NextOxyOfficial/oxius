@@ -320,6 +320,14 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                             Navigator.pushNamed(context, '/micro-gigs'),
                       ),
                       _MenuItem(
+                        icon: Icons.workspace_premium_outlined,
+                        label: 'Content Monetization',
+                        subtitle: 'Track your progress and apply to earn',
+                        gradient: const [Color(0xFF7C3AED), Color(0xFF6D28D9)],
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/monetization'),
+                      ),
+                      _MenuItem(
                         icon: Icons.psychology_outlined,
                         label: 'Mindforce',
                         subtitle: 'Problem solving colaborative network',

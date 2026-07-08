@@ -13,6 +13,7 @@ import 'screens/micro_gigs_screen.dart';
 import 'screens/post_gig_screen.dart';
 import 'screens/business_network/business_network_screen.dart';
 import 'screens/business_network/mindforce_screen.dart';
+import 'screens/business_network/monetization_screen.dart';
 import 'screens/business_network/profile_screen.dart';
 import 'screens/notification_permission_gate.dart';
 import 'screens/classified_category_list_screen.dart';
@@ -385,6 +386,7 @@ class MyApp extends StatelessWidget {
               '/post-a-gig': (context) => const PostGigScreen(),
               '/business-network': (context) => const BusinessNetworkScreen(),
               '/mindforce': (context) => const MindForceScreen(),
+              '/monetization': (context) => const MonetizationScreen(),
               '/courses': (context) => const ElearningScreen(),
               '/elearning': (context) => const ElearningScreen(),
               '/deposit-withdraw': (context) => const WalletScreen(),

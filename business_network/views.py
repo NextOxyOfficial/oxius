@@ -2406,11 +2406,11 @@ class UserHiddenPostsView(generics.ListAPIView):
 
 
 def _monetization_stats(user):
-    """Followers + total content views (media views across the user's posts)."""
+    """Followers, total content views, and video/photo post counts."""
     from .models import (
         BusinessNetworkFollowerModel,
         BusinessNetworkMedia,
-        ContentMonetizationApplication,
+        BusinessNetworkPost,
     )
 
     followers = BusinessNetworkFollowerModel.objects.filter(following=user).count()
@@ -2420,7 +2420,50 @@ def _monetization_stats(user):
         ).aggregate(total=Sum("views"))["total"]
         or 0
     )
-    return followers, views
+    video_posts = (
+        BusinessNetworkPost.objects.filter(author=user, media__type="video")
+        .distinct()
+        .count()
+    )
+    image_posts = (
+        BusinessNetworkPost.objects.filter(author=user, media__type="image")
+        .distinct()
+        .count()
+    )
+    return {
+        "followers": followers,
+        "views": views,
+        "video_posts": video_posts,
+        "image_posts": image_posts,
+    }
+
+
+def _monetization_requirements(user):
+    """The bar this user must clear: global settings, with any per-user
+    custom override taking precedence field by field."""
+    from .models import (
+        ContentMonetizationCustomRequirement,
+        ContentMonetizationSettings,
+    )
+
+    conf = ContentMonetizationSettings.current()
+    req = {
+        "followers": conf.required_followers,
+        "views": conf.required_views,
+        "video_posts": conf.required_video_posts,
+        "image_posts": conf.required_image_posts,
+    }
+    custom = ContentMonetizationCustomRequirement.objects.filter(user=user).first()
+    if custom:
+        if custom.required_followers is not None:
+            req["followers"] = custom.required_followers
+        if custom.required_views is not None:
+            req["views"] = custom.required_views
+        if custom.required_video_posts is not None:
+            req["video_posts"] = custom.required_video_posts
+        if custom.required_image_posts is not None:
+            req["image_posts"] = custom.required_image_posts
+    return req
 
 
 class ContentMonetizationStatusView(APIView):
@@ -2431,20 +2474,22 @@ class ContentMonetizationStatusView(APIView):
     def get(self, request):
         from .models import ContentMonetizationApplication
 
-        followers, views = _monetization_stats(request.user)
+        stats = _monetization_stats(request.user)
+        req = _monetization_requirements(request.user)
         app = ContentMonetizationApplication.objects.filter(
             user=request.user
         ).first()
         return Response(
             {
-                "followers": followers,
-                "views": views,
-                "required_followers": ContentMonetizationApplication.REQUIRED_FOLLOWERS,
-                "required_views": ContentMonetizationApplication.REQUIRED_VIEWS,
-                "eligible": (
-                    followers >= ContentMonetizationApplication.REQUIRED_FOLLOWERS
-                    and views >= ContentMonetizationApplication.REQUIRED_VIEWS
-                ),
+                "followers": stats["followers"],
+                "views": stats["views"],
+                "video_posts": stats["video_posts"],
+                "image_posts": stats["image_posts"],
+                "required_followers": req["followers"],
+                "required_views": req["views"],
+                "required_video_posts": req["video_posts"],
+                "required_image_posts": req["image_posts"],
+                "eligible": all(stats[k] >= req[k] for k in req),
                 "applied": app is not None,
                 "application_status": app.status if app else None,
                 "applied_at": app.created_at if app else None,
@@ -2472,27 +2517,27 @@ class ContentMonetizationApplyView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        followers, views = _monetization_stats(request.user)
-        if (
-            followers < ContentMonetizationApplication.REQUIRED_FOLLOWERS
-            or views < ContentMonetizationApplication.REQUIRED_VIEWS
-        ):
+        stats = _monetization_stats(request.user)
+        req = _monetization_requirements(request.user)
+        if any(stats[k] < req[k] for k in req):
             return Response(
                 {
                     "error": (
                         "Not eligible yet — you need "
-                        f"{ContentMonetizationApplication.REQUIRED_FOLLOWERS} followers "
-                        f"and {ContentMonetizationApplication.REQUIRED_VIEWS} views."
+                        f"{req['followers']} followers, {req['views']} views, "
+                        f"{req['video_posts']} video posts and "
+                        f"{req['image_posts']} photo posts."
                     ),
-                    "followers": followers,
-                    "views": views,
+                    **stats,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         app = ContentMonetizationApplication.objects.create(
             user=request.user,
-            followers_at_apply=followers,
-            views_at_apply=views,
+            followers_at_apply=stats["followers"],
+            views_at_apply=stats["views"],
+            video_posts_at_apply=stats["video_posts"],
+            image_posts_at_apply=stats["image_posts"],
             terms_accepted=True,
         )
         return Response(

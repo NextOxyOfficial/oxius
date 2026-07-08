@@ -338,7 +338,8 @@ def _bn_pulse_html():
     """Business Network community strip — list-style, action-first. Appended
     with the promo so every marketing-carrying mail also pulls the reader
     back into the community."""
-    rows = [
+    # A wide pool, 3 picked at random per send — no two emails read the same.
+    pool = [
         ("#2563EB", "নতুন পোস্ট দিন",
          "আপনার কাজ বা ভাবনা শেয়ার করুন — নেটওয়ার্ক যত দেখবে, পরিচিতি তত বাড়বে",
          "/business-network"),
@@ -348,7 +349,26 @@ def _bn_pulse_html():
         ("#7C3AED", "প্রোফাইল ঝালিয়ে নিন",
          "ছবি আর পেশা আপডেট থাকলে অন্যরা সহজে খুঁজে পায় ও বিশ্বাস করে",
          "/settings"),
+        ("#DC2626", "শর্টস দেখুন, বানান",
+         "ছোট ভিডিওতে নিজের কাজ দেখান — শর্টসে পরিচিতি বাড়ে সবচেয়ে দ্রুত",
+         "/business-network"),
+        ("#D97706", "মাইক্রো গিগে ইনকাম",
+         "ফিডে ছোট ছোট টাস্ক আসে — কয়েক মিনিটে শেষ করলেই ব্যালেন্সে টাকা",
+         "/micro-gigs"),
+        ("#059669", "ওয়ার্কস্পেস খুলুন",
+         "নিজের দক্ষতা লিখে রাখুন — কাজের অর্ডার আসবে সরাসরি আপনার কাছে",
+         "/business-network/workspace"),
+        ("#0284C7", "কমেন্টে যুক্ত হোন",
+         "পরিচিতদের পোস্টে মতামত দিন — কথাবার্তা থেকেই তৈরি হয় নতুন সুযোগ",
+         "/business-network"),
+        ("#7C3AED", "মাইন্ডফোর্সে প্রশ্ন করুন",
+         "কোনো সমস্যায় আটকে গেছেন? কমিউনিটির অভিজ্ঞরা সমাধান দেবেন",
+         "/business-network/mindforce"),
+        ("#0D9488", "QR দিয়ে পরিচয় দিন",
+         "প্রোফাইলের QR কোড শেয়ার করলেই যে কেউ এক স্ক্যানে আপনাকে ফলো করতে পারবে",
+         "/business-network"),
     ]
+    rows = random.sample(pool, 3)
     items = "".join(
         f'''<tr><td style="padding:7px 0;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
@@ -413,9 +433,11 @@ def _product_showcase_html(limit=2, heading="আপনার জন্য বা
         )
         if not candidates:
             return ""
-        picks = random.sample(candidates, min(limit, len(candidates)))
+        # 2 photo cards in a grid + up to 4 compact list rows below.
+        picks = random.sample(candidates, min(limit + 4, len(candidates)))
+        grid_picks, list_picks = picks[:limit], picks[limit:]
         cards = ""
-        for prod in picks:
+        for prod in grid_picks:
             media = prod.image.all().first()
             img_url = ""
             if media is not None and getattr(media, "image", None):
@@ -441,12 +463,37 @@ def _product_showcase_html(limit=2, heading="আপনার জন্য বা
 </table></td>'''
         if not cards:
             return ""
+        list_rows = ""
+        for prod in list_picks:
+            media = prod.image.all().first()
+            img_url = ""
+            if media is not None and getattr(media, "image", None):
+                try:
+                    img_url = media.image.url
+                except Exception:
+                    img_url = ""
+            if not img_url:
+                continue
+            price = prod.sale_price if (prod.sale_price or 0) > 0 else prod.regular_price
+            link = f"{SITE_URL}/product-details/{prod.slug or prod.id}"
+            name = (prod.name or "")[:52]
+            list_rows += f'''<tr><td style="padding:8px 0;border-bottom:1px solid #F1F5F9;">
+<a href="{link}" style="text-decoration:none;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<td width="44" valign="middle"><img src="{img_url}" width="44" height="44" alt="{name}" style="display:block;width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid #E5E7EB;"></td>
+<td valign="middle" style="padding-left:10px;color:#0F172A;font-size:12.5px;font-weight:600;line-height:1.35;">{name}</td>
+<td valign="middle" align="right" style="white-space:nowrap;color:#059669;font-size:13px;font-weight:800;">৳{price}</td>
+</tr></table></a></td></tr>'''
+        list_html = ""
+        if list_rows:
+            list_html = f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:8px 0 0;">{list_rows}</table>'''
         return f'''<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:22px 0 0;border-top:1px solid #E5E7EB;">
 <tr>
 <td align="left" style="padding:16px 8px 4px 0;color:#0F172A;font-size:14px;font-weight:700;">{heading}</td>
 <td align="right" style="padding:16px 0 4px 8px;white-space:nowrap;"><a href="{SITE_URL}/eshop" style="color:#059669;font-size:12.5px;font-weight:700;text-decoration:none;">সব দেখুন&nbsp;&#8594;</a></td>
 </tr></table>
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>{cards}</tr></table>'''
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>{cards}</tr></table>
+{list_html}'''
     except Exception:
         return ""
 

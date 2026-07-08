@@ -297,6 +297,8 @@ class ContentMonetizationApplicationAdmin(admin.ModelAdmin):
         "status",
         "followers_at_apply",
         "views_at_apply",
+        "video_posts_at_apply",
+        "image_posts_at_apply",
         "terms_accepted",
         "created_at",
         "reviewed_at",
@@ -307,6 +309,8 @@ class ContentMonetizationApplicationAdmin(admin.ModelAdmin):
         "user",
         "followers_at_apply",
         "views_at_apply",
+        "video_posts_at_apply",
+        "image_posts_at_apply",
         "terms_accepted",
         "created_at",
     ]
@@ -327,3 +331,46 @@ class ContentMonetizationApplicationAdmin(admin.ModelAdmin):
             status="rejected", reviewed_at=_tz.now()
         )
         self.message_user(request, f"{updated} application(s) rejected.", messages.SUCCESS)
+
+
+@admin.register(ContentMonetizationSettings)
+class ContentMonetizationSettingsAdmin(admin.ModelAdmin):
+    """Global monetization bar — edit these to change what NEW applicants
+    must reach (existing applications are unaffected)."""
+
+    list_display = [
+        "required_followers",
+        "required_views",
+        "required_video_posts",
+        "required_image_posts",
+        "updated_at",
+    ]
+    list_editable = [
+        "required_views",
+        "required_video_posts",
+        "required_image_posts",
+    ]
+    list_display_links = ["required_followers"]
+
+    def has_add_permission(self, request):
+        return not ContentMonetizationSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(ContentMonetizationCustomRequirement)
+class ContentMonetizationCustomRequirementAdmin(admin.ModelAdmin):
+    """Per-user monetization bar overrides (blank field = global value)."""
+
+    list_display = [
+        "user",
+        "required_followers",
+        "required_views",
+        "required_video_posts",
+        "required_image_posts",
+        "note",
+        "updated_at",
+    ]
+    search_fields = ["user__email", "user__username", "user__name", "user__phone"]
+    autocomplete_fields = ["user"]

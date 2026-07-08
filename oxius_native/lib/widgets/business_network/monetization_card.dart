@@ -50,20 +50,29 @@ class _MonetizationCardState extends State<MonetizationCard> {
     final applied = _status!['applied'] == true;
     final appStatus = (_status!['application_status'] ?? '').toString();
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+    return GestureDetector(
+      // Tapping the card opens the full monetization page; the Apply button
+      // in the eligible state has its own tap and takes precedence.
+      onTap: () async {
+        await Navigator.of(context).pushNamed('/monetization');
+        if (mounted) _load();
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: applied
+            ? _buildAppliedState(appStatus)
+            : eligible
+                ? _buildEligibleState()
+                : _buildProgressState(
+                    followers, views, reqFollowers, reqViews),
       ),
-      child: applied
-          ? _buildAppliedState(appStatus)
-          : eligible
-              ? _buildEligibleState()
-              : _buildProgressState(
-                  followers, views, reqFollowers, reqViews),
     );
   }
 
@@ -93,7 +102,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
         ),
         const SizedBox(height: 4),
         const Text(
-          'Reach 1,000 followers and 20,000 views to apply for content monetization and start earning from your content.',
+          'Meet the requirements to apply for content monetization and start earning from your content. Tap to see all requirements.',
           style: TextStyle(
             fontSize: 11.5,
             color: Color(0xFF64748B),

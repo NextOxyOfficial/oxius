@@ -1139,17 +1139,67 @@ class GoldSponsorBanner(models.Model):
         return f"Banner for {self.sponsor.business_name}"
 
 
+class ContentMonetizationSettings(models.Model):
+    """Admin-tunable global requirements for content monetization (singleton).
+
+    Changing these only affects users who have NOT applied yet — existing
+    applications keep the snapshot they were reviewed against.
+    """
+
+    required_followers = models.PositiveIntegerField(default=1000)
+    required_views = models.PositiveIntegerField(default=20000)
+    required_video_posts = models.PositiveIntegerField(default=10)
+    required_image_posts = models.PositiveIntegerField(default=10)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Content Monetization Settings"
+        verbose_name_plural = "Content Monetization Settings"
+
+    def __str__(self):
+        return (
+            f"{self.required_followers} followers / {self.required_views} views / "
+            f"{self.required_video_posts} videos / {self.required_image_posts} photos"
+        )
+
+    @classmethod
+    def current(cls):
+        obj = cls.objects.first()
+        return obj if obj is not None else cls.objects.create()
+
+
+class ContentMonetizationCustomRequirement(models.Model):
+    """Per-user override of the monetization bar. Any blank field falls back
+    to the global ContentMonetizationSettings value."""
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="monetization_custom_requirement"
+    )
+    required_followers = models.PositiveIntegerField(null=True, blank=True)
+    required_views = models.PositiveIntegerField(null=True, blank=True)
+    required_video_posts = models.PositiveIntegerField(null=True, blank=True)
+    required_image_posts = models.PositiveIntegerField(null=True, blank=True)
+    note = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Content Monetization Custom Requirement"
+        verbose_name_plural = "Content Monetization Custom Requirements"
+
+    def __str__(self):
+        return f"Custom bar for {self.user.email or self.user.username}"
+
+
 class ContentMonetizationApplication(models.Model):
     """A creator's application for content monetization.
 
-    Users become eligible at 1,000 followers + 20,000 content views (media
-    views across their posts). Applying requires accepting the Terms &
-    Community Guidelines in the app; admins review applications from the
-    Django admin.
+    Requirements (followers, views, video posts, photo posts) come from
+    ContentMonetizationSettings, optionally overridden per user by
+    ContentMonetizationCustomRequirement. Applying requires accepting the
+    Terms & Community Guidelines in the app; admins review applications
+    from the Django admin.
     """
-
-    REQUIRED_FOLLOWERS = 1000
-    REQUIRED_VIEWS = 20000
 
     STATUS_CHOICES = [
         ("pending", "Pending Review"),
@@ -1164,6 +1214,8 @@ class ContentMonetizationApplication(models.Model):
     # Snapshot of the numbers at the moment of application, for the reviewer.
     followers_at_apply = models.PositiveIntegerField(default=0)
     views_at_apply = models.PositiveIntegerField(default=0)
+    video_posts_at_apply = models.PositiveIntegerField(default=0)
+    image_posts_at_apply = models.PositiveIntegerField(default=0)
     terms_accepted = models.BooleanField(default=False)
     admin_note = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
