@@ -1320,11 +1320,33 @@ class BusinessNetworkService {
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
       }
-      return null;
+      return kDebugMode ? _dummyMonetizationStatus() : null;
     } catch (e) {
       debugPrint('Error fetching monetization status: $e');
-      return null;
+      // In local debug (no backend/auth) fall back to sample data so the
+      // monetization UI is visible while working on the frontend. This is
+      // stripped from release builds by the kDebugMode guard.
+      return kDebugMode ? _dummyMonetizationStatus() : null;
     }
+  }
+
+  /// Sample monetization status for local frontend debugging only — shows
+  /// partial progress across all four requirements so the design renders.
+  static Map<String, dynamic> _dummyMonetizationStatus() {
+    return {
+      'followers': 640,
+      'views': 12500,
+      'video_posts': 6,
+      'image_posts': 8,
+      'required_followers': 1000,
+      'required_views': 20000,
+      'required_video_posts': 10,
+      'required_image_posts': 10,
+      'eligible': false,
+      'applied': false,
+      'application_status': null,
+      'applied_at': null,
+    };
   }
 
   /// Submit a content monetization application (terms must be accepted).
