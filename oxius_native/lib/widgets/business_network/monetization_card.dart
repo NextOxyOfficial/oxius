@@ -42,10 +42,6 @@ class _MonetizationCardState extends State<MonetizationCard> {
   Widget build(BuildContext context) {
     if (_loading || _status == null) return const SizedBox.shrink();
 
-    final followers = _asInt(_status!['followers']);
-    final views = _asInt(_status!['views']);
-    final reqFollowers = _asInt(_status!['required_followers']);
-    final reqViews = _asInt(_status!['required_views']);
     final eligible = _status!['eligible'] == true;
     final applied = _status!['applied'] == true;
     final appStatus = (_status!['application_status'] ?? '').toString();
@@ -70,27 +66,56 @@ class _MonetizationCardState extends State<MonetizationCard> {
             ? _buildAppliedState(appStatus)
             : eligible
                 ? _buildEligibleState()
-                : _buildProgressState(
-                    followers, views, reqFollowers, reqViews),
+                : _buildProgressState(),
       ),
     );
   }
 
-  // ── State 1: progress toward the bar ────────────────────────────────────
+  // ── State 1: what to complete to unlock monetization ─────────────────────
 
-  Widget _buildProgressState(
-      int followers, int views, int reqFollowers, int reqViews) {
+  Widget _buildProgressState() {
+    // All four requirements shown compactly so the user sees exactly what to
+    // complete — this sits right by the KYC banner as a companion "to unlock"
+    // checklist.
+    final reqs = [
+      (
+        Icons.group_outlined,
+        'Followers',
+        _asInt(_status!['followers']),
+        _asInt(_status!['required_followers']),
+      ),
+      (
+        Icons.visibility_outlined,
+        'Content views',
+        _asInt(_status!['views']),
+        _asInt(_status!['required_views']),
+      ),
+      (
+        Icons.videocam_outlined,
+        'Video posts',
+        _asInt(_status!['video_posts']),
+        _asInt(_status!['required_video_posts']),
+      ),
+      (
+        Icons.photo_outlined,
+        'Photo posts',
+        _asInt(_status!['image_posts']),
+        _asInt(_status!['required_image_posts']),
+      ),
+    ];
+    final metCount = reqs.where((r) => r.$3 >= r.$4).length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Icon(Icons.workspace_premium_outlined,
+          children: [
+            const Icon(Icons.workspace_premium_outlined,
                 size: 20, color: Color(0xFF7C3AED)),
-            SizedBox(width: 8),
-            Expanded(
+            const SizedBox(width: 8),
+            const Expanded(
               child: Text(
-                'Content Monetization',
+                'Unlock Content Monetization',
                 style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w700,
@@ -98,11 +123,22 @@ class _MonetizationCardState extends State<MonetizationCard> {
                 ),
               ),
             ),
+            Text(
+              '$metCount/${reqs.length}',
+              style: const TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF7C3AED),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right_rounded,
+                size: 18, color: Color(0xFFCBD5E1)),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 3),
         const Text(
-          'Meet the requirements to apply for content monetization and start earning from your content. Tap to see all requirements.',
+          'Complete these to apply and start earning from your content:',
           style: TextStyle(
             fontSize: 11.5,
             color: Color(0xFF64748B),
@@ -110,37 +146,52 @@ class _MonetizationCardState extends State<MonetizationCard> {
           ),
         ),
         const SizedBox(height: 10),
-        _progressRow('Followers', followers, reqFollowers),
-        const SizedBox(height: 8),
-        _progressRow('Views', views, reqViews),
+        for (var i = 0; i < reqs.length; i++) ...[
+          if (i > 0) const SizedBox(height: 8),
+          _progressRow(reqs[i].$1, reqs[i].$2, reqs[i].$3, reqs[i].$4),
+        ],
       ],
     );
   }
 
-  Widget _progressRow(String label, int current, int required) {
+  Widget _progressRow(IconData icon, String label, int current, int required) {
     final safeRequired = required <= 0 ? 1 : required;
     final ratio = (current / safeRequired).clamp(0.0, 1.0);
+    final met = current >= required;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF475569),
+            Icon(icon,
+                size: 14,
+                color: met
+                    ? const Color(0xFF059669)
+                    : const Color(0xFF94A3B8)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF475569),
+                ),
               ),
             ),
             Text(
               '${_formatCount(current)} / ${_formatCount(required)}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF7C3AED),
+                color: met ? const Color(0xFF059669) : const Color(0xFF7C3AED),
               ),
+            ),
+            const SizedBox(width: 6),
+            Icon(
+              met ? Icons.check_circle_rounded : Icons.circle_outlined,
+              size: 15,
+              color: met ? const Color(0xFF059669) : const Color(0xFFCBD5E1),
             ),
           ],
         ),
@@ -149,10 +200,11 @@ class _MonetizationCardState extends State<MonetizationCard> {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: ratio,
-            minHeight: 6,
+            minHeight: 5,
             backgroundColor: const Color(0xFFF1F5F9),
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(Color(0xFF7C3AED)),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              met ? const Color(0xFF059669) : const Color(0xFF7C3AED),
+            ),
           ),
         ),
       ],
