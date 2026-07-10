@@ -30,10 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # AppLovin MAX temporarily DISABLED (account approval pending) — re-enable
-  # this line + the code in ads_service.dart / feed_native_ad_card.dart when
-  # the AppLovin account is approved.
-  # applovin_max: ^4.0.0
+  # Ads: Google AdMob (switched from AppLovin MAX — that account was never
+  # approved). Server config /api/ads/config/ still controls everything.
+  google_mobile_ads: ^5.2.0
   flutter_mentions: ^2.0.0
 
   # The following adds the Cupertino Icons font to your application.

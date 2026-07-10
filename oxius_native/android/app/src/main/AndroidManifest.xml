@@ -165,6 +165,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Google AdMob application ID (AdsyClub Android) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7353770814470592~7885293673" />
         
         <!-- Default notification channel -->
         <meta-data
