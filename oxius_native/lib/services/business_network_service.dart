@@ -1349,4 +1349,33 @@ class BusinessNetworkService {
       return 'Network error — please try again';
     }
   }
+
+  /// Likers of a post, from the post detail endpoint. Used by the likers
+  /// sheet when the feed item doesn't carry the embedded list (e.g. right
+  /// after an optimistic like).
+  static Future<List<PostLike>> fetchPostLikes(dynamic postId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/posts/$postId/'),
+        headers: headers,
+      );
+      if (response.statusCode != 200) return [];
+      final data = json.decode(response.body);
+      final raw = (data is Map ? data['post_likes'] : null) ?? [];
+      return (raw is List ? raw : [])
+          .map((e) {
+            try {
+              return PostLike.fromJson(Map<String, dynamic>.from(e as Map));
+            } catch (_) {
+              return null;
+            }
+          })
+          .whereType<PostLike>()
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching post likes: $e');
+      return [];
+    }
+  }
 }

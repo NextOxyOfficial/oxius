@@ -102,12 +102,20 @@ class PostActions extends StatelessWidget {
   }
 
   void _showLikers(BuildContext context) {
-    if (post.postLikes.isEmpty) return;
+    // Open on the COUNT, not the embedded list — after an optimistic like the
+    // list is still empty while the count already reads "1 like", and the old
+    // isEmpty guard made the tap do nothing. The sheet fetches likers itself
+    // when it wasn't handed any.
+    if (post.likesCount <= 0 && post.postLikes.isEmpty) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _LikersBottomSheet(likes: post.postLikes),
+      builder: (_) => _LikersBottomSheet(
+        likes: post.postLikes,
+        postId: post.id,
+      ),
     );
   }
 
@@ -170,8 +178,9 @@ class _ActionButton extends StatelessWidget {
 /// unfollow action on the right for each one.
 class _LikersBottomSheet extends StatefulWidget {
   final List<PostLike> likes;
+  final dynamic postId;
 
-  const _LikersBottomSheet({required this.likes});
+  const _LikersBottomSheet({required this.likes, this.postId});
 
   @override
   State<_LikersBottomSheet> createState() => _LikersBottomSheetState();
@@ -180,6 +189,26 @@ class _LikersBottomSheet extends StatefulWidget {
 class _LikersBottomSheetState extends State<_LikersBottomSheet> {
   final Set<String> _busy = {}; // userUuid currently toggling
   final Map<String, bool> _followOverride = {}; // userUuid -> isFollowing
+  late List<PostLike> _likes;
+  bool _fetching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _likes = widget.likes;
+    // No embedded likers (fresh optimistic like, or a feed payload without
+    // the list) — pull them from the post detail endpoint.
+    if (_likes.isEmpty && widget.postId != null) {
+      _fetching = true;
+      BusinessNetworkService.fetchPostLikes(widget.postId).then((fetched) {
+        if (!mounted) return;
+        setState(() {
+          _likes = fetched;
+          _fetching = false;
+        });
+      });
+    }
+  }
 
   bool _isFollowing(PostLike like) =>
       _followOverride[like.userUuid] ?? like.isFollowing;
@@ -199,61 +228,92 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final likes = widget.likes;
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.92,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Grab handle
-              Container(
-                margin: const EdgeInsets.only(top: 10, bottom: 6),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+    final likes = _likes;
+    // Tapping the dimmed area above the sheet closes it: the
+    // DraggableScrollableSheet fills the whole modal height, so its
+    // transparent top region used to swallow the tap before it could reach
+    // the modal barrier.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => Navigator.of(context).pop(),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.92,
+        builder: (context, scrollController) {
+          return GestureDetector(
+            onTap: () {}, // taps on the sheet itself must not dismiss it
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              // Title
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
-                child: Row(
-                  children: [
-                    const Icon(Icons.favorite, color: Color(0xFFEF4444), size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${likes.length} ${likes.length == 1 ? 'like' : 'likes'}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                      ),
+              child: Column(
+                children: [
+                  // Grab handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 6),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                  ],
-                ),
+                  ),
+                  // Title
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.favorite,
+                            color: Color(0xFFEF4444), size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${likes.length} ${likes.length == 1 ? 'like' : 'likes'}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: _fetching
+                        ? const Center(
+                            child: SizedBox(
+                              width: 26,
+                              height: 26,
+                              child: CircularProgressIndicator(strokeWidth: 2.5),
+                            ),
+                          )
+                        : likes.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No likes yet',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              )
+                            : ListView.separated(
+                                controller: scrollController,
+                                itemCount: likes.length,
+                                separatorBuilder: (_, __) => Divider(
+                                    height: 1, color: Colors.grey.shade100),
+                                itemBuilder: (context, index) =>
+                                    _buildLikerRow(likes[index]),
+                              ),
+                  ),
+                ],
               ),
-              const Divider(height: 1),
-              Expanded(
-                child: ListView.separated(
-                  controller: scrollController,
-                  itemCount: likes.length,
-                  separatorBuilder: (_, __) =>
-                      Divider(height: 1, color: Colors.grey.shade100),
-                  itemBuilder: (context, index) => _buildLikerRow(likes[index]),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+            ),
+          );
+        },
+      ),
     );
   }
 
