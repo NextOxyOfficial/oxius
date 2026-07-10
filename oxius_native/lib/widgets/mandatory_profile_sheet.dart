@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
+import 'common/dob_picker.dart';
 
 /// Blocking, non-dismissible sheet shown right after registration / first login
 /// until the four mandatory identity fields (first name, last name, phone, date
@@ -77,16 +78,44 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
       _phone.text.trim().length >= 6 &&
       _dob != null;
 
-  Future<void> _pickDob() async {
+  int _calcAge(DateTime dob) {
     final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(now.year - 18, now.month, now.day),
-      firstDate: DateTime(1940),
-      lastDate: now,
-      helpText: 'জন্ম তারিখ নির্বাচন করুন',
+    var age = now.year - dob.year;
+    if (now.month < dob.month ||
+        (now.month == dob.month && now.day < dob.day)) {
+      age--;
+    }
+    return age;
+  }
+
+  Future<void> _pickDob() async {
+    // Same Day/Month/Year dropdown picker the registration page uses.
+    final picked = await showDobPicker(
+      context,
+      initial: _dob,
+      accent: _primary,
     );
     if (picked != null) setState(() => _dob = picked);
+  }
+
+  // Flatten the backend's {field: [messages]} error map into one line.
+  String _describeErrors(Map<String, dynamic> result) {
+    final errors = result['errors'];
+    if (errors is Map && errors.isNotEmpty) {
+      final parts = <String>[];
+      errors.forEach((key, value) {
+        final msg =
+            value is List ? value.map((e) => '$e').join(' ') : '$value';
+        parts.add(msg);
+      });
+      final joined = parts.join(' ');
+      if (joined.trim().isNotEmpty) return joined;
+    }
+    final message = (result['message'] ?? '').toString().trim();
+    if (message.isNotEmpty && message != 'Failed to update profile') {
+      return message;
+    }
+    return 'সেভ করা যায়নি। তথ্যগুলো দেখে আবার চেষ্টা করুন।';
   }
 
   Future<void> _submit() async {
@@ -101,17 +130,36 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
       final dob = '${d.year.toString().padLeft(4, '0')}-'
           '${d.month.toString().padLeft(2, '0')}-'
           '${d.day.toString().padLeft(2, '0')}';
-      await SettingsService.updateProfile(u!.email, {
+      final result = await SettingsService.updateProfile(u!.email, {
         'first_name': _firstName.text.trim(),
         'last_name': _lastName.text.trim(),
         'phone': _phone.text.trim(),
         'date_of_birth': dob,
       });
+      // updateProfile reports failures via {'success': false} instead of
+      // throwing — treating any return as success used to close the sheet
+      // with nothing saved (and no confirmation email, since the backend
+      // never completed the profile).
+      if (result['success'] != true) {
+        if (mounted) setState(() => _error = _describeErrors(result));
+        return;
+      }
       await UserStateService().refreshUserData();
+      final refreshed = UserStateService().currentUser;
+      if (refreshed != null && !refreshed.mandatoryProfileComplete) {
+        // Server accepted the request but the profile still reads incomplete
+        // — keep the sheet open instead of silently dropping the user.
+        if (mounted) {
+          setState(() =>
+              _error = 'তথ্য সেভ হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
+        }
+        return;
+      }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'সেভ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
+        setState(
+            () => _error = 'সেভ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -273,7 +321,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                 const SizedBox(width: 10),
                 Text(
                   _dob == null
-                      ? 'তারিখ নির্বাচন করুন'
+                      ? 'তারিখ সিলেক্ট করুন'
                       : '${_dob!.day}/${_dob!.month}/${_dob!.year}',
                   style: TextStyle(
                       fontSize: 14,
@@ -281,6 +329,16 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                           ? const Color(0xFF94A3B8)
                           : const Color(0xFF0F172A)),
                 ),
+                if (_dob != null) ...[
+                  const Spacer(),
+                  Text(
+                    '${_calcAge(_dob!)} বছর',
+                    style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: _primary),
+                  ),
+                ],
               ],
             ),
           ),
