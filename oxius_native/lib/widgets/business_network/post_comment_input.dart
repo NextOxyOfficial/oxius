@@ -235,7 +235,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
               decoration: InputDecoration(
                 hintText: 'Write a comment...',
                 hintStyle: TextStyle(
-                  fontSize: 13,
+                  fontSize: 14.5,
                   color: Colors.grey.shade500,
                 ),
                 filled: true,
@@ -287,7 +287,9 @@ class _PostCommentInputState extends State<PostCommentInput> {
                         padding: const EdgeInsets.all(8),
                       ),
               ),
-              style: const TextStyle(fontSize: 13),
+              // 15px: 13 read noticeably small while typing, especially on
+              // iOS's text rendering.
+              style: const TextStyle(fontSize: 15),
               onChanged: (value) async {
                 setState(() {
                   _hasText = value.trim().isNotEmpty;

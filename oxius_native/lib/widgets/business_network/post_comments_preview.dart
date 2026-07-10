@@ -550,13 +550,14 @@ class _ReplyInputState extends State<_ReplyInput> {
                 decoration: InputDecoration(
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle:
-                      TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                      TextStyle(fontSize: 14.5, color: Colors.grey.shade500),
                   border: InputBorder.none,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   isDense: true,
                 ),
-                style: const TextStyle(fontSize: 14, height: 1.35),
+                // 15px matches the main comment field — 14 read small on iOS.
+                style: const TextStyle(fontSize: 15, height: 1.35),
                 onChanged: (value) async {
                   if (value.contains('@')) {
                     final lastAtIndex = value.lastIndexOf('@');

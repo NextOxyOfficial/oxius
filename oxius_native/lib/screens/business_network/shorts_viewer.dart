@@ -1449,10 +1449,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               ),
             ),
           // Action rail — fades out while paused so only the video and the
-          // seekbar remain (clean scrub mode).
+          // seekbar remain (clean scrub mode). The seekbar sits inside a
+          // SafeArea, so on iOS the home-indicator inset lifts it — the rail
+          // and author block must rise by the same inset or they overlap it.
           Positioned(
             right: 10,
-            bottom: 64,
+            bottom: 64 + MediaQuery.of(context).padding.bottom,
             child: IgnorePointer(
               ignoring: _showPlayHint,
               child: AnimatedOpacity(
@@ -1498,11 +1500,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
             ),
           ),
           // Author + caption block — hugs the seekbar (no dead band below),
-          // fades out while paused.
+          // fades out while paused. Safe-area aware so it stays just above
+          // the seekbar on iOS too (fixed 22 used to overlap it there).
           Positioned(
             left: 14,
             right: 78,
-            bottom: 22,
+            bottom: 22 + MediaQuery.of(context).padding.bottom,
             child: IgnorePointer(
               ignoring: _showPlayHint,
               child: AnimatedOpacity(
