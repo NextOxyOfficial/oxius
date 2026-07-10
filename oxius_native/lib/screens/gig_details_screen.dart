@@ -202,29 +202,27 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         title: Text(
-          'Gig Details',
+          'Task Details',
           style: AppFonts.roboto(
-            fontWeight: FontWeight.w600,
-            fontSize: 17,
-            letterSpacing: -0.2,
+            fontWeight: FontWeight.w700,
+            fontSize: 16.5,
+            color: const Color(0xFF0F172A),
           ),
         ),
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        foregroundColor: const Color(0xFF1F2937),
+        centerTitle: false,
+        foregroundColor: const Color(0xFF0F172A),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            color: Colors.grey.shade200,
-            height: 1,
-          ),
+        shape: const Border(
+          bottom: BorderSide(color: Color(0xFFF1F5F9)),
         ),
       ),
       body: _buildBody(),
@@ -233,42 +231,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: AdsyLoadingIndicator(
-                  strokeWidth: 3,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Colors.green.shade600),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Loading gig details...',
-              style: AppFonts.poppins(
-                fontSize: 16,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+      return const Center(
+        child: AdsyLoadingIndicator(
+          strokeWidth: 2.5,
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
         ),
       );
     }
@@ -277,61 +243,42 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       return Center(
         child: Container(
           margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.red.withValues(alpha: 0.1),
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
-            ],
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.error_outline,
-                    size: 48, color: Colors.red.shade400),
-              ),
-              const SizedBox(height: 16),
+              const Icon(Icons.wifi_off_rounded,
+                  size: 36, color: Color(0xFF94A3B8)),
+              const SizedBox(height: 12),
               Text(
-                'Error',
-                style: AppFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red.shade700,
+                'টাস্কটা লোড করা গেল না',
+                style: AppFonts.roboto(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E293B),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
-                _error!,
+                'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।',
                 textAlign: TextAlign.center,
                 style: AppFonts.roboto(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                  fontSize: 12.5,
+                  color: const Color(0xFF64748B),
                 ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
+              const SizedBox(height: 14),
+              TextButton.icon(
                 onPressed: _loadGigDetails,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade600,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('আবার চেষ্টা করুন'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF059669),
                 ),
               ),
             ],
@@ -347,23 +294,44 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Padding(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.fromLTRB(12, 14, 12, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 8),
             _buildHeader(),
-            const SizedBox(height: 4),
+            const SizedBox(height: 16),
+            _sectionLabel('Instructions'),
             _buildInstructions(),
-            if (_gig!['medias'] != null && (_gig!['medias'] as List).isNotEmpty)
+            if (_gig!['medias'] != null &&
+                (_gig!['medias'] as List).isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _sectionLabel('Reference Media'),
               _buildReferenceMedia(),
+            ],
             if (_gig!['action_link'] != null &&
-                _gig!['action_link'].toString().isNotEmpty)
+                _gig!['action_link'].toString().isNotEmpty) ...[
+              const SizedBox(height: 12),
               _buildActionLink(),
-            const SizedBox(height: 4),
+            ],
+            const SizedBox(height: 16),
+            _sectionLabel('Submit Your Work'),
             _buildUploadSection(),
-            const SizedBox(height: 12),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 2, bottom: 8),
+      child: Text(
+        text.toUpperCase(),
+        style: AppFonts.roboto(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF94A3B8),
+          letterSpacing: 0.8,
         ),
       ),
     );
@@ -372,130 +340,121 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
   Widget _buildHeader() {
     final title = _gig!['title'] ?? '';
     final price = _gig!['price'] ?? 0;
+    final required = int.tryParse('${_gig!['required_quantity'] ?? ''}') ?? 0;
+    final filled = int.tryParse('${_gig!['filled_quantity'] ?? ''}') ?? 0;
+    final remaining = (required - filled) < 0 ? 0 : (required - filled);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            title,
+            style: AppFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+              height: 1.35,
+            ),
+          ),
+          if (_hasSubmitted) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.hourglass_top_rounded,
+                      color: Color(0xFFD97706), size: 13),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Submitted — under review',
+                    style: AppFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF92400E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          // Facts strip: earn / remaining slots — the numbers a worker needs.
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(
-                  Icons.work_outline_rounded,
-                  size: 18,
-                  color: Color(0xFF10B981),
+              Expanded(
+                child: _factTile(
+                  Icons.payments_outlined,
+                  'You earn',
+                  '\u09f3$price',
+                  const Color(0xFF059669),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  title,
-                  style: AppFonts.roboto(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1F2937),
-                    height: 1.35,
-                    letterSpacing: -0.2,
-                  ),
+                child: _factTile(
+                  Icons.groups_outlined,
+                  'Slots left',
+                  required > 0 ? '$remaining of $required' : '—',
+                  const Color(0xFF475569),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    width: 1,
+        ],
+      ),
+    );
+  }
+
+  Widget _factTile(IconData icon, String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppFonts.roboto(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF94A3B8),
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.monetization_on_rounded,
-                      color: Color(0xFF10B981),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Earn: ',
-                      style: AppFonts.roboto(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
-                    Text(
-                      '৳$price',
-                      style: AppFonts.roboto(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF10B981),
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              if (_hasSubmitted)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: Colors.orange.shade200,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        color: Colors.orange.shade700,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Submitted',
-                        style: AppFonts.roboto(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.orange.shade700,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 1),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppFonts.roboto(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    color: color,
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -506,79 +465,29 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final instructions = _gig!['instructions'] ?? '';
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(
-                  Icons.description_outlined,
-                  color: Color(0xFF3B82F6),
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Instructions',
-                style: AppFonts.roboto(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1F2937),
-                  letterSpacing: -0.1,
-                ),
-              ),
-            ],
+      child: Html(
+        data: instructions,
+        onLinkTap: (url, attributes, element) {
+          UrlLauncherUtils.launchExternalUrl(url);
+        },
+        style: {
+          "body": Style(
+            fontSize: FontSize(14.5),
+            color: const Color(0xFF334155),
+            lineHeight: const LineHeight(1.6),
+            margin: Margins.zero,
           ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
-              ),
-            ),
-            child: Html(
-              data: instructions,
-              onLinkTap: (url, attributes, element) {
-                UrlLauncherUtils.launchExternalUrl(url);
-              },
-              style: {
-                "body": Style(
-                  fontSize: FontSize(15),
-                  textAlign: TextAlign.justify,
-                  color: const Color(0xFF374151),
-                  lineHeight: const LineHeight(1.55),
-                ),
-                "a": Style(
-                  color: const Color(0xFF2563EB),
-                  textDecoration: TextDecoration.none,
-                ),
-              },
-            ),
+          "a": Style(
+            color: const Color(0xFF2563EB),
+            textDecoration: TextDecoration.none,
           ),
-        ],
+        },
       ),
     );
   }
@@ -587,49 +496,15 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final medias = _gig!['medias'] as List;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(
-                  Icons.photo_library_outlined,
-                  color: Color(0xFF8B5CF6),
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Reference Media',
-                style: AppFonts.roboto(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1F2937),
-                  letterSpacing: -0.1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -640,18 +515,15 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   child: Hero(
                     tag: media['image'],
                     child: Container(
-                      width: 70,
-                      height: 70,
+                      width: 76,
+                      height: 76,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.grey.shade200,
-                          width: 1,
-                        ),
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         child: Image.network(
                           media['image'],
                           fit: BoxFit.cover,
@@ -674,20 +546,16 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   onTap: () =>
                       UrlLauncherUtils.launchExternalUrl(media['video']),
                   child: Container(
-                    width: 70,
-                    height: 70,
+                    width: 76,
+                    height: 76,
                     decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.red.shade200,
-                        width: 1,
-                      ),
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      Icons.play_circle_filled_rounded,
-                      size: 32,
-                      color: Colors.red.shade400,
+                    child: const Icon(
+                      Icons.play_circle_fill_rounded,
+                      size: 30,
+                      color: Colors.white,
                     ),
                   ),
                 );
@@ -758,49 +626,48 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           }
         },
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFEF3C7),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFFFBBF24),
-              width: 1,
-            ),
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFBFDBFE)),
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFBBF24),
-                  borderRadius: BorderRadius.circular(6),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
                 ),
+                alignment: Alignment.center,
                 child: const Icon(
                   Icons.link_rounded,
-                  color: Colors.white,
-                  size: 16,
+                  color: Color(0xFF2563EB),
+                  size: 19,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Action URL',
+                      'Open the task link',
                       style: AppFonts.roboto(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF92400E),
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1E3A8A),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       actionLink,
                       style: AppFonts.roboto(
-                        fontSize: 14,
-                        color: const Color(0xFF78350F),
-                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                        color: const Color(0xFF2563EB),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -809,9 +676,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(
+              const Icon(
                 Icons.open_in_new_rounded,
-                color: const Color(0xFFFBBF24),
+                color: Color(0xFF2563EB),
                 size: 17,
               ),
             ],
@@ -827,45 +694,11 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(
-                  Icons.cloud_upload_outlined,
-                  color: Color(0xFF10B981),
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Upload Your Work',
-                style: AppFonts.roboto(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1F2937),
-                  letterSpacing: -0.1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -890,20 +723,20 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     fontSize: 14,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide:
-                        const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                        const BorderSide(color: Color(0xFF059669), width: 1.5),
                   ),
                   filled: true,
-                  fillColor: const Color(0xFFF9FAFB),
+                  fillColor: const Color(0xFFF8FAFC),
                   contentPadding: const EdgeInsets.all(12),
                   errorText: _showValidationErrors &&
                           _submitDetailsController.text.trim().isEmpty
@@ -938,15 +771,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                           width: 76,
                           height: 76,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: Colors.grey.shade300,
-                              width: 1,
-                            ),
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(10),
+                            border:
+                                Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
                             child: Image.file(
                               image,
                               fit: BoxFit.cover,
@@ -983,28 +814,26 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       width: 76,
                       height: 76,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFF10B981),
-                          width: 1.5,
-                        ),
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(10),
+                        border:
+                            Border.all(color: const Color(0xFFBBF7D0)),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(
                             Icons.add_photo_alternate_outlined,
-                            size: 26,
-                            color: Color(0xFF10B981),
+                            size: 24,
+                            color: Color(0xFF059669),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'Add',
                             style: AppFonts.roboto(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF10B981),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF059669),
                             ),
                           ),
                         ],
@@ -1019,12 +848,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.orange.shade200,
-                    width: 1,
-                  ),
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: Column(
                   children: [
@@ -1038,7 +864,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             value: _acceptedTerms,
                             onChanged: (value) =>
                                 setState(() => _acceptedTerms = value ?? false),
-                            activeColor: const Color(0xFF10B981),
+                            activeColor: const Color(0xFF059669),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(3),
                             ),
@@ -1146,7 +972,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             value: _acceptedCondition,
                             onChanged: (value) => setState(
                                 () => _acceptedCondition = value ?? false),
-                            activeColor: const Color(0xFF10B981),
+                            activeColor: const Color(0xFF059669),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(3),
                             ),
@@ -1194,21 +1020,19 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               // Submit Button
               SizedBox(
                 width: double.infinity,
+                height: 48,
                 child: ElevatedButton(
                   onPressed:
                       (_isSubmitting || _hasSubmitted) ? null : _submitGig,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _hasSubmitted
-                        ? Colors.grey.shade400
-                        : const Color(0xFF10B981),
+                    backgroundColor: const Color(0xFF059669),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
-                    disabledBackgroundColor: Colors.grey.shade400,
-                    disabledForegroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(0xFFE2E8F0),
+                    disabledForegroundColor: const Color(0xFF94A3B8),
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
@@ -1220,28 +1044,12 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _hasSubmitted
-                                  ? Icons.check_circle_rounded
-                                  : Icons.check_circle_rounded,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _hasSubmitted
-                                  ? 'Already Submitted'
-                                  : 'Submit Work',
-                              style: AppFonts.roboto(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.1,
-                              ),
-                            ),
-                          ],
+                      : Text(
+                          _hasSubmitted ? 'Already Submitted' : 'Submit Work',
+                          style: AppFonts.roboto(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                 ),
               ),
