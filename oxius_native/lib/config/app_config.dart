@@ -6,9 +6,13 @@ class AppConfig {
   static const String _apiOverride = String.fromEnvironment('API_BASE_URL');
   static const String _mediaOverride = String.fromEnvironment('MEDIA_BASE_URL');
   static const String _localHostOverride = String.fromEnvironment('LOCAL_API_HOST');
+  // Debug runs hit the PRODUCTION API by default so the frontend always
+  // shows real content (the local dev DB lacks banners/pro products and
+  // made every home section look empty). To develop against a local
+  // backend, run with: flutter run --dart-define=USE_LOCAL_API=true
   static const bool _useLocalDevServer = bool.fromEnvironment(
     'USE_LOCAL_API',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   // ==================== DEVELOPMENT CONFIGURATION ====================
