@@ -9,6 +9,9 @@ import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../services/business_network_service.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;
@@ -38,9 +41,16 @@ class _SearchScreenState extends State<SearchScreen> {
   Timer? _debounce;
   String _selectedTab = 'all'; // all, people, hashtags, posts
 
+  // Facebook-style start state: recent searches (persisted) + trending tags.
+  static const _recentKey = 'bn_recent_searches';
+  List<String> _recentSearches = [];
+  List<Map<String, dynamic>> _trendingTags = [];
+
   @override
   void initState() {
     super.initState();
+    _loadRecentSearches();
+    _loadTrendingTags();
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
       _searchController.text = widget.initialQuery!;
       _performSearch(widget.initialQuery!);
@@ -60,6 +70,53 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchFocusNode.dispose();
     _debounce?.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadRecentSearches() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getStringList(_recentKey) ?? [];
+      if (mounted) setState(() => _recentSearches = saved);
+    } catch (_) {}
+  }
+
+  Future<void> _saveRecentSearch(String query) async {
+    final q = query.trim();
+    if (q.length < 2) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList(_recentKey) ?? [];
+      list.removeWhere((e) => e.toLowerCase() == q.toLowerCase());
+      list.insert(0, q);
+      final trimmed = list.take(10).toList();
+      await prefs.setStringList(_recentKey, trimmed);
+      if (mounted) setState(() => _recentSearches = trimmed);
+    } catch (_) {}
+  }
+
+  Future<void> _removeRecentSearch(String query) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList(_recentKey) ?? [];
+      list.removeWhere((e) => e == query);
+      await prefs.setStringList(_recentKey, list);
+      if (mounted) setState(() => _recentSearches = list);
+    } catch (_) {}
+  }
+
+  Future<void> _clearRecentSearches() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_recentKey);
+      if (mounted) setState(() => _recentSearches = []);
+    } catch (_) {}
+  }
+
+  Future<void> _loadTrendingTags() async {
+    try {
+      final tags = await BusinessNetworkService.getTopTags();
+      if (mounted) setState(() => _trendingTags = tags.take(10).toList());
+    } catch (_) {}
   }
 
   void _onSearchChanged(String query) {
@@ -98,6 +155,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _performSearch(String query) async {
     if (query.trim().isEmpty) return;
+    _saveRecentSearch(query);
 
     setState(() {
       _isLoading = true;
@@ -242,23 +300,26 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         toolbarHeight: 56,
         titleSpacing: 0,
+        shape: const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 22),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: Color(0xFF0F172A), size: 22),
           onPressed: () => Navigator.pop(context),
           padding: EdgeInsets.zero,
         ),
         title: Container(
-          height: 36,
+          height: 38,
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(18),
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(19),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -277,7 +338,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   focusNode: _searchFocusNode,
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
-                    hintText: 'Search people, posts...',
+                    hintText: 'Search people, posts, hashtags...',
                     hintStyle: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF9E9E9E),
@@ -346,9 +407,9 @@ class _SearchScreenState extends State<SearchScreen> {
             alignment: Alignment.centerLeft,
             child: Text(
               'Results for "$_currentQuery"',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: Color(0xFF64748B),
               ),
             ),
           ),
@@ -398,13 +459,14 @@ class _SearchScreenState extends State<SearchScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1976D2) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+          borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: isSelected ? const Color(0xFF1976D2) : Colors.grey.shade300,
-            width: 1,
+            color: isSelected
+                ? const Color(0xFF2563EB)
+                : const Color(0xFFE2E8F0),
           ),
         ),
         child: Row(
@@ -413,19 +475,32 @@ class _SearchScreenState extends State<SearchScreen> {
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected
+                    ? const Color(0xFF2563EB)
+                    : const Color(0xFF475569),
               ),
             ),
             if (count > 0) ...[
-              const SizedBox(width: 4),
-              Text(
-                count.toString(),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white70 : Colors.grey.shade500,
+              const SizedBox(width: 5),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF2563EB)
+                      : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  count.toString(),
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color:
+                        isSelected ? Colors.white : const Color(0xFF64748B),
+                  ),
                 ),
               ),
             ],
@@ -564,25 +639,33 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSectionHeader(String title, int count) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
       color: Colors.white,
       child: Row(
         children: [
           Text(
-            title,
+            title.toUpperCase(),
             style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF212121),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF94A3B8),
+              letterSpacing: 0.8,
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            '($count)',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey.shade500,
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              '$count',
+              style: const TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF64748B),
+              ),
             ),
           ),
         ],
@@ -721,65 +804,197 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  // Facebook-style start state: recent searches + trending hashtags, so the
+  // page is useful before a single letter is typed.
   Widget _buildInitialState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0F2F5),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.search,
-                size: 40,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Search Business Network',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Find posts, people, and hashtags',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade100),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.lightbulb_outline,
-                      size: 16, color: Colors.blue.shade700),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Tip: Use # to search hashtags',
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 24),
+      children: [
+        if (_recentSearches.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 8),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'RECENT SEARCHES',
                     style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF94A3B8),
+                      letterSpacing: 0.8,
                     ),
                   ),
-                ],
+                ),
+                GestureDetector(
+                  onTap: _clearRecentSearches,
+                  child: const Text(
+                    'Clear all',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF2563EB),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < _recentSearches.length; i++)
+                  _recentRow(_recentSearches[i],
+                      isLast: i == _recentSearches.length - 1),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+        ],
+        if (_trendingTags.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.only(left: 2, bottom: 8),
+            child: Text(
+              'TRENDING HASHTAGS',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF94A3B8),
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _trendingTags.map((t) {
+                final tag = (t['tag'] ?? '').toString();
+                final count = t['count'];
+                return GestureDetector(
+                  onTap: () {
+                    _searchController.text = '#$tag';
+                    _performSearch('#$tag');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 11, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '#$tag',
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                        if (count != null) ...[
+                          const SizedBox(width: 5),
+                          Text(
+                            '$count',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 18),
+        ],
+        // Quiet hint card at the end (kept from the old design, restyled).
+        Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.tips_and_updates_outlined,
+                  size: 18, color: Color(0xFF64748B)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Search people by name, posts by keyword, or use # to find hashtags.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Color(0xFF475569),
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _recentRow(String query, {required bool isLast}) {
+    return InkWell(
+      onTap: () {
+        _searchController.text = query;
+        _performSearch(query);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : const Border(
+                  bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                ),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.history_rounded,
+                size: 18, color: Color(0xFF94A3B8)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                query,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () => _removeRecentSearch(query),
+              behavior: HitTestBehavior.opaque,
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.close_rounded,
+                    size: 16, color: Color(0xFFCBD5E1)),
               ),
             ),
           ],
@@ -792,52 +1007,41 @@ class _SearchScreenState extends State<SearchScreen> {
     final isHashtagSearch = _currentQuery.startsWith('#');
 
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+      child: Container(
+        margin: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue.shade100),
-              ),
-              child: Icon(
-                isHashtagSearch ? Icons.tag : Icons.search,
-                size: 32,
-                color: Colors.blue.shade500,
-              ),
+            Icon(
+              isHashtagSearch ? Icons.tag_rounded : Icons.search_off_rounded,
+              size: 36,
+              color: const Color(0xFF94A3B8),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               isHashtagSearch
-                  ? 'No Results for this Hashtag'
-                  : 'No Results Found',
+                  ? 'No results for this hashtag'
+                  : 'No results found',
               style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              isHashtagSearch
-                  ? 'We couldn\'t find any posts using the hashtag "$_currentQuery"'
-                  : 'We couldn\'t find any matches for "$_currentQuery"',
+              'Nothing matched "$_currentQuery". Try a different keyword or check the spelling.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Back to Feed'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF64748B),
+                height: 1.45,
               ),
             ),
           ],
@@ -852,14 +1056,15 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Center(
         child: _isLoading
             ? const AdsyLoadingIndicator()
-            : ElevatedButton(
+            : TextButton(
                 onPressed: _loadMore,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blue.shade500,
-                  side: BorderSide(color: Colors.blue.shade200),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF2563EB),
                 ),
-                child: const Text('Load more'),
+                child: const Text(
+                  'Load more',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
       ),
     );
