@@ -288,19 +288,11 @@ def social_login(request):
             ref_by.refer_count += 1
             ref_by.save()
 
-        # Welcome email + admin notification (non-blocking), mirroring register().
-        try:
-            from .email_service import (
-                send_welcome_email,
-                send_ceo_welcome_email,
-                notify_admin_new_registration,
-            )
-            if user.email:
-                send_welcome_email(user)
-                send_ceo_welcome_email(user)  # personal note from the CEO
-            notify_admin_new_registration(user)
-        except Exception as e:
-            print(f"Email notification error (non-blocking): {e}")
+        # NO emails here. A social signup has no phone/DOB yet (the welcome
+        # mail used to go out with ফোন: N/A) — the full welcome pack (user
+        # welcome + CEO note + admin notification) is sent by update_user()
+        # the moment the post-signup profile sheet completes the mandatory
+        # fields. Direct form registrations still email from register().
     else:
         if not user.is_active:
             return Response(
@@ -489,12 +481,27 @@ def update_user(request, email):
             if not had_phone and user.phone:
                 from .welcome_sms import send_welcome_sms_async
                 send_welcome_sms_async(user.name or user.first_name, user.phone)
-            # Profile just became complete -> confirmation email carrying the
-            # phone number, completion % and the remaining steps (async).
+            # Profile just became complete. Social signups (Google/Facebook)
+            # get their FULL welcome pack now — user welcome + CEO note +
+            # admin notification — because registration only truly finishes
+            # here (name/phone/DOB all present, so no more ফোন: N/A mails).
+            # ceo_welcome_sent dedupes: direct form registrations already got
+            # the pack from register(), so they get the completion mail only.
             if not was_mandatory_complete and _mandatory_complete(user):
                 try:
-                    from .email_service import send_profile_completion_email
-                    send_profile_completion_email(user)
+                    if not user.ceo_welcome_sent:
+                        from .email_service import (
+                            send_welcome_email,
+                            send_ceo_welcome_email,
+                            notify_admin_new_registration,
+                        )
+                        if user.email:
+                            send_welcome_email(user)
+                            send_ceo_welcome_email(user)
+                        notify_admin_new_registration(user)
+                    else:
+                        from .email_service import send_profile_completion_email
+                        send_profile_completion_email(user)
                 except Exception as mail_err:
                     print(f"profile completion email error: {mail_err}")
             return Response(

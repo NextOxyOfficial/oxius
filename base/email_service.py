@@ -821,7 +821,7 @@ def send_welcome_email(user):
 {_info_table(
     _info_row("নাম", name) +
     _info_row("ইমেইল", user.email or "N/A") +
-    _info_row("ফোন", user.phone or "N/A") +
+    (_info_row("ফোন", user.phone) if user.phone else "") +
     _info_row("রেফারেল কোড", user.referral_code or "N/A")
 )}
 
@@ -882,7 +882,7 @@ def send_profile_completion_email(user):
 {_info_table(
     _info_row("নাম", name) +
     _info_row("ইমেইল", user.email or "N/A") +
-    _info_row("ফোন", user.phone or "N/A")
+    (_info_row("ফোন", user.phone) if user.phone else "")
 )}
 
 <p style="color:#374151;font-size:15px;line-height:1.6;margin:16px 0 8px;"><strong>প্রোফাইল সম্পূর্ণতা: {percentage}%</strong></p>

@@ -221,6 +221,15 @@ class User(AbstractUser):
             if timezone.now() > self.pro_validity:
                 self.is_pro = False
 
+        # Display name always follows first/last name (single source of
+        # truth). Social signups create users with first/last only, and the
+        # post-signup profile sheet edits first/last — without this the
+        # `name` field (what the app and emails display) stayed stale/empty,
+        # which read as "the name never updates".
+        _full = f"{(self.first_name or '').strip()} {(self.last_name or '').strip()}".strip()
+        if _full:
+            self.name = _full
+
         # age always follows date_of_birth (single source of truth) — covers
         # every entry point the same way: web form, Flutter form, the Google
         # post-signup profile sheet and admin edits.
