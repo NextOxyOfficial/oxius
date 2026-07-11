@@ -146,6 +146,13 @@ export default defineNuxtConfig({
           src: "https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js",
           defer: true,
         },
+        // Google AdSense (Auto ads) — once the site is approved, Google places
+        // ads automatically. pub id shared with the AdMob/app account.
+        {
+          src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7353770814470592",
+          async: true,
+          crossorigin: "anonymous",
+        },
       ],
     },
   },
