@@ -59,7 +59,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   int _unreadNotificationCount = 0;
   bool _isLoadingSaved = false;
   bool _isLoadingGigs = false;
-  bool _isContactInfoExpanded = false;
   int _profileImageRefreshTick = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final WorkspaceService _workspaceService = WorkspaceService();
@@ -69,7 +68,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   final List<String> _tabLabels = const [
     'Posts',
-    'About',
     'My Workspace',
     'Media',
     'Saved',
@@ -187,11 +185,11 @@ class _ProfileScreenState extends State<ProfileScreen>
         _currentTabIndex = _tabController.index;
       });
       // Load gigs when My Workspace tab is selected (index 1)
-      if (_currentTabIndex == 2 && _userGigs.isEmpty && !_isLoadingGigs) {
+      if (_currentTabIndex == 1 && _userGigs.isEmpty && !_isLoadingGigs) {
         _loadUserGigs();
       }
       // Load saved posts when Saved tab is selected (index 3)
-      if (_currentTabIndex == 4 && !_isLoadingSaved) {
+      if (_currentTabIndex == 3 && !_isLoadingSaved) {
         _loadSavedPosts();
       }
     }
@@ -202,10 +200,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (!mounted) return;
 
     // Refresh tab-specific data
-    if (_currentTabIndex == 2 && !_isLoadingGigs) {
+    if (_currentTabIndex == 1 && !_isLoadingGigs) {
       await _loadUserGigs();
     }
-    if (_currentTabIndex == 4 && !_isLoadingSaved) {
+    if (_currentTabIndex == 3 && !_isLoadingSaved) {
       await _loadSavedPosts();
     }
   }
@@ -1818,21 +1816,99 @@ class _ProfileScreenState extends State<ProfileScreen>
       case 0:
         return _buildPostsTab();
       case 1:
-        return _buildAboutTab();
-      case 2:
         return _buildWorkspaceTab();
-      case 3:
+      case 2:
         return _buildMediaTab();
-      case 4:
+      case 3:
         return _buildSavedTab();
       default:
         return _buildPostsTab();
     }
   }
 
-  // ── About tab: the full Facebook-style profile info, in quiet sections ──
+  // ── About sheet: the full Facebook-style profile info, opened from the
+  // "See more about ..." link in the header (About is profile detail, not a
+  // productivity tab).
 
-  Widget _buildAboutTab() {
+  void _showAboutSheet() {
+    final userName =
+        _stringValue(_userData?['name']).isNotEmpty
+            ? _stringValue(_userData?['name'])
+            : (_userData?['first_name'] ?? 'this user').toString();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.of(sheetContext).pop(),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.45,
+            maxChildSize: 0.92,
+            builder: (context, scrollController) {
+              return GestureDetector(
+                onTap: () {},
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 10, bottom: 6),
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person_outline_rounded,
+                                size: 20, color: Color(0xFF475569)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'About $userName',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 28),
+                          children: [_buildAboutContent()],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAboutContent() {
     final about = _stringValue(_userData?['about']);
     final profession = _stringValue(_userData?['profession']);
     final company = _stringValue(_userData?['company']);
@@ -1973,12 +2049,9 @@ class _ProfileScreenState extends State<ProfileScreen>
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: sections,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: sections,
     );
   }
 
@@ -2034,8 +2107,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 13.5,
-                  height: 1.4,
+                  fontSize: 14.5,
+                  height: 1.45,
                   fontWeight: tappable ? FontWeight.w600 : FontWeight.w400,
                   color: tappable
                       ? const Color(0xFF2563EB)
@@ -2074,7 +2147,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: Text(
                     e,
                     style: const TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF475569),
                     ),
@@ -2670,64 +2743,30 @@ class _ProfileScreenState extends State<ProfileScreen>
             Colors.green.shade500,
           ),
 
-        // Expandable section for additional details
-        if (_isContactInfoExpanded == true) ...[
-          // Website
-          if (showWebsite)
-            _buildContactItem(
-              Icons.link,
-              website,
-              Colors.blue.shade600,
-              url: website,
-            ),
 
-          // WhatsApp
-          if (showWhatsapp)
-            _buildContactItem(
-              Icons.message,
-              whatsapp,
-              Colors.green.shade600,
-              url: _whatsAppUrl(whatsapp),
-            ),
-
-          if (showFacebook)
-            _buildContactItem(
-              Icons.facebook_rounded,
-              facebook,
-              Colors.indigo.shade500,
-              url: facebook,
-            ),
-
-          // Instagram
-          if (showInstagram)
-            _buildContactItem(
-              Icons.camera_alt,
-              instagram,
-              Colors.pink.shade600,
-              url: instagram,
-            ),
-        ],
-
-        // "See more about [Name]" button
+        // "See more about [Name]" — opens the full About bottom sheet.
         if (hasAdditionalInfo) ...[
           const SizedBox(height: 4),
           InkWell(
-            onTap: () {
-              setState(() {
-                _isContactInfoExpanded = !_isContactInfoExpanded;
-              });
-            },
+            onTap: _showAboutSheet,
+            borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                _isContactInfoExpanded
-                    ? 'Show less'
-                    : 'See more about $userName...',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'See more about $userName',
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2563EB),
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  const Icon(Icons.chevron_right_rounded,
+                      size: 19, color: Color(0xFF2563EB)),
+                ],
               ),
             ),
           ),
@@ -2753,7 +2792,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                 child: Text(
                   text,
                   style: const TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 15,
+                    height: 1.35,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF2563EB),
                   ),
@@ -2777,8 +2817,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade700,
+                fontSize: 15,
+                height: 1.35,
+                color: Colors.grey.shade800,
                 fontWeight: FontWeight.w400,
               ),
             ),

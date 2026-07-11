@@ -466,7 +466,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 if (_post.title.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
-                                        16, 16, 16, 12),
+                                        12, 14, 12, 10),
                                     child: Text(
                                       _post.title,
                                       style: const TextStyle(
@@ -477,15 +477,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     ),
                                   ),
 
-                                // Post Content
+                                // Post Content — explicit type scale: the
+                                // Html default body (~14px + its own margins)
+                                // read small and doubled the side padding.
                                 Padding(
-                                  padding: EdgeInsets.fromLTRB(16,
-                                      _post.title.isNotEmpty ? 0 : 16, 16, 0),
+                                  padding: EdgeInsets.fromLTRB(12,
+                                      _post.title.isNotEmpty ? 0 : 14, 12, 0),
                                   child: Html(
                                     data: HtmlContentUtils.toDisplayHtml(
                                         _post.content),
                                     onLinkTap: (url, attributes, element) {
                                       UrlLauncherUtils.launchExternalUrl(url);
+                                    },
+                                    style: {
+                                      "body": Style(
+                                        fontSize: FontSize(15.5),
+                                        lineHeight: const LineHeight(1.6),
+                                        color: const Color(0xFF1F2937),
+                                        margin: Margins.zero,
+                                      ),
+                                      "a": Style(
+                                        color: const Color(0xFF2563EB),
+                                        textDecoration: TextDecoration.none,
+                                      ),
                                     },
                                   ),
                                 ),
