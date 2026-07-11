@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
+import 'post_detail_screen.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,12 +46,14 @@ class _SearchScreenState extends State<SearchScreen> {
   static const _recentKey = 'bn_recent_searches';
   List<String> _recentSearches = [];
   List<Map<String, dynamic>> _trendingTags = [];
+  List<BusinessNetworkPost> _trendingPosts = [];
 
   @override
   void initState() {
     super.initState();
     _loadRecentSearches();
     _loadTrendingTags();
+    _loadTrendingPosts();
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
       _searchController.text = widget.initialQuery!;
       _performSearch(widget.initialQuery!);
@@ -115,7 +118,15 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _loadTrendingTags() async {
     try {
       final tags = await BusinessNetworkService.getTopTags();
-      if (mounted) setState(() => _trendingTags = tags.take(10).toList());
+      if (mounted) setState(() => _trendingTags = tags.take(5).toList());
+    } catch (_) {}
+  }
+
+  Future<void> _loadTrendingPosts() async {
+    try {
+      final res = await BusinessNetworkService.getPosts(page: 1, pageSize: 5);
+      final posts = (res['posts'] as List?)?.cast<BusinessNetworkPost>() ?? [];
+      if (mounted) setState(() => _trendingPosts = posts);
     } catch (_) {}
   }
 
@@ -856,6 +867,35 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           const SizedBox(height: 18),
         ],
+        if (_trendingPosts.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.only(left: 2, bottom: 8),
+            child: Text(
+              'TRENDING POSTS',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF94A3B8),
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < _trendingPosts.length; i++)
+                  _trendingPostRow(_trendingPosts[i],
+                      isLast: i == _trendingPosts.length - 1),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+        ],
         if (_trendingTags.isNotEmpty) ...[
           const Padding(
             padding: EdgeInsets.only(left: 2, bottom: 8),
@@ -870,58 +910,17 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _trendingTags.map((t) {
-                final tag = (t['tag'] ?? '').toString();
-                final count = t['count'];
-                return GestureDetector(
-                  onTap: () {
-                    _searchController.text = '#$tag';
-                    _performSearch('#$tag');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 11, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: const Color(0xFFBFDBFE)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '#$tag',
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF2563EB),
-                          ),
-                        ),
-                        if (count != null) ...[
-                          const SizedBox(width: 5),
-                          Text(
-                            '$count',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+            child: Column(
+              children: [
+                for (var i = 0; i < _trendingTags.length; i++)
+                  _trendingTagRow(_trendingTags[i],
+                      isLast: i == _trendingTags.length - 1),
+              ],
             ),
           ),
           const SizedBox(height: 18),
@@ -953,6 +952,152 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _trendingPostRow(BusinessNetworkPost post, {required bool isLast}) {
+    final author = post.user.name;
+    final rawAvatar = post.user.image ?? post.user.avatar;
+    final avatar = ApiService.getAbsoluteUrl(rawAvatar);
+    var snippet = post.title.trim();
+    if (snippet.isEmpty) {
+      snippet = post.content
+          .replaceAll(RegExp(r'<[^>]*>'), ' ')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+    }
+    if (snippet.isEmpty) snippet = 'Photo/video post';
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : const Border(
+                  bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                ),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: const Color(0xFFF1F5F9),
+              backgroundImage:
+                  avatar.isNotEmpty ? NetworkImage(avatar) : null,
+              child: avatar.isEmpty
+                  ? Text(
+                      author.isNotEmpty ? author[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF64748B),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    author,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    snippet,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (post.likesCount > 0) ...[
+              const Icon(Icons.favorite,
+                  size: 13, color: Color(0xFFEF4444)),
+              const SizedBox(width: 3),
+              Text(
+                '${post.likesCount}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right_rounded,
+                size: 18, color: Color(0xFFCBD5E1)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _trendingTagRow(Map<String, dynamic> t, {required bool isLast}) {
+    final tag = (t['tag'] ?? '').toString();
+    final count = t['count'];
+    return InkWell(
+      onTap: () {
+        _searchController.text = '#$tag';
+        _performSearch('#$tag');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : const Border(
+                  bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                ),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.tag_rounded,
+                size: 17, color: Color(0xFF2563EB)),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Text(
+                tag,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ),
+            if (count != null)
+              Text(
+                '$count posts',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF94A3B8),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
