@@ -697,20 +697,26 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 # Seen-demotion. A FRESH seen post gets -55 (drops it below an
                 # unseen 3-day post) so nothing pins the top across refreshes;
                 # older seen posts drop further.
+                # A seen post is demoted HARD — big enough to dethrone even a
+                # dominant top post (relationship 150 + recency 140 + heat), so
+                # the #1 slot rotates on the very next reload instead of the
+                # same post staying pinned while only the tail reshuffles. The
+                # first page's impressions are persisted as it's served, so the
+                # post you just saw at the top drops next time.
                 seen_penalty=Case(
                     When(
                         Q(id__in=seen_post_ids) & Q(created_at__lt=thirty_days_ago),
-                        then=Value(-90.0),
+                        then=Value(-320.0),
                     ),
                     When(
                         Q(id__in=seen_post_ids) & Q(created_at__lt=seven_days_ago),
-                        then=Value(-70.0),
+                        then=Value(-300.0),
                     ),
                     When(
                         Q(id__in=seen_post_ids) & Q(created_at__lt=three_days_ago),
-                        then=Value(-60.0),
+                        then=Value(-280.0),
                     ),
-                    When(Q(id__in=seen_post_ids), then=Value(-55.0)),
+                    When(Q(id__in=seen_post_ids), then=Value(-260.0)),
                     default=Value(0.0),
                     output_field=FloatField(),
                 ),
@@ -721,11 +727,14 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     default=Value(0.0),
                     output_field=FloatField(),
                 ),
-                # Per-refresh jitter (0-59) folded INTO the score so the feed
-                # reorders on every pull instead of a static wall.
+                # Per-refresh jitter (0-99) folded INTO the score so the feed
+                # reorders on every pull instead of a static wall — wide enough
+                # to reshuffle a cluster of similarly-scored fresh posts (a
+                # relationship tier is 20-35 pts apart) without drowning out
+                # relevance across tiers.
                 jitter=Mod(
                     Cast("id", BigIntegerField()) * Value(2654435) + Value(feed_shuffle_seed),
-                    Value(60),
+                    Value(100),
                 ),
                 shuffle_score=Mod(
                     Cast("id", BigIntegerField()) + Value(feed_shuffle_seed),
