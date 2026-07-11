@@ -16,6 +16,12 @@ class UserProfile {
   final String? faceLink;
   final String? instagramLink;
   final String? whatsappLink;
+  final String? tiktokLink;
+  final String? youtubeLink;
+  final String? linkedinLink;
+  final String? languages;
+  final String? education;
+  final String? skills;
   final String? profession;
   final String? company;
   final String? website;
@@ -38,6 +44,12 @@ class UserProfile {
   final bool? instagramPublic;
   final bool? whatsappPublic;
   final bool? aboutPublic;
+  final bool? tiktokPublic;
+  final bool? youtubePublic;
+  final bool? linkedinPublic;
+  final bool? languagesPublic;
+  final bool? educationPublic;
+  final bool? skillsPublic;
 
   UserProfile({
     this.id,
@@ -55,6 +67,12 @@ class UserProfile {
     this.faceLink,
     this.instagramLink,
     this.whatsappLink,
+    this.tiktokLink,
+    this.youtubeLink,
+    this.linkedinLink,
+    this.languages,
+    this.education,
+    this.skills,
     this.profession,
     this.company,
     this.website,
@@ -77,6 +95,12 @@ class UserProfile {
     this.instagramPublic,
     this.whatsappPublic,
     this.aboutPublic,
+    this.tiktokPublic,
+    this.youtubePublic,
+    this.linkedinPublic,
+    this.languagesPublic,
+    this.educationPublic,
+    this.skillsPublic,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -96,6 +120,12 @@ class UserProfile {
       faceLink: json['face_link'],
       instagramLink: json['instagram_link'],
       whatsappLink: json['whatsapp_link'],
+      tiktokLink: json['tiktok_link'],
+      youtubeLink: json['youtube_link'],
+      linkedinLink: json['linkedin_link'],
+      languages: json['languages'],
+      education: json['education'],
+      skills: json['skills'],
       profession: json['profession'],
       company: json['company'],
       website: json['website'],
@@ -118,6 +148,12 @@ class UserProfile {
       instagramPublic: json['instagram_public'],
       whatsappPublic: json['whatsapp_public'],
       aboutPublic: json['about_public'],
+      tiktokPublic: json['tiktok_public'],
+      youtubePublic: json['youtube_public'],
+      linkedinPublic: json['linkedin_public'],
+      languagesPublic: json['languages_public'],
+      educationPublic: json['education_public'],
+      skillsPublic: json['skills_public'],
     );
   }
 

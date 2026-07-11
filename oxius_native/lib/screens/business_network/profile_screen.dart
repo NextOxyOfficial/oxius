@@ -28,6 +28,7 @@ import 'profile_options.dart';
 import 'post_media_viewer_screen.dart';
 import 'shorts_player_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -68,6 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   final List<String> _tabLabels = const [
     'Posts',
+    'About',
     'My Workspace',
     'Media',
     'Saved',
@@ -185,11 +187,11 @@ class _ProfileScreenState extends State<ProfileScreen>
         _currentTabIndex = _tabController.index;
       });
       // Load gigs when My Workspace tab is selected (index 1)
-      if (_currentTabIndex == 1 && _userGigs.isEmpty && !_isLoadingGigs) {
+      if (_currentTabIndex == 2 && _userGigs.isEmpty && !_isLoadingGigs) {
         _loadUserGigs();
       }
       // Load saved posts when Saved tab is selected (index 3)
-      if (_currentTabIndex == 3 && !_isLoadingSaved) {
+      if (_currentTabIndex == 4 && !_isLoadingSaved) {
         _loadSavedPosts();
       }
     }
@@ -200,10 +202,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (!mounted) return;
 
     // Refresh tab-specific data
-    if (_currentTabIndex == 1 && !_isLoadingGigs) {
+    if (_currentTabIndex == 2 && !_isLoadingGigs) {
       await _loadUserGigs();
     }
-    if (_currentTabIndex == 3 && !_isLoadingSaved) {
+    if (_currentTabIndex == 4 && !_isLoadingSaved) {
       await _loadSavedPosts();
     }
   }
@@ -1816,14 +1818,279 @@ class _ProfileScreenState extends State<ProfileScreen>
       case 0:
         return _buildPostsTab();
       case 1:
-        return _buildWorkspaceTab();
+        return _buildAboutTab();
       case 2:
-        return _buildMediaTab();
+        return _buildWorkspaceTab();
       case 3:
+        return _buildMediaTab();
+      case 4:
         return _buildSavedTab();
       default:
         return _buildPostsTab();
     }
+  }
+
+  // ── About tab: the full Facebook-style profile info, in quiet sections ──
+
+  Widget _buildAboutTab() {
+    final about = _stringValue(_userData?['about']);
+    final profession = _stringValue(_userData?['profession']);
+    final company = _stringValue(_userData?['company']);
+    final education = _stringValue(_userData?['education']);
+    final languages = _stringValue(_userData?['languages']);
+    final skills = _stringValue(_userData?['skills']);
+    final email = _stringValue(_userData?['email']);
+    final phone = _stringValue(_userData?['phone']);
+    final website = _stringValue(_userData?['website']);
+    final city = _stringValue(_userData?['city']);
+    final state = _stringValue(_userData?['state']);
+
+    final socials = <Map<String, dynamic>>[
+      {
+        'label': 'Facebook',
+        'icon': Icons.facebook_rounded,
+        'url': _stringValue(_userData?['face_link']),
+        'visible': _isFieldVisible('facebook_public'),
+      },
+      {
+        'label': 'Instagram',
+        'icon': Icons.camera_alt_outlined,
+        'url': _stringValue(_userData?['instagram_link']),
+        'visible': _isFieldVisible('instagram_public'),
+      },
+      {
+        'label': 'WhatsApp',
+        'icon': Icons.chat_bubble_outline_rounded,
+        'url': _whatsAppUrl(_stringValue(_userData?['whatsapp_link'])),
+        'visible': _isFieldVisible('whatsapp_public'),
+      },
+      {
+        'label': 'TikTok',
+        'icon': Icons.music_note_rounded,
+        'url': _stringValue(_userData?['tiktok_link']),
+        'visible': _isFieldVisible('tiktok_public'),
+      },
+      {
+        'label': 'YouTube',
+        'icon': Icons.play_circle_outline_rounded,
+        'url': _stringValue(_userData?['youtube_link']),
+        'visible': _isFieldVisible('youtube_public'),
+      },
+      {
+        'label': 'LinkedIn',
+        'icon': Icons.work_outline_rounded,
+        'url': _stringValue(_userData?['linkedin_link']),
+        'visible': _isFieldVisible('linkedin_public'),
+      },
+    ]
+        .where((e) =>
+            (e['url'] as String).isNotEmpty && (e['visible'] as bool))
+        .toList();
+
+    final sections = <Widget>[];
+
+    if (about.isNotEmpty && _isFieldVisible('about_public')) {
+      sections.add(_aboutSection('Bio', [
+        _aboutRow(Icons.subject_rounded, about),
+      ]));
+    }
+
+    final workRows = <Widget>[];
+    if (profession.isNotEmpty && _isFieldVisible('profession_public')) {
+      workRows.add(_aboutRow(Icons.badge_outlined, profession));
+    }
+    if (company.isNotEmpty && _isFieldVisible('company_public')) {
+      workRows.add(_aboutRow(Icons.business_outlined, company));
+    }
+    if (workRows.isNotEmpty) sections.add(_aboutSection('Work', workRows));
+
+    if (education.isNotEmpty && _isFieldVisible('education_public')) {
+      sections.add(_aboutSection('Education', [
+        _aboutRow(Icons.school_outlined, education),
+      ]));
+    }
+
+    if (languages.isNotEmpty && _isFieldVisible('languages_public')) {
+      sections.add(_aboutSection('Languages', [_aboutChips(languages)]));
+    }
+    if (skills.isNotEmpty && _isFieldVisible('skills_public')) {
+      sections.add(_aboutSection('Skills', [_aboutChips(skills)]));
+    }
+
+    final contactRows = <Widget>[];
+    if (email.isNotEmpty) {
+      contactRows.add(_aboutRow(Icons.email_outlined,
+          _maskEmail(email, _userData?['email_public'])));
+    }
+    if (phone.isNotEmpty) {
+      contactRows.add(_aboutRow(Icons.phone_outlined,
+          _maskPhoneNumber(phone, _userData?['phone_public'])));
+    }
+    if (website.isNotEmpty && _isFieldVisible('website_public')) {
+      contactRows.add(_aboutRow(Icons.language_rounded, website,
+          url: website));
+    }
+    if (contactRows.isNotEmpty) {
+      sections.add(_aboutSection('Contact', contactRows));
+    }
+
+    if (socials.isNotEmpty) {
+      sections.add(_aboutSection(
+        'Social Links',
+        socials
+            .map((e) => _aboutRow(
+                  e['icon'] as IconData,
+                  e['label'] as String,
+                  url: e['url'] as String,
+                ))
+            .toList(),
+      ));
+    }
+
+    final placeRows = <Widget>[];
+    if (city.isNotEmpty || state.isNotEmpty) {
+      placeRows.add(_aboutRow(
+          Icons.location_on_outlined,
+          '$city${city.isNotEmpty && state.isNotEmpty ? ', ' : ''}$state'));
+    }
+    if (_userData?['date_joined'] != null) {
+      placeRows.add(_aboutRow(Icons.calendar_today_outlined,
+          'Joined ${_formatTimeAgo(_userData!['date_joined'])}'));
+    }
+    if (placeRows.isNotEmpty) {
+      sections.add(_aboutSection('Location & Joined', placeRows));
+    }
+
+    if (sections.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 48),
+        child: Center(
+          child: Text(
+            'No profile information added yet',
+            style: TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: sections,
+      ),
+    );
+  }
+
+  Widget _aboutSection(String title, List<Widget> children) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 6),
+            child: Text(
+              title.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF94A3B8),
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(children: children),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _aboutRow(IconData icon, String text, {String? url}) {
+    final tappable = url != null && url.isNotEmpty;
+    return InkWell(
+      onTap:
+          tappable ? () => UrlLauncherUtils.launchExternalUrl(url) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon,
+                size: 18,
+                color: tappable
+                    ? const Color(0xFF2563EB)
+                    : const Color(0xFF64748B)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  height: 1.4,
+                  fontWeight: tappable ? FontWeight.w600 : FontWeight.w400,
+                  color: tappable
+                      ? const Color(0xFF2563EB)
+                      : const Color(0xFF334155),
+                ),
+              ),
+            ),
+            if (tappable)
+              const Icon(Icons.open_in_new_rounded,
+                  size: 15, color: Color(0xFFCBD5E1)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _aboutChips(String commaSeparated) {
+    final items = commaSeparated
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+      child: Wrap(
+        spacing: 7,
+        runSpacing: 7,
+        children: items
+            .map((e) => Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 11, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    e,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  /// wa.me url from a raw whatsapp value (number or link).
+  String _whatsAppUrl(String raw) {
+    if (raw.isEmpty) return '';
+    if (raw.startsWith('http')) return raw;
+    final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    return digits.isEmpty ? raw : 'https://wa.me/$digits';
   }
 
   Widget _buildPostsTab() {
@@ -2411,6 +2678,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Icons.link,
               website,
               Colors.blue.shade600,
+              url: website,
             ),
 
           // WhatsApp
@@ -2419,6 +2687,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Icons.message,
               whatsapp,
               Colors.green.shade600,
+              url: _whatsAppUrl(whatsapp),
             ),
 
           if (showFacebook)
@@ -2426,6 +2695,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Icons.facebook_rounded,
               facebook,
               Colors.indigo.shade500,
+              url: facebook,
             ),
 
           // Instagram
@@ -2434,6 +2704,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Icons.camera_alt,
               instagram,
               Colors.pink.shade600,
+              url: instagram,
             ),
         ],
 
@@ -2465,7 +2736,36 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildContactItem(IconData icon, String text, Color color) {
+  Widget _buildContactItem(IconData icon, String text, Color color,
+      {String? url}) {
+    final tappable = url != null && url.isNotEmpty;
+    if (tappable) {
+      return InkWell(
+        onTap: () => UrlLauncherUtils.launchExternalUrl(url),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+              ),
+              const Icon(Icons.open_in_new_rounded,
+                  size: 14, color: Color(0xFFCBD5E1)),
+            ],
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(

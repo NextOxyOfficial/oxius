@@ -135,6 +135,22 @@ class User(AbstractUser):
     profession = models.CharField(max_length=256, blank=True, default="")
     company = models.CharField(max_length=256, blank=True, default="")
     website = models.CharField(max_length=256, blank=True, default="")
+    # Extended About info (Facebook-style profile sections)
+    tiktok_link = models.CharField(max_length=256, blank=True, default="")
+    youtube_link = models.CharField(max_length=256, blank=True, default="")
+    linkedin_link = models.CharField(max_length=256, blank=True, default="")
+    languages = models.CharField(
+        max_length=256, blank=True, default="",
+        help_text='Comma-separated, e.g. "বাংলা, English"',
+    )
+    education = models.CharField(
+        max_length=256, blank=True, default="",
+        help_text='e.g. "BBA — Dhaka University"',
+    )
+    skills = models.CharField(
+        max_length=256, blank=True, default="",
+        help_text='Comma-separated, e.g. "Graphic Design, Marketing"',
+    )
     email_public = models.BooleanField(default=False)
     phone_public = models.BooleanField(default=False)
     professional_details_public = models.BooleanField(default=True)
@@ -145,6 +161,12 @@ class User(AbstractUser):
     instagram_public = models.BooleanField(default=True)
     whatsapp_public = models.BooleanField(default=True)
     about_public = models.BooleanField(default=True)
+    tiktok_public = models.BooleanField(default=True)
+    youtube_public = models.BooleanField(default=True)
+    linkedin_public = models.BooleanField(default=True)
+    languages_public = models.BooleanField(default=True)
+    education_public = models.BooleanField(default=True)
+    skills_public = models.BooleanField(default=True)
     is_topcontributor = models.BooleanField(default=False)
     #   subscription
     is_pro = models.BooleanField(default=False)

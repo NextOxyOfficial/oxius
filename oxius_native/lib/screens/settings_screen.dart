@@ -65,6 +65,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _facebookController = TextEditingController();
   final _instagramController = TextEditingController();
   final _whatsappController = TextEditingController();
+  final _tiktokController = TextEditingController();
+  final _youtubeController = TextEditingController();
+  final _linkedinController = TextEditingController();
+  final _languagesController = TextEditingController();
+  final _educationController = TextEditingController();
+  final _skillsController = TextEditingController();
   final _addressController = TextEditingController();
   final _zipController = TextEditingController();
   final _aboutController = TextEditingController();
@@ -124,6 +130,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _professionController.dispose();
     _companyController.dispose();
     _websiteController.dispose();
+    _tiktokController.dispose();
+    _youtubeController.dispose();
+    _linkedinController.dispose();
+    _languagesController.dispose();
+    _educationController.dispose();
+    _skillsController.dispose();
     _facebookController.dispose();
     _instagramController.dispose();
     _whatsappController.dispose();
@@ -145,6 +157,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _professionController,
       _companyController,
       _websiteController,
+      _tiktokController,
+      _youtubeController,
+      _linkedinController,
+      _languagesController,
+      _educationController,
+      _skillsController,
       _facebookController,
       _instagramController,
       _whatsappController,
@@ -220,6 +238,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _facebookController.text = profile.faceLink ?? '';
     _instagramController.text = profile.instagramLink ?? '';
     _whatsappController.text = profile.whatsappLink ?? '';
+    _tiktokController.text = profile.tiktokLink ?? '';
+    _youtubeController.text = profile.youtubeLink ?? '';
+    _linkedinController.text = profile.linkedinLink ?? '';
+    _languagesController.text = profile.languages ?? '';
+    _educationController.text = profile.education ?? '';
+    _skillsController.text = profile.skills ?? '';
     _addressController.text = profile.address ?? '';
     _zipController.text = profile.zip ?? '';
     _aboutController.text = profile.about ?? '';
@@ -652,6 +676,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'face_link': _facebookController.text.trim(),
         'instagram_link': _instagramController.text.trim(),
         'whatsapp_link': _whatsappController.text.trim(),
+        'tiktok_link': _tiktokController.text.trim(),
+        'youtube_link': _youtubeController.text.trim(),
+        'linkedin_link': _linkedinController.text.trim(),
+        'languages': _languagesController.text.trim(),
+        'education': _educationController.text.trim(),
+        'skills': _skillsController.text.trim(),
         'about': _aboutController.text.trim(),
         if (_formatDob(_selectedDob) != null)
           'date_of_birth': _formatDob(_selectedDob),
@@ -1694,6 +1724,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     hintText: _t('settings_whatsapp_hint',
                         'হোয়াটসঅ্যাপ নম্বর বা wa.me লিংক'),
                     icon: Icons.chat_bubble_outline_rounded,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildResponsivePair(
+                    left: _buildTextField(
+                      controller: _tiktokController,
+                      label: _t('settings_tiktok', 'টিকটক'),
+                      hintText: _t('settings_tiktok_hint',
+                          'টিকটক প্রোফাইলের লিংক'),
+                      icon: Icons.music_note_rounded,
+                      keyboardType: TextInputType.url,
+                    ),
+                    right: _buildTextField(
+                      controller: _youtubeController,
+                      label: _t('settings_youtube', 'ইউটিউব'),
+                      hintText: _t('settings_youtube_hint',
+                          'ইউটিউব চ্যানেলের লিংক'),
+                      icon: Icons.play_circle_outline_rounded,
+                      keyboardType: TextInputType.url,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _linkedinController,
+                    label: _t('settings_linkedin', 'লিংকডইন'),
+                    hintText: _t(
+                        'settings_linkedin_hint', 'লিংকডইন প্রোফাইলের লিংক'),
+                    icon: Icons.work_outline_rounded,
+                    keyboardType: TextInputType.url,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildSectionCard(
+              title: _t('settings_more_info', 'অতিরিক্ত তথ্য'),
+              subtitle: _t('settings_more_info_sub',
+                  'পড়াশোনা, ভাষা আর দক্ষতা — প্রোফাইলে দেখা যাবে।'),
+              icon: Icons.school_outlined,
+              child: Column(
+                children: [
+                  _buildTextField(
+                    controller: _educationController,
+                    label: _t('settings_education', 'পড়াশোনা'),
+                    hintText: _t('settings_education_hint',
+                        'যেমন: BBA — Dhaka University'),
+                    icon: Icons.school_outlined,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _languagesController,
+                    label: _t('settings_languages', 'ভাষা'),
+                    hintText: _t('settings_languages_hint',
+                        'কমা দিয়ে লিখুন — যেমন: বাংলা, English'),
+                    icon: Icons.translate_rounded,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _skillsController,
+                    label: _t('settings_skills', 'দক্ষতা'),
+                    hintText: _t('settings_skills_hint',
+                        'কমা দিয়ে লিখুন — যেমন: Graphic Design, Marketing'),
+                    icon: Icons.workspace_premium_outlined,
                   ),
                 ],
               ),
