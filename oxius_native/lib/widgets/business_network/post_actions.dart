@@ -115,6 +115,7 @@ class PostActions extends StatelessWidget {
       builder: (_) => _LikersBottomSheet(
         likes: post.postLikes,
         postId: post.id,
+        initialCount: post.likesCount,
       ),
     );
   }
@@ -179,8 +180,10 @@ class _ActionButton extends StatelessWidget {
 class _LikersBottomSheet extends StatefulWidget {
   final List<PostLike> likes;
   final dynamic postId;
+  final int initialCount;
 
-  const _LikersBottomSheet({required this.likes, this.postId});
+  const _LikersBottomSheet(
+      {required this.likes, this.postId, this.initialCount = 0});
 
   @override
   State<_LikersBottomSheet> createState() => _LikersBottomSheetState();
@@ -269,7 +272,14 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
                             color: Color(0xFFEF4444), size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          '${likes.length} ${likes.length == 1 ? 'like' : 'likes'}',
+                          // While fetching, show the post's own count so the
+                          // title doesn't flash "0 likes".
+                          () {
+                            final n = _fetching
+                                ? widget.initialCount
+                                : likes.length;
+                            return '$n ${n == 1 ? 'like' : 'likes'}';
+                          }(),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
