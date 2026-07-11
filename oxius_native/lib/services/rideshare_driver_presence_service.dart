@@ -327,8 +327,13 @@ class RideshareDriverPresenceService {
       return false;
     }
 
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    // Android: the driver tracker is a foreground service with
+    // foregroundServiceType="location", which may keep using location with
+    // the screen off under the WHILE-IN-USE permission — so we neither
+    // declare nor require ACCESS_BACKGROUND_LOCATION ("Allow all the time").
+    // Forcing users to the all-the-time setting is what got the app rejected
+    // under Play's prominent-disclosure policy.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       return permission == LocationPermission.always;
     }
 

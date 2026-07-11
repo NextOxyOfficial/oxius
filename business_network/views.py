@@ -8,10 +8,12 @@ from django.db.models import (
     BigIntegerField,
     Case,
     Count,
+    Exists,
     ExpressionWrapper,
     F,
     FloatField,
     IntegerField,
+    OuterRef,
     Q,
     Subquery,
     Sum,
@@ -369,6 +371,39 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
             ]
             cache.set(seen_cache_key, merged_seen_ids, self.seen_cache_ttl)
 
+            # Persist impressions so seen-demotion survives cache restarts
+            # (the cache-only list evaporated and let the same posts pin the
+            # top again). bulk upsert: insert new pairs, touch existing.
+            try:
+                from .models import PostSeen
+
+                existing = set(
+                    PostSeen.objects.filter(
+                        user=request.user, post_id__in=post_ids
+                    ).values_list("post_id", flat=True)
+                )
+                fresh = [pid for pid in post_ids if pid not in existing]
+                if fresh:
+                    PostSeen.objects.bulk_create(
+                        [
+                            PostSeen(user=request.user, post_id=pid)
+                            for pid in fresh
+                        ],
+                        ignore_conflicts=True,
+                    )
+                if existing:
+                    from django.db.models import F as _F
+                    from django.utils import timezone as _tz
+
+                    PostSeen.objects.filter(
+                        user=request.user, post_id__in=list(existing)
+                    ).update(
+                        times_seen=_F("times_seen") + 1,
+                        last_seen_at=_tz.now(),
+                    )
+            except Exception:  # pragma: no cover — never break the feed
+                pass
+
         return response
 
     def get_queryset(self):
@@ -497,6 +532,22 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         active_seen_cache_key = f"business_network_active_seen_posts:{user.id}"
         if page_number == 1:
             seen_post_ids = cache.get(seen_cache_key, [])[: self.seen_cache_limit]
+            # Durable impressions from the DB (survive cache restarts) — the
+            # union keeps demotion working even right after a deploy.
+            try:
+                from .models import PostSeen
+
+                db_seen = PostSeen.objects.filter(
+                    user=user,
+                    last_seen_at__gte=now - timedelta(days=14),
+                ).order_by("-last_seen_at").values_list("post_id", flat=True)[
+                    : self.seen_cache_limit
+                ]
+                seen_post_ids = list(
+                    dict.fromkeys([*seen_post_ids, *db_seen])
+                )[: self.seen_cache_limit]
+            except Exception:  # pragma: no cover
+                pass
             cache.set(active_seen_cache_key, seen_post_ids, self.feed_cache_ttl)
         else:
             seen_post_ids = cache.get(active_seen_cache_key, [])
@@ -556,259 +607,143 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
             | Q(author_id__in=blocked_by_user_ids)
         )
 
-        if device_level == "low":
-            return (
-                queryset.annotate(
-                    relationship_score=Case(
-                        When(author_id__in=users_following, then=Value(150)),
-                        When(author_id__in=users_followers, then=Value(115)),
-                        When(author_id__in=second_degree_users, then=Value(95)),
-                        When(author_id__in=co_engaged_author_ids, then=Value(85)),
-                        When(author=user, then=Value(30)),
-                        default=Value(-220),
-                        output_field=IntegerField(),
-                    ),
-                    recency_score=Case(
-                        When(created_at__gte=one_day_ago, then=Value(140)),
-                        When(created_at__gte=three_days_ago, then=Value(100)),
-                        When(created_at__gte=seven_days_ago, then=Value(60)),
-                        When(created_at__gte=thirty_days_ago, then=Value(16)),
-                        default=Value(0),
-                        output_field=IntegerField(),
-                    ),
-                    freshness_bucket=Case(
-                        When(created_at__gte=one_day_ago, then=Value(4)),
-                        When(created_at__gte=three_days_ago, then=Value(3)),
-                        When(created_at__gte=seven_days_ago, then=Value(2)),
-                        When(created_at__gte=thirty_days_ago, then=Value(1)),
-                        default=Value(0),
-                        output_field=IntegerField(),
-                    ),
-                    seen_penalty=Case(
-                        When(
-                            Q(id__in=seen_post_ids)
-                            & Q(created_at__lt=thirty_days_ago),
-                            then=Value(-80),
-                        ),
-                        When(
-                            Q(id__in=seen_post_ids) & Q(created_at__lt=seven_days_ago),
-                            then=Value(-45),
-                        ),
-                        When(
-                            Q(id__in=seen_post_ids) & Q(created_at__lt=three_days_ago),
-                            then=Value(-18),
-                        ),
-                        default=Value(0),
-                        output_field=IntegerField(),
-                    ),
-                    activity_score=(
-                        Count(
-                            "post_comments",
-                            filter=Q(post_comments__created_at__gte=seven_days_ago),
-                            distinct=True,
-                        )
-                        * 20
-                        + Count(
-                            "post_likes",
-                            filter=Q(post_likes__created_at__gte=seven_days_ago),
-                            distinct=True,
-                        )
-                        * 7
-                        + Count(
-                            "post_followers",
-                            filter=Q(post_followers__created_at__gte=fourteen_days_ago),
-                            distinct=True,
-                        )
-                        * 5
-                    ),
-                    shuffle_score=Mod(
-                        Cast("id", BigIntegerField()) + Value(feed_shuffle_seed),
-                        Value(997),
-                    ),
-                    shuffle_boost=Mod(
-                        Cast("id", BigIntegerField()) * Value(37)
-                        + Value(feed_shuffle_seed),
-                        Value(17),
-                    ),
-                )
-                .select_related("author")
-                .order_by(
-                    "-relationship_score",
-                    "-freshness_bucket",
-                    "-activity_score",
-                    "-seen_penalty",
-                    "-shuffle_boost",
-                    "shuffle_score",
-                    "-created_at",
+        # ── Join-free relevance scoring ──────────────────────────────────
+        # The score is built ONLY from Case/F/arithmetic and the model's
+        # DENORMALIZED counters (like_count/comment_count/save_count) plus a
+        # single Exists subquery for interest tags. It deliberately uses NO
+        # Count() aggregates: mixing per-row Count() (which forces a GROUP BY)
+        # with the Case/ExpressionWrapper terms produced an invalid grouped
+        # query whose blended score collapsed to a constant — so relationship,
+        # freshness, engagement and seen-demotion never actually affected the
+        # order (the feed felt static and one post pinned the top). Everything
+        # here is per-row, so the score works and stays fast.
+        if interest_tags:
+            queryset = queryset.annotate(
+                _has_interest_tag=Exists(
+                    BusinessNetworkPostTag.objects.filter(
+                        business_network_posts=OuterRef("pk"),
+                        tag__in=interest_tags,
+                    )
                 )
             )
+            interest_case = Case(
+                When(_has_interest_tag=True, then=Value(30.0)),
+                default=Value(0.0),
+                output_field=FloatField(),
+            )
+        else:
+            interest_case = Value(0.0, output_field=FloatField())
+
+        location_case = (
+            Case(
+                When(author_location_query, then=Value(12.0)),
+                default=Value(0.0),
+                output_field=FloatField(),
+            )
+            if author_location_query
+            else Value(0.0, output_field=FloatField())
+        )
+        profession_case = (
+            Case(
+                When(author__profession__iexact=user.profession, then=Value(8.0)),
+                default=Value(0.0),
+                output_field=FloatField(),
+            )
+            if user.profession
+            else Value(0.0, output_field=FloatField())
+        )
 
         queryset = (
             queryset.annotate(
-                common_tag_count=Count(
-                    "tags",
-                    filter=Q(tags__tag__in=interest_tags),
-                    distinct=True,
+                _age_hours=ExpressionWrapper(
+                    Extract(Now() - F("created_at"), "epoch") / 3600.0,
+                    output_field=FloatField(),
                 ),
-                known_comment_count=Count(
-                    "post_comments",
-                    filter=Q(post_comments__author_id__in=trusted_network_user_ids),
-                    distinct=True,
-                ),
-                recent_known_comment_count=Count(
-                    "post_comments",
-                    filter=Q(
-                        post_comments__author_id__in=trusted_network_user_ids,
-                        post_comments__created_at__gte=seven_days_ago,
-                    ),
-                    distinct=True,
-                ),
-                known_like_count=Count(
-                    "post_likes",
-                    filter=Q(post_likes__user_id__in=trusted_network_user_ids),
-                    distinct=True,
-                ),
-                mutual_connection_count=Count(
-                    "author__business_network_following",
-                    filter=Q(
-                        author__business_network_following__follower_id__in=users_following
-                    ),
-                    distinct=True,
-                ),
+            )
+            .annotate(
                 relationship_score=Case(
-                    When(author_id__in=users_following, then=Value(150)),
-                    When(author_id__in=users_followers, then=Value(115)),
-                    When(author_id__in=second_degree_users, then=Value(95)),
-                    When(author_id__in=co_engaged_author_ids, then=Value(85)),
-                    When(author=user, then=Value(30)),
-                    default=Value(-220),
-                    output_field=IntegerField(),
-                ),
-                community_score=(
-                    Count(
-                        "post_comments",
-                        filter=Q(post_comments__author_id__in=trusted_network_user_ids),
-                        distinct=True,
-                    )
-                    * 9
-                    + Count(
-                        "post_comments",
-                        filter=Q(
-                            post_comments__author_id__in=trusted_network_user_ids,
-                            post_comments__created_at__gte=seven_days_ago,
-                        ),
-                        distinct=True,
-                    )
-                    * 8
-                    + Count(
-                        "post_likes",
-                        filter=Q(post_likes__user_id__in=trusted_network_user_ids),
-                        distinct=True,
-                    )
-                    * 4
-                    + Count(
-                        "author__business_network_following",
-                        filter=Q(
-                            author__business_network_following__follower_id__in=users_following
-                        ),
-                        distinct=True,
-                    )
-                    * 3
-                ),
-                location_score=Case(
-                    When(author_location_query, then=Value(12))
-                    if author_location_query
-                    else When(pk__isnull=True, then=Value(0)),
-                    default=Value(0),
-                    output_field=IntegerField(),
-                ),
-                profession_score=Case(
-                    When(
-                        author__profession__iexact=user.profession,
-                        then=Value(8),
-                    )
-                    if user.profession
-                    else When(pk__isnull=True, then=Value(0)),
-                    default=Value(0),
-                    output_field=IntegerField(),
+                    When(author_id__in=users_following, then=Value(150.0)),
+                    When(author_id__in=users_followers, then=Value(115.0)),
+                    When(author_id__in=second_degree_users, then=Value(95.0)),
+                    When(author_id__in=co_engaged_author_ids, then=Value(85.0)),
+                    When(author=user, then=Value(30.0)),
+                    default=Value(-60.0),
+                    output_field=FloatField(),
                 ),
                 recency_score=Case(
-                    When(created_at__gte=one_day_ago, then=Value(140)),
-                    When(created_at__gte=three_days_ago, then=Value(100)),
-                    When(created_at__gte=seven_days_ago, then=Value(60)),
-                    When(created_at__gte=thirty_days_ago, then=Value(16)),
-                    default=Value(0),
-                    output_field=IntegerField(),
+                    When(created_at__gte=one_day_ago, then=Value(140.0)),
+                    When(created_at__gte=three_days_ago, then=Value(100.0)),
+                    When(created_at__gte=seven_days_ago, then=Value(60.0)),
+                    When(created_at__gte=thirty_days_ago, then=Value(16.0)),
+                    default=Value(0.0),
+                    output_field=FloatField(),
                 ),
-                freshness_bucket=Case(
-                    When(created_at__gte=one_day_ago, then=Value(4)),
-                    When(created_at__gte=three_days_ago, then=Value(3)),
-                    When(created_at__gte=seven_days_ago, then=Value(2)),
-                    When(created_at__gte=thirty_days_ago, then=Value(1)),
-                    default=Value(0),
-                    output_field=IntegerField(),
+                # Time-decayed engagement "heat" from the denormalized counters:
+                # engagement / (age_hours + 2)^1.5 — fresh activity outweighs
+                # stale viral. No COUNT join.
+                heat_score=ExpressionWrapper(
+                    (
+                        F("like_count") * 3.0
+                        + F("comment_count") * 5.0
+                        + F("save_count") * 4.0
+                    )
+                    / Power(F("_age_hours") + 2.0, 1.5)
+                    * 30.0,
+                    output_field=FloatField(),
                 ),
+                interest_score=interest_case,
+                location_score=location_case,
+                profession_score=profession_case,
+                # Seen-demotion. A FRESH seen post gets -55 (drops it below an
+                # unseen 3-day post) so nothing pins the top across refreshes;
+                # older seen posts drop further.
                 seen_penalty=Case(
                     When(
                         Q(id__in=seen_post_ids) & Q(created_at__lt=thirty_days_ago),
-                        then=Value(-80),
+                        then=Value(-90.0),
                     ),
                     When(
                         Q(id__in=seen_post_ids) & Q(created_at__lt=seven_days_ago),
-                        then=Value(-45),
+                        then=Value(-70.0),
                     ),
                     When(
                         Q(id__in=seen_post_ids) & Q(created_at__lt=three_days_ago),
-                        then=Value(-18),
+                        then=Value(-60.0),
                     ),
-                    default=Value(0),
-                    output_field=IntegerField(),
+                    When(Q(id__in=seen_post_ids), then=Value(-55.0)),
+                    default=Value(0.0),
+                    output_field=FloatField(),
                 ),
-                engagement_score=(
-                    Count("post_likes", distinct=True) * 2
-                    + Count("post_comments", distinct=True) * 4
-                    + Count("post_followers", distinct=True)
-                ),
-                activity_score=(
-                    Count(
-                        "post_comments",
-                        filter=Q(post_comments__created_at__gte=seven_days_ago),
-                        distinct=True,
-                    )
-                    * 20
-                    + Count(
-                        "post_likes",
-                        filter=Q(post_likes__created_at__gte=seven_days_ago),
-                        distinct=True,
-                    )
-                    * 7
-                    + Count(
-                        "post_followers",
-                        filter=Q(post_followers__created_at__gte=fourteen_days_ago),
-                        distinct=True,
-                    )
-                    * 5
-                ),
-                interest_score=(F("common_tag_count") * 10),
-                # Demote your own posts well below your network's content. The
-                # value offsets the freshness boost (recency up to +140) a
-                # just-created post would otherwise get, so your own post never
-                # pins itself to the top of your own feed — it still appears,
-                # interspersed below others, and can climb only if it earns real
-                # engagement (engagement_decay).
+                # Your own post never pins its own feed — it appears below your
+                # network's content and climbs only on real engagement.
                 own_post_penalty=Case(
-                    When(author=user, then=Value(-165)),
-                    default=Value(0),
-                    output_field=IntegerField(),
+                    When(author=user, then=Value(-165.0)),
+                    default=Value(0.0),
+                    output_field=FloatField(),
+                ),
+                # Per-refresh jitter (0-59) folded INTO the score so the feed
+                # reorders on every pull instead of a static wall.
+                jitter=Mod(
+                    Cast("id", BigIntegerField()) * Value(2654435) + Value(feed_shuffle_seed),
+                    Value(60),
                 ),
                 shuffle_score=Mod(
                     Cast("id", BigIntegerField()) + Value(feed_shuffle_seed),
                     Value(997),
                 ),
-                shuffle_boost=Mod(
-                    Cast("id", BigIntegerField()) * Value(37)
-                    + Value(feed_shuffle_seed),
-                    Value(17),
+            )
+            .annotate(
+                final_score=ExpressionWrapper(
+                    F("relationship_score")
+                    + F("recency_score")
+                    + F("heat_score")
+                    + F("interest_score")
+                    + F("location_score")
+                    + F("profession_score")
+                    + F("seen_penalty")
+                    + F("own_post_penalty")
+                    + F("jitter"),
+                    output_field=FloatField(),
                 ),
             )
             .select_related("author")
@@ -819,49 +754,8 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 "post_comments__author",
                 "post_followers__user",
             )
-            # Time-decayed global engagement ("hotness") from the denormalized
-            # counters — no COUNT join needed. Gravity decay so fresh activity
-            # outweighs stale: engagement / (age_hours + 2)^1.5.
-            .annotate(
-                _age_hours=ExpressionWrapper(
-                    Extract(Now() - F("created_at"), "epoch") / 3600.0,
-                    output_field=FloatField(),
-                ),
-            )
-            .annotate(
-                engagement_decay=ExpressionWrapper(
-                    (
-                        F("like_count") * 3
-                        + F("comment_count") * 5
-                        + F("save_count") * 4
-                    )
-                    / Power(F("_age_hours") + 2.0, 1.5)
-                    * 30.0,
-                    output_field=FloatField(),
-                ),
-            )
-            # Single blended relevance score (Facebook-style) instead of a strict
-            # tier cascade, so a highly-engaged or fresher post can climb past a
-            # quieter one even across relationship tiers, while the large
-            # relationship weights keep your own society near the top.
-            .annotate(
-                final_score=ExpressionWrapper(
-                    F("relationship_score")
-                    + F("recency_score")
-                    + F("community_score")
-                    + F("activity_score")
-                    + F("interest_score")
-                    + F("location_score")
-                    + F("profession_score")
-                    + F("seen_penalty")
-                    + F("own_post_penalty")
-                    + F("engagement_decay"),
-                    output_field=FloatField(),
-                ),
-            )
             .order_by(
                 "-final_score",
-                "-shuffle_boost",
                 "shuffle_score",
                 "-created_at",
             )

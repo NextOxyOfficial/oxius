@@ -374,3 +374,13 @@ class ContentMonetizationCustomRequirementAdmin(admin.ModelAdmin):
     ]
     search_fields = ["user__email", "user__username", "user__name", "user__phone"]
     autocomplete_fields = ["user"]
+
+
+@admin.register(PostSeen)
+class PostSeenAdmin(admin.ModelAdmin):
+    list_display = ("user", "post", "times_seen", "last_seen_at")
+    search_fields = ("user__email", "user__username", "post__id")
+    readonly_fields = ("user", "post", "times_seen", "last_seen_at")
+
+    def has_add_permission(self, request):
+        return False

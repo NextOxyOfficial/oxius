@@ -1228,3 +1228,32 @@ class ContentMonetizationApplication(models.Model):
 
     def __str__(self):
         return f"{self.user.email or self.user.username} — {self.status}"
+
+
+class PostSeen(models.Model):
+    """Persistent per-user post impressions (which feed posts were served).
+
+    Powers the feed's seen-demotion durably: the old cache-only list vanished
+    on every cache restart/TTL, letting the same posts pin the top again.
+    Written server-side when the feed page is served — no app change needed.
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="seen_posts"
+    )
+    post = models.ForeignKey(
+        BusinessNetworkPost, on_delete=models.CASCADE, related_name="seen_by"
+    )
+    times_seen = models.PositiveIntegerField(default=1)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["user", "post"]
+        indexes = [
+            models.Index(
+                fields=["user", "-last_seen_at"], name="bn_seen_user_recent_idx"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} saw {self.post_id} x{self.times_seen}"

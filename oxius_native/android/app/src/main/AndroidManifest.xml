@@ -5,7 +5,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <!-- NOTE: ACCESS_BACKGROUND_LOCATION intentionally NOT declared. Google
+         Play rejected the app over its prominent-disclosure policy for that
+         permission. Driver tracking instead runs a foreground service with
+         foregroundServiceType="location" (see below), which keeps streaming
+         location with the screen off using only the while-in-use permission
+         — so the background permission (and its policy review) is unneeded. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
