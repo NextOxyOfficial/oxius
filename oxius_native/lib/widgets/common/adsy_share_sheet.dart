@@ -387,8 +387,8 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                           tooltip: 'Copy',
                           label: 'Copy',
                           icon: _copied
-                              ? Icons.check_rounded
-                              : Icons.copy_rounded,
+                              ? FontAwesomeIcons.check
+                              : FontAwesomeIcons.copy,
                           color: const Color(0xFF059669),
                           onTap: _copyLink,
                         ),
@@ -505,7 +505,7 @@ class _SharePreview extends StatelessWidget {
 class _SharePlatformButton extends StatelessWidget {
   final String tooltip;
   final String label;
-  final IconData? icon;
+  final FaIconData? icon;
   final Color color;
   final VoidCallback onTap;
 
@@ -538,7 +538,10 @@ class _SharePlatformButton extends StatelessWidget {
                     color: color.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Center(child: Icon(icon, size: 20, color: color)),
+                  child: Center(
+                      child: icon == null
+                          ? null
+                          : FaIcon(icon!, size: 20, color: color)),
                 ),
                 const SizedBox(height: 6),
                 Text(
