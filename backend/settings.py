@@ -103,6 +103,14 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.adsyclub.com",
 ]
 
+# Local dev (Flutter web / Nuxt on a random localhost port) can reach the
+# production API. Safe because the API authenticates with Bearer tokens, not
+# cookies — a local page can't act as a user without already holding the token.
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
+]
+
 # CORS settings for API access
 CORS_ALLOW_CREDENTIALS = True
 # Allow all origins in DEBUG so local dev servers (Flutter web, Nuxt) aren't blocked.
