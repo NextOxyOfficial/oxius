@@ -436,32 +436,34 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           title: const Text(
             'Create Post',
             style: TextStyle(
-              color: Colors.black87,
-              fontSize: 20,
+              color: Color(0xFF0F172A),
+              fontSize: 17,
               fontWeight: FontWeight.w700,
-              letterSpacing: -0.8,
+              letterSpacing: -0.4,
             ),
           ),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.only(right: 12),
               child: TextButton(
                 onPressed: _isLoading ? null : _createPost,
                 style: TextButton.styleFrom(
                   backgroundColor: _isLoading
                       ? Colors.grey.shade200
-                      : const Color(0xFF3B82F6),
+                      : const Color(0xFF2563EB),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  minimumSize: const Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 0,
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                        width: 16,
-                        height: 16,
+                        width: 15,
+                        height: 15,
                         child: AdsyLoadingIndicator(
                           strokeWidth: 2,
                           valueColor:
@@ -471,8 +473,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     : const Text(
                         'Post',
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
@@ -489,8 +491,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.grey.shade200, width: 2),
@@ -613,7 +615,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ],
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
               // Post text (description) — single field; title was removed to
               // avoid confusing users about title vs description.
@@ -624,14 +626,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 maxLines: 14,
                 minLines: 4,
                 style: TextStyle(
-                  fontSize: 17,
+                  fontSize: 15.5,
                   color: Colors.grey.shade800,
                   height: 1.5,
                 ),
                 decoration: InputDecoration(
                   hintText: 'What\'s on your mind? Use @ to mention someone',
                   hintStyle: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15.5,
                     color: Colors.grey.shade400,
                   ),
                   border: InputBorder.none,
@@ -720,7 +722,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
               // Hashtags Section
               Column(
@@ -729,14 +731,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   Row(
                     children: [
                       Icon(Icons.tag_rounded,
-                          size: 20, color: Colors.grey.shade600),
-                      const SizedBox(width: 8),
+                          size: 17, color: Colors.grey.shade500),
+                      const SizedBox(width: 7),
                       Text(
                         'Add Hashtags',
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                           color: Colors.grey.shade700,
+                          letterSpacing: 0.1,
                         ),
                       ),
                     ],
@@ -748,41 +751,44 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: Colors.grey.shade200),
                           ),
                           child: TextField(
                             controller: _hashtagController,
-                            style: const TextStyle(fontSize: 15),
+                            style: const TextStyle(fontSize: 14),
                             decoration: InputDecoration(
                               hintText: 'Type a hashtag',
                               hintStyle: TextStyle(
-                                  color: Colors.grey.shade400, fontSize: 15),
+                                  color: Colors.grey.shade400, fontSize: 14),
                               prefixIcon: Icon(Icons.tag,
-                                  size: 20, color: Colors.grey.shade400),
+                                  size: 18, color: Colors.grey.shade400),
+                              prefixIconConstraints: const BoxConstraints(
+                                  minWidth: 36, minHeight: 0),
                               border: InputBorder.none,
+                              isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
+                                  horizontal: 12, vertical: 11),
                             ),
                             onSubmitted: (_) => _addHashtag(),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Material(
-                        color: const Color(0xFF3B82F6),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFF2563EB),
+                        borderRadius: BorderRadius.circular(10),
                         child: InkWell(
                           onTap: _addHashtag,
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 14),
-                            child: const Text(
+                          borderRadius: BorderRadius.circular(10),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 11),
+                            child: Text(
                               'Add',
                               style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white,
                               ),
                             ),
@@ -853,7 +859,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ],
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
               // Combined Media Section (Photos + Videos)
               Column(
@@ -862,14 +868,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   Row(
                     children: [
                       Icon(Icons.perm_media_rounded,
-                          size: 20, color: Colors.grey.shade600),
-                      const SizedBox(width: 8),
+                          size: 17, color: Colors.grey.shade500),
+                      const SizedBox(width: 7),
                       Text(
                         'Media',
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                           color: Colors.grey.shade700,
+                          letterSpacing: 0.1,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1070,26 +1077,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   // Single Upload Media Button
                   InkWell(
                     onTap: _showMediaPicker,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
                         border:
-                            Border.all(color: Colors.grey.shade300, width: 1.5),
+                            Border.all(color: Colors.grey.shade300, width: 1),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add_photo_alternate_outlined,
-                              size: 22, color: Colors.grey.shade600),
-                          const SizedBox(width: 10),
+                              size: 19, color: Colors.grey.shade600),
+                          const SizedBox(width: 8),
                           Text(
                             'Upload Media',
                             style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
                               color: Colors.grey.shade700,
                             ),
                           ),
