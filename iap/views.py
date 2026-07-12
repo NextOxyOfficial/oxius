@@ -134,11 +134,20 @@ def iap_rtdn(request):
         msg = (request.data or {}).get("message") or {}
         raw = msg.get("data")
         if not raw:
+            logger.info("[iap] RTDN received (no data / handshake)")
             return Response({"ok": True})
         payload = json.loads(base64.b64decode(raw).decode("utf-8"))
+        if payload.get("testNotification"):
+            logger.info("[iap] RTDN TEST notification received OK: %s", payload)
+            return Response({"ok": True})
         sub = payload.get("subscriptionNotification")
         if not sub:
+            logger.info("[iap] RTDN received (non-subscription): %s", list(payload.keys()))
             return Response({"ok": True})
+        logger.info(
+            "[iap] RTDN subscriptionNotification type=%s token=%s",
+            sub.get("notificationType"), (sub.get("purchaseToken") or "")[:16],
+        )
         token = sub.get("purchaseToken", "")
         ntype = sub.get("notificationType")
         purchase = IapPurchase.objects.filter(purchase_token=token).first()
