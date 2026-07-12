@@ -90,4 +90,5 @@ class NotificationType {
   static const String mention = 'mention';
   static const String solution = 'solution';
   static const String giftDiamonds = 'gift_diamonds';
+  static const String share = 'share';
 }

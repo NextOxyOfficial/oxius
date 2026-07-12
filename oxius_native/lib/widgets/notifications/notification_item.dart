@@ -210,6 +210,8 @@ class NotificationItem extends StatelessWidget {
         return const Color(0xFFF59E0B); // Amber
       case NotificationType.giftDiamonds:
         return const Color(0xFF14B8A6); // Teal
+      case NotificationType.share:
+        return const Color(0xFF10B981); // Emerald
       default:
         return Colors.grey.shade500;
     }
@@ -231,6 +233,8 @@ class NotificationItem extends StatelessWidget {
         return Icons.star_rounded;
       case NotificationType.giftDiamonds:
         return Icons.card_giftcard_rounded;
+      case NotificationType.share:
+        return Icons.repeat_rounded;
       default:
         return Icons.notifications_rounded;
     }
@@ -254,6 +258,8 @@ class NotificationItem extends StatelessWidget {
         return 'marked your advice as a solution';
       case NotificationType.giftDiamonds:
         return 'sent you gift diamonds';
+      case NotificationType.share:
+        return 'আপনার পোস্ট শেয়ার করেছেন';
       default:
         return 'interacted with your content';
     }

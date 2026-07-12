@@ -205,10 +205,20 @@ class _PostCardState extends State<PostCard> {
   }
 
   // Embedded card showing the original post inside a reshare/repost.
+  void _openSharedAuthor(SharedPostPreview orig) {
+    if (orig.authorId.isEmpty) return;
+    Navigator.pushNamed(
+      context,
+      '/business-network/profile',
+      arguments: {'userId': orig.authorId},
+    );
+  }
+
   Widget _buildResharedOriginal(SharedPostPreview orig) {
     final avatar = AppConfig.getAbsoluteUrl(orig.authorImage);
-    final img =
-        orig.mediaUrls.isNotEmpty ? AppConfig.getAbsoluteUrl(orig.mediaUrls.first) : '';
+    final img = (orig.mediaThumbUrl ?? '').isNotEmpty
+        ? AppConfig.getAbsoluteUrl(orig.mediaThumbUrl!)
+        : '';
     final text =
         HtmlContentUtils.previewText(HtmlContentUtils.toPlainText(orig.content), 220);
     return Padding(
@@ -222,46 +232,51 @@ class _PostCardState extends State<PostCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
-              child: Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFFE2E8F0),
+            // Original author — tap opens their Business Network profile.
+            InkWell(
+              onTap: () => _openSharedAuthor(orig),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFE2E8F0),
+                      ),
+                      child: ClipOval(
+                        child: avatar.isNotEmpty
+                            ? Image.network(avatar,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.person_rounded,
+                                    size: 16,
+                                    color: Color(0xFF94A3B8)))
+                            : const Icon(Icons.person_rounded,
+                                size: 16, color: Color(0xFF94A3B8)),
+                      ),
                     ),
-                    child: ClipOval(
-                      child: avatar.isNotEmpty
-                          ? Image.network(avatar,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.person_rounded,
-                                  size: 16,
-                                  color: Color(0xFF94A3B8)))
-                          : const Icon(Icons.person_rounded,
-                              size: 16, color: Color(0xFF94A3B8)),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        orig.authorName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A)),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      orig.authorName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A)),
-                    ),
-                  ),
-                  if (orig.authorVerified) ...[
-                    const SizedBox(width: 4),
-                    const Icon(Icons.verified, size: 13, color: Color(0xFF2563EB)),
+                    if (orig.authorVerified) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.verified,
+                          size: 13, color: Color(0xFF2563EB)),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             if (text.trim().isNotEmpty)
@@ -277,14 +292,34 @@ class _PostCardState extends State<PostCard> {
               ),
             if (img.isNotEmpty)
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(14)),
-                child: Image.network(
-                  img,
-                  width: double.infinity,
-                  height: 190,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(14)),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.network(
+                      img,
+                      width: double.infinity,
+                      height: 190,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        height: orig.mediaIsVideo ? 190 : 0,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    // Play badge for video originals.
+                    if (orig.mediaIsVideo)
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.play_arrow_rounded,
+                            color: Colors.white, size: 30),
+                      ),
+                  ],
                 ),
               ),
           ],

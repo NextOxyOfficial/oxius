@@ -1095,6 +1095,27 @@ def reshare_post(request, post_id):
                 target_id=str(root.id),
                 content=(caption[:140] if caption else None),
             )
+            # FCM push (mirrors like/comment notifications).
+            from base.models import FCMToken
+            from base.fcm_service import send_fcm_notification_async
+
+            actor_name = (
+                request.user.get_full_name()
+                or getattr(request.user, "name", "")
+                or request.user.email
+            )
+            for tok in FCMToken.objects.filter(user=root.author, is_active=True):
+                send_fcm_notification_async(
+                    fcm_token=tok.token,
+                    title="Post Shared",
+                    body=f"{actor_name} আপনার পোস্ট শেয়ার করেছেন",
+                    data={
+                        "type": "share",
+                        "post_id": str(root.id),
+                        "user_id": str(request.user.id),
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                    },
+                )
     except Exception:
         _logging.getLogger(__name__).exception("[bn] reshare notification failed")
 

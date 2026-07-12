@@ -169,6 +169,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case NotificationType.likePost:
       case NotificationType.comment:
       case NotificationType.mention:
+      case NotificationType.share:
         // Navigate to post detail
         if (notification.targetId != null) {
           final postId = int.tryParse(notification.targetId.toString());

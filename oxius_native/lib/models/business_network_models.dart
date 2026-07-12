@@ -477,22 +477,27 @@ class LikerFace {
 class SharedPostPreview {
   final int id;
   final String slug;
+  final String authorId;
   final String authorName;
   final String? authorImage;
   final bool authorVerified;
   final String content;
-  final List<String> mediaUrls;
+  // First media to preview: a photo, or a video's thumbnail.
+  final String? mediaThumbUrl;
+  final bool mediaIsVideo;
   final int likeCount;
   final int commentCount;
 
   SharedPostPreview({
     required this.id,
     this.slug = '',
+    this.authorId = '',
     required this.authorName,
     this.authorImage,
     this.authorVerified = false,
     this.content = '',
-    this.mediaUrls = const [],
+    this.mediaThumbUrl,
+    this.mediaIsVideo = false,
     this.likeCount = 0,
     this.commentCount = 0,
   });
@@ -501,22 +506,31 @@ class SharedPostPreview {
     final ad = (json['author_details'] is Map)
         ? Map<String, dynamic>.from(json['author_details'])
         : <String, dynamic>{};
-    final media = (json['post_media'] as List?)
-            ?.whereType<Map>()
-            .map((m) => (m['file'] ?? m['image'] ?? m['url'] ?? '').toString())
-            .where((s) => s.isNotEmpty)
-            .toList() ??
-        const <String>[];
+
+    String? thumb;
+    bool isVideo = false;
+    final mediaList = (json['post_media'] as List?)?.whereType<Map>().toList();
+    if (mediaList != null && mediaList.isNotEmpty) {
+      final m = Map<String, dynamic>.from(mediaList.first);
+      isVideo = (m['type'] ?? '').toString().toLowerCase() == 'video';
+      thumb = isVideo
+          ? (m['thumbnail'] ?? m['file'] ?? '').toString()
+          : (m['file'] ?? m['image'] ?? m['url'] ?? '').toString();
+      if (thumb.isEmpty) thumb = null;
+    }
+
     return SharedPostPreview(
       id: json['id'] is int
           ? json['id']
           : int.tryParse('${json['id']}') ?? 0,
       slug: json['slug']?.toString() ?? '',
+      authorId: (ad['id'] ?? '').toString(),
       authorName: (ad['name'] ?? ad['username'] ?? '').toString(),
       authorImage: ad['image']?.toString(),
       authorVerified: ad['kyc'] == true,
       content: (json['content'] ?? '').toString(),
-      mediaUrls: media,
+      mediaThumbUrl: thumb,
+      mediaIsVideo: isVideo,
       likeCount: int.tryParse('${json['like_count'] ?? 0}') ?? 0,
       commentCount: int.tryParse('${json['comment_count'] ?? 0}') ?? 0,
     );
