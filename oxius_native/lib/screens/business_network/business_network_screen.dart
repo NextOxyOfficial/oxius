@@ -496,6 +496,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   Future<void> _refreshPosts() async {
     _currentPage = 1;
     _lastCreatedAt = null;
+    // Drop completed micro-gig cards and refetch fresh gigs (submitted excluded).
+    resetMicroGigsFeed();
     await Future.wait([
       _loadPosts(forceRefresh: true),
       _loadSponsoredProducts(),

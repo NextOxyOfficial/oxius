@@ -241,6 +241,24 @@ class _DiscoveryStore<T> {
 // ── Micro gigs ──────────────────────────────────────────────────────────────
 final _microStore = _DiscoveryStore<MicroGig>();
 
+// Gigs the user completed this session — the card shows a "done" state in place
+// (instead of instantly swapping in a new task, which killed scroll intent).
+// Cleared on feed refresh so completed tasks then drop out of the feed.
+final Set<String> _submittedGigSlugs = {};
+
+// Bumped on pull-to-refresh; micro-gig cards listen and reload fresh gigs
+// (with showSubmitted:false, so completed ones are excluded).
+final ValueNotifier<int> _microGigsResetTick = ValueNotifier<int>(0);
+
+/// Call from the feed's pull-to-refresh so completed tasks disappear and gigs
+/// are refetched.
+void resetMicroGigsFeed() {
+  _microStore.data = null;
+  _microStore.inFlight = null;
+  _submittedGigSlugs.clear();
+  _microGigsResetTick.value++;
+}
+
 /// One available micro gig shown as an "earn now" card between posts — only
 /// when the user still has uncompleted gigs. Each feed slot rotates to the
 /// next gig via [index].
@@ -259,7 +277,19 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
   @override
   void initState() {
     super.initState();
+    _microGigsResetTick.addListener(_onFeedReset);
     _loadGigs();
+  }
+
+  @override
+  void dispose() {
+    _microGigsResetTick.removeListener(_onFeedReset);
+    super.dispose();
+  }
+
+  // Feed was refreshed — refetch gigs (submitted ones are now excluded).
+  void _onFeedReset() {
+    if (mounted) _loadGigs();
   }
 
   void _loadGigs() {
@@ -278,17 +308,19 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
     if (_gigs.isEmpty) return const SizedBox.shrink();
     final gig = _gigs[widget.index % _gigs.length];
     final categoryImg = gig.categoryDetails?.image ?? '';
+    final isDone = _submittedGigSlugs.contains(gig.slug);
 
     Future<void> openGig() async {
-      await Navigator.push(
+      final submitted = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
               builder: (_) => GigDetailsScreen(gigSlug: gig.slug)));
-      // Back from the gig: refetch so a just-submitted task disappears
-      // instead of keeping its stale "ইনকাম করুন" button in the feed.
-      _microStore.data = null;
-      _microStore.inFlight = null;
-      if (mounted) _loadGigs();
+      // Completed: mark it done and show a "সম্পন্ন" state in place — do NOT
+      // swap in a new task (that killed the user's intent to scroll). It drops
+      // out of the feed on the next pull-to-refresh.
+      if (submitted == true && mounted) {
+        setState(() => _submittedGigSlugs.add(gig.slug));
+      }
     }
 
     return Container(
@@ -354,7 +386,7 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
           ),
           // The gig itself
           InkWell(
-            onTap: openGig,
+            onTap: isDone ? null : openGig,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
@@ -440,26 +472,52 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
             ),
           ),
           const SizedBox(height: 10),
-          // Earn CTA
+          // CTA — "earn" normally, or a "completed" state after the user
+          // submits the task (stays in place until the next feed refresh).
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: SizedBox(
               width: double.infinity,
               height: 34,
-              child: ElevatedButton(
-                onPressed: openGig,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999)),
-                ),
-                child: const Text(
-                  'ইনকাম করুন',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                ),
-              ),
+              child: isDone
+                  ? Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: const Color(0xFFA7F3D0)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_rounded,
+                              size: 16, color: Color(0xFF059669)),
+                          SizedBox(width: 6),
+                          Text(
+                            'টাস্ক সম্পন্ন হয়েছে',
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF047857)),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ElevatedButton(
+                      onPressed: openGig,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999)),
+                      ),
+                      child: const Text(
+                        'ইনকাম করুন',
+                        style:
+                            TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ),
             ),
           ),
         ],
