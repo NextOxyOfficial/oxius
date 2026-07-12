@@ -49,7 +49,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
   late TabController _tabController;
   List<DiamondPackage> _packages = [];
   int? _selectedPackage;
-  int? _customAmount;
   bool _isLoading = false;
   bool _isLoadingPackages = true;
 
@@ -59,9 +58,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
   int _currentPage = 1;
   int _totalPages = 1;
   String? _historyError;
-
-  final TextEditingController _customAmountController = TextEditingController();
-
 
   // Local balance state for immediate updates
   late int _currentDiamondBalance;
@@ -87,7 +83,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
   @override
   void dispose() {
     _tabController.dispose();
-    _customAmountController.dispose();
     super.dispose();
   }
 
@@ -147,9 +142,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
           _packages.firstWhere((p) => p.diamonds == _selectedPackage);
       return package.price;
     }
-    if (_customAmount != null && _customAmount! >= 10) {
-      return DiamondService.calculatePrice(_customAmount!);
-    }
     return 0;
   }
 
@@ -157,8 +149,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
     final user = AuthService.currentUser;
     if (user == null) return false;
 
-    final hasAmount = _selectedPackage != null ||
-        (_customAmount != null && _customAmount! >= 10);
+    final hasAmount = _selectedPackage != null;
     final total = _calculateTotal();
     // Use local balance state for immediate validation
     final hasBalance = _currentAccountBalance >= total;
@@ -166,29 +157,36 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
     return hasAmount && hasBalance && total > 0;
   }
 
-  // Offer balance OR Google Play. Google Play grants server-side; the
-  // balance path runs the existing flow below.
+  // Offer balance OR Google Play. Google Play grants server-side (no wallet
+  // balance needed); the balance path runs the existing flow below.
   Future<void> _startPurchase() async {
-    if (!_canPurchase()) return;
-    final amount = _selectedPackage ?? _customAmount!;
+    if (_selectedPackage == null) return;
+    final amount = _selectedPackage!;
+    final total = _calculateTotal();
+    final hasBalance = _currentAccountBalance >= total;
     final result = await showPurchaseMethodSheet(
       context,
       kind: 'diamonds',
       diamondsWanted: amount,
-      onBalance: () {},
+      // Only offer the balance option when the wallet can cover it; Google
+      // Play is always available.
+      onBalance: hasBalance ? () {} : null,
+      allowBalance: hasBalance,
     );
     if (!mounted || result == null) return;
     if (result == 'balance') {
       await _purchaseDiamonds();
     } else if (result == 'google') {
+      // Server granted the diamonds — refresh from the source of truth.
+      await AuthService.refreshUserData();
+      if (!mounted) return;
       setState(() {
         _selectedPackage = null;
-        _customAmount = null;
+        _currentDiamondBalance =
+            AuthService.currentUser?.diamondBalance ?? _currentDiamondBalance;
       });
-      _customAmountController.clear();
-      AdsyToast.success(context, 'ডায়মন্ড যোগ হয়েছে!');
       widget.onPurchaseSuccess?.call();
-      AuthService.refreshUserData();
+      _tabController.animateTo(1); // show it in history
     }
   }
 
@@ -198,7 +196,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
     setState(() => _isLoading = true);
 
     try {
-      final amount = _selectedPackage ?? _customAmount!;
+      final amount = _selectedPackage!;
       final cost = _calculateTotal();
 
       // Calculate new balances immediately
@@ -215,7 +213,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
         setState(() {
           _isLoading = false;
           _selectedPackage = null;
-          _customAmount = null;
           // Update balances immediately
           _currentDiamondBalance = newDiamondBalance;
           _currentAccountBalance = newAccountBalance;
@@ -225,12 +222,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
 
         widget.onPurchaseSuccess?.call();
 
-        // Mark that purchase happened
-
         // Refresh user data in background
         AuthService.refreshUserData();
-
-        _customAmountController.clear();
 
         // Switch to history tab to show the purchase
         _tabController.animateTo(1);
@@ -483,8 +476,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                             _selectedPackage = null;
                           } else {
                             _selectedPackage = package.diamonds;
-                            _customAmount = null;
-                            _customAmountController.clear();
                           }
                         });
                       },
@@ -583,61 +574,6 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
 
           const SizedBox(height: 16),
 
-          // Custom amount
-          Text(
-            'Custom Amount',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _customAmountController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: 'Enter diamond amount',
-              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-              suffixIcon: Icon(Icons.auto_awesome,
-                  color: Colors.pink.shade400, size: 18),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.pink.shade500, width: 2),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            ),
-            onChanged: (value) {
-              setState(() {
-                _customAmount = int.tryParse(value);
-                if (_customAmount != null) {
-                  _selectedPackage = null;
-                }
-              });
-            },
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Minimum 10 diamonds',
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-              ),
-              Text(
-                '≈ ${DiamondService.calculatePrice(_customAmount ?? 0).toStringAsFixed(2)} BDT',
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
           // Info and total
           Container(
             padding: const EdgeInsets.all(12),
@@ -645,24 +581,17 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
               color: Colors.blue.shade50,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.info_outline,
-                        size: 14, color: Colors.blue.shade700),
-                    const SizedBox(width: 6),
-                    Text(
-                      '10 diamonds = 1 BDT',
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.blue.shade700),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'You will be charged ৳${_calculateTotal().toStringAsFixed(2)} from your account balance',
-                  style: TextStyle(fontSize: 12, color: Colors.blue.shade800),
+                Icon(Icons.info_outline, size: 14, color: Colors.blue.shade700),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _selectedPackage != null
+                        ? 'Total ৳${_calculateTotal().toStringAsFixed(2)} — pay with balance or Google Play'
+                        : 'Select a package to continue',
+                    style: TextStyle(fontSize: 12, color: Colors.blue.shade800),
+                  ),
                 ),
               ],
             ),
@@ -675,8 +604,9 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed:
-                  _canPurchase() && !_isLoading ? _startPurchase : null,
+              onPressed: _selectedPackage != null && !_isLoading
+                  ? _startPurchase
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.pink.shade600,
                 foregroundColor: Colors.white,

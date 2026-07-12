@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../services/google_play_billing_service.dart';
-import 'common/adsy_toast.dart';
 
-/// A bottom sheet that lets the user pay for a digital good with either their
-/// wallet BALANCE or GOOGLE PLAY. The balance path calls [onBalance] (the
-/// screen's existing flow); the Google Play path loads the catalog for [kind],
-/// runs the purchase, and returns true on a verified, server-granted purchase.
+/// A professional bottom sheet that lets the user pay for a digital good with
+/// either their wallet BALANCE or GOOGLE PLAY. The balance path returns
+/// 'balance' (the caller runs its own flow); the Google Play path loads the
+/// catalog for [kind], runs the purchase, shows an in-sheet success state, and
+/// returns 'google' on a verified, server-granted purchase.
 ///
 /// Returns:
 ///   'balance'  — user chose balance (caller runs its own flow)
@@ -56,6 +56,8 @@ class _PurchaseMethodSheet extends StatefulWidget {
 class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
   bool _loadingCatalog = true;
   bool _buying = false;
+  bool _success = false;
+  String _successMessage = '';
   List<IapCatalogItem> _catalog = [];
 
   @override
@@ -83,185 +85,431 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
     return _catalog.first;
   }
 
+  // ── Theme per product kind ────────────────────────────────────────────────
+  IconData get _kindIcon {
+    switch (widget.kind) {
+      case 'pro':
+        return Icons.workspace_premium_rounded;
+      case 'gold':
+        return Icons.military_tech_rounded;
+      default:
+        return Icons.diamond_rounded;
+    }
+  }
+
+  Color get _kindColor {
+    switch (widget.kind) {
+      case 'pro':
+        return const Color(0xFF7C3AED);
+      case 'gold':
+        return const Color(0xFFD97706);
+      default:
+        return const Color(0xFF9333EA);
+    }
+  }
+
+  String get _productTitle {
+    final it = _defaultItem;
+    switch (widget.kind) {
+      case 'pro':
+        return 'AdsyClub Pro';
+      case 'gold':
+        return 'Gold Sponsor';
+      default:
+        final d = it?.diamonds ?? widget.diamondsWanted ?? 0;
+        return '$d ডায়মন্ড';
+    }
+  }
+
+  String get _productSubtitle {
+    switch (widget.kind) {
+      case 'pro':
+      case 'gold':
+        return 'মাসিক • অটো-রিনিউ';
+      default:
+        return 'আপনার ওয়ালেটে যোগ হবে';
+    }
+  }
+
+  String _successFor(IapCatalogItem item) {
+    switch (widget.kind) {
+      case 'pro':
+        return 'AdsyClub Pro চালু হয়েছে!';
+      case 'gold':
+        return 'Gold Sponsor চালু হয়েছে!';
+      default:
+        return '${item.diamonds} ডায়মন্ড যোগ হয়েছে!';
+    }
+  }
+
   Future<void> _buyGoogle(IapCatalogItem item) async {
     setState(() => _buying = true);
     final ok = await GooglePlayBilling.buy(item, refId: widget.refId);
     if (!mounted) return;
-    setState(() => _buying = false);
     if (ok) {
-      Navigator.of(context).pop('google');
+      setState(() {
+        _buying = false;
+        _success = true;
+        _successMessage = _successFor(item);
+      });
+      // Let the user see the confirmation, then return to caller.
+      await Future.delayed(const Duration(milliseconds: 1400));
+      if (mounted) Navigator.of(context).pop('google');
     } else {
-      AdsyToast.error(context, 'পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।');
+      setState(() => _buying = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।'),
+          backgroundColor: Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final googleAvailable = _catalog.isNotEmpty;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const Text(
-                'পেমেন্ট পদ্ধতি বাছুন',
-                style: TextStyle(
-                  fontSize: 16.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 14),
-              if (widget.allowBalance && widget.onBalance != null)
-                _optionTile(
-                  icon: Icons.account_balance_wallet_outlined,
-                  color: const Color(0xFF059669),
-                  title: 'ব্যালেন্স দিয়ে',
-                  subtitle: 'আপনার Adsy Pay ব্যালেন্স থেকে',
-                  onTap: _buying
-                      ? null
-                      : () => Navigator.of(context).pop('balance'),
-                ),
-              const SizedBox(height: 10),
-              _optionTile(
-                icon: Icons.shop_rounded,
-                color: const Color(0xFF2563EB),
-                title: 'Google Play দিয়ে',
-                subtitle: _loadingCatalog
-                    ? 'লোড হচ্ছে…'
-                    : googleAvailable
-                        ? (_defaultItem?.price ?? 'Google Play')
-                        : 'এখন উপলব্ধ নয়',
-                trailing: _buying
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child:
-                            CircularProgressIndicator(strokeWidth: 2.2))
-                    : null,
-                onTap: (_loadingCatalog || _buying || !googleAvailable)
-                    ? null
-                    : () {
-                        final item = _defaultItem;
-                        if (item != null) _buyGoogle(item);
-                      },
-              ),
-              // Diamonds: if several packs are available, list them.
-              if (widget.kind == 'diamonds' &&
-                  googleAvailable &&
-                  _catalog.length > 1) ...[
-                const SizedBox(height: 14),
-                const Text(
-                  'অথবা Google Play প্যাক বাছুন',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF94A3B8),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ..._catalog.map((it) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _optionTile(
-                        icon: Icons.diamond_outlined,
-                        color: const Color(0xFF7C3AED),
-                        title: '${it.diamonds} ডায়মন্ড',
-                        subtitle: it.price,
-                        onTap: _buying ? null : () => _buyGoogle(it),
-                      ),
-                    )),
-              ],
-            ],
-          ),
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          child: _success ? _buildSuccess() : _buildChooser(),
         ),
       ),
     );
   }
 
+  // ── Success state ─────────────────────────────────────────────────────────
+  Widget _buildSuccess() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 34),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 76,
+            height: 76,
+            decoration: const BoxDecoration(
+              color: Color(0xFFDCFCE7),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.check_rounded,
+                size: 44, color: Color(0xFF16A34A)),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'পেমেন্ট সফল',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _successMessage,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF475569)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Chooser state ─────────────────────────────────────────────────────────
+  Widget _buildChooser() {
+    final googleAvailable = _catalog.isNotEmpty;
+    final showPackList =
+        widget.kind == 'diamonds' && googleAvailable && _catalog.length > 1;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 42,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // Product summary card
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  _kindColor.withValues(alpha: 0.10),
+                  _kindColor.withValues(alpha: 0.03),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _kindColor.withValues(alpha: 0.18)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _kindColor.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(_kindIcon, size: 26, color: _kindColor),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _productTitle,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _productSubtitle,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+          const Text(
+            'পেমেন্ট মাধ্যম বাছুন',
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF94A3B8),
+              letterSpacing: 0.2,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Balance option
+          if (widget.allowBalance && widget.onBalance != null) ...[
+            _optionTile(
+              iconWidget: const Icon(Icons.account_balance_wallet_rounded,
+                  size: 22, color: Color(0xFF059669)),
+              iconBg: const Color(0xFFECFDF5),
+              title: 'Adsy Pay ব্যালেন্স',
+              subtitle: 'তাৎক্ষণিক • কোনো অতিরিক্ত ফি নেই',
+              onTap: _buying ? null : () => Navigator.of(context).pop('balance'),
+            ),
+            const SizedBox(height: 10),
+          ],
+
+          // Google Play option (single, when not showing a pack list)
+          if (!showPackList)
+            _optionTile(
+              iconWidget: _googlePlayGlyph(),
+              iconBg: const Color(0xFFEFF6FF),
+              title: 'Google Play',
+              subtitle: _loadingCatalog
+                  ? 'লোড হচ্ছে…'
+                  : googleAvailable
+                      ? '${_defaultItem?.price ?? ''}  •  ১৫% Google ফি সহ'
+                      : 'এখন উপলব্ধ নয়',
+              trailing: _buying
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    )
+                  : null,
+              onTap: (_loadingCatalog || _buying || !googleAvailable)
+                  ? null
+                  : () {
+                      final item = _defaultItem;
+                      if (item != null) _buyGoogle(item);
+                    },
+            ),
+
+          // Diamonds: multiple Google Play packs
+          if (showPackList) ...[
+            _optionHeaderGoogle(),
+            const SizedBox(height: 8),
+            ..._catalog.map((it) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _optionTile(
+                    iconWidget: const Icon(Icons.diamond_rounded,
+                        size: 20, color: Color(0xFF9333EA)),
+                    iconBg: const Color(0xFFF5F3FF),
+                    title: '${it.diamonds} ডায়মন্ড',
+                    subtitle: '${it.price}  •  ১৫% Google ফি সহ',
+                    onTap: _buying ? null : () => _buyGoogle(it),
+                  ),
+                )),
+          ],
+
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.lock_rounded, size: 12, color: Color(0xFF94A3B8)),
+              const SizedBox(width: 5),
+              Text(
+                'নিরাপদ পেমেন্ট • Google দ্বারা সুরক্ষিত',
+                style: TextStyle(
+                    fontSize: 11, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _optionHeaderGoogle() {
+    return Row(
+      children: [
+        _googlePlayGlyph(size: 18),
+        const SizedBox(width: 8),
+        const Text(
+          'Google Play প্যাক বাছুন',
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF475569),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // A small Google-Play-style triangle glyph.
+  Widget _googlePlayGlyph({double size = 22}) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _PlayTrianglePainter()),
+    );
+  }
+
   Widget _optionTile({
-    required IconData icon,
-    required Color color,
+    required Widget iconWidget,
+    required Color iconBg,
     required String title,
     required String subtitle,
     VoidCallback? onTap,
     Widget? trailing,
   }) {
     final enabled = onTap != null;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Opacity(
-        opacity: enabled ? 1 : 0.5,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(11),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Opacity(
+          opacity: enabled ? 1 : 0.55,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE7ECF3)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: iconWidget,
                 ),
-                alignment: Alignment.center,
-                child: Icon(icon, size: 21, color: color),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E293B),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF64748B),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              if (trailing != null) trailing,
-              if (trailing == null && enabled)
-                const Icon(Icons.chevron_right_rounded,
-                    color: Color(0xFFCBD5E1)),
-            ],
+                if (trailing != null) trailing,
+                if (trailing == null && enabled)
+                  const Icon(Icons.chevron_right_rounded,
+                      color: Color(0xFFCBD5E1)),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Paints the multicolour Google Play triangle.
+class _PlayTrianglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    final p = Path()
+      ..moveTo(w * 0.16, h * 0.08)
+      ..lineTo(w * 0.16, h * 0.92)
+      ..lineTo(w * 0.86, h * 0.5)
+      ..close();
+    final rect = Rect.fromLTWH(0, 0, w, h);
+    final paint = Paint()
+      ..shader = const LinearGradient(
+        colors: [
+          Color(0xFF00D0FF), // blue
+          Color(0xFF00E676), // green
+          Color(0xFFFFCE00), // yellow
+          Color(0xFFFF3D57), // red
+        ],
+        begin: Alignment.bottomLeft,
+        end: Alignment.topRight,
+      ).createShader(rect);
+    canvas.drawPath(p, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
