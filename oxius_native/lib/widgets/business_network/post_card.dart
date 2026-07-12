@@ -226,7 +226,23 @@ class _PostCardState extends State<PostCard> {
     if (!mounted || post == null) return;
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => ShortsViewer(posts: [post])),
+      MaterialPageRoute(
+        builder: (ctx) => ShortsViewer(
+          posts: [post],
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
+  // "আরও পড়ুন" on a reshared post → open the original post's detail screen.
+  Future<void> _openSharedPostDetail(SharedPostPreview orig) async {
+    final ident = orig.slug.isNotEmpty ? orig.slug : orig.id.toString();
+    final post = await BusinessNetworkService.getPostByIdentifier(ident);
+    if (!mounted || post == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
     );
   }
 
@@ -235,8 +251,8 @@ class _PostCardState extends State<PostCard> {
     final img = (orig.mediaThumbUrl ?? '').isNotEmpty
         ? AppConfig.getAbsoluteUrl(orig.mediaThumbUrl!)
         : '';
-    final text =
-        HtmlContentUtils.previewText(HtmlContentUtils.toPlainText(orig.content), 220);
+    final fullText = HtmlContentUtils.toPlainText(orig.content).trim();
+    final isLongText = fullText.length > 160;
     return Padding(
       padding: const EdgeInsets.fromLTRB(6, 2, 6, 8),
       child: Container(
@@ -295,15 +311,36 @@ class _PostCardState extends State<PostCard> {
                 ),
               ),
             ),
-            if (text.trim().isNotEmpty)
+            if (fullText.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-                child: Text(
-                  text,
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 13.5, color: Color(0xFF334155), height: 1.45),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fullText,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13.5,
+                          color: Color(0xFF334155),
+                          height: 1.45),
+                    ),
+                    if (isLongText)
+                      GestureDetector(
+                        onTap: () => _openSharedPostDetail(orig),
+                        child: const Padding(
+                          padding: EdgeInsets.only(top: 3),
+                          child: Text(
+                            'আরও পড়ুন',
+                            style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2563EB)),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             // Video original: autoplay it in place (same widget as the feed).
@@ -359,7 +396,7 @@ class _PostCardState extends State<PostCard> {
           .map((l) => l.userImage!)
           .toList();
     }
-    final shown = faceUrls.take(7).toList();
+    final shown = faceUrls.take(5).toList();
 
     const double size = 24;
     const double overlap = 16;

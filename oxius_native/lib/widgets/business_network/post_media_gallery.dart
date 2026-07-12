@@ -572,6 +572,7 @@ class AutoPlaySingleVideoPreview extends StatefulWidget {
   final VoidCallback? onTap;
 
   const AutoPlaySingleVideoPreview({
+    super.key,
     required this.media,
     this.minHeight = 200,
     this.maxHeight = 520,
