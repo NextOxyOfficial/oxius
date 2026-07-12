@@ -12,6 +12,7 @@ int _parseId(dynamic value) {
 class BusinessNetworkPost {
   final int id;
   final String title;
+  final String slug; // random hash for a unique shareable link
   final BusinessNetworkUser user;
   final String content;
   final List<PostMedia> media;
@@ -29,6 +30,7 @@ class BusinessNetworkPost {
   BusinessNetworkPost({
     required this.id,
     required this.title,
+    this.slug = '',
     required this.user,
     required this.content,
     required this.media,
@@ -184,6 +186,7 @@ class BusinessNetworkPost {
             ? json['id']
             : int.tryParse(json['id'].toString()) ?? 0,
         title: json['title'] ?? '',
+        slug: json['slug']?.toString() ?? '',
         user: userData != null
             ? BusinessNetworkUser.fromJson(userData)
             : BusinessNetworkUser(
@@ -224,6 +227,7 @@ class BusinessNetworkPost {
     return {
       'id': id,
       'title': title,
+      'slug': slug,
       'user': user.toJson(),
       'content': content,
       'post_media': media.map((e) => e.toJson()).toList(),
@@ -256,6 +260,7 @@ class BusinessNetworkPost {
     return BusinessNetworkPost(
       id: id,
       title: title ?? this.title,
+      slug: slug,
       user: user ?? this.user,
       content: content ?? this.content,
       media: media ?? this.media,

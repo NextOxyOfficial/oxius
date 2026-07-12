@@ -1108,14 +1108,13 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     await AdsyShareSheet.show(
       context,
       data: AdsyShareData(
-        title: _post.title.isNotEmpty
-            ? _post.title
-            : '${_post.user.name} on Business Network',
+        title: '${_post.user.name} on Business Network',
         description: HtmlContentUtils.previewText(plainPostContent, 140),
-        url: 'https://adsyclub.com/business-network/posts/${_post.id}',
+        url:
+            'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
         imageUrl:
             _post.media.isNotEmpty ? _post.media.first.bestThumbnailUrl : null,
-        subject: _post.title.isNotEmpty ? _post.title : 'Business Network Post',
+        subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
       ),

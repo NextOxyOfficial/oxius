@@ -276,24 +276,6 @@ class _EditPostScreenState extends State<EditPostScreen> {
           _buildAuthorStrip(),
           _sectionDivider(),
           const Text(
-            'Post title',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF334155),
-            ),
-          ),
-          const SizedBox(height: 8),
-          _buildMentionField(
-            mentionKey: _titleMentionKey,
-            defaultText: widget.post.title,
-            hint: 'Add a short title (use @ to mention)',
-            minLines: 1,
-            maxLines: 2,
-            onChanged: (value) => setState(() => _titleText = value),
-          ),
-          const SizedBox(height: 14),
-          const Text(
             'Description',
             style: TextStyle(
               fontSize: 13,

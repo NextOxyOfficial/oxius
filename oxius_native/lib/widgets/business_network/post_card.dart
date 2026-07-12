@@ -208,15 +208,14 @@ class _PostCardState extends State<PostCard> {
     await AdsyShareSheet.show(
       context,
       data: AdsyShareData(
-        title: _post.title.isNotEmpty
-            ? _post.title
-            : '${_post.user.name} on Business Network',
+        title: '${_post.user.name} on Business Network',
         description: HtmlContentUtils.previewText(plainPostContent, 140),
-        url: 'https://adsyclub.com/business-network/posts/${_post.id}',
+        url:
+            'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
         imageUrl: _post.media.isNotEmpty
             ? _post.media.first.bestThumbnailUrl
             : _post.user.image ?? _post.user.avatar,
-        subject: _post.title.isNotEmpty ? _post.title : 'Business Network Post',
+        subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
       ),
@@ -644,34 +643,7 @@ class _PostCardState extends State<PostCard> {
               media: _post.media,
               onMediaTap: _handleMediaTap,
             ),
-          // Post Title with mention support and long press copy
-          if (_post.title.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              child: GestureDetector(
-                onTap: _handleViewAllComments,
-                onLongPress: () {
-                  Clipboard.setData(ClipboardData(text: _post.title));
-                  AdsyToast.success(context, 'Title copied to clipboard');
-                },
-                child: Text.rich(
-                  TextSpan(
-                    children: MentionParser.parseTextWithMentions(
-                      _post.title,
-                      context,
-                      onMentionTap: _handleMentionTap,
-                      style: const TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                        height: 1.45,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          // Post Content with long press copy
+          // Post Content with long press copy (title removed from design)
           if (plainPostContent.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),

@@ -26,8 +26,6 @@ class CreatePostScreen extends StatefulWidget {
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
   final TextEditingController _hashtagController = TextEditingController();
-  final GlobalKey<FlutterMentionsState> _titleMentionKey =
-      GlobalKey<FlutterMentionsState>();
   final GlobalKey<FlutterMentionsState> _contentMentionKey =
       GlobalKey<FlutterMentionsState>();
   final ImagePicker _picker = ImagePicker();
@@ -354,29 +352,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future<void> _createPost() async {
-    final titleController = _titleMentionKey.currentState?.controller;
     final contentController = _contentMentionKey.currentState?.controller;
 
-    final rawTitle = titleController?.text ?? '';
     final rawContent = contentController?.text ?? '';
-
-    final titleMarkup = titleController?.markupText ?? '';
     final contentMarkup = contentController?.markupText ?? '';
-
-    final titleText = MentionParser.markupToDelimitedText(titleMarkup).trim();
     final contentText =
         MentionParser.markupToDelimitedText(contentMarkup).trim();
 
-    // Check if at least one field has content
-    final hasTitle = titleText.isNotEmpty || rawTitle.trim().isNotEmpty;
+    // Single description field \u2014 title was removed from the design.
     final hasContent = contentText.isNotEmpty || rawContent.trim().isNotEmpty;
     final hasImages = _selectedImages.isNotEmpty;
     final hasVideos = _selectedVideos.isNotEmpty;
     final hasTags = _hashtags.isNotEmpty;
 
-    if (!hasTitle && !hasContent && !hasImages && !hasVideos && !hasTags) {
+    if (!hasContent && !hasImages && !hasVideos && !hasTags) {
       AdsyToast.warning(context,
-          'Please add at least a title, content, image, video, or hashtag');
+          'Please write something, or add an image, video, or hashtag');
       return;
     }
 
@@ -388,11 +379,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           : null;
 
       final post = await BusinessNetworkService.createPost(
-        title: hasTitle
-            ? (titleText.isNotEmpty
-                ? titleText
-                : rawTitle.replaceAll('\u00A0', ' ').trim())
-            : null,
+        title: null,
         content: hasContent
             ? (contentText.isNotEmpty
                 ? contentText
@@ -628,117 +615,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
               const SizedBox(height: 24),
 
-              // Title Input with Mentions
-              FlutterMentions(
-                key: _titleMentionKey,
-                suggestionPosition: SuggestionPosition.Bottom,
-                maxLines: 5,
-                minLines: 1,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                  height: 1.3,
-                  letterSpacing: -0.5,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'What\'s on your mind? Write a post title...',
-                  hintStyle: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade300,
-                    letterSpacing: -0.5,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                onSearchChanged: (trigger, value) async {
-                  if (trigger == '@') {
-                    final users = await _searchUsers(value);
-                    if (mounted) {
-                      setState(() {
-                        _mentionUserData = users;
-                      });
-                    }
-                  }
-                },
-                mentions: [
-                  Mention(
-                    trigger: '@',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    data: _mentionUserData,
-                    matchAll: false,
-                    disableMarkup: false,
-                    suggestionBuilder: (data) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.grey.shade100,
-                              ),
-                              child: ClipOval(
-                                child: () {
-                                  final avatarUrl =
-                                      AppConfig.getAbsoluteUrl(data['photo']);
-                                  if (avatarUrl.isNotEmpty) {
-                                    return Image.network(
-                                      avatarUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Icon(Icons.person,
-                                            color: Colors.grey.shade400,
-                                            size: 20);
-                                      },
-                                    );
-                                  }
-                                  return Icon(Icons.person,
-                                      color: Colors.grey.shade400, size: 20);
-                                }(),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                data['full_name'] ?? data['display'] ?? '',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
+              // Post text (description) — single field; title was removed to
+              // avoid confusing users about title vs description.
               // Content Input with Mentions
               FlutterMentions(
                 key: _contentMentionKey,
                 suggestionPosition: SuggestionPosition.Bottom,
-                maxLines: 10,
-                minLines: 3,
+                maxLines: 14,
+                minLines: 4,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 17,
                   color: Colors.grey.shade800,
                   height: 1.5,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Share more details... Use @ to mention someone',
+                  hintText: 'What\'s on your mind? Use @ to mention someone',
                   hintStyle: TextStyle(
                     fontSize: 16,
                     color: Colors.grey.shade400,
@@ -820,13 +711,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
               Builder(
                 builder: (context) {
-                  final titleText =
-                      _titleMentionKey.currentState?.controller?.text ?? '';
                   final contentText =
                       _contentMentionKey.currentState?.controller?.text ?? '';
-                  final text = '$titleText\n$contentText';
                   return FirstLinkPreview(
-                    text: text,
+                    text: contentText,
                     margin: const EdgeInsets.only(top: 12),
                   );
                 },

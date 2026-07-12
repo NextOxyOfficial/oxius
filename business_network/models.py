@@ -342,15 +342,26 @@ class BusinessNetworkPost(models.Model):
             return base_number[:7] + random_suffix
         return base_number
     
+    def _generate_hash_slug(self):
+        """A short random hash so every post has a unique, unguessable
+        shareable link (title was removed, so slugs no longer derive from it)."""
+        from django.utils.crypto import get_random_string
+        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
+        for _ in range(12):
+            candidate = get_random_string(10, alphabet)
+            if not BusinessNetworkPost.objects.filter(slug=candidate).exists():
+                return candidate
+        return get_random_string(14, alphabet)
+
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
-        if not self.slug and self.title:
-            self.slug = generate_unique_slug(BusinessNetworkPost,self.title,self)
+        if not self.slug:
+            self.slug = self._generate_hash_slug()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Post {self.title} by {self.author.username}"
+        return f"Post {self.id} by {self.author.username}"
 
 
 
