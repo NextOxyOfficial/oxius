@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
@@ -570,54 +571,175 @@ class _ProfileScreenState extends State<ProfileScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
+        final profileUrl =
+            '${AppConfig.mediaBaseUrl}/business-network/profile/${widget.userId}';
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              ListTile(
-                leading:
-                    const Icon(Icons.share_outlined, color: Color(0xFF3B82F6)),
-                title: const Text('Share Profile'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _shareProfile();
-                },
+              const Text(
+                'প্রোফাইল শেয়ার করুন',
+                style: TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A)),
+              ),
+              const SizedBox(height: 12),
+              // Profile link + one-tap copy.
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.link_rounded,
+                        size: 18, color: Color(0xFF64748B)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        profileUrl,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 12.5, color: Color(0xFF475569)),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Material(
+                      color: const Color(0xFF2563EB),
+                      borderRadius: BorderRadius.circular(9),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(9),
+                        onTap: () async {
+                          await Clipboard.setData(
+                              ClipboardData(text: profileUrl));
+                          if (!context.mounted) return;
+                          AdsyToast.success(context, 'লিংক কপি হয়েছে');
+                          Navigator.pop(context);
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 9),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.copy_rounded,
+                                  size: 14, color: Colors.white),
+                              SizedBox(width: 5),
+                              Text('Copy',
+                                  style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              _profileOptionTile(
+                icon: Icons.ios_share_rounded,
+                color: const Color(0xFF3B82F6),
+                title: 'আরও শেয়ার করুন',
+                subtitle: 'WhatsApp, Facebook, X, Messenger…',
+                onTap: _shareProfile,
               ),
               if (!isOwnProfile && AuthService.isAuthenticated)
-                if (_isBlockedProfile)
-                  ListTile(
-                    leading: const Icon(Icons.lock_open_rounded,
-                        color: Color(0xFF3B82F6)),
-                    title: const Text('Unblock User'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _unblockProfileUser();
-                    },
-                  )
-                else
-                  ListTile(
-                    leading: const Icon(Icons.block_rounded, color: Colors.red),
-                    title: const Text('Block User',
-                        style: TextStyle(color: Colors.red)),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _blockProfileUser();
-                    },
-                  ),
-              const SizedBox(height: 8),
+                _isBlockedProfile
+                    ? _profileOptionTile(
+                        icon: Icons.lock_open_rounded,
+                        color: const Color(0xFF059669),
+                        title: 'Unblock User',
+                        onTap: _unblockProfileUser,
+                      )
+                    : _profileOptionTile(
+                        icon: Icons.block_rounded,
+                        color: const Color(0xFFDC2626),
+                        title: 'Block User',
+                        danger: true,
+                        onTap: _blockProfileUser,
+                      ),
             ],
+          ),
           ),
         );
       },
+    );
+  }
+
+  Widget _profileOptionTile({
+    required IconData icon,
+    required Color color,
+    required String title,
+    String? subtitle,
+    bool danger = false,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 18, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: danger
+                          ? const Color(0xFFDC2626)
+                          : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 1),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 11.5, color: Color(0xFF94A3B8))),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -2187,7 +2309,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(4),
+      // Match the main feed's near-edge horizontal padding (1px).
+      padding: const EdgeInsets.fromLTRB(1, 4, 1, 4),
       itemCount: _userPosts.length,
       itemBuilder: (context, index) {
         return PostCard(
