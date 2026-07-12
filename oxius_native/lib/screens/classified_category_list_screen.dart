@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../services/ads_service.dart';
+import '../widgets/ads/feed_native_ad_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
@@ -936,16 +938,25 @@ class _ClassifiedCategoryListScreenState
   }
 
   Widget _buildPostsList(List<ClassifiedPost> posts, {bool isNearby = false}) {
+    final adsOn = AdsService.placementActive('classified_list_native');
+    final every =
+        adsOn ? AdsService.feedFrequency('classified_list_native', fallback: 6) : 0;
+    final block = every + 1;
+    final adCount = every == 0 ? 0 : posts.length ~/ every;
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      itemCount: posts.length,
+      itemCount: posts.length + adCount,
       separatorBuilder: (context, index) =>
           const Divider(height: 1, thickness: 1),
-      itemBuilder: (context, index) {
-        final post = posts[index];
-        return _buildPostCard(post, isNearby: isNearby);
+      itemBuilder: (context, i) {
+        if (every != 0 && (i + 1) % block == 0) {
+          return const FeedNativeAdCard(placementKey: 'classified_list_native');
+        }
+        final idx = every == 0 ? i : i - (i ~/ block);
+        if (idx >= posts.length) return const SizedBox.shrink();
+        return _buildPostCard(posts[idx], isNearby: isNearby);
       },
     );
   }

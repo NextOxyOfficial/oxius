@@ -191,8 +191,14 @@ Future<void> _bootstrap(UserStateService userState) async {
       timeout: const Duration(seconds: 12));
 
   await _safeInit('DeepLink', () => DeepLinkService.instance.init());
-  // Ads (AppLovin MAX) — server-config driven; no-op when disabled.
-  _safeInit('Ads', () => AdsService.init());
+  // Ads (Google AdMob) — server-config driven; no-op when disabled.
+  _safeInit('Ads', () async {
+    await AdsService.init();
+    AdsService.loadAppOpen();
+  });
+  // App-open ad on returning to the app (never on first launch; cooldown +
+  // gap enforced inside AdsService).
+  WidgetsBinding.instance.addObserver(_AppOpenLifecycleObserver());
 
   if (userState.isAuthenticated) {
     debugPrint('Session restored: ${userState.userName}');
@@ -234,6 +240,17 @@ class _SuspensionLifecycleObserver extends WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed && AuthService.isAuthenticated) {
       // validateToken() pulls a fresh profile and locks the app if suspended.
       AuthService.validateToken();
+    }
+  }
+}
+
+class _AppOpenLifecycleObserver extends WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Only on genuine resume (returning from background) — never the cold
+    // start. AdsService enforces the cooldown + no-stacking gap.
+    if (state == AppLifecycleState.resumed) {
+      AdsService.showAppOpenIfReady();
     }
   }
 }

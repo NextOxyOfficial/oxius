@@ -256,6 +256,10 @@ class AdsService {
 
   static AppOpenAd? _appOpenAd;
   static bool _appOpenShowing = false;
+  static DateTime _lastAppOpen = DateTime.fromMillisecondsSinceEpoch(0);
+  // App-open shows at most once every few minutes so returning to the app
+  // isn't an ad wall.
+  static const _appOpenCooldown = Duration(minutes: 4);
 
   static void loadAppOpen() {
     if (!placementActive('app_open') || _appOpenAd != null) return;
@@ -274,6 +278,7 @@ class AdsService {
 
   static void showAppOpenIfReady() {
     if (_appOpenShowing || _fullScreenTooSoon()) return;
+    if (DateTime.now().difference(_lastAppOpen) < _appOpenCooldown) return;
     final ad = _appOpenAd;
     if (ad == null) {
       loadAppOpen();
@@ -285,6 +290,7 @@ class AdsService {
       onAdDismissedFullScreenContent: (a) {
         a.dispose();
         _appOpenShowing = false;
+        _lastAppOpen = DateTime.now();
         _lastFullScreen = DateTime.now();
         loadAppOpen();
       },
