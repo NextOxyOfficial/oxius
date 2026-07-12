@@ -977,8 +977,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(
-                          context, '/business-network/profile',
-                          arguments: {'userId': user.id}),
+                          context, '/seller-profile', arguments: {
+                        'userId': user.id,
+                        'userName': user.displayName,
+                      }),
                       child: Row(
                         children: [
                           Flexible(

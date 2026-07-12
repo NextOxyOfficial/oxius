@@ -1117,6 +1117,16 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
+        // Repost this short to the user's own profile/feed.
+        onRepost: (caption) async {
+          if (!AuthService.isAuthenticated) return false;
+          final targetId = _post.sharedFrom?.id ?? _post.id;
+          final result = await BusinessNetworkService.resharePost(
+            targetId,
+            caption: caption,
+          );
+          return result != null;
+        },
       ),
     );
     widget.onShare?.call(_post);
@@ -1506,7 +1516,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     const SizedBox(height: 18),
                     if (!_isOwnPost()) ...[
                       _ActionButton(
-                        materialIcon: Icons.card_giftcard,
+                        iconPath: 'assets/icons/gift.png',
                         label: 'Gift',
                         onTap: () {
                           // ignore: discarded_futures
@@ -1683,22 +1693,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                         ),
                       ),
                     ),
-                    if (post.title.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        post.title,
-                        maxLines: _captionExpanded ? 4 : 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.95),
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
+                    // Title removed — show only the description, like the BN feed.
                     if (post.content.trim().isNotEmpty) ...[
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 8),
                       GestureDetector(
                         onTap: () => setState(
                             () => _captionExpanded = !_captionExpanded),

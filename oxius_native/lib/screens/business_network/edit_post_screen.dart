@@ -177,7 +177,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     return Portal(
       child: Scaffold(
-      backgroundColor: const Color(0xFFF5F8FC),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -268,8 +268,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
   }
 
   Widget _buildEditCard() {
-    return _panel(
-      padding: const EdgeInsets.all(12),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -795,25 +795,4 @@ class _EditPostScreenState extends State<EditPostScreen> {
     );
   }
 
-  Widget _panel({
-    required Widget child,
-    EdgeInsetsGeometry padding = EdgeInsets.zero,
-  }) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5EDF7)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
 }

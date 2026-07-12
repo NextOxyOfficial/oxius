@@ -489,6 +489,8 @@ class SharedPostPreview {
   // First media to preview: a photo, or a video's thumbnail.
   final String? mediaThumbUrl;
   final bool mediaIsVideo;
+  // Full first media object (used to autoplay a shared video).
+  final PostMedia? firstMedia;
   final int likeCount;
   final int commentCount;
 
@@ -502,6 +504,7 @@ class SharedPostPreview {
     this.content = '',
     this.mediaThumbUrl,
     this.mediaIsVideo = false,
+    this.firstMedia,
     this.likeCount = 0,
     this.commentCount = 0,
   });
@@ -513,6 +516,7 @@ class SharedPostPreview {
 
     String? thumb;
     bool isVideo = false;
+    PostMedia? firstMedia;
     final mediaList = (json['post_media'] as List?)?.whereType<Map>().toList();
     if (mediaList != null && mediaList.isNotEmpty) {
       final m = Map<String, dynamic>.from(mediaList.first);
@@ -521,6 +525,9 @@ class SharedPostPreview {
           ? (m['thumbnail'] ?? m['file'] ?? '').toString()
           : (m['file'] ?? m['image'] ?? m['url'] ?? '').toString();
       if (thumb.isEmpty) thumb = null;
+      try {
+        firstMedia = PostMedia.fromJson(m);
+      } catch (_) {}
     }
 
     return SharedPostPreview(
@@ -535,6 +542,7 @@ class SharedPostPreview {
       content: (json['content'] ?? '').toString(),
       mediaThumbUrl: thumb,
       mediaIsVideo: isVideo,
+      firstMedia: firstMedia,
       likeCount: int.tryParse('${json['like_count'] ?? 0}') ?? 0,
       commentCount: int.tryParse('${json['comment_count'] ?? 0}') ?? 0,
     );

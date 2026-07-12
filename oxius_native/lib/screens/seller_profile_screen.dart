@@ -74,7 +74,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     try {
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/user/${widget.userId}/'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -119,7 +119,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
       final response = await http.get(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (response.statusCode == 200) {

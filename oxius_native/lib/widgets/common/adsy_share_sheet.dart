@@ -185,7 +185,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     setState(() => _reposting = false);
     if (ok) {
       Navigator.pop(context);
-      AdsyToast.success(context, 'আপনার প্রোফাইলে শেয়ার হয়েছে! 🔁');
+      AdsyToast.success(context, 'আপনার প্রোফাইলে শেয়ার হয়েছে');
     } else {
       AdsyToast.error(context, 'শেয়ার করা যায়নি। আবার চেষ্টা করুন।');
     }
@@ -240,9 +240,9 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
           child: ElevatedButton.icon(
             onPressed: _reposting ? null : _doRepost,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB),
+              backgroundColor: const Color(0xFF1E293B),
               foregroundColor: Colors.white,
-              disabledBackgroundColor: const Color(0xFFBFDBFE),
+              disabledBackgroundColor: const Color(0xFF94A3B8),
               elevation: 0,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(11)),

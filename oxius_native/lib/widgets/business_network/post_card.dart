@@ -24,6 +24,7 @@ import 'post_comments_preview.dart';
 import 'post_comment_input.dart';
 import '../../screens/business_network/post_media_viewer_screen.dart';
 import '../../screens/business_network/shorts_player_screen.dart';
+import '../../screens/business_network/shorts_viewer.dart';
 
 class PostCard extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -32,6 +33,8 @@ class PostCard extends StatefulWidget {
   final VoidCallback? onPostDeleted;
   final void Function(String userId)? onUserBlocked;
   final void Function(int postId, bool isSaved)? onSaveChanged;
+  // Called with the new reshare post so the feed can prepend it without reload.
+  final void Function(BusinessNetworkPost reshared)? onReshared;
 
   const PostCard({
     super.key,
@@ -41,6 +44,7 @@ class PostCard extends StatefulWidget {
     this.onPostDeleted,
     this.onUserBlocked,
     this.onSaveChanged,
+    this.onReshared,
   });
 
   @override
@@ -214,6 +218,18 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
+  // Tap a shared video → open it full-screen in the Shorts player (with the
+  // original owner's details), like other social apps.
+  Future<void> _openSharedVideoInShorts(SharedPostPreview orig) async {
+    final ident = orig.slug.isNotEmpty ? orig.slug : orig.id.toString();
+    final post = await BusinessNetworkService.getPostByIdentifier(ident);
+    if (!mounted || post == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ShortsViewer(posts: [post])),
+    );
+  }
+
   Widget _buildResharedOriginal(SharedPostPreview orig) {
     final avatar = AppConfig.getAbsoluteUrl(orig.authorImage);
     final img = (orig.mediaThumbUrl ?? '').isNotEmpty
@@ -236,7 +252,7 @@ class _PostCardState extends State<PostCard> {
             InkWell(
               onTap: () => _openSharedAuthor(orig),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
                 child: Row(
                   children: [
                     Container(
@@ -290,36 +306,28 @@ class _PostCardState extends State<PostCard> {
                       fontSize: 13.5, color: Color(0xFF334155), height: 1.45),
                 ),
               ),
-            if (img.isNotEmpty)
+            // Video original: autoplay it in place (same widget as the feed).
+            if (orig.mediaIsVideo && orig.firstMedia != null)
               ClipRRect(
                 borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(14)),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Image.network(
-                      img,
-                      width: double.infinity,
-                      height: 190,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        height: orig.mediaIsVideo ? 190 : 0,
-                        color: const Color(0xFF0F172A),
-                      ),
-                    ),
-                    // Play badge for video originals.
-                    if (orig.mediaIsVideo)
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.play_arrow_rounded,
-                            color: Colors.white, size: 30),
-                      ),
-                  ],
+                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+                child: AutoPlaySingleVideoPreview(
+                  media: orig.firstMedia!,
+                  minHeight: 190,
+                  maxHeight: 320,
+                  onTap: () => _openSharedVideoInShorts(orig),
+                ),
+              )
+            else if (img.isNotEmpty)
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+                child: Image.network(
+                  img,
+                  width: double.infinity,
+                  height: 190,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                 ),
               ),
           ],
@@ -372,7 +380,7 @@ class _PostCardState extends State<PostCard> {
         padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
         child: Text(
           likeLabel,
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 12.5,
@@ -429,7 +437,7 @@ class _PostCardState extends State<PostCard> {
           Flexible(
             child: Text(
               likeLabel,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 12.5,
@@ -470,7 +478,12 @@ class _PostCardState extends State<PostCard> {
             targetId,
             caption: caption,
           );
-          return result != null;
+          if (result != null) {
+            // Prepend the fresh repost to the feed (no reload).
+            widget.onReshared?.call(result);
+            return true;
+          }
+          return false;
         },
       ),
     );
@@ -633,7 +646,6 @@ class _PostCardState extends State<PostCard> {
                   icon: Icons.flag_outlined,
                   color: const Color(0xFFEA580C),
                   title: 'Report',
-                  subtitle: 'এই পোস্টে সমস্যা আছে',
                   onTap: _handleReportPost,
                 ),
                 _menuTile(

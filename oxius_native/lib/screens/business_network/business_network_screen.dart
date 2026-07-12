@@ -517,6 +517,20 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     _refreshPosts();
   }
 
+  // A repost just happened — show it at the top of the feed immediately,
+  // no reload, and glide up to it.
+  void _handlePostReshared(BusinessNetworkPost newPost) {
+    if (!mounted) return;
+    setState(() => _posts.insert(0, newPost));
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   void _openCreatePost() {
     Navigator.push(
       context,
@@ -798,6 +812,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               _handleCommentAddedByPostId(post.id, comment),
           onPostDeleted: () => _handlePostDeletedByPostId(post.id),
           onUserBlocked: _handleUserBlocked,
+          onReshared: _handlePostReshared,
         );
 
       case _FeedSlotType.footer:

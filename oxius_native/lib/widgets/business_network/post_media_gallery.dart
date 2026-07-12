@@ -179,7 +179,7 @@ class PostMediaGallery extends StatelessWidget {
     // The preview sizes ITSELF to the video's aspect ratio (clamped), exactly
     // like a single image — no fixed box, so wide videos no longer show dark
     // letterbox bars.
-    return _AutoPlaySingleVideoPreview(
+    return AutoPlaySingleVideoPreview(
       media: media[index],
       minHeight: 200,
       maxHeight: 520,
@@ -565,13 +565,13 @@ class _AdaptiveAspectRatioBoxState extends State<_AdaptiveAspectRatioBox> {
   }
 }
 
-class _AutoPlaySingleVideoPreview extends StatefulWidget {
+class AutoPlaySingleVideoPreview extends StatefulWidget {
   final PostMedia media;
   final double minHeight;
   final double maxHeight;
   final VoidCallback? onTap;
 
-  const _AutoPlaySingleVideoPreview({
+  const AutoPlaySingleVideoPreview({
     required this.media,
     this.minHeight = 200,
     this.maxHeight = 520,
@@ -579,10 +579,10 @@ class _AutoPlaySingleVideoPreview extends StatefulWidget {
   });
 
   @override
-  State<_AutoPlaySingleVideoPreview> createState() => _AutoPlaySingleVideoPreviewState();
+  State<AutoPlaySingleVideoPreview> createState() => AutoPlaySingleVideoPreviewState();
 }
 
-class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview> {
+class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   // Aspect ratio measured from the thumbnail so the box is sized correctly even
@@ -600,7 +600,7 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
   }
 
   @override
-  void didUpdateWidget(covariant _AutoPlaySingleVideoPreview oldWidget) {
+  void didUpdateWidget(covariant AutoPlaySingleVideoPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.media.bestUrl != widget.media.bestUrl) {
       _disposeController();
