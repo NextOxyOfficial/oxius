@@ -39,6 +39,7 @@ urlpatterns = urlpatterns + [
     path("api/zonal/", include("zonal.urls")),
     path("api/ads/", include("ads.urls")),
     path("api/app-version/", include("app_versioning.urls")),
+    path("api/", include("iap.urls")),
     path("api/news/", include("news.urls")),
     path(
         "api/",

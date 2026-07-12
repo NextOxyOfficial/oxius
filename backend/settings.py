@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "mobile_recharge",
     "subscription",
     "business_network",
+    "iap",
     "elearning",
     "news",
     "sale",  # Add the sale app here
@@ -639,6 +640,13 @@ SP_ENDPOINT = "https://engine.shurjopayment.com"
 SP_RETURN = "https://adsyclub.com/verify-payment"
 SP_CANCEL = "https://adsyclub.com/deposit-withdraw/"
 SP_PREFIX = "ADSYCLUB_"
+
+# ── Google Play In-App Purchase (server-side verification) ──
+# Fill these once the Play service account is created. Until then, IAP verify
+# returns failure (no entitlement) so the app ships safely.
+GOOGLE_PLAY_PACKAGE_NAME = os.getenv("GOOGLE_PLAY_PACKAGE_NAME", "com.oxius.app")
+# Path to the service-account JSON, OR the raw JSON string.
+GOOGLE_PLAY_SA_JSON = os.getenv("GOOGLE_PLAY_SA_JSON", "")
 
 # sms settings
 API_SMS = os.getenv("API_SMS", "")
