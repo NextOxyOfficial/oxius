@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/ads_service.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/network_error_handler.dart';
@@ -254,6 +255,11 @@ class _ShortsViewerState extends State<ShortsViewer> {
   bool _isRequestingMore = false;
   final Map<int, int> _mediaViewsOverrides = {};
   final Map<int, VideoPlayerController> _preloadedControllers = {};
+
+  // Ads: the currently-playing controller (so we can pause it behind a
+  // full-screen ad) + a counter that triggers one every N shorts.
+  VideoPlayerController? _activeController;
+  int _shortsSinceAd = 0;
   // Media ids whose controller has been handed over to (and is owned by) a
   // live page — never re-preload these or we'd stream the same video twice.
   final Set<int> _pageOwnedMediaIds = {};
@@ -278,6 +284,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
     _currentIndex = 0;
     _pageController = PageController(initialPage: _currentIndex);
 
+    // Warm up the shorts full-screen ad slot.
+    AdsService.preloadInterstitial('shorts_fullscreen');
+
     // Start warming neighbours immediately — previously preloading only
     // began after the FIRST swipe, so the second video always showed a
     // loading state.
@@ -291,6 +300,22 @@ class _ShortsViewerState extends State<ShortsViewer> {
     if (target.isEmpty) return 0;
     final idx = items.indexWhere((e) => e.media.bestUrl == target);
     return idx < 0 ? 0 : idx;
+  }
+
+  // Full-screen ad every N shorts (server-tuned, default 5). Pauses the
+  // current video so audio doesn't play behind the ad, resumes after.
+  Future<void> _maybeShowShortsAd(int index) async {
+    if (!AdsService.placementActive('shorts_fullscreen')) return;
+    if (index >= _items.length) return; // on the end/caught-up page
+    _shortsSinceAd++;
+    final every = AdsService.feedFrequency('shorts_fullscreen', fallback: 5);
+    if (_shortsSinceAd < every) return;
+    _shortsSinceAd = 0;
+    final wasPlaying = _activeController?.value.isPlaying ?? false;
+    _activeController?.pause();
+    await AdsService.showInterstitial('shorts_fullscreen');
+    if (!mounted) return;
+    if (wasPlaying) _activeController?.play();
   }
 
   Future<void> _maybeRequestMore(int index) async {
@@ -474,6 +499,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
               });
               _maybeRequestMore(i);
               _preloadVideos(i);
+              _maybeShowShortsAd(i);
             },
             itemBuilder: (context, index) {
               // Show end page (loading or all caught up)
@@ -632,6 +658,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
                   // marked so we never spin up a duplicate stream for it.
                   _preloadedControllers.remove(item.media.id);
                   _pageOwnedMediaIds.add(item.media.id);
+                  _activeController = controller;
                 },
                 onControllerDisposed: () {
                   _pageOwnedMediaIds.remove(item.media.id);

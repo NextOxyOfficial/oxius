@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
+import '../services/ads_service.dart';
 import '../utils/image_compressor.dart';
 import '../utils/url_launcher_utils.dart';
 import 'terms_and_conditions_screen.dart';
@@ -50,6 +51,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
   void initState() {
     super.initState();
     _loadGigDetails();
+    // Warm up the highest-eCPM slot so tapping Submit shows it instantly.
+    AdsService.preloadRewarded('gig_submit_rewarded');
   }
 
   @override
@@ -138,6 +141,15 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     if (_gig == null) {
       _showError('Gig details not loaded');
       return;
+    }
+
+    // Monetization: a rewarded video plays before the work is submitted.
+    // This is the app's highest-eCPM slot and fits the earning context.
+    // It NEVER blocks — if no ad is ready, showRewarded returns instantly and
+    // the submission proceeds as normal.
+    if (AdsService.placementActive('gig_submit_rewarded')) {
+      await AdsService.showRewarded('gig_submit_rewarded');
+      if (!mounted) return;
     }
 
     setState(() => _isSubmitting = true);

@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import '../services/user_state_service.dart';
 import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
+import '../services/ads_service.dart';
+import '../widgets/ads/feed_native_ad_card.dart';
 import '../services/api_service.dart';
 import '../utils/url_launcher_utils.dart';
 import '../widgets/home/account_balance_section.dart';
@@ -1352,18 +1354,37 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           else if (_filteredGigs.isEmpty)
             _buildEmptyState(isMobile)
           else
-            ListView.separated(
-              key: ValueKey(
-                  'gigs_list_${_selectedFilter}_${_filteredGigs.length}'),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _filteredGigs.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final gig = _filteredGigs[index];
-                return _buildGigCard(gig, isMobile);
-              },
-            ),
+            Builder(builder: (context) {
+              // Interleave a native ad after every N gigs (server-tuned).
+              final adsOn = AdsService.placementActive('gig_list_native');
+              final every = adsOn
+                  ? AdsService.feedFrequency('gig_list_native', fallback: 5)
+                  : 0;
+              final block = every + 1;
+              final adCount =
+                  every == 0 ? 0 : _filteredGigs.length ~/ every;
+              final total = _filteredGigs.length + adCount;
+              return ListView.separated(
+                key: ValueKey(
+                    'gigs_list_${_selectedFilter}_${_filteredGigs.length}'),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: total,
+                separatorBuilder: (context, index) =>
+                    const Divider(height: 1),
+                itemBuilder: (context, i) {
+                  if (every != 0 && (i + 1) % block == 0) {
+                    return const FeedNativeAdCard(
+                        placementKey: 'gig_list_native');
+                  }
+                  final gigIndex = every == 0 ? i : i - (i ~/ block);
+                  if (gigIndex >= _filteredGigs.length) {
+                    return const SizedBox.shrink();
+                  }
+                  return _buildGigCard(_filteredGigs[gigIndex], isMobile);
+                },
+              );
+            }),
         ],
       ),
     );
