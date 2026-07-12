@@ -977,10 +977,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(
-                          context, '/seller-profile', arguments: {
-                        'userId': user.id,
-                        'userName': user.displayName
-                      }),
+                          context, '/business-network/profile',
+                          arguments: {'userId': user.id}),
                       child: Row(
                         children: [
                           Flexible(
@@ -1037,33 +1035,31 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   ],
                 ),
               ),
-              if (user.salePostCount != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              // AdsyClub profile icon — tap to open the seller's Business
+              // Network profile (mirrors the classified/service details page).
+              InkWell(
+                onTap: () => Navigator.pushNamed(
+                    context, '/business-network/profile',
+                    arguments: {'userId': user.id}),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${user.salePostCount}',
-                        style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF111827),
-                            height: 1),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(_t('sale_listings', 'টি বিজ্ঞাপন'),
-                          style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF6B7280),
-                              fontWeight: FontWeight.w500)),
-                    ],
+                  child: Image.asset(
+                    'assets/images/favicon.png',
+                    width: 22,
+                    height: 22,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.person_rounded,
+                      size: 22,
+                      color: Color(0xFF10B981),
+                    ),
                   ),
                 ),
+              ),
             ],
           ),
         ],

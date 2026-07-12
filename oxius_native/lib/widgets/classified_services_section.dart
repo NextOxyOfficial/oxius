@@ -252,16 +252,16 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
       },
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(compact ? 2 : 4, 6, compact ? 2 : 4, 8),
+        padding: EdgeInsets.fromLTRB(compact ? 2 : 4, 5, compact ? 2 : 4, 6),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: compact ? 50 : 56,
-              height: compact ? 50 : 56,
+              width: compact ? 46 : 50,
+              height: compact ? 46 : 50,
               decoration: BoxDecoration(
                 color: const Color(0xFFECFEFF),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: const Color(0xFF67E8F9)),
                 boxShadow: [
                   BoxShadow(
@@ -275,17 +275,18 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                 isSeeLess
                     ? Icons.keyboard_arrow_up_rounded
                     : Icons.keyboard_arrow_down_rounded,
-                size: compact ? 26 : 30,
+                size: compact ? 24 : 28,
                 color: const Color(0xFF0891B2),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             SizedBox(
-              height: compact ? 32 : 34,
+              height: compact ? 28 : 30,
               child: Text(
                 label,
                 textAlign: TextAlign.center,
-                style: AppText.tileLabel(color: const Color(0xFF0891B2)),
+                style: AppText.tileLabel(color: const Color(0xFF0891B2))
+                    .copyWith(height: 1.15),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

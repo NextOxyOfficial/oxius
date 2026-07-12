@@ -42,12 +42,12 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
                 ? 5
                 : 6;
     final childAspectRatio = width < 340
-        ? 0.72
+        ? 0.90
         : width < 390
-            ? 0.58
+            ? 0.80
             : width < 760
-                ? 0.76
-                : 0.84;
+                ? 0.82
+                : 0.86;
     final spacing = width < 390 ? 8.0 : 10.0;
 
     if (widget.isLoading) {
@@ -161,40 +161,41 @@ class _CategoryTileState extends State<_CategoryTile> {
             onTap: widget.onTap,
             child: Padding(
               padding:
-                  EdgeInsets.fromLTRB(compact ? 2 : 4, 6, compact ? 2 : 4, 8),
+                  EdgeInsets.fromLTRB(compact ? 2 : 4, 5, compact ? 2 : 4, 6),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 160),
                     curve: Curves.easeOut,
-                    width: compact ? 50 : 56,
-                    height: compact ? 50 : 56,
+                    width: compact ? 46 : 50,
+                    height: compact ? 46 : 50,
                     decoration: BoxDecoration(
                       color: widget.isSelected
                           ? highlightColor.withValues(alpha: 0.10)
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
                       child: _CategoryImage(
                         url: widget.category.getIconAsset(),
                         categoryTitle: widget.category.title,
-                        size: compact ? 30 : 34,
+                        size: compact ? 28 : 31,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   SizedBox(
-                    height: compact ? 32 : 34,
+                    height: compact ? 28 : 30,
                     child: Text(
                       widget.category.title,
                       textAlign: TextAlign.center,
                       style: AppText.tileLabel(color: labelColor).copyWith(
-                        fontSize: compact ? 11.2 : 12,
+                        fontSize: compact ? 11 : 11.5,
                         fontWeight: widget.isSelected
                             ? FontWeight.w700
                             : FontWeight.w600,
+                        height: 1.15,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -216,22 +217,22 @@ class _LoadingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+      padding: const EdgeInsets.fromLTRB(4, 5, 4, 6),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Container(
-            width: 52,
-            height: 28,
+            width: 46,
+            height: 24,
             decoration: BoxDecoration(
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(6),
