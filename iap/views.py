@@ -83,7 +83,9 @@ def iap_verify(request):
     if product.is_subscription:
         google_data = verify.verify_subscription(token)
     else:
-        google_data = verify.verify_product(token=token, product_id=product_id)
+        google_data = verify.verify_product(
+            product_id=product_id, purchase_token=token
+        )
 
     if not google_data:
         purchase.status = "failed"
