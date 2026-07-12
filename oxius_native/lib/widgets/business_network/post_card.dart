@@ -204,20 +204,224 @@ class _PostCardState extends State<PostCard> {
     LoginPromptDialog.show(context, action: action);
   }
 
+  // Embedded card showing the original post inside a reshare/repost.
+  Widget _buildResharedOriginal(SharedPostPreview orig) {
+    final avatar = AppConfig.getAbsoluteUrl(orig.authorImage);
+    final img =
+        orig.mediaUrls.isNotEmpty ? AppConfig.getAbsoluteUrl(orig.mediaUrls.first) : '';
+    final text =
+        HtmlContentUtils.previewText(HtmlContentUtils.toPlainText(orig.content), 220);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 2, 10, 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFE2E8F0),
+                    ),
+                    child: ClipOval(
+                      child: avatar.isNotEmpty
+                          ? Image.network(avatar,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.person_rounded,
+                                  size: 16,
+                                  color: Color(0xFF94A3B8)))
+                          : const Icon(Icons.person_rounded,
+                              size: 16, color: Color(0xFF94A3B8)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      orig.authorName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A)),
+                    ),
+                  ),
+                  if (orig.authorVerified) ...[
+                    const SizedBox(width: 4),
+                    const Icon(Icons.verified, size: 13, color: Color(0xFF2563EB)),
+                  ],
+                ],
+              ),
+            ),
+            if (text.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+                child: Text(
+                  text,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 13.5, color: Color(0xFF334155), height: 1.45),
+                ),
+              ),
+            if (img.isNotEmpty)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(14)),
+                child: Image.network(
+                  img,
+                  width: double.infinity,
+                  height: 190,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleReshare() async {
+    if (!AuthService.isAuthenticated) {
+      _showLoginPrompt('repost');
+      return;
+    }
+    // Reposting a repost targets the original post.
+    final targetId = _post.sharedFrom?.id ?? _post.id;
+    final captionController = TextEditingController();
+    final go = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: const [
+                  Icon(Icons.repeat_rounded, size: 18, color: Color(0xFF10B981)),
+                  SizedBox(width: 8),
+                  Text('আপনার প্রোফাইলে শেয়ার করুন',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A))),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: captionController,
+                maxLines: 3,
+                minLines: 1,
+                style: const TextStyle(fontSize: 14.5),
+                decoration: InputDecoration(
+                  hintText: 'কিছু লিখুন (ঐচ্ছিক)…',
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.repeat_rounded, size: 18),
+                  label: const Text('শেয়ার করুন',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (go != true || !mounted) return;
+    final result = await BusinessNetworkService.resharePost(
+      targetId,
+      caption: captionController.text.trim(),
+    );
+    if (!mounted) return;
+    if (result != null) {
+      AdsyToast.success(context, 'আপনার প্রোফাইলে শেয়ার হয়েছে! 🔁');
+    } else {
+      AdsyToast.error(context, 'শেয়ার করা যায়নি। আবার চেষ্টা করুন।');
+    }
+  }
+
   // Rounded overlapping avatars of who liked the post — mutual connections
   // (people the viewer follows) are ordered first, then a "+N more" count.
   Widget _buildLikedByRow() {
     final total = _post.likesCount;
     if (total <= 0) return const SizedBox.shrink();
 
-    final likes = [..._post.postLikes];
-    // Mutual (followed) likers first.
-    likes.sort((a, b) => a.isFollowing == b.isFollowing
-        ? 0
-        : (a.isFollowing ? -1 : 1));
-    final withImage =
-        likes.where((l) => (l.userImage ?? '').isNotEmpty).toList();
-    final shown = withImage.take(7).toList();
+    // Prefer the compact server preview (mutual-first); fall back to the full
+    // postLikes array (present only on the detail screen).
+    List<String> faceUrls;
+    if (_post.likedByPreview.isNotEmpty) {
+      faceUrls = _post.likedByPreview
+          .where((f) => (f.image ?? '').isNotEmpty)
+          .map((f) => f.image!)
+          .toList();
+    } else {
+      final likes = [..._post.postLikes]
+        ..sort((a, b) =>
+            a.isFollowing == b.isFollowing ? 0 : (a.isFollowing ? -1 : 1));
+      faceUrls = likes
+          .where((l) => (l.userImage ?? '').isNotEmpty)
+          .map((l) => l.userImage!)
+          .toList();
+    }
+    final shown = faceUrls.take(7).toList();
 
     const double size = 24;
     const double overlap = 16;
@@ -260,7 +464,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                       child: ClipOval(
                         child: Image.network(
-                          AppConfig.getAbsoluteUrl(shown[i].userImage!),
+                          AppConfig.getAbsoluteUrl(shown[i]),
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => const Icon(
                               Icons.person_rounded,
@@ -456,6 +660,18 @@ class _PostCardState extends State<PostCard> {
                   },
                 ),
               ],
+              // Repost to your own profile (Facebook-style reshare)
+              ListTile(
+                leading: const Icon(Icons.repeat_rounded,
+                    color: Color(0xFF10B981)),
+                title: const Text('আপনার প্রোফাইলে শেয়ার করুন'),
+                subtitle: const Text('Repost to your profile',
+                    style: TextStyle(fontSize: 11)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleReshare();
+                },
+              ),
               // Options for public posts
               if (!isSelf) ...[
                 ListTile(
@@ -789,6 +1005,8 @@ class _PostCardState extends State<PostCard> {
                 ],
               ),
             ),
+          // Embedded original when this post is a reshare/repost.
+          if (_post.sharedFrom != null) _buildResharedOriginal(_post.sharedFrom!),
           // Post Tags
           if (_post.tags.isNotEmpty)
             Padding(

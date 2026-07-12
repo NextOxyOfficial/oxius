@@ -81,6 +81,28 @@ class BusinessNetworkService {
   }
 
   /// Get Business Network logo
+  /// Reshare (repost) a post to the current user's profile/feed. Returns the
+  /// newly created reshare post, or null on failure.
+  static Future<BusinessNetworkPost?> resharePost(int postId,
+      {String caption = ''}) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final res = await http.post(
+        Uri.parse('$_baseUrl/posts/$postId/reshare/'),
+        headers: headers,
+        body: jsonEncode({'caption': caption}),
+      );
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        return BusinessNetworkPost.fromJson(jsonDecode(res.body));
+      }
+      debugPrint('reshare -> ${res.statusCode} ${res.body}');
+      return null;
+    } catch (e) {
+      debugPrint('reshare failed: $e');
+      return null;
+    }
+  }
+
   static Future<String?> getBusinessNetworkLogo() async {
     try {
       final response = await http.get(

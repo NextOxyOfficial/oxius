@@ -26,12 +26,19 @@ class BusinessNetworkPost {
   final String? category;
   final List<BusinessNetworkComment> comments;
   final List<PostLike> postLikes;
+  // Small liker preview for the feed's "liked by" row (mutual-first). The full
+  // postLikes array is only sent on the detail screen.
+  final List<LikerFace> likedByPreview;
+  // When this post is a reshare/repost, the embedded original.
+  final SharedPostPreview? sharedFrom;
 
   BusinessNetworkPost({
     required this.id,
     required this.title,
     this.slug = '',
     required this.user,
+    this.likedByPreview = const [],
+    this.sharedFrom,
     required this.content,
     required this.media,
     required this.tags,
@@ -187,6 +194,15 @@ class BusinessNetworkPost {
             : int.tryParse(json['id'].toString()) ?? 0,
         title: json['title'] ?? '',
         slug: json['slug']?.toString() ?? '',
+        likedByPreview: (json['liked_by_preview'] as List?)
+                ?.whereType<Map>()
+                .map((e) => LikerFace.fromJson(Map<String, dynamic>.from(e)))
+                .toList() ??
+            const [],
+        sharedFrom: json['shared_from_details'] is Map
+            ? SharedPostPreview.fromJson(
+                Map<String, dynamic>.from(json['shared_from_details']))
+            : null,
         user: userData != null
             ? BusinessNetworkUser.fromJson(userData)
             : BusinessNetworkUser(
@@ -261,6 +277,8 @@ class BusinessNetworkPost {
       id: id,
       title: title ?? this.title,
       slug: slug,
+      likedByPreview: likedByPreview,
+      sharedFrom: sharedFrom,
       user: user ?? this.user,
       content: content ?? this.content,
       media: media ?? this.media,
@@ -437,6 +455,71 @@ class PostTag {
       'id': id,
       'tag': tag,
     };
+  }
+}
+
+/// A single liker face for the feed's "liked by" row.
+class LikerFace {
+  final String name;
+  final String? image;
+  final bool isFollowing;
+
+  LikerFace({required this.name, this.image, this.isFollowing = false});
+
+  factory LikerFace.fromJson(Map<String, dynamic> json) => LikerFace(
+        name: (json['name'] ?? '').toString(),
+        image: json['image']?.toString(),
+        isFollowing: json['isFollowing'] == true,
+      );
+}
+
+/// The embedded original post shown inside a reshare/repost card.
+class SharedPostPreview {
+  final int id;
+  final String slug;
+  final String authorName;
+  final String? authorImage;
+  final bool authorVerified;
+  final String content;
+  final List<String> mediaUrls;
+  final int likeCount;
+  final int commentCount;
+
+  SharedPostPreview({
+    required this.id,
+    this.slug = '',
+    required this.authorName,
+    this.authorImage,
+    this.authorVerified = false,
+    this.content = '',
+    this.mediaUrls = const [],
+    this.likeCount = 0,
+    this.commentCount = 0,
+  });
+
+  factory SharedPostPreview.fromJson(Map<String, dynamic> json) {
+    final ad = (json['author_details'] is Map)
+        ? Map<String, dynamic>.from(json['author_details'])
+        : <String, dynamic>{};
+    final media = (json['post_media'] as List?)
+            ?.whereType<Map>()
+            .map((m) => (m['file'] ?? m['image'] ?? m['url'] ?? '').toString())
+            .where((s) => s.isNotEmpty)
+            .toList() ??
+        const <String>[];
+    return SharedPostPreview(
+      id: json['id'] is int
+          ? json['id']
+          : int.tryParse('${json['id']}') ?? 0,
+      slug: json['slug']?.toString() ?? '',
+      authorName: (ad['name'] ?? ad['username'] ?? '').toString(),
+      authorImage: ad['image']?.toString(),
+      authorVerified: ad['kyc'] == true,
+      content: (json['content'] ?? '').toString(),
+      mediaUrls: media,
+      likeCount: int.tryParse('${json['like_count'] ?? 0}') ?? 0,
+      commentCount: int.tryParse('${json['comment_count'] ?? 0}') ?? 0,
+    );
   }
 }
 
