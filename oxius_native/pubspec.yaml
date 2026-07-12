@@ -149,6 +149,11 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
+  # iOS: google_mobile_ads is CocoaPods-only; with Swift Package Manager
+  # enabled the pod install conflicts (google_mobile_ads vs
+  # webview_flutter_wkwebview). Keep SPM off until google_mobile_ads adopts it.
+  disable-swift-package-manager: true
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
