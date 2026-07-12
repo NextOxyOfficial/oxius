@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -30,8 +31,13 @@ class GooglePlayBilling {
 
   static bool get available => _available;
 
+  /// Android-only: Google Play Billing. iOS IAP (StoreKit) is a separate,
+  /// later setup — on iOS this whole service stays inert so the app never
+  /// offers a broken Google Play option.
+  static bool get _supported => !kIsWeb && Platform.isAndroid;
+
   static Future<void> init() async {
-    if (_initialized || kIsWeb) return;
+    if (_initialized || !_supported) return;
     _initialized = true;
     try {
       _available = await _iap.isAvailable();
@@ -48,6 +54,7 @@ class GooglePlayBilling {
   /// merged with Play's live price/title. Empty until the admin fills the
   /// Play product ids.
   static Future<List<IapCatalogItem>> loadCatalog(String kind) async {
+    if (!_supported) return []; // Android only
     await init();
     if (!_available) return [];
     try {
@@ -91,6 +98,7 @@ class GooglePlayBilling {
   /// by the server. [refId] links the purchase to an in-app object (e.g. a
   /// pending Gold Sponsor id).
   static Future<bool> buy(IapCatalogItem item, {String? refId}) async {
+    if (!_supported) return false; // Android only
     await init();
     if (!_available) return false;
     final pd = _details[item.productId];
