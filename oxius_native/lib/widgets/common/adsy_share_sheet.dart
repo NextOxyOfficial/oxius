@@ -240,9 +240,9 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
           child: ElevatedButton.icon(
             onPressed: _reposting ? null : _doRepost,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF111827),
+              backgroundColor: const Color(0xFF2563EB),
               foregroundColor: Colors.white,
-              disabledBackgroundColor: const Color(0xFF9CA3AF),
+              disabledBackgroundColor: const Color(0xFFBFDBFE),
               elevation: 0,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(11)),

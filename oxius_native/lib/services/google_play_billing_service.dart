@@ -169,6 +169,8 @@ class GooglePlayBilling {
     try {
       final token = p.verificationData.serverVerificationData;
       final headers = await ApiService.getHeaders();
+      // Real amount paid on Google Play (localized) so the history shows it.
+      final pd = _details[p.productID];
       final res = await http
           .post(
             Uri.parse('${ApiService.baseUrl}/iap/verify/'),
@@ -177,6 +179,8 @@ class GooglePlayBilling {
               'product_id': p.productID,
               'purchase_token': token,
               if (refId != null) 'ref_id': refId,
+              if (pd != null) 'amount': pd.rawPrice,
+              if (pd != null) 'currency': pd.currencyCode,
             }),
           )
           .timeout(const Duration(seconds: 20));

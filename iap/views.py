@@ -106,7 +106,9 @@ def iap_verify(request):
                 {"success": False, "error": "purchase not completed"}, status=402
             )
 
-    granted = grants.grant(purchase, product, google_data)
+    granted = grants.grant(
+        purchase, product, google_data, amount=request.data.get("amount")
+    )
     purchase.raw = google_data
     purchase.status = "granted" if granted else "failed"
     purchase.save()

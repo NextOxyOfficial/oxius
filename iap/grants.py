@@ -8,6 +8,30 @@ from django.utils.dateparse import parse_datetime
 logger = logging.getLogger(__name__)
 
 
+def _decimal_or_none(value):
+    """Parse a client-sent price into Decimal, or None if unusable."""
+    if value in (None, "", 0, "0"):
+        return None
+    try:
+        from decimal import Decimal
+
+        d = Decimal(str(value))
+        return d if d > 0 else None
+    except Exception:
+        return None
+
+
+def _pack_price_for(diamonds):
+    """Fallback: the BDT price of the DiamondPackages row for this pack size."""
+    try:
+        from base.models import DiamondPackages
+
+        pkg = DiamondPackages.objects.filter(diamonds=diamonds).first()
+        return pkg.price if pkg else None
+    except Exception:
+        return None
+
+
 def _subscription_expiry(google_data):
     """Pull the expiry time from a subscriptionsv2 response, if present."""
     if not isinstance(google_data, dict):
@@ -22,14 +46,21 @@ def _subscription_expiry(google_data):
     return None
 
 
-def grant(purchase, product, google_data):
+def grant(purchase, product, google_data, amount=None):
     """Apply the entitlement for a verified purchase. Returns True on success.
-    Never raises — a failure is logged and the purchase stays non-granted."""
+    `amount` is the real price the user paid on Google Play (used for the
+    transaction history). Never raises — a failure is logged and the purchase
+    stays non-granted."""
     user = purchase.user
     try:
         if product.kind == "diamonds":
             user.diamond_balance = (user.diamond_balance or 0) + product.diamonds
             user.save(update_fields=["diamond_balance"])
+            # Real amount paid via Google Play (fallback to the balance-price
+            # of the matching pack so history never shows ৳0).
+            cost = _decimal_or_none(amount)
+            if cost is None:
+                cost = _pack_price_for(product.diamonds)
             try:
                 from base.models import DiamondTransaction
 
@@ -41,7 +72,7 @@ def grant(purchase, product, google_data):
                     to_user=user,
                     transaction_type="purchase",
                     amount=product.diamonds,
-                    cost=0,
+                    cost=cost or 0,
                     completed=True,
                     approved=True,
                     payment_method="google_play",

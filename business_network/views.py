@@ -922,6 +922,21 @@ class BusinessNetworkPostRetrieveUpdateDestroyView(
         ctx["full_detail"] = True
         return ctx
 
+    def get_object(self):
+        # Accept either the post id (PK) or its slug, so shared hash-slug links
+        # (adsyclub.com/business-network/posts/<slug>) open the right post.
+        ident = self.kwargs.get(self.lookup_field) or self.kwargs.get("id")
+        post = (
+            BusinessNetworkPost.objects.filter(id=ident).first()
+            or BusinessNetworkPost.objects.filter(slug=ident).first()
+        )
+        if post is None:
+            from django.http import Http404
+
+            raise Http404("Post not found")
+        self.check_object_permissions(self.request, post)
+        return post
+
     def get_permissions(self):
         if self.request.method == "GET":
             return []

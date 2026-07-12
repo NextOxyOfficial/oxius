@@ -355,14 +355,25 @@ class _PostCardState extends State<PostCard> {
 
     const double size = 24;
     const double overlap = 16;
-    final int extra = total - shown.length;
+
+    // Professional, human label: "<name> ও আরও N জন এই পোস্টটি পছন্দ করেছেন".
+    final firstName = _post.likedByPreview.isNotEmpty
+        ? _post.likedByPreview.first.name
+        : (_post.postLikes.isNotEmpty ? _post.postLikes.first.userName : '');
+    final String likeLabel = firstName.trim().isNotEmpty
+        ? (total > 1
+            ? '$firstName ও আরও ${total - 1} জন এই পোস্টটি পছন্দ করেছেন'
+            : '$firstName এই পোস্টটি পছন্দ করেছেন')
+        : '$total জন এই পোস্টটি পছন্দ করেছেন';
 
     if (shown.isEmpty) {
       // Have a count but no avatars loaded — show a plain count.
       return Padding(
         padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
         child: Text(
-          '$total ${total == 1 ? 'like' : 'likes'}',
+          likeLabel,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.w600,
@@ -417,9 +428,7 @@ class _PostCardState extends State<PostCard> {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              extra > 0
-                  ? '+$extra more'
-                  : '$total ${total == 1 ? 'like' : 'likes'}',
+              likeLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
