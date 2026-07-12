@@ -805,6 +805,88 @@ def send_admin_moderation_email(*, subject, label, intro, rows, model_key=None,
 
 
 # ============================================================
+# IN-APP PURCHASE (Google Play) TRANSACTION EMAILS
+# ============================================================
+
+def send_iap_purchase_email(purchase, product, event="purchase"):
+    """Notify the buyer and admins about an in-app purchase transaction
+    (diamonds / Pro / Gold Sponsor via Google Play).
+
+    event: 'purchase' (first buy), 'renewal' (auto-renew), 'expired' (lapsed).
+    Never raises — email must not break the purchase flow.
+    """
+    try:
+        user = purchase.user
+        kind = product.kind
+        if kind == "diamonds":
+            item = f"{product.diamonds} Diamonds"
+        elif kind == "pro":
+            item = "AdsyClub Pro (Monthly)"
+        elif kind == "gold":
+            item = "Gold Sponsor (Monthly)"
+        else:
+            item = product.title or product.google_product_id
+
+        event_label = {
+            "purchase": "Purchase successful",
+            "renewal": "Subscription renewed",
+            "expired": "Subscription ended",
+        }.get(event, "Purchase")
+
+        uname = (getattr(user, "name", "") or getattr(user, "username", "")
+                 or getattr(user, "email", "") or "User")
+        expiry = (purchase.expiry_at.strftime("%d %b %Y")
+                  if getattr(purchase, "expiry_at", None) else "—")
+
+        rows = (
+            _info_row("Item", item)
+            + _info_row("Type", (kind or "").title())
+            + _info_row("Order ID", getattr(purchase, "order_id", "") or "—")
+            + _info_row("Status", purchase.status)
+            + (_info_row("Valid until", expiry) if product.is_subscription else "")
+        )
+
+        # ---- Buyer confirmation ----
+        if getattr(user, "email", ""):
+            headline = ("আপনার কেনা সফল হয়েছে" if event == "purchase"
+                        else ("সাবস্ক্রিপশন নবায়ন হয়েছে" if event == "renewal"
+                              else "সাবস্ক্রিপশন শেষ হয়েছে"))
+            body = (
+                f'<p style="margin:0 0 12px;color:#111827;font-size:15px;">প্রিয় {uname},</p>'
+                f'<p style="margin:0 0 8px;color:#374151;font-size:14px;">'
+                f'<b>{item}</b> — {headline}। বিস্তারিত:</p>'
+                f'{_info_table(rows)}'
+                f'<p style="margin:12px 0 0;color:#6b7280;font-size:13px;">'
+                f'AdsyClub-এর সাথে থাকার জন্য ধন্যবাদ।</p>'
+            )
+            html = _base_template(f"AdsyClub — {event_label}", body)
+            text = f"{event_label}: {item}. Status: {purchase.status}."
+            _send_email(f"AdsyClub — {event_label}", user.email, text, html)
+
+        # ---- Admin notification ----
+        admins = _admin_recipients()
+        if admins:
+            arows = (
+                _info_row("User", uname)
+                + _info_row("Email", getattr(user, "email", "") or "—")
+                + _info_row("Phone", getattr(user, "phone", "") or "—")
+                + rows
+                + _info_row("Product ID", product.google_product_id)
+                + _info_row("Purchase token", (purchase.purchase_token or "")[:24] + "…")
+            )
+            abody = (
+                f'<p style="margin:0 0 8px;color:#111827;font-size:15px;">'
+                f'New in-app purchase ({event}).</p>{_info_table(arows)}'
+            )
+            ahtml = _base_template("New IAP transaction", abody)
+            atext = (f"IAP {event}: {item} by {uname} "
+                     f"({getattr(user, 'email', '')}). Status {purchase.status}.")
+            _send_email(f"[IAP] {event_label} — {item}", admins, atext, ahtml)
+    except Exception:
+        logger.exception("[iap] purchase email failed")
+
+
+# ============================================================
 # USER EMAILS
 # ============================================================
 

@@ -8,7 +8,6 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 // Design tokens — mirrors the rideshare panel palette
 const _emerald = Color(0xFF10B981);
 const _indigo = Color(0xFF6366F1);
-const _violet = Color(0xFF8B5CF6);
 const _slate200 = Color(0xFFE2E8F0);
 const _slate400 = Color(0xFF94A3B8);
 const _slate500 = Color(0xFF64748B);
@@ -95,28 +94,13 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
             child: Row(
               children: [
                 // ── Gradient icon ─────────────────────────────────────────
-                Container(
+                const SizedBox(
                   width: 46,
                   height: 46,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [_indigo, _violet],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(13),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _indigo.withValues(alpha: 0.30),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.phone_android_rounded,
-                    color: Colors.white,
-                    size: 22,
+                    color: _indigo,
+                    size: 30,
                   ),
                 ),
                 const SizedBox(width: 13),

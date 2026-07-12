@@ -120,6 +120,13 @@ def iap_verify(request):
                 verify.acknowledge_product(product_id, token)
         except Exception:
             logger.exception("[iap] acknowledge failed (non-fatal)")
+        # Email the buyer + admins (async; never blocks the response).
+        try:
+            from base.email_service import send_iap_purchase_email
+
+            send_iap_purchase_email(purchase, product, event="purchase")
+        except Exception:
+            logger.exception("[iap] purchase email dispatch failed")
 
     return Response({"success": granted, "status": purchase.status})
 
@@ -157,16 +164,32 @@ def iap_rtdn(request):
         google_data = verify.verify_subscription(token)
         # Notification types: 2 RENEWED, 3 CANCELED, 4 PURCHASED, 12 REVOKED,
         # 13 EXPIRED. Re-derive entitlement from the authoritative state.
+        product = IapProduct.objects.filter(
+            google_product_id=purchase.google_product_id
+        ).first()
         if ntype in (2, 4, 1, 7):  # renewed / purchased / recovered / restarted
-            product = IapProduct.objects.filter(
-                google_product_id=purchase.google_product_id
-            ).first()
             if product and google_data:
                 grants.grant(purchase, product, google_data)
                 purchase.status = "granted"
+                if product and ntype == 2:  # only email real renewals
+                    try:
+                        from base.email_service import send_iap_purchase_email
+
+                        send_iap_purchase_email(
+                            purchase, product, event="renewal"
+                        )
+                    except Exception:
+                        logger.exception("[iap] renewal email failed")
         elif ntype in (13, 12):  # expired / revoked
             grants.revoke(purchase, reason="expired")
             purchase.status = "expired"
+            if product:
+                try:
+                    from base.email_service import send_iap_purchase_email
+
+                    send_iap_purchase_email(purchase, product, event="expired")
+                except Exception:
+                    logger.exception("[iap] expiry email failed")
         purchase.raw = google_data or purchase.raw
         purchase.updated_at = timezone.now()
         purchase.save()
