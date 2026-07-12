@@ -416,19 +416,19 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
       children: [
         if (previews.isNotEmpty)
           SizedBox(
-            height: 16,
-            width: 16.0 + (previews.length - 1) * 11.0,
+            height: 22,
+            width: 22.0 + (previews.length - 1) * 14.0,
             child: Stack(
               children: [
                 for (int i = 0; i < previews.length; i++)
                   Positioned(
-                    left: i * 11.0,
+                    left: i * 14.0,
                     child: Container(
-                      width: 16,
-                      height: 16,
+                      width: 22,
+                      height: 22,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.2),
+                        border: Border.all(color: Colors.white, width: 1.5),
                         color: const Color(0xFFE2E8F0),
                       ),
                       child: ClipOval(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
@@ -201,6 +202,95 @@ class _PostCardState extends State<PostCard> {
 
   void _showLoginPrompt(String action) {
     LoginPromptDialog.show(context, action: action);
+  }
+
+  // Rounded overlapping avatars of who liked the post — mutual connections
+  // (people the viewer follows) are ordered first, then a "+N more" count.
+  Widget _buildLikedByRow() {
+    final total = _post.likesCount;
+    if (total <= 0) return const SizedBox.shrink();
+
+    final likes = [..._post.postLikes];
+    // Mutual (followed) likers first.
+    likes.sort((a, b) => a.isFollowing == b.isFollowing
+        ? 0
+        : (a.isFollowing ? -1 : 1));
+    final withImage =
+        likes.where((l) => (l.userImage ?? '').isNotEmpty).toList();
+    final shown = withImage.take(7).toList();
+
+    const double size = 24;
+    const double overlap = 16;
+    final int extra = total - shown.length;
+
+    if (shown.isEmpty) {
+      // Have a count but no avatars loaded — show a plain count.
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
+        child: Text(
+          '$total ${total == 1 ? 'like' : 'likes'}',
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF64748B),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 2),
+      child: Row(
+        children: [
+          SizedBox(
+            height: size,
+            width: size + (shown.length - 1) * overlap,
+            child: Stack(
+              children: [
+                for (int i = 0; i < shown.length; i++)
+                  Positioned(
+                    left: i * overlap,
+                    child: Container(
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.6),
+                        color: const Color(0xFFE2E8F0),
+                      ),
+                      child: ClipOval(
+                        child: Image.network(
+                          AppConfig.getAbsoluteUrl(shown[i].userImage!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person_rounded,
+                              size: 15,
+                              color: Color(0xFF94A3B8)),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              extra > 0
+                  ? '+$extra more'
+                  : '$total ${total == 1 ? 'like' : 'likes'}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleShare() async {
@@ -751,6 +841,8 @@ class _PostCardState extends State<PostCard> {
             onShare: _handleShare,
             onSave: _handleSave,
           ),
+          // Liked-by faces (mutual connections first)
+          _buildLikedByRow(),
           // Comments Preview
           PostCommentsPreview(
             post: _post,
