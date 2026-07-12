@@ -33,12 +33,19 @@ def grant(purchase, product, google_data):
             try:
                 from base.models import DiamondTransaction
 
+                # Log only — the balance is already credited above.
+                # completed=True prevents DiamondTransaction.save() from
+                # crediting diamond_balance a second time (double-credit).
                 DiamondTransaction.objects.create(
                     user=user,
                     to_user=user,
                     transaction_type="purchase",
                     amount=product.diamonds,
                     cost=0,
+                    completed=True,
+                    approved=True,
+                    payment_method="google_play",
+                    description=f"Google Play purchase: {product.google_product_id}",
                 )
             except Exception:
                 logger.exception("[iap] diamond txn log failed (non-fatal)")
