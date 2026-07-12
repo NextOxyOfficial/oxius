@@ -575,7 +575,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         const SizedBox(height: 5),
         Text(
           _t('login_subtitle',
-              'চালিয়ে যেতে আপনার AdsyClub অ্যাকাউন্টে লগইন করুন'),
+              'আপনার AdsyClub অ্যাকাউন্টে লগইন করুন'),
           style: AppFonts.roboto(
             fontSize: 13.5,
             color: _bodyTextColor,
