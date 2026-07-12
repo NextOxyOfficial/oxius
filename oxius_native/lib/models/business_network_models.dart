@@ -19,6 +19,7 @@ class BusinessNetworkPost {
   final List<PostTag> tags;
   final int likesCount;
   final int commentsCount;
+  final int shareCount;
   final bool isLiked;
   final bool isSaved;
   final String createdAt;
@@ -44,6 +45,7 @@ class BusinessNetworkPost {
     required this.tags,
     required this.likesCount,
     required this.commentsCount,
+    this.shareCount = 0,
     required this.isLiked,
     required this.isSaved,
     required this.createdAt,
@@ -212,6 +214,7 @@ class BusinessNetworkPost {
         tags: tagItems,
         likesCount: json['like_count'] ?? json['likes_count'] ?? 0,
         commentsCount: json['comment_count'] ?? json['comments_count'] ?? 0,
+        shareCount: json['share_count'] ?? 0,
         isLiked: isLiked,
         isSaved: parseBool(json['is_saved'] ?? json['isSaved']),
         createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
@@ -279,6 +282,7 @@ class BusinessNetworkPost {
       slug: slug,
       likedByPreview: likedByPreview,
       sharedFrom: sharedFrom,
+      shareCount: shareCount,
       user: user ?? this.user,
       content: content ?? this.content,
       media: media ?? this.media,

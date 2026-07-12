@@ -151,6 +151,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     is_saved = serializers.SerializerMethodField()
     liked_by_preview = serializers.SerializerMethodField()
     shared_from_details = serializers.SerializerMethodField()
+    share_count = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessNetworkPost
@@ -168,6 +169,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             "post_likes",
             "liked_by_preview",
             "shared_from_details",
+            "share_count",
             "post_comments",
             "post_tags",
             "post_followers",
@@ -230,6 +232,11 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
                 "isFollowing": _is_following(self.context, l.user_id),
             })
         return out
+
+    def get_share_count(self, obj):
+        """How many times this post has been reshared."""
+        cache = self._prefetched(obj, "reshares")
+        return len(cache) if cache is not None else obj.reshares.count()
 
     def get_shared_from_details(self, obj):
         """Shallow copy of the original post for a reshare — enough to render the

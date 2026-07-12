@@ -222,11 +222,11 @@ class _PostCardState extends State<PostCard> {
     final text =
         HtmlContentUtils.previewText(HtmlContentUtils.toPlainText(orig.content), 220);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 2, 10, 8),
+      padding: const EdgeInsets.fromLTRB(6, 2, 6, 8),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Column(
@@ -372,8 +372,15 @@ class _PostCardState extends State<PostCard> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 2),
+    return InkWell(
+      onTap: () => showPostLikers(
+        context,
+        likes: _post.postLikes,
+        postId: _post.id,
+        likesCount: _post.likesCount,
+      ),
+      child: Padding(
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
       child: Row(
         children: [
           SizedBox(
@@ -423,6 +430,7 @@ class _PostCardState extends State<PostCard> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -559,85 +567,78 @@ class _PostCardState extends State<PostCard> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
+        final isReshare = _post.sharedFrom != null;
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle bar
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
+                margin: const EdgeInsets.only(top: 10, bottom: 6),
+                width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               if (_post.media.isNotEmpty)
-                ListTile(
-                  leading: const Icon(Icons.download_rounded,
-                      color: Color(0xFF3B82F6)),
-                  title: Text(_downloadMenuTitle()),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleDownloadMedia();
-                  },
+                _menuTile(
+                  icon: Icons.download_rounded,
+                  color: const Color(0xFF3B82F6),
+                  title: _downloadMenuTitle(),
+                  onTap: _handleDownloadMedia,
                 ),
-              // Options for own posts
+              // Reshares hide Save in the actions row — offer it here instead.
+              if (isReshare)
+                _menuTile(
+                  icon:
+                      _post.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  color: const Color(0xFF7C3AED),
+                  title: _post.isSaved ? 'Unsave' : 'Save',
+                  subtitle: 'পরে দেখার জন্য সেভ করুন',
+                  onTap: _handleSave,
+                ),
               if (isSelf) ...[
-                ListTile(
-                  leading: const Icon(Icons.edit, color: Colors.blue),
-                  title: const Text('Edit'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleEditPost();
-                  },
+                _menuTile(
+                  icon: Icons.edit_outlined,
+                  color: const Color(0xFF2563EB),
+                  title: 'Edit post',
+                  onTap: _handleEditPost,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.delete, color: Colors.red),
-                  title:
-                      const Text('Delete', style: TextStyle(color: Colors.red)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleDeletePost();
-                  },
+                _menuTile(
+                  icon: Icons.delete_outline_rounded,
+                  color: const Color(0xFFDC2626),
+                  title: 'Delete post',
+                  danger: true,
+                  onTap: _handleDeletePost,
                 ),
               ],
-              // Options for public posts
               if (!isSelf) ...[
-                ListTile(
-                  leading: const Icon(Icons.share_outlined,
-                      color: Color(0xFF3B82F6)),
-                  title: const Text('Share Post'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleShare();
-                  },
+                _menuTile(
+                  icon: Icons.share_outlined,
+                  color: const Color(0xFF3B82F6),
+                  title: 'Share post',
+                  onTap: _handleShare,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.report, color: Colors.orange),
-                  title: const Text('Report'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleReportPost();
-                  },
+                _menuTile(
+                  icon: Icons.flag_outlined,
+                  color: const Color(0xFFEA580C),
+                  title: 'Report',
+                  subtitle: 'এই পোস্টে সমস্যা আছে',
+                  onTap: _handleReportPost,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.block, color: Colors.red),
-                  title: const Text('Block User',
-                      style: TextStyle(color: Colors.red)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleBlockUser();
-                  },
+                _menuTile(
+                  icon: Icons.visibility_off_outlined,
+                  color: const Color(0xFF64748B),
+                  title: 'Hide this post',
+                  onTap: _handleHidePost,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.visibility_off, color: Colors.grey),
-                  title: const Text('Hide'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleHidePost();
-                  },
+                _menuTile(
+                  icon: Icons.block_rounded,
+                  color: const Color(0xFFDC2626),
+                  title: 'Block user',
+                  danger: true,
+                  onTap: _handleBlockUser,
                 ),
               ],
               const SizedBox(height: 8),
@@ -645,6 +646,64 @@ class _PostCardState extends State<PostCard> {
           ),
         );
       },
+    );
+  }
+
+  Widget _menuTile({
+    required IconData icon,
+    required Color color,
+    required String title,
+    String? subtitle,
+    bool danger = false,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 18, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: danger
+                          ? const Color(0xFFDC2626)
+                          : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                          fontSize: 11.5, color: Color(0xFF94A3B8)),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -988,7 +1047,8 @@ class _PostCardState extends State<PostCard> {
             onLike: _handleLike,
             onComment: _handleViewAllComments,
             onShare: _handleShare,
-            onSave: _handleSave,
+            // Reshares move Save into the ⋯ menu to keep the row uncluttered.
+            onSave: _post.sharedFrom != null ? null : _handleSave,
           ),
           // Liked-by faces (mutual connections first)
           _buildLikedByRow(),

@@ -29,13 +29,11 @@ class PostActions extends StatelessWidget {
         children: [
           // Like: the heart toggles the like; the "N likes" label opens a
           // bottom sheet listing everyone who liked this post.
-          // The visual icon is 19px but the tappable area is ~44px — the old
-          // ~27px target made first taps miss ("like is not working").
           InkWell(
             onTap: onLike,
             borderRadius: BorderRadius.circular(999),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
               child: Image.asset(
                 post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
                 width: 19,
@@ -48,24 +46,18 @@ class PostActions extends StatelessWidget {
             onTap: () => _showLikers(context),
             borderRadius: BorderRadius.circular(8),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-              // Reserve stable width: "1 like" vs "2 likes" otherwise changes
-              // the label width and visibly shifts Comments/Share on every
-              // like toggle.
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 52),
-                child: Text(
-                  '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 11),
+              child: Text(
+                '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 6),
           // Comment: opens post details where all comments are shown.
           _ActionButton(
             iconPath: 'assets/icons/comments.png',
@@ -73,21 +65,21 @@ class PostActions extends StatelessWidget {
                 '${_formatCount(post.commentsCount)} ${post.commentsCount == 1 ? 'Comment' : 'Comments'}',
             onTap: onComment,
           ),
-          const SizedBox(width: 16),
-          // Share Button
+          const SizedBox(width: 6),
+          // Share: label is the reshare count ("how many shared").
           _ActionButton(
             iconPath: 'assets/icons/share.png',
-            label: 'Share',
+            label: _formatCount(post.shareCount),
             onTap: onShare,
           ),
           const Spacer(),
-          // Save Button
+          // Save (hidden on reshares — moved to the ⋯ menu there).
           if (onSave != null)
             InkWell(
               onTap: onSave,
               borderRadius: BorderRadius.circular(999),
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
                 child: Image.asset(
                   post.isSaved ? 'assets/icons/saved.png' : 'assets/icons/save.png',
                   width: 18,
@@ -102,21 +94,11 @@ class PostActions extends StatelessWidget {
   }
 
   void _showLikers(BuildContext context) {
-    // Open on the COUNT, not the embedded list — after an optimistic like the
-    // list is still empty while the count already reads "1 like", and the old
-    // isEmpty guard made the tap do nothing. The sheet fetches likers itself
-    // when it wasn't handed any.
-    if (post.likesCount <= 0 && post.postLikes.isEmpty) return;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      isDismissible: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _LikersBottomSheet(
-        likes: post.postLikes,
-        postId: post.id,
-        initialCount: post.likesCount,
-      ),
+    showPostLikers(
+      context,
+      likes: post.postLikes,
+      postId: post.id,
+      likesCount: post.likesCount,
     );
   }
 
@@ -128,6 +110,28 @@ class PostActions extends StatelessWidget {
     }
     return count.toString();
   }
+}
+
+/// Opens the "who liked this" bottom sheet. Shared by the actions row and the
+/// feed's liked-by faces row so both entry points behave identically.
+void showPostLikers(
+  BuildContext context, {
+  required List<PostLike> likes,
+  int? postId,
+  int likesCount = 0,
+}) {
+  if (likesCount <= 0 && likes.isEmpty) return;
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    isDismissible: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _LikersBottomSheet(
+      likes: likes,
+      postId: postId,
+      initialCount: likesCount,
+    ),
+  );
 }
 
 class _ActionButton extends StatelessWidget {
@@ -147,23 +151,23 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 11),
         child: Row(
           children: [
             Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+              padding: const EdgeInsets.only(bottom: 3),
               child: Image.asset(
                 iconPath,
-                width: 19,
-                height: 19,
+                width: 18,
+                height: 18,
                 fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13.5,
+                fontSize: 13,
                 color: Colors.grey.shade700,
                 fontWeight: FontWeight.w500,
               ),
