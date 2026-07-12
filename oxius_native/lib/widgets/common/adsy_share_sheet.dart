@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../config/app_config.dart';
@@ -336,49 +337,49 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                         _SharePlatformButton(
                           tooltip: 'More apps',
                           label: 'More',
-                          iconAsset: 'assets/icons/share.png',
+                          icon: FontAwesomeIcons.shareNodes,
                           color: const Color(0xFF4F46E5),
                           onTap: _nativeShare,
                         ),
                         _SharePlatformButton(
                           tooltip: 'WhatsApp',
                           label: 'WhatsApp',
-                          icon: Icons.chat_rounded,
-                          color: const Color(0xFF16A34A),
+                          icon: FontAwesomeIcons.whatsapp,
+                          color: const Color(0xFF25D366),
                           onTap: () => _openShareUrl(_platformUrl('whatsapp')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'Facebook',
                           label: 'Facebook',
-                          icon: Icons.facebook_rounded,
+                          icon: FontAwesomeIcons.facebookF,
                           color: const Color(0xFF1877F2),
                           onTap: () => _openShareUrl(_platformUrl('facebook')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'X',
                           label: 'X',
-                          textIcon: 'X',
+                          icon: FontAwesomeIcons.xTwitter,
                           color: const Color(0xFF111827),
                           onTap: () => _openShareUrl(_platformUrl('x')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'LinkedIn',
                           label: 'LinkedIn',
-                          icon: Icons.business_center_rounded,
+                          icon: FontAwesomeIcons.linkedinIn,
                           color: const Color(0xFF0A66C2),
                           onTap: () => _openShareUrl(_platformUrl('linkedin')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'Telegram',
                           label: 'Telegram',
-                          icon: Icons.send_rounded,
+                          icon: FontAwesomeIcons.telegram,
                           color: const Color(0xFF229ED9),
                           onTap: () => _openShareUrl(_platformUrl('telegram')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'Email',
                           label: 'Email',
-                          icon: Icons.email_rounded,
+                          icon: FontAwesomeIcons.envelope,
                           color: const Color(0xFFEA580C),
                           onTap: () => _openShareUrl(_platformUrl('email')),
                         ),
@@ -505,8 +506,6 @@ class _SharePlatformButton extends StatelessWidget {
   final String tooltip;
   final String label;
   final IconData? icon;
-  final String? iconAsset;
-  final String? textIcon;
   final Color color;
   final VoidCallback onTap;
 
@@ -516,57 +515,40 @@ class _SharePlatformButton extends StatelessWidget {
     required this.color,
     required this.onTap,
     this.icon,
-    this.iconAsset,
-    this.textIcon,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 14),
+      padding: const EdgeInsets.only(right: 12),
       child: Tooltip(
         message: tooltip,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           child: SizedBox(
-            width: 54,
+            width: 60,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: 30,
-                  height: 28,
-                  child: Center(
-                    child: iconAsset != null
-                        ? Image.asset(
-                            iconAsset!,
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.contain,
-                          )
-                        : textIcon != null
-                            ? Text(
-                                textIcon!,
-                                style: TextStyle(
-                                  color: color,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1,
-                                ),
-                              )
-                            : Icon(icon, size: 23, color: color),
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
                   ),
+                  child: Center(child: Icon(icon, size: 20, color: color)),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 6),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF475569),
                     height: 1.1,
                   ),
                 ),
