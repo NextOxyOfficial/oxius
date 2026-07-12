@@ -293,111 +293,6 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
-  Future<void> _handleReshare() async {
-    if (!AuthService.isAuthenticated) {
-      _showLoginPrompt('repost');
-      return;
-    }
-    // Reposting a repost targets the original post.
-    final targetId = _post.sharedFrom?.id ?? _post.id;
-    final captionController = TextEditingController();
-    final go = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Row(
-                children: const [
-                  Icon(Icons.repeat_rounded, size: 18, color: Color(0xFF10B981)),
-                  SizedBox(width: 8),
-                  Text('আপনার প্রোফাইলে শেয়ার করুন',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A))),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: captionController,
-                maxLines: 3,
-                minLines: 1,
-                style: const TextStyle(fontSize: 14.5),
-                decoration: InputDecoration(
-                  hintText: 'কিছু লিখুন (ঐচ্ছিক)…',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
-                  filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton.icon(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.repeat_rounded, size: 18),
-                  label: const Text('শেয়ার করুন',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (go != true || !mounted) return;
-    final result = await BusinessNetworkService.resharePost(
-      targetId,
-      caption: captionController.text.trim(),
-    );
-    if (!mounted) return;
-    if (result != null) {
-      AdsyToast.success(context, 'আপনার প্রোফাইলে শেয়ার হয়েছে! 🔁');
-    } else {
-      AdsyToast.error(context, 'শেয়ার করা যায়নি। আবার চেষ্টা করুন।');
-    }
-  }
-
   // Rounded overlapping avatars of who liked the post — mutual connections
   // (people the viewer follows) are ordered first, then a "+N more" count.
   Widget _buildLikedByRow() {
@@ -512,6 +407,19 @@ class _PostCardState extends State<PostCard> {
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
+        // Repost-to-profile composer inside the share sheet.
+        onRepost: (caption) async {
+          if (!AuthService.isAuthenticated) {
+            _showLoginPrompt('repost');
+            return false;
+          }
+          final targetId = _post.sharedFrom?.id ?? _post.id;
+          final result = await BusinessNetworkService.resharePost(
+            targetId,
+            caption: caption,
+          );
+          return result != null;
+        },
       ),
     );
   }
@@ -660,18 +568,6 @@ class _PostCardState extends State<PostCard> {
                   },
                 ),
               ],
-              // Repost to your own profile (Facebook-style reshare)
-              ListTile(
-                leading: const Icon(Icons.repeat_rounded,
-                    color: Color(0xFF10B981)),
-                title: const Text('আপনার প্রোফাইলে শেয়ার করুন'),
-                subtitle: const Text('Repost to your profile',
-                    style: TextStyle(fontSize: 11)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _handleReshare();
-                },
-              ),
               // Options for public posts
               if (!isSelf) ...[
                 ListTile(

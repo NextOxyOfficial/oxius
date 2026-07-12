@@ -15,6 +15,10 @@ class AdsyShareData {
   final String? subject;
   final String? eyebrow;
   final List<String> hashtags;
+  // When set, the sheet shows a "Repost to your profile" composer at the top.
+  // Receives the caption; returns true on success.
+  final Future<bool> Function(String caption)? onRepost;
+  final String? repostHint;
 
   const AdsyShareData({
     required this.title,
@@ -24,6 +28,8 @@ class AdsyShareData {
     this.subject,
     this.eyebrow,
     this.hashtags = const [],
+    this.onRepost,
+    this.repostHint,
   });
 
   String get cleanTitle {
@@ -160,8 +166,112 @@ class _AdsyShareSheetBody extends StatefulWidget {
 
 class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
   bool _copied = false;
+  bool _reposting = false;
+  final TextEditingController _captionCtrl = TextEditingController();
 
   AdsyShareData get data => widget.data;
+
+  @override
+  void dispose() {
+    _captionCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _doRepost() async {
+    if (data.onRepost == null || _reposting) return;
+    setState(() => _reposting = true);
+    final ok = await data.onRepost!(_captionCtrl.text.trim());
+    if (!mounted) return;
+    setState(() => _reposting = false);
+    if (ok) {
+      Navigator.pop(context);
+      AdsyToast.success(context, 'আপনার প্রোফাইলে শেয়ার হয়েছে! 🔁');
+    } else {
+      AdsyToast.error(context, 'শেয়ার করা যায়নি। আবার চেষ্টা করুন।');
+    }
+  }
+
+  Widget _buildRepostComposer() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.repeat_rounded, size: 18, color: Color(0xFF059669)),
+              SizedBox(width: 8),
+              Text(
+                'আপনার প্রোফাইলে শেয়ার করুন',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF065F46)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _captionCtrl,
+            maxLines: 3,
+            minLines: 1,
+            style: const TextStyle(fontSize: 14.5),
+            decoration: InputDecoration(
+              hintText:
+                  data.repostHint ?? 'এই পোস্ট সম্পর্কে কিছু লিখুন… (ঐচ্ছিক)',
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFFD1FAE5)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFFD1FAE5)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: ElevatedButton.icon(
+              onPressed: _reposting ? null : _doRepost,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(11)),
+              ),
+              icon: _reposting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Colors.white)))
+                  : const Icon(Icons.send_rounded, size: 17),
+              label: Text(_reposting ? 'পোস্ট হচ্ছে…' : 'পোস্ট করুন',
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _copyLink() async {
     await Clipboard.setData(ClipboardData(text: data.cleanUrl));
@@ -290,6 +400,10 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                   const SizedBox(height: 12),
                   _SharePreview(data: data),
                   const SizedBox(height: 10),
+                  if (data.onRepost != null) ...[
+                    _buildRepostComposer(),
+                    const SizedBox(height: 10),
+                  ],
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
