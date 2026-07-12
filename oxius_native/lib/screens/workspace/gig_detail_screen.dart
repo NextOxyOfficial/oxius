@@ -627,7 +627,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           // Content Section
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -635,11 +635,11 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 Text(
                   _gig!['title'] ?? '',
                   style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 19.5,
+                      fontWeight: FontWeight.w800,
                       height: 1.3,
-                      letterSpacing: -0.2,
-                      color: Colors.black87),
+                      letterSpacing: -0.3,
+                      color: Color(0xFF0F172A)),
                 ),
                 const SizedBox(height: 10),
 
@@ -650,19 +650,23 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 // Description
                 Text(_t('workspace_about_gig', 'এই গিগ সম্পর্কে'),
                     style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700)),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A))),
                 const SizedBox(height: 8),
                 Text(
                   _gig!['description'] ?? '',
-                  style: TextStyle(
-                      color: Colors.grey[800], fontSize: 13.5, height: 1.55),
+                  style: const TextStyle(
+                      color: Color(0xFF334155), fontSize: 15, height: 1.6),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
 
                 // What You'll Get
                 Text(_t('workspace_what_you_get', 'যা যা পাবেন:'),
                     style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700)),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A))),
                 const SizedBox(height: 8),
                 ..._getGigFeatures().map((feature) => Padding(
                       padding: const EdgeInsets.only(bottom: 7),
@@ -674,10 +678,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                           const SizedBox(width: 9),
                           Expanded(
                               child: Text(feature,
-                                  style: TextStyle(
-                                      color: Colors.grey[800],
-                                      fontSize: 13,
-                                      height: 1.4))),
+                                  style: const TextStyle(
+                                      color: Color(0xFF334155),
+                                      fontSize: 14.5,
+                                      height: 1.45))),
                         ],
                       ),
                     )),
@@ -686,7 +690,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 // Skills & Expertise
                 Text(_t('workspace_skills_expertise', 'দক্ষতা ও অভিজ্ঞতা:'),
                     style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700)),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A))),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,

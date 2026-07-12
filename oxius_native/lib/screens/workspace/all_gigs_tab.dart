@@ -207,18 +207,12 @@ class _AllGigsTabState extends State<AllGigsTab> {
                 ? const Center(child: AdsyLoadingIndicator())
                 : _gigs.isEmpty
                     ? _buildEmptyState()
-                    : GridView.builder(
+                    : ListView.separated(
                         controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 6),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.82,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 10,
-                        ),
-                        itemCount: _gigs.length + (_isLoadingMore ? 2 : 0),
+                        padding: const EdgeInsets.fromLTRB(10, 8, 10, 14),
+                        itemCount: _gigs.length + (_isLoadingMore ? 1 : 0),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           if (index >= _gigs.length) {
                             return const Center(
@@ -282,24 +276,26 @@ class _AllGigsTabState extends State<AllGigsTab> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFEDF0F5)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 1),
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Column(
+        padding: const EdgeInsets.all(8),
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
+            // Thumbnail
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(8)),
-              child: AspectRatio(
-                aspectRatio: 16 / 10,
+              borderRadius: BorderRadius.circular(11),
+              child: SizedBox(
+                width: 112,
+                height: 88,
                 child: CachedNetworkImage(
                   imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
                   fit: BoxFit.cover,
@@ -308,109 +304,101 @@ class _AllGigsTabState extends State<AllGigsTab> {
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[200],
                     child:
-                        const Icon(Icons.image, color: Colors.grey, size: 20),
+                        const Icon(Icons.image, color: Colors.grey, size: 22),
                   ),
                 ),
               ),
             ),
-
+            const SizedBox(width: 12),
             // Content
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Seller info
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 10,
-                          backgroundImage: user?['avatar'] != null
-                              ? CachedNetworkImageProvider(
-                                  _getImageUrl(user!['avatar']))
-                              : null,
-                          child: user?['avatar'] == null
-                              ? Text(
-                                  (user?['name'] ?? 'U')[0].toUpperCase(),
-                                  style: const TextStyle(fontSize: 8),
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  user?['name'] ?? 'Unknown',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey[600],
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (user?['kyc'] == true)
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 3),
-                                  child: Icon(Icons.verified,
-                                      size: 12, color: Colors.blue),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    gig['title'] ?? '',
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E293B),
+                      height: 1.3,
                     ),
-                    const SizedBox(height: 4),
-
-                    // Title
-                    Expanded(
-                      child: Text(
-                        gig['title'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 7),
+                  // Seller row
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 9,
+                        backgroundColor: const Color(0xFFEDE9FE),
+                        backgroundImage: user?['avatar'] != null
+                            ? CachedNetworkImageProvider(
+                                _getImageUrl(user!['avatar']))
+                            : null,
+                        child: user?['avatar'] == null
+                            ? Text(
+                                (user?['name'] ?? 'U')[0].toUpperCase(),
+                                style: const TextStyle(
+                                    fontSize: 9,
+                                    color: Color(0xFF7C3AED),
+                                    fontWeight: FontWeight.w700),
+                              )
+                            : null,
                       ),
-                    ),
-
-                    // Rating and Price
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.star,
-                                size: 12, color: Colors.amber),
-                            const SizedBox(width: 2),
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '৳$price',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF8B5CF6),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          user?['name'] ?? 'Unknown',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                      if (user?['kyc'] == true)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 3),
+                          child:
+                              Icon(Icons.verified, size: 13, color: Colors.blue),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Rating + Price
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded,
+                              size: 15, color: Colors.amber),
+                          const SizedBox(width: 3),
+                          Text(
+                            rating.toStringAsFixed(1),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '৳$price',
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF8B5CF6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
