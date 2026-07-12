@@ -149,6 +149,8 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     follower_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
+    liked_by_preview = serializers.SerializerMethodField()
+    shared_from_details = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessNetworkPost
@@ -164,6 +166,8 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             "updated_at",
             "post_media",
             "post_likes",
+            "liked_by_preview",
+            "shared_from_details",
             "post_comments",
             "post_tags",
             "post_followers",
@@ -206,6 +210,47 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
         return BusinessNetworkPostLikeSerializer(
             obj.post_likes.all(), many=True, context=self.context
         ).data
+
+    def get_liked_by_preview(self, obj):
+        """A few liker faces for the feed's 'liked by' row — mutual connections
+        (people the viewer follows) first. Bounded query so the feed stays fast."""
+        likes = list(obj.post_likes.select_related("user").all()[:12])
+        if not likes:
+            return []
+        likes.sort(
+            key=lambda l: 0 if _is_following(self.context, l.user_id) else 1
+        )
+        out = []
+        for l in likes[:7]:
+            ud = UserSerializer(l.user, context=self.context).data
+            out.append({
+                "id": ud.get("id"),
+                "name": ud.get("name"),
+                "image": ud.get("image"),
+                "isFollowing": _is_following(self.context, l.user_id),
+            })
+        return out
+
+    def get_shared_from_details(self, obj):
+        """Shallow copy of the original post for a reshare — enough to render the
+        embedded card without another round-trip."""
+        orig = obj.shared_from
+        if orig is None:
+            return None
+        return {
+            "id": orig.id,
+            "slug": orig.slug,
+            "content": orig.content,
+            "created_at": orig.created_at,
+            "author_details": UserSerializer(
+                orig.author, context=self.context
+            ).data,
+            "post_media": BusinessNetworkMediaSerializer(
+                orig.media.all(), many=True, context=self.context
+            ).data,
+            "like_count": orig.like_count,
+            "comment_count": orig.comment_count,
+        }
 
     # Counts reuse the view's prefetch_related cache when present (feed lists
     # prefetch these relations), so a 20-post page costs 0 extra COUNT

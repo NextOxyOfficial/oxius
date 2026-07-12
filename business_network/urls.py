@@ -18,6 +18,7 @@ urlpatterns = [
         name="prioritized-feed",
     ),
     path("posts/save/", UserSavedPostListCreateView.as_view(), name="user-saved-posts"),
+    path("posts/<str:post_id>/reshare/", reshare_post, name="post-reshare"),
     path("posts/search/", BusinessNetworkPostSearchView.as_view(), name="post-search"),
     path(
         "saved-posts/delete/<str:post_id>/",

@@ -299,6 +299,12 @@ class BusinessNetworkPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_posts')
     title = models.CharField(max_length=255,blank=True,null=True)
     content = models.TextField(blank=True,null=True)
+    # A reshare/repost: this post shares another user's post. content holds the
+    # optional caption; media/tags stay empty (the original is embedded).
+    shared_from = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='reshares',
+    )
     media = models.ManyToManyField(BusinessNetworkMedia, blank=True, related_name='business_network_posts')
     tags = models.ManyToManyField(BusinessNetworkPostTag, blank=True, related_name='business_network_posts')
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')
@@ -764,6 +770,7 @@ class BusinessNetworkNotification(models.Model):
         ('reply', 'Reply'),
         ('mention', 'Mention'),
         ('solution', 'Solution'),
+        ('share', 'Share'),
     )
     
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bn_notifications_received')

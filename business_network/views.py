@@ -23,7 +23,7 @@ from django.db.models import (
 from django.db.models.functions import Cast, Extract, Mod, Now, Power
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -1055,6 +1055,53 @@ def increment_media_views(request, media_id):
         return Response({"message": "Views incremented", "views": media.views}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def reshare_post(request, post_id):
+    """Reshare (repost) another user's post to your own profile/feed.
+
+    Body: {caption?}. Creates a new post whose shared_from points at the ROOT
+    original (so resharing a reshare still embeds the source), and notifies the
+    original author.
+    """
+    import logging as _logging
+
+    original = BusinessNetworkPost.objects.filter(
+        id=post_id, is_banned=False
+    ).first()
+    if original is None:
+        return Response(
+            {"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    root = original.shared_from or original
+    caption = (request.data.get("caption") or "").strip()
+
+    reshare = BusinessNetworkPost.objects.create(
+        author=request.user,
+        content=caption or None,
+        shared_from=root,
+        visibility="public",
+    )
+
+    try:
+        if root.author_id != request.user.id:
+            BusinessNetworkNotification.objects.create(
+                recipient=root.author,
+                actor=request.user,
+                type="share",
+                target_id=str(root.id),
+                content=(caption[:140] if caption else None),
+            )
+    except Exception:
+        _logging.getLogger(__name__).exception("[bn] reshare notification failed")
+
+    data = BusinessNetworkPostSerializer(
+        reshare, context={"request": request}
+    ).data
+    return Response(data, status=status.HTTP_201_CREATED)
 
 
 # Like Views
