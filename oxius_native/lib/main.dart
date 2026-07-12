@@ -52,6 +52,7 @@ import 'services/app_update_service.dart';
 import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
 import 'services/ads_service.dart';
+import 'services/google_play_billing_service.dart';
 import 'services/auth_service.dart';
 import 'services/translation_service.dart';
 import 'services/online_status_service.dart';
@@ -196,6 +197,8 @@ Future<void> _bootstrap(UserStateService userState) async {
     await AdsService.init();
     AdsService.loadAppOpen();
   });
+  // Google Play In-App Purchase (diamonds, Pro, Gold Sponsor).
+  _safeInit('IAP', () => GooglePlayBilling.init());
   // App-open ad on returning to the app (never on first launch; cooldown +
   // gap enforced inside AdsService).
   WidgetsBinding.instance.addObserver(_AppOpenLifecycleObserver());

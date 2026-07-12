@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/subscription_service.dart';
+import '../widgets/purchase_method_sheet.dart';
 import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -765,6 +766,20 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
     if (_isPro) {
       _showAlreadyProSnackbar();
+      return;
+    }
+
+    // Balance OR Google Play. Google Play subscription grants server-side
+    // (auto-renew handled by Google).
+    final method = await showPurchaseMethodSheet(
+      context,
+      kind: 'pro',
+      onBalance: () {},
+    );
+    if (!mounted || method == null) return;
+    if (method == 'google') {
+      await _userState.refreshUser();
+      if (mounted) _showSuccessDialog();
       return;
     }
 

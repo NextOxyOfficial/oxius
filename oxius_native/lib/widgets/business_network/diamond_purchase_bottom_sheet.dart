@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/diamond_models.dart';
+import '../purchase_method_sheet.dart';
 import '../../services/diamond_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/payment_policy.dart';
@@ -163,6 +164,32 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
     final hasBalance = _currentAccountBalance >= total;
 
     return hasAmount && hasBalance && total > 0;
+  }
+
+  // Offer balance OR Google Play. Google Play grants server-side; the
+  // balance path runs the existing flow below.
+  Future<void> _startPurchase() async {
+    if (!_canPurchase()) return;
+    final amount = _selectedPackage ?? _customAmount!;
+    final result = await showPurchaseMethodSheet(
+      context,
+      kind: 'diamonds',
+      diamondsWanted: amount,
+      onBalance: () {},
+    );
+    if (!mounted || result == null) return;
+    if (result == 'balance') {
+      await _purchaseDiamonds();
+    } else if (result == 'google') {
+      setState(() {
+        _selectedPackage = null;
+        _customAmount = null;
+      });
+      _customAmountController.clear();
+      AdsyToast.success(context, 'ডায়মন্ড যোগ হয়েছে!');
+      widget.onPurchaseSuccess?.call();
+      AuthService.refreshUserData();
+    }
   }
 
   Future<void> _purchaseDiamonds() async {
@@ -649,7 +676,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
             height: 44,
             child: ElevatedButton(
               onPressed:
-                  _canPurchase() && !_isLoading ? _purchaseDiamonds : null,
+                  _canPurchase() && !_isLoading ? _startPurchase : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.pink.shade600,
                 foregroundColor: Colors.white,
