@@ -159,9 +159,15 @@ class _MindForceScreenState extends State<MindForceScreen> {
       return;
     }
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
+      isScrollControlled: true,
+      isDismissible: false,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => CreateProblemScreen(
         categories: _categories,
         onSubmit: _handleCreateProblem,

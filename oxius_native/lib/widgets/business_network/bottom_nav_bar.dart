@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../config/app_config.dart';
+import '../../services/auth_service.dart';
 import '../login_prompt_dialog.dart';
 
 /// Business network bottom navigation — standard social-app anatomy:
@@ -73,6 +75,8 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         activeIcon: Icons.person_rounded,
         label: 'Profile',
         isActive: currentIndex == 3,
+        // Facebook-style: the profile tab shows the user's own face.
+        avatarUrl: AuthService.currentUser?.profilePicture,
       ),
       _buildNavItem(
         context,
@@ -135,32 +139,76 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
     required bool isActive,
     int? badge,
     bool useFavicon = false,
+    String? avatarUrl,
   }) {
     final color = isActive ? _accent : _inactive;
+    final avatar = AppConfig.getAbsoluteUrl(avatarUrl ?? '');
+
+    // The main tab glyph: avatar (profile tab), favicon, or icon pair.
+    Widget glyph;
+    if (avatar.isNotEmpty) {
+      // Facebook-style avatar tab — blue ring marks the active state.
+      glyph = Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isActive ? _accent : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: ClipOval(
+          child: Image.network(
+            avatar,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+                Icon(isActive ? activeIcon : icon, size: 22, color: color),
+          ),
+        ),
+      );
+    } else if (useFavicon) {
+      glyph = Image.asset(
+        'assets/images/favicon.png',
+        width: 24,
+        height: 24,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(isActive ? activeIcon : icon, size: 24, color: color);
+        },
+      );
+    } else {
+      glyph = Icon(isActive ? activeIcon : icon, size: 24, color: color);
+    }
 
     return Expanded(
       child: GestureDetector(
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
-        child: Column(
+        child: Stack(
+          children: [
+            // Facebook-style active indicator: a thin accent bar along the
+            // TOP edge of the active tab.
+            Align(
+              alignment: Alignment.topCenter,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                height: 3,
+                width: isActive ? 36 : 0,
+                decoration: BoxDecoration(
+                  color: _accent,
+                  borderRadius:
+                      const BorderRadius.vertical(bottom: Radius.circular(3)),
+                ),
+              ),
+            ),
+            Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Stack(
               clipBehavior: Clip.none,
               children: [
-                useFavicon
-                    ? Image.asset(
-                        'assets/images/favicon.png',
-                        width: 24,
-                        height: 24,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(isActive ? activeIcon : icon,
-                              size: 24, color: color);
-                        },
-                      )
-                    : Icon(isActive ? activeIcon : icon,
-                        size: 24, color: color),
+                glyph,
                 if (badge != null && badge > 0)
                   Positioned(
                     top: -4,
@@ -199,6 +247,8 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+            ),
+          ],
             ),
           ],
         ),

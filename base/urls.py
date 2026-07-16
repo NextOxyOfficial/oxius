@@ -24,7 +24,11 @@ router.register(r"regions", RegionViewSet)
 router.register(r"countries", CountryViewSet)
 
 
+from .share_meta import share_meta
+
 urlpatterns = [
+    # Crawler-facing share previews (bots are routed here by nginx).
+    path("share-meta/", share_meta, name="share-meta"),
     path("upload/", upload_file, name="upload_file"),
     path("logo/", getLogo, name="logo"),
     path("moderate/<str:token>/", moderate, name="moderate"),

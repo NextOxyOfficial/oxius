@@ -567,6 +567,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 suggestionListHeight: 220,
                 maxLines: 8,
                 minLines: 4,
+                // Rebuild on every keystroke so the URL preview below reacts
+                // in real time as a link is typed/pasted.
+                onChanged: (_) => setState(() {}),
                 style: TextStyle(
                   fontSize: 15.5,
                   color: Colors.grey.shade800,

@@ -282,6 +282,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
                 news.author, context=self.context
             ).data if news.author_id else None,
             "comment_count": news.post_comments.count(),
+            "share_count": news.bn_reshares.count(),
         }
 
     # Counts reuse the view's prefetch_related cache when present (feed lists

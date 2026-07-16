@@ -16,6 +16,7 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
+import '../../widgets/business_network/feed_composer_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
 import '../../widgets/ios_web_redirect_screen.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
@@ -1034,8 +1035,14 @@ class _ProfileScreenState extends State<ProfileScreen>
         onSearchTap: () {
           // TODO: Implement search
         },
+        // Header avatar → profile OPTIONS, same as the rest of the app.
         onProfileTap: () {
-          // Already on profile page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfileOptionsScreen(),
+            ),
+          );
         },
       ),
       drawer: isMobile
@@ -1110,23 +1117,34 @@ class _ProfileScreenState extends State<ProfileScreen>
         });
         break;
       case 2:
-        // Create Post
-        Navigator.push(
+        // Create Post — insert the new post at the top of this profile's
+        // list so it shows without a reload.
+        Navigator.push<BusinessNetworkPost?>(
           context,
           MaterialPageRoute(
             builder: (context) => const CreatePostScreen(),
           ),
-        );
+        ).then((created) {
+          if (created != null && mounted && _isOwnProfile()) {
+            setState(() => _userPosts.insert(0, created));
+          }
+        });
         break;
       case 3:
-        // Profile - Already here
+        // Profile — the footer goes to the profile PAGE (the header avatar
+        // opens the options screen). If this is already the user's own
+        // profile there is nowhere to go.
         if (AuthService.isAuthenticated) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ProfileOptionsScreen(),
-            ),
-          );
+          final currentUser = AuthService.currentUser;
+          if (currentUser != null && !_isOwnProfile()) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ProfileScreen(userId: currentUser.id),
+              ),
+            );
+          }
         } else {
           Navigator.pushNamed(context, '/login');
         }
@@ -2281,6 +2299,19 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildPostsTab() {
+    // Own profile gets the same "কী ভাবছেন?" composer as the feed; a created
+    // post appears at the top without a reload.
+    final composer = _isOwnProfile()
+        ? Padding(
+            padding: const EdgeInsets.fromLTRB(1, 4, 1, 0),
+            child: FeedComposerCard(
+              onPostCreated: (post) {
+                if (mounted) setState(() => _userPosts.insert(0, post));
+              },
+            ),
+          )
+        : const SizedBox.shrink();
+
     if (_userPosts.isEmpty) {
       if (_isLoadingPosts) {
         // Posts still streaming in — header is already visible above.
@@ -2295,9 +2326,21 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         );
       }
-      return _buildEmptyState('No posts yet', Icons.post_add);
+      return Column(
+        children: [
+          composer,
+          _buildEmptyState('No posts yet', Icons.post_add),
+        ],
+      );
     }
 
+    return Column(children: [
+      composer,
+      _buildPostsList(),
+    ]);
+  }
+
+  Widget _buildPostsList() {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

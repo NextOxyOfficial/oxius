@@ -589,6 +589,9 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
   // Aspect ratio measured from the thumbnail so the box is sized correctly even
   // before the video controller finishes initializing.
   double? _thumbAspect;
+  // Once known, the box keeps this shape forever — prevents the feed jumping
+  // when the video's own aspect arrives after initialization.
+  double? _lockedAspect;
   bool _hasError = false;
   bool _isVisible = false;
 
@@ -622,7 +625,13 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     listener = ImageStreamListener((info, _) {
       final img = info.image;
       if (img.height != 0 && mounted) {
-        setState(() => _thumbAspect = img.width / img.height);
+        setState(() {
+          _thumbAspect = img.width / img.height;
+          // Lock the box to the thumbnail's shape — the thumb is a frame of
+          // the video, so the aspect matches and the card never resizes when
+          // the video finishes loading.
+          _lockedAspect ??= _thumbAspect;
+        });
       }
       stream.removeListener(listener);
     }, onError: (_, __) => stream.removeListener(listener));
@@ -658,6 +667,11 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
       setState(() {
         _isInitialized = true;
         _hasError = false;
+        // No thumbnail case: lock to the video's real shape (single, animated
+        // resize instead of repeated jumps).
+        if (controller.value.aspectRatio > 0) {
+          _lockedAspect ??= controller.value.aspectRatio;
+        }
       });
 
       _updatePlayback();
@@ -694,9 +708,10 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     super.dispose();
   }
 
-  /// Best-known aspect ratio: the initialized video's, else the thumbnail's,
-  /// else a sensible 16:9 default.
+  /// Best-known aspect ratio. Locked after first measurement so the card
+  /// keeps a stable size; otherwise: video's, then thumbnail's, then 16:9.
   double get _aspect {
+    if (_lockedAspect != null && _lockedAspect! > 0) return _lockedAspect!;
     final c = _controller;
     if (c != null && _isInitialized && c.value.aspectRatio > 0) {
       return c.value.aspectRatio;
@@ -712,7 +727,17 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     final stack = Stack(
       fit: StackFit.expand,
       children: [
-        Container(color: Colors.black),
+        // Soft dark placeholder instead of a flat black slab, so a video with
+        // a missing thumbnail still looks intentional while it loads.
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF334155), Color(0xFF0F172A)],
+            ),
+          ),
+        ),
         // Poster (cover-fills the box, no letterbox).
         if (thumbUrl.isNotEmpty)
           CachedNetworkImage(
@@ -816,7 +841,13 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
           } else if (expectedH < widget.minHeight) {
             ratio = maxW / widget.minHeight;
           }
-          return AspectRatio(aspectRatio: ratio, child: stack);
+          // AnimatedSize smooths the one-time settle when a video with no
+          // thumbnail locks to its real shape.
+          return AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            child: AspectRatio(aspectRatio: ratio, child: stack),
+          );
         },
       ),
     );

@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import random
 import re
 import uuid
@@ -2583,8 +2584,22 @@ def reset_password_request(request):
                     fail_silently=False,
                 )
         else:
-            # Implement SMS sending logic here
-            pass
+            # Phone reset: the OTP SMS was never implemented — this branch was
+            # a bare `pass`, so "reset instructions sent" was returned while
+            # nothing was sent.
+            message = (
+                f"AdsyClub password reset code: {otp}. "
+                "কোডটি কাউকে জানাবেন না।"
+            )
+            sent, provider_message = _send_smsinbd_message(value, message)
+            if not sent:
+                logging.getLogger(__name__).error(
+                    "[reset] OTP SMS failed for %s: %s", value, provider_message
+                )
+                return Response(
+                    {"detail": "SMS পাঠানো যায়নি, একটু পরে আবার চেষ্টা করুন"},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
 
         return Response({"detail": "Reset instructions sent"})
     except User.DoesNotExist:

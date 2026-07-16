@@ -554,6 +554,9 @@ class FeedNewsCard extends StatefulWidget {
 
 class _FeedNewsCardState extends State<FeedNewsCard> {
   List<NewsPost> _posts = const [];
+  // Live count overrides so a new comment/reshare shows without a reload.
+  int? _commentCount;
+  int? _shareCount;
 
   @override
   void initState() {
@@ -702,16 +705,21 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
                 const Spacer(),
                 _newsAction(
                   icon: Icons.mode_comment_outlined,
-                  label: 'মন্তব্য',
+                  label: _labelWithCount(
+                      'Comments', _commentCount ?? post.commentCount),
                   onTap: () => NewsCommentsSheet.show(
                     context,
                     newsId: '${post.id}',
                     newsTitle: post.title,
+                    onCountChanged: (n) {
+                      if (mounted) setState(() => _commentCount = n);
+                    },
                   ),
                 ),
                 _newsAction(
                   icon: Icons.share_outlined,
-                  label: 'শেয়ার',
+                  label: _labelWithCount(
+                      'Share', _shareCount ?? post.shareCount),
                   onTap: () => _shareStory(post),
                 ),
               ],
@@ -721,6 +729,9 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
       ),
     );
   }
+
+  String _labelWithCount(String label, int count) =>
+      count > 0 ? '$label ($count)' : label;
 
   Widget _newsAction({
     required IconData icon,
@@ -774,6 +785,8 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
           );
           if (created == null) return false;
           if (mounted) {
+            setState(() =>
+                _shareCount = (_shareCount ?? post.shareCount) + 1);
             AdsyToast.success(context, 'খবরটি আপনার ফিডে শেয়ার হয়েছে');
           }
           return true;

@@ -17,24 +17,32 @@ class NewsCommentsSheet extends StatefulWidget {
   final String newsId;
   final String newsTitle;
 
+  /// Fired whenever the comment count changes (load/new comment), so callers
+  /// can live-update their counters without a reload.
+  final ValueChanged<int>? onCountChanged;
+
   const NewsCommentsSheet({
     super.key,
     required this.newsId,
     this.newsTitle = '',
+    this.onCountChanged,
   });
 
-  /// Opens the sheet. Returns the resulting comment count when it changes, so
-  /// callers can refresh their own count without refetching the story.
-  static Future<int?> show(
+  static Future<void> show(
     BuildContext context, {
     required String newsId,
     String newsTitle = '',
+    ValueChanged<int>? onCountChanged,
   }) {
-    return showModalBottomSheet<int>(
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => NewsCommentsSheet(newsId: newsId, newsTitle: newsTitle),
+      builder: (_) => NewsCommentsSheet(
+        newsId: newsId,
+        newsTitle: newsTitle,
+        onCountChanged: onCountChanged,
+      ),
     );
   }
 
@@ -67,6 +75,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
       _comments = rows;
       _loading = false;
     });
+    widget.onCountChanged?.call(rows.length);
   }
 
   Future<void> _submit() async {
@@ -88,6 +97,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
         _comments.insert(0, created);
         _sending = false;
       });
+      widget.onCountChanged?.call(_comments.length);
     } else {
       setState(() => _sending = false);
       AdsyToast.error(context, 'মন্তব্য পোস্ট করা যায়নি');
@@ -125,9 +135,9 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: Row(
                   children: [
-                    Text(
-                      'মন্তব্য',
-                      style: const TextStyle(
+                    const Text(
+                      'Comments',
+                      style: TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF0F172A),

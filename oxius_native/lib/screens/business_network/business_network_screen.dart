@@ -15,6 +15,7 @@ import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
+import '../../widgets/business_network/feed_composer_card.dart';
 import '../../widgets/business_network/user_suggestions_card.dart';
 import '../../widgets/business_network/sponsored_products_card.dart';
 import '../../widgets/business_network/feed_discovery_cards.dart';
@@ -757,6 +758,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // "কিছু ভাবছেন? কোনো আইডিয়া থাকলে পোস্ট করে ফেলুন " composer strip — created posts land in the feed
+        // without a reload.
+        FeedComposerCard(
+          onPostCreated: (post) {
+            if (mounted) setState(() => _posts.insert(0, post));
+          },
+        ),
+        const SizedBox(height: 6),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: GoldSponsorsSlider(),

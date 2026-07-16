@@ -114,28 +114,24 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
+    final maxHeight = MediaQuery.of(context).size.height * 0.9;
+    return Padding(
+      // Keep inputs visible above the keyboard
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 600),
-        decoration: BoxDecoration(
+        constraints: BoxConstraints(maxWidth: 600, maxHeight: maxHeight),
+        decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Compact Header with Gradient
+            // Compact Header with Gradient + drag handle
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -143,13 +139,24 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                     Colors.deepPurple.shade700,
                   ],
                 ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
                 ),
               ),
-              child: Row(
+              child: Column(
                 children: [
+                  // Drag handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Row(
+                    children: [
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
@@ -187,13 +194,15 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                    iconSize: 20,
-                    color: Colors.white,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        iconSize: 20,
+                        color: Colors.white,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -386,10 +395,6 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                 color: Colors.grey.shade50,
                 border: Border(
                   top: BorderSide(color: Colors.grey.shade200),
-                ),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
                 ),
               ),
               child: Row(

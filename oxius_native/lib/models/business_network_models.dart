@@ -578,6 +578,7 @@ class SharedNewsPreview {
   final String authorName;
   final String? authorImage;
   final int commentCount;
+  final int shareCount;
 
   SharedNewsPreview({
     required this.id,
@@ -588,6 +589,7 @@ class SharedNewsPreview {
     this.authorName = '',
     this.authorImage,
     this.commentCount = 0,
+    this.shareCount = 0,
   });
 
   factory SharedNewsPreview.fromJson(Map<String, dynamic> json) {
@@ -604,6 +606,7 @@ class SharedNewsPreview {
       authorName: (ad['name'] ?? ad['username'] ?? '').toString(),
       authorImage: ad['image']?.toString(),
       commentCount: int.tryParse('${json['comment_count'] ?? 0}') ?? 0,
+      shareCount: int.tryParse('${json['share_count'] ?? 0}') ?? 0,
     );
   }
 }

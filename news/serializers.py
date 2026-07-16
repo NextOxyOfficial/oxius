@@ -19,14 +19,19 @@ class NewsPostListSerializer(serializers.ModelSerializer):
     author_details = UserSerializer(source='author', read_only=True)
     category_details = NewsCategorySerializer(many=True, read_only=True)
     comment_count = serializers.SerializerMethodField()
-    
+    share_count = serializers.SerializerMethodField()
+
     class Meta:
         model = NewsPost
         fields = '__all__'
         read_only_fields = ['slug']
-    
+
     def get_comment_count(self, obj):
         return obj.post_comments.count()
+
+    def get_share_count(self, obj):
+        # Reshares of this story into the Business Network feed.
+        return obj.bn_reshares.count()
 
 class NewsPostDetailSerializer(serializers.ModelSerializer):
     author_details = UserSerializer(source='author', read_only=True)

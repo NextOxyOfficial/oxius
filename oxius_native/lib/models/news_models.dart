@@ -9,6 +9,8 @@ class NewsPost {
   final List<String> tags;
   final AuthorDetails? authorDetails;
   final List<NewsComment> comments;
+  final int commentCount;
+  final int shareCount;
 
   NewsPost({
     required this.id,
@@ -21,6 +23,8 @@ class NewsPost {
     this.tags = const [],
     this.authorDetails,
     this.comments = const [],
+    this.commentCount = 0,
+    this.shareCount = 0,
   });
 
   factory NewsPost.fromJson(Map<String, dynamic> json) {
@@ -45,6 +49,10 @@ class NewsPost {
               .map((c) => NewsComment.fromJson(c))
               .toList()
           : [],
+      commentCount: int.tryParse('${json['comment_count'] ?? 0}') ??
+          (json['post_comments'] as List?)?.length ??
+          0,
+      shareCount: int.tryParse('${json['share_count'] ?? 0}') ?? 0,
     );
   }
 

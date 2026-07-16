@@ -3078,6 +3078,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                               },
                             ),
                 ),
+                // Animated "other user is typing" bubble, just above the input
+                _buildTypingIndicator(),
                 // Message Input
                 _buildMessageInput(),
               ],
@@ -3504,6 +3506,42 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     );
   }
 
+  /// WhatsApp/Messenger-style typing indicator shown just above the input
+  /// bar when the other user is typing. Fades/slides in and out and is
+  /// left-aligned to match where received message bubbles start
+  /// (list horizontal padding 8 + avatar column 34 = 42).
+  Widget _buildTypingIndicator() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SizeTransition(
+          sizeFactor: animation,
+          axisAlignment: -1.0,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.35),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        ),
+      ),
+      child: _isOtherUserTyping
+          ? const Padding(
+              key: ValueKey('typing_indicator_visible'),
+              padding: EdgeInsets.fromLTRB(42, 2, 8, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: _TypingIndicatorBubble(),
+              ),
+            )
+          : const SizedBox.shrink(key: ValueKey('typing_indicator_hidden')),
+    );
+  }
+
   Widget _buildMessageInput() {
     return ChatMessageInput(
       messageController: _messageController,
@@ -3551,5 +3589,100 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     } else {
       return 'Just now';
     }
+  }
+}
+
+/// Compact grey chat bubble (styled like a received message) containing three
+/// dots that pulse in a smooth staggered wave — the classic WhatsApp /
+/// Messenger "typing…" animation.
+class _TypingIndicatorBubble extends StatefulWidget {
+  const _TypingIndicatorBubble();
+
+  @override
+  State<_TypingIndicatorBubble> createState() => _TypingIndicatorBubbleState();
+}
+
+class _TypingIndicatorBubbleState extends State<_TypingIndicatorBubble>
+    with SingleTickerProviderStateMixin {
+  static const int _dotCount = 3;
+  static const double _dotSize = 7;
+
+  late final AnimationController _controller;
+  late final List<Animation<double>> _dotAnimations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat();
+
+    // Each dot rides the same 1s loop, offset so the pulse travels
+    // left-to-right like a tide.
+    _dotAnimations = List.generate(_dotCount, (index) {
+      final start = index * 0.15;
+      return CurvedAnimation(
+        parent: _controller,
+        curve: Interval(start, start + 0.6, curve: Curves.linear),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Maps the interval progress (0→1) to a smooth 0→1→0 pulse.
+  double _pulse(double t) {
+    final wave = t <= 0.5 ? t * 2 : (1 - t) * 2;
+    return Curves.easeInOut.transform(wave.clamp(0.0, 1.0));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 32,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(18),
+          topRight: Radius.circular(18),
+          bottomLeft: Radius.circular(5),
+          bottomRight: Radius.circular(18),
+        ),
+      ),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_dotCount, (index) {
+              final pulse = _pulse(_dotAnimations[index].value);
+              return Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: index == 1 ? 3 : 0,
+                ),
+                child: Transform.scale(
+                  scale: 0.7 + 0.3 * pulse,
+                  child: Container(
+                    width: _dotSize,
+                    height: _dotSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF64748B)
+                          .withValues(alpha: 0.35 + 0.55 * pulse),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          );
+        },
+      ),
+    );
   }
 }

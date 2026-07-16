@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/html_content_utils.dart';
+import 'news_comments_sheet.dart';
 
 /// The embedded Adsy News story shown inside a news reshare — used by both the
 /// feed and the post-detail screen so the design lives in one place.
@@ -105,13 +106,59 @@ class ResharedNewsCard extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 5),
-                    const Text(
-                      'আরও পড়ুন',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF2563EB),
-                      ),
+                    Row(
+                      children: [
+                        const Text(
+                          'আরও পড়ুন',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                        const Spacer(),
+                        // The original story's engagement — tap opens its
+                        // comments right here.
+                        InkWell(
+                          onTap: () => NewsCommentsSheet.show(
+                            context,
+                            newsId: news.id,
+                            newsTitle: news.title,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 4),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.mode_comment_outlined,
+                                    size: 14, color: Color(0xFF64748B)),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '${news.commentCount}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.share_outlined,
+                            size: 14, color: Color(0xFF64748B)),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${news.shareCount}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
