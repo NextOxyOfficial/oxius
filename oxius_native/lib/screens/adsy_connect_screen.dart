@@ -1147,6 +1147,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           ],
                         ),
                       ),
+                      if (chat['isMuted'] == true) ...[
+                        const SizedBox(width: 4),
+                        Icon(Icons.notifications_off_rounded,
+                            size: 14, color: Colors.grey.shade400),
+                      ],
                       const SizedBox(width: 4),
                       Text(
                         _formatTimestamp(chat['timestamp']),

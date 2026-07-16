@@ -435,7 +435,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         (current.instagramPublic ?? true) !=
             (original.instagramPublic ?? true) ||
         (current.whatsappPublic ?? true) != (original.whatsappPublic ?? true) ||
-        (current.aboutPublic ?? true) != (original.aboutPublic ?? true);
+        (current.aboutPublic ?? true) != (original.aboutPublic ?? true) ||
+        (current.whoCanMessage ?? 'everyone') !=
+            (original.whoCanMessage ?? 'everyone');
   }
 
   int get _passwordStrength {
@@ -696,6 +698,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'instagram_public': _userProfile?.instagramPublic ?? true,
         'whatsapp_public': _userProfile?.whatsappPublic ?? true,
         'about_public': _userProfile?.aboutPublic ?? true,
+        'who_can_message': _userProfile?.whoCanMessage ?? 'everyone',
       };
 
       if (!_isKycLocked) {
@@ -755,6 +758,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'instagram_public': _userProfile?.instagramPublic ?? true,
         'whatsapp_public': _userProfile?.whatsappPublic ?? true,
         'about_public': _userProfile?.aboutPublic ?? true,
+        'who_can_message': _userProfile?.whoCanMessage ?? 'everyone',
       };
 
       final result =
@@ -2100,10 +2104,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final aboutPublic = profile.aboutPublic ?? true;
     final phonePreview = _maskPhone(profile.phone ?? '', phonePublic);
 
+    final whoCanMessage = profile.whoCanMessage ?? 'everyone';
+
     return _buildRefreshableTab(
       key: const ValueKey('privacy-tab'),
       child: Column(
         children: [
+          _buildSectionCard(
+            title: _t('settings_who_can_message', 'কে মেসেজ পাঠাতে পারবে'),
+            subtitle: _t('settings_who_can_message_sub',
+                'AdsyConnect-এ কারা আপনাকে নতুন মেসেজ পাঠাতে পারবে ঠিক করুন।'),
+            icon: Icons.forum_outlined,
+            child: Column(
+              children: [
+                _buildMessagePrivacyOption(
+                  value: 'everyone',
+                  groupValue: whoCanMessage,
+                  icon: Icons.public_rounded,
+                  title: _t('settings_msg_everyone', 'সবাই'),
+                  description: _t('settings_msg_everyone_desc',
+                      'যেকোনো ব্যবহারকারী আপনাকে মেসেজ পাঠাতে পারবে।'),
+                ),
+                _buildMessagePrivacyOption(
+                  value: 'followers',
+                  groupValue: whoCanMessage,
+                  icon: Icons.group_outlined,
+                  title: _t('settings_msg_followers', 'যারা ফলো করে'),
+                  description: _t('settings_msg_followers_desc',
+                      'শুধু আপনাকে ফলো করা ব্যবহারকারীরা মেসেজ পাঠাতে পারবে।'),
+                ),
+                _buildMessagePrivacyOption(
+                  value: 'following',
+                  groupValue: whoCanMessage,
+                  icon: Icons.person_add_alt_1_outlined,
+                  title: _t('settings_msg_following', 'যাদের ফলো করেন'),
+                  description: _t('settings_msg_following_desc',
+                      'শুধু আপনি যাদের ফলো করেন তারাই মেসেজ পাঠাতে পারবে।'),
+                ),
+                _buildMessagePrivacyOption(
+                  value: 'mutual',
+                  groupValue: whoCanMessage,
+                  icon: Icons.handshake_outlined,
+                  title: _t('settings_msg_mutual', 'শুধু মিউচুয়াল'),
+                  description: _t('settings_msg_mutual_desc',
+                      'দুজন দুজনকে ফলো করলে তবেই মেসেজ পাঠানো যাবে।'),
+                  isLast: true,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
           _buildSectionCard(
             title: _t('settings_contact_visibility', 'যোগাযোগের দৃশ্যমানতা'),
             subtitle: _t('settings_contact_visibility_sub',
@@ -2302,6 +2352,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: _savePrivacy,
           ),
         ],
+      ),
+    );
+  }
+
+  // A single selectable "who can message me" choice — radio-style row.
+  Widget _buildMessagePrivacyOption({
+    required String value,
+    required String groupValue,
+    required IconData icon,
+    required String title,
+    required String description,
+    bool isLast = false,
+  }) {
+    final selected = value == groupValue;
+    const accent = Color(0xFF3B82F6);
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          setState(() {
+            _userProfile = _userProfile?.copyWith(whoCanMessage: value);
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: selected ? accent.withValues(alpha: 0.06) : _softSurfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected ? accent : Colors.transparent,
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon,
+                  size: 20,
+                  color: selected ? accent : Colors.grey.shade500),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: selected
+                                ? accent
+                                : const Color(0xFF1F2937))),
+                    const SizedBox(height: 2),
+                    Text(description,
+                        style: TextStyle(
+                            fontSize: 11.5,
+                            color: Colors.grey.shade600,
+                            height: 1.3)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                size: 20,
+                color: selected ? accent : Colors.grey.shade400,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

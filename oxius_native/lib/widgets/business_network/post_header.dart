@@ -163,12 +163,13 @@ class PostHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // Location (city, upazila) under the name when available.
-                if (post.user.locationLabel.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                // Location and time share one line: address on the left, the
+                // post time to its right (separated by a dot). Without a
+                // location the time simply sits on its own.
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    if (post.user.locationLabel.isNotEmpty) ...[
                       Icon(Icons.location_on_rounded,
                           size: 13, color: Colors.grey.shade500),
                       const SizedBox(width: 2),
@@ -183,16 +184,25 @@ class PostHeader extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 3,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                     ],
-                  ),
-                ],
-                const SizedBox(height: 2),
-                Text(
-                  _formatTimeAgo(post.createdAt),
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: Colors.grey.shade600,
-                  ),
+                    Text(
+                      _formatTimeAgo(post.createdAt),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

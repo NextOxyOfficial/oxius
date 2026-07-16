@@ -36,6 +36,10 @@ def send_chat_push_notification(
         chatroom = ChatRoom.objects.filter(id=chatroom_id).first()
         if chatroom and ActiveChatSession.is_user_in_chat(receiver, chatroom):
             return {'skipped': 'receiver_in_chat'}
+        # Defence in depth: never push for a conversation the receiver muted,
+        # even if the enqueue-time check was somehow bypassed.
+        if chatroom and chatroom.is_muted_for(receiver):
+            return {'skipped': 'muted'}
 
         send_message_notification(
             recipient_user=receiver,

@@ -899,16 +899,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                       // Inline status · pro seller
                       Row(
                         children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color:
-                                  active ? green : const Color(0xFF94A3B8),
-                            ),
+                          Icon(
+                            active
+                                ? Icons.check_circle_rounded
+                                : Icons.do_not_disturb_on_rounded,
+                            size: 14,
+                            color: active ? green : const Color(0xFF94A3B8),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 4),
                           Text(
                               active
                                   ? t('eshop_active', fallback: 'অ্যাক্টিভ')
@@ -928,6 +926,24 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
+                          // PRO badge to the left of the "pro seller" label.
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text('PRO',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.3)),
+                          ),
+                          const SizedBox(width: 5),
                           Text(
                               t('eshop_pro_seller', fallback: 'প্রো সেলার'),
                               style: const TextStyle(
