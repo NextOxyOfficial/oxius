@@ -74,6 +74,14 @@ def link_preview(request):
     if cached is not None:
         return Response(cached)
 
+    domain = parsed.netloc
+    # A favicon we can always show, even when the page itself blocks scraping
+    # (Cloudflare "Just a moment…", bot walls, etc.) — Google's favicon service.
+    favicon = f"https://www.google.com/s2/favicons?domain={domain}&sz=128"
+
+    title = description = image = None
+    site_name = domain
+    is_blocked = False
     try:
         resp = requests.get(
             raw,
@@ -82,38 +90,43 @@ def link_preview(request):
             allow_redirects=True,
         )
         html = resp.text[:_MAX_HTML]
+
+        title = (
+            _meta(html, "og:title") or _meta(html, "twitter:title", False)
+            or _title_tag(html)
+        )
+        description = (
+            _meta(html, "og:description")
+            or _meta(html, "twitter:description", False)
+            or _meta(html, "description", False)
+        )
+        image = _meta(html, "og:image") or _meta(html, "twitter:image", False)
+        site_name = _meta(html, "og:site_name") or domain
+
+        # Detect an anti-bot interstitial so we don't show its junk title.
+        low = (title or "").lower()
+        if any(m in low for m in ("just a moment", "attention required",
+                                  "access denied", "are you a robot")):
+            is_blocked = True
+            title = description = image = None
+
+        if image:
+            image = _unescape(image)
+            if not image.startswith(("http://", "https://")):
+                image = urljoin(raw, image)
     except Exception:
-        # Cache the miss briefly so we don't hammer a dead/blocking host.
-        cache.set(cache_key, {}, 60 * 10)
-        return Response({})
-
-    title = (
-        _meta(html, "og:title") or _meta(html, "twitter:title", False)
-        or _title_tag(html)
-    )
-    description = (
-        _meta(html, "og:description")
-        or _meta(html, "twitter:description", False)
-        or _meta(html, "description", False)
-    )
-    image = _meta(html, "og:image") or _meta(html, "twitter:image", False)
-    site_name = _meta(html, "og:site_name") or parsed.netloc
-
-    if image:
-        image = _unescape(image)
-        if not image.startswith(("http://", "https://")):
-            image = urljoin(raw, image)
+        is_blocked = True
 
     data = {
         "url": raw,
         "title": _unescape(title) if title else None,
         "description": _unescape(description) if description else None,
         "image": image,
-        "site_name": _unescape(site_name) if site_name else parsed.netloc,
+        # Always present, so the app can render at least a compact link card.
+        "site_name": _unescape(site_name) if site_name else domain,
+        "favicon": favicon,
     }
-    # Only cache a useful result long-term.
-    if data["title"] or data["description"] or data["image"]:
-        cache.set(cache_key, data, _CACHE_TTL)
-    else:
-        cache.set(cache_key, data, 60 * 10)
+    # Cache real results long; blocked/minimal ones only briefly (they may
+    # start working, e.g. transient Cloudflare challenge).
+    cache.set(cache_key, data, 60 * 10 if is_blocked else _CACHE_TTL)
     return Response(data)

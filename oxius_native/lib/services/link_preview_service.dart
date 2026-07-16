@@ -84,15 +84,17 @@ class LinkPreviewService {
       final title = (data['title'] ?? '').toString();
       final desc = (data['description'] ?? '').toString();
       final image = (data['image'] ?? '').toString();
-      if (title.isEmpty && desc.isEmpty && image.isEmpty) return null;
+      final favicon = (data['favicon'] ?? '').toString();
+      final site = (data['site_name'] ?? '').toString();
+      // The server always returns at least a domain + favicon, so we can show
+      // a compact link card even for pages that block scraping.
       return LinkPreviewData(
         url: url,
         title: title.isEmpty ? null : title,
         description: desc.isEmpty ? null : desc,
         imageUrl: image.isEmpty ? null : image,
-        siteName: (data['site_name'] ?? '').toString().isEmpty
-            ? Uri.parse(url).host
-            : data['site_name'].toString(),
+        siteName: site.isEmpty ? Uri.parse(url).host : site,
+        faviconUrl: favicon.isEmpty ? null : favicon,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('server link-preview failed: $e');

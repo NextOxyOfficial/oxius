@@ -228,11 +228,27 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     alignment: Alignment.center,
-                    child: Icon(Icons.link_rounded,
-                        size: 22,
-                        color: onDark
-                            ? Colors.white.withValues(alpha: 0.85)
-                            : const Color(0xFF64748B)),
+                    clipBehavior: Clip.antiAlias,
+                    // Prefer the site's real favicon; fall back to a link icon.
+                    child: (data.faviconUrl != null &&
+                            data.faviconUrl!.isNotEmpty)
+                        ? Image.network(
+                            data.faviconUrl!,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Icon(
+                                Icons.link_rounded,
+                                size: 22,
+                                color: onDark
+                                    ? Colors.white.withValues(alpha: 0.85)
+                                    : const Color(0xFF64748B)),
+                          )
+                        : Icon(Icons.link_rounded,
+                            size: 22,
+                            color: onDark
+                                ? Colors.white.withValues(alpha: 0.85)
+                                : const Color(0xFF64748B)),
                   ),
                   const SizedBox(width: 10),
                 ],
@@ -278,6 +294,23 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                             fontWeight: FontWeight.w400,
                             color: descColor,
                             height: 1.3,
+                          ),
+                        ),
+                      ],
+                      // Blocked/OG-less site: still show the link itself so the
+                      // card is meaningful (favicon + domain + the URL).
+                      if ((data.title == null || data.title!.isEmpty) &&
+                          (data.description == null ||
+                              data.description!.isEmpty)) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          data.url.replaceFirst(RegExp(r'^https?://'), ''),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: descColor,
                           ),
                         ),
                       ],
