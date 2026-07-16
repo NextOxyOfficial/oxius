@@ -640,17 +640,15 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                       ),
                     );
                   },
+                  // Header avatar → profile OPTIONS (the footer opens the
+                  // profile page itself).
                   onProfileTap: () {
-                    final currentUser = AuthService.currentUser;
-                    if (currentUser != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ProfileScreen(userId: currentUser.id),
-                        ),
-                      );
-                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileOptionsScreen(),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -729,15 +727,19 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         break;
       case 3:
         if (isLoggedIn) {
-          // Profile - Navigate to ProfileOptionsScreen
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ProfileOptionsScreen(),
-            ),
-          ).then((_) {
-            if (mounted) setState(() => _currentNavIndex = 0);
-          });
+          // Profile - Navigate to the profile page itself (the header avatar
+          // opens the profile options screen).
+          final currentUser = AuthService.currentUser;
+          if (currentUser != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: currentUser.id),
+              ),
+            ).then((_) {
+              if (mounted) setState(() => _currentNavIndex = 0);
+            });
+          }
         } else {
           Navigator.pushNamed(context, '/login');
         }

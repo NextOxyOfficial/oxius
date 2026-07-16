@@ -495,7 +495,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             LinkifyText(
               text,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 16,
                 color: isMe ? Colors.white : const Color(0xFF1F2937),
                 height: 1.38,
               ),

@@ -57,7 +57,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
     if (mounted && fullPost != null) {
       setState(() {
-        _post = fullPost;
+        // Keep the reshare data the feed already handed us if the refetch
+        // comes back without it — otherwise the embedded original silently
+        // disappears on the detail screen.
+        _post = fullPost.sharedFrom == null && widget.post.sharedFrom != null
+            ? fullPost.copyWith(sharedFrom: widget.post.sharedFrom)
+            : fullPost;
         _isLoading = false;
       });
     } else if (mounted) {
@@ -515,7 +520,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     },
                                     style: {
                                       "body": Style(
-                                        fontSize: FontSize(15.5),
+                                        fontSize: FontSize(16),
                                         lineHeight: const LineHeight(1.6),
                                         color: const Color(0xFF1F2937),
                                         margin: Margins.zero,

@@ -310,15 +310,24 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            _getUserDisplayName(user),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1F2937),
-              height: 1.25,
+          // Name — tappable to profile (same as the avatar).
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: userId),
+              ),
+            ),
+            child: Text(
+              _getUserDisplayName(user),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+                height: 1.25,
+              ),
             ),
           ),
           const SizedBox(height: 1),

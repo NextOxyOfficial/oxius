@@ -368,14 +368,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         );
         break;
       case 3:
-        // Profile
+        // Profile — the footer opens the profile page itself (the header
+        // avatar opens the profile options screen).
         if (AuthService.isAuthenticated) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ProfileOptionsScreen(),
-            ),
-          );
+          final currentUser = AuthService.currentUser;
+          if (currentUser != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: currentUser.id),
+              ),
+            );
+          }
         } else {
           Navigator.pushNamed(context, '/login');
         }
@@ -408,16 +412,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         onSearchTap: () {
           // TODO: Implement search
         },
+        // Header avatar → profile OPTIONS, same as the Business Network feed.
         onProfileTap: () {
-          final user = AuthService.currentUser;
-          if (user != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileScreen(userId: user.id),
-              ),
-            );
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfileOptionsScreen(),
+            ),
+          );
         },
       ),
       drawer: isMobile

@@ -275,13 +275,14 @@ class BusinessNetworkPost {
     String? title,
     String? content,
     String? visibility,
+    SharedPostPreview? sharedFrom,
   }) {
     return BusinessNetworkPost(
       id: id,
       title: title ?? this.title,
       slug: slug,
       likedByPreview: likedByPreview,
-      sharedFrom: sharedFrom,
+      sharedFrom: sharedFrom ?? this.sharedFrom,
       shareCount: shareCount,
       user: user ?? this.user,
       content: content ?? this.content,

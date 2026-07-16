@@ -447,13 +447,13 @@ class ChatMessageInput extends StatelessWidget {
                       maxLines: 5,
                       textCapitalization: TextCapitalization.sentences,
                       style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         color: Color(0xFF1F2937),
                       ),
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: TextStyle(
-                          fontSize: 15,
+                          fontSize: 16,
                           color: Colors.grey.shade400,
                         ),
                         border: InputBorder.none,
