@@ -690,11 +690,11 @@ class BusinessNetworkUser {
     this.upazila,
   });
 
-  /// "City, Upazila" (or whichever is present) for a compact location line.
+  /// "Upazila, City" (or whichever is present) for a compact location line.
   String get locationLabel {
     final parts = [
-      (city ?? '').trim(),
       (upazila ?? '').trim(),
+      (city ?? '').trim(),
     ].where((p) => p.isNotEmpty).toList();
     return parts.join(', ');
   }

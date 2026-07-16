@@ -55,9 +55,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final users = await _searchUsers('');
     if (mounted) {
       setState(() {
-        _mentionUserData = users;
+        _mergeMentionUsers(users);
       });
     }
+  }
+
+  /// Accumulate mention candidates instead of replacing them. flutter_mentions
+  /// derives its annotations from this `data` list, so if a search replaces the
+  /// list, any user already inserted as a mention drops out of the annotation
+  /// map — their `@Name` reverts to plain text and `markupText` omits it. That
+  /// is why only the last-searched user could be mentioned. Keeping every user
+  /// we have ever seen (deduped by id) lets flutter_mentions filter the
+  /// dropdown by the current query while preserving all inserted mentions.
+  void _mergeMentionUsers(List<Map<String, dynamic>> newUsers) {
+    final byId = {for (final u in _mentionUserData) u['id']: u};
+    for (final u in newUsers) {
+      byId[u['id']] = u;
+    }
+    _mentionUserData = byId.values.toList();
   }
 
   Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
@@ -601,7 +616,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     final users = await _searchUsers(value);
                     if (mounted) {
                       setState(() {
-                        _mentionUserData = users;
+                        _mergeMentionUsers(users);
                       });
                     }
                   }

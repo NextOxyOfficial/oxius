@@ -77,8 +77,21 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Future<void> _loadInitialMentionUsers() async {
     final users = await _searchUsers('');
     if (mounted) {
-      setState(() => _mentionUserData = users);
+      setState(() => _mergeMentionUsers(users));
     }
+  }
+
+  /// Accumulate mention candidates instead of replacing them. flutter_mentions
+  /// derives its annotations from this `data` list; replacing it on each search
+  /// drops previously-inserted mentions from the annotation map, so only the
+  /// last-searched user could be mentioned. Deduping by id keeps every inserted
+  /// mention recognized while the dropdown still filters by the query.
+  void _mergeMentionUsers(List<Map<String, dynamic>> newUsers) {
+    final byId = {for (final u in _mentionUserData) u['id']: u};
+    for (final u in newUsers) {
+      byId[u['id']] = u;
+    }
+    _mentionUserData = byId.values.toList();
   }
 
   Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
@@ -450,7 +463,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
           if (trigger == '@') {
             final users = await _searchUsers(value);
             if (mounted) {
-              setState(() => _mentionUserData = users);
+              setState(() => _mergeMentionUsers(users));
             }
           }
         },
