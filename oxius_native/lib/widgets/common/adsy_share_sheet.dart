@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../config/app_config.dart';
 import '../../services/adsyconnect_service.dart';
+import '../../services/user_search_service.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'adsy_loading.dart';
 import 'adsy_toast.dart';
@@ -171,7 +172,73 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
   bool _reposting = false;
   final TextEditingController _captionCtrl = TextEditingController();
 
+  // Active (existing) chats shown as a quick "send to chat" row.
+  bool _loadingChats = true;
+  List<Map<String, dynamic>> _activeChats = [];
+  final Set<String> _sendingRoomIds = {};
+  final Set<String> _sentRoomIds = {};
+
   AdsyShareData get data => widget.data;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadActiveChats();
+  }
+
+  Future<void> _loadActiveChats() async {
+    try {
+      final rooms = await AdsyConnectService.getChatRooms(pageSize: 30);
+      if (!mounted) return;
+      setState(() {
+        _activeChats = rooms.map<Map<String, dynamic>>((r) {
+          final u = r['other_user'] ?? {};
+          final first = (u['first_name'] ?? '').toString();
+          final last = (u['last_name'] ?? '').toString();
+          final name = [first, last].where((s) => s.isNotEmpty).join(' ');
+          return {
+            'id': r['id']?.toString() ?? '',
+            'userId': u['id']?.toString() ?? '',
+            'name': name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
+            'firstName': first.isNotEmpty
+                ? first
+                : (name.isNotEmpty ? name : 'User'),
+            'avatar': u['avatar'],
+          };
+        }).where((r) => (r['id'] as String).isNotEmpty).toList();
+        _loadingChats = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingChats = false);
+    }
+  }
+
+  Future<void> _quickSend(Map<String, dynamic> room) async {
+    final id = room['id'] as String;
+    if (_sendingRoomIds.contains(id) || _sentRoomIds.contains(id)) return;
+    setState(() => _sendingRoomIds.add(id));
+    bool ok = false;
+    try {
+      await AdsyConnectService.sendTextMessage(
+        chatroomId: id,
+        receiverId: room['userId'] as String,
+        content: data.shareText,
+      );
+      ok = true;
+    } catch (_) {
+      ok = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      _sendingRoomIds.remove(id);
+      if (ok) _sentRoomIds.add(id);
+    });
+    if (ok) {
+      AdsyToast.success(context, '${room['name']}-কে পাঠানো হয়েছে');
+    } else {
+      AdsyToast.error(context, 'পাঠানো যায়নি');
+    }
+  }
 
   @override
   void dispose() {
@@ -268,6 +335,147 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     );
   }
 
+  // Prominent "send to a chat" strip shown right under the profile-share
+  // button. Lists the user's ACTIVE chats as avatar chips (one tap sends);
+  // the search chip opens the full picker where typing surfaces new users.
+  Widget _buildChatShareSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: const [
+            Icon(Icons.forum_rounded, size: 17, color: Color(0xFF2563EB)),
+            SizedBox(width: 7),
+            Text('চ্যাটে শেয়ার করুন',
+                style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF111827))),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 84,
+          child: _loadingChats
+              ? const Center(
+                  child: SizedBox(
+                      width: 22, height: 22, child: AdsyLoadingIndicator()))
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _activeChats.length + 1,
+                  separatorBuilder: (_, __) => const SizedBox(width: 4),
+                  itemBuilder: (_, i) {
+                    if (i == 0) return _searchChip();
+                    return _contactChip(_activeChats[i - 1]);
+                  },
+                ),
+        ),
+        const Divider(height: 20, color: Color(0xFFF1F5F9)),
+      ],
+    );
+  }
+
+  // Opens the full picker (active chats + user search) for new people.
+  Widget _searchChip() {
+    return SizedBox(
+      width: 62,
+      child: InkWell(
+        onTap: _shareToChat,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF3FF),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFDBE4FF)),
+              ),
+              child: const Icon(Icons.search_rounded,
+                  color: Color(0xFF2563EB), size: 24),
+            ),
+            const SizedBox(height: 5),
+            const Text('সার্চ',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF475569))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _contactChip(Map<String, dynamic> room) {
+    final id = room['id'] as String;
+    final sending = _sendingRoomIds.contains(id);
+    final sent = _sentRoomIds.contains(id);
+    final avatar = AppConfig.getAbsoluteUrl((room['avatar'] ?? '').toString());
+    return SizedBox(
+      width: 62,
+      child: InkWell(
+        onTap: sent ? null : () => _quickSend(room),
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: const BoxDecoration(
+                      shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+                  clipBehavior: Clip.antiAlias,
+                  child: avatar.isNotEmpty
+                      ? Image.network(avatar,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person, color: Color(0xFF3B82F6)))
+                      : const Icon(Icons.person, color: Color(0xFF3B82F6)),
+                ),
+                if (sending || sent)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.32),
+                      ),
+                      child: Center(
+                        child: sent
+                            ? const Icon(Icons.check_rounded,
+                                color: Colors.white, size: 24)
+                            : const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(
+                                        Colors.white))),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Text(room['firstName'].toString(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF475569))),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _copyLink() async {
     await Clipboard.setData(ClipboardData(text: data.cleanUrl));
     if (!mounted) return;
@@ -294,12 +502,17 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
   // Send this item into an AdsyConnect chat. The chat renders the URL as a
   // rich link-preview card, so no special message type is needed.
   Future<void> _shareToChat() async {
-    Navigator.pop(context);
+    // Capture the root navigator BEFORE popping — after the share sheet is
+    // dismissed, `context` is defunct and can't open the picker (that was why
+    // nothing appeared on tap).
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final text = data.shareText;
+    navigator.pop();
     await showModalBottomSheet<void>(
-      context: context,
+      context: navigator.context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ChatPickerSheet(shareText: data.shareText),
+      builder: (_) => _ChatPickerSheet(shareText: text),
     );
   }
 
@@ -409,6 +622,8 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                     _buildRepostComposer(),
                     const SizedBox(height: 14),
                   ],
+                  // Send-to-chat sits right under the profile-share button.
+                  _buildChatShareSection(),
                   _SharePreview(data: data),
                   const SizedBox(height: 10),
                   Container(
@@ -455,13 +670,6 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _SharePlatformButton(
-                          tooltip: 'Send to a chat',
-                          label: 'চ্যাটে',
-                          icon: FontAwesomeIcons.solidComments,
-                          color: const Color(0xFF2563EB),
-                          onTap: _shareToChat,
-                        ),
                         _SharePlatformButton(
                           tooltip: 'More apps',
                           label: 'More',
@@ -643,26 +851,58 @@ class _ChatPickerSheet extends StatefulWidget {
 
 class _ChatPickerSheetState extends State<_ChatPickerSheet> {
   bool _loading = true;
+  bool _searching = false;
+  // Sent/sending are keyed by the OTHER user's id so a person can't be sent
+  // to twice whether they came from active chats or a fresh search.
   final Set<String> _sending = {};
   final Set<String> _sent = {};
-  List<Map<String, dynamic>> _rooms = [];
+  List<Map<String, dynamic>> _rooms = []; // active chats
+  List<Map<String, dynamic>> _searchResults = [];
   final TextEditingController _search = TextEditingController();
   String _query = '';
+  int _searchSeq = 0;
 
   @override
   void initState() {
     super.initState();
-    _search.addListener(() {
-      final v = _search.text.trim().toLowerCase();
-      if (v != _query) setState(() => _query = v);
-    });
+    _search.addListener(_onSearchChanged);
     _load();
   }
 
   @override
   void dispose() {
+    _search.removeListener(_onSearchChanged);
     _search.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final v = _search.text.trim();
+    if (v == _query) return;
+    setState(() => _query = v);
+    if (v.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _searching = false;
+      });
+      return;
+    }
+    // Search all users (surfaces people not yet in an active chat).
+    final seq = ++_searchSeq;
+    setState(() => _searching = true);
+    UserSearchService.searchUsers(v).then((users) {
+      if (!mounted || seq != _searchSeq) return;
+      setState(() {
+        _searchResults = users
+            .map((u) => {
+                  'userId': u.id,
+                  'name': u.name.isNotEmpty ? u.name : (u.username ?? 'User'),
+                  'avatar': u.image ?? u.avatar,
+                })
+            .toList();
+        _searching = false;
+      });
+    });
   }
 
   Future<void> _load() async {
@@ -689,35 +929,41 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
     }
   }
 
-  List<Map<String, dynamic>> get _visible {
-    if (_query.isEmpty) return _rooms;
-    return _rooms
-        .where((r) => r['name'].toString().toLowerCase().contains(_query))
-        .toList();
-  }
+  // Active chats initially; user-search results once a query is typed.
+  List<Map<String, dynamic>> get _visible =>
+      _query.isEmpty ? _rooms : _searchResults;
 
-  Future<void> _sendTo(Map<String, dynamic> room) async {
-    final id = room['id'] as String;
-    if (_sending.contains(id) || _sent.contains(id)) return;
-    setState(() => _sending.add(id));
+  Future<void> _sendTo(Map<String, dynamic> item) async {
+    final userId = (item['userId'] ?? '').toString();
+    if (userId.isEmpty) return;
+    if (_sending.contains(userId) || _sent.contains(userId)) return;
+    setState(() => _sending.add(userId));
     bool ok = false;
     try {
-      await AdsyConnectService.sendTextMessage(
-        chatroomId: id,
-        receiverId: room['userId'] as String,
-        content: widget.shareText,
-      );
-      ok = true;
+      // A searched user may have no room yet — open/create it first.
+      var roomId = (item['id'] ?? '').toString();
+      if (roomId.isEmpty) {
+        final room = await AdsyConnectService.getOrCreateChatRoom(userId);
+        roomId = (room['id'] ?? '').toString();
+      }
+      if (roomId.isNotEmpty) {
+        await AdsyConnectService.sendTextMessage(
+          chatroomId: roomId,
+          receiverId: userId,
+          content: widget.shareText,
+        );
+        ok = true;
+      }
     } catch (_) {
       ok = false;
     }
     if (!mounted) return;
     setState(() {
-      _sending.remove(id);
-      if (ok) _sent.add(id);
+      _sending.remove(userId);
+      if (ok) _sent.add(userId);
     });
     if (ok) {
-      AdsyToast.success(context, '${room['name']}-কে পাঠানো হয়েছে');
+      AdsyToast.success(context, '${item['name']}-কে পাঠানো হয়েছে');
     } else {
       AdsyToast.error(context, 'পাঠানো যায়নি');
     }
@@ -794,15 +1040,23 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                 ),
               ),
               Flexible(
-                child: _loading
+                child: (_loading || _searching)
                     ? const Padding(
                         padding: EdgeInsets.all(28),
-                        child: AdsyLoadingIndicator(),
+                        child: Center(
+                          child: SizedBox(
+                              width: 26,
+                              height: 26,
+                              child: AdsyLoadingIndicator()),
+                        ),
                       )
                     : _visible.isEmpty
                         ? Padding(
                             padding: const EdgeInsets.all(28),
-                            child: Text('কোনো চ্যাট নেই',
+                            child: Text(
+                                _query.isEmpty
+                                    ? 'কোনো চ্যাট নেই'
+                                    : 'কোনো ব্যবহারকারী পাওয়া যায়নি',
                                 style: TextStyle(color: Colors.grey.shade600)),
                           )
                         : ListView.builder(
@@ -819,9 +1073,9 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
   }
 
   Widget _tile(Map<String, dynamic> room) {
-    final id = room['id'] as String;
-    final sending = _sending.contains(id);
-    final sent = _sent.contains(id);
+    final userId = (room['userId'] ?? '').toString();
+    final sending = _sending.contains(userId);
+    final sent = _sent.contains(userId);
     final avatar = AppConfig.getAbsoluteUrl((room['avatar'] ?? '').toString());
     return ListTile(
       leading: Container(
