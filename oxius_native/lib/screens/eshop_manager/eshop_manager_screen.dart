@@ -704,6 +704,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     final totalOrders = _orders.length;
     final pendingOrders =
         _orders.where((o) => o.orderStatus == 'pending').length;
+    final deliveredOrders =
+        _orders.where((o) => o.orderStatus == 'delivered').length;
     final revenue = _orders
         .where((o) => o.orderStatus == 'delivered')
         .fold<double>(0, (s, o) => s + o.total);
@@ -713,79 +715,31 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
       color: const Color(0xFF10B981),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(2, 12, 2, 90),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 96),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _dashQuickActions(),
-            const SizedBox(height: 16),
             _dashStoreHeader(),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
+            _dashIncomeHero(revenue, deliveredOrders),
+            const SizedBox(height: 20),
             _dashLabel(t('eshop_overview', fallback: 'ওভারভিউ')),
-            // Flat 2×2 stats — hairline dividers instead of separate cards.
-            Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: Color(0xFFE9EDF2)),
-                  bottom: BorderSide(color: Color(0xFFE9EDF2)),
-                ),
-              ),
-              child: Column(
-                children: [
-                  IntrinsicHeight(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _statCard(
-                              t('eshop_total_products',
-                                  fallback: 'টোটাল প্রোডাক্ট'),
-                              '$totalProducts',
-                              const Color(0xFF6366F1),
-                              onTap: () => _selectSection(1)),
-                        ),
-                        Container(width: 1, color: const Color(0xFFF1F5F9)),
-                        Expanded(
-                          child: _statCard(
-                              t('eshop_total_orders', fallback: 'টোটাল অর্ডার'),
-                              '$totalOrders',
-                              const Color(0xFF10B981),
-                              onTap: () => _selectSection(2)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(height: 1, color: const Color(0xFFF1F5F9)),
-                  IntrinsicHeight(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _statCard(
-                              t('eshop_pending_orders',
-                                  fallback: 'পেন্ডিং অর্ডার'),
-                              '$pendingOrders',
-                              const Color(0xFFD97706),
-                              onTap: () => _selectSection(2)),
-                        ),
-                        Container(width: 1, color: const Color(0xFFF1F5F9)),
-                        Expanded(
-                          child: _statCard(
-                              t('eshop_total_income', fallback: 'টোটাল ইনকাম'),
-                              '৳${revenue.toStringAsFixed(0)}',
-                              const Color(0xFF059669)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 11),
+            _dashOverviewGrid(
+                totalProducts, totalOrders, pendingOrders, deliveredOrders),
+            const SizedBox(height: 20),
+            _dashLabel(t('eshop_quick_actions', fallback: 'কুইক অ্যাকশন')),
+            const SizedBox(height: 11),
+            _dashQuickActions(),
             const SizedBox(height: 20),
             _dashLabel(
                 t('eshop_product_status', fallback: 'প্রোডাক্ট স্ট্যাটাস')),
-            _dashProductStatus(activeProducts, outOfStock, totalProducts),
+            const SizedBox(height: 11),
+            _dashProductStatus(activeProducts, outOfStock, inactive,
+                totalProducts),
             const SizedBox(height: 20),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                     child: _dashLabel(
@@ -794,16 +748,24 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                   GestureDetector(
                     onTap: () => _selectSection(2),
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 4, bottom: 8),
-                      child: Text(t('eshop_view_all', fallback: 'সব দেখুন'),
-                          style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF059669))),
+                      padding: const EdgeInsets.only(right: 2),
+                      child: Row(
+                        children: [
+                          Text(t('eshop_view_all', fallback: 'সব দেখুন'),
+                              style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF059669))),
+                          const SizedBox(width: 2),
+                          const Icon(Icons.chevron_right_rounded,
+                              size: 18, color: Color(0xFF059669)),
+                        ],
+                      ),
                     ),
                   ),
               ],
             ),
+            const SizedBox(height: 11),
             _dashRecentOrders(),
           ],
         ),
@@ -811,12 +773,37 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     );
   }
 
+  // Shared soft card look — subtle border + faint shadow, generous radius.
+  BoxDecoration _dashCard() => BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDF1F5)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A0F172A),
+            blurRadius: 14,
+            offset: Offset(0, 5),
+          ),
+        ],
+      );
+
+  // Group whole thousands with commas so large incomes stay readable.
+  String _money(double v) {
+    final s = v.toStringAsFixed(0);
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
   Widget _dashLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 10),
+      padding: const EdgeInsets.only(left: 2),
       child: Text(text,
           style: const TextStyle(
-              fontSize: 13.5,
+              fontSize: 14.5,
               fontWeight: FontWeight.w800,
               color: Color(0xFF0F172A),
               letterSpacing: 0.1)),
@@ -835,31 +822,35 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     const dark = Color(0xFF0F172A);
     const slate = Color(0xFF64748B);
     return Material(
-      color: Colors.white,
+      color: Colors.transparent,
       child: InkWell(
         onTap: () => _selectSection(4),
+        borderRadius: BorderRadius.circular(16),
         child: Ink(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              top: BorderSide(color: Color(0xFFE9EDF2)),
-              bottom: BorderSide(color: Color(0xFFE9EDF2)),
-            ),
-          ),
+          decoration: _dashCard(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+            padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                // Store avatar — shop icon (no background)
-                Image.asset(
-                  'assets/images/icons/shop.png',
-                  width: 54,
-                  height: 54,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                      Icons.storefront_rounded,
-                      size: 44,
-                      color: green),
+                // Store avatar in a soft tinted circle.
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFECFDF5),
+                  ),
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    'assets/images/icons/shop.png',
+                    width: 38,
+                    height: 38,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                        Icons.storefront_rounded,
+                        size: 32,
+                        color: green),
+                  ),
                 ),
                 const SizedBox(width: 13),
                 Expanded(
@@ -896,44 +887,25 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                               fontSize: 12.5,
                               fontWeight: FontWeight.w500)),
                       const SizedBox(height: 9),
-                      // Inline status · pro seller
+                      // Status chip · pro seller chip
                       Row(
                         children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color:
-                                  active ? green : const Color(0xFF94A3B8),
-                            ),
+                          _headerChip(
+                            active
+                                ? t('eshop_active', fallback: 'অ্যাক্টিভ')
+                                : t('eshop_inactive', fallback: 'ইনঅ্যাক্টিভ'),
+                            active ? green : slate,
+                            active
+                                ? const Color(0xFFECFDF5)
+                                : const Color(0xFFF1F5F9),
+                            dot: true,
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                              active
-                                  ? t('eshop_active', fallback: 'অ্যাক্টিভ')
-                                  : t('eshop_inactive',
-                                      fallback: 'ইনঅ্যাক্টিভ'),
-                              style: TextStyle(
-                                  color: active ? green : slate,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700)),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 3,
-                            height: 3,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFFCBD5E1),
-                            ),
+                          _headerChip(
+                            t('eshop_pro_seller', fallback: 'প্রো সেলার'),
+                            const Color(0xFFB45309),
+                            const Color(0xFFFEF3C7),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                              t('eshop_pro_seller', fallback: 'প্রো সেলার'),
-                              style: const TextStyle(
-                                  color: slate,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ],
@@ -959,48 +931,209 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     );
   }
 
-  // Flat stat cell — sits inside the hairline-divided overview grid.
-  Widget _statCard(String label, String value, Color color,
+  Widget _headerChip(String label, Color fg, Color bg, {bool dot = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (dot) ...[
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: fg),
+            ),
+            const SizedBox(width: 5),
+          ],
+          Text(label,
+              style: TextStyle(
+                  color: fg, fontSize: 11, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
+  // Prominent income hero — the seller's headline number, front and centre.
+  Widget _dashIncomeHero(double revenue, int deliveredOrders) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF047857), Color(0xFF10B981)],
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x3310B981),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.account_balance_wallet_rounded,
+                  color: Colors.white70, size: 17),
+              const SizedBox(width: 7),
+              Text(t('eshop_total_income', fallback: 'টোটাল ইনকাম'),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text('৳${_money(revenue)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8)),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 14),
+                const SizedBox(width: 5),
+                Text(
+                    '$deliveredOrders ${t('eshop_delivered_orders_suffix', fallback: 'টি ডেলিভারড অর্ডার')}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dashOverviewGrid(
+      int totalProducts, int totalOrders, int pendingOrders, int delivered) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _statTile(
+                  Icons.inventory_2_rounded,
+                  t('eshop_total_products', fallback: 'টোটাল প্রোডাক্ট'),
+                  '$totalProducts',
+                  const Color(0xFF6366F1),
+                  onTap: () => _selectSection(1)),
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: _statTile(
+                  Icons.shopping_bag_rounded,
+                  t('eshop_total_orders', fallback: 'টোটাল অর্ডার'),
+                  '$totalOrders',
+                  const Color(0xFF10B981),
+                  onTap: () => _selectSection(2)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 11),
+        Row(
+          children: [
+            Expanded(
+              child: _statTile(
+                  Icons.hourglass_bottom_rounded,
+                  t('eshop_pending_orders', fallback: 'পেন্ডিং অর্ডার'),
+                  '$pendingOrders',
+                  const Color(0xFFD97706),
+                  onTap: () => _selectSection(2)),
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: _statTile(
+                  Icons.local_shipping_rounded,
+                  t('eshop_delivered', fallback: 'ডেলিভারড'),
+                  '$delivered',
+                  const Color(0xFF059669),
+                  onTap: () => _selectSection(2)),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Rounded stat card with an icon chip, big value and label.
+  Widget _statTile(IconData icon, String label, String value, Color color,
       {VoidCallback? onTap}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: color,
-                      letterSpacing: -0.6)),
-              const SizedBox(height: 4),
-              Text(label,
-                  style:
-                      const TextStyle(fontSize: 12.5, color: Color(0xFF64748B))),
-            ],
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: _dashCard(),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(height: 12),
+                Text(value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.6)),
+                const SizedBox(height: 2),
+                Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500)),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _dashProductStatus(int active, int outOfStock, int total) {
-    final inactive = (total - active - outOfStock).clamp(0, total);
+  Widget _dashProductStatus(int active, int outOfStock, int inactive,
+      int total) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE9EDF2)),
-          bottom: BorderSide(color: Color(0xFFE9EDF2)),
-        ),
-      ),
+      padding: const EdgeInsets.all(16),
+      decoration: _dashCard(),
       child: Column(
         children: [
           Row(
@@ -1014,7 +1147,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
             ],
           ),
           if (total > 0) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Row(
@@ -1023,20 +1156,26 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                     Expanded(
                         flex: active,
                         child: Container(
-                            height: 8, color: const Color(0xFF10B981))),
+                            height: 9, color: const Color(0xFF10B981))),
                   if (outOfStock > 0)
                     Expanded(
                         flex: outOfStock,
                         child: Container(
-                            height: 8, color: const Color(0xFFDC2626))),
+                            height: 9, color: const Color(0xFFDC2626))),
                   if (inactive > 0)
                     Expanded(
                         flex: inactive,
                         child: Container(
-                            height: 8, color: const Color(0xFFCBD5E1))),
+                            height: 9, color: const Color(0xFFCBD5E1))),
                 ],
               ),
             ),
+          ] else ...[
+            const SizedBox(height: 12),
+            Text(
+                t('eshop_no_products_yet', fallback: 'এখনো কোনো প্রোডাক্ট নেই'),
+                style:
+                    const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
           ],
         ],
       ),
@@ -1049,10 +1188,23 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
         children: [
           Text('$count',
               style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w800, color: color)),
-          const SizedBox(height: 2),
-          Text(label,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+          const SizedBox(height: 3),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+              ),
+              const SizedBox(width: 5),
+              Text(label,
+                  style: const TextStyle(
+                      fontSize: 11.5, color: Color(0xFF64748B))),
+            ],
+          ),
         ],
       ),
     );
@@ -1061,42 +1213,32 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
   Widget _dashRecentOrders() {
     if (_orders.isEmpty) {
       return Container(
-        padding: const EdgeInsets.symmetric(vertical: 26),
+        padding: const EdgeInsets.symmetric(vertical: 30),
         alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Color(0xFFE9EDF2)),
-            bottom: BorderSide(color: Color(0xFFE9EDF2)),
-          ),
-        ),
+        decoration: _dashCard(),
         child: Column(
           children: [
             Icon(Icons.receipt_long_rounded,
-                size: 34, color: Colors.grey.shade300),
+                size: 36, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
-                t('eshop_no_orders_yet',
-                    fallback: 'এখনো কোনো অর্ডার আসেনি'),
+                t('eshop_no_orders_yet', fallback: 'এখনো কোনো অর্ডার আসেনি'),
                 style: const TextStyle(
                     fontSize: 12.5, color: Color(0xFF94A3B8))),
           ],
         ),
       );
     }
-    final recent = _orders.take(3).toList();
+    final recent = _orders.take(4).toList();
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE9EDF2)),
-          bottom: BorderSide(color: Color(0xFFE9EDF2)),
-        ),
-      ),
+      decoration: _dashCard(),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           for (int i = 0; i < recent.length; i++) ...[
-            if (i > 0) const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            if (i > 0)
+              const Divider(
+                  height: 1, color: Color(0xFFF1F5F9), indent: 64),
             _recentOrderRow(recent[i]),
           ],
         ],
@@ -1111,17 +1253,17 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     return InkWell(
       onTap: () => _selectSection(2),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         child: Row(
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: c.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(11),
               ),
-              child: Icon(Icons.shopping_bag_rounded, color: c, size: 19),
+              child: Icon(Icons.shopping_bag_rounded, color: c, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1132,28 +1274,28 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1F2937))),
                   const SizedBox(height: 2),
                   Text('#$ref',
                       style: const TextStyle(
-                          fontSize: 11, color: Color(0xFF94A3B8))),
+                          fontSize: 11.5, color: Color(0xFF94A3B8))),
                 ],
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('৳${o.total.toStringAsFixed(0)}',
+                Text('৳${_money(o.total)}',
                     style: const TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF059669))),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: c.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
@@ -1202,47 +1344,36 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     }
   }
 
-  // Flat quick-action strip — single bordered band with hairline separators.
+  // Quick-action tiles — three soft cards with a tinted icon chip each.
   Widget _dashQuickActions() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE9EDF2)),
-          bottom: BorderSide(color: Color(0xFFE9EDF2)),
+    return Row(
+      children: [
+        Expanded(
+          child: _quickAction(
+              Icons.inventory_2_rounded,
+              t('eshop_product', fallback: 'প্রোডাক্ট'),
+              const Color(0xFF6366F1),
+              () => _selectSection(1)),
         ),
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              child: _quickAction(
-                  Icons.inventory_2_rounded,
-                  t('eshop_product', fallback: 'প্রোডাক্ট'),
-                  const Color(0xFF6366F1),
-                  () => _selectSection(1)),
-            ),
-            Container(width: 1, color: const Color(0xFFF1F5F9)),
-            Expanded(
-              child: _quickAction(
-                  Icons.shopping_bag_rounded,
-                  t('eshop_order', fallback: 'অর্ডার'),
-                  const Color(0xFF10B981),
-                  () => _selectSection(2)),
-            ),
-            Container(width: 1, color: const Color(0xFFF1F5F9)),
-            Expanded(
-              child: _quickAction(
-                  _remainingSlots > 0
-                      ? Icons.add_circle_rounded
-                      : Icons.lock_rounded,
-                  t('eshop_add_new', fallback: 'নতুন যোগ'),
-                  const Color(0xFF2563EB),
-                  () => _selectSection(3)),
-            ),
-          ],
+        const SizedBox(width: 11),
+        Expanded(
+          child: _quickAction(
+              Icons.shopping_bag_rounded,
+              t('eshop_order', fallback: 'অর্ডার'),
+              const Color(0xFF10B981),
+              () => _selectSection(2)),
         ),
-      ),
+        const SizedBox(width: 11),
+        Expanded(
+          child: _quickAction(
+              _remainingSlots > 0
+                  ? Icons.add_circle_rounded
+                  : Icons.lock_rounded,
+              t('eshop_add_new', fallback: 'নতুন যোগ'),
+              const Color(0xFF2563EB),
+              () => _selectSection(3)),
+        ),
+      ],
     );
   }
 
@@ -1252,18 +1383,33 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 23),
-              const SizedBox(height: 7),
-              Text(label,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF374151))),
-            ],
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          decoration: _dashCard().copyWith(
+              borderRadius: BorderRadius.circular(14)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 6),
+            child: Column(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                const SizedBox(height: 9),
+                Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF374151))),
+              ],
+            ),
           ),
         ),
       ),

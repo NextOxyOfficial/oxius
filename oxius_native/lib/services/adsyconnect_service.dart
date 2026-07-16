@@ -147,12 +147,15 @@ class AdsyConnectService {
   static Future<List<dynamic>> getChatRooms({
     int page = 1,
     int pageSize = 20,
+    bool archived = false,
   }) async {
     try {
       final headers = await _getHeaders();
 
+      final archivedParam = archived ? '&archived=true' : '';
       final response = await http.get(
-        Uri.parse('$baseUrl/chatrooms/?page=$page&page_size=$pageSize'),
+        Uri.parse(
+            '$baseUrl/chatrooms/?page=$page&page_size=$pageSize$archivedParam'),
         headers: headers,
       );
 

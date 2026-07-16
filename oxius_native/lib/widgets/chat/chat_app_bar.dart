@@ -100,6 +100,10 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String lastSeenLabel;
   final bool blockedByMe;
 
+  /// When true, a muted (crossed-out) bell is shown next to the name so the
+  /// user knows notifications for this chat are silenced.
+  final bool isMuted;
+
   // Search mode
   final bool isSearchMode;
   final TextEditingController searchController;
@@ -128,6 +132,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.isTyping,
     required this.lastSeenLabel,
     required this.blockedByMe,
+    this.isMuted = false,
     required this.isSearchMode,
     required this.searchController,
     required this.searchFocusNode,
@@ -219,6 +224,23 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           _buildAvatar(),
           const SizedBox(width: 10),
           Expanded(child: _buildUserInfo()),
+          // Muted indicator — a crossed-out bell so the user understands why
+          // this chat is silent. Sits at the right edge of the name area.
+          if (isMuted) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.16),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.notifications_off_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ],
       ),
     );

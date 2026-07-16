@@ -268,6 +268,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   Duration _voiceDuration = Duration.zero;
   bool _isChatBlocked = false;
   bool _blockedByMe = false;
+  bool _isMuted = false;
   bool _isLoadingChatroomStatus = false;
   int _statusPollCounter = 0;
   bool _isUserNearBottom = true;
@@ -869,10 +870,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
       final isBlocked = _parseBool(blockedValue);
       final blockedByMe = _parseBool(blockedByMeValue);
+      final isMuted = _parseBool(
+          details['is_muted'] ?? details['isMuted'] ?? details['muted']);
 
       setState(() {
         _isChatBlocked = isBlocked;
         _blockedByMe = blockedByMe;
+        _isMuted = isMuted;
         _isLoadingChatroomStatus = false;
       });
     } catch (_) {
@@ -3134,6 +3138,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       isTyping: _isOtherUserTyping,
       lastSeenLabel: _formatLastSeen(_lastSeenTime),
       blockedByMe: _blockedByMe,
+      isMuted: _isMuted,
       isSearchMode: _isSearchMode,
       searchController: _searchController,
       searchFocusNode: _searchFocusNode,

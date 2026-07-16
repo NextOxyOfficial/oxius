@@ -741,26 +741,49 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF9FAFB),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                ),
-                child: TextField(
-                  controller: _chatSearchController,
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.search_rounded,
-                        color: Colors.grey.shade500, size: 20),
-                    hintText: 'Search chats',
-                    hintStyle:
-                        TextStyle(color: Colors.grey.shade500, fontSize: 14),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      child: TextField(
+                        controller: _chatSearchController,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.search_rounded,
+                              color: Colors.grey.shade500, size: 20),
+                          hintText: 'Search chats',
+                          hintStyle: TextStyle(
+                              color: Colors.grey.shade500, fontSize: 14),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  // Archived chats entry point.
+                  InkWell(
+                    onTap: _openArchivedChats,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      child: Icon(Icons.archive_outlined,
+                          color: Colors.grey.shade600, size: 21),
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -913,6 +936,16 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         onTap();
       },
     );
+  }
+
+  Future<void> _openArchivedChats() async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const ArchivedChatsScreen()),
+    );
+    // A chat was unarchived while inside — reload so it reappears in the list.
+    if (changed == true && mounted) {
+      _loadChats();
+    }
   }
 
   Future<void> _archiveChat(Map<String, dynamic> chat) async {
@@ -1196,5 +1229,232 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if (difference.inDays < 1) return '${difference.inHours}h';
     if (difference.inDays < 7) return '${difference.inDays}d';
     return '${(difference.inDays / 7).floor()}w';
+  }
+}
+
+/// Standalone list of the user's archived chats with an unarchive action.
+/// Pops `true` when at least one chat was unarchived so the caller can refresh.
+class ArchivedChatsScreen extends StatefulWidget {
+  const ArchivedChatsScreen({super.key});
+
+  @override
+  State<ArchivedChatsScreen> createState() => _ArchivedChatsScreenState();
+}
+
+class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
+  bool _loading = true;
+  bool _changed = false;
+  List<Map<String, dynamic>> _rooms = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final rooms =
+          await AdsyConnectService.getChatRooms(pageSize: 100, archived: true);
+      if (!mounted) return;
+      setState(() {
+        _rooms = rooms.map(_parseRoom).toList();
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  Map<String, dynamic> _parseRoom(dynamic room) {
+    final otherUser = room['other_user'] ?? {};
+    final lastMessage = room['last_message'];
+    final isDeleted = lastMessage?['is_deleted'] == true;
+    final content = lastMessage?['content']?.toString() ??
+        room['last_message_preview']?.toString() ??
+        '';
+    String preview;
+    if (isDeleted || content == 'Message deleted') {
+      preview = 'Message removed';
+    } else if (content.isEmpty) {
+      preview = 'No messages yet';
+    } else {
+      preview = content;
+    }
+    final first = (otherUser['first_name'] ?? '').toString();
+    final last = (otherUser['last_name'] ?? '').toString();
+    final username = (otherUser['username'] ?? 'User').toString();
+    final name = [first, last].where((s) => s.isNotEmpty).join(' ');
+    return {
+      'id': room['id'],
+      'userId': otherUser['id']?.toString() ?? '',
+      'userName': name.isNotEmpty ? name : username,
+      'userAvatar': otherUser['avatar'],
+      'lastMessage': preview,
+      'isVerified': otherUser['is_verified'] == true,
+    };
+  }
+
+  Future<void> _unarchive(Map<String, dynamic> room) async {
+    final id = room['id']?.toString() ?? '';
+    final ok = await AdsyConnectService.setArchived(id, false);
+    if (!mounted) return;
+    if (ok) {
+      setState(() {
+        _rooms.removeWhere((r) => r['id'] == room['id']);
+        _changed = true;
+      });
+      AdsyToast.info(context, 'চ্যাট আনআর্কাইভ হয়েছে');
+    } else {
+      AdsyToast.error(context, 'আনআর্কাইভ করা যায়নি');
+    }
+  }
+
+  void _openChat(Map<String, dynamic> room) {
+    unawaited(AdsyConnectChatInterface.open(
+      context,
+      chatroomId: room['id']?.toString() ?? '',
+      userId: room['userId']?.toString() ?? '',
+      userName: room['userName']?.toString() ?? '',
+      userAvatar: room['userAvatar']?.toString(),
+      isVerified: room['isVerified'] == true,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop(_changed);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0.5,
+          surfaceTintColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF334155)),
+            onPressed: () => Navigator.of(context).pop(_changed),
+          ),
+          title: const Text('আর্কাইভ করা চ্যাট',
+              style: TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700)),
+        ),
+        body: _loading
+            ? const Center(child: AdsyLoadingIndicator())
+            : _rooms.isEmpty
+                ? _buildEmpty()
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    itemCount: _rooms.length,
+                    separatorBuilder: (_, __) => Divider(
+                        height: 1, color: Colors.grey.shade100, indent: 74),
+                    itemBuilder: (_, i) => _buildTile(_rooms[i]),
+                  ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.archive_outlined, size: 56, color: Colors.grey.shade300),
+          const SizedBox(height: 12),
+          Text('কোনো আর্কাইভ করা চ্যাট নেই',
+              style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTile(Map<String, dynamic> room) {
+    final avatar =
+        AppConfig.getAbsoluteUrl((room['userAvatar'] ?? '').toString());
+    final name = room['userName']?.toString() ?? '';
+    return InkWell(
+      onTap: () => _openChat(room),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey.shade100,
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: avatar.isNotEmpty
+                  ? Image.network(avatar,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(Icons.person,
+                          color: Colors.grey.shade400, size: 24))
+                  : Icon(Icons.person, color: Colors.grey.shade400, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E293B))),
+                      ),
+                      if (room['isVerified'] == true) ...[
+                        const SizedBox(width: 4),
+                        const Icon(Icons.verified,
+                            size: 14, color: Color(0xFF3B82F6)),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(room['lastMessage']?.toString() ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 12.5, color: Colors.grey.shade600)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Unarchive action.
+            TextButton.icon(
+              onPressed: () => _unarchive(room),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF3B82F6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              icon: const Icon(Icons.unarchive_outlined, size: 18),
+              label: const Text('আনআর্কাইভ',
+                  style:
+                      TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

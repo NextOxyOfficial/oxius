@@ -187,16 +187,16 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
-          'সাবস্ক্রিপশনটি অন্য অ্যাকাউন্টে আছে',
+          'প্রিমিয়াম সাবস্ক্রিপশনটি অন্য অ্যাকাউন্টে আছে',
           style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'আপনার Google অ্যাকাউন্টের এই সাবস্ক্রিপশনটি $owner AdsyClub '
-          'অ্যাকাউন্টের সাথে যুক্ত। Google Play একই সাবস্ক্রিপশন দুবার কিনতে '
+          'আপনার Google অ্যাকাউন্টের এই প্রিমিয়াম সাবস্ক্রিপশনটি $owner AdsyClub '
+          'অ্যাকাউন্টের সাথে যুক্ত। Google Play একই প্রিমিয়াম সাবস্ক্রিপশন দুবার কিনতে '
           'দেয় না।\n\n${conflict.canTransfer ? 'চাইলে সাবস্ক্রিপশনটি এই '
-              'অ্যাকাউন্টে নিয়ে আসতে পারেন — আগের অ্যাকাউন্ট থেকে সুবিধাটি '
+              'অ্যাকাউন্টে নিয়ে আসতে পারেন — আগের অ্যাকাউন্ট থেকে প্রিমিয়াম সুবিধাটি '
               'সরে যাবে।' : cooldownNote ?? 'ঐ অ্যাকাউন্টে লগইন করে '
-              'সাবস্ক্রিপশনটি ব্যবহার করুন।'}',
+              'প্রিমিয়াম সাবস্ক্রিপশনটি ব্যবহার করুন।'}',
           style: const TextStyle(fontSize: 13.5, height: 1.5),
         ),
         actions: [
@@ -224,12 +224,12 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
     if (ok) {
       setState(() {
         _success = true;
-        _successMessage = 'সাবস্ক্রিপশন এই অ্যাকাউন্টে চলে এসেছে!';
+        _successMessage = 'প্রিমিয়াম সাবস্ক্রিপশন এই অ্যাকাউন্টে চলে এসেছে!';
       });
       await Future.delayed(const Duration(milliseconds: 1400));
       if (mounted) Navigator.of(context).pop('google');
     } else {
-      AdsyToast.error(context, 'সাবস্ক্রিপশন সরানো যায়নি। পরে আবার চেষ্টা করুন।');
+      AdsyToast.error(context, 'প্রিমিয়াম সাবস্ক্রিপশন সরানো যায়নি। পরে আবার চেষ্টা করুন।');
     }
   }
 
@@ -369,7 +369,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
 
           const SizedBox(height: 18),
           const Text(
-            'পেমেন্ট মাধ্যম বাছুন',
+            'পেমেন্ট মাধ্যম সিলেক্ট করুন',
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
@@ -386,7 +386,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
                   size: 22, color: Color(0xFF059669)),
               iconBg: const Color(0xFFECFDF5),
               title: 'Adsy Pay ব্যালেন্স',
-              subtitle: 'তাৎক্ষণিক • কোনো অতিরিক্ত ফি নেই',
+              subtitle: 'ইনস্ট্যান্ট রিচার্জ • কোনো অতিরিক্ত ফি নেই',
               onTap: _buying ? null : () => Navigator.of(context).pop('balance'),
             ),
             const SizedBox(height: 10),
@@ -402,7 +402,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
                   ? 'লোড হচ্ছে…'
                   : googleAvailable
                       ? '${_defaultItem?.price ?? ''}  •  ১৫% Google ফি সহ'
-                      : 'এখন উপলব্ধ নয়',
+                      : 'আনএভেইলেবল',
               trailing: _buying
                   ? const SizedBox(
                       width: 20,
@@ -459,7 +459,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
         _googlePlayGlyph(size: 18),
         const SizedBox(width: 8),
         const Text(
-          'Google Play প্যাক বাছুন',
+          'Google Play প্যাক সিলেক্ট করুন',
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,

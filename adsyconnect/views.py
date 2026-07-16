@@ -758,6 +758,13 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             Q(user1=user) | Q(user2=user)
         ).select_related('user1', 'user2', 'blocked_by')
 
+        # The archived split only makes sense for the list view. Detail actions
+        # (retrieve, archive/unarchive, mute, …) must still resolve an archived
+        # room by id — otherwise unarchiving it would 404 (it's archived, so a
+        # filtered queryset would exclude it).
+        if self.action != 'list':
+            return qs
+
         archived_param = str(
             self.request.query_params.get('archived', '')
         ).lower()
