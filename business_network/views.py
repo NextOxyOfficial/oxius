@@ -1140,6 +1140,38 @@ def reshare_post(request, post_id):
     return Response(data, status=status.HTTP_201_CREATED)
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def reshare_news(request, news_id):
+    """Reshare an Adsy News story to your own Business Network feed.
+
+    Body: {caption?}. Creates a BusinessNetworkPost whose shared_news points at
+    the story. Unlike post reshares there is no root-collapsing to do — a news
+    story is always the source.
+    """
+    from news.models import NewsPost
+
+    news = NewsPost.objects.filter(id=news_id).first()
+    if news is None:
+        return Response(
+            {"error": "News post not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    caption = (request.data.get("caption") or "").strip()
+
+    reshare = BusinessNetworkPost.objects.create(
+        author=request.user,
+        content=caption or None,
+        shared_news=news,
+        visibility="public",
+    )
+
+    data = BusinessNetworkPostSerializer(
+        reshare, context={"request": request}
+    ).data
+    return Response(data, status=status.HTTP_201_CREATED)
+
+
 # Like Views
 class BusinessNetworkPostLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostLikeSerializer

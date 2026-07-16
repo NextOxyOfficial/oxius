@@ -126,6 +126,8 @@ class NewsComment {
   final DateTime createdAt;
   final dynamic userId; // Can be int or String
   final String? userName;
+  final String? userImage;
+  final bool userVerified;
 
   NewsComment({
     required this.id,
@@ -133,17 +135,25 @@ class NewsComment {
     required this.createdAt,
     required this.userId,
     this.userName,
+    this.userImage,
+    this.userVerified = false,
   });
 
   factory NewsComment.fromJson(Map<String, dynamic> json) {
+    // The API nests the commenter under `author_details` (NewsPostCommentSerializer).
+    final ad = (json['author_details'] is Map)
+        ? Map<String, dynamic>.from(json['author_details'])
+        : <String, dynamic>{};
     return NewsComment(
       id: json['id'],
       content: json['content'] ?? '',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
-      userId: json['user'],
-      userName: json['user_name'],
+      userId: ad['id'] ?? json['author'] ?? json['user'],
+      userName: (ad['name'] ?? ad['username'] ?? json['user_name'])?.toString(),
+      userImage: ad['image']?.toString(),
+      userVerified: ad['kyc'] == true,
     );
   }
 }

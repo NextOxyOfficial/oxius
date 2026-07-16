@@ -103,6 +103,29 @@ class BusinessNetworkService {
     }
   }
 
+  /// Reshare an Adsy News story to the user's Business Network feed. News ids
+  /// are strings, and the story is always the source, so there is no root to
+  /// collapse the way [resharePost] does.
+  static Future<BusinessNetworkPost?> reshareNews(String newsId,
+      {String caption = ''}) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final res = await http.post(
+        Uri.parse('$_baseUrl/news/$newsId/reshare/'),
+        headers: headers,
+        body: jsonEncode({'caption': caption}),
+      );
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        return BusinessNetworkPost.fromJson(jsonDecode(res.body));
+      }
+      debugPrint('reshareNews -> ${res.statusCode} ${res.body}');
+      return null;
+    } catch (e) {
+      debugPrint('reshareNews failed: $e');
+      return null;
+    }
+  }
+
   static Future<String?> getBusinessNetworkLogo() async {
     try {
       final response = await http.get(

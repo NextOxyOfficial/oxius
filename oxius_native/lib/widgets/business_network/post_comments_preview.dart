@@ -338,15 +338,6 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                 const SizedBox(height: 8),
                 ...repliesToShow.map((reply) => Container(
                       margin: const EdgeInsets.only(left: 40, bottom: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          left: BorderSide(
-                            color: Colors.grey.shade300,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      padding: const EdgeInsets.only(left: 8),
                       child: _CommentItem(
                         comment: reply,
                         post: widget.post,

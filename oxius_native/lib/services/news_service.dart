@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/news_models.dart';
 import '../config/app_config.dart';
+import 'api_service.dart';
 import 'package:flutter/foundation.dart';
 
 class NewsService {
@@ -279,6 +280,56 @@ class NewsService {
       return null;
     } catch (e) {
       debugPrint('Error fetching news logo: $e');
+      return null;
+    }
+  }
+
+  // ---- Comments -------------------------------------------------------------
+  // Backed by the existing news comment API. Routes key off the NewsPost *id*
+  // (not the slug), and comments are flat — no replies.
+
+  /// List a story's comments, newest first (the API orders by -created_at).
+  static Future<List<NewsComment>> getComments(String newsId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/news/posts/$newsId/comments/'),
+        headers: await ApiService.getHeaders(),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Paginated responses wrap the rows in `results`.
+        final rows = (data is Map ? data['results'] : data) as List? ?? [];
+        return rows
+            .whereType<Map>()
+            .map((e) => NewsComment.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      debugPrint('getComments -> ${response.statusCode} ${response.body}');
+      return [];
+    } catch (e) {
+      debugPrint('Error fetching news comments: $e');
+      return [];
+    }
+  }
+
+  /// Post a comment on a story. Returns the created comment, or null on failure.
+  static Future<NewsComment?> addComment(String newsId, String content) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/news/posts/$newsId/comments/'),
+        headers: await ApiService.getHeaders(),
+        body: json.encode({'content': content}),
+      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // The story's cached detail payload now has a stale comment list.
+        _cache.removeWhere((k, _) => k.startsWith('post_'));
+        return NewsComment.fromJson(
+            Map<String, dynamic>.from(json.decode(response.body)));
+      }
+      debugPrint('addComment -> ${response.statusCode} ${response.body}');
+      return null;
+    } catch (e) {
+      debugPrint('Error posting news comment: $e');
       return null;
     }
   }

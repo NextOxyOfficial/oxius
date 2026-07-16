@@ -151,6 +151,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     is_saved = serializers.SerializerMethodField()
     liked_by_preview = serializers.SerializerMethodField()
     shared_from_details = serializers.SerializerMethodField()
+    shared_news_details = serializers.SerializerMethodField()
     share_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -169,6 +170,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             "post_likes",
             "liked_by_preview",
             "shared_from_details",
+            "shared_news_details",
             "share_count",
             "post_comments",
             "post_tags",
@@ -257,6 +259,29 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             ).data,
             "like_count": orig.like_count,
             "comment_count": orig.comment_count,
+        }
+
+    def get_shared_news_details(self, obj):
+        """Shallow copy of an Adsy News story for a news reshare — enough to
+        render the embedded card without another round-trip."""
+        news = obj.shared_news
+        if news is None:
+            return None
+        request = self.context.get("request")
+        image = getattr(news.image, "url", None) or None
+        if image and request is not None:
+            image = request.build_absolute_uri(image)
+        return {
+            "id": news.id,
+            "slug": news.slug,
+            "title": news.title,
+            "content": news.content,
+            "image": image,
+            "created_at": news.created_at,
+            "author_details": UserSerializer(
+                news.author, context=self.context
+            ).data if news.author_id else None,
+            "comment_count": news.post_comments.count(),
         }
 
     # Counts reuse the view's prefetch_related cache when present (feed lists

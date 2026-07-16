@@ -305,6 +305,12 @@ class BusinessNetworkPost(models.Model):
         'self', null=True, blank=True, on_delete=models.SET_NULL,
         related_name='reshares',
     )
+    # A reshare of an Adsy News story. shared_from can only point at another
+    # BusinessNetworkPost, so news reshares need their own reference.
+    shared_news = models.ForeignKey(
+        'news.NewsPost', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='bn_reshares',
+    )
     media = models.ManyToManyField(BusinessNetworkMedia, blank=True, related_name='business_network_posts')
     tags = models.ManyToManyField(BusinessNetworkPostTag, blank=True, related_name='business_network_posts')
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')

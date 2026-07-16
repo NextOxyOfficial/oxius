@@ -32,6 +32,8 @@ class BusinessNetworkPost {
   final List<LikerFace> likedByPreview;
   // When this post is a reshare/repost, the embedded original.
   final SharedPostPreview? sharedFrom;
+  // When this post is a reshare of an Adsy News story, the embedded story.
+  final SharedNewsPreview? sharedNews;
 
   BusinessNetworkPost({
     required this.id,
@@ -40,6 +42,7 @@ class BusinessNetworkPost {
     required this.user,
     this.likedByPreview = const [],
     this.sharedFrom,
+    this.sharedNews,
     required this.content,
     required this.media,
     required this.tags,
@@ -205,6 +208,10 @@ class BusinessNetworkPost {
             ? SharedPostPreview.fromJson(
                 Map<String, dynamic>.from(json['shared_from_details']))
             : null,
+        sharedNews: json['shared_news_details'] is Map
+            ? SharedNewsPreview.fromJson(
+                Map<String, dynamic>.from(json['shared_news_details']))
+            : null,
         user: userData != null
             ? BusinessNetworkUser.fromJson(userData)
             : BusinessNetworkUser(
@@ -276,6 +283,7 @@ class BusinessNetworkPost {
     String? content,
     String? visibility,
     SharedPostPreview? sharedFrom,
+    SharedNewsPreview? sharedNews,
   }) {
     return BusinessNetworkPost(
       id: id,
@@ -283,6 +291,7 @@ class BusinessNetworkPost {
       slug: slug,
       likedByPreview: likedByPreview,
       sharedFrom: sharedFrom ?? this.sharedFrom,
+      sharedNews: sharedNews ?? this.sharedNews,
       shareCount: shareCount,
       user: user ?? this.user,
       content: content ?? this.content,
@@ -553,6 +562,47 @@ class SharedPostPreview {
       mediaIsVideo: isVideo,
       firstMedia: firstMedia,
       likeCount: int.tryParse('${json['like_count'] ?? 0}') ?? 0,
+      commentCount: int.tryParse('${json['comment_count'] ?? 0}') ?? 0,
+    );
+  }
+}
+
+/// The embedded Adsy News story shown inside a news reshare, parsed from the
+/// serializer's `shared_news_details`.
+class SharedNewsPreview {
+  final String id;
+  final String slug;
+  final String title;
+  final String content;
+  final String? image;
+  final String authorName;
+  final String? authorImage;
+  final int commentCount;
+
+  SharedNewsPreview({
+    required this.id,
+    this.slug = '',
+    this.title = '',
+    this.content = '',
+    this.image,
+    this.authorName = '',
+    this.authorImage,
+    this.commentCount = 0,
+  });
+
+  factory SharedNewsPreview.fromJson(Map<String, dynamic> json) {
+    final ad = (json['author_details'] is Map)
+        ? Map<String, dynamic>.from(json['author_details'])
+        : <String, dynamic>{};
+    final img = (json['image'] ?? '').toString();
+    return SharedNewsPreview(
+      id: (json['id'] ?? '').toString(),
+      slug: (json['slug'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      content: (json['content'] ?? '').toString(),
+      image: img.isEmpty ? null : img,
+      authorName: (ad['name'] ?? ad['username'] ?? '').toString(),
+      authorImage: ad['image']?.toString(),
       commentCount: int.tryParse('${json['comment_count'] ?? 0}') ?? 0,
     );
   }

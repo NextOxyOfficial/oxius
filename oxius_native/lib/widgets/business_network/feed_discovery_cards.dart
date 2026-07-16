@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 
 import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
+import '../../services/business_network_service.dart';
 import '../../services/microgig_service.dart';
 import '../../services/news_service.dart';
 import '../../services/workspace_service.dart';
@@ -16,6 +18,10 @@ import '../../screens/news_detail_screen.dart';
 import '../../screens/micro_gigs_screen.dart';
 import '../../screens/workspace/gig_detail_screen.dart';
 import '../../screens/workspace/workspace_screen.dart';
+import '../common/adsy_share_sheet.dart';
+import '../common/adsy_toast.dart';
+import '../login_prompt_dialog.dart';
+import 'news_comments_sheet.dart';
 
 /// One tile inside a discovery row.
 class FeedDiscoveryItem {
@@ -668,29 +674,110 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
               ),
             ),
           ),
-          // Read-more action.
+          // Read-more + actions. Comment and share mirror a post's action row
+          // so news behaves like the rest of the feed.
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 2, 12, 12),
-            child: GestureDetector(
-              onTap: openStory,
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'আরো পড়ুন',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: _accent,
-                    ),
+            padding: const EdgeInsets.fromLTRB(12, 2, 6, 8),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: openStory,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'আরো পড়ুন',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _accent,
+                        ),
+                      ),
+                      SizedBox(width: 2),
+                      Icon(Icons.arrow_forward_rounded,
+                          size: 15, color: _accent),
+                    ],
                   ),
-                  SizedBox(width: 2),
-                  Icon(Icons.arrow_forward_rounded, size: 15, color: _accent),
-                ],
-              ),
+                ),
+                const Spacer(),
+                _newsAction(
+                  icon: Icons.mode_comment_outlined,
+                  label: 'মন্তব্য',
+                  onTap: () => NewsCommentsSheet.show(
+                    context,
+                    newsId: '${post.id}',
+                    newsTitle: post.title,
+                  ),
+                ),
+                _newsAction(
+                  icon: Icons.share_outlined,
+                  label: 'শেয়ার',
+                  onTap: () => _shareStory(post),
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _newsAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: const Color(0xFF64748B)),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Share sheet with a repost composer, same as a Business Network post — the
+  // repost lands on the user's feed as a news reshare.
+  void _shareStory(NewsPost post) {
+    AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: post.title,
+        url: '${AppConfig.mediaBaseUrl}/adsy-news/${post.slug}',
+        eyebrow: 'এডসি নিউজ',
+        repostHint: 'এই খবর নিয়ে কিছু বলুন...',
+        onRepost: (caption) async {
+          if (!AuthService.isAuthenticated) {
+            if (mounted) {
+              LoginPromptDialog.show(context, action: 'খবর শেয়ার করতে');
+            }
+            return false;
+          }
+          final created = await BusinessNetworkService.reshareNews(
+            '${post.id}',
+            caption: caption,
+          );
+          if (created == null) return false;
+          if (mounted) {
+            AdsyToast.success(context, 'খবরটি আপনার ফিডে শেয়ার হয়েছে');
+          }
+          return true;
+        },
       ),
     );
   }

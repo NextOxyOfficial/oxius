@@ -6,6 +6,8 @@ import '../../services/auth_service.dart';
 import '../../config/app_config.dart';
 import '../../widgets/business_network/post_media_gallery.dart';
 import '../../widgets/business_network/reshared_post_card.dart';
+import '../../widgets/business_network/reshared_news_card.dart';
+import '../news_detail_screen.dart';
 import 'shorts_viewer.dart';
 import '../../widgets/business_network/post_actions.dart';
 import '../../widgets/business_network/post_comment_input.dart';
@@ -553,6 +555,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         _openSharedPostDetail(_post.sharedFrom!),
                                     onOpenVideo: () => _openSharedVideoInShorts(
                                         _post.sharedFrom!),
+                                  ),
+
+                                // Reshared news story — same card as the feed.
+                                if (_post.sharedNews != null)
+                                  ResharedNewsCard(
+                                    news: _post.sharedNews!,
+                                    onOpen: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => NewsDetailScreen(
+                                            slug: _post.sharedNews!.slug),
+                                      ),
+                                    ),
                                   ),
 
                                 // Post Actions

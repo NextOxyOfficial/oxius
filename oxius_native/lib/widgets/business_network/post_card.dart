@@ -20,6 +20,8 @@ import '../../widgets/common/adsy_toast.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'reshared_post_card.dart';
+import 'reshared_news_card.dart';
+import '../../screens/news_detail_screen.dart';
 import 'post_actions.dart';
 import 'post_comments_preview.dart';
 import 'post_comment_input.dart';
@@ -943,6 +945,17 @@ class _PostCardState extends State<PostCard> {
             ),
           // Embedded original when this post is a reshare/repost.
           if (_post.sharedFrom != null) _buildResharedOriginal(_post.sharedFrom!),
+          // Embedded news story when this post is a news reshare.
+          if (_post.sharedNews != null)
+            ResharedNewsCard(
+              news: _post.sharedNews!,
+              onOpen: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => NewsDetailScreen(slug: _post.sharedNews!.slug),
+                ),
+              ),
+            ),
           // Post Tags
           if (_post.tags.isNotEmpty)
             Padding(
