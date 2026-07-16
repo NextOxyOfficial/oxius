@@ -11,6 +11,10 @@ import '../utils/network_error_handler.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
+/// Chat-list buckets. Spam is hidden from every tab except its own so junk
+/// never clutters real conversations.
+enum _ChatTab { all, mutual, groups, nonFollowers, spam }
+
 class AdsyConnectScreen extends StatefulWidget {
   const AdsyConnectScreen({super.key, this.initialChatId});
 
@@ -48,6 +52,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   final TextEditingController _chatSearchController = TextEditingController();
   String _chatSearchQuery = '';
+  _ChatTab _activeChatTab = _ChatTab.all;
 
   static const int _pageSize = 20;
 
@@ -295,11 +300,35 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     super.dispose();
   }
 
+  bool _matchesTab(Map<String, dynamic> chat) {
+    final isSpam = chat['isSpam'] == true;
+    switch (_activeChatTab) {
+      case _ChatTab.all:
+        return !isSpam;
+      case _ChatTab.mutual:
+        return !isSpam && chat['isMutual'] == true;
+      case _ChatTab.groups:
+        return chat['isGroup'] == true;
+      case _ChatTab.nonFollowers:
+        return !isSpam && chat['theyFollowMe'] != true;
+      case _ChatTab.spam:
+        return isSpam;
+    }
+  }
+
+  int _tabCount(_ChatTab tab) {
+    final prev = _activeChatTab;
+    _activeChatTab = tab;
+    final n = _chatConversations.where(_matchesTab).length;
+    _activeChatTab = prev;
+    return n;
+  }
+
   List<Map<String, dynamic>> get _filteredChats {
     final q = _chatSearchQuery.trim().toLowerCase();
-    if (q.isEmpty) return _chatConversations;
-
     return _chatConversations.where((chat) {
+      if (!_matchesTab(chat)) return false;
+      if (q.isEmpty) return true;
       final name = (chat['userName'] ?? '').toString().toLowerCase();
       final msg = (chat['lastMessage'] ?? '').toString().toLowerCase();
       return name.contains(q) || msg.contains(q);
@@ -459,6 +488,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         'isVerified': otherUser['is_verified'] ?? false,
         'isMuted': room['is_muted'] == true,
         'isArchived': room['is_archived'] == true,
+        'isMutual': room['is_mutual'] == true,
+        'iFollowThem': room['i_follow_them'] == true,
+        'theyFollowMe': room['they_follow_me'] == true,
+        'isSpam': room['is_spam'] == true,
+        'isGroup': room['is_group'] == true,
       };
     }).toList();
   }
@@ -786,16 +820,27 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                 ],
               ),
             ),
+            _buildChatTabs(),
             Expanded(
-              child: chatsToShow.isEmpty && isFiltering
+              child: chatsToShow.isEmpty && (isFiltering || !_isLoadingChats)
                   ? Center(
-                      child: Text(
-                        'No results found',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(_chatTabEmptyIcon,
+                              size: 46, color: Colors.grey.shade300),
+                          const SizedBox(height: 10),
+                          Text(
+                            isFiltering
+                                ? 'No results found'
+                                : _chatTabEmptyMessage,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : AdsyRefreshIndicator(
@@ -1000,6 +1045,107 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     } else {
       AdsyToast.error(context, 'মুছতে ব্যর্থ');
     }
+  }
+
+  IconData get _chatTabEmptyIcon {
+    switch (_activeChatTab) {
+      case _ChatTab.groups:
+        return Icons.groups_outlined;
+      case _ChatTab.spam:
+        return Icons.verified_user_outlined;
+      case _ChatTab.mutual:
+        return Icons.handshake_outlined;
+      case _ChatTab.nonFollowers:
+        return Icons.person_outline_rounded;
+      case _ChatTab.all:
+        return Icons.chat_bubble_outline_rounded;
+    }
+  }
+
+  String get _chatTabEmptyMessage {
+    switch (_activeChatTab) {
+      case _ChatTab.groups:
+        return 'এখনো কোনো গ্রুপ চ্যাট নেই';
+      case _ChatTab.spam:
+        return 'কোনো স্প্যাম মেসেজ নেই';
+      case _ChatTab.mutual:
+        return 'কোনো মিউচুয়াল চ্যাট নেই';
+      case _ChatTab.nonFollowers:
+        return 'নন-ফলোয়ারদের কোনো চ্যাট নেই';
+      case _ChatTab.all:
+        return 'এখনো কোনো চ্যাট নেই';
+    }
+  }
+
+  // Horizontal scrollable pill tabs: All / Mutual / Groups / Non-followers /
+  // Maybe spam. Spam is bucketed away from the other tabs.
+  Widget _buildChatTabs() {
+    const tabs = [
+      (_ChatTab.all, 'সব', Icons.chat_bubble_outline_rounded),
+      (_ChatTab.mutual, 'মিউচুয়াল', Icons.handshake_outlined),
+      (_ChatTab.groups, 'গ্রুপ', Icons.groups_outlined),
+      (_ChatTab.nonFollowers, 'নন-ফলোয়ার', Icons.person_outline_rounded),
+      (_ChatTab.spam, 'স্প্যাম', Icons.report_gmailerrorred_rounded),
+    ];
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+        itemCount: tabs.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          final (tab, label, icon) = tabs[i];
+          final active = _activeChatTab == tab;
+          final count = _tabCount(tab);
+          return InkWell(
+            onTap: () => setState(() => _activeChatTab = tab),
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+              decoration: BoxDecoration(
+                color: active ? const Color(0xFF3B82F6) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                children: [
+                  Icon(icon,
+                      size: 15,
+                      color: active ? Colors.white : Colors.grey.shade600),
+                  const SizedBox(width: 5),
+                  Text(label,
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color:
+                              active ? Colors.white : const Color(0xFF475569))),
+                  if (count > 0) ...[
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: active
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text('$count',
+                          style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: active
+                                  ? Colors.white
+                                  : const Color(0xFF475569))),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildChatItem(Map<String, dynamic> chat) {

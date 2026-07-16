@@ -352,6 +352,16 @@ def _can_message(sender, recipient):
     return False, 'এই ব্যবহারকারী শুধু নির্দিষ্ট মানুষের মেসেজ গ্রহণ করেন।'
 
 
+def _receiver_follows_sender(message):
+    """True when the message receiver follows the sender — used to spare
+    trusted senders from the spam filter."""
+    from business_network.models import BusinessNetworkFollowerModel as F_
+
+    return F_.objects.filter(
+        follower_id=message.receiver_id, following_id=message.sender_id
+    ).exists()
+
+
 def _broadcast_to_user(user_id, event):
     channel_layer = get_channel_layer()
     if channel_layer is None:
@@ -1071,6 +1081,18 @@ class MessageViewSet(viewsets.ModelViewSet):
             )
 
         message = serializer.save(sender=request.user)
+
+        # Auto-classify text as spam (powers the "Maybe spam" chat bucket).
+        # Only spam from a NON-followed sender is worth flagging — messages from
+        # people the receiver follows are trusted and stay in the normal list.
+        if message.message_type == 'text' and message.content:
+            from .spam_filter import classify_message
+
+            is_spam, category = classify_message(message.content)
+            if is_spam and not _receiver_follows_sender(message):
+                message.is_spam = True
+                message.spam_category = category
+                message.save(update_fields=['is_spam', 'spam_category'])
 
         # Update chatroom's last message
         chatroom = message.chatroom

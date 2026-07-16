@@ -136,7 +136,9 @@ class _AdsyToastView extends StatelessWidget {
     final topInset = MediaQuery.of(context).padding.top;
 
     return Positioned(
-      top: topInset + 10,
+      // Clear the app bar so the toast sits just below the header instead of
+      // being hidden behind it (status bar inset + a standard toolbar height).
+      top: topInset + kToolbarHeight + 10,
       left: 12,
       right: 12,
       child: TweenAnimationBuilder<double>(

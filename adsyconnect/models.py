@@ -100,6 +100,16 @@ class ChatRoom(models.Model):
             self.muted_by_user2 = value
         self.save(update_fields=['muted_by_user1', 'muted_by_user2'])
 
+    def has_spam_from_other(self, user):
+        """Whether the OTHER participant has sent this user a spam message.
+        Drives the 'Maybe spam' bucket in the chat list."""
+        other = self.get_other_user(user)
+        if other is None:
+            return False
+        return self.messages.filter(
+            sender=other, is_spam=True, is_deleted=False
+        ).exists()
+
 
 class Message(models.Model):
     """
@@ -150,11 +160,17 @@ class Message(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     is_edited = models.BooleanField(default=False)
     edited_at = models.DateTimeField(null=True, blank=True)
-    
+
+    # Auto spam classification (keyword-based, set once at send time). Powers
+    # the "Maybe spam" chat-list bucket. spam_category is vulgar/gambling/
+    # marketing/link when flagged, else empty.
+    is_spam = models.BooleanField(default=False)
+    spam_category = models.CharField(max_length=20, blank=True, default='')
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         db_table = 'adsyconnect_messages'
         ordering = ['created_at']

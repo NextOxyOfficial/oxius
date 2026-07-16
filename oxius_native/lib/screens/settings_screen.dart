@@ -2155,7 +2155,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 10),
           _buildSectionCard(
-            title: _t('settings_contact_visibility', 'যোগাযোগের দৃশ্যমানতা'),
+            title: _t('settings_contact_visibility', 'যেভাবে যোগাযোগের তথ্য দেখাবেন'),
             subtitle: _t('settings_contact_visibility_sub',
                 'বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার যোগাযোগের তথ্য কীভাবে দেখাবে ঠিক করুন।'),
             icon: Icons.visibility_outlined,

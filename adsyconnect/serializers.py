@@ -142,6 +142,11 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     blocked_by_me = serializers.SerializerMethodField()
     is_archived = serializers.SerializerMethodField()
     is_muted = serializers.SerializerMethodField()
+    # Chat-list tab classification.
+    i_follow_them = serializers.SerializerMethodField()
+    they_follow_me = serializers.SerializerMethodField()
+    is_mutual = serializers.SerializerMethodField()
+    is_spam = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
@@ -149,6 +154,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
             'id', 'other_user', 'last_message_at', 'last_message_preview',
             'unread_count', 'last_message', 'is_blocked', 'blocked_by',
             'blocked_by_me', 'is_archived', 'is_muted',
+            'i_follow_them', 'they_follow_me', 'is_mutual', 'is_spam',
             'created_at', 'updated_at'
         ]
 
@@ -159,6 +165,49 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     def get_is_muted(self, obj):
         user = getattr(self.context.get('request'), 'user', None)
         return obj.is_muted_for(user) if user else False
+
+    def _follow_sets(self):
+        """(i_follow ids, they_follow ids) for the current user, computed once
+        per request and shared across every room in the list (avoids N+1)."""
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if not user or not getattr(user, 'is_authenticated', False):
+            return set(), set()
+        cache = getattr(request, '_adsy_follow_sets', None)
+        if cache is not None:
+            return cache
+        from business_network.models import BusinessNetworkFollowerModel as F_
+
+        i_follow = set(
+            F_.objects.filter(follower=user).values_list('following_id', flat=True)
+        )
+        follow_me = set(
+            F_.objects.filter(following=user).values_list('follower_id', flat=True)
+        )
+        cache = (i_follow, follow_me)
+        request._adsy_follow_sets = cache
+        return cache
+
+    def _other_id(self, obj):
+        user = getattr(self.context.get('request'), 'user', None)
+        if not user:
+            return None
+        return obj.user2_id if obj.user1_id == user.id else obj.user1_id
+
+    def get_i_follow_them(self, obj):
+        other = self._other_id(obj)
+        return other in self._follow_sets()[0] if other else False
+
+    def get_they_follow_me(self, obj):
+        other = self._other_id(obj)
+        return other in self._follow_sets()[1] if other else False
+
+    def get_is_mutual(self, obj):
+        return self.get_i_follow_them(obj) and self.get_they_follow_me(obj)
+
+    def get_is_spam(self, obj):
+        user = getattr(self.context.get('request'), 'user', None)
+        return obj.has_spam_from_other(user) if user else False
 
     def get_blocked_by_me(self, obj):
         """True if the current user is the one who blocked this conversation.
