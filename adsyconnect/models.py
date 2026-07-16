@@ -37,6 +37,13 @@ class ChatRoom(models.Model):
     cleared_at_user1 = models.DateTimeField(null=True, blank=True)
     cleared_at_user2 = models.DateTimeField(null=True, blank=True)
 
+    # Per-user archive (hidden from the main list, still receives messages) and
+    # mute (no push notifications). Each participant controls their own flag.
+    archived_by_user1 = models.BooleanField(default=False)
+    archived_by_user2 = models.BooleanField(default=False)
+    muted_by_user1 = models.BooleanField(default=False)
+    muted_by_user2 = models.BooleanField(default=False)
+
     # Block status
     is_blocked = models.BooleanField(default=False)
     blocked_by = models.ForeignKey(
@@ -69,6 +76,29 @@ class ChatRoom(models.Model):
         return self.messages.filter(
             is_read=False
         ).exclude(sender=user).count()
+
+    def _is_user1(self, user):
+        return self.user1_id == getattr(user, 'id', user)
+
+    def is_archived_for(self, user):
+        return self.archived_by_user1 if self._is_user1(user) else self.archived_by_user2
+
+    def is_muted_for(self, user):
+        return self.muted_by_user1 if self._is_user1(user) else self.muted_by_user2
+
+    def set_archived(self, user, value):
+        if self._is_user1(user):
+            self.archived_by_user1 = value
+        else:
+            self.archived_by_user2 = value
+        self.save(update_fields=['archived_by_user1', 'archived_by_user2'])
+
+    def set_muted(self, user, value):
+        if self._is_user1(user):
+            self.muted_by_user1 = value
+        else:
+            self.muted_by_user2 = value
+        self.save(update_fields=['muted_by_user1', 'muted_by_user2'])
 
 
 class Message(models.Model):

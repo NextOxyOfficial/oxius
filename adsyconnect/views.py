@@ -324,6 +324,34 @@ def _send_call_data_message(*, target_user, payload):
     }
 
 
+def _can_message(sender, recipient):
+    """Enforce the recipient's who_can_message privacy for a NEW conversation.
+    Returns (allowed: bool, reason: str)."""
+    pref = getattr(recipient, 'who_can_message', 'everyone') or 'everyone'
+    if pref == 'everyone':
+        return True, ''
+    from business_network.models import BusinessNetworkFollowerModel as F_
+
+    sender_follows_recipient = F_.objects.filter(
+        follower=sender, following=recipient
+    ).exists()
+    recipient_follows_sender = F_.objects.filter(
+        follower=recipient, following=sender
+    ).exists()
+
+    if pref == 'followers':  # only people who follow the recipient
+        ok = sender_follows_recipient
+    elif pref == 'following':  # only people the recipient follows
+        ok = recipient_follows_sender
+    elif pref == 'mutual':
+        ok = sender_follows_recipient and recipient_follows_sender
+    else:
+        ok = True
+    if ok:
+        return True, ''
+    return False, 'এই ব্যবহারকারী শুধু নির্দিষ্ট মানুষের মেসেজ গ্রহণ করেন।'
+
+
 def _broadcast_to_user(user_id, event):
     channel_layer = get_channel_layer()
     if channel_layer is None:
@@ -720,12 +748,31 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     pagination_class = None  # Disable pagination to return direct list
     
     def get_queryset(self):
-        """Get chat rooms for current user"""
+        """Get chat rooms for current user.
+
+        By default the main list hides rooms this user archived; pass
+        ?archived=true to get ONLY the archived ones (the Archived tab).
+        """
         user = self.request.user
-        return ChatRoom.objects.filter(
+        qs = ChatRoom.objects.filter(
             Q(user1=user) | Q(user2=user)
         ).select_related('user1', 'user2', 'blocked_by')
-    
+
+        archived_param = str(
+            self.request.query_params.get('archived', '')
+        ).lower()
+        want_archived = archived_param in ('1', 'true', 'yes')
+        # A room is archived FOR THIS USER if their side's flag is set.
+        mine_archived = (
+            Q(user1=user, archived_by_user1=True)
+            | Q(user2=user, archived_by_user2=True)
+        )
+        if want_archived:
+            qs = qs.filter(mine_archived)
+        else:
+            qs = qs.exclude(mine_archived)
+        return qs
+
     @action(detail=False, methods=['post'])
     def get_or_create(self, request):
         """Get or create a chat room with another user"""
@@ -774,8 +821,14 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             Q(user1=request.user, user2=other_user) |
             Q(user1=other_user, user2=request.user)
         ).first()
-        
+
+        # Privacy: honour the target's "who can message me" setting, but only
+        # when opening a BRAND NEW conversation (an existing thread stays open).
         if not chatroom:
+            allowed, reason = _can_message(request.user, other_user)
+            if not allowed:
+                return Response({'error': reason},
+                                status=status.HTTP_403_FORBIDDEN)
             chatroom = ChatRoom.objects.create(
                 user1=request.user,
                 user2=other_user
@@ -874,6 +927,28 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         _sync_blocked_chatrooms(request.user, other_user, is_blocked=False)
 
         return Response({'status': 'user unblocked'})
+
+    @action(detail=True, methods=['post'])
+    def archive(self, request, pk=None):
+        """Toggle archive for the calling user. Body: {archived: bool}."""
+        chatroom = self.get_object()
+        if request.user not in (chatroom.user1, chatroom.user2):
+            return Response({'error': 'Not a participant'},
+                            status=status.HTTP_403_FORBIDDEN)
+        value = bool(request.data.get('archived', True))
+        chatroom.set_archived(request.user, value)
+        return Response({'status': 'ok', 'archived': value})
+
+    @action(detail=True, methods=['post'])
+    def mute(self, request, pk=None):
+        """Toggle mute (no push) for the calling user. Body: {muted: bool}."""
+        chatroom = self.get_object()
+        if request.user not in (chatroom.user1, chatroom.user2):
+            return Response({'error': 'Not a participant'},
+                            status=status.HTTP_403_FORBIDDEN)
+        value = bool(request.data.get('muted', True))
+        chatroom.set_muted(request.user, value)
+        return Response({'status': 'ok', 'muted': value})
 
     @action(detail=True, methods=['post'])
     def clear(self, request, pk=None):
@@ -1013,20 +1088,23 @@ class MessageViewSet(viewsets.ModelViewSet):
         # but the request reported a timeout). The task re-checks whether the
         # receiver is currently in this chat before notifying.
         try:
-            from .tasks import send_chat_push_notification
+            # Respect the receiver's mute: no push for a muted conversation.
+            receiver_muted = chatroom.is_muted_for(message.receiver_id)
+            if not receiver_muted:
+                from .tasks import send_chat_push_notification
 
-            sender_name = (
-                request.user.get_full_name()
-                or request.user.username
-                or request.user.email
-            )
-            send_chat_push_notification.delay(
-                receiver_id=str(message.receiver_id),
-                sender_id=str(request.user.id),
-                sender_name=sender_name,
-                message_preview=message.get_preview(),
-                chatroom_id=str(chatroom.id),
-            )
+                sender_name = (
+                    request.user.get_full_name()
+                    or request.user.username
+                    or request.user.email
+                )
+                send_chat_push_notification.delay(
+                    receiver_id=str(message.receiver_id),
+                    sender_id=str(request.user.id),
+                    sender_name=sender_name,
+                    message_preview=message.get_preview(),
+                    chatroom_id=str(chatroom.id),
+                )
         except Exception as e:
             logger.warning('Failed to enqueue chat push notification: %s', e)
 

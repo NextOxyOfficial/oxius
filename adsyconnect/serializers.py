@@ -140,14 +140,25 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     unread_count = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     blocked_by_me = serializers.SerializerMethodField()
+    is_archived = serializers.SerializerMethodField()
+    is_muted = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
         fields = [
             'id', 'other_user', 'last_message_at', 'last_message_preview',
             'unread_count', 'last_message', 'is_blocked', 'blocked_by',
-            'blocked_by_me', 'created_at', 'updated_at'
+            'blocked_by_me', 'is_archived', 'is_muted',
+            'created_at', 'updated_at'
         ]
+
+    def get_is_archived(self, obj):
+        user = getattr(self.context.get('request'), 'user', None)
+        return obj.is_archived_for(user) if user else False
+
+    def get_is_muted(self, obj):
+        user = getattr(self.context.get('request'), 'user', None)
+        return obj.is_muted_for(user) if user else False
 
     def get_blocked_by_me(self, obj):
         """True if the current user is the one who blocked this conversation.

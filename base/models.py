@@ -187,6 +187,20 @@ class User(AbstractUser):
     store_banner = models.ImageField(upload_to="images/", blank=True, null=True)
     product_limit = models.IntegerField(default=10)
     email_notifications = models.BooleanField(default=True)
+    # AdsyConnect privacy: who may start a chat with this user.
+    #   everyone   — anyone (default)
+    #   followers  — only people who follow me
+    #   following  — only people I follow
+    #   mutual     — only people I follow who also follow me
+    WHO_CAN_MESSAGE_CHOICES = [
+        ("everyone", "Everyone"),
+        ("followers", "People who follow me"),
+        ("following", "People I follow"),
+        ("mutual", "Mutual connections only"),
+    ]
+    who_can_message = models.CharField(
+        max_length=20, choices=WHO_CAN_MESSAGE_CHOICES, default="everyone"
+    )
     # Account suspension. Unlike is_active (which blocks auth entirely), a
     # suspended user can still authenticate so the app can show a "suspended"
     # lock screen — but middleware blocks every service endpoint.

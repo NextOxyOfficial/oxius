@@ -252,10 +252,10 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         context,
         data: AdsyShareData(
           title: 'AdsyClub-এ যোগ দিন',
-          description: 'আমার রেফারেল লিংক দিয়ে আয় শুরু করো।',
+          description: 'আমার রেফারেল লিংক দিয়ে রেজিস্ট্রেশন করে ইনকাম শুরু করুন',
           url: _referralLink!,
-          subject: 'AdsyClub-এ যোগ দিন',
-          eyebrow: 'রেফার করে আয়',
+          subject: 'AdsyClub-এ  রেজিস্ট্রেশন করুন',
+          eyebrow: 'রেফার করে ইনকাম',
           hashtags: const ['AdsyClub', 'Referral'],
         ),
       );
@@ -304,7 +304,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'রেফার করে আয়',
+          'রেফার করে ইনকাম',
           style: AppFonts.roboto(
             fontSize: 17,
             fontWeight: FontWeight.w600,
@@ -349,7 +349,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'বন্ধুদের আনুন, একসাথে আয় করুন',
+                    'বন্ধুদের রেফার করুন, একসাথে ইনকাম করুন',
                     style: AppFonts.roboto(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -359,7 +359,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '২০% পর্যন্ত আয়',
+                  '২০% পর্যন্ত ইনকাম',
                   style: AppFonts.roboto(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -379,8 +379,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 const SizedBox(height: 10),
                 Text(
                   isIOSPlatform
-                      ? 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ শেষ করলে ৫%, রেফারেলে ২০% পর্যন্ত কমিশন!'
-                      : 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ শেষ করলে ৫%, সাবস্ক্রিপশন ও স্পন্সরে ২০% কমিশন!',
+                      ? 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর ইনকাম করুন — গিগ শেষ করলে ৫%, রেফারেলে ২০% পর্যন্ত কমিশন!'
+                      : 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর ইনকাম করুন — গিগ শেষ করলে ৫%, সাবস্ক্রিপশন ও স্পন্সরে ২০% কমিশন!',
                   style: AppFonts.roboto(
                     fontSize: 12,
                     height: 1.4,
@@ -404,7 +404,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                           elevation: 0,
                         ),
                         child: Text(
-                          'সাইন আপ করে আয় শুরু করুন',
+                          'সাইন আপ করে ইনকাম শুরু করুন',
                           style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -455,8 +455,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   3,
                   'কমিশন আয় করুন',
                   isIOSPlatform
-                      ? 'গিগে ৫%, রেফারেলে ২০% — আলাদা আলাদা হারে কমিশন পান'
-                      : 'গিগে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% — আলাদা হারে কমিশন পান',
+                      ? 'গিগে ৫%, রেফারেলে ২০% — আলাদা আলাদা কমিশন পান'
+                      : 'গিগে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% — আলাদা কমিশন পান',
                   Icons.paid_rounded,
                 ),
               ],
@@ -851,7 +851,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader('কমিশন রেট',
-            subtitle: 'প্রতিটি ধরন থেকে আপনি যা আয় করেন'),
+            subtitle: 'প্রতিটি ধরন থেকে আপনি যা আয় করতে পারবেন'),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
@@ -1063,7 +1063,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     if (_commissionData == null ||
         _commissionData!.recentTransactions.isEmpty) {
       return _buildEmptyState(
-          Icons.receipt_long_rounded, 'এখনো কোনো আয় নেই');
+          Icons.receipt_long_rounded, 'এখনো কোনো ইনকাম নেই');
     }
 
     final transactions = _commissionData!.recentTransactions;
@@ -1426,7 +1426,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
-            user.isActive ? 'সক্রিয়' : 'নিষ্ক্রিয়',
+            user.isActive ? 'একটিভ' : 'ইনএক্টিভ',
             style: AppFonts.roboto(
                 fontSize: 9.5,
                 fontWeight: FontWeight.w600,

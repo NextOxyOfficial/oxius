@@ -502,6 +502,37 @@ class AdsyConnectService {
     }
   }
 
+  /// Archive/unarchive this conversation for the current user (hidden from the
+  /// main list, still receives messages).
+  static Future<bool> setArchived(String chatroomId, bool archived) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/chatrooms/$chatroomId/archive/'),
+        headers: await _getHeaders(),
+        body: json.encode({'archived': archived}),
+      );
+      return res.statusCode >= 200 && res.statusCode < 300;
+    } catch (e) {
+      debugPrint('setArchived failed: $e');
+      return false;
+    }
+  }
+
+  /// Mute/unmute push notifications for this conversation (current user only).
+  static Future<bool> setMuted(String chatroomId, bool muted) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/chatrooms/$chatroomId/mute/'),
+        headers: await _getHeaders(),
+        body: json.encode({'muted': muted}),
+      );
+      return res.statusCode >= 200 && res.statusCode < 300;
+    } catch (e) {
+      debugPrint('setMuted failed: $e');
+      return false;
+    }
+  }
+
   /// Clear this conversation for the CURRENT user only. The other participant
   /// keeps their history; once both sides have cleared, the server hard-deletes
   /// the records nobody can see anymore. Returns the server response

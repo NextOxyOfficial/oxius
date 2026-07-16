@@ -9,6 +9,7 @@ import '../widgets/chat_list_skeleton.dart';
 import '../config/app_config.dart';
 import '../utils/network_error_handler.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
 class AdsyConnectScreen extends StatefulWidget {
   const AdsyConnectScreen({super.key, this.initialChatId});
@@ -456,6 +457,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         'isOnline': _parseBool(otherUser['is_online'] ?? otherUser['isOnline']),
         'isTyping': false,
         'isVerified': otherUser['is_verified'] ?? false,
+        'isMuted': room['is_muted'] == true,
+        'isArchived': room['is_archived'] == true,
       };
     }).toList();
   }
@@ -857,13 +860,146 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     );
   }
 
+  // Bottom sheet of per-conversation actions (long-press).
+  void _showChatActions(Map<String, dynamic> chat) {
+    final id = chat['id']?.toString() ?? '';
+    if (id.isEmpty) return;
+    final bool muted = chat['isMuted'] == true;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 6),
+            _chatActionTile(ctx, Icons.archive_outlined, 'আর্কাইভ করুন',
+                () => _archiveChat(chat)),
+            _chatActionTile(
+                ctx,
+                muted ? Icons.notifications_active_outlined
+                      : Icons.notifications_off_outlined,
+                muted ? 'আনমিউট করুন' : 'মিউট করুন',
+                () => _muteChat(chat, !muted)),
+            _chatActionTile(ctx, Icons.delete_outline_rounded, 'চ্যাট মুছুন',
+                () => _deleteChat(chat), danger: true),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _chatActionTile(BuildContext ctx, IconData icon, String label,
+      VoidCallback onTap, {bool danger = false}) {
+    final color = danger ? const Color(0xFFDC2626) : const Color(0xFF334155);
+    return ListTile(
+      leading: Icon(icon, color: color, size: 22),
+      title: Text(label,
+          style: TextStyle(
+              color: color, fontSize: 14.5, fontWeight: FontWeight.w600)),
+      onTap: () {
+        Navigator.pop(ctx);
+        onTap();
+      },
+    );
+  }
+
+  Future<void> _archiveChat(Map<String, dynamic> chat) async {
+    final id = chat['id']?.toString() ?? '';
+    final ok = await AdsyConnectService.setArchived(id, true);
+    if (!mounted) return;
+    if (ok) {
+      setState(() => _chatConversations.removeWhere((c) => c['id'] == chat['id']));
+      AdsyToast.info(context, 'চ্যাট আর্কাইভ হয়েছে');
+    } else {
+      AdsyToast.error(context, 'আর্কাইভ করা যায়নি');
+    }
+  }
+
+  Future<void> _muteChat(Map<String, dynamic> chat, bool muted) async {
+    final id = chat['id']?.toString() ?? '';
+    final ok = await AdsyConnectService.setMuted(id, muted);
+    if (!mounted) return;
+    if (ok) {
+      setState(() => chat['isMuted'] = muted);
+      AdsyToast.info(context, muted ? 'মিউট হয়েছে' : 'আনমিউট হয়েছে');
+    } else {
+      AdsyToast.error(context, 'করা যায়নি');
+    }
+  }
+
+  Future<void> _deleteChat(Map<String, dynamic> chat) async {
+    final id = chat['id']?.toString() ?? '';
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('চ্যাট মুছবেন?'),
+        content: const Text('আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে।'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('বাতিল')),
+          FilledButton(
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626)),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('মুছুন')),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    final res = await AdsyConnectService.clearConversation(id);
+    if (!mounted) return;
+    if (res != null) {
+      setState(() => _chatConversations.removeWhere((c) => c['id'] == chat['id']));
+      AdsyToast.success(context, 'চ্যাট মুছে গেছে');
+    } else {
+      AdsyToast.error(context, 'মুছতে ব্যর্থ');
+    }
+  }
+
   Widget _buildChatItem(Map<String, dynamic> chat) {
     final bool hasUnread = chat['unreadCount'] > 0;
     final bool isOnline = chat['isOnline'] ?? false;
     final bool isTyping = chat['isTyping'] ?? false;
 
-    return InkWell(
+    return Dismissible(
+      key: ValueKey('chat_${chat['id']}'),
+      // Swipe left → archive; swipe right → delete (confirmed inside).
+      background: Container(
+        color: const Color(0xFFDC2626),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+      ),
+      secondaryBackground: Container(
+        color: const Color(0xFF64748B),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.archive_outlined, color: Colors.white),
+      ),
+      confirmDismiss: (dir) async {
+        if (dir == DismissDirection.endToStart) {
+          _archiveChat(chat);
+        } else {
+          _deleteChat(chat);
+        }
+        return false; // we mutate the list ourselves after the async call
+      },
+      child: InkWell(
       onTap: () => unawaited(_openChat(chat)),
+      onLongPress: () => _showChatActions(chat),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
@@ -1047,6 +1183,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -574,7 +574,7 @@
                   <div class="h-10 w-10 rounded-full bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-sm shrink-0">{{ m.name.charAt(0) }}</div>
                   <div class="min-w-0 flex-1">
                     <p class="text-sm font-semibold text-slate-800 truncate">{{ m.name }}
-                      <span v-if="!m.is_active" class="text-[10px] font-semibold text-red-500 ml-1">(নিষ্ক্রিয়)</span>
+                      <span v-if="!m.is_active" class="text-[10px] font-semibold text-red-500 ml-1">(ইনএক্টিভ)</span>
                     </p>
                     <p class="text-xs text-slate-500 truncate">📍 {{ m.area }} <span v-if="m.phone">&bull; {{ m.phone }}</span></p>
                   </div>

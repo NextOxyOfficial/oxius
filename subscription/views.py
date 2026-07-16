@@ -358,7 +358,7 @@ class AutoRenewView(APIView):
     The app buys Pro via /subscribe/, which sets Pro on the User itself
     (is_pro / pro_validity) — NOT the plan-based Subscription table. So this reads
     the User; otherwise every app-purchased Pro user wrongly looked "not pro" here
-    (the bug behind "Pro সক্রিয় নেই" while Pro was actually active).
+    (the bug behind "Pro একটিভ নেই" while Pro was actually active).
 
     GET  -> {has_active_pro, auto_renew, end_date, plan, price}
     POST {auto_renew: bool} -> updates it.

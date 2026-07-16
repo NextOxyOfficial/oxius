@@ -9,7 +9,7 @@
 - iOS-এ WhatsApp-স্টাইল incoming call (APNs VoIP key configure + Apple-verified)।
 
 ## 🧩 Business Network
-- **পোস্ট Edit** — single-card ডিজাইন, title/description-এ @mention, hashtag যোগ/মুছা, টাইপ করার সাথে সাথে Save সক্রিয়।
+- **পোস্ট Edit** — single-card ডিজাইন, title/description-এ @mention, hashtag যোগ/মুছা, টাইপ করার সাথে সাথে Save একটিভ।
 - **@mention notification** চালু (Bangla push)।
 - নতুন user search-এ পাওয়া যায়; like/comment/share সারির jitter বন্ধ; like-sheet/comment avatar → profile; Facebook-স্টাইল link preview।
 - **MindForce: নিজের পোস্ট Edit/Delete** (list + detail view); নিরাপত্তা: শুধু মালিক edit/delete করতে পারে (backend guard)।
