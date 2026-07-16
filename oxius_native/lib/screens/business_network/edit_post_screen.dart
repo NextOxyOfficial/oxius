@@ -54,9 +54,10 @@ class _EditPostScreenState extends State<EditPostScreen> {
         .where((tag) => tag.isNotEmpty)
         .toSet()
         .toList();
-    _visibility = widget.post.visibility.trim().isEmpty
-        ? 'public'
-        : widget.post.visibility;
+    // Clamp to the known set — an unexpected value would crash the dropdown.
+    const known = {'public', 'followers', 'private'};
+    final v = widget.post.visibility.trim();
+    _visibility = known.contains(v) ? v : 'public';
     _loadInitialMentionUsers();
   }
 
@@ -292,8 +293,6 @@ class _EditPostScreenState extends State<EditPostScreen> {
             maxLines: 14,
             onChanged: (value) => setState(() => _contentText = value),
           ),
-          const SizedBox(height: 14),
-          _buildVisibilitySelector(),
           _sectionDivider(),
           _buildTagsEditor(),
           if (widget.post.media.isNotEmpty) ...[
@@ -474,118 +473,68 @@ class _EditPostScreenState extends State<EditPostScreen> {
     );
   }
 
-  Widget _buildVisibilitySelector() {
+  // Compact dropdown in the header — same control the create screen uses, so
+  // visibility looks and works identically in both places.
+  Widget _buildVisibilityPill() {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        children: [
-          _buildVisibilityOption(
+      child: DropdownButton<String>(
+        value: _visibility,
+        isDense: true,
+        underline: const SizedBox(),
+        borderRadius: BorderRadius.circular(12),
+        icon: const Icon(
+          Icons.arrow_drop_down,
+          size: 18,
+          color: Color(0xFF64748B),
+        ),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF475569),
+        ),
+        items: const [
+          DropdownMenuItem(
             value: 'public',
-            label: 'Public',
-            icon: Icons.public_rounded,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.public, size: 14, color: Color(0xFF64748B)),
+                SizedBox(width: 6),
+                Text('Public'),
+              ],
+            ),
           ),
-          _buildVisibilityOption(
+          DropdownMenuItem(
+            value: 'followers',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.group_outlined, size: 14, color: Color(0xFF64748B)),
+                SizedBox(width: 6),
+                Text('Followers'),
+              ],
+            ),
+          ),
+          DropdownMenuItem(
             value: 'private',
-            label: 'Private',
-            icon: Icons.lock_outline_rounded,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVisibilityOption({
-    required String value,
-    required String label,
-    required IconData icon,
-  }) {
-    final selected = _visibility == value;
-
-    return Expanded(
-      child: InkWell(
-        onTap: () => setState(() => _visibility = value),
-        borderRadius: BorderRadius.circular(11),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(11),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: selected
-                    ? const Color(0xFF2563EB)
-                    : const Color(0xFF64748B),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: selected
-                      ? const Color(0xFF1D4ED8)
-                      : const Color(0xFF64748B),
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  letterSpacing: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVisibilityPill() {
-    final isPrivate = _visibility == 'private';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: isPrivate ? const Color(0xFFFFF7ED) : const Color(0xFFECFDF5),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: isPrivate ? const Color(0xFFFED7AA) : const Color(0xFFA7F3D0),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isPrivate ? Icons.lock_outline_rounded : Icons.public_rounded,
-            size: 14,
-            color:
-                isPrivate ? const Color(0xFFEA580C) : const Color(0xFF059669),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            isPrivate ? 'Private' : 'Public',
-            style: TextStyle(
-              color:
-                  isPrivate ? const Color(0xFFEA580C) : const Color(0xFF047857),
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.lock, size: 14, color: Color(0xFF64748B)),
+                SizedBox(width: 6),
+                Text('Only me'),
+              ],
             ),
           ),
         ],
+        onChanged: (value) {
+          if (value != null) setState(() => _visibility = value);
+        },
       ),
     );
   }

@@ -309,6 +309,9 @@ class BusinessNetworkService {
     String? category,
     List<String>? tags,
     String visibility = 'public',
+    // 0..1 upload progress; only fires for the multipart (video) path, where
+    // uploads are big enough to need feedback.
+    void Function(double progress)? onProgress,
   }) async {
     try {
       final hasVideoFiles = videoPaths != null && videoPaths.isNotEmpty;
@@ -381,6 +384,9 @@ class BusinessNetworkService {
             contentType: null,
             validateStatus: (status) => true,
           ),
+          onSendProgress: (sent, total) {
+            if (onProgress != null && total > 0) onProgress(sent / total);
+          },
         );
 
         debugPrint('=== Create Post Debug ===');

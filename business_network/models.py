@@ -291,6 +291,7 @@ class BusinessNetworkPostTag(models.Model):
 class BusinessNetworkPost(models.Model):
     VISIBILITY_CHOICES = [
         ('public', 'Public'),
+        ('followers', 'Followers only'),
         ('private', 'Private'),
     ]
     

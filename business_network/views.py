@@ -417,9 +417,15 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         - Same freshness band gets a stable per-user shuffle to avoid a stale wall.
         """
         if not self.request.user.is_authenticated:
-            # For unauthenticated users, show recent posts with minimal data
-            return BusinessNetworkPost.objects.select_related("author").order_by(
-                "-created_at"
+            # For unauthenticated users, show recent PUBLIC posts only —
+            # followers-only/private posts and banned content must not leak
+            # into the anonymous feed.
+            return (
+                BusinessNetworkPost.objects.filter(
+                    visibility="public", is_banned=False
+                )
+                .select_related("author")
+                .order_by("-created_at")
             )
 
         user = self.request.user
@@ -597,8 +603,16 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         if user.state:
             author_location_query |= Q(author__state__iexact=user.state)
 
+        # Followers-only posts are visible to the people who follow the author
+        # (and to the author, covered by Q(author=user) below).
+        followed_author_ids = BusinessNetworkFollowerModel.objects.filter(
+            follower=user
+        ).values("following_id")
+
         queryset = BusinessNetworkPost.objects.filter(
-            Q(visibility="public") | Q(author=user),
+            Q(visibility="public")
+            | Q(author=user)
+            | Q(visibility="followers", author_id__in=followed_author_ids),
             is_banned=False,
         ).exclude(
             Q(id__in=hidden_post_ids)
@@ -934,8 +948,29 @@ class BusinessNetworkPostRetrieveUpdateDestroyView(
             from django.http import Http404
 
             raise Http404("Post not found")
+        self._enforce_visibility(post)
         self.check_object_permissions(self.request, post)
         return post
+
+    def _enforce_visibility(self, post):
+        """A non-public post must 404 (not 403 — don't confirm it exists) for
+        anyone who isn't allowed to see it, even with a direct id/slug link."""
+        from django.http import Http404
+
+        user = self.request.user
+        is_author = user.is_authenticated and post.author_id == user.id
+        if is_author:
+            return
+        if post.is_banned or post.visibility == "private":
+            raise Http404("Post not found")
+        if post.visibility == "followers":
+            follows = user.is_authenticated and (
+                BusinessNetworkFollowerModel.objects.filter(
+                    follower=user, following_id=post.author_id
+                ).exists()
+            )
+            if not follows:
+                raise Http404("Post not found")
 
     def get_permissions(self):
         if self.request.method == "GET":
@@ -986,16 +1021,31 @@ class UserPostsListView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
-        queryset = BusinessNetworkPost.objects.filter(author__id=user_id)
-        if self.request.user.is_authenticated:
-            # Hide this profile's posts if EITHER side blocked the other, so a
-            # blocked user can't browse the blocker's posts and vice-versa.
-            is_blocked = BlockedUser.objects.filter(
-                Q(blocker=self.request.user, blocked_id=user_id)
-                | Q(blocker_id=user_id, blocked=self.request.user)
-            ).exists()
-            if is_blocked:
-                return BusinessNetworkPost.objects.none()
+        viewer = self.request.user
+        queryset = BusinessNetworkPost.objects.filter(
+            author__id=user_id, is_banned=False
+        )
+
+        is_own_profile = viewer.is_authenticated and str(viewer.id) == str(user_id)
+        if not is_own_profile:
+            if viewer.is_authenticated:
+                # Hide this profile's posts if EITHER side blocked the other, so
+                # a blocked user can't browse the blocker's posts and vice-versa.
+                is_blocked = BlockedUser.objects.filter(
+                    Q(blocker=viewer, blocked_id=user_id)
+                    | Q(blocker_id=user_id, blocked=viewer)
+                ).exists()
+                if is_blocked:
+                    return BusinessNetworkPost.objects.none()
+                follows = BusinessNetworkFollowerModel.objects.filter(
+                    follower=viewer, following_id=user_id
+                ).exists()
+                allowed = (
+                    ["public", "followers"] if follows else ["public"]
+                )
+            else:
+                allowed = ["public"]
+            queryset = queryset.filter(visibility__in=allowed)
         return queryset.order_by(
             "-created_at"
         )

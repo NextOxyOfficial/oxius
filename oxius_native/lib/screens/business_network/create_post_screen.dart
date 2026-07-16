@@ -34,14 +34,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final List<String> _selectedImages = [];
   final List<Map<String, dynamic>> _selectedVideos = []; // {path, name}
   final List<String> _hashtags = [];
-  String _visibility = 'public'; // public or private
+  String _visibility = 'public'; // public | followers | private
   bool _isLoading = false;
   bool _isCompressing = false;
   String _compressionStatus = '';
+  // 0..1 while the post (with videos) is uploading, null otherwise.
+  double? _uploadProgress;
 
   static const int _maxPhotos = 12;
   static const int _maxVideos = 2;
-  static const int _maxVideoDurationSeconds = 120; // 2 minutes
+  static const int _maxVideoDurationSeconds = 180; // 3 minutes
 
   @override
   void initState() {
@@ -184,7 +186,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         _compressionStatus = 'Processing video...';
       });
 
-      // Enforce duration limit (max 2 minutes)
+      // Enforce duration limit (max 3 minutes)
       try {
         final controller = VideoPlayerController.file(File(video.path));
         await controller.initialize();
@@ -194,7 +196,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         if (duration > const Duration(seconds: _maxVideoDurationSeconds)) {
           if (mounted) {
             AdsyToast.warning(
-                context, 'Video is too long. Maximum length is 2 minutes.');
+                context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ৩ মিনিটের ভিডিও দেওয়া যাবে');
           }
           setState(() {
             _isCompressing = false;
@@ -234,99 +236,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() {
       _selectedVideos.removeAt(index);
     });
-  }
-
-  void _showMediaPicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Upload Media',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Photos option
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.photo_library_rounded,
-                      color: Colors.blue.shade600, size: 24),
-                ),
-                title: const Text('Photos',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('${_selectedImages.length}/$_maxPhotos selected',
-                    style:
-                        TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                trailing:
-                    Icon(Icons.chevron_right, color: Colors.grey.shade400),
-                enabled: _selectedImages.length < _maxPhotos,
-                onTap: _selectedImages.length < _maxPhotos
-                    ? () {
-                        Navigator.pop(context);
-                        _pickImage();
-                      }
-                    : null,
-              ),
-              const SizedBox(height: 8),
-              // Videos option
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.purple.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.videocam_rounded,
-                      color: Colors.purple.shade600, size: 24),
-                ),
-                title: const Text('Video',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(
-                    '${_selectedVideos.length}/$_maxVideos selected (max 2 min)',
-                    style:
-                        TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                trailing:
-                    Icon(Icons.chevron_right, color: Colors.grey.shade400),
-                enabled: _selectedVideos.length < _maxVideos,
-                onTap: _selectedVideos.length < _maxVideos
-                    ? () {
-                        Navigator.pop(context);
-                        _pickVideo();
-                      }
-                    : null,
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   void _addHashtag() {
@@ -389,6 +298,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         videoPaths: videoPathList,
         tags: hasTags ? _hashtags : null,
         visibility: _visibility,
+        onProgress: hasVideos
+            ? (p) {
+                if (mounted) setState(() => _uploadProgress = p);
+              }
+            : null,
       );
 
       if (mounted) {
@@ -413,7 +327,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _uploadProgress = null;
+        });
       }
     }
   }
@@ -585,6 +502,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                 ),
                               ),
                               DropdownMenuItem(
+                                value: 'followers',
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.group_outlined,
+                                      size: 14,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    const Text('Followers'),
+                                  ],
+                                ),
+                              ),
+                              DropdownMenuItem(
                                 value: 'private',
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -595,7 +527,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                       color: Colors.grey.shade700,
                                     ),
                                     const SizedBox(width: 6),
-                                    const Text('Private'),
+                                    const Text('Only me'),
                                   ],
                                 ),
                               ),
@@ -745,15 +677,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey.shade200),
-                          ),
+                  // Pill-shaped input with the add action inside it — reads as
+                  // one control, the way native composers do.
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    padding: const EdgeInsets.only(left: 4, right: 6),
+                    child: Row(
+                      children: [
+                        Expanded(
                           child: TextField(
                             controller: _hashtagController,
                             style: const TextStyle(fontSize: 14),
@@ -768,34 +703,33 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               border: InputBorder.none,
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 11),
+                                  horizontal: 8, vertical: 11),
                             ),
                             onSubmitted: (_) => _addHashtag(),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Material(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(10),
-                        child: InkWell(
-                          onTap: _addHashtag,
-                          borderRadius: BorderRadius.circular(10),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 11),
-                            child: Text(
-                              'Add',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
+                        TextButton(
+                          onPressed: _addHashtag,
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF2563EB),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: const Text(
+                            'যোগ করুন',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   if (_hashtags.isNotEmpty) ...[
                     const SizedBox(height: 16),
@@ -948,6 +882,55 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     const SizedBox(height: 12),
                   ],
 
+                  // Upload progress — video posts can take a while, so show a
+                  // real percentage instead of an anonymous spinner.
+                  if (_uploadProgress != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.cloud_upload_outlined,
+                                  size: 16, color: Color(0xFF2563EB)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _uploadProgress! >= 0.99
+                                      ? 'প্রসেস হচ্ছে...'
+                                      : 'আপলোড হচ্ছে... ${(_uploadProgress! * 100).round()}%',
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1E40AF),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: _uploadProgress,
+                              minHeight: 5,
+                              backgroundColor:
+                                  const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                              valueColor: const AlwaysStoppedAnimation(
+                                  Color(0xFF2563EB)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
                   // Combined Media Grid (Images + Videos)
                   if (_selectedImages.isNotEmpty ||
                       _selectedVideos.isNotEmpty) ...[
@@ -1074,43 +1057,37 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     const SizedBox(height: 10),
                   ],
 
-                  // Single Upload Media Button
-                  InkWell(
-                    onTap: _showMediaPicker,
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border:
-                            Border.all(color: Colors.grey.shade300, width: 1),
+                  // Direct photo / video actions — no intermediate bottom
+                  // sheet, the way native composers work.
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _mediaActionButton(
+                          icon: Icons.photo_library_outlined,
+                          iconColor: const Color(0xFF16A34A),
+                          label: 'ছবি',
+                          onTap: _pickImage,
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.add_photo_alternate_outlined,
-                              size: 19, color: Colors.grey.shade600),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Upload Media',
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _mediaActionButton(
+                          icon: Icons.videocam_outlined,
+                          iconColor: const Color(0xFFDC2626),
+                          label: 'ভিডিও',
+                          onTap: _pickVideo,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 8),
-                  // Helper text
+                  // Limits, stated plainly so nobody discovers them by error.
                   Text(
-                    'Max $_maxPhotos photos + $_maxVideos videos (2 min)',
+                    'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও (প্রতিটি সর্বোচ্চ ৩ মিনিট) দেওয়া যাবে',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.5,
                       color: Colors.grey.shade500,
+                      height: 1.4,
                     ),
                   ),
                 ],
@@ -1120,6 +1097,41 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _mediaActionButton({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20, color: iconColor),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ],
         ),
       ),
     );
