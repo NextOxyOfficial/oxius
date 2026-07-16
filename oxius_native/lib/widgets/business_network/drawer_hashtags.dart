@@ -64,22 +64,16 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
-          child: Row(
-            children: [
-              Icon(Icons.tag, size: 11, color: Colors.purple.shade500),
-              const SizedBox(width: 4),
-              Text(
-                'TRENDING',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.6,
-                ),
-              ),
-            ],
+        const Padding(
+          padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+          child: Text(
+            'TRENDING',
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF94A3B8),
+              letterSpacing: 0.6,
+            ),
           ),
         ),
 
@@ -125,30 +119,30 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
                             },
                             borderRadius: BorderRadius.circular(11),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.purple.shade50,
+                                color: const Color(0xFFF1F5F9),
                                 borderRadius: BorderRadius.circular(11),
-                                border: Border.all(color: Colors.purple.shade100),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     '#${tag['tag']}',
-                                    style: TextStyle(
-                                      fontSize: 11,
+                                    style: const TextStyle(
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.purple.shade700,
+                                      color: Color(0xFF334155),
                                     ),
                                   ),
-                                  const SizedBox(width: 3),
+                                  const SizedBox(width: 4),
                                   Text(
                                     _formatCount(tag['count'] as int),
-                                    style: TextStyle(
-                                      fontSize: 9,
+                                    style: const TextStyle(
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.purple.shade400,
+                                      color: Color(0xFF94A3B8),
                                     ),
                                   ),
                                 ],

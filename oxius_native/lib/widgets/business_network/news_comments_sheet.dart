@@ -83,7 +83,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
     if (text.isEmpty || _sending) return;
 
     if (!AuthService.isAuthenticated) {
-      LoginPromptDialog.show(context, action: 'মন্তব্য করতে');
+      LoginPromptDialog.show(context, action: 'কমেন্ট করতে');
       return;
     }
 
@@ -100,7 +100,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
       widget.onCountChanged?.call(_comments.length);
     } else {
       setState(() => _sending = false);
-      AdsyToast.error(context, 'মন্তব্য পোস্ট করা যায়নি');
+      AdsyToast.error(context, 'কমেন্ট পোস্ট করা যায়নি');
     }
   }
 
@@ -193,7 +193,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
           SizedBox(height: 10),
           Center(
             child: Text(
-              'এখনো কোনো মন্তব্য নেই',
+              'এখনো কোনো কমেন্ট নেই',
               style: TextStyle(fontSize: 13.5, color: Color(0xFF94A3B8)),
             ),
           ),
@@ -310,7 +310,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                 textCapitalization: TextCapitalization.sentences,
                 style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: 'মন্তব্য লিখুন...',
+                  hintText: 'কমেন্ট লিখুন...',
                   hintStyle: const TextStyle(
                       fontSize: 16, color: Color(0xFF94A3B8)),
                   filled: true,

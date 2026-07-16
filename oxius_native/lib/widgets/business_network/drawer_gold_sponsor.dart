@@ -59,19 +59,19 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
           child: Row(
             children: [
               Icon(Icons.workspace_premium_rounded,
-                  size: 11, color: Colors.amber.shade600),
-              const SizedBox(width: 4),
+                  size: 14, color: Color(0xFFF59E0B)),
+              SizedBox(width: 6),
               Text(
                 'GOLD SPONSORS',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500,
+                  color: Color(0xFF94A3B8),
                   letterSpacing: 0.6,
                 ),
               ),
@@ -82,11 +82,11 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
         // Content card
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.amber.shade50.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.amber.shade100),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child:
               widget.isLoggedIn ? _buildLoggedInContent() : _buildLoginPrompt(),
@@ -222,16 +222,15 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
 
   Widget _buildStatChip(String label, String value, bool isLoading,
       {bool isWarning = false}) {
-    final color = isWarning ? Colors.orange.shade600 : Colors.amber.shade700;
+    final color =
+        isWarning ? Colors.orange.shade600 : const Color(0xFF0F172A);
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-              color:
-                  isWarning ? Colors.orange.shade200 : Colors.amber.shade200),
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Column(
           children: [
@@ -240,17 +239,18 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                 height: 14,
                 width: 28,
                 decoration: BoxDecoration(
-                  color: Colors.amber.shade100,
+                  color: const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(3),
                 ),
               )
             else
               Text(value,
                   style: TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w700, color: color)),
-            const SizedBox(height: 1),
+                      fontSize: 14, fontWeight: FontWeight.w700, color: color)),
+            const SizedBox(height: 2),
             Text(label,
-                style: TextStyle(fontSize: 9, color: Colors.grey.shade500)),
+                style: const TextStyle(
+                    fontSize: 10, color: Color(0xFF94A3B8))),
           ],
         ),
       ),
@@ -265,7 +265,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
           margin: const EdgeInsets.only(bottom: 6),
           height: 32,
           decoration: BoxDecoration(
-            color: Colors.amber.shade50,
+            color: const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(6),
           ),
         ),
@@ -285,7 +285,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: Colors.amber.shade100),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Row(
             children: [
@@ -301,14 +301,14 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                         errorWidget: (_, __, ___) => Container(
                           width: 20,
                           height: 20,
-                          color: Colors.amber.shade100,
+                          color: const Color(0xFFF1F5F9),
                           child: const Icon(Icons.business, size: 12),
                         ),
                       )
                     : Container(
                         width: 20,
                         height: 20,
-                        color: Colors.amber.shade100,
+                        color: const Color(0xFFF1F5F9),
                         child: const Icon(Icons.business, size: 12),
                       ),
               ),

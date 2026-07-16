@@ -2506,14 +2506,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'মেসেজ পরিষ্কার করবেন?',
+                'মেসেজ ক্লিয়ার করবেন?',
                 style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
-                'আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে। অপর পক্ষ তাদের '
-                'মেসেজ আগের মতোই দেখতে পাবেন — দুজনেই পরিষ্কার করলে '
-                'মেসেজগুলো স্থায়ীভাবে মুছে যাবে।',
+                'আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে। অন্যজন তাদের '
+                'মেসেজ আগের মতোই দেখতে পাবে — দুজনেই ক্লিয়ার করলে '
+                'মেসেজগুলো একেবারে মুছে যাবে।',
                 style: TextStyle(
                     fontSize: 13.5, color: Colors.grey.shade600, height: 1.5),
               ),
@@ -2544,7 +2544,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('পরিষ্কার করুন'),
+                      child: const Text('ক্লিয়ার করুন'),
                     ),
                   ),
                 ],
@@ -2602,7 +2602,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'মেসেজ পরিষ্কার হচ্ছে...',
+                  'মেসেজ ক্লিয়ার হচ্ছে...',
                   style:
                       TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
@@ -2632,9 +2632,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     if (!mounted) return;
     if (result != null) {
       setState(() => _messages.clear());
-      AdsyToast.success(context, 'মেসেজ পরিষ্কার হয়ে গেছে');
+      AdsyToast.success(context, 'মেসেজ ক্লিয়ার হয়ে গেছে');
     } else {
-      AdsyToast.error(context, 'মেসেজ পরিষ্কার করা যায়নি');
+      AdsyToast.error(context, 'মেসেজ ক্লিয়ার করা যায়নি');
     }
   }
 

@@ -116,20 +116,14 @@ class _DrawerNewsState extends State<DrawerNews> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.newspaper, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 6),
-                  Text(
-                    'ADSY NEWS',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
+              const Text(
+                'ADSY NEWS',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF94A3B8),
+                  letterSpacing: 0.6,
+                ),
               ),
               TextButton.icon(
                 onPressed: () {

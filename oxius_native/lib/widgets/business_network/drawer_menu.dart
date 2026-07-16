@@ -27,7 +27,7 @@ class DrawerMenu extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 6),
             child: Material(
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF2563EB),
               borderRadius: BorderRadius.circular(8),
               child: InkWell(
                 onTap: () {
@@ -68,7 +68,6 @@ class DrawerMenu extends StatelessWidget {
           context,
           icon: Icons.bolt_rounded,
           label: 'Recent',
-          color: const Color(0xFF3B82F6),
           isActive: currentRoute == '/business-network',
           onTap: () {
             Navigator.pop(context);
@@ -85,7 +84,6 @@ class DrawerMenu extends StatelessWidget {
             context,
             icon: Icons.person_rounded,
             label: 'Profile',
-            color: const Color(0xFFA855F7),
             isActive:
                 currentRoute?.contains('/business-network/profile/') ?? false,
             onTap: () {
@@ -102,7 +100,6 @@ class DrawerMenu extends StatelessWidget {
           context,
           icon: Icons.psychology_rounded,
           label: 'MindForce',
-          color: const Color(0xFF10B981),
           isActive: currentRoute == '/business-network/mindforce',
           badge: 'NEW',
           onTap: () {
@@ -119,7 +116,6 @@ class DrawerMenu extends StatelessWidget {
           context,
           icon: Icons.workspaces_rounded,
           label: 'Workspaces',
-          color: const Color(0xFF8B5CF6),
           isActive: currentRoute == '/business-network/workspaces',
           badge: 'NEW',
           onTap: () {
@@ -136,7 +132,6 @@ class DrawerMenu extends StatelessWidget {
           context,
           icon: Icons.notifications_rounded,
           label: 'Notifications',
-          color: const Color(0xFFEF4444),
           isActive: currentRoute == '/business-network/notifications',
           onTap: () {
             Navigator.pop(context);
@@ -152,7 +147,6 @@ class DrawerMenu extends StatelessWidget {
           context,
           icon: Icons.settings_rounded,
           label: 'Settings',
-          color: const Color(0xFF6B7280),
           isActive: currentRoute == '/settings',
           onTap: () {
             Navigator.pop(context);
@@ -167,59 +161,56 @@ class DrawerMenu extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String label,
-    required Color color,
     required bool isActive,
     required VoidCallback onTap,
     String? badge,
   }) {
+    // Single neutral treatment: dark icon + label normally, a subtle
+    // light-slate highlight with a brand-blue icon/label when active.
+    const brand = Color(0xFF2563EB);
+    const neutral = Color(0xFF334155);
+    final foreground = isActive ? brand : neutral;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
           decoration: BoxDecoration(
-            color: isActive ? color.withValues(alpha: 0.08) : Colors.transparent,
+            color: isActive ? const Color(0xFFF1F5F9) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: isActive ? color : color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Icon(icon,
-                    size: 15, color: isActive ? Colors.white : color),
-              ),
-              const SizedBox(width: 10),
+              Icon(icon, size: 19, color: foreground),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                    color: isActive ? color : const Color(0xFF374151),
+                    color: foreground,
                   ),
                 ),
               ),
               if (badge != null)
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.pink.shade500,
+                    color: const Color(0xFFEFF6FF),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     badge,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF2563EB),
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ),

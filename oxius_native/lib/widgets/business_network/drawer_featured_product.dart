@@ -162,21 +162,14 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.shopping_bag,
-                      size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 6),
-                  Text(
-                    'FEATURED PRODUCT',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
+              const Text(
+                'FEATURED PRODUCT',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF94A3B8),
+                  letterSpacing: 0.6,
+                ),
               ),
               IconButton(
                 icon:

@@ -500,7 +500,7 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                               size: 16, color: Color(0xFF059669)),
                           SizedBox(width: 6),
                           Text(
-                            'টাস্ক সম্পন্ন হয়েছে',
+                            'টাস্ক কমপ্লিট হয়েছে',
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
@@ -613,7 +613,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
-                    'এডজি নিউজ',
+                    'এডসি নিউজ',
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,

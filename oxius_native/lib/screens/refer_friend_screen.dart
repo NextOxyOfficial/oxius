@@ -252,7 +252,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         context,
         data: AdsyShareData(
           title: 'AdsyClub-এ যোগ দিন',
-          description: 'আমার রেফারেল লিংক দিয়ে আয় শুরু করুন।',
+          description: 'আমার রেফারেল লিংক দিয়ে আয় শুরু করো।',
           url: _referralLink!,
           subject: 'AdsyClub-এ যোগ দিন',
           eyebrow: 'রেফার করে আয়',
@@ -379,8 +379,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 const SizedBox(height: 10),
                 Text(
                   isIOSPlatform
-                      ? 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ সম্পন্নে ৫%, রেফারেল কার্যক্রমে ২০% কমিশন!'
-                      : 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ সম্পন্নে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% কমিশন!',
+                      ? 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ শেষ করলে ৫%, রেফারেলে ২০% পর্যন্ত কমিশন!'
+                      : 'আপনার লিংকটি বন্ধুদের শেয়ার করুন আর আয় করুন — গিগ শেষ করলে ৫%, সাবস্ক্রিপশন ও স্পন্সরে ২০% কমিশন!',
                   style: AppFonts.roboto(
                     fontSize: 12,
                     height: 1.4,
@@ -455,7 +455,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   3,
                   'কমিশন আয় করুন',
                   isIOSPlatform
-                      ? 'গিগে ৫%, রেফারেল কার্যক্রমে ২০% — আলাদা আলাদা হারে কমিশন পান'
+                      ? 'গিগে ৫%, রেফারেলে ২০% — আলাদা আলাদা হারে কমিশন পান'
                       : 'গিগে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% — আলাদা হারে কমিশন পান',
                   Icons.paid_rounded,
                 ),
@@ -478,7 +478,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   _isLoadingPlatform
                       ? '...'
                       : '${_platformStats?.activeReferrers ?? 500}+',
-                  'সক্রিয় রেফারার',
+                  'একটিভ রেফারার',
                   Colors.blue,
                 )),
               ],
@@ -682,13 +682,13 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         _buildHowStep(
           2,
           'বন্ধু যোগ দিক',
-          'আপনার লিংকে সাইন আপ করে বন্ধু সক্রিয় হোক।',
+          'আপনার লিংকে সাইন আপ করে বন্ধু একটিভ হোক।',
         ),
         _buildHowStep(
           3,
           'কমিশন আয় করুন',
           isIOSPlatform
-              ? 'গিগে ৫%, রেফারেল কার্যক্রমে ২০% পর্যন্ত কমিশন পান।'
+              ? 'গিগে ৫%, রেফারেলে ২০% পর্যন্ত কমিশন পান।'
               : 'গিগে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% কমিশন পান।',
           isLast: true,
         ),
@@ -787,9 +787,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 _buildStat('৳ ${total.toStringAsFixed(0)}', 'মোট আয়',
                     accent: true),
                 _buildStatDivider(),
-                _buildStat('$refs', 'রেফারেল'),
+                _buildStat('$refs', 'বন্ধু রেফার'),
                 _buildStatDivider(),
-                _buildStat('$txns', 'লেনদেন'),
+                _buildStat('$txns', 'কমিশন পেয়েছেন'),
               ],
             ),
           ),
@@ -835,7 +835,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
   Widget _buildCommissionRates() {
     final b = _commissionData?.commissionBreakdown;
     final rows = <List<String>>[
-      ['গিগ সম্পন্ন', b?.gigCompletion.rate ?? '৫%', 'বন্ধুর গিগ আয়ের উপর'],
+      ['গিগ শেষ', b?.gigCompletion.rate ?? '৫%', 'বন্ধুর গিগ আয়ের উপর'],
       [
         'প্রো সাবস্ক্রিপশন',
         b?.proSubscription.rate ?? '২০%',
@@ -931,12 +931,12 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
               AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600),
           indicatorColor: _kGreen,
           indicatorWeight: 2,
-          indicatorSize: TabBarIndicatorSize.label,
+          indicatorSize: TabBarIndicatorSize.tab,
           labelPadding: const EdgeInsets.symmetric(vertical: 4),
           dividerColor: _kBorder,
           dividerHeight: 1,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
+          // Two full-width tabs split the row evenly (no left-cramped scroll).
+          isScrollable: false,
           tabs: [
             Tab(
                 text:

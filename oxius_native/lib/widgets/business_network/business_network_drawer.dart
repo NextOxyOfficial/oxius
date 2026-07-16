@@ -31,8 +31,8 @@ class BusinessNetworkDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = AuthService.currentUser;
     final screenWidth = MediaQuery.of(context).size.width;
-    // Responsive width: ~85% of screen, capped so it never feels too wide.
-    final drawerWidth = math.min(screenWidth * 0.85, 300.0);
+    // Responsive width: ~90% of screen, capped for a roomier, native feel.
+    final drawerWidth = math.min(screenWidth * 0.90, 340.0);
 
     return Drawer(
       width: drawerWidth,
@@ -162,7 +162,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
       child: Align(
         alignment: Alignment.center,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 264),
+          constraints: const BoxConstraints(maxWidth: 320),
           child: Material(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
@@ -362,17 +362,9 @@ class BusinessNetworkDrawer extends StatelessWidget {
 
   Widget _sectionDivider() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       height: 1,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.transparent,
-            Colors.grey.shade200,
-            Colors.transparent,
-          ],
-        ),
-      ),
+      color: const Color(0xFFE2E8F0),
     );
   }
 }

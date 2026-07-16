@@ -59,7 +59,7 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            'A social business network for Bangladesh',
+            'A social business network',
             style: AppFonts.roboto(
               fontSize: 21,
               fontWeight: FontWeight.w700,

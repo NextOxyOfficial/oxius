@@ -51,22 +51,16 @@ class _DrawerContributorsState extends State<DrawerContributors> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
-          child: Row(
-            children: [
-              Icon(Icons.people_alt_rounded, size: 11, color: Colors.green.shade600),
-              const SizedBox(width: 4),
-              Text(
-                'TOP CONTRIBUTORS',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.6,
-                ),
-              ),
-            ],
+        const Padding(
+          padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+          child: Text(
+            'TOP CONTRIBUTORS',
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF94A3B8),
+              letterSpacing: 0.6,
+            ),
           ),
         ),
 
@@ -118,12 +112,12 @@ class _DrawerContributorsState extends State<DrawerContributors> {
                   },
                   borderRadius: BorderRadius.circular(7),
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    margin: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(7),
-                      border: Border.all(color: Colors.grey.shade200),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: Row(
                       children: [

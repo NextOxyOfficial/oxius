@@ -381,14 +381,10 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
   bool get _showLegacySponsorDetail => false;
 
   Widget _buildSponsorPanel(BuildContext context) {
+    // Plain page (no bordered card) — content sits directly on the sheet.
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -796,8 +792,8 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
         return Container(
           clipBehavior: Clip.antiAlias,
           decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
@@ -814,7 +810,7 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
               Expanded(
                 child: SingleChildScrollView(
                   controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 18),
+                  padding: const EdgeInsets.fromLTRB(0, 4, 0, 18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
