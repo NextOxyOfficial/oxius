@@ -5,6 +5,8 @@ import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../config/app_config.dart';
 import '../../widgets/business_network/post_media_gallery.dart';
+import '../../widgets/business_network/reshared_post_card.dart';
+import 'shorts_viewer.dart';
 import '../../widgets/business_network/post_actions.dart';
 import '../../widgets/business_network/post_comment_input.dart';
 import '../../widgets/business_network/post_comments_preview.dart';
@@ -198,6 +200,43 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => ProfileScreen(userId: userId),
+      ),
+    );
+  }
+
+  // ---- Reshared original (embedded) navigation ------------------------------
+  void _openSharedAuthor(SharedPostPreview orig) {
+    if (orig.authorId.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProfileScreen(userId: orig.authorId)),
+    );
+  }
+
+  Future<void> _openSharedPostDetail(SharedPostPreview orig) async {
+    final ident = orig.slug.isNotEmpty ? orig.slug : orig.id.toString();
+    final post = await BusinessNetworkService.getPostByIdentifier(ident);
+    if (!mounted || post == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
+    );
+  }
+
+  Future<void> _openSharedVideoInShorts(SharedPostPreview orig) async {
+    final ident = orig.slug.isNotEmpty ? orig.slug : orig.id.toString();
+    final post = await BusinessNetworkService.getPostByIdentifier(ident);
+    if (!mounted || post == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.black,
+          body: ShortsViewer(
+            posts: [post],
+            onClose: () => Navigator.of(ctx).pop(),
+          ),
+        ),
       ),
     );
   }
@@ -496,6 +535,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   PostMediaGallery(
                                     media: _post.media,
                                     onMediaTap: _handleMediaTap,
+                                  ),
+
+                                // Reshared original — same card as the feed so
+                                // the shared items always show here too.
+                                if (_post.sharedFrom != null)
+                                  ResharedPostCard(
+                                    shared: _post.sharedFrom!,
+                                    onAuthorTap: () =>
+                                        _openSharedAuthor(_post.sharedFrom!),
+                                    onOpenPost: () =>
+                                        _openSharedPostDetail(_post.sharedFrom!),
+                                    onOpenVideo: () => _openSharedVideoInShorts(
+                                        _post.sharedFrom!),
                                   ),
 
                                 // Post Actions

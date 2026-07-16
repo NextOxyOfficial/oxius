@@ -19,6 +19,7 @@ import '../../widgets/common/adsy_share_sheet.dart';
 import '../../widgets/common/adsy_toast.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
+import 'reshared_post_card.dart';
 import 'post_actions.dart';
 import 'post_comments_preview.dart';
 import 'post_comment_input.dart';
@@ -227,9 +228,12 @@ class _PostCardState extends State<PostCard> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (ctx) => ShortsViewer(
-          posts: [post],
-          onClose: () => Navigator.of(ctx).pop(),
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.black,
+          body: ShortsViewer(
+            posts: [post],
+            onClose: () => Navigator.of(ctx).pop(),
+          ),
         ),
       ),
     );
@@ -247,129 +251,13 @@ class _PostCardState extends State<PostCard> {
   }
 
   Widget _buildResharedOriginal(SharedPostPreview orig) {
-    final avatar = AppConfig.getAbsoluteUrl(orig.authorImage);
-    final img = (orig.mediaThumbUrl ?? '').isNotEmpty
-        ? AppConfig.getAbsoluteUrl(orig.mediaThumbUrl!)
-        : '';
-    final fullText = HtmlContentUtils.toPlainText(orig.content).trim();
-    final isLongText = fullText.length > 160;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 2, 6, 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Original author — tap opens their Business Network profile.
-            InkWell(
-              onTap: () => _openSharedAuthor(orig),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFFE2E8F0),
-                      ),
-                      child: ClipOval(
-                        child: avatar.isNotEmpty
-                            ? Image.network(avatar,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                    Icons.person_rounded,
-                                    size: 16,
-                                    color: Color(0xFF94A3B8)))
-                            : const Icon(Icons.person_rounded,
-                                size: 16, color: Color(0xFF94A3B8)),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        orig.authorName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A)),
-                      ),
-                    ),
-                    if (orig.authorVerified) ...[
-                      const SizedBox(width: 4),
-                      const Icon(Icons.verified,
-                          size: 13, color: Color(0xFF2563EB)),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            if (fullText.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fullText,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 13.5,
-                          color: Color(0xFF334155),
-                          height: 1.45),
-                    ),
-                    if (isLongText)
-                      GestureDetector(
-                        onTap: () => _openSharedPostDetail(orig),
-                        child: const Padding(
-                          padding: EdgeInsets.only(top: 3),
-                          child: Text(
-                            'আরও পড়ুন',
-                            style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF2563EB)),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            // Video original: autoplay it in place (same widget as the feed).
-            if (orig.mediaIsVideo && orig.firstMedia != null)
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
-                child: AutoPlaySingleVideoPreview(
-                  media: orig.firstMedia!,
-                  minHeight: 190,
-                  maxHeight: 320,
-                  onTap: () => _openSharedVideoInShorts(orig),
-                ),
-              )
-            else if (img.isNotEmpty)
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
-                child: Image.network(
-                  img,
-                  width: double.infinity,
-                  height: 190,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
-              ),
-          ],
-        ),
-      ),
+    // Single reusable card so the feed and the post-detail screen render the
+    // reshared original identically (full media gallery, same tap behaviour).
+    return ResharedPostCard(
+      shared: orig,
+      onAuthorTap: () => _openSharedAuthor(orig),
+      onOpenPost: () => _openSharedPostDetail(orig),
+      onOpenVideo: () => _openSharedVideoInShorts(orig),
     );
   }
 

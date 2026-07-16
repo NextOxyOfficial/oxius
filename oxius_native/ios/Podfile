@@ -28,7 +28,14 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  # STATIC linkage is required here. GoogleMobileAds (google_mobile_ads) and the
+  # Firebase SDKs ship as *static* xcframeworks; with the default dynamic
+  # `use_frameworks!` their Objective-C classes (GADNativeAdView, GADBannerView,
+  # etc.) are never pulled into the Runner binary, producing linker errors like
+  #   Undefined symbol: _OBJC_CLASS_$_GADNativeAdView
+  # Linking statically embeds those symbols. This is also Firebase's recommended
+  # CocoaPods configuration.
+  use_frameworks! :linkage => :static
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))

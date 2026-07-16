@@ -486,6 +486,8 @@ class SharedPostPreview {
   final String? authorImage;
   final bool authorVerified;
   final String content;
+  // All media (photos + video) so the reshare card shows the full gallery.
+  final List<PostMedia> media;
   // First media to preview: a photo, or a video's thumbnail.
   final String? mediaThumbUrl;
   final bool mediaIsVideo;
@@ -502,6 +504,7 @@ class SharedPostPreview {
     this.authorImage,
     this.authorVerified = false,
     this.content = '',
+    this.media = const [],
     this.mediaThumbUrl,
     this.mediaIsVideo = false,
     this.firstMedia,
@@ -517,17 +520,21 @@ class SharedPostPreview {
     String? thumb;
     bool isVideo = false;
     PostMedia? firstMedia;
+    final media = <PostMedia>[];
     final mediaList = (json['post_media'] as List?)?.whereType<Map>().toList();
     if (mediaList != null && mediaList.isNotEmpty) {
+      for (final raw in mediaList) {
+        try {
+          media.add(PostMedia.fromJson(Map<String, dynamic>.from(raw)));
+        } catch (_) {}
+      }
       final m = Map<String, dynamic>.from(mediaList.first);
       isVideo = (m['type'] ?? '').toString().toLowerCase() == 'video';
       thumb = isVideo
           ? (m['thumbnail'] ?? m['file'] ?? '').toString()
           : (m['file'] ?? m['image'] ?? m['url'] ?? '').toString();
       if (thumb.isEmpty) thumb = null;
-      try {
-        firstMedia = PostMedia.fromJson(m);
-      } catch (_) {}
+      firstMedia = media.isNotEmpty ? media.first : null;
     }
 
     return SharedPostPreview(
@@ -540,6 +547,7 @@ class SharedPostPreview {
       authorImage: ad['image']?.toString(),
       authorVerified: ad['kyc'] == true,
       content: (json['content'] ?? '').toString(),
+      media: media,
       mediaThumbUrl: thumb,
       mediaIsVideo: isVideo,
       firstMedia: firstMedia,
