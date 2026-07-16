@@ -73,7 +73,7 @@ class FeedComposerCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: const Text(
-                      'কী ভাবছেন?',
+                      'কিছু ভাবছেন? কোনো আইডিয়া থাকলে পোস্ট করে ফেলুন ',
                       style: TextStyle(
                         fontSize: 14,
                         color: Color(0xFF64748B),

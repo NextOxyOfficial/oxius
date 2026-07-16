@@ -148,14 +148,15 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
     Widget glyph;
     if (avatar.isNotEmpty) {
       // Facebook-style avatar tab — blue ring marks the active state.
+      // Same 24px box as the icon tabs so all glyphs sit on one baseline.
       glyph = Container(
-        width: 26,
-        height: 26,
+        width: 24,
+        height: 24,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
             color: isActive ? _accent : Colors.transparent,
-            width: 2,
+            width: 1.6,
           ),
         ),
         child: ClipOval(
@@ -163,7 +164,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
             avatar,
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) =>
-                Icon(isActive ? activeIcon : icon, size: 22, color: color),
+                Icon(isActive ? activeIcon : icon, size: 21, color: color),
           ),
         ),
       );
@@ -185,24 +186,22 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
       child: GestureDetector(
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
-        child: Stack(
+        child: Column(
           children: [
-            // Facebook-style active indicator: a thin accent bar along the
-            // TOP edge of the active tab.
-            Align(
-              alignment: Alignment.topCenter,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                height: 3,
-                width: isActive ? 36 : 0,
-                decoration: BoxDecoration(
-                  color: _accent,
-                  borderRadius:
-                      const BorderRadius.vertical(bottom: Radius.circular(3)),
-                ),
+            // Facebook-style active indicator: a thin accent bar flush with
+            // the bar's TOP edge; a fixed slot so icons never shift.
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              height: 3,
+              width: isActive ? 32 : 0,
+              decoration: BoxDecoration(
+                color: _accent,
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(3)),
               ),
             ),
-            Column(
+            Expanded(
+              child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Stack(
@@ -249,6 +248,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+              ),
             ),
           ],
         ),
