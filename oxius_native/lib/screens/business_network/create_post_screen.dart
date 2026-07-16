@@ -239,19 +239,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   void _addHashtag() {
-    final hashtag = _hashtagController.text.trim();
-    if (hashtag.isEmpty) return;
+    final input = _hashtagController.text.trim();
+    if (input.isEmpty) return;
 
-    // Remove # if user added it
-    final cleanHashtag =
-        hashtag.startsWith('#') ? hashtag.substring(1) : hashtag;
+    // People often paste several tags at once ("#offer#sale" or
+    // "offer, sale #new") — split on #, commas and whitespace so each
+    // becomes its own tag instead of one glued-together tag.
+    final parts = input
+        .split(RegExp(r'[#,\s]+'))
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return;
 
-    if (!_hashtags.contains(cleanHashtag) && cleanHashtag.isNotEmpty) {
-      setState(() {
-        _hashtags.add(cleanHashtag);
-        _hashtagController.clear();
-      });
-    }
+    setState(() {
+      for (final tag in parts) {
+        if (!_hashtags.contains(tag)) _hashtags.add(tag);
+      }
+      _hashtagController.clear();
+    });
   }
 
   void _removeHashtag(String hashtag) {
@@ -298,7 +304,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         videoPaths: videoPathList,
         tags: hasTags ? _hashtags : null,
         visibility: _visibility,
-        onProgress: hasVideos
+        onProgress: (hasVideos || hasImages)
             ? (p) {
                 if (mounted) setState(() => _uploadProgress = p);
               }

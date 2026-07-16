@@ -481,30 +481,13 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
 
   Future<void> _handleGigAction(String gigId, String action, bool value) async {
     // Show loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: AdsyLoadingIndicator(strokeWidth: 2, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Text(
-                '${action == "completed" ? "Stopping" : value ? "Activating" : "Pausing"} gig...'),
-          ],
-        ),
-        duration: const Duration(seconds: 30), // Longer duration for API call
-      ),
-    );
+    AdsyToast.info(context,
+        '${action == "completed" ? "Stopping" : value ? "Activating" : "Pausing"} gig...');
 
     try {
       final success = await _gigsService.updateGigStatus(gigId, action, value);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
         if (success) {
           AdsyToast.success(
               context,
@@ -524,7 +507,6 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
         AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
       }
     }
@@ -726,23 +708,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 Navigator.of(context).pop();
 
                 // Show loading indicator
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Row(
-                      children: [
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: AdsyLoadingIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        ),
-                        SizedBox(width: 12),
-                        Text('Resubmitting gig...'),
-                      ],
-                    ),
-                    duration: Duration(seconds: 30),
-                  ),
-                );
+                AdsyToast.info(context, 'Resubmitting gig...');
 
                 final success = await _resubmitGig(
                   gigId,
@@ -752,8 +718,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
 
                 if (mounted) {
                   // The dialog was dismissed before the await — use the
-                  // State's context for the snackbars.
-                  ScaffoldMessenger.of(this.context).hideCurrentSnackBar();
+                  // State's context for the toasts.
                   if (success) {
                     AdsyToast.success(this.context,
                         'Gig resubmitted successfully! Waiting for approval.');

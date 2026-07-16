@@ -417,24 +417,35 @@ class BusinessNetworkService {
         if (tags != null && tags.isNotEmpty) 'tags': tags,
       };
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/posts/'),
-        headers: headers,
-        body: json.encode(body),
+      // Dio so photo posts (base64 payloads are large) can report real upload
+      // progress the same way video posts do.
+      final dio = Dio(BaseOptions(responseType: ResponseType.json));
+      final response = await dio.post(
+        '$_baseUrl/posts/',
+        data: json.encode(body),
+        options: Options(
+          headers: headers,
+          contentType: 'application/json',
+          validateStatus: (status) => true,
+        ),
+        onSendProgress: (sent, total) {
+          if (onProgress != null && total > 0) onProgress(sent / total);
+        },
       );
 
       debugPrint('=== Create Post Debug ===');
-      debugPrint('Request body: ${json.encode(body)}');
       debugPrint('Response status: ${response.statusCode}');
-      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = response.data is Map
+            ? Map<String, dynamic>.from(response.data)
+            : json.decode(response.data.toString());
         final post = BusinessNetworkPost.fromJson(data);
         return post;
       }
 
-      throw ApiError.fromResponse(response.statusCode, response.body);
+      throw ApiError.fromResponse(
+          response.statusCode ?? 0, response.data?.toString() ?? '');
     } catch (e, stackTrace) {
       debugPrint('Error creating post: $e');
       debugPrint('Stack trace: $stackTrace');
@@ -706,6 +717,8 @@ class BusinessNetworkService {
     String? category,
     String? visibility,
     List<String>? tags,
+    // Ids of existing media to detach+delete from the post.
+    List<int>? removeMediaIds,
   }) async {
     try {
       final headers = await ApiService.getHeaders();
@@ -718,6 +731,8 @@ class BusinessNetworkService {
         if (visibility != null) 'visibility': visibility,
         // Send even when empty — clearing the last tag is a valid edit.
         if (tags != null) 'tags': tags,
+        if (removeMediaIds != null && removeMediaIds.isNotEmpty)
+          'remove_media_ids': removeMediaIds,
       };
 
       // PATCH (partial update) — PUT requires every writable serializer
@@ -1181,16 +1196,24 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
 
-      // Map Flutter reason to backend reason
-      final reasonMap = {
+      // Accept the option VALUE directly (spam/harassment/...). The label map
+      // remains as a fallback for old call sites — 'Fraudulent or scam' used
+      // to fall through this map and silently became 'other'.
+      const validReasons = {
+        'spam', 'harassment', 'violence', 'inappropriate', 'other'
+      };
+      const reasonMap = {
         'Spam or misleading': 'spam',
         'Harassment or hate speech': 'harassment',
         'Violence or dangerous content': 'violence',
         'Inappropriate content': 'inappropriate',
+        'Fraudulent or scam': 'spam',
         'Other': 'other',
       };
 
-      final backendReason = reasonMap[reason] ?? 'other';
+      final backendReason = validReasons.contains(reason)
+          ? reason
+          : (reasonMap[reason] ?? 'other');
 
       final body = {
         'reason': backendReason,

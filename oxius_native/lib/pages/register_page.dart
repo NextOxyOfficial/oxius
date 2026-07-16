@@ -183,19 +183,8 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       debugPrint('Image pick error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                _t('reg_image_failed', 'ছবি নেওয়া গেল না। আবার চেষ্টা করুন।')),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'OK',
-              textColor: Colors.white,
-              onPressed: () {},
-            ),
-          ),
-        );
+        AdsyToast.warning(context,
+            _t('reg_image_failed', 'ছবি নেওয়া গেল না। আবার চেষ্টা করুন।'));
       }
     }
   }

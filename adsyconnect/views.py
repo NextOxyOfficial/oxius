@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
-from django.db.models import Q, Max
+from django.db.models import F, Q, Max
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -872,8 +872,52 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         chatroom.blocked_at = None
         chatroom.save()
         _sync_blocked_chatrooms(request.user, other_user, is_blocked=False)
-        
+
         return Response({'status': 'user unblocked'})
+
+    @action(detail=True, methods=['post'])
+    def clear(self, request, pk=None):
+        """Clear this conversation for the calling user only.
+
+        The caller stops seeing messages up to now; the other participant's
+        view is untouched. When BOTH participants have cleared, messages older
+        than both clear-points are visible to no one and are hard-deleted from
+        the database.
+        """
+        chatroom = self.get_object()
+        if request.user not in (chatroom.user1, chatroom.user2):
+            return Response(
+                {'error': 'Not a participant'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        now = timezone.now()
+        if request.user == chatroom.user1:
+            chatroom.cleared_at_user1 = now
+        else:
+            chatroom.cleared_at_user2 = now
+        chatroom.save(
+            update_fields=['cleared_at_user1', 'cleared_at_user2']
+        )
+
+        purged = 0
+        both_cleared = (
+            chatroom.cleared_at_user1 is not None
+            and chatroom.cleared_at_user2 is not None
+        )
+        if both_cleared:
+            # Only rows neither side can see anymore — messages newer than the
+            # earlier clear-point are still visible to that participant.
+            cutoff = min(chatroom.cleared_at_user1, chatroom.cleared_at_user2)
+            purged, _ = Message.objects.filter(
+                chatroom=chatroom, created_at__lte=cutoff
+            ).delete()
+
+        return Response({
+            'status': 'cleared',
+            'both_cleared': both_cleared,
+            'purged': purged,
+        })
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -901,10 +945,29 @@ class MessageViewSet(viewsets.ModelViewSet):
         queryset = Message.objects.filter(
             Q(sender=user) | Q(receiver=user)
         ).select_related('sender', 'receiver', 'chatroom')
-        
+
         if chatroom_id:
             queryset = queryset.filter(chatroom_id=chatroom_id)
-        
+
+        # Per-user clear: a participant who cleared the conversation no longer
+        # sees messages up to their clear-point (the other side still does).
+        queryset = queryset.filter(
+            (
+                Q(chatroom__user1=user)
+                & (
+                    Q(chatroom__cleared_at_user1__isnull=True)
+                    | Q(created_at__gt=F('chatroom__cleared_at_user1'))
+                )
+            )
+            | (
+                Q(chatroom__user2=user)
+                & (
+                    Q(chatroom__cleared_at_user2__isnull=True)
+                    | Q(created_at__gt=F('chatroom__cleared_at_user2'))
+                )
+            )
+        )
+
         return queryset
     
     def create(self, request, *args, **kwargs):

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/business_network_models.dart';
-import '../widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'download_open_utils.dart';
 import 'gallery_saver.dart';
@@ -22,26 +21,7 @@ class BusinessNetworkMediaDownloader {
       return;
     }
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: const [
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: AdsyLoadingIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
-            SizedBox(width: 12),
-            Text('Downloading media...'),
-          ],
-        ),
-        duration: const Duration(minutes: 1),
-      ),
-    );
+    AdsyToast.info(context, 'Downloading media...');
 
     try {
       final fileName = _fileNameFor(url, media, ownerName: ownerName);
@@ -102,7 +82,7 @@ class BusinessNetworkMediaDownloader {
     bool isVideo,
     String fallbackPath,
   ) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    AdsyToast.dismiss();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -142,7 +122,7 @@ class BusinessNetworkMediaDownloader {
     String fileName,
     String filePath,
   ) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    AdsyToast.dismiss();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

@@ -183,6 +183,20 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     def get_last_message(self, obj):
         # Include deleted messages so frontend can show "Message removed"
         last_msg = obj.messages.order_by('-created_at').first()
+
+        # Respect a per-user clear: the participant who cleared must not see a
+        # pre-clear message resurface as the chat-list preview.
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if last_msg is not None and user is not None:
+            cleared_at = (
+                obj.cleared_at_user1 if user == obj.user1
+                else obj.cleared_at_user2 if user == obj.user2
+                else None
+            )
+            if cleared_at is not None and last_msg.created_at <= cleared_at:
+                return None
+
         if last_msg:
             return {
                 'id': str(last_msg.id),

@@ -761,6 +761,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   String? _errorUrl;
   String? _errorText;
   bool _showPlayHint = false;
+  // Non-null while the user drags the seekbar dot (milliseconds position).
+  double? _scrubValue;
   int _commentsCount = 0;
   int _viewsCount = 0;
   late BusinessNetworkPost _post;
@@ -1436,32 +1438,58 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               ),
             ),
           if (_isInitialized && _controller != null)
-            // TikTok-style seekbar: hairline while playing; grows into a
-            // grabbable scrub bar when paused (drag to seek back/forward).
+            // Seekbar: thin track with a white draggable dot, floated above
+            // the screen edge with side padding so it never sits flush against
+            // the bottom.
             Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
+              left: 12,
+              right: 12,
+              bottom: 10,
               child: SafeArea(
                 top: false,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  height: _showPlayHint ? 26 : 14,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: VideoProgressIndicator(
-                      _controller!,
-                      allowScrubbing: true,
-                      padding: EdgeInsets.only(
-                          bottom: 3, top: _showPlayHint ? 16 : 8),
-                      colors: VideoProgressColors(
-                        playedColor: Colors.white,
-                        bufferedColor: Colors.white.withValues(alpha: 0.35),
-                        backgroundColor: Colors.white
-                            .withValues(alpha: _showPlayHint ? 0.28 : 0.16),
+                child: ValueListenableBuilder<VideoPlayerValue>(
+                  valueListenable: _controller!,
+                  builder: (context, value, _) {
+                    final maxMs = value.duration.inMilliseconds.toDouble();
+                    if (maxMs <= 0) return const SizedBox.shrink();
+                    final posMs = _scrubValue ??
+                        value.position.inMilliseconds
+                            .clamp(0, value.duration.inMilliseconds)
+                            .toDouble();
+                    final scrubbing = _scrubValue != null;
+                    final emphasized = scrubbing || _showPlayHint;
+                    return SizedBox(
+                      height: 26,
+                      child: SliderTheme(
+                        data: SliderThemeData(
+                          trackHeight: emphasized ? 4 : 2.5,
+                          activeTrackColor: Colors.white,
+                          inactiveTrackColor:
+                              Colors.white.withValues(alpha: 0.25),
+                          thumbColor: Colors.white,
+                          thumbShape: RoundSliderThumbShape(
+                            enabledThumbRadius: emphasized ? 7 : 4.5,
+                            elevation: 0,
+                            pressedElevation: 0,
+                          ),
+                          overlayShape: SliderComponentShape.noOverlay,
+                          trackShape: const RectangularSliderTrackShape(),
+                        ),
+                        child: Slider(
+                          value: posMs.clamp(0, maxMs),
+                          max: maxMs,
+                          onChangeStart: (v) =>
+                              setState(() => _scrubValue = v),
+                          onChanged: (v) => setState(() => _scrubValue = v),
+                          onChangeEnd: (v) {
+                            _controller!
+                                .seekTo(Duration(milliseconds: v.round()));
+                            setState(() => _scrubValue = null);
+                          },
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -1710,7 +1738,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                 ? const BouncingScrollPhysics()
                                 : const NeverScrollableScrollPhysics(),
                             child: Text(
-                              post.content,
+                              // Strip HTML — captions written on the web can
+                              // carry <p class="text-wrap"> wrappers.
+                              HtmlContentUtils.toPlainText(post.content),
                               maxLines: _captionExpanded ? null : 2,
                               overflow: _captionExpanded
                                   ? TextOverflow.visible

@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/review_service.dart';
 import '../models/store_review.dart';
 import '../utils/url_launcher_utils.dart';
+import '../utils/html_content_utils.dart';
 import '../models/cart_item.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import '../widgets/product_card.dart';
@@ -684,7 +685,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     final regular = product['regular_price'] ?? product['price'];
     final discount = _calcDiscount(sale, regular);
     final isFreeDelivery = product['is_free_delivery'] == true;
-    final shortDescription = product['short_description'] ?? '';
+    final shortDescription =
+        HtmlContentUtils.toPlainText(product['short_description'] ?? '');
     final hasGallery = _hasProductImages;
 
     final stock = int.tryParse((product['quantity'] ?? 0).toString()) ?? 0;

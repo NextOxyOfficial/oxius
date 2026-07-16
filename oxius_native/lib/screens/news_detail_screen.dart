@@ -6,6 +6,7 @@ import '../services/news_service.dart';
 import '../services/translation_service.dart';
 import '../utils/network_error_handler.dart';
 import '../utils/url_launcher_utils.dart';
+import '../utils/html_content_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_share_sheet.dart';
 
@@ -602,7 +603,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         Padding(
           padding: const EdgeInsets.only(left: 39),
           child: Text(
-            comment.content,
+            HtmlContentUtils.toPlainText(comment.content),
             style: const TextStyle(
               fontSize: 13.5,
               color: _body,

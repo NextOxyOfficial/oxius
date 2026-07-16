@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/image_utils.dart';
 import '../../models/notification_models.dart';
 import '../../utils/time_utils.dart';
+import '../../utils/html_content_utils.dart';
 
 class NotificationItem extends StatelessWidget {
   final NotificationModel notification;
@@ -119,7 +120,8 @@ class NotificationItem extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
-                            notification.content!,
+                            HtmlContentUtils.toPlainText(
+                                notification.content!),
                             style: TextStyle(
                               fontSize: 14,
                               height: 1.25,

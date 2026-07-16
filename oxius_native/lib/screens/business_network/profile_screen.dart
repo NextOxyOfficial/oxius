@@ -856,12 +856,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       // Show loading
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Uploading profile picture...'),
-            duration: Duration(seconds: 30),
-          ),
-        );
+        AdsyToast.info(context, 'Uploading profile picture...');
       }
 
       // Compress before upload (fallback to original XFile on failure)
@@ -883,9 +878,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           await BusinessNetworkService.uploadProfilePicture(uploadFile);
 
       if (mounted) {
-        // Hide loading snackbar
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
         if (success) {
           setState(() {
             _profileImageRefreshTick = DateTime.now().millisecondsSinceEpoch;

@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/image_compressor.dart';
+import '../../widgets/link_preview_card.dart';
 
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
@@ -35,11 +40,19 @@ class _EditPostScreenState extends State<EditPostScreen> {
   late final List<String> _tags;
   late String _visibility;
   bool _isSaving = false;
+  // Media edits: existing media marked for removal + freshly-picked photos.
+  final Set<int> _removedMediaIds = {};
+  final List<String> _newImages = []; // base64
+  bool _isCompressing = false;
+
+  static const int _maxPhotos = 12;
 
   bool get _hasChanges {
     return _titleText.trim() != widget.post.title.trim() ||
         _contentText.trim() != widget.post.content.trim() ||
         _visibility != widget.post.visibility ||
+        _removedMediaIds.isNotEmpty ||
+        _newImages.isNotEmpty ||
         !_listEquals(_tags, widget.post.tags.map((tag) => tag.tag).toList());
   }
 
@@ -104,14 +117,21 @@ class _EditPostScreenState extends State<EditPostScreen> {
   }
 
   void _addTag() {
-    final tag = _normalizeTag(_tagController.text);
-    if (tag.isEmpty) return;
-    if (_tags.any((existing) => existing.toLowerCase() == tag.toLowerCase())) {
-      _tagController.clear();
-      return;
-    }
+    // Same multi-tag splitting as the create screen: "#a#b" / "a, b" pasted
+    // into the field become separate tags.
+    final parts = _tagController.text
+        .split(RegExp(r'[#,\s]+'))
+        .map(_normalizeTag)
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return;
     setState(() {
-      _tags.add(tag);
+      for (final tag in parts) {
+        if (!_tags
+            .any((existing) => existing.toLowerCase() == tag.toLowerCase())) {
+          _tags.add(tag);
+        }
+      }
       _tagController.clear();
     });
   }
@@ -147,6 +167,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
         content: content,
         visibility: _visibility,
         tags: _tags,
+        images: _newImages.isNotEmpty ? _newImages : null,
+        removeMediaIds:
+            _removedMediaIds.isNotEmpty ? _removedMediaIds.toList() : null,
       );
 
       if (!mounted) return;
@@ -273,12 +296,16 @@ class _EditPostScreenState extends State<EditPostScreen> {
             maxLines: 8,
             onChanged: (value) => setState(() => _contentText = value),
           ),
+          // Live link preview for the first URL in the content, like create.
+          if (_contentText.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: FirstLinkPreview(text: _contentText),
+            ),
           _sectionDivider(),
           _buildTagsEditor(),
-          if (widget.post.media.isNotEmpty) ...[
-            _sectionDivider(),
-            _buildMediaPreview(),
-          ],
+          _sectionDivider(),
+          _buildMediaPreview(),
         ],
       ),
     );
@@ -636,8 +663,55 @@ class _EditPostScreenState extends State<EditPostScreen> {
     );
   }
 
+  // How many photos the post will have after this edit is saved.
+  int get _effectivePhotoCount {
+    final kept = widget.post.media
+        .where((m) => !m.isVideo && !_removedMediaIds.contains(m.id))
+        .length;
+    return kept + _newImages.length;
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      if (_effectivePhotoCount >= _maxPhotos) {
+        AdsyToast.warning(context, 'সর্বোচ্চ $_maxPhotos টি ছবি দেওয়া যাবে');
+        return;
+      }
+      final images = await ImagePicker().pickMultiImage();
+      if (images.isEmpty) return;
+
+      final remaining = _maxPhotos - _effectivePhotoCount;
+      final toAdd = images.take(remaining).toList();
+      if (images.length > remaining && mounted) {
+        AdsyToast.warning(
+            context, 'শুধু $remaining টি ছবি যোগ হলো ($_maxPhotos সর্বোচ্চ)');
+      }
+
+      setState(() => _isCompressing = true);
+      for (final image in toAdd) {
+        final compressed = await ImageCompressor.compressToBase64(
+          image,
+          targetSize: 100 * 1024,
+          initialQuality: 78,
+          maxDimension: 1920,
+        );
+        if (compressed != null && mounted) {
+          setState(() => _newImages.add(compressed));
+        }
+      }
+      if (mounted) setState(() => _isCompressing = false);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isCompressing = false);
+        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
+      }
+    }
+  }
+
   Widget _buildMediaPreview() {
-    final media = widget.post.media.take(6).toList();
+    final existing = widget.post.media
+        .where((m) => !_removedMediaIds.contains(m.id))
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -656,26 +730,112 @@ class _EditPostScreenState extends State<EditPostScreen> {
               ),
             ),
             const Spacer(),
-            Text(
-              '${widget.post.media.length}',
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+            if (_isCompressing)
+              const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Text(
+                '${existing.length + _newImages.length}',
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
           ],
         ),
         const SizedBox(height: 10),
         SizedBox(
           height: 82,
-          child: ListView.separated(
+          child: ListView(
             scrollDirection: Axis.horizontal,
-            itemCount: media.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              return _buildMediaThumb(media[index]);
-            },
+            children: [
+              for (final m in existing) ...[
+                _removableThumb(
+                  child: _buildMediaThumb(m),
+                  onRemove: () =>
+                      setState(() => _removedMediaIds.add(m.id)),
+                ),
+                const SizedBox(width: 8),
+              ],
+              for (var i = 0; i < _newImages.length; i++) ...[
+                _removableThumb(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.memory(
+                      base64Decode(_newImages[i]),
+                      width: 82,
+                      height: 82,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  onRemove: () => setState(() => _newImages.removeAt(i)),
+                ),
+                const SizedBox(width: 8),
+              ],
+              // Add-photo tile.
+              InkWell(
+                onTap: _isCompressing ? null : _pickImage,
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  width: 82,
+                  height: 82,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                    color: const Color(0xFFF8FAFC),
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add_photo_alternate_outlined,
+                          size: 24, color: Color(0xFF64748B)),
+                      SizedBox(height: 4),
+                      Text(
+                        'ছবি যোগ',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // A thumbnail with an ✕ badge to remove it from the post.
+  Widget _removableThumb({
+    required Widget child,
+    required VoidCallback onRemove,
+  }) {
+    return Stack(
+      children: [
+        child,
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: onRemove,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close_rounded,
+                  size: 14, color: Colors.white),
+            ),
           ),
         ),
       ],

@@ -1007,6 +1007,44 @@ class BusinessNetworkPostRetrieveUpdateDestroyView(
                     )
                     post.tags.add(tag)
 
+        # Media edits. `remove_media_ids` detaches + deletes existing media;
+        # `images` appends new base64 photos (same format the create endpoint
+        # accepts). Videos can only be attached at create time — they need the
+        # multipart upload path.
+        remove_ids = self.request.data.get("remove_media_ids")
+        if isinstance(remove_ids, (list, tuple)) and remove_ids:
+            ids = [int(i) for i in remove_ids if str(i).isdigit()]
+            for media in post.media.filter(id__in=ids):
+                post.media.remove(media)
+                media.delete()
+
+        new_images = self.request.data.get("images")
+        if isinstance(new_images, (list, tuple)):
+            for image_data in new_images:
+                if isinstance(image_data, dict):
+                    image_data = (
+                        image_data.get("base64")
+                        or image_data.get("image")
+                        or image_data.get("data")
+                    )
+                if not isinstance(image_data, str) or not image_data:
+                    continue
+                try:
+                    if "base64," in image_data:
+                        image_file = base64ToFile(image_data)
+                    else:
+                        image_file = base64ToFile(
+                            f"data:image/png;base64,{image_data}"
+                        )
+                    media = BusinessNetworkMedia.objects.create(
+                        type="image", image=image_file
+                    )
+                    post.media.add(media)
+                except Exception as e:
+                    raise ValidationError(
+                        {"images": f"Error processing image: {str(e)}"}
+                    )
+
     def perform_destroy(self, instance):
         # Only the author may delete (same raising contract as above).
         if instance.author != self.request.user:

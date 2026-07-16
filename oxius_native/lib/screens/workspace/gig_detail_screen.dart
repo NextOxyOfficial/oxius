@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
+import '../../utils/html_content_utils.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/adsyconnect_service.dart';
@@ -655,7 +656,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                         color: Color(0xFF0F172A))),
                 const SizedBox(height: 8),
                 Text(
-                  _gig!['description'] ?? '',
+                  // Descriptions written on the web carry HTML wrappers.
+                  HtmlContentUtils.toPlainText(_gig!['description'] ?? ''),
                   style: const TextStyle(
                       color: Color(0xFF334155), fontSize: 15, height: 1.6),
                 ),

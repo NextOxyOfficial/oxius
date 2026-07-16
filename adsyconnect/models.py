@@ -30,6 +30,13 @@ class ChatRoom(models.Model):
     last_message_at = models.DateTimeField(default=timezone.now)
     last_message_preview = models.TextField(blank=True, null=True)
     
+    # Per-user "clear messages": each side may clear independently. A user who
+    # cleared no longer sees messages up to their timestamp; the other side
+    # keeps seeing everything. Once BOTH sides have cleared, messages older
+    # than both timestamps serve no one and are hard-deleted.
+    cleared_at_user1 = models.DateTimeField(null=True, blank=True)
+    cleared_at_user2 = models.DateTimeField(null=True, blank=True)
+
     # Block status
     is_blocked = models.BooleanField(default=False)
     blocked_by = models.ForeignKey(

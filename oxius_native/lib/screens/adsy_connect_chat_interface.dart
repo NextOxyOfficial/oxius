@@ -2479,10 +2479,162 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         if (!mounted) return;
         _showUnblockConfirmation();
         break;
+      case 'clear_chat':
+        if (!mounted) return;
+        _showClearChatConfirmation();
+        break;
       case 'report':
         if (!mounted) return;
         _showReportDialog();
         break;
+    }
+  }
+
+  void _showClearChatConfirmation() {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: false,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'মেসেজ পরিষ্কার করবেন?',
+                style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে। অপর পক্ষ তাদের '
+                'মেসেজ আগের মতোই দেখতে পাবেন — দুজনেই পরিষ্কার করলে '
+                'মেসেজগুলো স্থায়ীভাবে মুছে যাবে।',
+                style: TextStyle(
+                    fontSize: 13.5, color: Colors.grey.shade600, height: 1.5),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(sheetCtx).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('বাতিল'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        Navigator.of(sheetCtx).pop();
+                        _clearConversation();
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('পরিষ্কার করুন'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _clearConversation() async {
+    // Animated progress dialog: sweeps to ~90% while the server works (the
+    // purge can take a moment on long chats), then completes when it returns.
+    final progress = ValueNotifier<double>(0);
+    var dialogOpen = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: false,
+      builder: (_) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+          child: ValueListenableBuilder<double>(
+            valueListenable: progress,
+            builder: (_, p, __) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 64,
+                        height: 64,
+                        child: CircularProgressIndicator(
+                          value: p,
+                          strokeWidth: 5,
+                          backgroundColor: const Color(0xFFEDE9FE),
+                          valueColor: const AlwaysStoppedAnimation(
+                              Color(0xFF8B5CF6)),
+                        ),
+                      ),
+                      Text(
+                        '${(p * 100).round()}%',
+                        style: const TextStyle(
+                            fontSize: 13.5, fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'মেসেজ পরিষ্কার হচ্ছে...',
+                  style:
+                      TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).then((_) => dialogOpen = false);
+
+    // Ease toward 90% while waiting; the final jump to 100% happens on reply.
+    final ticker =
+        Timer.periodic(const Duration(milliseconds: 120), (t) {
+      if (progress.value < 0.9) {
+        progress.value =
+            (progress.value + (0.9 - progress.value) * 0.08).clamp(0, 0.9);
+      }
+    });
+
+    final result =
+        await AdsyConnectService.clearConversation(widget.chatroomId);
+    ticker.cancel();
+    progress.value = 1.0;
+    await Future.delayed(const Duration(milliseconds: 350));
+    if (mounted && dialogOpen) Navigator.of(context).pop();
+
+    if (!mounted) return;
+    if (result != null) {
+      setState(() => _messages.clear());
+      AdsyToast.success(context, 'মেসেজ পরিষ্কার হয়ে গেছে');
+    } else {
+      AdsyToast.error(context, 'মেসেজ পরিষ্কার করা যায়নি');
     }
   }
 

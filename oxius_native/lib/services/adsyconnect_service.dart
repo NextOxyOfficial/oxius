@@ -502,6 +502,30 @@ class AdsyConnectService {
     }
   }
 
+  /// Clear this conversation for the CURRENT user only. The other participant
+  /// keeps their history; once both sides have cleared, the server hard-deletes
+  /// the records nobody can see anymore. Returns the server response
+  /// ({both_cleared, purged}) or null on failure.
+  static Future<Map<String, dynamic>?> clearConversation(
+      String chatroomId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/chatrooms/$chatroomId/clear/'),
+        headers: headers,
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return Map<String, dynamic>.from(json.decode(response.body));
+      }
+      debugPrint(
+          'clearConversation -> ${response.statusCode} ${response.body}');
+      return null;
+    } catch (e) {
+      debugPrint('Error clearing conversation: $e');
+      return null;
+    }
+  }
+
   // Unblock user
   static Future<void> unblockUser(String chatroomId) async {
     try {

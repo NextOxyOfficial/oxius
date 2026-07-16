@@ -785,7 +785,9 @@ class _PostCardState extends State<PostCard> {
       ],
       successMessage: 'Post reported. We will review it shortly.',
       onSubmit: (option, details) {
-        return BusinessNetworkService.reportPost(_post.id, option.label);
+        // Send the backend code (option.value) like every other report flow —
+        // sending the label made reasons silently degrade to 'other'.
+        return BusinessNetworkService.reportPost(_post.id, option.value);
       },
     );
   }

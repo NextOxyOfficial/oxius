@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/google_play_billing_service.dart';
+import 'common/adsy_toast.dart';
 
 /// A professional bottom sheet that lets the user pay for a digital good with
 /// either their wallet BALANCE or GOOGLE PLAY. The balance path returns
@@ -166,13 +167,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
       await _showConflictDialog(conflict);
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।'),
-        backgroundColor: Color(0xFFDC2626),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AdsyToast.error(context, 'পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।');
   }
 
   Future<void> _showConflictDialog(IapOwnershipConflict conflict) async {
@@ -234,13 +229,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
       await Future.delayed(const Duration(milliseconds: 1400));
       if (mounted) Navigator.of(context).pop('google');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('সাবস্ক্রিপশন সরানো যায়নি। পরে আবার চেষ্টা করুন।'),
-          backgroundColor: Color(0xFFDC2626),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AdsyToast.error(context, 'সাবস্ক্রিপশন সরানো যায়নি। পরে আবার চেষ্টা করুন।');
     }
   }
 

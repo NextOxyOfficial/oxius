@@ -127,3 +127,15 @@ class SaleBannerAdmin(admin.ModelAdmin):
 
 admin.site.register(SaleSponsoredHorizontal)
 admin.site.register(SaleSponsoredVertical)
+
+
+@admin.register(SalePostReport)
+class SalePostReportAdmin(admin.ModelAdmin):
+    """User reports on sale listings — previously saved but never surfaced
+    anywhere, so nobody could review them."""
+    list_display = ('id', 'post', 'reported_by', 'reason', 'reviewed',
+                    'created_at')
+    list_filter = ('reason', 'reviewed', 'created_at')
+    search_fields = ('post__title', 'reported_by__email', 'details')
+    raw_id_fields = ('post', 'reported_by')
+    list_editable = ('reviewed',)

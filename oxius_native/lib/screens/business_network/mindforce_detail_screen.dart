@@ -5,6 +5,7 @@ import '../../models/mindforce_models.dart';
 import '../../services/mindforce_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
+import '../../utils/html_content_utils.dart';
 import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
 import '../../widgets/skeleton_loader.dart';
@@ -695,7 +696,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             style: const TextStyle(
                 fontSize: 18, fontWeight: FontWeight.w600, height: 1.3)),
         const SizedBox(height: 12),
-        LinkifyText(_problem!.description,
+        LinkifyText(HtmlContentUtils.toPlainText(_problem!.description),
             style: TextStyle(
                 fontSize: 15, color: Colors.grey.shade700, height: 1.5)),
         FirstLinkPreview(text: _problem!.description),
@@ -943,7 +944,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            LinkifyText(comment.content,
+            LinkifyText(HtmlContentUtils.toPlainText(comment.content),
                 style: TextStyle(
                     fontSize: 14, color: Colors.grey.shade800, height: 1.4)),
             FirstLinkPreview(text: comment.content),

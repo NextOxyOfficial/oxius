@@ -593,6 +593,13 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           _menuItem(
             close: close,
+            value: 'clear_chat',
+            icon: Icons.cleaning_services_rounded,
+            label: 'Clear messages',
+            iconColor: const Color(0xFF8B5CF6),
+          ),
+          _menuItem(
+            close: close,
             value: blockedByMe ? 'unblock' : 'block',
             icon: blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
             label: blockedByMe ? 'Unblock' : 'Block',
