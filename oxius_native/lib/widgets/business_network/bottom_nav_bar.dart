@@ -20,8 +20,10 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
     this.isLoggedIn = false,
   });
 
-  static const Color _accent = Color(0xFF2563EB);
-  static const Color _inactive = Color(0xFF6B7280);
+  // Monochrome palette — near-black active on white reads more professional
+  // than a colored accent for navigation chrome.
+  static const Color _accent = Color(0xFF111827);
+  static const Color _inactive = Color(0xFF9CA3AF);
 
   @override
   Widget build(BuildContext context) {

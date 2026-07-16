@@ -388,7 +388,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         ),
         bottomNavigationBar: isMobile
             ? BusinessNetworkBottomNavBar(
-                currentIndex: 3,
+                // Not the profile page — no tab should read active here.
+                currentIndex: -1,
                 isLoggedIn: AuthService.isAuthenticated,
                 unreadCount: 0,
                 onTap: (index) => _handleNavTap(context, index),
@@ -1150,6 +1151,17 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
           }
           break;
         case 3:
+          // Footer profile goes to the profile PAGE (this options screen is
+          // reached from the header avatar, not this tab).
+          final currentUser = AuthService.currentUser;
+          if (currentUser != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: currentUser.id),
+              ),
+            );
+          }
           break;
         case 4:
           rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);

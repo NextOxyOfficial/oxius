@@ -1191,6 +1191,21 @@ class BusinessNetworkService {
     }
   }
 
+  /// Undo [hidePost] — the backend unhides on DELETE of the same route.
+  static Future<bool> unhidePost(int postId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/posts/$postId/hide/'),
+        headers: headers,
+      );
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (e) {
+      debugPrint('Error unhiding post: $e');
+      return false;
+    }
+  }
+
   /// Report a post
   static Future<bool> reportPost(int postId, String reason) async {
     try {

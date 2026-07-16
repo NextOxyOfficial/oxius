@@ -58,6 +58,8 @@ class _PostCardState extends State<PostCard> {
   late BusinessNetworkPost _post;
   bool _isAddingComment = false;
   bool _showFullContent = false;
+  // Hidden by the viewer — the card renders as an inline undo strip.
+  bool _isHidden = false;
   bool _isLiking = false; // Prevent double-clicking
 
   @override
@@ -846,15 +848,81 @@ class _PostCardState extends State<PostCard> {
     final success = await BusinessNetworkService.hidePost(_post.id);
 
     if (success && mounted) {
-      AdsyToast.info(context, 'Post hidden from your feed');
-      widget.onPostDeleted?.call(); // Remove from feed
+      // Swap the card for an inline undo strip instead of vanishing — a
+      // mis-tap would otherwise lose the post with no way back.
+      setState(() => _isHidden = true);
     } else if (mounted) {
       AdsyToast.error(context, 'Failed to hide post');
     }
   }
 
+  Future<void> _handleUnhidePost() async {
+    final success = await BusinessNetworkService.unhidePost(_post.id);
+    if (success && mounted) {
+      setState(() => _isHidden = false);
+    } else if (mounted) {
+      AdsyToast.error(context, 'আনডু করা যায়নি, আবার চেষ্টা করুন');
+    }
+  }
+
+  // Compact strip shown in place of a hidden post.
+  Widget _buildHiddenCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.visibility_off_outlined,
+              size: 20, color: Color(0xFF64748B)),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'পোস্টটি সরিয়ে নেওয়া হয়েছে',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'এই পোস্টটি আপনার ফিডে আর দেখা যাবে না',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: _handleUnhidePost,
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF2563EB),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'আনডু',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isHidden) return _buildHiddenCard();
+
     final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
     final previewPostContent = _showFullContent
         ? plainPostContent
