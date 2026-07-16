@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../models/gold_sponsor_models.dart';
 import '../../services/gold_sponsor_service.dart';
-import '../../utils/url_launcher_utils.dart';
+import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
-import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'become_gold_sponsor_screen.dart';
 
 class GoldSponsorsScreen extends StatefulWidget {
@@ -30,33 +29,18 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
     await _sponsorsFuture;
   }
 
-  Future<void> _openOffer(GoldSponsor sponsor) async {
-    final url = _offerUrl(sponsor);
-    if (url == null) {
-      _showMessage('No offer link available for this sponsor');
-      return;
-    }
-
-    await GoldSponsorService.incrementViews(sponsor.id);
-    final opened = await UrlLauncherUtils.launchExternalUrl(url);
-    if (!opened && mounted) {
-      _showMessage('Could not open sponsor offer');
-    }
+  // Open the shared sponsor details bottom sheet (same as the feed slider)
+  // instead of jumping straight to the sponsor's external URL.
+  void _openOffer(GoldSponsor sponsor) {
+    showGoldSponsorDetails(context, sponsor);
   }
 
   String? _offerUrl(GoldSponsor sponsor) {
     final website = sponsor.website?.trim();
     if (website != null && website.isNotEmpty) return website;
-
     final profileUrl = sponsor.profileUrl?.trim();
     if (profileUrl != null && profileUrl.isNotEmpty) return profileUrl;
-
     return null;
-  }
-
-  void _showMessage(String message) {
-    if (!mounted) return;
-    AdsyToast.warning(context, message);
   }
 
   String _descriptionFor(GoldSponsor sponsor) {

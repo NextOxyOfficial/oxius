@@ -252,6 +252,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                     post: widget.post,
                     isReply: true,
                     replyToUserName: highestGiftComment!.user.name,
+                    replyToUserId: highestGiftComment.user.uuid ??
+                        highestGiftComment.user.id.toString(),
                     onCommentDeleted: () => _handleCommentDeleted(reply.id),
                     onCommentUpdated: _handleCommentUpdated,
                   ));
@@ -345,6 +347,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                             null, // Don't allow replying to replies for now
                         isReply: true,
                         replyToUserName: comment.user.name,
+                        replyToUserId: comment.user.uuid ??
+                            comment.user.id.toString(),
                         onCommentDeleted: () => _handleCommentDeleted(reply.id),
                         onCommentUpdated: _handleCommentUpdated,
                       ),
@@ -668,6 +672,7 @@ class _CommentItem extends StatefulWidget {
   final VoidCallback? onCommentDeleted;
   final BusinessNetworkPost? post;
   final String? replyToUserName;
+  final String? replyToUserId;
 
   const _CommentItem({
     required this.comment,
@@ -677,6 +682,7 @@ class _CommentItem extends StatefulWidget {
     this.onCommentUpdated,
     this.onCommentDeleted,
     this.replyToUserName,
+    this.replyToUserId,
   });
 
   @override
@@ -976,12 +982,28 @@ class _CommentItemState extends State<_CommentItem> {
                             color: Colors.grey.shade500,
                           ),
                         ),
-                        Text(
-                          '@${widget.replyToUserName}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blue.shade600,
+                        GestureDetector(
+                          onTap: () {
+                            final id = widget.replyToUserId;
+                            if (id != null && id.isNotEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProfileScreen(userId: id),
+                                ),
+                              );
+                            } else if (widget.replyToUserName != null) {
+                              MentionNavigator.open(
+                                  context, widget.replyToUserName!);
+                            }
+                          },
+                          child: Text(
+                            '@${widget.replyToUserName}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue.shade600,
+                            ),
                           ),
                         ),
                       ],

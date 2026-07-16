@@ -758,17 +758,17 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // "কিছু ভাবছেন? কোনো আইডিয়া থাকলে পোস্ট করে ফেলুন " composer strip — created posts land in the feed
-        // without a reload.
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: GoldSponsorsSlider(),
+        ),
+        const SizedBox(height: 6),
+        // Composer strip sits below the sponsors; created posts land in
+        // the feed without a reload.
         FeedComposerCard(
           onPostCreated: (post) {
             if (mounted) setState(() => _posts.insert(0, post));
           },
-        ),
-        const SizedBox(height: 6),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4),
-          child: GoldSponsorsSlider(),
         ),
         const SizedBox(height: 10),
       ],

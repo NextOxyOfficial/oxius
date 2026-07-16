@@ -1563,13 +1563,13 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               ),
             ),
           ),
-          // Author + caption block — hugs the seekbar (no dead band below),
-          // fades out while paused. Safe-area aware so it stays just above
-          // the seekbar on iOS too (fixed 22 used to overlap it there).
+          // Author + caption block — sits just above the seekbar with a small
+          // consistent gap on every device. The seekbar occupies ~36px above
+          // the safe area (bottom:10 + 26 height), so clearing it needs ~46px.
           Positioned(
             left: 14,
             right: 78,
-            bottom: 22 + MediaQuery.of(context).padding.bottom,
+            bottom: 46 + MediaQuery.of(context).padding.bottom,
             child: IgnorePointer(
               ignoring: _showPlayHint,
               child: AnimatedOpacity(
@@ -1741,7 +1741,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                               // Strip HTML — captions written on the web can
                               // carry <p class="text-wrap"> wrappers.
                               HtmlContentUtils.toPlainText(post.content),
-                              maxLines: _captionExpanded ? null : 2,
+                              // Collapsed = a single tidy line; "আরো পড়ুন"
+                              // expands upward to the full caption.
+                              maxLines: _captionExpanded ? null : 1,
                               overflow: _captionExpanded
                                   ? TextOverflow.visible
                                   : TextOverflow.ellipsis,

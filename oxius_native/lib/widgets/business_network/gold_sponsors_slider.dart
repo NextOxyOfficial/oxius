@@ -48,13 +48,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
 
   void _showSponsorModal(GoldSponsor sponsor) {
     _incrementViews(sponsor.id);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _SponsorDetailModal(sponsor: sponsor),
-    );
+    showGoldSponsorDetails(context, sponsor, countView: false);
   }
 
   @override
@@ -270,17 +264,38 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
   }
 }
 
-// Sponsor Detail Modal
-class _SponsorDetailModal extends StatefulWidget {
-  final GoldSponsor sponsor;
-
-  const _SponsorDetailModal({required this.sponsor});
-
-  @override
-  State<_SponsorDetailModal> createState() => _SponsorDetailModalState();
+/// Opens the shared Gold Sponsor details bottom sheet (banner carousel, HTML
+/// description, contacts, visit-profile). Reused by the feed slider and the
+/// full Gold Sponsors list so both show the same sheet instead of jumping
+/// straight to an external URL. Pass [countView] false when the caller already
+/// counted the view.
+void showGoldSponsorDetails(
+  BuildContext context,
+  GoldSponsor sponsor, {
+  bool countView = true,
+}) {
+  if (countView) {
+    GoldSponsorService.incrementViews(sponsor.id);
+  }
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => SponsorDetailModal(sponsor: sponsor),
+  );
 }
 
-class _SponsorDetailModalState extends State<_SponsorDetailModal> {
+// Sponsor Detail Modal
+class SponsorDetailModal extends StatefulWidget {
+  final GoldSponsor sponsor;
+
+  const SponsorDetailModal({super.key, required this.sponsor});
+
+  @override
+  State<SponsorDetailModal> createState() => _SponsorDetailModalState();
+}
+
+class _SponsorDetailModalState extends State<SponsorDetailModal> {
   List<SponsorBanner> _banners = [];
   bool _isLoadingBanners = true;
   int _currentBannerIndex = 0;
