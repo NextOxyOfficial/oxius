@@ -384,3 +384,14 @@ class PostSeenAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+@admin.register(ProfileReport)
+class ProfileReportAdmin(admin.ModelAdmin):
+    list_display = ['reporter', 'reported_user', 'reason', 'status', 'created_at']
+    list_filter = ['reason', 'status', 'created_at']
+    search_fields = ['reporter__username', 'reported_user__username', 'description']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at']
+    list_editable = ['status']
+    raw_id_fields = ['reporter', 'reported_user']

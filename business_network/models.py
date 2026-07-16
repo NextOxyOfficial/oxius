@@ -848,6 +848,45 @@ class PostReport(models.Model):
         return f"{self.user.username} reported post {self.post.id} for {self.get_reason_display()}"
 
 
+class ProfileReport(models.Model):
+    """A report against a user's profile (e.g. fake/impersonating accounts)."""
+    REPORT_REASONS = [
+        ('fake', 'Fake or impersonating account'),
+        ('spam', 'Spam or scam'),
+        ('harassment', 'Harassment or hate speech'),
+        ('inappropriate', 'Inappropriate content'),
+        ('other', 'Other'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    ]
+
+    reporter = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='profile_reports_made'
+    )
+    reported_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='profile_reports_received'
+    )
+    reason = models.CharField(max_length=20, choices=REPORT_REASONS)
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['reporter', 'reported_user', 'reason']
+        ordering = ['-created_at']
+        verbose_name = "Profile Report"
+        verbose_name_plural = "Profile Reports"
+
+    def __str__(self):
+        return f"{self.reporter_id} reported {self.reported_user_id} ({self.reason})"
+
+
 # Gold Sponsor Models
 
 def sponsor_logo_path(instance, filename):

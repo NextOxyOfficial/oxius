@@ -2541,6 +2541,45 @@ class ReportPostView(APIView):
             )
 
 
+class ReportProfileView(APIView):
+    """Report a user's profile (e.g. fake / impersonating accounts)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        if str(user_id) == str(request.user.id):
+            return Response(
+                {"error": "You cannot report your own profile"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        reported = User.objects.filter(id=user_id).first()
+        if reported is None:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        reason = request.data.get('reason')
+        valid = [c[0] for c in ProfileReport.REPORT_REASONS]
+        if reason not in valid:
+            return Response(
+                {"error": "Invalid report reason"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        report, created = ProfileReport.objects.get_or_create(
+            reporter=request.user,
+            reported_user=reported,
+            reason=reason,
+            defaults={'description': request.data.get('description', '')},
+        )
+        if created:
+            return Response(
+                {"message": "Profile reported. Our team will review it."},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            {"message": "You have already reported this profile."},
+            status=status.HTTP_200_OK,
+        )
+
+
 class UserHiddenPostsView(generics.ListAPIView):
     """View to list all posts hidden by the user"""
     permission_classes = [IsAuthenticated]

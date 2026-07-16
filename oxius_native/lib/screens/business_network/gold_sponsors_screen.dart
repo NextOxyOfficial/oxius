@@ -184,12 +184,13 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                  child: IntrinsicHeight(
+                    child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildLogo(sponsor.logo),
-                      const SizedBox(width: 11),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,15 +217,16 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                             const SizedBox(height: 4),
                             Text(
                               _descriptionFor(sponsor),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 12,
-                                height: 1.25,
+                                height: 1.3,
                                 color: Color(0xFF64748B),
                               ),
                             ),
                             const SizedBox(height: 8),
+                            const Spacer(),
                             Row(
                               children: [
                                 _buildViewsChip(sponsor.views),
@@ -236,6 +238,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                         ),
                       ),
                     ],
+                    ),
                   ),
                 ),
               ),
@@ -247,9 +250,11 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   }
 
   Widget _buildLogo(String? logo) {
-    return Container(
-      width: 56,
-      height: 56,
+    // Square logo whose height matches the info column (IntrinsicHeight in the
+    // parent Row), giving a larger, balanced left block.
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -264,6 +269,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                 errorBuilder: (_, __, ___) => _buildLogoFallback(),
               )
             : _buildLogoFallback(),
+      ),
       ),
     );
   }
@@ -298,29 +304,22 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   }
 
   Widget _buildViewsChip(int views) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.visibility_outlined,
-              size: 12, color: Color(0xFF6B7280)),
-          const SizedBox(width: 4),
-          Text(
-            '$views views',
-            style: const TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF6B7280),
-            ),
+    // Plain text (no bordered chip) — cleaner, less boxed look.
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.visibility_outlined,
+            size: 13, color: Color(0xFF94A3B8)),
+        const SizedBox(width: 4),
+        Text(
+          '$views views',
+          style: const TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF94A3B8),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

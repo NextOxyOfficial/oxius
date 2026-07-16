@@ -311,13 +311,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeader(),
-            const SizedBox(height: 16),
-            _sectionLabel('Instructions'),
+            const SizedBox(height: 18),
+            _sectionHeader(Icons.description_outlined, 'Instructions'),
             _buildInstructions(),
             if (_gig!['medias'] != null &&
                 (_gig!['medias'] as List).isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _sectionLabel('Reference Media'),
+              const SizedBox(height: 18),
+              _sectionHeader(Icons.perm_media_outlined, 'Reference Media'),
               _buildReferenceMedia(),
             ],
             if (_gig!['action_link'] != null &&
@@ -325,8 +325,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               const SizedBox(height: 12),
               _buildActionLink(),
             ],
-            const SizedBox(height: 16),
-            _sectionLabel('Submit Your Work'),
+            const SizedBox(height: 18),
+            _sectionHeader(Icons.cloud_upload_outlined, 'Submit Your Work'),
             _buildUploadSection(),
           ],
         ),
@@ -334,17 +334,24 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     );
   }
 
-  Widget _sectionLabel(String text) {
+  // Consistent section header: a muted icon + uppercase label above each card.
+  Widget _sectionHeader(IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 8),
-      child: Text(
-        text.toUpperCase(),
-        style: AppFonts.roboto(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF94A3B8),
-          letterSpacing: 0.8,
-        ),
+      child: Row(
+        children: [
+          Icon(icon, size: 15, color: const Color(0xFF64748B)),
+          const SizedBox(width: 6),
+          Text(
+            text.toUpperCase(),
+            style: AppFonts.roboto(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF64748B),
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -357,10 +364,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final remaining = (required - filled) < 0 ? 0 : (required - filled);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
@@ -369,14 +376,14 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           Text(
             title,
             style: AppFonts.roboto(
-              fontSize: 16,
+              fontSize: 16.5,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
               height: 1.35,
             ),
           ),
           if (_hasSubmitted) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -404,68 +411,42 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           ],
           const SizedBox(height: 12),
           // Facts strip: earn / remaining slots — the numbers a worker needs.
-          Row(
-            children: [
-              Expanded(
-                child: _factTile(
-                  Icons.payments_outlined,
-                  'You earn',
-                  '\u09f3$price',
-                  const Color(0xFF059669),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _factTile(
-                  Icons.groups_outlined,
-                  'Slots left',
-                  required > 0 ? '$remaining of $required' : '—',
-                  const Color(0xFF475569),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _factTile(IconData icon, String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: AppFonts.roboto(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF94A3B8),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFEEF2F6)),
+            ),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _statBlock(
+                      Icons.payments_outlined,
+                      'You earn',
+                      '\u09f3$price',
+                      const Color(0xFF059669),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppFonts.roboto(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w800,
-                    color: color,
+                  const VerticalDivider(
+                    width: 1,
+                    thickness: 1,
+                    color: Color(0xFFE2E8F0),
+                    indent: 2,
+                    endIndent: 2,
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: _statBlock(
+                      Icons.groups_outlined,
+                      'Slots left',
+                      required > 0 ? '$remaining' : '—',
+                      const Color(0xFF334155),
+                      sub: required > 0 ? 'of $required' : null,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -473,14 +454,108 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     );
   }
 
+  Widget _statBlock(
+    IconData icon,
+    String label,
+    String value,
+    Color color, {
+    String? sub,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: const Color(0xFF94A3B8)),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: AppFonts.roboto(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF94A3B8),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              value,
+              style: AppFonts.roboto(
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+                color: color,
+                height: 1,
+              ),
+            ),
+            if (sub != null) ...[
+              const SizedBox(width: 4),
+              Text(
+                sub,
+                style: AppFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF94A3B8),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Auto-links bare URLs typed as plain text inside the instructions HTML so
+  // the existing Html onLinkTap makes them tappable. Skips anything already
+  // inside an <a>...</a> anchor or an html tag/attribute (e.g. href="..."),
+  // preserving hand-authored anchor links untouched.
+  static final RegExp _autoLinkRegExp = RegExp(
+    // 1: an existing anchor (kept verbatim)
+    r'(<a\b[^>]*>[\s\S]*?</a>)'
+    // 2: any other html tag (kept verbatim — protects attribute values)
+    r'|(<[^>]+>)'
+    // 3: a bare url in text content
+    r'|((?:https?://|www\.)[^\s<>"' "'" r']+)',
+    caseSensitive: false,
+  );
+
+  String _autoLinkBareUrls(String html) {
+    if (html.isEmpty) return html;
+    return html.replaceAllMapped(_autoLinkRegExp, (match) {
+      final anchor = match.group(1);
+      if (anchor != null) return anchor;
+      final tag = match.group(2);
+      if (tag != null) return tag;
+
+      var url = match.group(3)!;
+      // Keep trailing sentence punctuation outside the link target.
+      var trailing = '';
+      const trailingChars = ['.', ',', ';', ':', '!', '?', ')', ']', '}'];
+      while (url.isNotEmpty && trailingChars.contains(url[url.length - 1])) {
+        trailing = '${url[url.length - 1]}$trailing';
+        url = url.substring(0, url.length - 1);
+      }
+      if (url.isEmpty) return match.group(3)!;
+
+      final href = url.toLowerCase().startsWith('www.') ? 'https://$url' : url;
+      return '<a href="$href">$url</a>$trailing';
+    });
+  }
+
   Widget _buildInstructions() {
-    final instructions = _gig!['instructions'] ?? '';
+    final instructions = _autoLinkBareUrls('${_gig!['instructions'] ?? ''}');
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Html(
@@ -511,7 +586,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
@@ -705,7 +780,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(

@@ -235,6 +235,11 @@ urlpatterns = [
         name="report-post",
     ),
     path(
+        "users/<str:user_id>/report/",
+        ReportProfileView.as_view(),
+        name="report-profile",
+    ),
+    path(
         "hidden-posts/",
         UserHiddenPostsView.as_view(),
         name="user-hidden-posts",

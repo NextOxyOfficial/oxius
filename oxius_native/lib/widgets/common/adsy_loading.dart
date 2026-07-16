@@ -70,8 +70,6 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
           constraints.hasBoundedHeight ? constraints.maxHeight : 42,
         );
         final size = (widget.size ?? boundedMax).clamp(14.0, 46.0).toDouble();
-        final ringStroke = (size * 0.088).clamp(2.4, 4.2).toDouble();
-        final logoSize = (size * 0.50).clamp(12.0, 24.0).toDouble();
 
         return SizedBox(
           width: size,
@@ -79,47 +77,25 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, _) {
-              final determinate = widget.value != null;
-              // Gentle breathing of the logo, synced to the rotation.
-              final pulse = determinate
-                  ? 1.0
-                  : 0.94 +
-                      0.06 *
-                          (0.5 +
-                              0.5 *
-                                  math.sin(_controller.value * math.pi * 2));
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Rotating sweep-gradient comet ring
-                  Transform.rotate(
-                    angle:
-                        determinate ? 0 : _controller.value * math.pi * 2,
-                    child: CustomPaint(
-                      size: Size(size, size),
-                      painter: _SweepRingPainter(
-                        color: color,
-                        strokeWidth: ringStroke,
-                        progress: widget.value,
-                      ),
-                    ),
+              // Determinate (upload/download progress) keeps a clean arc ring.
+              if (widget.value != null) {
+                return CustomPaint(
+                  size: Size(size, size),
+                  painter: _SweepRingPainter(
+                    color: color,
+                    strokeWidth: (size * 0.10).clamp(2.6, 4.4).toDouble(),
+                    progress: widget.value,
                   ),
-                  // Center logo with a subtle pulse
-                  Transform.scale(
-                    scale: pulse,
-                    child: Image.asset(
-                      'assets/images/favicon.png',
-                      width: logoSize,
-                      height: logoSize,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Icon(
-                        Icons.storefront_rounded,
-                        size: logoSize,
-                        color: color,
-                      ),
-                    ),
-                  ),
-                ],
+                );
+              }
+              // Indeterminate: 12 rounded bars in a ring with a fading trail,
+              // stepped once per tick (the classic app-loading spinner).
+              return CustomPaint(
+                size: Size(size, size),
+                painter: _DotsRingPainter(
+                  color: color,
+                  t: _controller.value,
+                ),
               );
             },
           ),
@@ -137,6 +113,55 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
 
     return child;
   }
+}
+
+/// The classic "spinner": [count] rounded bars arranged in a ring, each with a
+/// decreasing opacity so a bright head chases a faded tail around the circle.
+/// Steps discretely (one bar per tick) for the crisp tick-tick-tick look.
+class _DotsRingPainter extends CustomPainter {
+  final Color color;
+  final double t; // 0..1 rotation phase
+  static const int count = 12;
+
+  _DotsRingPainter({required this.color, required this.t});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final r = math.min(size.width, size.height) / 2;
+    if (r <= 0) return;
+
+    // Bar geometry scaled to the widget size.
+    final barLen = r * 0.42;
+    final barWidth = (r * 0.16).clamp(1.6, 5.0);
+    final outer = r - barWidth * 0.6;
+    final inner = outer - barLen;
+
+    // Discrete head position so the animation "ticks".
+    final head = (t * count).floor() % count;
+
+    for (int i = 0; i < count; i++) {
+      // Distance behind the head → opacity trail.
+      final dist = (head - i + count) % count;
+      final alpha = (1.0 - dist / count) * 0.9 + 0.08;
+
+      final angle = (i / count) * 2 * math.pi - math.pi / 2;
+      final ca = math.cos(angle);
+      final sa = math.sin(angle);
+      final p1 = Offset(center.dx + ca * inner, center.dy + sa * inner);
+      final p2 = Offset(center.dx + ca * outer, center.dy + sa * outer);
+
+      final paint = Paint()
+        ..color = color.withValues(alpha: alpha.clamp(0.0, 1.0))
+        ..strokeWidth = barWidth.toDouble()
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(p1, p2, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DotsRingPainter old) =>
+      old.t != t || old.color != color;
 }
 
 /// Draws the spinner ring. Indeterminate = a comet-style sweep-gradient arc
@@ -543,31 +568,16 @@ class _PullProgressIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final clampedProgress = progress.clamp(0.0, 1.0).toDouble();
 
+    // Drag ring that fills as the user pulls (no favicon).
     return SizedBox(
       width: 28,
       height: 28,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          material.CircularProgressIndicator(
-            value: clampedProgress <= 0 ? 0.01 : clampedProgress,
-            backgroundColor: color.withValues(alpha: 0.12),
-            color: color,
-            strokeWidth: 2.6,
-            strokeCap: StrokeCap.round,
-          ),
-          Image.asset(
-            'assets/images/favicon.png',
-            width: 18,
-            height: 18,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Icon(
-              Icons.autorenew_rounded,
-              size: 15,
-              color: color,
-            ),
-          ),
-        ],
+      child: material.CircularProgressIndicator(
+        value: clampedProgress <= 0 ? 0.01 : clampedProgress,
+        backgroundColor: color.withValues(alpha: 0.12),
+        color: color,
+        strokeWidth: 2.8,
+        strokeCap: StrokeCap.round,
       ),
     );
   }

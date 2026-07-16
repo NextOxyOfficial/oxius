@@ -1191,6 +1191,23 @@ class BusinessNetworkService {
     }
   }
 
+  /// Report a user's profile (fake/impersonating account, spam, etc.).
+  static Future<bool> reportProfile(String userId, String reason,
+      {String description = ''}) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final res = await http.post(
+        Uri.parse('$_baseUrl/users/$userId/report/'),
+        headers: headers,
+        body: json.encode({'reason': reason, 'description': description}),
+      );
+      return res.statusCode >= 200 && res.statusCode < 300;
+    } catch (e) {
+      debugPrint('reportProfile failed: $e');
+      return false;
+    }
+  }
+
   /// Undo [hidePost] — the backend unhides on DELETE of the same route.
   static Future<bool> unhidePost(int postId) async {
     try {

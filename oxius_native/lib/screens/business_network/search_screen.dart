@@ -818,12 +818,14 @@ class _SearchScreenState extends State<SearchScreen> {
   // Facebook-style start state: recent searches + trending hashtags, so the
   // page is useful before a single letter is typed.
   Widget _buildInitialState() {
+    // Plain single-page layout: rows sit directly on the page background with
+    // section headers and hairline dividers between them (no per-section cards).
     return ListView(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 24),
+      padding: const EdgeInsets.fromLTRB(4, 12, 4, 24),
       children: [
         if (_recentSearches.isNotEmpty) ...[
           Padding(
-            padding: const EdgeInsets.only(left: 2, bottom: 8),
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 6),
             child: Row(
               children: [
                 const Expanded(
@@ -851,25 +853,14 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Column(
-              children: [
-                for (var i = 0; i < _recentSearches.length; i++)
-                  _recentRow(_recentSearches[i],
-                      isLast: i == _recentSearches.length - 1),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
+          for (var i = 0; i < _recentSearches.length; i++)
+            _recentRow(_recentSearches[i],
+                isLast: i == _recentSearches.length - 1),
+          const SizedBox(height: 20),
         ],
         if (_trendingPosts.isNotEmpty) ...[
           const Padding(
-            padding: EdgeInsets.only(left: 2, bottom: 8),
+            padding: EdgeInsets.fromLTRB(14, 0, 14, 6),
             child: Text(
               'TRENDING POSTS',
               style: TextStyle(
@@ -880,25 +871,14 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Column(
-              children: [
-                for (var i = 0; i < _trendingPosts.length; i++)
-                  _trendingPostRow(_trendingPosts[i],
-                      isLast: i == _trendingPosts.length - 1),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
+          for (var i = 0; i < _trendingPosts.length; i++)
+            _trendingPostRow(_trendingPosts[i],
+                isLast: i == _trendingPosts.length - 1),
+          const SizedBox(height: 20),
         ],
         if (_trendingTags.isNotEmpty) ...[
           const Padding(
-            padding: EdgeInsets.only(left: 2, bottom: 8),
+            padding: EdgeInsets.fromLTRB(14, 0, 14, 6),
             child: Text(
               'TRENDING HASHTAGS',
               style: TextStyle(
@@ -909,41 +889,25 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Column(
-              children: [
-                for (var i = 0; i < _trendingTags.length; i++)
-                  _trendingTagRow(_trendingTags[i],
-                      isLast: i == _trendingTags.length - 1),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
+          for (var i = 0; i < _trendingTags.length; i++)
+            _trendingTagRow(_trendingTags[i],
+                isLast: i == _trendingTags.length - 1),
+          const SizedBox(height: 20),
         ],
-        // Quiet hint card at the end (kept from the old design, restyled).
-        Container(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: const Row(
+        // Quiet hint at the end (plain, no card).
+        const Padding(
+          padding: EdgeInsets.fromLTRB(14, 4, 14, 4),
+          child: Row(
             children: [
               Icon(Icons.tips_and_updates_outlined,
-                  size: 18, color: Color(0xFF64748B)),
+                  size: 18, color: Color(0xFF94A3B8)),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Search people by name, posts by keyword, or use # to find hashtags.',
                   style: TextStyle(
                     fontSize: 12.5,
-                    color: Color(0xFF475569),
+                    color: Color(0xFF64748B),
                     height: 1.4,
                   ),
                 ),
@@ -1031,19 +995,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            if (post.likesCount > 0) ...[
-              const Icon(Icons.favorite,
-                  size: 13, color: Color(0xFFEF4444)),
-              const SizedBox(width: 3),
-              Text(
-                '${post.likesCount}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-            ],
+            _postCountsRow(post),
             const SizedBox(width: 4),
             const Icon(Icons.chevron_right_rounded,
                 size: 18, color: Color(0xFFCBD5E1)),
@@ -1051,6 +1003,34 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
     );
+  }
+
+  // Compact like / comment / share counts (a count is hidden when 0).
+  Widget _postCountsRow(BusinessNetworkPost post) {
+    final metrics = <Widget>[];
+    void addMetric(IconData icon, int count) {
+      if (count <= 0) return;
+      if (metrics.isNotEmpty) metrics.add(const SizedBox(width: 10));
+      metrics.addAll([
+        Icon(icon, size: 13, color: const Color(0xFF94A3B8)),
+        const SizedBox(width: 3),
+        Text(
+          '$count',
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF64748B),
+          ),
+        ),
+      ]);
+    }
+
+    addMetric(Icons.favorite_border_rounded, post.likesCount);
+    addMetric(Icons.chat_bubble_outline_rounded, post.commentsCount);
+    addMetric(Icons.share_outlined, post.shareCount);
+
+    if (metrics.isEmpty) return const SizedBox.shrink();
+    return Row(mainAxisSize: MainAxisSize.min, children: metrics);
   }
 
   Widget _trendingTagRow(Map<String, dynamic> t, {required bool isLast}) {

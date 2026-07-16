@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -21,6 +22,7 @@ import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
 import '../../widgets/ios_web_redirect_screen.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
+import '../../widgets/common/adsy_report_sheet.dart';
 
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
@@ -466,6 +468,32 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  void _reportProfileUser() {
+    if (_isOwnProfile()) return;
+    AdsyReportSheet.show(
+      context,
+      title: 'Report Profile',
+      prompt: 'Why are you reporting this profile?',
+      options: const [
+        AdsyReportOption(
+            label: 'Fake or impersonating account', value: 'fake'),
+        AdsyReportOption(label: 'Spam or scam', value: 'spam'),
+        AdsyReportOption(
+            label: 'Harassment or hate speech', value: 'harassment'),
+        AdsyReportOption(label: 'Inappropriate content', value: 'inappropriate'),
+        AdsyReportOption(label: 'Other', value: 'other'),
+      ],
+      successMessage: 'Profile reported. Our team will review it.',
+      onSubmit: (option, details) {
+        return BusinessNetworkService.reportProfile(
+          widget.userId,
+          option.value,
+          description: details,
+        );
+      },
+    );
+  }
+
   Future<void> _blockProfileUser() async {
     if (_isOwnProfile() || _isBlocking) return;
 
@@ -665,7 +693,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                 subtitle: 'WhatsApp, Facebook, X, Messenger…',
                 onTap: _shareProfile,
               ),
-              if (!isOwnProfile && AuthService.isAuthenticated)
+              if (!isOwnProfile && AuthService.isAuthenticated) ...[
+                _profileOptionTile(
+                  icon: Icons.flag_rounded,
+                  color: const Color(0xFFF59E0B),
+                  title: 'Report Profile',
+                  subtitle: 'Fake, impersonating or spam account',
+                  onTap: _reportProfileUser,
+                ),
                 _isBlockedProfile
                     ? _profileOptionTile(
                         icon: Icons.lock_open_rounded,
@@ -680,6 +715,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         danger: true,
                         onTap: _blockProfileUser,
                       ),
+              ],
             ],
           ),
           ),
@@ -855,15 +891,40 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       if (image == null) return;
 
+      // Let the user crop + rotate to a square before upload.
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        compressQuality: 95,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'ছবি ঠিক করুন',
+            toolbarColor: const Color(0xFF2563EB),
+            toolbarWidgetColor: Colors.white,
+            activeControlsWidgetColor: const Color(0xFF2563EB),
+            lockAspectRatio: true,
+            hideBottomControls: false,
+          ),
+          IOSUiSettings(
+            title: 'ছবি ঠিক করুন',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+            rotateButtonsHidden: false,
+          ),
+        ],
+      );
+      if (cropped == null) return; // user cancelled the crop
+      final XFile picked = XFile(cropped.path);
+
       // Show loading
       if (mounted) {
         AdsyToast.info(context, 'Uploading profile picture...');
       }
 
-      // Compress before upload (fallback to original XFile on failure)
-      XFile uploadFile = image;
+      // Compress before upload (fallback to the cropped XFile on failure)
+      XFile uploadFile = picked;
       final compressed = await ImageCompressor.compressToBytes(
-        image,
+        picked,
         targetSize: 80 * 1024,
       );
       if (compressed != null) {
@@ -1437,8 +1498,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               alignment: Alignment.center,
               children: [
                 Container(
-                  width: 140,
-                  height: 140,
+                  width: 164,
+                  height: 164,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(

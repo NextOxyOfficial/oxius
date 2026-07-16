@@ -30,12 +30,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   int _currentPage = 1;
   int _unreadCount = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadNotifications(isInitial: true);
     _markAllNotificationsAsRead();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Infinite scroll: load the next page as the list nears the bottom.
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 320 &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMoreNotifications();
+    }
   }
 
   Future<void> _markAllNotificationsAsRead() async {
@@ -699,12 +719,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       strokeWidth: 2.5,
       displacement: 40,
       child: ListView.builder(
+        controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
-        itemCount: _notifications.length + (_hasMore ? 1 : 0),
+        // A trailing spinner row appears only while the next page loads.
+        itemCount: _notifications.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _notifications.length) {
-            return _buildLoadMoreButton();
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Center(
+                child: SizedBox(
+                  width: 26,
+                  height: 26,
+                  child: AdsyLoadingIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  ),
+                ),
+              ),
+            );
           }
 
           final notification = _notifications[index];
@@ -714,57 +748,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             onMarkAsRead: () => _markAsRead(notification.id),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildLoadMoreButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-      child: Center(
-        child: _isLoadingMore
-            ? Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                      const Color(0xFF6366F1).withValues(alpha: 0.1)
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: AdsyLoadingIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                    strokeWidth: 2.5,
-                  ),
-                ),
-              )
-            : TextButton.icon(
-                onPressed: _loadMoreNotifications,
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF3B82F6),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: Colors.grey.shade200),
-                  ),
-                ),
-                icon: const Icon(Icons.expand_more_rounded, size: 18),
-                label: const Text(
-                  'Load More',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
       ),
     );
   }

@@ -364,3 +364,29 @@ def _notify_sponsor_approved(sender, instance, created, **kwargs):
             )
         except Exception as e:
             print(f"Error creating sponsor approved notice: {e}")
+
+
+# ── Retention: keep only the latest N notifications per recipient ──────────
+# When a new notification is created, delete anything beyond the most recent
+# 200 for that recipient so the table (and the app's list) never grows
+# unbounded. Runs on the notification model itself, so it covers every one of
+# the create sites (follow/like/comment/mention/share/...).
+_MAX_NOTIFICATIONS_PER_USER = 200
+
+
+@receiver(post_save, sender=BusinessNetworkNotification)
+def trim_notifications(sender, instance, created, **kwargs):
+    if not created or not instance.recipient_id:
+        return
+    try:
+        ids = list(
+            BusinessNetworkNotification.objects.filter(
+                recipient_id=instance.recipient_id
+            )
+            .order_by("-created_at")
+            .values_list("id", flat=True)[_MAX_NOTIFICATIONS_PER_USER:]
+        )
+        if ids:
+            BusinessNetworkNotification.objects.filter(id__in=ids).delete()
+    except Exception as e:
+        print(f"Error trimming notifications: {e}")
