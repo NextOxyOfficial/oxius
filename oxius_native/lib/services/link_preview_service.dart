@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+import 'api_service.dart';
 
 class LinkPreviewData {
   final String url;
@@ -55,6 +58,49 @@ class LinkPreviewService {
   }
 
   static Future<LinkPreviewData?> _fetch(String url) async {
+    // Prefer the server-side proxy — it uses a real browser UA, follows
+    // redirects, and isn't subject to CORS, so it reliably previews sites the
+    // client can't fetch (news portals, shops, etc.).
+    final server = await _fetchFromServer(url);
+    if (server != null) {
+      _cache[url] = _CacheEntry(server, DateTime.now());
+      return server;
+    }
+    return _fetchClientSide(url);
+  }
+
+  static Future<LinkPreviewData?> _fetchFromServer(String url) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final res = await http
+          .get(
+            Uri.parse(
+                '${ApiService.baseUrl}/link-preview/?url=${Uri.encodeQueryComponent(url)}'),
+            headers: headers,
+          )
+          .timeout(_timeout);
+      if (res.statusCode != 200) return null;
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final title = (data['title'] ?? '').toString();
+      final desc = (data['description'] ?? '').toString();
+      final image = (data['image'] ?? '').toString();
+      if (title.isEmpty && desc.isEmpty && image.isEmpty) return null;
+      return LinkPreviewData(
+        url: url,
+        title: title.isEmpty ? null : title,
+        description: desc.isEmpty ? null : desc,
+        imageUrl: image.isEmpty ? null : image,
+        siteName: (data['site_name'] ?? '').toString().isEmpty
+            ? Uri.parse(url).host
+            : data['site_name'].toString(),
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('server link-preview failed: $e');
+      return null;
+    }
+  }
+
+  static Future<LinkPreviewData?> _fetchClientSide(String url) async {
     try {
       final uri = Uri.parse(url);
       final headers = _buildHeaders();

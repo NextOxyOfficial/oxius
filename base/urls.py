@@ -25,10 +25,13 @@ router.register(r"countries", CountryViewSet)
 
 
 from .share_meta import share_meta
+from .link_preview import link_preview
 
 urlpatterns = [
     # Crawler-facing share previews (bots are routed here by nginx).
     path("share-meta/", share_meta, name="share-meta"),
+    # In-app link preview proxy (posts/comments/chat previews).
+    path("link-preview/", link_preview, name="link-preview"),
     path("upload/", upload_file, name="upload_file"),
     path("logo/", getLogo, name="logo"),
     path("moderate/<str:token>/", moderate, name="moderate"),

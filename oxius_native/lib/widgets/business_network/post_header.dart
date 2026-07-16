@@ -163,6 +163,29 @@ class PostHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                // Location (city, upazila) under the name when available.
+                if (post.user.locationLabel.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.location_on_rounded,
+                          size: 13, color: Colors.grey.shade500),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          post.user.locationLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 2),
                 Text(
                   _formatTimeAgo(post.createdAt),
