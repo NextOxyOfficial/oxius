@@ -93,8 +93,12 @@ class LinkPreviewService {
         final image = ogImage ?? twImage;
         final favicon = _extractFavicon(html);
 
-        final resolvedImage = _resolveAgainst(uri, image);
-        final resolvedFavicon = _resolveAgainst(uri, favicon);
+        // Unescape BEFORE resolving: Uri.parse on an entity-encoded URL
+        // ("...?w=1200&amp;sig=x") mangles the query keys.
+        final resolvedImage =
+            _resolveAgainst(uri, image == null ? null : _htmlUnescape(image));
+        final resolvedFavicon = _resolveAgainst(
+            uri, favicon == null ? null : _htmlUnescape(favicon));
 
         final data = LinkPreviewData(
           url: url,
@@ -159,8 +163,12 @@ class LinkPreviewService {
       };
     }
 
+    // A real browser UA — many sites refuse bare 'Mozilla/5.0' or serve a
+    // page without OpenGraph tags to unknown agents.
     return const {
-      'User-Agent': 'Mozilla/5.0',
+      'User-Agent':
+          'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) '
+              'Chrome/124.0.0.0 Mobile Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml',
     };
   }
@@ -210,8 +218,34 @@ class LinkPreviewService {
 
   static String? _clean(String? value) {
     if (value == null) return null;
-    final v = value.trim();
+    final v = _htmlUnescape(value.trim());
     if (v.isEmpty) return null;
+    return v;
+  }
+
+  /// Decode the HTML entities that appear inside meta-tag attributes. og:image
+  /// URLs routinely carry `&amp;` in their query strings (signed CDN URLs);
+  /// passing the raw value to Image.network 4xx-es and the preview silently
+  /// loses its image while title/description still show.
+  static String _htmlUnescape(String value) {
+    if (!value.contains('&')) return value;
+    var v = value
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&#x27;', "'")
+        .replaceAll('&nbsp;', ' ');
+    // Numeric entities (&#1234; / &#xA0;).
+    v = v.replaceAllMapped(RegExp(r'&#(\d+);'), (m) {
+      final code = int.tryParse(m.group(1)!);
+      return code == null ? m.group(0)! : String.fromCharCode(code);
+    });
+    v = v.replaceAllMapped(RegExp(r'&#x([0-9a-fA-F]+);'), (m) {
+      final code = int.tryParse(m.group(1)!, radix: 16);
+      return code == null ? m.group(0)! : String.fromCharCode(code);
+    });
     return v;
   }
 

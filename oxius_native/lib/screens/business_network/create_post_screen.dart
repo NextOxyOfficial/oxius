@@ -554,8 +554,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               // Content Input with Mentions
               FlutterMentions(
                 key: _contentMentionKey,
-                suggestionPosition: SuggestionPosition.Bottom,
-                maxLines: 14,
+                // Top + a capped field height keeps the suggestion list next
+                // to where the user is typing; anchored to the bottom of a
+                // 14-line field it appeared far below the caret.
+                suggestionPosition: SuggestionPosition.Top,
+                suggestionListHeight: 220,
+                maxLines: 8,
                 minLines: 4,
                 style: TextStyle(
                   fontSize: 15.5,

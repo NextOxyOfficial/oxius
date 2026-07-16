@@ -176,94 +176,74 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
+    // Mirrors the create-post chrome: X to dismiss, one pill action in the
+    // appbar, no bottom bar.
     return Portal(
       child: Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
-        surfaceTintColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF111827)),
-          onPressed: _isSaving ? null : () => Navigator.pop(context),
-        ),
-        titleSpacing: 0,
-        title: const Text(
-          'Edit Post',
-          style: TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.black87, size: 24),
+            onPressed: _isSaving ? null : () => Navigator.pop(context),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(2, 4, 2, 120),
-        child: _buildEditCard(),
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(12, 10, 12, bottomInset + 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.grey.shade200)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 18,
-              offset: const Offset(0, -6),
+          title: const Text(
+            'Edit Post',
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _isSaving ? null : () => Navigator.pop(context),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF475569),
-                  side: const BorderSide(color: Color(0xFFD8E1EC)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text('Cancel'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 2,
-              child: ElevatedButton(
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: TextButton(
                 onPressed: _isSaving || !_hasChanges ? null : _savePost,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  disabledBackgroundColor: const Color(0xFFCAD7EA),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  elevation: 0,
+                style: TextButton.styleFrom(
+                  backgroundColor: _isSaving || !_hasChanges
+                      ? Colors.grey.shade200
+                      : const Color(0xFF2563EB),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  minimumSize: const Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  elevation: 0,
                 ),
                 child: _isSaving
                     ? const SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 15,
+                        height: 15,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: Colors.white,
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text(
-                        'Save Changes',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                    : Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: _hasChanges
+                              ? Colors.white
+                              : Colors.grey.shade500,
+                        ),
                       ),
               ),
             ),
           ],
         ),
-      ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(16, 4, 16, bottomInset + 80),
+          child: _buildEditCard(),
+        ),
       ),
     );
   }
@@ -289,8 +269,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
             mentionKey: _contentMentionKey,
             defaultText: widget.post.content,
             hint: 'What do you want to share? Use @ to mention people',
-            minLines: 8,
-            maxLines: 14,
+            minLines: 4,
+            maxLines: 8,
             onChanged: (value) => setState(() => _contentText = value),
           ),
           _sectionDivider(),
@@ -379,7 +359,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
       child: FlutterMentions(
         key: mentionKey,
         defaultText: defaultText,
-        suggestionPosition: SuggestionPosition.Bottom,
+        // Keep suggestions beside the caret (see create_post_screen).
+        suggestionPosition: SuggestionPosition.Top,
+        suggestionListHeight: 220,
         minLines: minLines,
         maxLines: maxLines,
         onChanged: onChanged,
@@ -559,56 +541,59 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _tagController,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _addTag(),
-                style: const TextStyle(fontSize: 13.5),
-                decoration: InputDecoration(
-                  hintText: 'Add a hashtag and press +',
-                  hintStyle: TextStyle(
-                    fontSize: 12.5,
-                    color: Colors.grey.shade400,
-                  ),
-                  isDense: true,
-                  filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF2563EB)),
+        // Same pill-shaped input + inline text button as the create screen.
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          padding: const EdgeInsets.only(left: 4, right: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _tagController,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _addTag(),
+                  style: const TextStyle(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Type a hashtag',
+                    hintStyle:
+                        TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                    prefixIcon: Icon(Icons.tag,
+                        size: 18, color: Colors.grey.shade400),
+                    prefixIconConstraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 0),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 11),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 38,
-              height: 38,
-              child: Material(
-                color: const Color(0xFF2563EB),
-                borderRadius: BorderRadius.circular(12),
-                child: InkWell(
-                  onTap: _addTag,
-                  borderRadius: BorderRadius.circular(12),
-                  child: const Icon(Icons.add_rounded,
-                      color: Colors.white, size: 22),
+              TextButton(
+                onPressed: _addTag,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF2563EB),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                child: const Text(
+                  'যোগ করুন',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         if (_tags.isNotEmpty) ...[
           const SizedBox(height: 10),
