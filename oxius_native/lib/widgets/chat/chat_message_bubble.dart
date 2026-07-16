@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
+import '../../utils/shared_post_message.dart';
+import '../../utils/url_launcher_utils.dart';
 import '../../widgets/chat_video_player.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/linkify_text.dart';
@@ -381,14 +383,31 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final msgType = message['type']?.toString() ?? 'text';
     final isMedia = msgType == 'image' || msgType == 'video';
 
+    // A message that is ONLY a preview (a shared post, or a bare URL) drops the
+    // coloured bubble so the white preview card stands on its own — the
+    // Messenger/WhatsApp look the user asked for.
+    final text = (message['message'] ?? '').toString();
+    final previewOnly = msgType == 'text' &&
+        !isDeleted &&
+        (SharedPostMessage.tryDecode(text) != null ||
+            RegExp(r'^(https?:\/\/|www\.)\S+$', caseSensitive: false)
+                .hasMatch(text.trim()));
+
     return Container(
-      padding: isMedia
-          ? const EdgeInsets.all(3)
-          : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: previewOnly
+          ? EdgeInsets.zero
+          : isMedia
+              ? const EdgeInsets.all(3)
+              : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         // Messenger-standard surfaces: one solid brand blue for own
-        // messages, quiet gray for received — no gradients.
-        color: isMe ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
+        // messages, quiet gray for received — no gradients. Preview-only
+        // messages are transparent so only the card shows.
+        color: previewOnly
+            ? Colors.transparent
+            : isMe
+                ? const Color(0xFF2563EB)
+                : const Color(0xFFF1F5F9),
         border: widget.isSearchHit
             ? Border.all(
                 color: widget.isCurrentSearchHit
@@ -465,6 +484,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     if (msgType == 'text' && text.startsWith('📞')) {
       return wrapWithQuote(_buildCallLogContent(message, isMe));
     }
+    // A shared post: minimal Facebook-style attachment — thumbnail + owner
+    // name only, no link-preview chrome, no background box.
+    final shared = SharedPostMessage.tryDecode(text);
+    if (shared != null) {
+      return wrapWithQuote(_buildSharedPostContent(shared, isMe));
+    }
     // Default: text with link preview. When the whole message is just one
     // URL, the big meta card carries the meaning — shrink the raw link to a
     // muted one-liner under it (kept so the link survives if the preview
@@ -519,6 +544,87 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           ],
         ],
       ),
+    );
+  }
+
+  // Shared post rendered with the SAME standard card as link previews:
+  // thumbnail left, owner name (title) + "Business Network" (source) right,
+  // inside a white rounded bordered box. Opens the post on tap.
+  Widget _buildSharedPostContent(SharedPostMessage shared, bool isMe) {
+    final thumb = AppConfig.getAbsoluteUrl(shared.thumbUrl);
+    final title = shared.ownerName.isEmpty ? 'Post' : shared.ownerName;
+    return InkWell(
+      onTap: () {
+        if (shared.postUrl.isNotEmpty) {
+          UrlLauncherUtils.launchExternalUrl(shared.postUrl);
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: 78,
+                child: thumb.isNotEmpty
+                    ? Image.network(
+                        thumb,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _sharedThumbFallback(),
+                      )
+                    : _sharedThumbFallback(),
+              ),
+              Expanded(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                          height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Business Network',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sharedThumbFallback() {
+    return Container(
+      color: const Color(0xFFF1F5F9),
+      alignment: Alignment.center,
+      child: const Icon(Icons.image_rounded,
+          size: 24, color: Color(0xFF9CA3AF)),
     );
   }
 

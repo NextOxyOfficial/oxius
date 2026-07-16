@@ -148,6 +148,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
+        // Same repost-to-profile composer as the feed's post card.
+        onRepost: (caption) async {
+          if (!AuthService.isAuthenticated) return false;
+          final targetId = _post.sharedFrom?.id ?? _post.id;
+          final result = await BusinessNetworkService.resharePost(
+            targetId,
+            caption: caption,
+          );
+          return result != null;
+        },
       ),
     );
   }

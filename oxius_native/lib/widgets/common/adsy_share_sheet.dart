@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../services/adsyconnect_service.dart';
 import '../../services/user_search_service.dart';
+import '../../utils/shared_post_message.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'adsy_loading.dart';
 import 'adsy_toast.dart';
@@ -60,6 +61,30 @@ class AdsyShareData {
       cleanUrl,
     ];
     return parts.where((part) => part.trim().isNotEmpty).join('\n\n');
+  }
+
+  /// The structured payload sent when sharing into a chat — the recipient
+  /// renders a minimal thumbnail + owner-name card (no link-preview chrome).
+  /// The owner name is the title with any " on/— Business Network" suffix
+  /// trimmed so only the person's name shows.
+  String get chatShareContent {
+    var owner = cleanTitle;
+    for (final suffix in const [
+      ' on Business Network',
+      ' — Business Network',
+      ' - Business Network',
+      ' on AdsyClub',
+    ]) {
+      if (owner.endsWith(suffix)) {
+        owner = owner.substring(0, owner.length - suffix.length).trim();
+        break;
+      }
+    }
+    return SharedPostMessage(
+      ownerName: owner.isEmpty ? cleanTitle : owner,
+      thumbUrl: cleanImageUrl,
+      postUrl: cleanUrl,
+    ).encode();
   }
 
   String get hashtagText {
@@ -172,10 +197,12 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
   bool _reposting = false;
   final TextEditingController _captionCtrl = TextEditingController();
 
-  // Active (existing) chats shown as a quick "send to chat" row.
+  // Active (existing) chats shown as a "send to chat" row. Users are SELECTED
+  // first (checkmark) and delivered together when the send button is tapped.
   bool _loadingChats = true;
+  bool _sendingBatch = false;
   List<Map<String, dynamic>> _activeChats = [];
-  final Set<String> _sendingRoomIds = {};
+  final Set<String> _selectedRoomIds = {};
   final Set<String> _sentRoomIds = {};
 
   AdsyShareData get data => widget.data;
@@ -213,28 +240,44 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     }
   }
 
-  Future<void> _quickSend(Map<String, dynamic> room) async {
+  void _toggleSelect(Map<String, dynamic> room) {
     final id = room['id'] as String;
-    if (_sendingRoomIds.contains(id) || _sentRoomIds.contains(id)) return;
-    setState(() => _sendingRoomIds.add(id));
-    bool ok = false;
-    try {
-      await AdsyConnectService.sendTextMessage(
-        chatroomId: id,
-        receiverId: room['userId'] as String,
-        content: data.shareText,
-      );
-      ok = true;
-    } catch (_) {
-      ok = false;
+    if (_sentRoomIds.contains(id) || _sendingBatch) return;
+    setState(() {
+      if (_selectedRoomIds.contains(id)) {
+        _selectedRoomIds.remove(id);
+      } else {
+        _selectedRoomIds.add(id);
+      }
+    });
+  }
+
+  Future<void> _sendSelected() async {
+    if (_selectedRoomIds.isEmpty || _sendingBatch) return;
+    setState(() => _sendingBatch = true);
+    final targets = _activeChats
+        .where((r) => _selectedRoomIds.contains(r['id']))
+        .toList();
+    int ok = 0;
+    for (final room in targets) {
+      try {
+        await AdsyConnectService.sendTextMessage(
+          chatroomId: room['id'] as String,
+          receiverId: room['userId'] as String,
+          content: data.chatShareContent,
+        );
+        _sentRoomIds.add(room['id'] as String);
+        ok++;
+      } catch (_) {}
     }
     if (!mounted) return;
     setState(() {
-      _sendingRoomIds.remove(id);
-      if (ok) _sentRoomIds.add(id);
+      _selectedRoomIds.clear();
+      _sendingBatch = false;
     });
-    if (ok) {
-      AdsyToast.success(context, '${room['name']}-কে পাঠানো হয়েছে');
+    if (ok > 0) {
+      AdsyToast.success(context, '$ok জনকে পাঠানো হয়েছে');
+      Navigator.of(context).pop(); // close the share sheet after sending
     } else {
       AdsyToast.error(context, 'পাঠানো যায়নি');
     }
@@ -370,6 +413,38 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                   },
                 ),
         ),
+        if (_selectedRoomIds.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: ElevatedButton.icon(
+              onPressed: _sendingBatch ? null : _sendSelected,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(0xFF93C5FD),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(11)),
+              ),
+              icon: _sendingBatch
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Colors.white)))
+                  : const Icon(Icons.send_rounded, size: 17),
+              label: Text(
+                  _sendingBatch
+                      ? 'পাঠানো হচ্ছে…'
+                      : 'পাঠান (${_selectedRoomIds.length})',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 14)),
+            ),
+          ),
+        ],
         const Divider(height: 20, color: Color(0xFFF1F5F9)),
       ],
     );
@@ -412,13 +487,13 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
 
   Widget _contactChip(Map<String, dynamic> room) {
     final id = room['id'] as String;
-    final sending = _sendingRoomIds.contains(id);
+    final selected = _selectedRoomIds.contains(id);
     final sent = _sentRoomIds.contains(id);
     final avatar = AppConfig.getAbsoluteUrl((room['avatar'] ?? '').toString());
     return SizedBox(
       width: 62,
       child: InkWell(
-        onTap: sent ? null : () => _quickSend(room),
+        onTap: sent ? null : () => _toggleSelect(room),
         borderRadius: BorderRadius.circular(12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -428,8 +503,13 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                 Container(
                   width: 52,
                   height: 52,
-                  decoration: const BoxDecoration(
-                      shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFEFF6FF),
+                    border: selected
+                        ? Border.all(color: const Color(0xFF2563EB), width: 2)
+                        : null,
+                  ),
                   clipBehavior: Clip.antiAlias,
                   child: avatar.isNotEmpty
                       ? Image.network(avatar,
@@ -438,24 +518,18 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                               Icons.person, color: Color(0xFF3B82F6)))
                       : const Icon(Icons.person, color: Color(0xFF3B82F6)),
                 ),
-                if (sending || sent)
+                if (selected || sent)
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.black.withValues(alpha: 0.32),
+                        color: sent
+                            ? Colors.black.withValues(alpha: 0.32)
+                            : const Color(0xFF2563EB).withValues(alpha: 0.28),
                       ),
-                      child: Center(
-                        child: sent
-                            ? const Icon(Icons.check_rounded,
-                                color: Colors.white, size: 24)
-                            : const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation(
-                                        Colors.white))),
+                      child: const Center(
+                        child: Icon(Icons.check_rounded,
+                            color: Colors.white, size: 24),
                       ),
                     ),
                   ),
@@ -506,13 +580,13 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     // dismissed, `context` is defunct and can't open the picker (that was why
     // nothing appeared on tap).
     final navigator = Navigator.of(context, rootNavigator: true);
-    final text = data.shareText;
+    final content = data.chatShareContent;
     navigator.pop();
     await showModalBottomSheet<void>(
       context: navigator.context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ChatPickerSheet(shareText: text),
+      builder: (_) => _ChatPickerSheet(content: content),
     );
   }
 
@@ -841,9 +915,9 @@ class _SharePreview extends StatelessWidget {
 /// Pick one of the user's existing chats and send [shareText] into it. The
 /// chat interface renders the contained URL as a link-preview card.
 class _ChatPickerSheet extends StatefulWidget {
-  final String shareText;
+  final String content;
 
-  const _ChatPickerSheet({required this.shareText});
+  const _ChatPickerSheet({required this.content});
 
   @override
   State<_ChatPickerSheet> createState() => _ChatPickerSheetState();
@@ -852,9 +926,11 @@ class _ChatPickerSheet extends StatefulWidget {
 class _ChatPickerSheetState extends State<_ChatPickerSheet> {
   bool _loading = true;
   bool _searching = false;
-  // Sent/sending are keyed by the OTHER user's id so a person can't be sent
-  // to twice whether they came from active chats or a fresh search.
-  final Set<String> _sending = {};
+  bool _sendingBatch = false;
+  // Selection is keyed by the OTHER user's id (so active-chat and searched
+  // entries for the same person don't double up); the chosen item map is kept
+  // so batch-send can resolve/create the room.
+  final Map<String, Map<String, dynamic>> _selected = {};
   final Set<String> _sent = {};
   List<Map<String, dynamic>> _rooms = []; // active chats
   List<Map<String, dynamic>> _searchResults = [];
@@ -933,37 +1009,51 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
   List<Map<String, dynamic>> get _visible =>
       _query.isEmpty ? _rooms : _searchResults;
 
-  Future<void> _sendTo(Map<String, dynamic> item) async {
+  void _toggle(Map<String, dynamic> item) {
     final userId = (item['userId'] ?? '').toString();
-    if (userId.isEmpty) return;
-    if (_sending.contains(userId) || _sent.contains(userId)) return;
-    setState(() => _sending.add(userId));
-    bool ok = false;
-    try {
-      // A searched user may have no room yet — open/create it first.
-      var roomId = (item['id'] ?? '').toString();
-      if (roomId.isEmpty) {
-        final room = await AdsyConnectService.getOrCreateChatRoom(userId);
-        roomId = (room['id'] ?? '').toString();
+    if (userId.isEmpty || _sent.contains(userId) || _sendingBatch) return;
+    setState(() {
+      if (_selected.containsKey(userId)) {
+        _selected.remove(userId);
+      } else {
+        _selected[userId] = item;
       }
-      if (roomId.isNotEmpty) {
-        await AdsyConnectService.sendTextMessage(
-          chatroomId: roomId,
-          receiverId: userId,
-          content: widget.shareText,
-        );
-        ok = true;
-      }
-    } catch (_) {
-      ok = false;
+    });
+  }
+
+  Future<void> _sendSelected() async {
+    if (_selected.isEmpty || _sendingBatch) return;
+    setState(() => _sendingBatch = true);
+    int ok = 0;
+    for (final entry in _selected.entries.toList()) {
+      final userId = entry.key;
+      final item = entry.value;
+      try {
+        // A searched user may have no room yet — open/create it first.
+        var roomId = (item['id'] ?? '').toString();
+        if (roomId.isEmpty) {
+          final room = await AdsyConnectService.getOrCreateChatRoom(userId);
+          roomId = (room['id'] ?? '').toString();
+        }
+        if (roomId.isNotEmpty) {
+          await AdsyConnectService.sendTextMessage(
+            chatroomId: roomId,
+            receiverId: userId,
+            content: widget.content,
+          );
+          _sent.add(userId);
+          ok++;
+        }
+      } catch (_) {}
     }
     if (!mounted) return;
     setState(() {
-      _sending.remove(userId);
-      if (ok) _sent.add(userId);
+      _selected.clear();
+      _sendingBatch = false;
     });
-    if (ok) {
-      AdsyToast.success(context, '${item['name']}-কে পাঠানো হয়েছে');
+    if (ok > 0) {
+      AdsyToast.success(context, '$ok জনকে পাঠানো হয়েছে');
+      Navigator.of(context).pop(); // close the picker after sending
     } else {
       AdsyToast.error(context, 'পাঠানো যায়নি');
     }
@@ -1065,6 +1155,40 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                             itemBuilder: (_, i) => _tile(_visible[i]),
                           ),
               ),
+              if (_selected.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      onPressed: _sendingBatch ? null : _sendSelected,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFF93C5FD),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: _sendingBatch
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.white)))
+                          : const Icon(Icons.send_rounded, size: 18),
+                      label: Text(
+                          _sendingBatch
+                              ? 'পাঠানো হচ্ছে…'
+                              : 'পাঠান (${_selected.length})',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 14.5)),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -1074,10 +1198,11 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
 
   Widget _tile(Map<String, dynamic> room) {
     final userId = (room['userId'] ?? '').toString();
-    final sending = _sending.contains(userId);
+    final selected = _selected.containsKey(userId);
     final sent = _sent.contains(userId);
     final avatar = AppConfig.getAbsoluteUrl((room['avatar'] ?? '').toString());
     return ListTile(
+      onTap: sent ? null : () => _toggle(room),
       leading: Container(
         width: 44,
         height: 44,
@@ -1100,19 +1225,12 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
               color: Color(0xFF1E293B))),
       trailing: sent
           ? const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981))
-          : sending
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : TextButton(
-                  onPressed: () => _sendTo(room),
-                  style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF2563EB)),
-                  child: const Text('পাঠান',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
-      onTap: sent ? null : () => _sendTo(room),
+          : Icon(
+              selected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: selected ? const Color(0xFF2563EB) : Colors.grey.shade400,
+            ),
     );
   }
 }

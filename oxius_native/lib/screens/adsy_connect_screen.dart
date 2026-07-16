@@ -8,6 +8,7 @@ import '../services/deep_link_service.dart';
 import '../widgets/chat_list_skeleton.dart';
 import '../config/app_config.dart';
 import '../utils/network_error_handler.dart';
+import '../utils/shared_post_message.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -467,6 +468,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         displayMessage = 'Message removed';
       } else if (messageContent.isEmpty) {
         displayMessage = 'No messages yet';
+      } else if (SharedPostMessage.tryDecode(messageContent) != null) {
+        // Never leak the raw shared-post payload into the list preview.
+        displayMessage = '📎 একটি পোস্ট শেয়ার করা হয়েছে';
       } else {
         displayMessage = _formatReplyPreview(messageContent) ?? messageContent;
       }

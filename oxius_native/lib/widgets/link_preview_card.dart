@@ -157,6 +157,99 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
     );
   }
 
+  // Standard chat preview card: thumbnail left, title + domain right, inside a
+  // white rounded bordered box. One consistent look for every link (and shared
+  // post) in the chat.
+  Widget _buildChatPreviewCard(
+      LinkPreviewData data, String domain, bool hasImage) {
+    final title = (data.title != null && data.title!.trim().isNotEmpty)
+        ? data.title!.trim()
+        : (domain.isNotEmpty ? domain : data.url);
+    return InkWell(
+      onTap: () => UrlLauncherUtils.launchExternalUrl(data.url),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: 78,
+                child: hasImage
+                    ? Image.network(
+                        data.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _chatThumbFallback(data),
+                      )
+                    : _chatThumbFallback(data),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                          height: 1.25,
+                        ),
+                      ),
+                      if (domain.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          domain.toLowerCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _chatThumbFallback(LinkPreviewData data) {
+    final favicon = data.faviconUrl;
+    return Container(
+      color: const Color(0xFFF1F5F9),
+      alignment: Alignment.center,
+      child: (favicon != null && favicon.isNotEmpty)
+          ? Image.network(
+              favicon,
+              width: 26,
+              height: 26,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Icon(Icons.link_rounded,
+                  size: 24, color: Color(0xFF94A3B8)),
+            )
+          : const Icon(Icons.link_rounded, size: 24, color: Color(0xFF94A3B8)),
+    );
+  }
+
   Widget _buildCard(BuildContext context, LinkPreviewData data) {
     final hasImage = data.imageUrl != null && data.imageUrl!.isNotEmpty;
     final domain = (() {
@@ -169,12 +262,17 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       }
     })();
 
+    // In chat, every preview uses one standard, social-app card: a white
+    // rounded bordered box with the thumbnail on the LEFT and the title +
+    // domain on the RIGHT (like Messenger/WhatsApp). It reads cleanly on both
+    // the blue (own) and light (received) bubbles.
+    if (widget.bare) {
+      return _buildChatPreviewCard(data, domain, hasImage);
+    }
+
     // Rich link preview: cover image on top (rounded), then the domain, bold
     // title and short description directly on the bubble — NO surrounding
     // card background, so the preview reads as part of the message.
-    // In chat (`bare`) the tap opens a BROWSER instead of the internal
-    // navigator, so it opens instantly without pushing a screen behind the
-    // chat; text colors flip light on a dark (own/blue) bubble.
     final bare = widget.bare;
     final onDark = widget.onDark;
     final domainColor =
