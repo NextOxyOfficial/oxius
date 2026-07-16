@@ -4,7 +4,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../config/app_config.dart';
+import '../../services/adsyconnect_service.dart';
 import '../../utils/url_launcher_utils.dart';
+import 'adsy_loading.dart';
 import 'adsy_toast.dart';
 
 class AdsyShareData {
@@ -289,6 +291,18 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     }
   }
 
+  // Send this item into an AdsyConnect chat. The chat renders the URL as a
+  // rich link-preview card, so no special message type is needed.
+  Future<void> _shareToChat() async {
+    Navigator.pop(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ChatPickerSheet(shareText: data.shareText),
+    );
+  }
+
   String _platformUrl(String platform) {
     final encodedUrl = Uri.encodeComponent(data.cleanUrl);
     final encodedText = Uri.encodeComponent(data.shareText);
@@ -441,6 +455,13 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
+                        _SharePlatformButton(
+                          tooltip: 'Send to a chat',
+                          label: 'চ্যাটে',
+                          icon: FontAwesomeIcons.solidComments,
+                          color: const Color(0xFF2563EB),
+                          onTap: _shareToChat,
+                        ),
                         _SharePlatformButton(
                           tooltip: 'More apps',
                           label: 'More',
@@ -605,6 +626,239 @@ class _SharePreview extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Pick one of the user's existing chats and send [shareText] into it. The
+/// chat interface renders the contained URL as a link-preview card.
+class _ChatPickerSheet extends StatefulWidget {
+  final String shareText;
+
+  const _ChatPickerSheet({required this.shareText});
+
+  @override
+  State<_ChatPickerSheet> createState() => _ChatPickerSheetState();
+}
+
+class _ChatPickerSheetState extends State<_ChatPickerSheet> {
+  bool _loading = true;
+  final Set<String> _sending = {};
+  final Set<String> _sent = {};
+  List<Map<String, dynamic>> _rooms = [];
+  final TextEditingController _search = TextEditingController();
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _search.addListener(() {
+      final v = _search.text.trim().toLowerCase();
+      if (v != _query) setState(() => _query = v);
+    });
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    try {
+      final rooms = await AdsyConnectService.getChatRooms(pageSize: 100);
+      if (!mounted) return;
+      setState(() {
+        _rooms = rooms.map<Map<String, dynamic>>((r) {
+          final u = r['other_user'] ?? {};
+          final first = (u['first_name'] ?? '').toString();
+          final last = (u['last_name'] ?? '').toString();
+          final name = [first, last].where((s) => s.isNotEmpty).join(' ');
+          return {
+            'id': r['id']?.toString() ?? '',
+            'userId': u['id']?.toString() ?? '',
+            'name': name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
+            'avatar': u['avatar'],
+          };
+        }).where((r) => (r['id'] as String).isNotEmpty).toList();
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  List<Map<String, dynamic>> get _visible {
+    if (_query.isEmpty) return _rooms;
+    return _rooms
+        .where((r) => r['name'].toString().toLowerCase().contains(_query))
+        .toList();
+  }
+
+  Future<void> _sendTo(Map<String, dynamic> room) async {
+    final id = room['id'] as String;
+    if (_sending.contains(id) || _sent.contains(id)) return;
+    setState(() => _sending.add(id));
+    bool ok = false;
+    try {
+      await AdsyConnectService.sendTextMessage(
+        chatroomId: id,
+        receiverId: room['userId'] as String,
+        content: widget.shareText,
+      );
+      ok = true;
+    } catch (_) {
+      ok = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      _sending.remove(id);
+      if (ok) _sent.add(id);
+    });
+    if (ok) {
+      AdsyToast.success(context, '${room['name']}-কে পাঠানো হয়েছে');
+    } else {
+      AdsyToast.error(context, 'পাঠানো যায়নি');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: Container(
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.72),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(999)),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.forum_rounded,
+                        size: 19, color: Color(0xFF2563EB)),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text('চ্যাটে পাঠান',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF111827))),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: TextField(
+                    controller: _search,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search_rounded,
+                          color: Colors.grey.shade500, size: 20),
+                      hintText: 'সার্চ করুন',
+                      hintStyle:
+                          TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                      border: InputBorder.none,
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 11),
+                    ),
+                  ),
+                ),
+              ),
+              Flexible(
+                child: _loading
+                    ? const Padding(
+                        padding: EdgeInsets.all(28),
+                        child: AdsyLoadingIndicator(),
+                      )
+                    : _visible.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(28),
+                            child: Text('কোনো চ্যাট নেই',
+                                style: TextStyle(color: Colors.grey.shade600)),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            itemCount: _visible.length,
+                            itemBuilder: (_, i) => _tile(_visible[i]),
+                          ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tile(Map<String, dynamic> room) {
+    final id = room['id'] as String;
+    final sending = _sending.contains(id);
+    final sent = _sent.contains(id);
+    final avatar = AppConfig.getAbsoluteUrl((room['avatar'] ?? '').toString());
+    return ListTile(
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: const BoxDecoration(
+            shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+        clipBehavior: Clip.antiAlias,
+        child: avatar.isNotEmpty
+            ? Image.network(avatar,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.person, color: Color(0xFF3B82F6)))
+            : const Icon(Icons.person, color: Color(0xFF3B82F6)),
+      ),
+      title: Text(room['name'].toString(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E293B))),
+      trailing: sent
+          ? const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981))
+          : sending
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : TextButton(
+                  onPressed: () => _sendTo(room),
+                  style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF2563EB)),
+                  child: const Text('পাঠান',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+      onTap: sent ? null : () => _sendTo(room),
     );
   }
 }
