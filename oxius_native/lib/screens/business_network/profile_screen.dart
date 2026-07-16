@@ -2545,6 +2545,32 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                         ),
                       ),
+                    // Views count on video thumbnails (Instagram-style,
+                    // bottom-left over the dark gradient).
+                    if (media.isVideo)
+                      Positioned(
+                        left: 6,
+                        bottom: 6,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.play_arrow_rounded,
+                                size: 15, color: Colors.white),
+                            const SizedBox(width: 2),
+                            Text(
+                              _formatViews(media.views),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                shadows: [
+                                  Shadow(color: Colors.black54, blurRadius: 3),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -2553,6 +2579,12 @@ class _ProfileScreenState extends State<ProfileScreen>
         },
       ),
     );
+  }
+
+  String _formatViews(int n) {
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
+    return '$n';
   }
 
   BusinessNetworkPost _findParentPostForMedia(PostMedia media) {

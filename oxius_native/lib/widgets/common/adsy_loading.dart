@@ -69,7 +69,7 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
           constraints.hasBoundedWidth ? constraints.maxWidth : 42,
           constraints.hasBoundedHeight ? constraints.maxHeight : 42,
         );
-        final size = (widget.size ?? boundedMax).clamp(14.0, 46.0).toDouble();
+        final size = (widget.size ?? boundedMax).clamp(12.0, 38.0).toDouble();
 
         return SizedBox(
           width: size,

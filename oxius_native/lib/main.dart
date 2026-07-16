@@ -302,13 +302,7 @@ class MyApp extends StatelessWidget {
                 ),
               ),
             ),
-            home: const Scaffold(
-              body: Center(
-                child: AdsyLoadingIndicator(
-                  color: Color(0xFF10B981),
-                ),
-              ),
-            ),
+            home: const _SplashScreen(),
           );
         }
 
@@ -754,5 +748,35 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
   Widget buildOverscrollIndicator(
       BuildContext context, Widget child, ScrollableDetails details) {
     return child;
+  }
+}
+
+/// Full-screen branded splash shown while the app initializes (replaces the
+/// bare launcher icon). Uses the designed splash image with a subtle loader.
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/splash.png',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.white),
+          ),
+          const Align(
+            alignment: Alignment(0, 0.78),
+            child: AdsyLoadingIndicator(
+              color: Color(0xFF10B981),
+              size: 30,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

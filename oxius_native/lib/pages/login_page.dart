@@ -138,8 +138,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
 
       if (outcome.accountNotFound) {
         if (mounted) setState(() => _isLoading = false);
-        final confirmed = await _confirmCreateSocialAccount();
-        if (confirmed != true) {
+        final referral = await _confirmCreateSocialAccount();
+        if (referral == null) {
+          // Cancelled.
           await AuthService.socialSignOut();
           return;
         }
@@ -148,6 +149,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           provider,
           createIfMissing: true,
           reuseIdToken: outcome.idToken,
+          referralCode: referral,
         );
       }
 
@@ -209,8 +211,11 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
 
   /// Login-page only: confirm creating a brand-new account for an unregistered
   /// email, gated on accepting the terms & privacy policy.
-  Future<bool?> _confirmCreateSocialAccount() {
+  // Returns null if cancelled, otherwise the (possibly empty) referral code the
+  // user entered while confirming a new social account.
+  Future<String?> _confirmCreateSocialAccount() {
     bool agreed = false;
+    final referralCtrl = TextEditingController();
     const labelStyle =
         TextStyle(fontSize: 13, height: 1.6, color: Color(0xFF334155));
     final linkStyle = TextStyle(
@@ -221,7 +226,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       decorationColor: _primaryColor,
     );
 
-    return showDialog<bool>(
+    return showDialog<String?>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
@@ -264,7 +269,44 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                     style: TextStyle(
                         fontSize: 14, height: 1.55, color: Color(0xFF475569)),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 16),
+                  // Optional referral code (someone invited you? enter it here).
+                  TextField(
+                    controller: referralCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600),
+                    decoration: InputDecoration(
+                      hintText: 'রেফারেল কোড (ঐচ্ছিক)',
+                      hintStyle: const TextStyle(
+                          fontSize: 13.5,
+                          color: Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w400),
+                      prefixIcon: const Icon(Icons.card_giftcard_rounded,
+                          size: 19, color: Color(0xFF64748B)),
+                      isDense: true,
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: _primaryColor, width: 1.4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                   // Consent card — the শর্তাবলী / গোপনীয়তা নীতি words are tappable
                   // and open the real screens; the rest toggles the checkbox.
                   Container(
@@ -339,7 +381,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                     children: [
                       Expanded(
                         child: TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
+                          onPressed: () => Navigator.pop<String?>(ctx, null),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 13),
                             foregroundColor: const Color(0xFF64748B),
@@ -355,8 +397,10 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       Expanded(
                         flex: 2,
                         child: FilledButton(
-                          onPressed:
-                              agreed ? () => Navigator.pop(ctx, true) : null,
+                          onPressed: agreed
+                              ? () => Navigator.pop<String?>(
+                                  ctx, referralCtrl.text.trim())
+                              : null,
                           style: FilledButton.styleFrom(
                             backgroundColor: _primaryColor,
                             disabledBackgroundColor: const Color(0xFFCBD5E1),

@@ -560,13 +560,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               // Content Input with Mentions
               FlutterMentions(
                 key: _contentMentionKey,
-                // Top + a capped field height keeps the suggestion list next
-                // to where the user is typing; anchored to the bottom of a
-                // 14-line field it appeared far below the caret.
-                suggestionPosition: SuggestionPosition.Top,
-                suggestionListHeight: 220,
-                maxLines: 8,
-                minLines: 4,
+                // Opens as a compact dropdown directly BELOW the field. The
+                // list shrinks to its content (no dead space) and is styled
+                // like a proper menu card.
+                suggestionPosition: SuggestionPosition.Bottom,
+                suggestionListHeight: 240,
+                suggestionListDecoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                maxLines: 6,
+                minLines: 3,
                 // Rebuild on every keystroke so the URL preview below reacts
                 // in real time as a link is typed/pasted.
                 onChanged: (_) => setState(() {}),
@@ -607,12 +619,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     suggestionBuilder: (data) {
                       return Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
+                            horizontal: 12, vertical: 7),
                         child: Row(
                           children: [
                             Container(
-                              width: 36,
-                              height: 36,
+                              width: 32,
+                              height: 32,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: Colors.grey.shade100,
@@ -1096,7 +1108,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   const SizedBox(height: 8),
                   // Limits, stated plainly so nobody discovers them by error.
                   Text(
-                    'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও (প্রতিটি সর্বোচ্চ ৩ মিনিট) দেওয়া যাবে',
+                    'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ৩ মিনিটের মধ্যে হতে হবে',
                     style: TextStyle(
                       fontSize: 11.5,
                       color: Colors.grey.shade500,

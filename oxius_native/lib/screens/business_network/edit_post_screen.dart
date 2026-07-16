@@ -416,9 +416,21 @@ class _EditPostScreenState extends State<EditPostScreen> {
       child: FlutterMentions(
         key: mentionKey,
         defaultText: defaultText,
-        // Keep suggestions beside the caret (see create_post_screen).
-        suggestionPosition: SuggestionPosition.Top,
-        suggestionListHeight: 220,
+        // Compact dropdown that opens BELOW the field (matches create_post).
+        suggestionPosition: SuggestionPosition.Bottom,
+        suggestionListHeight: 240,
+        suggestionListDecoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
         minLines: minLines,
         maxLines: maxLines,
         onChanged: onChanged,
@@ -455,7 +467,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
             suggestionBuilder: (data) {
               return Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(

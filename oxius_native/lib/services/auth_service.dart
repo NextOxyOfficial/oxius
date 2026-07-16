@@ -364,6 +364,7 @@ class AuthService {
     String provider, {
     bool createIfMissing = true,
     String? reuseIdToken,
+    String? referralCode,
   }) async {
     String? idToken = reuseIdToken;
     if (idToken == null) {
@@ -388,6 +389,8 @@ class AuthService {
           'provider': provider,
           'id_token': idToken,
           'create_if_missing': createIfMissing,
+          if (referralCode != null && referralCode.trim().isNotEmpty)
+            'refer': referralCode.trim(),
         }),
       );
 

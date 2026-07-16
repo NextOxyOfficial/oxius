@@ -40,6 +40,13 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
   late TabController _tabController;
   bool _isLoggedIn = false;
 
+  // Design tokens (shared with the app's other pages).
+  static const Color _kDark = Color(0xFF0F172A);
+  static const Color _kMuted = Color(0xFF64748B);
+  static const Color _kBorder = Color(0xFFE2E8F0);
+  static const Color _kHairline = Color(0xFFF1F5F9);
+  static const Color _kGreen = Color(0xFF059669);
+
   @override
   void initState() {
     super.initState();
@@ -510,250 +517,444 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
 
   Widget _buildLoggedInView() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Referral Code Card
-          Container(
-            margin: const EdgeInsets.all(4),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'আপনার রেফারেল কোড',
-                  style: AppFonts.roboto(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                        width: 2),
-                  ),
-                  child: Text(
-                    _referralCode ?? 'লোড হচ্ছে...',
-                    style: AppFonts.roboto(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
-                      color: const Color(0xFF10B981),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _copyToClipboard(_referralLink ?? ''),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.copy_rounded, size: 16),
-                        label: Text(
-                          'লিংক কপি',
-                          style: AppFonts.roboto(
-                              fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _openShareSheet,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF10B981)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        icon: const Icon(Icons.share_rounded,
-                            size: 16, color: Color(0xFF10B981)),
-                        label: Text(
-                          'শেয়ার',
-                          style: AppFonts.roboto(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF10B981),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Commission Stats
-          if (_commissionData != null)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'আপনার আয়',
-                    style: AppFonts.roboto(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.1,
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildEarningCard(
-                          '৳ ${_commissionData!.totalEarned.toStringAsFixed(0)}',
-                          'মোট আয়',
-                          Colors.green,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildEarningCard(
-                          '${_commissionData!.recentTransactions.length}',
-                          'লেনদেন',
-                          Colors.blue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          if (_commissionData != null)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'কমিশনের হিসাব',
-                    style: AppFonts.roboto(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.1,
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBreakdownItem(
-                    title: 'গিগ সম্পন্ন',
-                    color: Colors.blue,
-                    rate:
-                        _commissionData!.commissionBreakdown.gigCompletion.rate,
-                    count: _commissionData!
-                        .commissionBreakdown.gigCompletion.count,
-                    amount: _commissionData!
-                        .commissionBreakdown.gigCompletion.totalAmount,
-                  ),
-                  const SizedBox(height: 10),
-                  _buildBreakdownItem(
-                    title: 'প্রো সাবস্ক্রিপশন',
-                    color: Colors.purple,
-                    rate: _commissionData!
-                        .commissionBreakdown.proSubscription.rate,
-                    count: _commissionData!
-                        .commissionBreakdown.proSubscription.count,
-                    amount: _commissionData!
-                        .commissionBreakdown.proSubscription.totalAmount,
-                  ),
-                  const SizedBox(height: 10),
-                  _buildBreakdownItem(
-                    title: 'গোল্ড স্পন্সর',
-                    color: Colors.amber,
-                    rate: _commissionData!.commissionBreakdown.goldSponsor.rate,
-                    count:
-                        _commissionData!.commissionBreakdown.goldSponsor.count,
-                    amount: _commissionData!
-                        .commissionBreakdown.goldSponsor.totalAmount,
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 12),
-
-          // Tabs
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Column(
-              children: [
-                TabBar(
-                  controller: _tabController,
-                  labelColor: const Color(0xFF10B981),
-                  unselectedLabelColor: Colors.grey.shade600,
-                  labelStyle: AppFonts.roboto(
-                      fontSize: 12, fontWeight: FontWeight.w600),
-                  indicatorColor: const Color(0xFF10B981),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  tabs: [
-                    Tab(
-                        text:
-                            'আয় (${_commissionData?.recentTransactions.length ?? 0})'),
-                    Tab(text: 'রেফার ও বোনাস'),
-                  ],
-                ),
-                Container(
-                  height: 340,
-                  padding: const EdgeInsets.all(8),
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildEarningsTab(),
-                      _buildReferredAndBonusTab(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
+          _buildHero(),
+          const SizedBox(height: 24),
+          _buildHowItWorks(),
+          const SizedBox(height: 24),
+          _buildEarningsSummary(),
+          const SizedBox(height: 24),
+          _buildCommissionRates(),
+          const SizedBox(height: 24),
+          _buildHistorySection(),
         ],
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared building blocks
+  // ---------------------------------------------------------------------------
+
+  Widget _sectionHeader(String title, {String? subtitle}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppFonts.roboto(
+            fontSize: 15.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
+            color: _kDark,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: AppFonts.roboto(fontSize: 12.5, color: _kMuted, height: 1.3),
+          ),
+        ],
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 1. Hero — referral code + copy / share
+  // ---------------------------------------------------------------------------
+
+  Widget _buildHero() {
+    final code = _referralCode ?? 'লোড হচ্ছে...';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'আপনার রেফারেল কোড',
+          style: AppFonts.roboto(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
+            color: _kMuted,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _kBorder),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  code,
+                  style: AppFonts.roboto(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                    color: _kGreen,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _copyToClipboard(_referralCode ?? ''),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.copy_rounded, size: 18, color: _kMuted),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _copyToClipboard(_referralLink ?? ''),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _kGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.link_rounded, size: 17),
+                label: Text(
+                  'লিংক কপি',
+                  style: AppFonts.roboto(
+                      fontSize: 13.5, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _openShareSheet,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _kGreen,
+                  side: const BorderSide(color: _kBorder),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.share_rounded, size: 17),
+                label: Text(
+                  'শেয়ার',
+                  style: AppFonts.roboto(
+                      fontSize: 13.5, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2. How it works
+  // ---------------------------------------------------------------------------
+
+  Widget _buildHowItWorks() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('যেভাবে কাজ করে'),
+        const SizedBox(height: 14),
+        _buildHowStep(
+          1,
+          'কোড শেয়ার করুন',
+          'আপনার রেফারেল কোড বা লিংক বন্ধুদের পাঠান।',
+        ),
+        _buildHowStep(
+          2,
+          'বন্ধু যোগ দিক',
+          'আপনার লিংকে সাইন আপ করে বন্ধু সক্রিয় হোক।',
+        ),
+        _buildHowStep(
+          3,
+          'কমিশন আয় করুন',
+          isIOSPlatform
+              ? 'গিগে ৫%, রেফারেল কার্যক্রমে ২০% পর্যন্ত কমিশন পান।'
+              : 'গিগে ৫%, সাবস্ক্রিপশন ও স্পন্সরশিপে ২০% কমিশন পান।',
+          isLast: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHowStep(int number, String title, String description,
+      {bool isLast = false}) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: _kGreen.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '$number',
+                    style: AppFonts.roboto(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _kGreen,
+                    ),
+                  ),
+                ),
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(width: 1.5, color: _kHairline),
+                ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppFonts.roboto(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1,
+                      color: _kDark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: AppFonts.roboto(
+                      fontSize: 12.5,
+                      height: 1.35,
+                      color: _kMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. Earnings summary — a simple stat row
+  // ---------------------------------------------------------------------------
+
+  Widget _buildEarningsSummary() {
+    final total = _commissionData?.totalEarned ?? 0;
+    final txns = _commissionData?.recentTransactions.length ?? 0;
+    final refs = _referredUsers.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('আপনার আয়'),
+        const SizedBox(height: 14),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _kBorder),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                _buildStat('৳ ${total.toStringAsFixed(0)}', 'মোট আয়',
+                    accent: true),
+                _buildStatDivider(),
+                _buildStat('$refs', 'রেফারেল'),
+                _buildStatDivider(),
+                _buildStat('$txns', 'লেনদেন'),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStat(String value, String label, {bool accent = false}) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: AppFonts.roboto(
+                fontSize: 19,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+                color: accent ? _kGreen : _kDark,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: AppFonts.roboto(fontSize: 11.5, color: _kMuted),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatDivider() {
+    return Container(width: 1, color: _kBorder);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Commission rates — a clean informative list
+  // ---------------------------------------------------------------------------
+
+  Widget _buildCommissionRates() {
+    final b = _commissionData?.commissionBreakdown;
+    final rows = <List<String>>[
+      ['গিগ সম্পন্ন', b?.gigCompletion.rate ?? '৫%', 'বন্ধুর গিগ আয়ের উপর'],
+      [
+        'প্রো সাবস্ক্রিপশন',
+        b?.proSubscription.rate ?? '২০%',
+        'বন্ধুর প্রো সাবস্ক্রিপশনে'
+      ],
+      [
+        'গোল্ড স্পন্সর',
+        b?.goldSponsor.rate ?? '২০%',
+        'বন্ধুর গোল্ড স্পন্সরশিপে'
+      ],
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('কমিশন রেট',
+            subtitle: 'প্রতিটি ধরন থেকে আপনি যা আয় করেন'),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _kBorder),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < rows.length; i++) ...[
+                if (i > 0) Container(height: 1, color: _kHairline),
+                _buildRateRow(rows[i][0], rows[i][1], rows[i][2]),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRateRow(String title, String rate, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppFonts.roboto(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: _kDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppFonts.roboto(fontSize: 11.5, color: _kMuted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            rate,
+            style: AppFonts.roboto(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+              color: _kGreen,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. History — transactions / referrals & bonus
+  // ---------------------------------------------------------------------------
+
+  Widget _buildHistorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('আয় ও রেফারেল'),
+        const SizedBox(height: 8),
+        TabBar(
+          controller: _tabController,
+          labelColor: _kGreen,
+          unselectedLabelColor: _kMuted,
+          labelStyle:
+              AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w700),
+          unselectedLabelStyle:
+              AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600),
+          indicatorColor: _kGreen,
+          indicatorWeight: 2,
+          indicatorSize: TabBarIndicatorSize.label,
+          labelPadding: const EdgeInsets.symmetric(vertical: 4),
+          dividerColor: _kBorder,
+          dividerHeight: 1,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          tabs: [
+            Tab(
+                text:
+                    'আয় (${_commissionData?.recentTransactions.length ?? 0})'),
+            const Tab(text: 'রেফার ও বোনাস'),
+          ],
+        ),
+        SizedBox(
+          height: 360,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildEarningsTab(),
+              _buildReferredAndBonusTab(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -845,141 +1046,35 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     );
   }
 
-  Widget _buildEarningCard(String value, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: AppFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: AppFonts.roboto(
-              fontSize: 10,
-              color: Colors.grey.shade700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBreakdownItem({
-    required String title,
-    required Color color,
-    required String rate,
-    required int count,
-    required double amount,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppFonts.roboto(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1F2937),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$count টি লেনদেন • $rate',
-                  style: AppFonts.roboto(
-                    fontSize: 10,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            '৳ ${amount.toStringAsFixed(0)}',
-            style: AppFonts.roboto(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF10B981),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildEarningsTab() {
     if (_isLoadingCommissions) {
-      return const Center(
-          child: AdsyLoadingIndicator(color: Color(0xFF10B981)));
+      return const Center(child: AdsyLoadingIndicator(color: _kGreen));
     }
 
     if (_commissionError != null) {
       return Center(
         child: Text(
           _commissionError!,
-          style: AppFonts.roboto(fontSize: 12, color: Colors.red),
+          style: AppFonts.roboto(fontSize: 12.5, color: Colors.red),
         ),
       );
     }
 
     if (_commissionData == null ||
         _commissionData!.recentTransactions.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.receipt_long_rounded,
-                size: 48, color: Colors.grey.shade300),
-            const SizedBox(height: 8),
-            Text(
-              'এখনো কোনো আয় নেই',
-              style: AppFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyState(
+          Icons.receipt_long_rounded, 'এখনো কোনো আয় নেই');
     }
 
-    return ListView.builder(
-      itemCount: _commissionData!.recentTransactions.length,
+    final transactions = _commissionData!.recentTransactions;
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      itemCount: transactions.length,
+      separatorBuilder: (_, __) => Container(height: 1, color: _kHairline),
       itemBuilder: (context, index) {
-        final transaction = _commissionData!.recentTransactions[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
+        final transaction = transactions[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
             children: [
               Container(
@@ -990,7 +1085,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   shape: BoxShape.circle,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -998,38 +1093,37 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                     Text(
                       transaction.referredUser?.name ?? 'অজানা ইউজার',
                       style: AppFonts.roboto(
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                        color: _kDark,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       '${transaction.type} (${transaction.commissionRate})',
-                      style: AppFonts.roboto(
-                        fontSize: 10,
-                        color: Colors.grey.shade600,
-                      ),
+                      style: AppFonts.roboto(fontSize: 11.5, color: _kMuted),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     '৳ ${transaction.amount.toStringAsFixed(0)}',
                     style: AppFonts.roboto(
-                      fontSize: 13,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF10B981),
+                      color: _kGreen,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     _formatDate(transaction.date),
-                    style: AppFonts.roboto(
-                      fontSize: 9,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: AppFonts.roboto(fontSize: 10.5, color: _kMuted),
                   ),
                 ],
               ),
@@ -1040,29 +1134,32 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     );
   }
 
+  Widget _buildEmptyState(IconData icon, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 44, color: _kBorder),
+          const SizedBox(height: 10),
+          Text(
+            message,
+            style: AppFonts.roboto(fontSize: 12.5, color: _kMuted),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildReferredAndBonusTab() {
     // Loading state
     if (_isLoadingUsers || _isLoadingClaims) {
-      return const Center(
-          child: AdsyLoadingIndicator(color: Color(0xFF10B981)));
+      return const Center(child: AdsyLoadingIndicator(color: _kGreen));
     }
 
     // Not logged in
     if (!_isLoggedIn) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.lock_outline_rounded,
-                size: 40, color: Colors.grey.shade300),
-            const SizedBox(height: 8),
-            Text(
-              'রেফারেল ও বোনাস দেখতে লগইন করুন',
-              style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyState(
+          Icons.lock_outline_rounded, 'রেফারেল ও বোনাস দেখতে লগইন করুন');
     }
 
     final claims = _claimsData;
@@ -1071,31 +1168,19 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
 
     // Empty state
     if (!hasReferredUsers && !hasBonus) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.people_outline_rounded,
-                size: 40, color: Colors.grey.shade300),
-            const SizedBox(height: 8),
-            Text(
-              'এখনো কোনো রেফারেল বা বোনাস নেই',
-              style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyState(
+          Icons.people_outline_rounded, 'এখনো কোনো রেফারেল বা বোনাস নেই');
     }
 
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(vertical: 4),
       children: [
         // Bonus Program Card (compact)
         if (hasBonus) _buildCompactBonusCard(),
 
         // Referred Users Section
         if (hasReferredUsers) ...[
-          if (hasBonus) const SizedBox(height: 8),
+          if (hasBonus) const SizedBox(height: 16),
           _buildReferredUsersSection(),
         ],
       ],
@@ -1108,14 +1193,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     final referrerClaims = claims.referrerClaims;
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(10),
+        color: _kGreen.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _kGreen.withValues(alpha: 0.20)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1123,35 +1205,28 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           // Header
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(Icons.card_giftcard_rounded,
-                    color: Colors.white, size: 16),
-              ),
+              Icon(Icons.card_giftcard_rounded, color: _kGreen, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   claims.program?.name ?? 'রেফারেল রিওয়ার্ড',
                   style: AppFonts.roboto(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white),
+                      color: _kDark),
                 ),
               ),
               if (_eligibleReferrerClaimsCount > 0)
                 SizedBox(
-                  height: 26,
+                  height: 30,
                   child: ElevatedButton(
                     onPressed: _isClaimingReward ? null : _claimAllRewards,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      backgroundColor: _kGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6)),
+                          borderRadius: BorderRadius.circular(8)),
                       elevation: 0,
                     ),
                     child: _isClaimingReward
@@ -1159,17 +1234,17 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                             width: 12,
                             height: 12,
                             child: AdsyLoadingIndicator(
-                                strokeWidth: 2, color: Color(0xFF0EA5E9)))
+                                strokeWidth: 2, color: Colors.white))
                         : Text('সব নিন ($_eligibleReferrerClaimsCount)',
                             style: AppFonts.roboto(
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0EA5E9))),
+                                color: Colors.white)),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           // Claims summary
           if (refereeClaim != null || referrerClaims.isNotEmpty)
             Wrap(
@@ -1184,20 +1259,19 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 if (referrerClaims.length > 3)
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                     decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6)),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: _kBorder)),
                     child: Text('আরও ${referrerClaims.length - 3} টি',
-                        style:
-                            AppFonts.roboto(fontSize: 9, color: Colors.white)),
+                        style: AppFonts.roboto(fontSize: 10, color: _kMuted)),
                   ),
               ],
             )
           else
             Text('বন্ধু রেফার করে রিওয়ার্ড নিন!',
-                style: AppFonts.roboto(
-                    fontSize: 10, color: Colors.white.withValues(alpha: 0.9))),
+                style: AppFonts.roboto(fontSize: 11.5, color: _kMuted)),
         ],
       ),
     );
@@ -1212,10 +1286,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           ? () => _claimReward(claim.id)
           : null,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _kBorder),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1226,20 +1301,20 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                   : isEligible
                       ? Icons.card_giftcard_rounded
                       : Icons.hourglass_empty_rounded,
-              size: 12,
+              size: 13,
               color: isClaimed
-                  ? Colors.green
+                  ? _kGreen
                   : isEligible
-                      ? const Color(0xFF10B981)
+                      ? _kGreen
                       : Colors.amber.shade700,
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 5),
             Text(
               '৳${claim.rewardAmount.toStringAsFixed(0)}',
               style: AppFonts.roboto(
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1F2937)),
+                  color: _kDark),
             ),
           ],
         ),
@@ -1251,93 +1326,89 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'রেফার করা ইউজার (${_referredUsers.length})',
-              style: AppFonts.roboto(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1F2937)),
-            ),
-          ],
+        Text(
+          'রেফার করা ইউজার (${_referredUsers.length})',
+          style: AppFonts.roboto(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: _kMuted),
         ),
         const SizedBox(height: 6),
-        ..._referredUsers.map((user) {
-          final claim = _getClaimForReferredUser(user.id);
-          final avatarUrl = AppConfig.getAbsoluteUrl(user.image);
+        for (int i = 0; i < _referredUsers.length; i++) ...[
+          if (i > 0) Container(height: 1, color: _kHairline),
+          _buildReferredUserRow(_referredUsers[i]),
+        ],
+      ],
+    );
+  }
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 6),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Row(
-              children: [
-                // Avatar
-                avatarUrl.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.network(
-                          avatarUrl,
-                          width: 28,
-                          height: 28,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _buildUserInitial(user.initial),
-                        ),
-                      )
-                    : _buildUserInitial(user.initial),
-                const SizedBox(width: 8),
-                // Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.displayName,
-                        style: AppFonts.roboto(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1F2937)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        _formatDate(user.joinedDate),
-                        style: AppFonts.roboto(
-                            fontSize: 9, color: Colors.grey.shade500),
-                      ),
-                    ],
+  Widget _buildReferredUserRow(ReferredUser user) {
+    final claim = _getClaimForReferredUser(user.id);
+    final avatarUrl = AppConfig.getAbsoluteUrl(user.image);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          // Avatar
+          avatarUrl.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.network(
+                    avatarUrl,
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        _buildUserInitial(user.initial),
                   ),
+                )
+              : _buildUserInitial(user.initial),
+          const SizedBox(width: 10),
+          // Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.displayName,
+                  style: AppFonts.roboto(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _kDark),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                // Status + Claim
-                _buildUserTrailing(user, claim),
+                const SizedBox(height: 2),
+                Text(
+                  _formatDate(user.joinedDate),
+                  style: AppFonts.roboto(fontSize: 11, color: _kMuted),
+                ),
               ],
             ),
-          );
-        }),
-      ],
+          ),
+          const SizedBox(width: 8),
+          // Status + Claim
+          _buildUserTrailing(user, claim),
+        ],
+      ),
     );
   }
 
   Widget _buildUserInitial(String initial) {
     return Container(
-      width: 28,
-      height: 28,
+      width: 32,
+      height: 32,
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
+        color: _kGreen.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
       ),
       child: Center(
         child: Text(initial,
             style: AppFonts.roboto(
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF10B981))),
+                color: _kGreen)),
       ),
     );
   }
@@ -1347,19 +1418,19 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: user.isActive
-                ? Colors.green.withValues(alpha: 0.1)
-                : Colors.grey.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
+                ? _kGreen.withValues(alpha: 0.1)
+                : _kHairline,
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             user.isActive ? 'সক্রিয়' : 'নিষ্ক্রিয়',
             style: AppFonts.roboto(
-                fontSize: 8,
+                fontSize: 9.5,
                 fontWeight: FontWeight.w600,
-                color: user.isActive ? Colors.green : Colors.grey),
+                color: user.isActive ? _kGreen : _kMuted),
           ),
         ),
         const SizedBox(width: 6),
@@ -1367,53 +1438,53 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           claim.isClaimed
               ? Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8)),
+                      color: _kGreen.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6)),
                   child: Text('নেওয়া হয়েছে',
                       style: AppFonts.roboto(
-                          fontSize: 8,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w700,
-                          color: Colors.green)),
+                          color: _kGreen)),
                 )
               : claim.isEligible
                   ? SizedBox(
-                      height: 24,
+                      height: 28,
                       child: ElevatedButton(
                         onPressed: _isClaimingReward
                             ? null
                             : () => _claimReward(claim.id),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          backgroundColor: _kGreen,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6)),
+                              borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
                         ),
-                        child: Text('৳${claim.rewardAmount.toStringAsFixed(0)}',
+                        child: Text('নিন ৳${claim.rewardAmount.toStringAsFixed(0)}',
                             style: AppFonts.roboto(
-                                fontSize: 9,
+                                fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white)),
                       ),
                     )
                   : Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8)),
+                          color: Colors.amber.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6)),
                       child: Text('অসম্পূর্ণ',
                           style: AppFonts.roboto(
-                              fontSize: 8,
+                              fontSize: 9.5,
                               fontWeight: FontWeight.w700,
-                              color: Colors.amber.shade700)),
+                              color: Colors.amber.shade800)),
                     )
         else
           Text('-',
-              style:
-                  AppFonts.roboto(fontSize: 10, color: Colors.grey.shade400)),
+              style: AppFonts.roboto(fontSize: 11, color: _kMuted)),
       ],
     );
   }
