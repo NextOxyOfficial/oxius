@@ -1,8 +1,11 @@
 """In-App Purchase API: product catalog, purchase verification, RTDN webhook."""
 import base64
+import hashlib
 import json
 import logging
+from datetime import timedelta
 
+from django.conf import settings
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -12,6 +15,31 @@ from . import grants, verify
 from .models import IapProduct, IapPurchase
 
 logger = logging.getLogger(__name__)
+
+# How often one purchase may hop between AdsyClub accounts. Google ties a
+# subscription to the buyer's Google account, so moving it is legitimate — but
+# without a cooldown one subscription could be passed around indefinitely.
+TRANSFER_COOLDOWN = timedelta(days=30)
+
+
+def obfuscated_account_id(user):
+    """Stable, non-reversible id for a user, sent to Play as
+    obfuscatedAccountId. Google echoes it back on verification, which is how we
+    tell which AdsyClub account started a purchase. Must never be the raw user
+    id or email — Google's docs require it not contain personal data."""
+    raw = f"{settings.SECRET_KEY}:{user.id}".encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()[:32]
+
+
+def _mask_email(email):
+    """a***@gmail.com — enough for the user to recognise their own account
+    without disclosing someone else's address."""
+    email = (email or "").strip()
+    if "@" not in email:
+        return ""
+    local, _, domain = email.partition("@")
+    head = local[:1] if local else ""
+    return f"{head}***@{domain}"
 
 
 @api_view(["GET"])
@@ -36,7 +64,15 @@ def iap_products(request):
         }
         for p in qs
     ]
-    return Response({"products": data})
+    # The obfuscatedAccountId the app must attach to purchases. Derived from the
+    # SECRET_KEY, so only the server can produce it — the client just echoes it
+    # back to Play, which returns it to us on verification.
+    account_id = (
+        obfuscated_account_id(request.user)
+        if request.user.is_authenticated
+        else ""
+    )
+    return Response({"products": data, "account_id": account_id})
 
 
 @api_view(["POST"])
@@ -64,8 +100,22 @@ def iap_verify(request):
             {"success": False, "error": "unknown product"}, status=400
         )
 
-    # Idempotency: a previously-granted token just re-confirms success.
+    # Idempotency: a previously-granted token just re-confirms success — but
+    # only for the account that owns it.
     existing = IapPurchase.objects.filter(purchase_token=token).first()
+    if existing and existing.user_id != request.user.id:
+        # The buyer's Google account already spent this token on a different
+        # AdsyClub account. Never silently re-link it — that would let any user
+        # claim someone else's purchase by replaying the token. Transferring is
+        # an explicit, rate-limited action (see iap_transfer).
+        return Response(
+            {
+                "success": False,
+                "error": "token_owned_by_other_account",
+                "owner_hint": _mask_email(getattr(existing.user, "email", "")),
+            },
+            status=409,
+        )
     if existing and existing.status == "granted":
         return Response({"success": True, "status": "already_granted"})
 
@@ -76,8 +126,8 @@ def iap_verify(request):
         purchase_token=token,
         is_subscription=product.is_subscription,
     )
-    purchase.user = request.user
     purchase.ref_id = ref_id or purchase.ref_id
+    purchase.obfuscated_account_id = obfuscated_account_id(request.user)
 
     # Server-side verification with Google.
     if product.is_subscription:
@@ -130,6 +180,145 @@ def iap_verify(request):
         except Exception:
             logger.exception("[iap] purchase email dispatch failed")
 
+    return Response({"success": granted, "status": purchase.status})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def iap_resolve_token(request):
+    """Who owns this Google Play purchase?
+
+    The app calls this with a token from queryPurchases() before offering to
+    subscribe, so it can explain "already subscribed" instead of letting Google
+    reject the purchase with a bare ITEM_ALREADY_OWNED.
+
+    Body: {purchase_token}. Returns status:
+      unclaimed    - no AdsyClub account holds it; it can be claimed via verify
+      yours        - already linked to the caller; just restore the entitlement
+      other_account- linked elsewhere; offer login-there or transfer-here
+    """
+    token = (request.data.get("purchase_token") or "").strip()
+    if not token:
+        return Response(
+            {"success": False, "error": "purchase_token required"}, status=400
+        )
+
+    purchase = IapPurchase.objects.filter(purchase_token=token).first()
+    if purchase is None:
+        return Response({"success": True, "status": "unclaimed"})
+
+    if purchase.user_id == request.user.id:
+        return Response(
+            {
+                "success": True,
+                "status": "yours",
+                "product_id": purchase.google_product_id,
+                "expiry_at": purchase.expiry_at,
+            }
+        )
+
+    can_transfer, reason = _transfer_availability(purchase)
+    return Response(
+        {
+            "success": True,
+            "status": "other_account",
+            "product_id": purchase.google_product_id,
+            "owner_hint": _mask_email(getattr(purchase.user, "email", "")),
+            "can_transfer": can_transfer,
+            "reason": reason,
+        }
+    )
+
+
+def _transfer_availability(purchase):
+    """A purchase may move at most once per TRANSFER_COOLDOWN."""
+    if not purchase.is_subscription:
+        # Diamonds are consumables — already credited and spendable, so there is
+        # nothing to move. Only recurring entitlements can be relocated.
+        return False, "not_transferable"
+    if purchase.status != "granted":
+        return False, "not_active"
+    if purchase.transferred_at:
+        elapsed = timezone.now() - purchase.transferred_at
+        if elapsed < TRANSFER_COOLDOWN:
+            days = (TRANSFER_COOLDOWN - elapsed).days + 1
+            return False, f"cooldown_{days}d"
+    return True, ""
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def iap_transfer(request):
+    """Move a purchase's entitlement to the calling AdsyClub account.
+
+    Google ties the subscription to the buyer's Google account, so a user who
+    signs into AdsyClub with a different email cannot buy it again — Play says
+    ITEM_ALREADY_OWNED. Since the entitlement is ours to place, we let them move
+    it: the previous account loses it, this one gains it, and the Google-side
+    subscription is untouched. One payment still yields exactly one active
+    entitlement.
+
+    Body: {purchase_token}.
+    """
+    token = (request.data.get("purchase_token") or "").strip()
+    if not token:
+        return Response(
+            {"success": False, "error": "purchase_token required"}, status=400
+        )
+
+    purchase = IapPurchase.objects.filter(purchase_token=token).first()
+    if purchase is None:
+        return Response(
+            {"success": False, "error": "unknown purchase"}, status=404
+        )
+    if purchase.user_id == request.user.id:
+        return Response({"success": True, "status": "already_yours"})
+
+    product = IapProduct.objects.filter(
+        google_product_id=purchase.google_product_id
+    ).first()
+    if product is None:
+        return Response(
+            {"success": False, "error": "unknown product"}, status=400
+        )
+
+    can_transfer, reason = _transfer_availability(purchase)
+    if not can_transfer:
+        return Response(
+            {"success": False, "error": "transfer_unavailable", "reason": reason},
+            status=409,
+        )
+
+    # Re-check with Google: never move a lapsed or refunded entitlement.
+    google_data = verify.verify_subscription(token) if purchase.is_subscription \
+        else verify.verify_product(
+            product_id=purchase.google_product_id, purchase_token=token
+        )
+    if not google_data:
+        return Response(
+            {"success": False, "error": "verification failed"}, status=402
+        )
+
+    # Strip the entitlement from the old account first, so a mid-way failure
+    # can never leave the same purchase active on two accounts.
+    previous_user = purchase.user
+    grants.revoke(purchase, reason="transferred")
+
+    purchase.user = request.user
+    purchase.obfuscated_account_id = obfuscated_account_id(request.user)
+    purchase.transferred_at = timezone.now()
+    purchase.transfer_count += 1
+    purchase.raw = google_data
+
+    granted = grants.grant(purchase, product, google_data)
+    purchase.status = "granted" if granted else "failed"
+    purchase.save()
+
+    logger.info(
+        "[iap] transfer %s: user %s -> %s (%s)",
+        purchase.google_product_id, previous_user.id, request.user.id,
+        "ok" if granted else "FAILED",
+    )
     return Response({"success": granted, "status": purchase.status})
 
 

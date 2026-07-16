@@ -155,11 +155,88 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
       // Let the user see the confirmation, then return to caller.
       await Future.delayed(const Duration(milliseconds: 1400));
       if (mounted) Navigator.of(context).pop('google');
+      return;
+    }
+    setState(() => _buying = false);
+
+    // The Google account already holds this subscription on another AdsyClub
+    // account — Play will refuse to sell it again, so offer to move it here.
+    final conflict = GooglePlayBilling.lastConflict;
+    if (conflict != null) {
+      await _showConflictDialog(conflict);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।'),
+        backgroundColor: Color(0xFFDC2626),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _showConflictDialog(IapOwnershipConflict conflict) async {
+    final owner =
+        conflict.ownerHint.isNotEmpty ? conflict.ownerHint : 'অন্য একটি';
+    String? cooldownNote;
+    if (!conflict.canTransfer && conflict.reason.startsWith('cooldown_')) {
+      final days =
+          conflict.reason.replaceAll(RegExp(r'[^0-9]'), '');
+      cooldownNote = 'সাবস্ক্রিপশনটি সম্প্রতি সরানো হয়েছে — আরও $days দিন পরে '
+          'আবার সরানো যাবে।';
+    }
+
+    final doTransfer = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'সাবস্ক্রিপশনটি অন্য অ্যাকাউন্টে আছে',
+          style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'আপনার Google অ্যাকাউন্টের এই সাবস্ক্রিপশনটি $owner AdsyClub '
+          'অ্যাকাউন্টের সাথে যুক্ত। Google Play একই সাবস্ক্রিপশন দুবার কিনতে '
+          'দেয় না।\n\n${conflict.canTransfer ? 'চাইলে সাবস্ক্রিপশনটি এই '
+              'অ্যাকাউন্টে নিয়ে আসতে পারেন — আগের অ্যাকাউন্ট থেকে সুবিধাটি '
+              'সরে যাবে।' : cooldownNote ?? 'ঐ অ্যাকাউন্টে লগইন করে '
+              'সাবস্ক্রিপশনটি ব্যবহার করুন।'}',
+          style: const TextStyle(fontSize: 13.5, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('ঠিক আছে'),
+          ),
+          if (conflict.canTransfer)
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB)),
+              child: const Text('এই অ্যাকাউন্টে নিয়ে আসুন'),
+            ),
+        ],
+      ),
+    );
+    if (doTransfer != true || !mounted) return;
+
+    setState(() => _buying = true);
+    final ok = await GooglePlayBilling.transferToCurrentAccount(
+        conflict.purchaseToken);
+    if (!mounted) return;
+    setState(() => _buying = false);
+    if (ok) {
+      setState(() {
+        _success = true;
+        _successMessage = 'সাবস্ক্রিপশন এই অ্যাকাউন্টে চলে এসেছে!';
+      });
+      await Future.delayed(const Duration(milliseconds: 1400));
+      if (mounted) Navigator.of(context).pop('google');
     } else {
-      setState(() => _buying = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।'),
+          content: Text('সাবস্ক্রিপশন সরানো যায়নি। পরে আবার চেষ্টা করুন।'),
           backgroundColor: Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
         ),

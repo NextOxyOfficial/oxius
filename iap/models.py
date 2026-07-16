@@ -95,6 +95,17 @@ class IapPurchase(models.Model):
     )
     raw = models.JSONField(default=dict, blank=True)
     error = models.TextField(blank=True, default="")
+    # Hash of the AdsyClub user id sent to Google as obfuscatedAccountId, echoed
+    # back on verification. Lets us prove which app account started a purchase
+    # even though Play only knows the buyer's Google account.
+    obfuscated_account_id = models.CharField(
+        max_length=64, blank=True, default="", db_index=True
+    )
+    # Google Play only allows one active subscription per base plan per Google
+    # account, so a user with two AdsyClub accounts must move the entitlement
+    # rather than buy twice. These track that move.
+    transferred_at = models.DateTimeField(null=True, blank=True)
+    transfer_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
