@@ -70,7 +70,7 @@ class ResharedNewsCard extends StatelessWidget {
                             size: 13, color: Color(0xFF2563EB)),
                         const SizedBox(width: 4),
                         Text(
-                          'এডসি নিউজ',
+                          'এডজি নিউজ',
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,

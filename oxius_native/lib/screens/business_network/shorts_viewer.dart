@@ -1721,6 +1721,31 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                         ),
                       ),
                     ),
+                    // Location under the name (city, upazila) when available.
+                    if (post.user.locationLabel.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.location_on_rounded,
+                              size: 13,
+                              color: Colors.white.withValues(alpha: 0.7)),
+                          const SizedBox(width: 3),
+                          Flexible(
+                            child: Text(
+                              post.user.locationLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.78),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     // Title removed — show only the description, like the BN feed.
                     if (post.content.trim().isNotEmpty) ...[
                       const SizedBox(height: 8),

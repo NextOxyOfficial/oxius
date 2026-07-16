@@ -613,7 +613,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
-                    'এডসি নিউজ',
+                    'এডজি নিউজ',
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
@@ -770,7 +770,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
       data: AdsyShareData(
         title: post.title,
         url: '${AppConfig.mediaBaseUrl}/adsy-news/${post.slug}',
-        eyebrow: 'এডসি নিউজ',
+        eyebrow: 'এডজি নিউজ',
         repostHint: 'এই খবর নিয়ে কিছু বলুন...',
         onRepost: (caption) async {
           if (!AuthService.isAuthenticated) {

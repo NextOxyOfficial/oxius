@@ -670,6 +670,8 @@ class BusinessNetworkUser {
   final String? firstName;
   final String? lastName;
   final bool isFollowing;
+  final String? city;
+  final String? upazila;
 
   BusinessNetworkUser({
     required this.id,
@@ -684,7 +686,18 @@ class BusinessNetworkUser {
     this.firstName,
     this.lastName,
     this.isFollowing = false,
+    this.city,
+    this.upazila,
   });
+
+  /// "City, Upazila" (or whichever is present) for a compact location line.
+  String get locationLabel {
+    final parts = [
+      (city ?? '').trim(),
+      (upazila ?? '').trim(),
+    ].where((p) => p.isNotEmpty).toList();
+    return parts.join(', ');
+  }
 
   factory BusinessNetworkUser.fromJson(Map<String, dynamic> json) {
     // Build full name from first_name and last_name if name is not provided
@@ -730,6 +743,8 @@ class BusinessNetworkUser {
       firstName: json['first_name'],
       lastName: json['last_name'],
       isFollowing: json['is_following'] ?? json['isFollowing'] ?? false,
+      city: json['city']?.toString(),
+      upazila: json['upazila']?.toString(),
     );
   }
 
