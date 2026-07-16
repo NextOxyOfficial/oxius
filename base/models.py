@@ -77,7 +77,12 @@ def generate_unique_username(user):
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to="images/", blank=True, null=True)
-    otp = models.CharField(max_length=100, blank=True, default="000000")
+    # SECURITY: default is EMPTY, not "000000". A shared/known default OTP let
+    # anyone reset any idle account's password by sending otp="000000". An empty
+    # OTP can never match a submitted code, so a reset is only possible right
+    # after the user requests one. otp_created_at bounds its validity window.
+    otp = models.CharField(max_length=100, blank=True, default="")
+    otp_created_at = models.DateTimeField(null=True, blank=True)
     name = models.CharField(max_length=100, blank=True, default="")
     about = models.TextField(null=True, blank=True, default="")
     face_link = models.CharField(null=True, blank=True, default="")

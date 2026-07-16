@@ -153,7 +153,30 @@ class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
         exclude = ("groups", "user_permissions")
         extra_kwargs = {
             "password": {"write_only": True},
-            # 'username': {'read_only': True},
+            # SECURITY: these are privilege/money/verification fields. They MUST
+            # stay read-only on this serializer — it is used by the self-service
+            # profile-update endpoints, and if writable a user could PATCH their
+            # own record to set is_superuser/is_staff/is_pro/kyc/balance/etc and
+            # take over the whole platform. Server code sets these directly on
+            # the model (bypassing the serializer), so this does not affect
+            # legitimate grants.
+            "is_staff": {"read_only": True},
+            "is_superuser": {"read_only": True},
+            "is_active": {"read_only": True},
+            "is_suspended": {"read_only": True},
+            "is_pro": {"read_only": True},
+            "pro_validity": {"read_only": True},
+            "kyc": {"read_only": True},
+            "kyc_pending": {"read_only": True},
+            "balance": {"read_only": True},
+            "pending_balance": {"read_only": True},
+            "diamond_balance": {"read_only": True},
+            "product_limit": {"read_only": True},
+            "otp": {"read_only": True},
+            "referral_code": {"read_only": True},
+            "ceo_welcome_sent": {"read_only": True},
+            "date_joined": {"read_only": True},
+            "last_login": {"read_only": True},
         }
         depth = 1
 
@@ -341,6 +364,10 @@ class NIDSerializer(serializers.ModelSerializer):
     class Meta:
         model = NID
         fields = "__all__"
+        # SECURITY: setting approved=True flips the owner's user.kyc to True
+        # (NID.save). The client must never self-approve KYC — only staff, via
+        # the admin/moderation path that sets it on the model directly.
+        read_only_fields = ["approved"]
 
 
 class MicroGigPostTaskSerializer(serializers.ModelSerializer):
@@ -475,6 +502,18 @@ class BalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Balance
         fields = "__all__"
+        # SECURITY: the approval/settlement flags decide whether balance is
+        # debited/credited (see Balance.save). If the client could set them, a
+        # user could e.g. POST a withdrawal with approved=true to skip the
+        # debit, or mark a transfer completed without moving funds. These are
+        # server-controlled only.
+        read_only_fields = [
+            "approved",
+            "completed",
+            "rejected",
+            "bank_status",
+            "received_amount",
+        ]
 
 
 class ClassifiedPostSerializer(serializers.ModelSerializer):
@@ -874,6 +913,9 @@ class DiamondTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiamondTransaction
         fields = "__all__"
+        # Settlement flags are server-controlled. (Diamond *purchases* are now
+        # priced entirely server-side in PurchaseDiamondsView.)
+        read_only_fields = ["completed", "approved"]
 
 
 class DiamondPackagesSerializer(serializers.ModelSerializer):

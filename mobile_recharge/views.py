@@ -94,37 +94,6 @@ class RechargeListCreateView(generics.ListCreateAPIView):
                 'detail': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    @transaction.atomic
-    def perform_create(self, serializer):
-        user = self.request.user
-        amount = serializer.validated_data.get('amount') or serializer.validated_data['package'].price
-        
-        # Check if user has sufficient balance
-        if user.balance < amount:
-            raise ValidationError(f"Insufficient balance. Required: ${amount}, Available: ${user.balance}")
-        
-        # Deduct amount from user balance
-        user.balance -= amount
-        user.save()
-        
-        # Create transaction history record
-        Balance.objects.create(
-            user=user,
-            amount=amount,
-            transaction_type='mobile_recharge',
-            completed=True,
-            approved=True,
-            bank_status='completed',
-            description=f"Mobile recharge for {serializer.validated_data['phone_number']}"
-        )
-          # Create the recharge record with pending status
-        recharge = serializer.save(user=user)
-        
-        # Note: Notification will be created when admin approves the recharge
-        # No immediate notification as recharge needs admin approval
-        
-        return recharge
-
 class RechargeDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = RechargeSerializer
     permission_classes = [IsAuthenticated]

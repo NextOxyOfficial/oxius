@@ -372,6 +372,24 @@ def iap_rtdn(request):
                     except Exception:
                         logger.exception("[iap] renewal email failed")
         elif ntype in (13, 12):  # expired / revoked
+            # SECURITY: never revoke on the notification alone — this webhook is
+            # unauthenticated, so a forged type=13 with a known token could
+            # otherwise strip a paying user's entitlement. Only revoke when
+            # Google's authoritative state confirms the subscription is no longer
+            # active. If verification is unavailable, leave the entitlement.
+            state = str((google_data or {}).get("subscriptionState") or "").upper()
+            still_active = state in {
+                "SUBSCRIPTION_STATE_ACTIVE",
+                "SUBSCRIPTION_STATE_IN_GRACE_PERIOD",
+                "SUBSCRIPTION_STATE_ON_HOLD",
+            }
+            if not google_data or still_active:
+                logger.warning(
+                    "[iap] RTDN revoke ignored (unverified/still-active) "
+                    "type=%s token=%s state=%s",
+                    ntype, (token or "")[:16], state or "unknown",
+                )
+                return Response({"ok": True})
             grants.revoke(purchase, reason="expired")
             purchase.status = "expired"
             if product:

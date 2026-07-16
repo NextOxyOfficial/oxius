@@ -245,6 +245,51 @@ def _finalize_verified_deposit(*, user, payment_details):
     }
 
 
+def verify_and_credit_deposit(user, sp_order_id):
+    """Server-side-verified wallet deposit.
+
+    Contacts ShurjoPay directly for the given order id, confirms the payment
+    actually succeeded, and only then credits the wallet (idempotent on the
+    gateway's merchant_invoice_no). This is the ONLY trustworthy way to credit
+    a deposit — the client is never trusted for the amount or the success flag.
+
+    Returns (ok: bool, payload: dict, http_status: int).
+    """
+    if not sp_order_id:
+        return False, {"error": "sp_order_id is required"}, status.HTTP_400_BAD_REQUEST
+
+    try:
+        payment_details = engine.verify_payment(sp_order_id)
+        details = _serialize_payment_details(payment_details)
+        if details is None:
+            raise ValueError("Payment details could not be serialized.")
+    except Exception as exc:
+        if _is_pending_payment_error(str(exc)):
+            return False, {"success": False, "status": "pending",
+                           "message": "Payment is not confirmed yet."}, status.HTTP_202_ACCEPTED
+        logger.exception("Deposit verification failed for order %s", sp_order_id)
+        return False, {"error": "Payment verification failed."}, status.HTTP_502_BAD_GATEWAY
+
+    bank_status = str(details.get("bank_status") or "").lower()
+    sp_message = str(details.get("shurjopay_message") or "").lower()
+    is_success = sp_message == "success" or bank_status in {"success", "completed"}
+    if not is_success:
+        return False, {"success": False, "status": "failed",
+                       "message": details.get("shurjopay_message")
+                       or "Payment was not successful."}, status.HTTP_402_PAYMENT_REQUIRED
+
+    try:
+        result = _finalize_verified_deposit(user=user, payment_details=details)
+    except Exception:
+        logger.exception("Deposit finalize failed for order %s", sp_order_id)
+        return False, {"error": "Could not finalize deposit."}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    return True, {"success": True, "status": "success",
+                  "already_processed": result.get("already_processed", False),
+                  "transaction_id": result.get("transaction_id"),
+                  "payment_details": details}, status.HTTP_200_OK
+
+
 def _build_engine(return_url=None, cancel_url=None):
     resolved_return = return_url if return_url and _is_safe_redirect_url(return_url) else settings.SP_RETURN
     resolved_cancel = cancel_url if cancel_url and _is_safe_redirect_url(cancel_url) else settings.SP_CANCEL

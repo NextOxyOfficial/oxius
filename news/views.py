@@ -7,6 +7,18 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import *
 from .serializers import *
 
+
+class IsStaffOrReadOnly(permissions.BasePermission):
+    """Anyone may read news; only staff may create/edit/delete it. News is
+    editorial/broadcast content — previously any authenticated user could
+    create, edit, delete, or re-author any article, category, or banner."""
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return bool(request.user and request.user.is_staff)
+
+
 # Advanced pagination classes
 
 
@@ -35,7 +47,7 @@ class CursorBasedPagination(CursorPagination):
 class NewsPostList(generics.ListCreateAPIView):
     queryset = NewsPost.objects.all().order_by('-created_at')
     serializer_class = NewsPostListSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsStaffOrReadOnly]
     pagination_class = CustomPageNumberPagination
 
     def perform_create(self, serializer):
@@ -45,7 +57,7 @@ class NewsPostList(generics.ListCreateAPIView):
 class NewsPostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDetailSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsStaffOrReadOnly]
     lookup_field = 'slug'
 
 
@@ -69,18 +81,33 @@ class NewsPostCommentDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NewsPostCommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    # IDOR guard: only the comment author (or staff) may edit/delete it.
+    def _assert_owner(self, instance):
+        if not (self.request.user.is_staff
+                or instance.author_id == self.request.user.id):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You cannot modify this comment.')
+
+    def perform_update(self, serializer):
+        self._assert_owner(serializer.instance)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._assert_owner(instance)
+        instance.delete()
+
 
 class NewsCategoryList(generics.ListCreateAPIView):
     queryset = NewsCategory.objects.all()
     serializer_class = NewsCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsStaffOrReadOnly]
     pagination_class = AdvancedPagination
 
 
 class NewsCategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = NewsCategory.objects.all()
     serializer_class = NewsCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsStaffOrReadOnly]
     lookup_field = 'slug'
 
 
@@ -178,4 +205,4 @@ class BreakingNewsListView(generics.ListAPIView):
 class BreakingNewsCreateView(generics.CreateAPIView):
     queryset = BreakingNews.objects.all()
     serializer_class = BreakingNewsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStaffOrReadOnly]

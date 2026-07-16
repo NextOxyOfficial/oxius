@@ -974,8 +974,22 @@ class MessageViewSet(viewsets.ModelViewSet):
         """Create a new message and return full serialization"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        # SECURITY: only a participant of the target chatroom may post to it.
+        # Without this an attacker could inject/spoof messages into any two
+        # users' private conversation by passing an arbitrary chatroom id.
+        target_room = serializer.validated_data.get('chatroom')
+        if target_room is None or request.user.id not in (
+            target_room.user1_id,
+            target_room.user2_id,
+        ):
+            return Response(
+                {'detail': 'You are not a participant of this conversation.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         message = serializer.save(sender=request.user)
-        
+
         # Update chatroom's last message
         chatroom = message.chatroom
         chatroom.last_message_at = message.created_at

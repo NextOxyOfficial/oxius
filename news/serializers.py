@@ -41,7 +41,8 @@ class NewsPostDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsPost
         fields = '__all__'
-        read_only_fields = ['slug']
+        # author pinned server-side (perform_create), never client-writable.
+        read_only_fields = ['slug', 'author']
 
 class TipsAndSuggestionSerializer(serializers.ModelSerializer):
     class Meta:

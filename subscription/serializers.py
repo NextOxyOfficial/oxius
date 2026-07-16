@@ -37,11 +37,18 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = '__all__'
-    
+        # Status/lifecycle fields are server-controlled — a client must not be
+        # able to create a subscription that is already 'active'.
+        read_only_fields = [
+            'user', 'status', 'start_date', 'end_date', 'auto_renew',
+        ]
+
     def create(self, validated_data):
         # Set user from request
         user = self.context['request'].user
         validated_data['user'] = user
+        # Never trust a client-provided status; always start pending.
+        validated_data['status'] = 'pending'
         
         # Create the subscription
         subscription = Subscription.objects.create(**validated_data)

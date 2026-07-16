@@ -69,6 +69,10 @@ class RechargeSerializer(serializers.ModelSerializer):
             'user', 'transaction_id', 'status', 'balance_charged',
             'provider_reference', 'provider_response', 'failure_reason',
             'processed_at',
+            # SECURITY: the charge amount is derived from the selected package
+            # server-side. A client-set amount allowed underpaying (or a NEGATIVE
+            # amount that *credited* the wallet).
+            'amount',
         ]
     
     def get_package_details(self, obj):

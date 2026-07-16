@@ -82,13 +82,23 @@ class SubscriptionActivateView(APIView):
     
     def post(self, request, pk):
         subscription = get_object_or_404(Subscription, id=pk, user=request.user)
-        
+
         if subscription.status != 'pending':
             return Response(
                 {"error": f"Cannot activate subscription with status: {subscription.status}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+        # SECURITY: a PAID plan must never be activated through this manual path
+        # — payment is enforced only in SubscriptionUpgradeView, which charges
+        # the wallet and then activates. Previously a user could create a
+        # pending paid subscription and self-activate it here for free Pro.
+        if subscription.plan and subscription.plan.price and subscription.plan.price > 0:
+            return Response(
+                {"error": "Paid subscriptions are activated automatically after payment."},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
         subscription.activate()
         
         # Create log entry

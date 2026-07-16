@@ -374,7 +374,8 @@ class AbnAdsPanelSerializer(serializers.ModelSerializer):
     class Meta:
         model = AbnAdsPanel
         fields = "__all__"
-        read_only_fields = ["id", "created_at", "updated_at"]
+        # `user` read-only so an editor can't reassign an ad panel to themselves.
+        read_only_fields = ["id", "created_at", "updated_at", "user"]
 
 
 class BusinessNetworkMindforceCategorySerializer(serializers.ModelSerializer):

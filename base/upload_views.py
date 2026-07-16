@@ -39,11 +39,36 @@ def upload_file(request):
             'success': False,
             'message': 'Invalid file type. Only images (JPG, PNG, GIF, WEBP) and videos (MP4, MOV, AVI, WEBM) are allowed'
         }, status=status.HTTP_400_BAD_REQUEST)
-    
+
+    # SECURITY: content_type and the filename extension are both client-supplied
+    # and spoofable — an attacker could upload x.svg/x.html labelled image/png,
+    # which then executes as active content (stored XSS). Sniff the real bytes
+    # and derive the extension from a fixed allow-list, ignoring the client's.
+    head = file.read(32)
+    file.seek(0)
+    sniffed_ext = None
+    if head[:3] == b"\xff\xd8\xff":
+        sniffed_ext = ".jpg"
+    elif head[:8] == b"\x89PNG\r\n\x1a\n":
+        sniffed_ext = ".png"
+    elif head[:6] in (b"GIF87a", b"GIF89a"):
+        sniffed_ext = ".gif"
+    elif head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+        sniffed_ext = ".webp"
+    elif head[4:8] == b"ftyp":
+        sniffed_ext = ".mp4"  # covers mp4/mov/m4v container family
+    elif head[:4] == b"\x1aE\xdf\xa3":
+        sniffed_ext = ".webm"
+
+    if sniffed_ext is None:
+        return Response({
+            'success': False,
+            'message': 'File content does not match a supported image or video format.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        # Generate unique filename
-        ext = os.path.splitext(file.name)[1]
-        filename = f"{uuid.uuid4()}{ext}"
+        # Extension comes from the sniffed signature, NOT the user filename.
+        filename = f"{uuid.uuid4()}{sniffed_ext}"
         
         # Determine folder based on file type
         if file.content_type in allowed_image_types:

@@ -46,6 +46,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'helpful_count', 'is_verified_purchase', 'created_at', 'updated_at',
             'seller_response', 'seller_response_at',
+            # Moderation flag — a user must not self-approve their own review.
+            'is_approved',
         ]
     
     def get_is_helpful(self, obj):

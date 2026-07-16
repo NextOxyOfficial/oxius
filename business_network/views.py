@@ -37,13 +37,25 @@ from .pagination import *
 from .serializers import *
 
 
+# Upload caps — reject oversized payloads BEFORE and AFTER decode so a
+# malicious client can't OOM the worker with a ~1GB base64 body.
+_MAX_IMAGE_BYTES = 12 * 1024 * 1024   # 12 MB
+_MAX_VIDEO_BYTES = 200 * 1024 * 1024  # 200 MB
+
+
 def base64ToFile(base64_data):
     # Remove the prefix if it exists (e.g., "data:image/png;base64,")
     if base64_data.startswith("data:image"):
         base64_data = base64_data.split("base64,")[1]
 
+    # base64 inflates ~33%; bound the encoded length before decoding.
+    if len(base64_data) > _MAX_IMAGE_BYTES * 4 // 3 + 1024:
+        raise ValidationError({"images": "Image is too large (max 12 MB)."})
+
     # Decode the Base64 string into bytes
     file_data = base64.b64decode(base64_data)
+    if len(file_data) > _MAX_IMAGE_BYTES:
+        raise ValidationError({"images": "Image is too large (max 12 MB)."})
 
     # Create a Django ContentFile object from the bytes
     file = ContentFile(file_data)
@@ -81,10 +93,16 @@ def base64ToVideoFile(base64_data):
     elif "mp4" in ct:
         ext = "mp4"
 
+    if len(raw) > _MAX_VIDEO_BYTES * 4 // 3 + 1024:
+        raise ValidationError({"videos": "Video is too large (max 200 MB)."})
+
     try:
         file_data = base64.b64decode(raw)
     except Exception:
         file_data = base64.b64decode(raw + "===")
+
+    if len(file_data) > _MAX_VIDEO_BYTES:
+        raise ValidationError({"videos": "Video is too large (max 200 MB)."})
 
     file = ContentFile(file_data)
 
@@ -1147,8 +1165,12 @@ class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def increment_media_views(request, media_id):
-    """Increment views count for a media item"""
+    """Increment views count for a media item.
+
+    Requires auth so views are attributable and anonymous scripts can't pump
+    the counter that monetization eligibility is derived from."""
     try:
         updated = BusinessNetworkMedia.objects.filter(id=media_id).update(views=F("views") + 1)
         if not updated:
@@ -2048,10 +2070,19 @@ class AbnAdsPanelRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView
     serializer_class = AbnAdsPanelSerializer
     permission_classes = [IsAuthenticated]
 
+    # IDOR guard: reads are public, but a user may only modify/delete their own
+    # ad panel (staff may manage any).
+    def _assert_owner(self, instance):
+        if not (self.request.user.is_staff
+                or instance.user_id == self.request.user.id):
+            raise PermissionDenied("You do not have permission to modify this ad.")
+
     def perform_update(self, serializer):
+        self._assert_owner(serializer.instance)
         serializer.save()
 
     def perform_destroy(self, instance):
+        self._assert_owner(instance)
         instance.delete()
 
 
@@ -2287,6 +2318,24 @@ class BusinessNetworkMindforceCommentDetailView(generics.RetrieveUpdateDestroyAP
     serializer_class = BusinessNetworkMindforceCommentSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "id"
+
+    # IDOR guard: only the comment's author may edit/delete it.
+    def _assert_owner(self, instance):
+        author_id = getattr(instance, "author_id", None) or getattr(
+            instance, "user_id", None
+        )
+        if not (self.request.user.is_staff or author_id == self.request.user.id):
+            raise PermissionDenied(
+                "You do not have permission to modify this comment."
+            )
+
+    def perform_update(self, serializer):
+        self._assert_owner(serializer.instance)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._assert_owner(instance)
+        instance.delete()
 
 
 class CheckUserFollowStatusView(generics.GenericAPIView):

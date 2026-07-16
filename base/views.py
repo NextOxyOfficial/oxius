@@ -1789,13 +1789,23 @@ def postBalance(request):
         # Set payment method for transfer
         data["payment_method"] = "p2p"
     
-    # === DEPOSIT VALIDATION ===
+    # === DEPOSIT — server-side verified only ===
     elif transaction_type == "deposit":
-        if amount < Decimal("100.00"):
-            return Response(
-                {"error": "Minimum deposit amount is ৳100.00"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # SECURITY: never credit a deposit from client-supplied amounts. The
+        # wallet is credited only after re-verifying the payment with ShurjoPay
+        # (idempotent on the gateway invoice). This closes a hole where any
+        # authenticated user could POST a "deposit" and mint free balance.
+        from .pay import verify_and_credit_deposit
+
+        sp_order_id = (
+            data.get("shurjopay_order_id")
+            or data.get("sp_order_id")
+            or data.get("order_id")
+        )
+        ok, payload, http_status = verify_and_credit_deposit(
+            request.user, sp_order_id
+        )
+        return Response(payload, status=http_status)
     
     # === WITHDRAW VALIDATION ===
     elif transaction_type == "withdraw":
@@ -2381,7 +2391,7 @@ def verifyOTP(request):
 
         if attempts >= 5:
             # Reset OTP and require new code
-            user.otp = "000000"
+            user.otp = ""  # clear (empty never matches)
             user.save()
             cache.delete(contact_key)
 
@@ -2522,7 +2532,7 @@ def resetPassword(request):
     try:
         # Reset password and clear OTP
         user.set_password(new_password)
-        user.otp = "000000"  # Clear OTP
+        user.otp = ""  # clear (empty never matches)
         user.save()
 
         # Delete the token to prevent reuse
@@ -2557,17 +2567,85 @@ def resetPassword(request):
         )
 
 
+# ── Password-reset OTP hardening ──────────────────────────────────────────
+# Only these fields may be used to look up an account for a reset. Passing an
+# arbitrary `method` into User.objects.get(**{method: value}) allowed lookup by
+# any column and user enumeration.
+_RESET_METHODS = {"email", "phone"}
+_OTP_TTL_SECONDS = 10 * 60      # a reset code is valid for 10 minutes
+_OTP_MAX_ATTEMPTS = 5           # per identifier, within the lockout window
+_OTP_LOCK_SECONDS = 15 * 60
+
+
+def _reset_user_for(method, value):
+    """Look up the account for a reset, restricted to safe lookup fields."""
+    if method not in _RESET_METHODS or not value:
+        return None
+    return User.objects.filter(**{method: value}).first()
+
+
+def _issue_reset_otp(user):
+    from django.utils import timezone
+    otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
+    user.otp = otp
+    user.otp_created_at = timezone.now()
+    user.save(update_fields=["otp", "otp_created_at"])
+    return otp
+
+
+def _otp_attempts_key(user):
+    return f"otp_attempts_user_{user.pk}"
+
+
+def _check_reset_otp(user, otp, consume=True):
+    """Validate a submitted reset OTP. Returns (ok, error_message).
+
+    Enforces: non-empty stored + submitted OTP, exact match, 10-minute expiry,
+    and a 5-try lockout per account. When [consume] is true a correct code is
+    cleared (single use) — the verify step passes consume=False so the code
+    survives to the set-password step.
+    """
+    from django.utils import timezone
+
+    submitted = (str(otp) if otp is not None else "").strip()
+    stored = (user.otp or "").strip()
+    if not submitted or not stored:
+        return False, "Invalid or expired code"
+
+    key = _otp_attempts_key(user)
+    attempts = cache.get(key, 0)
+    if attempts >= _OTP_MAX_ATTEMPTS:
+        return False, "Too many attempts. Please request a new code."
+
+    if user.otp_created_at is not None:
+        age = (timezone.now() - user.otp_created_at).total_seconds()
+        if age > _OTP_TTL_SECONDS:
+            return False, "Code has expired. Please request a new one."
+
+    if submitted != stored:
+        cache.set(key, attempts + 1, _OTP_LOCK_SECONDS)
+        return False, "Invalid or expired code"
+
+    if consume:
+        cache.delete(key)
+        user.otp = ""
+        user.otp_created_at = None
+        user.save(update_fields=["otp", "otp_created_at"])
+    return True, ""
+
+
 @api_view(["POST"])
 def reset_password_request(request):
     method = request.data.get("method")
     value = request.data.get(method)
 
+    user = _reset_user_for(method, value)
+    if user is None:
+        # Do not reveal whether the account exists.
+        return Response({"detail": "Reset instructions sent"})
+
     try:
-        user = User.objects.get(**{method: value})
-        # Generate OTP
-        otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
-        user.otp = otp
-        user.save()
+        otp = _issue_reset_otp(user)
 
         # Send OTP
         if method == "email":
@@ -2615,15 +2693,17 @@ def verify_reset_otp(request):
     value = request.data.get(method)
     otp = request.data.get("otp")
 
-    try:
-        user = User.objects.get(**{method: value})
-        if user.otp != otp:
-            return Response(
-                {"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        return Response({"detail": "OTP verified"})
-    except User.DoesNotExist:
-        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    user = _reset_user_for(method, value)
+    if user is None:
+        return Response(
+            {"detail": "Invalid or expired code"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    # Do NOT consume here — the code is needed again at set-password.
+    ok, err = _check_reset_otp(user, otp, consume=False)
+    if not ok:
+        return Response({"detail": err}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"detail": "OTP verified"})
 
 
 @api_view(["GET"])
@@ -2802,20 +2882,26 @@ def set_new_password(request):
     otp = request.data.get("otp")
     password = request.data.get("password")
 
-    try:
-        user = User.objects.get(**{method: value})
-        if user.otp != otp:
-            return Response(
-                {"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST
-            )
+    if not password or len(str(password)) < 6:
+        return Response(
+            {"detail": "Password must be at least 6 characters"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-        user.set_password(password)
-        user.otp = "000000"  # Reset OTP
-        user.save()
+    user = _reset_user_for(method, value)
+    if user is None:
+        return Response(
+            {"detail": "Invalid or expired code"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    # Consume the OTP so it can't be replayed.
+    ok, err = _check_reset_otp(user, otp, consume=True)
+    if not ok:
+        return Response({"detail": err}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"detail": "Password reset successfully"})
-    except User.DoesNotExist:
-        return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    user.set_password(password)
+    user.save(update_fields=["password"])
+    return Response({"detail": "Password reset successfully"})
 
 
 class ReceivedTransfersView(generics.ListAPIView):
@@ -4452,6 +4538,16 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
     lookup_field = "id"
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        # IDOR guard: only the buyer or a seller of one of the order's items
+        # may edit it. Previously any authenticated user could edit ANY order.
+        user = self.request.user
+        if user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(
+            Q(user=user) | Q(items__product__owner=user)
+        ).distinct()
+
     def update(self, request, *args, **kwargs):
         order = self.get_object()
         items_data = request.data.get("items", [])
@@ -4920,20 +5016,61 @@ class PurchaseDiamondsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        data = request.data
-        data["user"] = request.user.id
-        data["transaction_type"] = "purchase"
-        purchage_diamonds_serializer = DiamondTransactionSerializer(data=data)
-        if purchage_diamonds_serializer.is_valid():
-            purchage_diamonds_serializer.save()
+        # SECURITY: the price (cost) is taken from the server-side
+        # DiamondPackages table, NEVER from the client. Previously the client
+        # sent both the diamond quantity AND the cost, so `{amount: 1000000,
+        # cost: 0}` (or a negative cost, which INCREASED balance) minted free
+        # diamonds. We resolve the package by id or by exact diamond count.
+        from .models import DiamondPackages
+
+        package = None
+        pkg_id = request.data.get("package") or request.data.get("package_id")
+        if pkg_id:
+            package = DiamondPackages.objects.filter(id=pkg_id).first()
+        if package is None:
+            try:
+                diamonds = int(request.data.get("amount") or 0)
+            except (TypeError, ValueError):
+                diamonds = 0
+            if diamonds > 0:
+                package = DiamondPackages.objects.filter(diamonds=diamonds).first()
+
+        if package is None:
             return Response(
-                purchage_diamonds_serializer.data, status=status.HTTP_201_CREATED
+                {"error": "Invalid diamond package"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        else:
-            print(purchage_diamonds_serializer.errors)
+
+        if request.user.balance < package.price:
             return Response(
-                purchage_diamonds_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Insufficient balance for diamond purchase"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # Lock the user row so concurrent purchases can't double-spend.
+        from django.db import transaction as db_transaction
+
+        with db_transaction.atomic():
+            user = type(request.user).objects.select_for_update().get(
+                pk=request.user.pk
+            )
+            if user.balance < package.price:
+                return Response(
+                    {"error": "Insufficient balance for diamond purchase"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            txn = DiamondTransaction(
+                user=user,
+                transaction_type="purchase",
+                amount=package.diamonds,
+                cost=package.price,
+            )
+            txn.save()
+
+        return Response(
+            DiamondTransactionSerializer(txn).data,
+            status=status.HTTP_201_CREATED,
+        )
         # try:
         #     amount = int(request.data.get('amount', 0))
         #     cost = float(request.data.get('cost', 0))
