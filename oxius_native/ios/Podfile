@@ -38,6 +38,16 @@ target 'Runner' do
   use_frameworks! :linkage => :static
   use_modular_headers!
 
+  # Firestore on iOS otherwise compiles gRPC/BoringSSL/abseil from source, which
+  # (with Xcode 16 + Firebase 11.15) fails to link abseil:
+  #   Undefined symbol: absl::lts_20240722::log_internal::CheckOpMessageBuilder…
+  # Invertase's PRE-COMPILED Firestore binaries ship abseil correctly and skip
+  # that whole source build. The tag MUST equal the Firebase SDK version pinned
+  # by firebase_core (11.15.0 → firebase_core 3.15.2); bump both together.
+  pod 'FirebaseFirestore',
+    :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git',
+    :tag => '11.15.0'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
