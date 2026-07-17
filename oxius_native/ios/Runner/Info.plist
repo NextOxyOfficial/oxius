@@ -126,11 +126,13 @@
 	     app in AdMob (same publisher as Android, pub-7353770814470592). -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-7353770814470592~2099513287</string>
-	<!-- App Tracking Transparency prompt shown before requesting the IDFA for
-	     personalized ads (iOS 14.5+). Non-personalized ads still serve if the
-	     user declines. -->
-	<key>NSUserTrackingUsageDescription</key>
-	<string>This identifier will be used to deliver more relevant ads to you.</string>
+	<!-- NOTE: NSUserTrackingUsageDescription is intentionally NOT declared.
+	     The app never calls ATTrackingManager, so AdMob serves only
+	     non-personalized ads — no cross-app tracking. Declaring the key
+	     without an ATT prompt blocks App Store submission ("update your App
+	     Privacy response to indicate ... tracking"). Add the key together
+	     with a real ATT request + an App Privacy tracking declaration if
+	     personalized ads are wanted later. -->
 	<!-- SKAdNetwork IDs for ad attribution (Google-recommended list). -->
 	<key>SKAdNetworkItems</key>
 	<array>
