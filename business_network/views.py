@@ -1170,17 +1170,43 @@ class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def increment_media_views(request, media_id):
-    """Increment views count for a media item.
+    """Count a unique view for a media item.
 
-    Requires auth so views are attributable and anonymous scripts can't pump
-    the counter that monetization eligibility is derived from."""
+    The counter feeds monetization eligibility, so it must not be pumpable:
+    - one increment per (media, user) — repeat calls are no-ops,
+    - a viewer who authored a post using this media (self-view) is never
+      counted.
+    Always returns the current count so the client can display it."""
     try:
-        updated = BusinessNetworkMedia.objects.filter(id=media_id).update(views=F("views") + 1)
-        if not updated:
+        media = BusinessNetworkMedia.objects.filter(id=media_id).first()
+        if media is None:
             return Response({"error": "Media not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        media = BusinessNetworkMedia.objects.get(id=media_id)
-        return Response({"message": "Views incremented", "views": media.views}, status=status.HTTP_200_OK)
+        # Don't count the owner's own views.
+        is_owner = media.business_network_posts.filter(
+            author=request.user
+        ).exists()
+        if is_owner:
+            return Response(
+                {"message": "Own view not counted", "views": media.views},
+                status=status.HTTP_200_OK,
+            )
+
+        # First view from this user → record it and bump the counter atomically.
+        _, created = BusinessNetworkMediaView.objects.get_or_create(
+            media=media, user=request.user
+        )
+        if created:
+            BusinessNetworkMedia.objects.filter(id=media_id).update(
+                views=F("views") + 1
+            )
+            media.refresh_from_db(fields=["views"])
+
+        return Response(
+            {"message": "Views incremented" if created else "Already viewed",
+             "views": media.views},
+            status=status.HTTP_200_OK,
+        )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

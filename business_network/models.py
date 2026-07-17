@@ -213,6 +213,23 @@ class BusinessNetworkMedia(models.Model):
             return
 
 
+class BusinessNetworkMediaView(models.Model):
+    """One row per (media, user) — so the media.views counter (which feeds
+    monetization eligibility) counts each viewer once and can't be pumped by
+    repeated calls or self-views."""
+    media = models.ForeignKey(
+        'BusinessNetworkMedia', on_delete=models.CASCADE, related_name='view_records'
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='business_network_media_views'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # unique_together already provides the (media, user) index we look up on.
+        unique_together = ['media', 'user']
+
+
 class BusinessNetworkMediaLike(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     media = models.ForeignKey('BusinessNetworkMedia', on_delete=models.CASCADE, related_name='media_likes')
