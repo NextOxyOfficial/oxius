@@ -851,24 +851,28 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        // Pill-shaped, matching the BN comment input.
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: TextField(
-                        controller: _chatSearchController,
-                        decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.search_rounded,
-                              color: Colors.grey.shade500, size: 20),
-                          hintText: 'Search chats',
-                          hintStyle: TextStyle(
-                              color: Colors.grey.shade500, fontSize: 14),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 12),
+                    child: TextField(
+                      controller: _chatSearchController,
+                      style: const TextStyle(fontSize: 14),
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search_rounded,
+                            color: Colors.grey.shade500, size: 20),
+                        // Tight icon box so the icon + hint read as one line
+                        // instead of the icon floating far from the text.
+                        prefixIconConstraints:
+                            const BoxConstraints(minWidth: 38, minHeight: 0),
+                        hintText: 'Search chats',
+                        hintStyle: TextStyle(
+                            color: Colors.grey.shade500, fontSize: 14),
+                        isDense: true,
+                        filled: true,
+                        fillColor: const Color(0xFFF1F5F9),
+                        contentPadding: const EdgeInsets.only(
+                            left: 4, right: 12, top: 11, bottom: 11),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),

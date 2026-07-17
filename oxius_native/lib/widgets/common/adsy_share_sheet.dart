@@ -86,10 +86,15 @@ class AdsyShareData {
         break;
       }
     }
+    final author = owner.isEmpty ? cleanTitle : owner;
     return SharedPostMessage(
-      ownerName: owner.isEmpty ? cleanTitle : owner,
+      ownerName: author,
       thumbUrl: cleanImageUrl,
       postUrl: cleanUrl,
+      authorName: author,
+      // The post's own caption/content — shown under the author's name so the
+      // card carries the real post, not a generic "Business Network" label.
+      caption: cleanDescription,
     ).encode();
   }
 

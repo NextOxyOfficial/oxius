@@ -552,7 +552,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   // inside a white rounded bordered box. Opens the post on tap.
   Widget _buildSharedPostContent(SharedPostMessage shared, bool isMe) {
     final thumb = AppConfig.getAbsoluteUrl(shared.thumbUrl);
-    final title = shared.ownerName.isEmpty ? 'Post' : shared.ownerName;
+    // Bold = the actual post author's name; subtitle = the post's own caption
+    // (never a generic "Business Network" label). Falls back gracefully for
+    // legacy messages that carry only one of the two.
+    final title = shared.displayName.isEmpty ? 'Post' : shared.displayName;
+    final subtitle = shared.caption.trim().isNotEmpty
+        ? shared.caption.trim()
+        : 'Business Network পোস্ট';
     return InkWell(
       onTap: () {
         if (shared.postUrl.isNotEmpty) {
@@ -601,12 +607,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                           height: 1.25,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Business Network',
-                        maxLines: 1,
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF6B7280), height: 1.3),
                       ),
                     ],
                   ),

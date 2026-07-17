@@ -208,23 +208,30 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                    child: Container(
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: TextField(
-                        controller: _search,
-                        decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.search_rounded,
-                              color: Colors.grey.shade500, size: 20),
-                          hintText: 'মেম্বার সার্চ করুন',
-                          hintStyle: TextStyle(
-                              color: Colors.grey.shade400, fontSize: 14),
-                          border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 11),
+                    child: TextField(
+                      controller: _search,
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search_rounded,
+                            color: Colors.grey.shade500, size: 20),
+                        prefixIconConstraints:
+                            const BoxConstraints(minWidth: 40, minHeight: 0),
+                        hintText: 'মেম্বার সার্চ করুন',
+                        hintStyle: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 14),
+                        isDense: true,
+                        filled: true,
+                        fillColor: const Color(0xFFF1F5F9),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                              const BorderSide(color: _blue, width: 1.3),
                         ),
                       ),
                     ),
@@ -236,7 +243,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     padding: const EdgeInsets.fromLTRB(22, 12, 22, 4),
                     child: Text(
                       _search.text.trim().isEmpty
-                          ? 'আপনার কথোপকথন থেকে'
+                          ? 'আপনার রিসেন্ট চ্যাট একটিভিটি থেকে'
                           : 'সার্চ রেজাল্ট',
                       style: TextStyle(
                           fontSize: 12,
@@ -305,12 +312,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         children: [
           InkWell(
             onTap: _pickPhoto,
-            borderRadius: BorderRadius.circular(52),
+            borderRadius: BorderRadius.circular(40),
             child: Stack(
               children: [
                 Container(
-                  width: 96,
-                  height: 96,
+                  width: 76,
+                  height: 76,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: _imagePath == null
@@ -324,23 +331,23 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: _imagePath != null
                       ? Image.file(File(_imagePath!),
-                          width: 96, height: 96, fit: BoxFit.cover)
+                          width: 76, height: 76, fit: BoxFit.cover)
                       : const Icon(Icons.groups_rounded,
-                          size: 42, color: Color(0xFF3B82F6)),
+                          size: 34, color: Color(0xFF3B82F6)),
                 ),
                 Positioned(
-                  bottom: 2,
-                  right: 2,
+                  bottom: -1,
+                  right: -1,
                   child: Container(
-                    width: 30,
-                    height: 30,
+                    width: 26,
+                    height: 26,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _blue,
                       border: Border.all(color: Colors.white, width: 2.5),
                     ),
                     child: const Icon(Icons.camera_alt_rounded,
-                        size: 14, color: Colors.white),
+                        size: 12, color: Colors.white),
                   ),
                 ),
               ],
@@ -350,25 +357,29 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           TextField(
             controller: _name,
             maxLength: 80,
-            textAlign: TextAlign.center,
-            style:
-                const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
             decoration: InputDecoration(
               hintText: 'গ্রুপের নাম দিন',
               hintStyle: TextStyle(
-                  color: Colors.grey.shade400, fontWeight: FontWeight.w400),
+                  color: Colors.grey.shade400,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400),
+              prefixIcon: Icon(Icons.groups_2_outlined,
+                  size: 19, color: Colors.grey.shade500),
+              prefixIconConstraints:
+                  const BoxConstraints(minWidth: 42, minHeight: 0),
               counterText: '',
               isDense: true,
               filled: true,
               fillColor: const Color(0xFFF1F5F9),
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+                  const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: _blue, width: 1.3),
               ),
             ),
