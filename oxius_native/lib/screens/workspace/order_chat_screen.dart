@@ -8,6 +8,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 class OrderChatScreen extends StatefulWidget {
   final String orderId;
@@ -320,7 +321,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[300]),
+          const AdsyChatIcon(size: 64),
           const SizedBox(height: 16),
           Text(
             _t('workspace_no_messages', 'এখনো কোনো মেসেজ নেই'),

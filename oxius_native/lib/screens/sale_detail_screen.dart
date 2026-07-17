@@ -14,6 +14,7 @@ import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 /// Sale Post Detail Screen - View full post details with image gallery and all features
 class SaleDetailScreen extends StatefulWidget {
@@ -1441,11 +1442,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.chat_bubble_outline,
-                color: Color(0xFF10B981),
-                size: 24,
-              ),
+              child: const AdsyChatIcon(size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(

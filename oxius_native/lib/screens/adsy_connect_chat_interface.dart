@@ -28,6 +28,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_report_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../utils/url_launcher_utils.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -3196,11 +3197,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.chat_bubble_outline_rounded,
-              size: 48,
-              color: Color(0xFF3B82F6),
-            ),
+            child: const AdsyChatIcon(size: 48),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -3535,12 +3532,29 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         ),
       ),
       child: _isOtherUserTyping
-          ? const Padding(
-              key: ValueKey('typing_indicator_visible'),
-              padding: EdgeInsets.fromLTRB(42, 2, 8, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: _TypingIndicatorBubble(),
+          ? Padding(
+              key: const ValueKey('typing_indicator_visible'),
+              padding: const EdgeInsets.fromLTRB(42, 2, 8, 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const _TypingIndicatorBubble(),
+                  const SizedBox(width: 7),
+                  // Say WHO is typing — the other person's name.
+                  Flexible(
+                    child: Text(
+                      '${widget.userName} টাইপ করছেন…',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             )
           : const SizedBox.shrink(key: ValueKey('typing_indicator_hidden')),

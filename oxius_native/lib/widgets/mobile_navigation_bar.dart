@@ -3,6 +3,7 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/scroll_direction_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 class MobileNavigationBar extends StatefulWidget {
   final ScrollDirectionService? scrollService;
@@ -142,6 +143,8 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                 selectedIcon: Icons.chat_bubble,
                 label: 'Messages',
                 isSelected: false,
+                // AdsyConnect brand icon instead of the generic bubble.
+                customIcon: const AdsyChatIcon(size: 24),
                 onTap: () => _handleNavigation('Messages'),
               ),
               _buildNavItem(
@@ -165,6 +168,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
     required bool isSelected,
     required VoidCallback onTap,
     bool isHighlighted = false,
+    Widget? customIcon,
   }) {
     return Expanded(
       child: Material(
@@ -232,15 +236,16 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                             ],
                           )
                         : null,
-                    child: Icon(
-                      isSelected ? selectedIcon : icon,
-                      color: isHighlighted
-                          ? Colors.white
-                          : (isSelected
-                              ? const Color(0xFF3B82F6)
-                              : Colors.grey.shade600),
-                      size: isHighlighted ? 20 : 24,
-                    ),
+                    child: customIcon ??
+                        Icon(
+                          isSelected ? selectedIcon : icon,
+                          color: isHighlighted
+                              ? Colors.white
+                              : (isSelected
+                                  ? const Color(0xFF3B82F6)
+                                  : Colors.grey.shade600),
+                          size: isHighlighted ? 20 : 24,
+                        ),
                   ),
                 const SizedBox(height: 4),
                 Text(

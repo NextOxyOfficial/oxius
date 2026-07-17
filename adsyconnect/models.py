@@ -111,6 +111,109 @@ class ChatRoom(models.Model):
         ).exists()
 
 
+class ChatGroup(models.Model):
+    """A named group conversation with any number of members.
+
+    Kept separate from the 1-on-1 ChatRoom/Message pair so the heavily-used
+    direct-chat paths stay untouched. The creator starts as admin; admins can
+    add/remove members and rename the group; anyone can leave.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=80)
+    image = models.ImageField(
+        upload_to='adsyconnect/groups/', null=True, blank=True
+    )
+    creator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='adsy_groups_created'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_message_at = models.DateTimeField(default=timezone.now)
+    last_message_preview = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'adsyconnect_chat_groups'
+        ordering = ['-last_message_at']
+
+    def __str__(self):
+        return f'Group: {self.name}'
+
+    def is_member(self, user):
+        return self.memberships.filter(user=user).exists()
+
+    def is_admin(self, user):
+        return self.memberships.filter(user=user, role='admin').exists()
+
+
+class ChatGroupMembership(models.Model):
+    ROLE_CHOICES = [('admin', 'Admin'), ('member', 'Member')]
+
+    group = models.ForeignKey(
+        ChatGroup, on_delete=models.CASCADE, related_name='memberships'
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='adsy_group_memberships'
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')
+    joined_at = models.DateTimeField(auto_now_add=True)
+    # Everything before this stays hidden for the member (like 1:1 clear).
+    cleared_at = models.DateTimeField(null=True, blank=True)
+    muted = models.BooleanField(default=False)
+    # Typing heartbeat: set on every keystroke batch; a member counts as
+    # "typing" while this is a few seconds fresh (clients poll it).
+    typing_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'adsyconnect_chat_group_memberships'
+        unique_together = ['group', 'user']
+
+    def __str__(self):
+        return f'{self.user.username} in {self.group.name} ({self.role})'
+
+
+class GroupMessage(models.Model):
+    MESSAGE_TYPES = [
+        ('text', 'Text'),
+        ('voice', 'Voice'),
+        ('image', 'Image'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    group = models.ForeignKey(
+        ChatGroup, on_delete=models.CASCADE, related_name='messages'
+    )
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='adsy_group_messages'
+    )
+    message_type = models.CharField(
+        max_length=20, choices=MESSAGE_TYPES, default='text'
+    )
+    content = models.TextField(blank=True, null=True)
+    media_file = models.FileField(
+        upload_to='adsyconnect/group_media/%Y/%m/%d/', blank=True, null=True
+    )
+    voice_duration = models.IntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'adsyconnect_group_messages'
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['group', 'created_at']),
+        ]
+
+    def get_preview(self):
+        if self.is_deleted:
+            return 'Message deleted'
+        if self.message_type == 'voice':
+            return '🎤 Voice message'
+        if self.message_type == 'image':
+            return '📷 Photo'
+        text = self.content or ''
+        return text[:50] + '...' if len(text) > 50 else text
+
+
 class Message(models.Model):
     """
     Represents a message in a chat room

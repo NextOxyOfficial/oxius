@@ -10,6 +10,7 @@ import '../../utils/shared_post_message.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'adsy_loading.dart';
 import 'adsy_toast.dart';
+import 'adsy_chat_icon.dart';
 
 class AdsyShareData {
   final String title;
@@ -393,7 +394,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
       children: [
         Row(
           children: const [
-            Icon(Icons.forum_rounded, size: 17, color: Color(0xFF2563EB)),
+            AdsyChatIcon(size: 17),
             SizedBox(width: 7),
             Text('চ্যাটে শেয়ার করুন',
                 style: TextStyle(
@@ -1099,8 +1100,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.forum_rounded,
-                        size: 19, color: Color(0xFF2563EB)),
+                    const AdsyChatIcon(size: 19),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text('চ্যাটে পাঠান',

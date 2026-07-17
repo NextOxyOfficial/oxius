@@ -17,6 +17,7 @@ import 'adsy_connect_chat_interface.dart';
 import 'user_posts_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -1071,11 +1072,7 @@ class _ClassifiedPostDetailsScreenState
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.chat_bubble_outline,
-                color: Color(0xFF10B981),
-                size: 24,
-              ),
+              child: const AdsyChatIcon(size: 24),
             ),
             const SizedBox(width: 12),
             const Expanded(

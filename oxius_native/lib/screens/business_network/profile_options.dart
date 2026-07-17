@@ -20,6 +20,7 @@ import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
   const ProfileOptionsScreen({super.key});
@@ -282,6 +283,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                       ),
                       _MenuItem(
                         icon: Icons.chat_bubble_outline_rounded,
+                        customIcon: const AdsyChatIcon(size: 22),
                         label: 'AdsyConnect',
                         subtitle: 'Messages and conversations',
                         gradient: const [Color(0xFF06B6D4), Color(0xFF0891B2)],
@@ -892,7 +894,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
           ),
           child: Row(
             children: [
-              Icon(item.icon, color: const Color(0xFF475569), size: 22),
+              item.customIcon ??
+                  Icon(item.icon, color: const Color(0xFF475569), size: 22),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -1177,6 +1180,8 @@ class _MenuItem {
   final String subtitle;
   final List<Color> gradient;
   final VoidCallback onTap;
+  // Optional widget icon (e.g. the AdsyConnect brand icon).
+  final Widget? customIcon;
 
   const _MenuItem({
     required this.icon,
@@ -1184,6 +1189,7 @@ class _MenuItem {
     required this.subtitle,
     required this.gradient,
     required this.onTap,
+    this.customIcon,
   });
 }
 // ─── Followers / Following bottom sheet ─────────────────────────────────────

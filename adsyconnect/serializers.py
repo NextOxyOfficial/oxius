@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from .models import (
     ChatRoom, Message, MessageReport,
-    BlockedUser, TypingStatus, OnlineStatus
+    BlockedUser, TypingStatus, OnlineStatus,
+    ChatGroup, ChatGroupMembership, GroupMessage,
 )
 
 User = get_user_model()
@@ -327,3 +328,72 @@ class TypingStatusSerializer(serializers.ModelSerializer):
         model = TypingStatus
         fields = ['id', 'chatroom', 'user', 'is_typing', 'updated_at']
         read_only_fields = ['id', 'user', 'updated_at']
+
+
+class GroupMemberSerializer(serializers.ModelSerializer):
+    """A group member with their role."""
+    user = UserBasicSerializer(read_only=True)
+
+    class Meta:
+        model = ChatGroupMembership
+        fields = ['user', 'role', 'joined_at']
+
+
+class GroupMessageSerializer(serializers.ModelSerializer):
+    sender = UserBasicSerializer(read_only=True)
+    media_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GroupMessage
+        fields = [
+            'id', 'group', 'sender', 'message_type', 'content', 'media_url',
+            'voice_duration', 'created_at', 'is_deleted',
+        ]
+        read_only_fields = ['id', 'sender', 'created_at', 'is_deleted']
+
+    def get_media_url(self, obj):
+        if not obj.media_file:
+            return None
+        request = self.context.get('request')
+        url = obj.media_file.url
+        if request:
+            url = request.build_absolute_uri(url)
+            if url.startswith('http://') and 'localhost' not in url and '127.0.0.1' not in url:
+                url = url.replace('http://', 'https://', 1)
+        return url
+
+
+class ChatGroupSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    member_count = serializers.SerializerMethodField()
+    my_role = serializers.SerializerMethodField()
+    members = GroupMemberSerializer(source='memberships', many=True, read_only=True)
+
+    class Meta:
+        model = ChatGroup
+        fields = [
+            'id', 'name', 'image_url', 'creator', 'member_count', 'my_role',
+            'members', 'last_message_at', 'last_message_preview', 'created_at',
+        ]
+        read_only_fields = fields
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get('request')
+        url = obj.image.url
+        if request:
+            url = request.build_absolute_uri(url)
+            if url.startswith('http://') and 'localhost' not in url and '127.0.0.1' not in url:
+                url = url.replace('http://', 'https://', 1)
+        return url
+
+    def get_member_count(self, obj):
+        return obj.memberships.count()
+
+    def get_my_role(self, obj):
+        user = getattr(self.context.get('request'), 'user', None)
+        if not user or not getattr(user, 'is_authenticated', False):
+            return None
+        m = obj.memberships.filter(user=user).first()
+        return m.role if m else None

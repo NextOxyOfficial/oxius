@@ -1,0 +1,489 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../config/app_config.dart';
+import '../services/adsyconnect_service.dart';
+import '../services/auth_service.dart';
+import '../widgets/chat/member_picker_sheet.dart';
+import '../widgets/common/adsy_toast.dart';
+
+/// Group settings / management. What each side can do:
+///
+/// Everyone: see members & roles, mute/unmute, leave.
+/// Admin, additionally: rename group, change photo, add members,
+/// remove members, promote/demote admins, delete the group.
+///
+/// Pops 'left' or 'deleted' when the caller must close the chat.
+class GroupInfoScreen extends StatefulWidget {
+  final Map<String, dynamic> group;
+
+  const GroupInfoScreen({super.key, required this.group});
+
+  @override
+  State<GroupInfoScreen> createState() => _GroupInfoScreenState();
+}
+
+class _GroupInfoScreenState extends State<GroupInfoScreen> {
+  late Map<String, dynamic> _group;
+  bool _muted = false;
+
+  String get _groupId => (_group['id'] ?? '').toString();
+  String get _myId => AuthService.currentUser?.id ?? '';
+  bool get _isAdmin => _group['my_role'] == 'admin';
+  String get _creatorId => (_group['creator'] ?? '').toString();
+
+  List<Map<String, dynamic>> get _members =>
+      List<Map<String, dynamic>>.from((_group['members'] as List? ?? [])
+          .map((m) => Map<String, dynamic>.from(m)));
+
+  @override
+  void initState() {
+    super.initState();
+    _group = Map<String, dynamic>.from(widget.group);
+  }
+
+  Future<void> _refresh() async {
+    final groups = await AdsyConnectService.getGroups();
+    if (!mounted) return;
+    final updated = groups
+        .map<Map<String, dynamic>>((g) => Map<String, dynamic>.from(g))
+        .where((g) => g['id'].toString() == _groupId)
+        .toList();
+    if (updated.isNotEmpty) setState(() => _group = updated.first);
+  }
+
+  Future<void> _rename() async {
+    final controller =
+        TextEditingController(text: (_group['name'] ?? '').toString());
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('গ্রুপের নাম বদলান'),
+        content: TextField(
+          controller: controller,
+          maxLength: 80,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'নতুন নাম'),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('বাতিল')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+              child: const Text('সেভ করুন')),
+        ],
+      ),
+    );
+    if (newName == null || newName.isEmpty || !mounted) return;
+    final res = await AdsyConnectService.updateGroup(_groupId, name: newName);
+    if (!mounted) return;
+    if (res != null) {
+      setState(() => _group = res);
+      AdsyToast.success(context, 'নাম বদলানো হয়েছে');
+    } else {
+      AdsyToast.error(context, 'নাম বদলানো যায়নি');
+    }
+  }
+
+  Future<void> _changePhoto() async {
+    try {
+      final picked = await ImagePicker()
+          .pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (picked == null || !mounted) return;
+      final res =
+          await AdsyConnectService.updateGroup(_groupId, imagePath: picked.path);
+      if (!mounted) return;
+      if (res != null) {
+        setState(() => _group = res);
+        AdsyToast.success(context, 'গ্রুপের ছবি বদলানো হয়েছে');
+      } else {
+        AdsyToast.error(context, 'ছবি বদলানো যায়নি');
+      }
+    } catch (_) {
+      if (mounted) AdsyToast.error(context, 'ছবি নেওয়া যায়নি');
+    }
+  }
+
+  Future<void> _addMembers() async {
+    final selected = await showModalBottomSheet<List<String>>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+      builder: (_) => const MemberPickerSheet(),
+    );
+    if (selected == null || selected.isEmpty || !mounted) return;
+    final ok = await AdsyConnectService.addGroupMembers(_groupId, selected);
+    if (!mounted) return;
+    if (ok) {
+      AdsyToast.success(context, 'মেম্বার যোগ হয়েছে');
+      _refresh();
+    } else {
+      AdsyToast.error(context, 'মেম্বার যোগ করা যায়নি');
+    }
+  }
+
+  Future<void> _toggleMute() async {
+    final next = !_muted;
+    final ok = await AdsyConnectService.setGroupMuted(_groupId, next);
+    if (!mounted) return;
+    if (ok) {
+      setState(() => _muted = next);
+      AdsyToast.info(context, next ? 'গ্রুপ মিউট হয়েছে' : 'আনমিউট হয়েছে');
+    } else {
+      AdsyToast.error(context, 'করা যায়নি');
+    }
+  }
+
+  Future<void> _leave() async {
+    final confirm = await _confirm(
+        'গ্রুপ ছাড়বেন?', '"${_group['name']}" থেকে বেরিয়ে যাবেন।', 'গ্রুপ ছাড়ুন');
+    if (confirm != true || !mounted) return;
+    final ok = await AdsyConnectService.leaveGroup(_groupId);
+    if (!mounted) return;
+    if (ok) {
+      Navigator.of(context).pop('left');
+    } else {
+      AdsyToast.error(context, 'গ্রুপ ছাড়া যায়নি');
+    }
+  }
+
+  Future<void> _deleteGroup() async {
+    final confirm = await _confirm('গ্রুপ ডিলিট করবেন?',
+        'সব মেসেজসহ গ্রুপটি স্থায়ীভাবে মুছে যাবে। এটা আর ফেরানো যাবে না।', 'ডিলিট করুন');
+    if (confirm != true || !mounted) return;
+    final ok = await AdsyConnectService.deleteGroup(_groupId);
+    if (!mounted) return;
+    if (ok) {
+      Navigator.of(context).pop('deleted');
+    } else {
+      AdsyToast.error(context, 'ডিলিট করা যায়নি');
+    }
+  }
+
+  Future<bool?> _confirm(String title, String body, String action) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('বাতিল')),
+          FilledButton(
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626)),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(action)),
+        ],
+      ),
+    );
+  }
+
+  void _memberActions(Map<String, dynamic> m) {
+    final u = Map<String, dynamic>.from(m['user'] ?? {});
+    final uid = (u['id'] ?? '').toString();
+    final isAdminRow = m['role'] == 'admin';
+    final isCreatorRow = uid == _creatorId;
+    if (!_isAdmin || uid == _myId) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            if (!isAdminRow)
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings_outlined,
+                    color: Color(0xFF2563EB)),
+                title: const Text('অ্যাডমিন বানান'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final ok = await AdsyConnectService.promoteGroupAdmin(
+                      _groupId, uid);
+                  if (!mounted) return;
+                  if (ok) {
+                    AdsyToast.success(this.context, 'অ্যাডমিন বানানো হয়েছে');
+                    _refresh();
+                  } else {
+                    AdsyToast.error(this.context, 'করা যায়নি');
+                  }
+                },
+              ),
+            if (isAdminRow && !isCreatorRow)
+              ListTile(
+                leading: const Icon(Icons.remove_moderator_outlined,
+                    color: Color(0xFFD97706)),
+                title: const Text('অ্যাডমিন থেকে সরান'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final ok = await AdsyConnectService.demoteGroupAdmin(
+                      _groupId, uid);
+                  if (!mounted) return;
+                  if (ok) {
+                    AdsyToast.info(this.context, 'অ্যাডমিন থেকে সরানো হয়েছে');
+                    _refresh();
+                  } else {
+                    AdsyToast.error(this.context, 'করা যায়নি');
+                  }
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.person_remove_outlined,
+                  color: Color(0xFFDC2626)),
+              title: const Text('গ্রুপ থেকে remove করুন',
+                  style: TextStyle(color: Color(0xFFDC2626))),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final ok = await AdsyConnectService.removeGroupMember(
+                    _groupId, uid);
+                if (!mounted) return;
+                if (ok) {
+                  AdsyToast.info(this.context, 'Remove করা হয়েছে');
+                  _refresh();
+                } else {
+                  AdsyToast.error(this.context, 'Remove করা যায়নি');
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final name = (_group['name'] ?? '').toString();
+    final imageUrl = (_group['image_url'] ?? '').toString();
+    final members = _members;
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0.5,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF334155)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text('গ্রুপ ইনফো',
+            style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontSize: 17,
+                fontWeight: FontWeight.w700)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 30),
+        children: [
+          // Header: photo + name + count
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 22),
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: const BoxDecoration(
+                          shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+                      clipBehavior: Clip.antiAlias,
+                      alignment: Alignment.center,
+                      child: imageUrl.isNotEmpty
+                          ? Image.network(imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.groups,
+                                  size: 40,
+                                  color: Color(0xFF3B82F6)))
+                          : const Icon(Icons.groups,
+                              size: 40, color: Color(0xFF3B82F6)),
+                    ),
+                    if (_isAdmin)
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: InkWell(
+                          onTap: _changePhoto,
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF2563EB),
+                              border:
+                                  Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(Icons.camera_alt,
+                                size: 14, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A))),
+                    ),
+                    if (_isAdmin) ...[
+                      const SizedBox(width: 6),
+                      InkWell(
+                        onTap: _rename,
+                        child: Icon(Icons.edit_outlined,
+                            size: 17, color: Colors.grey.shade600),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text('${members.length} জন মেম্বার',
+                    style:
+                        TextStyle(fontSize: 12.5, color: Colors.grey.shade600)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Quick actions
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                if (_isAdmin)
+                  _actionTile(Icons.person_add_alt_1_outlined,
+                      'মেম্বার যোগ করুন', _addMembers),
+                _actionTile(
+                    _muted
+                        ? Icons.notifications_active_outlined
+                        : Icons.notifications_off_outlined,
+                    _muted ? 'আনমিউট করুন' : 'মিউট করুন',
+                    _toggleMute),
+                _actionTile(Icons.logout_rounded, 'গ্রুপ ছাড়ুন', _leave,
+                    danger: true),
+                if (_isAdmin)
+                  _actionTile(Icons.delete_forever_outlined,
+                      'গ্রুপ ডিলিট করুন', _deleteGroup,
+                      danger: true),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Members
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Text('মেম্বার (${members.length})',
+                      style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A))),
+                ),
+                ...members.map(_memberTile),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionTile(IconData icon, String label, VoidCallback onTap,
+      {bool danger = false}) {
+    final color = danger ? const Color(0xFFDC2626) : const Color(0xFF334155);
+    return ListTile(
+      leading: Icon(icon, color: color, size: 22),
+      title: Text(label,
+          style: TextStyle(
+              color: color, fontSize: 14.5, fontWeight: FontWeight.w600)),
+      onTap: onTap,
+    );
+  }
+
+  Widget _memberTile(Map<String, dynamic> m) {
+    final u = Map<String, dynamic>.from(m['user'] ?? {});
+    final uid = (u['id'] ?? '').toString();
+    final name = [
+      (u['first_name'] ?? '').toString(),
+      (u['last_name'] ?? '').toString(),
+    ].where((s) => s.isNotEmpty).join(' ');
+    final display =
+        name.isNotEmpty ? name : (u['username'] ?? 'User').toString();
+    final avatar = AppConfig.getAbsoluteUrl((u['avatar'] ?? '').toString());
+    final isAdminRow = m['role'] == 'admin';
+    final isMe = uid == _myId;
+    return ListTile(
+      onTap: (_isAdmin && !isMe) ? () => _memberActions(m) : null,
+      leading: Container(
+        width: 42,
+        height: 42,
+        decoration: const BoxDecoration(
+            shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+        clipBehavior: Clip.antiAlias,
+        alignment: Alignment.center,
+        child: avatar.isNotEmpty
+            ? Image.network(avatar,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Text(
+                    display.isNotEmpty ? display[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                        color: Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w700)))
+            : Text(display.isNotEmpty ? display[0].toUpperCase() : '?',
+                style: const TextStyle(
+                    color: Color(0xFF3B82F6), fontWeight: FontWeight.w700)),
+      ),
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(isMe ? '$display (আপনি)' : display,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 14.5, fontWeight: FontWeight.w600)),
+          ),
+          if (isAdminRow) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: const Text('অ্যাডমিন',
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF059669))),
+            ),
+          ],
+        ],
+      ),
+      trailing: (_isAdmin && !isMe)
+          ? Icon(Icons.more_vert, size: 18, color: Colors.grey.shade500)
+          : null,
+    );
+  }
+}

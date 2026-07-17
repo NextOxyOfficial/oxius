@@ -12,6 +12,7 @@ import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 /// Seller Profile Screen - Display seller information and their listings
 class SellerProfileScreen extends StatefulWidget {
@@ -691,8 +692,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.chat_bubble_outline,
-                  color: Color(0xFF10B981), size: 24),
+              child: const AdsyChatIcon(size: 24),
             ),
             const SizedBox(width: 12),
             const Expanded(

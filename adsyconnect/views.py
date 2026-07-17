@@ -16,13 +16,15 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import (
-    ChatRoom, Message, MessageReport, 
-    BlockedUser, TypingStatus, OnlineStatus, ActiveChatSession, CallSession
+    ChatRoom, Message, MessageReport,
+    BlockedUser, TypingStatus, OnlineStatus, ActiveChatSession, CallSession,
+    ChatGroup, ChatGroupMembership, GroupMessage
 )
 from .serializers import (
     ChatRoomSerializer, MessageSerializer, MessageCreateSerializer,
-    MessageReportSerializer, BlockedUserSerializer, 
-    OnlineStatusSerializer, TypingStatusSerializer
+    MessageReportSerializer, BlockedUserSerializer,
+    OnlineStatusSerializer, TypingStatusSerializer,
+    ChatGroupSerializer, GroupMessageSerializer
 )
 
 User = get_user_model()
@@ -1462,3 +1464,278 @@ def heartbeat(request):
     )
     online_status.set_presence(True)
     return Response({'status': 'online', 'timestamp': timezone.now().isoformat()})
+
+
+class ChatGroupViewSet(viewsets.ModelViewSet):
+    """Group chats: create (name/photo/members), message, manage members, leave.
+
+    Kept deliberately separate from the 1-on-1 ChatRoom paths. Realtime uses
+    the same per-user channel groups (`user_<id>`) with a `group_message`
+    event; clients without the socket fall back to polling `messages`.
+    """
+    serializer_class = ChatGroupSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_queryset(self):
+        return (
+            ChatGroup.objects.filter(memberships__user=self.request.user)
+            .prefetch_related('memberships__user')
+            .distinct()
+        )
+
+    def create(self, request, *args, **kwargs):
+        name = (request.data.get('name') or '').strip()
+        if not name:
+            return Response({'error': 'গ্রুপের নাম দিন'}, status=400)
+        if len(name) > 80:
+            name = name[:80]
+
+        raw_ids = request.data.get('member_ids') or []
+        if isinstance(raw_ids, str):
+            raw_ids = [x for x in raw_ids.split(',') if x.strip()]
+        member_ids = [str(x).strip() for x in raw_ids if str(x).strip()]
+
+        members = list(User.objects.filter(id__in=member_ids))
+        if not members:
+            return Response({'error': 'অন্তত একজন মেম্বার যোগ করুন'}, status=400)
+
+        group = ChatGroup.objects.create(
+            name=name,
+            creator=request.user,
+            image=request.FILES.get('image'),
+        )
+        ChatGroupMembership.objects.create(
+            group=group, user=request.user, role='admin'
+        )
+        for m in members:
+            if m.id == request.user.id:
+                continue
+            ChatGroupMembership.objects.get_or_create(group=group, user=m)
+
+        data = ChatGroupSerializer(group, context={'request': request}).data
+        # Tell every member their group list changed.
+        for m in members:
+            _broadcast_to_user(m.id, {'type': 'group_updated', 'group': data})
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def _require_member(self, group):
+        if not group.is_member(self.request.user):
+            return Response({'error': 'আপনি এই গ্রুপের মেম্বার নন'}, status=403)
+        return None
+
+    def _require_admin(self, group):
+        if not group.is_admin(self.request.user):
+            return Response({'error': 'শুধু অ্যাডমিন এটা করতে পারেন'}, status=403)
+        return None
+
+    def partial_update(self, request, *args, **kwargs):
+        """Admin edits: rename group and/or change photo."""
+        group = self.get_object()
+        err = self._require_admin(group)
+        if err:
+            return err
+        name = (request.data.get('name') or '').strip()
+        updates = []
+        if name:
+            group.name = name[:80]
+            updates.append('name')
+        if 'image' in request.FILES:
+            group.image = request.FILES['image']
+            updates.append('image')
+        if updates:
+            group.save(update_fields=updates + ['updated_at'])
+        return Response(
+            ChatGroupSerializer(group, context={'request': request}).data
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete the whole group — admin only."""
+        group = self.get_object()
+        err = self._require_admin(group)
+        if err:
+            return err
+        group.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    def promote_admin(self, request, pk=None):
+        """Make another member an admin — admin only."""
+        group = self.get_object()
+        err = self._require_admin(group)
+        if err:
+            return err
+        user_id = str(request.data.get('user_id') or '').strip()
+        updated = ChatGroupMembership.objects.filter(
+            group=group, user_id=user_id
+        ).update(role='admin')
+        return Response({'promoted': bool(updated)})
+
+    @action(detail=True, methods=['post'])
+    def demote_admin(self, request, pk=None):
+        """Turn another admin back into a member — admin only. The creator
+        can never be demoted, and a group always keeps at least one admin."""
+        group = self.get_object()
+        err = self._require_admin(group)
+        if err:
+            return err
+        user_id = str(request.data.get('user_id') or '').strip()
+        if user_id == str(group.creator_id):
+            return Response({'error': 'গ্রুপ ক্রিয়েটরকে demote করা যায় না'},
+                            status=400)
+        admins = group.memberships.filter(role='admin')
+        if admins.count() <= 1:
+            return Response({'error': 'গ্রুপে অন্তত একজন অ্যাডমিন থাকতে হবে'},
+                            status=400)
+        updated = admins.filter(user_id=user_id).update(role='member')
+        return Response({'demoted': bool(updated)})
+
+    @action(detail=True, methods=['post'])
+    def mute(self, request, pk=None):
+        """Toggle MY notifications for this group. Body: {muted: bool}."""
+        group = self.get_object()
+        err = self._require_member(group)
+        if err:
+            return err
+        value = bool(request.data.get('muted', True))
+        group.memberships.filter(user=request.user).update(muted=value)
+        return Response({'muted': value})
+
+    @action(detail=True, methods=['get', 'post'])
+    def typing(self, request, pk=None):
+        """POST: I'm typing (heartbeat). GET: who else is typing right now."""
+        group = self.get_object()
+        err = self._require_member(group)
+        if err:
+            return err
+        if request.method == 'POST':
+            group.memberships.filter(user=request.user).update(
+                typing_at=timezone.now()
+            )
+            return Response({'ok': True})
+        cutoff = timezone.now() - timezone.timedelta(seconds=6)
+        names = []
+        for m in group.memberships.select_related('user').filter(
+            typing_at__gte=cutoff
+        ).exclude(user=request.user):
+            names.append(
+                m.user.first_name or m.user.username or 'Someone'
+            )
+        return Response({'typing': names})
+
+    @action(detail=True, methods=['post'])
+    def add_members(self, request, pk=None):
+        group = self.get_object()
+        err = self._require_admin(group)
+        if err:
+            return err
+        raw_ids = request.data.get('user_ids') or []
+        if isinstance(raw_ids, str):
+            raw_ids = [x for x in raw_ids.split(',') if x.strip()]
+        added = 0
+        for u in User.objects.filter(id__in=[str(x).strip() for x in raw_ids]):
+            _, created = ChatGroupMembership.objects.get_or_create(
+                group=group, user=u
+            )
+            if created:
+                added += 1
+                _broadcast_to_user(u.id, {
+                    'type': 'group_updated',
+                    'group': ChatGroupSerializer(
+                        group, context={'request': request}
+                    ).data,
+                })
+        return Response({'added': added})
+
+    @action(detail=True, methods=['post'])
+    def remove_member(self, request, pk=None):
+        group = self.get_object()
+        err = self._require_admin(group)
+        if err:
+            return err
+        user_id = str(request.data.get('user_id') or '').strip()
+        if user_id == str(request.user.id):
+            return Response({'error': 'নিজেকে remove করতে leave ব্যবহার করুন'},
+                            status=400)
+        deleted, _ = ChatGroupMembership.objects.filter(
+            group=group, user_id=user_id
+        ).delete()
+        return Response({'removed': bool(deleted)})
+
+    @action(detail=True, methods=['post'])
+    def leave(self, request, pk=None):
+        group = self.get_object()
+        err = self._require_member(group)
+        if err:
+            return err
+        ChatGroupMembership.objects.filter(
+            group=group, user=request.user
+        ).delete()
+        remaining = group.memberships.all()
+        if not remaining.exists():
+            group.delete()
+            return Response({'left': True, 'deleted': True})
+        # Never leave a group admin-less.
+        if not remaining.filter(role='admin').exists():
+            oldest = remaining.order_by('joined_at').first()
+            oldest.role = 'admin'
+            oldest.save(update_fields=['role'])
+        return Response({'left': True})
+
+    @action(detail=True, methods=['get', 'post'])
+    def messages(self, request, pk=None):
+        group = self.get_object()
+        err = self._require_member(group)
+        if err:
+            return err
+
+        if request.method == 'GET':
+            membership = group.memberships.filter(user=request.user).first()
+            qs = group.messages.select_related('sender')
+            if membership and membership.cleared_at:
+                qs = qs.filter(created_at__gt=membership.cleared_at)
+            msgs = list(qs.order_by('-created_at')[:100])[::-1]
+            return Response(GroupMessageSerializer(
+                msgs, many=True, context={'request': request}
+            ).data)
+
+        message_type = (request.data.get('message_type') or 'text').strip()
+        content = (request.data.get('content') or '').strip()
+        media = request.FILES.get('media_file')
+        if message_type == 'text' and not content:
+            return Response({'error': 'মেসেজ লিখুন'}, status=400)
+        if message_type in ('voice', 'image') and media is None:
+            return Response({'error': 'media_file required'}, status=400)
+        voice_duration = None
+        try:
+            raw_dur = request.data.get('voice_duration')
+            if raw_dur is not None and str(raw_dur).strip():
+                voice_duration = int(str(raw_dur).strip())
+        except (TypeError, ValueError):
+            voice_duration = None
+        message = GroupMessage.objects.create(
+            group=group,
+            sender=request.user,
+            message_type=message_type,
+            content=content or None,
+            media_file=media,
+            voice_duration=voice_duration,
+        )
+        group.last_message_at = message.created_at
+        group.last_message_preview = (
+            f'{request.user.first_name or request.user.username}: '
+            f'{message.get_preview()}'
+        )
+        group.save(update_fields=['last_message_at', 'last_message_preview'])
+
+        payload = GroupMessageSerializer(
+            message, context={'request': request}
+        ).data
+        for member_id in group.memberships.exclude(
+            user=request.user
+        ).values_list('user_id', flat=True):
+            _broadcast_to_user(member_id, {
+                'type': 'group_message',
+                'message': payload,
+            })
+        return Response(payload, status=status.HTTP_201_CREATED)

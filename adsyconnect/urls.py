@@ -3,12 +3,14 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ChatRoomViewSet, MessageViewSet, MessageReportViewSet,
     BlockedUserViewSet, OnlineStatusViewSet, TypingStatusViewSet,
+    ChatGroupViewSet,
     agora_rtc_token, agora_config, firebase_custom_token, send_call_notification, send_call_status,
     set_active_chat, clear_active_chat, heartbeat
 )
 
 router = DefaultRouter()
 router.register(r'chatrooms', ChatRoomViewSet, basename='chatroom')
+router.register(r'groups', ChatGroupViewSet, basename='chat-group')
 router.register(r'messages', MessageViewSet, basename='message')
 router.register(r'reports', MessageReportViewSet, basename='report')
 router.register(r'blocked-users', BlockedUserViewSet, basename='blocked-user')

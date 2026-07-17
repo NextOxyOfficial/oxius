@@ -740,4 +740,286 @@ class AdsyConnectService {
       debugPrint('Error sending heartbeat: $e');
     }
   }
+
+  // ── Group chats ─────────────────────────────────────────────────────────
+
+  static Future<List<dynamic>> getGroups() async {
+    try {
+      final headers = await _getHeaders();
+      final response =
+          await http.get(Uri.parse('$baseUrl/groups/'), headers: headers);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is Map && data.containsKey('results')) {
+          return List<dynamic>.from(data['results'] ?? []);
+        }
+        if (data is List) return List<dynamic>.from(data);
+      }
+      return [];
+    } catch (e) {
+      debugPrint('getGroups failed: $e');
+      return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>?> createGroup({
+    required String name,
+    required List<String> memberIds,
+    String? imagePath,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      headers.remove('Content-Type'); // multipart sets its own boundary
+      final req =
+          http.MultipartRequest('POST', Uri.parse('$baseUrl/groups/'));
+      req.headers.addAll(headers);
+      req.fields['name'] = name;
+      req.fields['member_ids'] = memberIds.join(',');
+      if (imagePath != null && imagePath.isNotEmpty) {
+        req.files.add(await http.MultipartFile.fromPath('image', imagePath));
+      }
+      final streamed = await req.send().timeout(const Duration(seconds: 30));
+      final body = await streamed.stream.bytesToString();
+      if (streamed.statusCode == 201) {
+        return Map<String, dynamic>.from(jsonDecode(body));
+      }
+      debugPrint('createGroup -> ${streamed.statusCode} $body');
+      return null;
+    } catch (e) {
+      debugPrint('createGroup failed: $e');
+      return null;
+    }
+  }
+
+  static Future<List<dynamic>> getGroupMessages(String groupId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/groups/$groupId/messages/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is List) return List<dynamic>.from(data);
+      }
+      return [];
+    } catch (e) {
+      debugPrint('getGroupMessages failed: $e');
+      return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>?> sendGroupMessage(
+      String groupId, String content) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/messages/'),
+        headers: headers,
+        body: jsonEncode({'content': content}),
+      );
+      if (response.statusCode == 201) {
+        return Map<String, dynamic>.from(jsonDecode(response.body));
+      }
+      return null;
+    } catch (e) {
+      debugPrint('sendGroupMessage failed: $e');
+      return null;
+    }
+  }
+
+  static Future<bool> addGroupMembers(
+      String groupId, List<String> userIds) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/add_members/'),
+        headers: headers,
+        body: jsonEncode({'user_ids': userIds}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('addGroupMembers failed: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> removeGroupMember(String groupId, String userId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/remove_member/'),
+        headers: headers,
+        body: jsonEncode({'user_id': userId}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('removeGroupMember failed: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> leaveGroup(String groupId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/leave/'),
+        headers: headers,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('leaveGroup failed: $e');
+      return false;
+    }
+  }
+
+  /// Admin: rename the group and/or change its photo.
+  static Future<Map<String, dynamic>?> updateGroup(
+    String groupId, {
+    String? name,
+    String? imagePath,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      headers.remove('Content-Type');
+      final req = http.MultipartRequest(
+          'PATCH', Uri.parse('$baseUrl/groups/$groupId/'));
+      req.headers.addAll(headers);
+      if (name != null && name.trim().isNotEmpty) {
+        req.fields['name'] = name.trim();
+      }
+      if (imagePath != null && imagePath.isNotEmpty) {
+        req.files.add(await http.MultipartFile.fromPath('image', imagePath));
+      }
+      final streamed = await req.send().timeout(const Duration(seconds: 30));
+      final body = await streamed.stream.bytesToString();
+      if (streamed.statusCode == 200) {
+        return Map<String, dynamic>.from(jsonDecode(body));
+      }
+      return null;
+    } catch (e) {
+      debugPrint('updateGroup failed: $e');
+      return null;
+    }
+  }
+
+  static Future<bool> deleteGroup(String groupId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/groups/$groupId/'),
+        headers: headers,
+      );
+      return response.statusCode == 204;
+    } catch (e) {
+      debugPrint('deleteGroup failed: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> promoteGroupAdmin(String groupId, String userId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/promote_admin/'),
+        headers: headers,
+        body: jsonEncode({'user_id': userId}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('promoteGroupAdmin failed: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> demoteGroupAdmin(String groupId, String userId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/demote_admin/'),
+        headers: headers,
+        body: jsonEncode({'user_id': userId}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('demoteGroupAdmin failed: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> setGroupMuted(String groupId, bool muted) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/mute/'),
+        headers: headers,
+        body: jsonEncode({'muted': muted}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('setGroupMuted failed: $e');
+      return false;
+    }
+  }
+
+  /// Heartbeat: tell the group I'm typing right now.
+  static Future<void> setGroupTyping(String groupId) async {
+    try {
+      final headers = await _getHeaders();
+      await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/typing/'),
+        headers: headers,
+      );
+    } catch (_) {}
+  }
+
+  /// Names of OTHER members typing right now.
+  static Future<List<String>> getGroupTyping(String groupId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/groups/$groupId/typing/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<String>.from(data['typing'] ?? []);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Send a voice (or image) message into a group.
+  static Future<Map<String, dynamic>?> sendGroupMediaMessage({
+    required String groupId,
+    required String filePath,
+    required String messageType,
+    int? voiceDuration,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      headers.remove('Content-Type');
+      final req = http.MultipartRequest(
+          'POST', Uri.parse('$baseUrl/groups/$groupId/messages/'));
+      req.headers.addAll(headers);
+      req.fields['message_type'] = messageType;
+      if (voiceDuration != null) {
+        req.fields['voice_duration'] = '$voiceDuration';
+      }
+      req.files
+          .add(await http.MultipartFile.fromPath('media_file', filePath));
+      final streamed = await req.send().timeout(const Duration(seconds: 60));
+      final body = await streamed.stream.bytesToString();
+      if (streamed.statusCode == 201) {
+        return Map<String, dynamic>.from(jsonDecode(body));
+      }
+      debugPrint('sendGroupMediaMessage -> ${streamed.statusCode} $body');
+      return null;
+    } catch (e) {
+      debugPrint('sendGroupMediaMessage failed: $e');
+      return null;
+    }
+  }
 }

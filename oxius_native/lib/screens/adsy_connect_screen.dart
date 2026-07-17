@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'adsy_connect_chat_interface.dart';
+import 'create_group_screen.dart';
+import 'group_chat_screen.dart';
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
@@ -11,6 +13,7 @@ import '../utils/network_error_handler.dart';
 import '../utils/shared_post_message.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 
 /// Chat-list buckets. Spam is hidden from every tab except its own so junk
 /// never clutters real conversations.
@@ -54,6 +57,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   final TextEditingController _chatSearchController = TextEditingController();
   String _chatSearchQuery = '';
   _ChatTab _activeChatTab = _ChatTab.all;
+  List<Map<String, dynamic>> _groups = [];
+  bool _loadingGroups = false;
+  bool _groupsLoadedOnce = false;
 
   static const int _pageSize = 20;
 
@@ -318,11 +324,42 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   int _tabCount(_ChatTab tab) {
+    if (tab == _ChatTab.groups) return _groups.length;
     final prev = _activeChatTab;
     _activeChatTab = tab;
     final n = _chatConversations.where(_matchesTab).length;
     _activeChatTab = prev;
     return n;
+  }
+
+  Future<void> _loadGroups() async {
+    setState(() => _loadingGroups = true);
+    final gs = await AdsyConnectService.getGroups();
+    if (!mounted) return;
+    setState(() {
+      _groups = gs
+          .map<Map<String, dynamic>>((g) => Map<String, dynamic>.from(g))
+          .toList();
+      _loadingGroups = false;
+      _groupsLoadedOnce = true;
+    });
+  }
+
+  Future<void> _openCreateGroup() async {
+    final created = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CreateGroupScreen()),
+    );
+    if (created != null && mounted) {
+      setState(() => _activeChatTab = _ChatTab.groups);
+      await _loadGroups();
+    }
+  }
+
+  Future<void> _openGroup(Map<String, dynamic> group) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => GroupChatScreen(group: group)),
+    );
+    if (mounted) _loadGroups();
   }
 
   List<Map<String, dynamic>> get _filteredChats {
@@ -805,6 +842,23 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
+                  // Create a new group chat.
+                  InkWell(
+                    onTap: _openCreateGroup,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      child: Icon(Icons.group_add_outlined,
+                          color: Colors.grey.shade600, size: 21),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   // Archived chats entry point.
                   InkWell(
                     onTap: _openArchivedChats,
@@ -826,13 +880,19 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             ),
             _buildChatTabs(),
             Expanded(
-              child: chatsToShow.isEmpty && (isFiltering || !_isLoadingChats)
+              child: _activeChatTab == _ChatTab.groups
+                  ? _buildGroupsList()
+                  : chatsToShow.isEmpty && (isFiltering || !_isLoadingChats)
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(_chatTabEmptyIcon,
-                              size: 46, color: Colors.grey.shade300),
+                          if (_activeChatTab == _ChatTab.all)
+                            AdsyChatIcon(
+                                size: 46, color: Colors.grey.shade300)
+                          else
+                            Icon(_chatTabEmptyIcon,
+                                size: 46, color: Colors.grey.shade300),
                           const SizedBox(height: 10),
                           Text(
                             isFiltering
@@ -1081,6 +1141,110 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
   }
 
+  Widget _buildGroupsList() {
+    if (_loadingGroups) {
+      return const Center(child: AdsyLoadingIndicator());
+    }
+    if (_groups.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.groups_outlined, size: 46, color: Colors.grey.shade300),
+            const SizedBox(height: 10),
+            Text('এখনো কোনো গ্রুপ চ্যাট নেই',
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500)),
+            const SizedBox(height: 14),
+            FilledButton.icon(
+              onPressed: _openCreateGroup,
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB)),
+              icon: const Icon(Icons.group_add_outlined, size: 18),
+              label: const Text('গ্রুপ তৈরি করুন'),
+            ),
+          ],
+        ),
+      );
+    }
+    return AdsyRefreshIndicator(
+      onRefresh: _loadGroups,
+      color: const Color(0xFF3B82F6),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        itemCount: _groups.length,
+        itemBuilder: (_, i) => _buildGroupItem(_groups[i]),
+      ),
+    );
+  }
+
+  Widget _buildGroupItem(Map<String, dynamic> group) {
+    final name = (group['name'] ?? '').toString();
+    final preview = (group['last_message_preview'] ?? '').toString();
+    final memberCount =
+        group['member_count'] ?? (group['members'] as List? ?? []).length;
+    final imageUrl = (group['image_url'] ?? '').toString();
+    return InkWell(
+      onTap: () => _openGroup(group),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.4),
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: const BoxDecoration(
+                  shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+              clipBehavior: Clip.antiAlias,
+              alignment: Alignment.center,
+              child: imageUrl.isNotEmpty
+                  ? Image.network(imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.groups,
+                          color: Color(0xFF3B82F6), size: 24))
+                  : const Icon(Icons.groups,
+                      color: Color(0xFF3B82F6), size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937))),
+                  const SizedBox(height: 2),
+                  Text(
+                    preview.isNotEmpty ? preview : '$memberCount জন মেম্বার',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 13, color: Color(0xFF6B7280)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Horizontal scrollable pill tabs: All / Mutual / Groups / Non-followers /
   // Maybe spam. Spam is bucketed away from the other tabs.
   Widget _buildChatTabs() {
@@ -1103,7 +1267,12 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           final active = _activeChatTab == tab;
           final count = _tabCount(tab);
           return InkWell(
-            onTap: () => setState(() => _activeChatTab = tab),
+            onTap: () {
+              setState(() => _activeChatTab = tab);
+              if (tab == _ChatTab.groups && !_groupsLoadedOnce) {
+                _loadGroups();
+              }
+            },
             borderRadius: BorderRadius.circular(999),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
@@ -1113,9 +1282,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(icon,
-                      size: 15,
-                      color: active ? Colors.white : Colors.grey.shade600),
+                  // Brand chat icon for the main tab; Material icons elsewhere.
+                  if (tab == _ChatTab.all)
+                    AdsyChatIcon(
+                        size: 15, color: active ? Colors.white : null)
+                  else
+                    Icon(icon,
+                        size: 15,
+                        color: active ? Colors.white : Colors.grey.shade600),
                   const SizedBox(width: 5),
                   Text(label,
                       style: TextStyle(

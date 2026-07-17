@@ -172,9 +172,13 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
   // post) in the chat.
   Widget _buildChatPreviewCard(
       LinkPreviewData data, String domain, bool hasImage) {
-    final title = (data.title != null && data.title!.trim().isNotEmpty)
-        ? data.title!.trim()
-        : (domain.isNotEmpty ? domain : data.url);
+    // Bold page title on top; when the site blocks scraping (no title), fall
+    // back to the URL itself (scheme-stripped) so the two lines never repeat
+    // the same domain twice. The muted line below is always the domain.
+    final rawTitle = (data.title ?? '').trim();
+    final title = rawTitle.isNotEmpty
+        ? rawTitle
+        : data.url.replaceFirst(RegExp(r'^https?://'), '');
     return InkWell(
       onTap: () => UrlLauncherUtils.launchExternalUrl(data.url),
       borderRadius: BorderRadius.circular(12),

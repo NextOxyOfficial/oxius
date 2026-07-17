@@ -202,6 +202,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': event['message']
         }))
 
+    async def group_message(self, event):
+        """Forward a group-chat message to this member's socket."""
+        await self.send(text_data=json.dumps({
+            'type': 'group_message',
+            'message': event['message']
+        }))
+
+    async def group_updated(self, event):
+        """A group this user belongs to was created/changed."""
+        await self.send(text_data=json.dumps({
+            'type': 'group_updated',
+            'group': event['group']
+        }))
+
     async def typing_status_update(self, event):
         """Send typing status update to WebSocket"""
         await self.send(text_data=json.dumps({
