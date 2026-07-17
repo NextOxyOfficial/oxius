@@ -600,7 +600,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     // centered pill so everyone sees what happened.
     if ((raw['message_type'] ?? '').toString() == 'system') {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 40),
+        padding: const EdgeInsets.fromLTRB(40, 8, 40, 18),
         child: Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
