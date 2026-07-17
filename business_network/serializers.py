@@ -39,7 +39,19 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
             "is_gift_comment",
             "diamond_amount",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        # SECURITY: post/author are set server-side (save() kwargs); gift fields
+        # are set ONLY by the diamond-charging gift flow. If any were writable
+        # here, a user could PATCH their own comment into a fake diamond gift
+        # (no payment) or reassign it to another author/post.
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "post",
+            "author",
+            "is_gift_comment",
+            "diamond_amount",
+        ]
 
     def get_author_details(self, obj):
         """Get author details with follow status"""
@@ -87,7 +99,10 @@ class BusinessNetworkMediaCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessNetworkMediaComment
         fields = "__all__"
-        read_only_fields = ["id", "created_at", "updated_at"]
+        # SECURITY: author/media are bound server-side in create(); writable
+        # here let a user PATCH their own media comment onto another author or
+        # media item.
+        read_only_fields = ["id", "created_at", "updated_at", "author", "media"]
 
 
 class BusinessNetworkMediaSerializer(serializers.ModelSerializer):
@@ -181,7 +196,9 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             "is_liked",
             "is_saved",
         ]
-        read_only_fields = ["id", "slug", "created_at", "updated_at"]
+        # SECURITY: author is bound to request.user in create() (save kwarg);
+        # leaving it writable let an author PATCH a post over to someone else.
+        read_only_fields = ["id", "slug", "created_at", "updated_at", "author"]
 
     def get_author_details(self, obj):
         """Get author details with follow status"""

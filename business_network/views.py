@@ -842,12 +842,12 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     "title": request.data.get("title"),
                     "content": request.data.get("content"),
                     "visibility": request.data.get("visibility", "public"),
-                    "author": request.user.id,
                 }
             )
 
             serializer.is_valid(raise_exception=True)
-            post = serializer.save()
+            # author is read-only on the serializer — bind it here.
+            post = serializer.save(author=request.user)
 
             if image_files:
                 for image_file in image_files:
@@ -1154,14 +1154,17 @@ class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_destroy(self, instance):
-        # Only allow the post author to delete media
-        if instance.post.author == self.request.user:
-            instance.delete()
-        else:
-            return Response(
-                {"detail": "You do not have permission to delete this media."},
-                status=status.HTTP_403_FORBIDDEN,
+        # Media attaches to posts via M2M (business_network_posts) — there is
+        # no `.post`. Only someone who authored a post using this media may
+        # delete it. (The old `instance.post` 500'd for everyone.)
+        owns = instance.business_network_posts.filter(
+            author=self.request.user
+        ).exists()
+        if not owns:
+            raise PermissionDenied(
+                "You do not have permission to delete this media."
             )
+        instance.delete()
 
 
 @api_view(["POST"])
@@ -1541,27 +1544,25 @@ class BusinessNetworkPostCommentRetrieveUpdateDestroyView(
         return BusinessNetworkPostComment.objects.all()
 
     def perform_update(self, serializer):
-        # Only allow comment author to update
-        if serializer.instance.author == self.request.user:
-            serializer.save()
-        else:
-            return Response(
-                {"detail": "You do not have permission to edit this comment."},
-                status=status.HTTP_403_FORBIDDEN,
+        # Only the comment author may edit. (Returning a Response from
+        # perform_update is silently discarded by DRF, so raise instead — a
+        # returned 403 was answered as 200.)
+        if serializer.instance.author != self.request.user:
+            raise PermissionDenied(
+                "You do not have permission to edit this comment."
             )
+        serializer.save()
 
     def perform_destroy(self, instance):
-        # Allow comment author or post author to delete
+        # Comment author or post author may delete.
         if (
-            instance.author == self.request.user
-            or instance.post.author == self.request.user
+            instance.author != self.request.user
+            and instance.post.author != self.request.user
         ):
-            instance.delete()
-        else:
-            return Response(
-                {"detail": "You do not have permission to delete this comment."},
-                status=status.HTTP_403_FORBIDDEN,
+            raise PermissionDenied(
+                "You do not have permission to delete this comment."
             )
+        instance.delete()
 
 
 # Tag Views
@@ -1575,14 +1576,18 @@ class BusinessNetworkPostTagDestroyView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_destroy(self, instance):
-        # Only post author can delete tags
-        if instance.post.author == self.request.user:
-            instance.delete()
-        else:
-            return Response(
-                {"detail": "Only the post author can delete tags."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # Tags are shared across posts (M2M, get_or_create by name) and have no
+        # `.post`. Deleting the tag OBJECT would strip it from every post that
+        # uses it, so only detach it from the caller's own posts — never delete
+        # the shared row. (The old `instance.post` 500'd for everyone; the edit
+        # flow sets tags via the post-update `tags` list, not this endpoint.)
+        my_posts = instance.business_network_posts.filter(
+            author=self.request.user
+        )
+        if not my_posts.exists():
+            raise PermissionDenied("Only the post author can remove tags.")
+        for post in my_posts:
+            post.tags.remove(instance)
 
 
 # Search and Discovery
@@ -2038,27 +2043,25 @@ class BusinessNetworkMediaCommentRetrieveUpdateDestroyView(
         return BusinessNetworkMediaComment.objects.all()
 
     def perform_update(self, serializer):
-        # Only allow comment author to update
-        if serializer.instance.author == self.request.user:
-            serializer.save()
-        else:
-            return Response(
-                {"detail": "You do not have permission to edit this comment."},
-                status=status.HTTP_403_FORBIDDEN,
+        # Only the comment author may edit (raise so DRF returns a real 403).
+        if serializer.instance.author != self.request.user:
+            raise PermissionDenied(
+                "You do not have permission to edit this comment."
             )
+        serializer.save()
 
     def perform_destroy(self, instance):
-        # Allow comment author or media author to delete
-        if (
-            instance.author == self.request.user
-            or instance.media.author == self.request.user
-        ):
-            instance.delete()
-        else:
-            return Response(
-                {"detail": "You do not have permission to delete this comment."},
-                status=status.HTTP_403_FORBIDDEN,
+        # Comment author, or the author of a post that uses this media, may
+        # delete. (Media has no `.author` — the old check 500'd for non-authors;
+        # media links to posts via M2M.)
+        is_media_post_author = instance.media.business_network_posts.filter(
+            author=self.request.user
+        ).exists()
+        if instance.author != self.request.user and not is_media_post_author:
+            raise PermissionDenied(
+                "You do not have permission to delete this comment."
             )
+        instance.delete()
 
 
 class AbnAdsPanelCategoryListCreateView(generics.ListCreateAPIView):
