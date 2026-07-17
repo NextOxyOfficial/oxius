@@ -221,24 +221,45 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
 
   Future<void> _loadActiveChats() async {
     try {
-      final rooms = await AdsyConnectService.getChatRooms(pageSize: 30);
+      final results = await Future.wait([
+        AdsyConnectService.getChatRooms(pageSize: 30),
+        AdsyConnectService.getGroups(),
+      ]);
       if (!mounted) return;
+      final rooms = results[0];
+      final groups = results[1];
       setState(() {
-        _activeChats = rooms.map<Map<String, dynamic>>((r) {
-          final u = r['other_user'] ?? {};
-          final first = (u['first_name'] ?? '').toString();
-          final last = (u['last_name'] ?? '').toString();
-          final name = [first, last].where((s) => s.isNotEmpty).join(' ');
-          return {
-            'id': r['id']?.toString() ?? '',
-            'userId': u['id']?.toString() ?? '',
-            'name': name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
-            'firstName': first.isNotEmpty
-                ? first
-                : (name.isNotEmpty ? name : 'User'),
-            'avatar': u['avatar'],
-          };
-        }).where((r) => (r['id'] as String).isNotEmpty).toList();
+        // Groups first, then 1:1 chats — both are share targets.
+        _activeChats = [
+          ...groups.map<Map<String, dynamic>>((g) {
+            final name = (g['name'] ?? '').toString();
+            return {
+              'isGroup': true,
+              'id': g['id']?.toString() ?? '',
+              'name': name,
+              'firstName': name,
+              'avatar': g['image_url'],
+            };
+          }),
+          ...rooms.map<Map<String, dynamic>>((r) {
+            final u = r['other_user'] ?? {};
+            final first = (u['first_name'] ?? '').toString();
+            final last = (u['last_name'] ?? '').toString();
+            final name = [first, last].where((s) => s.isNotEmpty).join(' ');
+            return {
+              'isGroup': false,
+              'id': r['id']?.toString() ?? '',
+              'userId': u['id']?.toString() ?? '',
+              'name': name.isNotEmpty
+                  ? name
+                  : (u['username'] ?? 'User').toString(),
+              'firstName': first.isNotEmpty
+                  ? first
+                  : (name.isNotEmpty ? name : 'User'),
+              'avatar': u['avatar'],
+            };
+          }),
+        ].where((r) => (r['id'] as String).isNotEmpty).toList();
         _loadingChats = false;
       });
     } catch (_) {
@@ -267,11 +288,17 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     int ok = 0;
     for (final room in targets) {
       try {
-        await AdsyConnectService.sendTextMessage(
-          chatroomId: room['id'] as String,
-          receiverId: room['userId'] as String,
-          content: data.chatShareContent,
-        );
+        if (room['isGroup'] == true) {
+          final res = await AdsyConnectService.sendGroupMessage(
+              room['id'] as String, data.chatShareContent);
+          if (res == null) continue;
+        } else {
+          await AdsyConnectService.sendTextMessage(
+            chatroomId: room['id'] as String,
+            receiverId: room['userId'] as String,
+            content: data.chatShareContent,
+          );
+        }
         _sentRoomIds.add(room['id'] as String);
         ok++;
       } catch (_) {}
@@ -496,6 +523,9 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     final id = room['id'] as String;
     final selected = _selectedRoomIds.contains(id);
     final sent = _sentRoomIds.contains(id);
+    final isGroup = room['isGroup'] == true;
+    final fallbackIcon = Icon(isGroup ? Icons.groups : Icons.person,
+        color: const Color(0xFF3B82F6));
     final avatar = AppConfig.getAbsoluteUrl((room['avatar'] ?? '').toString());
     return SizedBox(
       width: 62,
@@ -521,9 +551,8 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                   child: avatar.isNotEmpty
                       ? Image.network(avatar,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
-                              Icons.person, color: Color(0xFF3B82F6)))
-                      : const Icon(Icons.person, color: Color(0xFF3B82F6)),
+                          errorBuilder: (_, __, ___) => fallbackIcon)
+                      : fallbackIcon,
                 ),
                 if (selected || sent)
                   Positioned.fill(
@@ -994,21 +1023,38 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
 
   Future<void> _load() async {
     try {
-      final rooms = await AdsyConnectService.getChatRooms(pageSize: 100);
+      final results = await Future.wait([
+        AdsyConnectService.getChatRooms(pageSize: 100),
+        AdsyConnectService.getGroups(),
+      ]);
       if (!mounted) return;
+      final rooms = results[0];
+      final groups = results[1];
       setState(() {
-        _rooms = rooms.map<Map<String, dynamic>>((r) {
-          final u = r['other_user'] ?? {};
-          final first = (u['first_name'] ?? '').toString();
-          final last = (u['last_name'] ?? '').toString();
-          final name = [first, last].where((s) => s.isNotEmpty).join(' ');
-          return {
-            'id': r['id']?.toString() ?? '',
-            'userId': u['id']?.toString() ?? '',
-            'name': name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
-            'avatar': u['avatar'],
-          };
-        }).where((r) => (r['id'] as String).isNotEmpty).toList();
+        _rooms = [
+          // Groups are share targets too — listed first.
+          ...groups.map<Map<String, dynamic>>((g) => {
+                'isGroup': true,
+                'id': g['id']?.toString() ?? '',
+                'name': (g['name'] ?? '').toString(),
+                'avatar': g['image_url'],
+              }),
+          ...rooms.map<Map<String, dynamic>>((r) {
+            final u = r['other_user'] ?? {};
+            final first = (u['first_name'] ?? '').toString();
+            final last = (u['last_name'] ?? '').toString();
+            final name = [first, last].where((s) => s.isNotEmpty).join(' ');
+            return {
+              'isGroup': false,
+              'id': r['id']?.toString() ?? '',
+              'userId': u['id']?.toString() ?? '',
+              'name': name.isNotEmpty
+                  ? name
+                  : (u['username'] ?? 'User').toString(),
+              'avatar': u['avatar'],
+            };
+          }),
+        ].where((r) => (r['id'] as String).isNotEmpty).toList();
         _loading = false;
       });
     } catch (_) {
@@ -1016,18 +1062,23 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
     }
   }
 
+  // Groups are keyed by group id, people by user id — never collide.
+  String _keyOf(Map<String, dynamic> item) => item['isGroup'] == true
+      ? 'g:${item['id']}'
+      : (item['userId'] ?? '').toString();
+
   // Active chats initially; user-search results once a query is typed.
   List<Map<String, dynamic>> get _visible =>
       _query.isEmpty ? _rooms : _searchResults;
 
   void _toggle(Map<String, dynamic> item) {
-    final userId = (item['userId'] ?? '').toString();
-    if (userId.isEmpty || _sent.contains(userId) || _sendingBatch) return;
+    final key = _keyOf(item);
+    if (key.isEmpty || _sent.contains(key) || _sendingBatch) return;
     setState(() {
-      if (_selected.containsKey(userId)) {
-        _selected.remove(userId);
+      if (_selected.containsKey(key)) {
+        _selected.remove(key);
       } else {
-        _selected[userId] = item;
+        _selected[key] = item;
       }
     });
   }
@@ -1037,9 +1088,19 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
     setState(() => _sendingBatch = true);
     int ok = 0;
     for (final entry in _selected.entries.toList()) {
-      final userId = entry.key;
+      final key = entry.key;
       final item = entry.value;
       try {
+        if (item['isGroup'] == true) {
+          final res = await AdsyConnectService.sendGroupMessage(
+              (item['id'] ?? '').toString(), widget.content);
+          if (res != null) {
+            _sent.add(key);
+            ok++;
+          }
+          continue;
+        }
+        final userId = (item['userId'] ?? '').toString();
         // A searched user may have no room yet — open/create it first.
         var roomId = (item['id'] ?? '').toString();
         if (roomId.isEmpty) {
@@ -1052,7 +1113,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
             receiverId: userId,
             content: widget.content,
           );
-          _sent.add(userId);
+          _sent.add(key);
           ok++;
         }
       } catch (_) {}
@@ -1208,9 +1269,12 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
   }
 
   Widget _tile(Map<String, dynamic> room) {
-    final userId = (room['userId'] ?? '').toString();
-    final selected = _selected.containsKey(userId);
-    final sent = _sent.contains(userId);
+    final key = _keyOf(room);
+    final selected = _selected.containsKey(key);
+    final sent = _sent.contains(key);
+    final isGroup = room['isGroup'] == true;
+    final fallbackIcon = Icon(isGroup ? Icons.groups : Icons.person,
+        color: const Color(0xFF3B82F6));
     final avatar = AppConfig.getAbsoluteUrl((room['avatar'] ?? '').toString());
     return ListTile(
       onTap: sent ? null : () => _toggle(room),
@@ -1222,10 +1286,8 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
         clipBehavior: Clip.antiAlias,
         child: avatar.isNotEmpty
             ? Image.network(avatar,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.person, color: Color(0xFF3B82F6)))
-            : const Icon(Icons.person, color: Color(0xFF3B82F6)),
+                fit: BoxFit.cover, errorBuilder: (_, __, ___) => fallbackIcon)
+            : fallbackIcon,
       ),
       title: Text(room['name'].toString(),
           maxLines: 1,

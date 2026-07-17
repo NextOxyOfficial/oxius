@@ -1212,7 +1212,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   Widget _buildGroupItem(Map<String, dynamic> group) {
     final name = (group['name'] ?? '').toString();
-    final preview = (group['last_message_preview'] ?? '').toString();
+    var preview = (group['last_message_preview'] ?? '').toString();
+    // Never leak a shared-post payload into the list preview.
+    if (preview.contains('ADSYPOST')) {
+      final who = preview.split(':').first.trim();
+      preview = who.isNotEmpty && !who.contains('ADSYPOST')
+          ? '$who: 📎 একটি পোস্ট'
+          : '📎 একটি পোস্ট শেয়ার করা হয়েছে';
+    }
     final memberCount =
         group['member_count'] ?? (group['members'] as List? ?? []).length;
     final imageUrl = (group['image_url'] ?? '').toString();

@@ -1704,7 +1704,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         media = request.FILES.get('media_file')
         if message_type == 'text' and not content:
             return Response({'error': 'মেসেজ লিখুন'}, status=400)
-        if message_type in ('voice', 'image') and media is None:
+        if message_type in ('voice', 'image', 'video', 'document')                 and media is None:
             return Response({'error': 'media_file required'}, status=400)
         voice_duration = None
         try:
@@ -1719,6 +1719,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             message_type=message_type,
             content=content or None,
             media_file=media,
+            file_name=(request.data.get('file_name') or '').strip() or None,
             voice_duration=voice_duration,
         )
         group.last_message_at = message.created_at

@@ -991,11 +991,14 @@ class AdsyConnectService {
     }
   }
 
-  /// Send a voice (or image) message into a group.
+  /// Send a media message (voice/image/video/document) into a group.
+  /// Pass either [filePath] or [mediaBytes] (+ [fileName]).
   static Future<Map<String, dynamic>?> sendGroupMediaMessage({
     required String groupId,
-    required String filePath,
     required String messageType,
+    String? filePath,
+    List<int>? mediaBytes,
+    String? fileName,
     int? voiceDuration,
   }) async {
     try {
@@ -1008,9 +1011,22 @@ class AdsyConnectService {
       if (voiceDuration != null) {
         req.fields['voice_duration'] = '$voiceDuration';
       }
-      req.files
-          .add(await http.MultipartFile.fromPath('media_file', filePath));
-      final streamed = await req.send().timeout(const Duration(seconds: 60));
+      if (fileName != null && fileName.isNotEmpty) {
+        req.fields['file_name'] = fileName;
+      }
+      if (filePath != null) {
+        req.files
+            .add(await http.MultipartFile.fromPath('media_file', filePath));
+      } else if (mediaBytes != null) {
+        req.files.add(http.MultipartFile.fromBytes(
+          'media_file',
+          mediaBytes,
+          filename: fileName ?? 'upload.bin',
+        ));
+      } else {
+        return null;
+      }
+      final streamed = await req.send().timeout(const Duration(minutes: 3));
       final body = await streamed.stream.bytesToString();
       if (streamed.statusCode == 201) {
         return Map<String, dynamic>.from(jsonDecode(body));

@@ -176,6 +176,8 @@ class GroupMessage(models.Model):
         ('text', 'Text'),
         ('voice', 'Voice'),
         ('image', 'Image'),
+        ('video', 'Video'),
+        ('document', 'Document'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -192,6 +194,7 @@ class GroupMessage(models.Model):
     media_file = models.FileField(
         upload_to='adsyconnect/group_media/%Y/%m/%d/', blank=True, null=True
     )
+    file_name = models.CharField(max_length=255, blank=True, null=True)
     voice_duration = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
@@ -215,7 +218,14 @@ class GroupMessage(models.Model):
             return '🎤 Voice message'
         if self.message_type == 'image':
             return '📷 Photo'
+        if self.message_type == 'video':
+            return '🎥 Video'
+        if self.message_type == 'document':
+            return f'📄 {self.file_name or "Document"}'
         text = self.content or ''
+        # A shared post's structured payload must never leak into previews.
+        if text.startswith('ADSYPOST'):
+            return '📎 পোস্ট'
         return text[:50] + '...' if len(text) > 50 else text
 
 

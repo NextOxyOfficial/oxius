@@ -347,7 +347,7 @@ class GroupMessageSerializer(serializers.ModelSerializer):
         model = GroupMessage
         fields = [
             'id', 'group', 'sender', 'message_type', 'content', 'media_url',
-            'voice_duration', 'created_at', 'is_deleted',
+            'file_name', 'voice_duration', 'created_at', 'is_deleted',
         ]
         read_only_fields = ['id', 'sender', 'created_at', 'is_deleted']
 

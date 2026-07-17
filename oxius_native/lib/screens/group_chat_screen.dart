@@ -1,19 +1,28 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:record/record.dart';
 
-import '../config/app_config.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
+import '../utils/image_compressor.dart';
+import '../utils/url_launcher_utils.dart';
+import '../widgets/chat/chat_message_bubble.dart';
+import '../widgets/chat/chat_message_input.dart';
 import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_toast.dart';
 import 'group_info_screen.dart';
 
-/// Group conversation: text + voice messages, live typing indicator
-/// ("কে/কতজন টাইপ করছে"), and the group-info management screen.
+/// Group conversation. Reuses the SAME polished pieces as the 1:1 chat —
+/// [ChatMessageInput] (text, mic recording, attachments with image preview)
+/// and [ChatMessageBubble] (text/image/video/document/voice bubbles, link
+/// previews, shared-post cards) — so groups feel identical to direct chats.
+/// Adds group-only bits: sender name above received bubbles, a live
+/// "কে/কতজন টাইপ করছে" line, and the group-info management screen.
 /// No audio/video calls in groups — by design.
 class GroupChatScreen extends StatefulWidget {
   final Map<String, dynamic> group;
@@ -29,12 +38,20 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   List<Map<String, dynamic>> _messages = [];
   List<String> _typingNames = [];
   bool _loading = true;
-  bool _sending = false;
   Timer? _pollTimer;
   Timer? _typingPollTimer;
   DateTime _lastTypingSent = DateTime.fromMillisecondsSinceEpoch(0);
-  final TextEditingController _input = TextEditingController();
   final ScrollController _scroll = ScrollController();
+
+  // Input state — mirrors the 1:1 interface so ChatMessageInput drops in.
+  final TextEditingController _messageController = TextEditingController();
+  final FocusNode _messageFocusNode = FocusNode();
+  final ImagePicker _imagePicker = ImagePicker();
+  final List<XFile> _selectedImages = [];
+  final List<String> _compressedImages = [];
+  bool _isCompressingImages = false;
+  bool _isUploadingAttachment = false;
+  bool _isTyping = false;
 
   // Voice recording / playback
   final AudioRecorder _recorder = AudioRecorder();
@@ -42,7 +59,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   bool _recording = false;
   int _recordSeconds = 0;
   Timer? _recordTimer;
-  String? _playingId;
+  String? _playingVoiceId;
+  Duration _voicePosition = Duration.zero;
+  Duration _voiceDuration = Duration.zero;
 
   String get _groupId => (_group['id'] ?? '').toString();
   String get _myId => AuthService.currentUser?.id ?? '';
@@ -51,15 +70,26 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void initState() {
     super.initState();
     _group = Map<String, dynamic>.from(widget.group);
-    _input.addListener(_onInputChanged);
+    _messageController.addListener(_onInputChanged);
     _loadMessages(initial: true);
     _pollTimer =
         Timer.periodic(const Duration(seconds: 5), (_) => _loadMessages());
     _typingPollTimer =
         Timer.periodic(const Duration(seconds: 3), (_) => _pollTyping());
+    _player.positionStream.listen((p) {
+      if (mounted && _playingVoiceId != null) {
+        setState(() => _voicePosition = p);
+      }
+    });
+    _player.durationStream.listen((d) {
+      if (mounted && d != null) setState(() => _voiceDuration = d);
+    });
     _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed && mounted) {
-        setState(() => _playingId = null);
+        setState(() {
+          _playingVoiceId = null;
+          _voicePosition = Duration.zero;
+        });
       }
     });
   }
@@ -69,8 +99,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _pollTimer?.cancel();
     _typingPollTimer?.cancel();
     _recordTimer?.cancel();
-    _input.removeListener(_onInputChanged);
-    _input.dispose();
+    _messageController.removeListener(_onInputChanged);
+    _messageController.dispose();
+    _messageFocusNode.dispose();
     _scroll.dispose();
     _recorder.dispose();
     _player.dispose();
@@ -79,13 +110,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   // Throttled typing heartbeat — at most one ping per 2.5s while typing.
   void _onInputChanged() {
-    if (_input.text.trim().isEmpty) return;
+    final hasText = _messageController.text.trim().isNotEmpty;
+    if (hasText != _isTyping) setState(() => _isTyping = hasText);
+    if (!hasText) return;
     final now = DateTime.now();
     if (now.difference(_lastTypingSent).inMilliseconds > 2500) {
       _lastTypingSent = now;
       AdsyConnectService.setGroupTyping(_groupId);
     }
-    setState(() {}); // swap mic/send button
   }
 
   Future<void> _pollTyping() async {
@@ -116,48 +148,201 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     }
   }
 
-  Future<void> _send() async {
-    final text = _input.text.trim();
-    if (text.isEmpty || _sending) return;
-    setState(() => _sending = true);
+  Future<void> _sendText() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+    _messageController.clear();
     final res = await AdsyConnectService.sendGroupMessage(_groupId, text);
     if (!mounted) return;
-    setState(() => _sending = false);
     if (res != null) {
-      _input.clear();
       await _loadMessages();
     } else {
       AdsyToast.error(context, 'মেসেজ পাঠানো যায়নি');
     }
   }
 
-  // ── Voice messages — same UX as the 1:1 chat ─────────────────────────────
+  // ── Attachments — same sheet + flows as the 1:1 chat ────────────────────
+
+  Future<void> _showAttachmentOptions() async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(2)),
+            ),
+            const SizedBox(height: 6),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined,
+                  color: Color(0xFF16A34A)),
+              title: const Text('ছবি'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImagesFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam_outlined,
+                  color: Color(0xFFDC2626)),
+              title: const Text('ভিডিও'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickVideo();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.insert_drive_file_outlined,
+                  color: Color(0xFF2563EB)),
+              title: const Text('ডকুমেন্ট'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickDocument();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImagesFromGallery() async {
+    try {
+      final List<XFile> images = await _imagePicker.pickMultiImage();
+      if (images.isEmpty) return;
+      if (_selectedImages.length + images.length > 8) {
+        if (mounted) AdsyToast.error(context, 'Maximum 8 photos allowed');
+        return;
+      }
+      setState(() => _isCompressingImages = true);
+      final List<String> compressed = [];
+      for (final image in images) {
+        final compressedBase64 = await ImageCompressor.compressToBase64(
+          image,
+          targetSize: 200 * 1024,
+          initialQuality: 80,
+          maxDimension: 1920,
+        );
+        if (compressedBase64 != null) compressed.add(compressedBase64);
+      }
+      if (!mounted) return;
+      setState(() {
+        _selectedImages.addAll(images);
+        _compressedImages.addAll(compressed);
+        _isCompressingImages = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isCompressingImages = false);
+        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
+      }
+    }
+  }
+
+  Future<void> _sendSelectedImages() async {
+    if (_selectedImages.isEmpty) return;
+    final count = _selectedImages.length;
+    setState(() => _isUploadingAttachment = true);
+    try {
+      for (int i = 0; i < count; i++) {
+        await AdsyConnectService.sendGroupMediaMessage(
+          groupId: _groupId,
+          messageType: 'image',
+          filePath: _selectedImages[i].path,
+        );
+        if (i < count - 1) {
+          await Future.delayed(const Duration(milliseconds: 300));
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _selectedImages.clear();
+        _compressedImages.clear();
+        _isUploadingAttachment = false;
+      });
+      await _loadMessages();
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isUploadingAttachment = false);
+        AdsyToast.error(context, 'ছবি পাঠানো যায়নি');
+      }
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    try {
+      final XFile? video =
+          await _imagePicker.pickVideo(source: ImageSource.gallery);
+      if (video == null) return;
+      await _sendMedia(video.path, 'video');
+    } catch (_) {
+      if (mounted) AdsyToast.error(context, 'ভিডিও বাছাই করা যায়নি');
+    }
+  }
+
+  Future<void> _pickDocument() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'],
+      );
+      final path = result?.files.single.path;
+      if (path == null) return;
+      await _sendMedia(path, 'document',
+          fileName: result!.files.single.name);
+    } catch (_) {
+      if (mounted) AdsyToast.error(context, 'ডকুমেন্ট বাছাই করা যায়নি');
+    }
+  }
+
+  Future<void> _sendMedia(String filePath, String type,
+      {String? fileName, int? voiceDuration}) async {
+    setState(() => _isUploadingAttachment = true);
+    final res = await AdsyConnectService.sendGroupMediaMessage(
+      groupId: _groupId,
+      messageType: type,
+      filePath: filePath,
+      fileName: fileName,
+      voiceDuration: voiceDuration,
+    );
+    if (!mounted) return;
+    setState(() => _isUploadingAttachment = false);
+    if (res != null) {
+      await _loadMessages();
+    } else {
+      AdsyToast.error(context, 'পাঠানো যায়নি');
+    }
+  }
+
+  // ── Voice — same record UX as the 1:1 chat ──────────────────────────────
 
   Future<void> _startRecording() async {
     try {
       if (!await _recorder.hasPermission()) {
-        if (mounted) {
-          AdsyToast.warning(context, 'মাইক্রোফোনের অনুমতি দিন');
-        }
+        if (mounted) AdsyToast.warning(context, 'মাইক্রোফোনের অনুমতি দিন');
         return;
       }
-      final dir = DateTime.now().millisecondsSinceEpoch;
-      final path =
-          '${(await _tempDirPath())}/group_voice_$dir.m4a';
+      final stamp = DateTime.now().millisecondsSinceEpoch;
+      final path = '${Directory.systemTemp.path}/group_voice_$stamp.m4a';
       await _recorder.start(const RecordConfig(), path: path);
       _recordSeconds = 0;
       _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() => _recordSeconds++);
       });
       setState(() => _recording = true);
-    } catch (e) {
+    } catch (_) {
       if (mounted) AdsyToast.error(context, 'রেকর্ড শুরু করা যায়নি');
     }
-  }
-
-  Future<String> _tempDirPath() async {
-    // record package accepts any writable path; use the system temp dir.
-    return Directory.systemTemp.path;
   }
 
   Future<void> _stopAndSendRecording() async {
@@ -169,20 +354,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       _recordSeconds = 0;
     });
     if (path == null) return;
-    setState(() => _sending = true);
-    final res = await AdsyConnectService.sendGroupMediaMessage(
-      groupId: _groupId,
-      filePath: path,
-      messageType: 'voice',
-      voiceDuration: duration,
-    );
-    if (!mounted) return;
-    setState(() => _sending = false);
-    if (res != null) {
-      await _loadMessages();
-    } else {
-      AdsyToast.error(context, 'ভয়েস মেসেজ পাঠানো যায়নি');
-    }
+    await _sendMedia(path, 'voice', voiceDuration: duration);
   }
 
   Future<void> _cancelRecording() async {
@@ -197,19 +369,27 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Future<void> _playVoice(String id, String? url) async {
     if (url == null || url.isEmpty) return;
     try {
-      if (_playingId == id) {
+      if (_playingVoiceId == id) {
         await _player.stop();
-        setState(() => _playingId = null);
+        setState(() {
+          _playingVoiceId = null;
+          _voicePosition = Duration.zero;
+        });
         return;
       }
       await _player.stop();
       await _player.setUrl(url);
-      setState(() => _playingId = id);
+      setState(() {
+        _playingVoiceId = id;
+        _voicePosition = Duration.zero;
+      });
       await _player.play();
     } catch (_) {
-      if (mounted) setState(() => _playingId = null);
+      if (mounted) setState(() => _playingVoiceId = null);
     }
   }
+
+  // ── Navigation ──────────────────────────────────────────────────────────
 
   Future<void> _openInfo() async {
     final result = await Navigator.of(context).push(
@@ -220,7 +400,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       Navigator.of(context).pop(true);
       return;
     }
-    // Pull fresh group meta (name/photo/members may have changed).
     final groups = await AdsyConnectService.getGroups();
     if (!mounted) return;
     final updated = groups
@@ -228,6 +407,73 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         .where((g) => g['id'].toString() == _groupId)
         .toList();
     if (updated.isNotEmpty) setState(() => _group = updated.first);
+  }
+
+  void _viewImage(String path) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: Center(
+          child: InteractiveViewer(
+            maxScale: 5,
+            child: Image.network(path,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.white54,
+                    size: 48)),
+          ),
+        ),
+      ),
+    ));
+  }
+
+  // ── Message mapping — group payload → the 1:1 bubble's shape ────────────
+
+  Map<String, dynamic> _bubbleMessage(Map<String, dynamic> m) {
+    final sender = Map<String, dynamic>.from(m['sender'] ?? {});
+    final senderId = (sender['id'] ?? '').toString();
+    return {
+      'id': (m['id'] ?? '').toString(),
+      'type': (m['message_type'] ?? 'text').toString(),
+      'message': (m['content'] ?? '').toString(),
+      'isMe': senderId == _myId,
+      'mediaUrl': m['media_url']?.toString(),
+      'fileName': m['file_name']?.toString(),
+      'voiceDuration':
+          int.tryParse('${m['voice_duration'] ?? ''}') ?? 0,
+      'isDeleted': m['is_deleted'] == true,
+      'showTimestamp': true,
+      'timeDisplay': _formatTime(
+          DateTime.tryParse((m['created_at'] ?? '').toString())),
+      'isSeen': false,
+    };
+  }
+
+  String _formatTime(DateTime? t) {
+    if (t == null) return '';
+    final local = t.toLocal();
+    final h = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final ampm = local.hour >= 12 ? 'PM' : 'AM';
+    return '$h:${local.minute.toString().padLeft(2, '0')} $ampm';
+  }
+
+  String _senderName(Map<String, dynamic> m) {
+    final sender = Map<String, dynamic>.from(m['sender'] ?? {});
+    final name = [
+      (sender['first_name'] ?? '').toString(),
+      (sender['last_name'] ?? '').toString(),
+    ].where((s) => s.isNotEmpty).join(' ');
+    return name.isNotEmpty ? name : (sender['username'] ?? 'User').toString();
+  }
+
+  String? _senderAvatar(Map<String, dynamic> m) {
+    final sender = Map<String, dynamic>.from(m['sender'] ?? {});
+    return sender['avatar']?.toString();
   }
 
   @override
@@ -307,16 +553,104 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       )
                     : ListView.builder(
                         controller: _scroll,
-                        padding: const EdgeInsets.fromLTRB(10, 12, 10, 8),
+                        padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
                         itemCount: _messages.length,
-                        itemBuilder: (_, i) => _bubble(_messages[i]),
+                        itemBuilder: (_, i) => _buildRow(i),
                       ),
           ),
           _buildTypingIndicator(),
-          _buildInput(),
+          // The SAME input bar as the 1:1 chat: text, attachments with image
+          // preview strip, and mic recording UI.
+          ChatMessageInput(
+            messageController: _messageController,
+            messageFocusNode: _messageFocusNode,
+            isRecording: _recording,
+            isChatBlocked: false,
+            blockedByMe: false,
+            isTyping: _isTyping,
+            isUploadingAttachment: _isUploadingAttachment,
+            isCompressingImages: _isCompressingImages,
+            compressedImages: _compressedImages,
+            recordDuration: Duration(seconds: _recordSeconds),
+            onSend: _sendText,
+            onStartRecording: _startRecording,
+            onStopRecording: _stopAndSendRecording,
+            onCancelRecording: _cancelRecording,
+            onUnblock: () {},
+            onCancelReply: () {},
+            onShowAttachmentOptions: _showAttachmentOptions,
+            onSendImages: _sendSelectedImages,
+            onCancelImagePreview: () => setState(() {
+              _selectedImages.clear();
+              _compressedImages.clear();
+            }),
+            onRemoveImage: (i) => setState(() {
+              if (i < _selectedImages.length) _selectedImages.removeAt(i);
+              if (i < _compressedImages.length) _compressedImages.removeAt(i);
+            }),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildRow(int i) {
+    final raw = _messages[i];
+    final mapped = _bubbleMessage(raw);
+    final isMe = mapped['isMe'] == true;
+    // Show the avatar when the sender changes (like the 1:1 list).
+    final prevSender = i > 0
+        ? (Map<String, dynamic>.from(_messages[i - 1]['sender'] ?? {})['id'] ??
+                '')
+            .toString()
+        : '';
+    final thisSender =
+        (Map<String, dynamic>.from(raw['sender'] ?? {})['id'] ?? '')
+            .toString();
+    final showAvatar = !isMe && thisSender != prevSender;
+
+    final bubble = ChatMessageBubble(
+      key: ValueKey(mapped['id']),
+      message: mapped,
+      showAvatar: showAvatar,
+      userName: _senderName(raw),
+      userAvatar: _senderAvatar(raw),
+      playingVoiceMessageId: _playingVoiceId,
+      voicePosition: _voicePosition,
+      voiceDuration: _voiceDuration,
+      onReply: (_) {},
+      onPlayVoice: _playVoice,
+      onViewImage: _viewImage,
+      onDownloadDoc: (path, name) {
+        final url = mapped['mediaUrl']?.toString();
+        if (url != null && url.isNotEmpty) {
+          UrlLauncherUtils.launchExternalUrl(url);
+        }
+      },
+      onScrollToMessage: (_) {},
+    );
+
+    // Group-only: name the sender above a new speaker's message run.
+    if (!isMe && showAvatar) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 46, top: 6, bottom: 2),
+            child: Text(
+              _senderName(raw),
+              style: const TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2563EB),
+              ),
+            ),
+          ),
+          bubble,
+        ],
+      );
+    }
+    return bubble;
   }
 
   /// Bottom-left typing line: one person → "Name টাইপ করছেন…", several →
@@ -355,200 +689,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 ),
               ),
             ),
-    );
-  }
-
-  Widget _bubble(Map<String, dynamic> m) {
-    final sender = Map<String, dynamic>.from(m['sender'] ?? {});
-    final senderId = (sender['id'] ?? '').toString();
-    final isMe = senderId == _myId;
-    final name = [
-      (sender['first_name'] ?? '').toString(),
-      (sender['last_name'] ?? '').toString(),
-    ].where((s) => s.isNotEmpty).join(' ');
-    final display =
-        name.isNotEmpty ? name : (sender['username'] ?? 'User').toString();
-    final isVoice = m['message_type'] == 'voice';
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-        constraints:
-            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.74),
-        decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF2563EB) : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isMe ? 16 : 5),
-            bottomRight: Radius.circular(isMe ? 5 : 16),
-          ),
-          border: isMe ? null : Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Sender name above received messages — essential in a group.
-            if (!isMe)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 3),
-                child: Text(display,
-                    style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF2563EB))),
-              ),
-            if (isVoice)
-              _voiceContent(m, isMe)
-            else
-              Text(
-                (m['content'] ?? '').toString(),
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.35,
-                  color: isMe ? Colors.white : const Color(0xFF1F2937),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _voiceContent(Map<String, dynamic> m, bool isMe) {
-    final id = (m['id'] ?? '').toString();
-    final url = m['media_url']?.toString();
-    final duration = m['voice_duration'] is int
-        ? m['voice_duration'] as int
-        : int.tryParse('${m['voice_duration'] ?? 0}') ?? 0;
-    final playing = _playingId == id;
-    final fg = isMe ? Colors.white : const Color(0xFF2563EB);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InkWell(
-          onTap: () => _playVoice(id, url),
-          child: Icon(
-            playing ? Icons.stop_circle_rounded : Icons.play_circle_fill_rounded,
-            size: 34,
-            color: fg,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Icon(Icons.graphic_eq_rounded,
-            size: 20, color: fg.withValues(alpha: 0.8)),
-        const SizedBox(width: 6),
-        Text(
-          '${(duration ~/ 60).toString().padLeft(1, '0')}:${(duration % 60).toString().padLeft(2, '0')}',
-          style: TextStyle(
-              fontSize: 12.5, fontWeight: FontWeight.w600, color: fg),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInput() {
-    final hasText = _input.text.trim().isNotEmpty;
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-        color: Colors.white,
-        child: _recording
-            ? Row(
-                children: [
-                  IconButton(
-                    onPressed: _cancelRecording,
-                    icon: const Icon(Icons.delete_outline_rounded,
-                        color: Color(0xFFDC2626)),
-                  ),
-                  const Icon(Icons.mic, color: Color(0xFFDC2626), size: 20),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${(_recordSeconds ~/ 60)}:${(_recordSeconds % 60).toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B)),
-                  ),
-                  const Spacer(),
-                  InkWell(
-                    onTap: _sending ? null : _stopAndSendRecording,
-                    borderRadius: BorderRadius.circular(22),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                          shape: BoxShape.circle, color: Color(0xFF2563EB)),
-                      child: _sending
-                          ? const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation(Colors.white)))
-                          : const Icon(Icons.send_rounded,
-                              color: Colors.white, size: 20),
-                    ),
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      child: TextField(
-                        controller: _input,
-                        minLines: 1,
-                        maxLines: 4,
-                        textInputAction: TextInputAction.newline,
-                        decoration: const InputDecoration(
-                          hintText: 'মেসেজ লিখুন…',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: _sending
-                        ? null
-                        : hasText
-                            ? _send
-                            : _startRecording,
-                    borderRadius: BorderRadius.circular(22),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: hasText
-                              ? const Color(0xFF2563EB)
-                              : const Color(0xFF10B981)),
-                      child: _sending
-                          ? const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation(Colors.white)))
-                          : Icon(
-                              hasText ? Icons.send_rounded : Icons.mic_rounded,
-                              color: Colors.white,
-                              size: 20),
-                    ),
-                  ),
-                ],
-              ),
-      ),
     );
   }
 }
