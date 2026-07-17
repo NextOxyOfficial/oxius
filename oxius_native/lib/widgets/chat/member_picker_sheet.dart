@@ -93,7 +93,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                     filled: true,
                     fillColor: const Color(0xFFF9FAFB),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(999),
                       borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                     ),
                   ),

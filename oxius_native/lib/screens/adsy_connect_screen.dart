@@ -78,6 +78,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   void initState() {
     super.initState();
     _loadChats();
+    // Groups show inline in the main list, so load them up front too.
+    unawaited(_loadGroups());
     unawaited(AdsyConnectRealtimeService.instance.connect());
     _realtimeSubscription = AdsyConnectRealtimeService.instance.events.listen(
       _handleRealtimeEvent,
@@ -364,13 +366,43 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   List<Map<String, dynamic>> get _filteredChats {
     final q = _chatSearchQuery.trim().toLowerCase();
-    return _chatConversations.where((chat) {
+    final list = _chatConversations.where((chat) {
       if (!_matchesTab(chat)) return false;
       if (q.isEmpty) return true;
       final name = (chat['userName'] ?? '').toString().toLowerCase();
       final msg = (chat['lastMessage'] ?? '').toString().toLowerCase();
       return name.contains(q) || msg.contains(q);
     }).toList();
+
+    // The main (সব) tab shows GROUPS inline with 1:1 chats, sorted together
+    // by recency — a group shouldn't hide inside its own tab only.
+    if (_activeChatTab == _ChatTab.all && _groups.isNotEmpty) {
+      for (final g in _groups) {
+        final name = (g['name'] ?? '').toString();
+        final preview = (g['last_message_preview'] ?? '').toString();
+        if (q.isNotEmpty &&
+            !name.toLowerCase().contains(q) &&
+            !preview.toLowerCase().contains(q)) {
+          continue;
+        }
+        list.add({
+          'isGroup': true,
+          '_group': g,
+          'userName': name,
+          'lastMessage': preview,
+          'timestamp':
+              DateTime.tryParse((g['last_message_at'] ?? '').toString()) ??
+                  DateTime.now(),
+        });
+      }
+      list.sort((a, b) {
+        final ta = a['timestamp'];
+        final tb = b['timestamp'];
+        if (ta is! DateTime || tb is! DateTime) return 0;
+        return tb.compareTo(ta);
+      });
+    }
+    return list;
   }
 
   Future<void> _loadChats({bool loadMore = false}) async {
@@ -822,9 +854,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     child: Container(
                       height: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        color: const Color(0xFFF1F5F9),
+                        // Pill-shaped, matching the BN comment input.
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: TextField(
                         controller: _chatSearchController,
@@ -850,12 +882,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       height: 44,
                       width: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: Icon(Icons.group_add_outlined,
-                          color: Colors.grey.shade600, size: 21),
+                          color: Colors.grey.shade700, size: 21),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -867,12 +898,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       height: 44,
                       width: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: Icon(Icons.archive_outlined,
-                          color: Colors.grey.shade600, size: 21),
+                          color: Colors.grey.shade700, size: 21),
                     ),
                   ),
                 ],
@@ -1327,6 +1357,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   Widget _buildChatItem(Map<String, dynamic> chat) {
+    // Group entries merged into the main list render as group tiles.
+    if (chat['isGroup'] == true && chat['_group'] is Map) {
+      return _buildGroupItem(
+          Map<String, dynamic>.from(chat['_group'] as Map));
+    }
     final bool hasUnread = chat['unreadCount'] > 0;
     final bool isOnline = chat['isOnline'] ?? false;
     final bool isTyping = chat['isTyping'] ?? false;

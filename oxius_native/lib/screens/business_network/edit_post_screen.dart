@@ -277,7 +277,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ],
         ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(16, 4, 16, bottomInset + 80),
+          // Same 16px screen-side padding as the create screen (the old
+          // nested padding doubled it to 32px).
+          padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 80),
           child: _buildEditCard(),
         ),
       ),
@@ -286,38 +288,30 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
   Widget _buildEditCard() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildAuthorStrip(),
-          _sectionDivider(),
-          const Text(
-            'Description',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF334155),
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
+          // Continuous, label-less flow — exactly like the create screen.
           _buildMentionField(
             mentionKey: _contentMentionKey,
             defaultText: widget.post.content,
-            hint: 'What do you want to share? Use @ to mention people',
-            minLines: 4,
-            maxLines: 8,
+            hint: 'What\'s on your mind? Use @ to mention someone',
+            minLines: 3,
+            maxLines: 6,
             onChanged: (value) => setState(() => _contentText = value),
           ),
           // Live link preview for the first URL in the content, like create.
           if (_contentText.trim().isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(top: 12),
               child: FirstLinkPreview(text: _contentText),
             ),
-          _sectionDivider(),
+          const SizedBox(height: 18),
           _buildTagsEditor(),
-          _sectionDivider(),
+          const SizedBox(height: 18),
           _buildMediaPreview(),
         ],
       ),
@@ -327,22 +321,26 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Widget _buildAuthorStrip() {
     final avatar = widget.post.user.avatar ?? widget.post.user.image ?? '';
 
+    // Mirrors the create screen's user row exactly: circular avatar, bold
+    // name (+verified), and the visibility dropdown pill right under it.
     return Row(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            width: 48,
-            height: 48,
-            color: const Color(0xFFEAF1F8),
-            child: avatar.isNotEmpty
-                ? Image.network(
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.grey.shade200, width: 2),
+          ),
+          child: avatar.isNotEmpty
+              ? ClipOval(
+                  child: Image.network(
                     avatar,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => _avatarFallback(),
-                  )
-                : _avatarFallback(),
-          ),
+                  ),
+                )
+              : _avatarFallback(),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -357,52 +355,95 @@ class _EditPostScreenState extends State<EditPostScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                        letterSpacing: -0.3,
                       ),
                     ),
                   ),
-                  if (widget.post.user.isVerified) ...[
+                  if (widget.post.user.isVerified ||
+                      widget.post.user.isPro) ...[
                     const SizedBox(width: 4),
-                    const Icon(Icons.verified,
-                        size: 15, color: Color(0xFF2563EB)),
-                  ],
-                  if (widget.post.user.isPro) ...[
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF7C3AED),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'Pro',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
+                    const Icon(
+                      Icons.verified,
+                      size: 16,
+                      color: Color(0xFF3B82F6),
                     ),
                   ],
                 ],
               ),
-              const SizedBox(height: 3),
-              Text(
-                'Update your post details',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(height: 4),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: DropdownButton<String>(
+                  value: _visibility,
+                  isDense: true,
+                  underline: const SizedBox(),
+                  borderRadius: BorderRadius.circular(12),
+                  icon: Icon(
+                    Icons.arrow_drop_down,
+                    size: 18,
+                    color: Colors.grey.shade700,
+                  ),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'public',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.public,
+                              size: 14, color: Colors.grey.shade700),
+                          const SizedBox(width: 6),
+                          const Text('Public'),
+                        ],
+                      ),
+                    ),
+                    DropdownMenuItem(
+                      value: 'followers',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.group_outlined,
+                              size: 14, color: Colors.grey.shade700),
+                          const SizedBox(width: 6),
+                          const Text('Followers'),
+                        ],
+                      ),
+                    ),
+                    DropdownMenuItem(
+                      value: 'private',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.lock,
+                              size: 14, color: Colors.grey.shade700),
+                          const SizedBox(width: 6),
+                          const Text('Only me'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _visibility = value);
+                    }
+                  },
                 ),
               ),
             ],
           ),
         ),
-        _buildVisibilityPill(),
       ],
     );
   }
@@ -539,90 +580,26 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
   // Compact dropdown in the header — same control the create screen uses, so
   // visibility looks and works identically in both places.
-  Widget _buildVisibilityPill() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: DropdownButton<String>(
-        value: _visibility,
-        isDense: true,
-        underline: const SizedBox(),
-        borderRadius: BorderRadius.circular(12),
-        icon: const Icon(
-          Icons.arrow_drop_down,
-          size: 18,
-          color: Color(0xFF64748B),
-        ),
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF475569),
-        ),
-        items: const [
-          DropdownMenuItem(
-            value: 'public',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.public, size: 14, color: Color(0xFF64748B)),
-                SizedBox(width: 6),
-                Text('Public'),
-              ],
-            ),
-          ),
-          DropdownMenuItem(
-            value: 'followers',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.group_outlined, size: 14, color: Color(0xFF64748B)),
-                SizedBox(width: 6),
-                Text('Followers'),
-              ],
-            ),
-          ),
-          DropdownMenuItem(
-            value: 'private',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.lock, size: 14, color: Color(0xFF64748B)),
-                SizedBox(width: 6),
-                Text('Only me'),
-              ],
-            ),
-          ),
-        ],
-        onChanged: (value) {
-          if (value != null) setState(() => _visibility = value);
-        },
-      ),
-    );
-  }
-
-  Widget _sectionDivider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Container(height: 1, color: const Color(0xFFEDF2F7)),
-    );
-  }
-
   Widget _buildTagsEditor() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Hashtags',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF334155),
-          ),
+        Row(
+          children: [
+            Icon(Icons.tag_rounded, size: 17, color: Colors.grey.shade500),
+            const SizedBox(width: 7),
+            Text(
+              'Add Hashtags',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade700,
+                letterSpacing: 0.1,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         // Same pill-shaped input + inline text button as the create screen.
         Container(
           decoration: BoxDecoration(
@@ -678,35 +655,58 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ),
         ),
         if (_tags.isNotEmpty) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
+          // Chip visuals copied from the create screen.
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: _tags.map((tag) {
               return Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      '#$tag',
-                      style: const TextStyle(
-                        color: Color(0xFF2563EB),
-                        fontSize: 12,
+                    const Text(
+                      '#',
+                      style: TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
+                        color: Color(0xFF3B82F6),
                       ),
                     ),
-                    const SizedBox(width: 5),
+                    Text(
+                      tag,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => _removeTag(tag),
-                      child: const Icon(Icons.close_rounded,
-                          size: 14, color: Color(0xFF2563EB)),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 14,
+                          color: Color(0xFF3B82F6),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -768,20 +768,59 @@ class _EditPostScreenState extends State<EditPostScreen> {
         .where((m) => !_removedMediaIds.contains(m.id))
         .toList();
 
+    final videoCount = existing.where((m) => m.isVideo).length;
+
+    // Header, count badges, actions and limits copied from the create screen
+    // so editing feels identical to composing.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.photo_library_rounded,
-                size: 18, color: Color(0xFF2563EB)),
-            const SizedBox(width: 8),
-            const Text(
-              'Attached media',
+            Icon(Icons.perm_media_rounded,
+                size: 17, color: Colors.grey.shade500),
+            const SizedBox(width: 7),
+            Text(
+              'Media',
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF334155),
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade700,
+                letterSpacing: 0.1,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$_effectivePhotoCount/$_maxPhotos photos',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade50,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$videoCount/2 videos',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.purple.shade700,
+                ),
               ),
             ),
             const Spacer(),
@@ -790,81 +829,113 @@ class _EditPostScreenState extends State<EditPostScreen> {
                 width: 14,
                 height: 14,
                 child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              Text(
-                '${existing.length + _newImages.length}',
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
               ),
           ],
         ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 82,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              for (final m in existing) ...[
-                _removableThumb(
-                  child: _buildMediaThumb(m),
-                  onRemove: () =>
-                      setState(() => _removedMediaIds.add(m.id)),
-                ),
-                const SizedBox(width: 8),
-              ],
-              for (var i = 0; i < _newImages.length; i++) ...[
-                _removableThumb(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.memory(
-                      base64Decode(_newImages[i]),
-                      width: 82,
-                      height: 82,
-                      fit: BoxFit.cover,
-                    ),
+        const SizedBox(height: 12),
+        if (existing.isNotEmpty || _newImages.isNotEmpty) ...[
+          SizedBox(
+            height: 82,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                for (final m in existing) ...[
+                  _removableThumb(
+                    child: _buildMediaThumb(m),
+                    onRemove: () =>
+                        setState(() => _removedMediaIds.add(m.id)),
                   ),
-                  onRemove: () => setState(() => _newImages.removeAt(i)),
-                ),
-                const SizedBox(width: 8),
-              ],
-              // Add-photo tile.
-              InkWell(
-                onTap: _isCompressing ? null : _pickImage,
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  width: 82,
-                  height: 82,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFCBD5E1)),
-                    color: const Color(0xFFF8FAFC),
-                  ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add_photo_alternate_outlined,
-                          size: 24, color: Color(0xFF64748B)),
-                      SizedBox(height: 4),
-                      Text(
-                        'ছবি যোগ',
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF64748B),
-                        ),
+                  const SizedBox(width: 8),
+                ],
+                for (var i = 0; i < _newImages.length; i++) ...[
+                  _removableThumb(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.memory(
+                        base64Decode(_newImages[i]),
+                        width: 82,
+                        height: 82,
+                        fit: BoxFit.cover,
                       ),
-                    ],
+                    ),
+                    onRemove: () => setState(() => _newImages.removeAt(i)),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+        // Same direct photo / video actions as the create screen.
+        Row(
+          children: [
+            Expanded(
+              child: _mediaActionButton(
+                icon: Icons.photo_library_outlined,
+                iconColor: const Color(0xFF16A34A),
+                label: 'ছবি',
+                onTap: _isCompressing ? () {} : _pickImage,
               ),
-            ],
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _mediaActionButton(
+                icon: Icons.videocam_outlined,
+                iconColor: const Color(0xFFDC2626),
+                label: 'ভিডিও',
+                onTap: () => AdsyToast.info(context,
+                    'এডিট করার সময় নতুন ভিডিও যোগ করা যায় না'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Same limits line as the create screen.
+        Text(
+          'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং ২ টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ৩ মিনিটের মধ্যে হতে হবে',
+          style: TextStyle(
+            fontSize: 11.5,
+            color: Colors.grey.shade500,
+            height: 1.4,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _mediaActionButton({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20, color: iconColor),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
