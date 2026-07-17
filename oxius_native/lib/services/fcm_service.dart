@@ -2891,6 +2891,21 @@ class FCMService {
       );
     }
     // ============================================
+    // ADSYCONNECT GROUP MESSAGES
+    // ============================================
+    else if (type == 'group_message') {
+      // Groups live in the AdsyConnect list (main tab shows them inline) —
+      // open the list; the group id can't be opened as a 1:1 chat.
+      _log('   → Navigating to AdsyConnect for group message');
+      navigator.push(
+        MaterialPageRoute(
+          builder: (context) => InboxScreen(
+            initialTab: 0, // AdsyConnect tab is index 0
+          ),
+        ),
+      );
+    }
+    // ============================================
     // SUPPORT TICKETS
     // ============================================
     else if (type == 'support_ticket' ||

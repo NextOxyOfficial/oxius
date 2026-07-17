@@ -1216,6 +1216,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final memberCount =
         group['member_count'] ?? (group['members'] as List? ?? []).length;
     final imageUrl = (group['image_url'] ?? '').toString();
+    final lastAt =
+        DateTime.tryParse((group['last_message_at'] ?? '').toString());
     return InkWell(
       onTap: () => _openGroup(group),
       child: Container(
@@ -1251,13 +1253,30 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937))),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1F2937))),
+                      ),
+                      if (lastAt != null) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatTimestamp(lastAt),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     preview.isNotEmpty ? preview : '$memberCount জন মেম্বার',

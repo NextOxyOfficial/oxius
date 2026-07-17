@@ -8,6 +8,68 @@ from .models import CallSession
 logger = logging.getLogger(__name__)
 
 
+@shared_task(bind=True, max_retries=1, default_retry_delay=10)
+def send_group_push_notification(
+    self, group_id, sender_id, sender_name, message_preview
+):
+    """Push a group message to every member except the sender, skipping
+    members who muted the group. Runs off the request thread — a group can
+    have many members and each FCM send is a network round-trip.
+
+    Payload type is 'group_message' (NOT 'message') so the app routes the tap
+    to the AdsyConnect list instead of trying to open a 1:1 room by group id.
+    """
+    from base.fcm_service import send_fcm_notification
+    from base.models import FCMToken
+    from .models import ChatGroup
+
+    try:
+        group = ChatGroup.objects.filter(id=group_id).first()
+        if group is None:
+            return {'skipped': 'missing_group'}
+
+        recipient_ids = list(
+            group.memberships.filter(muted=False)
+            .exclude(user_id=sender_id)
+            .values_list('user_id', flat=True)
+        )
+        if not recipient_ids:
+            return {'skipped': 'no_recipients'}
+
+        tokens = FCMToken.objects.filter(
+            user_id__in=recipient_ids, is_active=True
+        ).values_list('token', flat=True)
+
+        body = f'{sender_name}: {message_preview}'
+        if len(body) > 110:
+            body = body[:110] + '…'
+        sent = 0
+        for token in tokens:
+            if str(token or '').startswith('voip:'):
+                continue
+            ok = send_fcm_notification(
+                fcm_token=token,
+                title=group.name,
+                body=body,
+                data={
+                    'type': 'group_message',
+                    'group_id': str(group.id),
+                    'group_name': group.name,
+                    'sender_id': str(sender_id),
+                    'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+                },
+            )
+            if ok:
+                sent += 1
+        return {'sent': sent}
+    except Exception as exc:
+        logger.warning('send_group_push_notification failed: %s', exc)
+        try:
+            raise self.retry(exc=exc)
+        except self.MaxRetriesExceededError:
+            return {'error': str(exc)}
+
+
 @shared_task(bind=True, max_retries=2, default_retry_delay=10)
 def send_chat_push_notification(
     self, receiver_id, sender_id, sender_name, message_preview, chatroom_id

@@ -1738,4 +1738,22 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                 'type': 'group_message',
                 'message': payload,
             })
+
+        # Push notifications off-thread (skips members who muted the group).
+        try:
+            from .tasks import send_group_push_notification
+
+            sender_name = (
+                request.user.get_full_name()
+                or request.user.username
+                or request.user.email
+            )
+            send_group_push_notification.delay(
+                group_id=str(group.id),
+                sender_id=str(request.user.id),
+                sender_name=sender_name,
+                message_preview=message.get_preview(),
+            )
+        except Exception as e:
+            logger.warning('Failed to enqueue group push: %s', e)
         return Response(payload, status=status.HTTP_201_CREATED)
