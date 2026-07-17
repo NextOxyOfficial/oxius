@@ -3,6 +3,10 @@
     <!-- Internet permission - REQUIRED for API calls -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- Advertising ID - REQUIRED by AdMob so the ad identifier isn't zeroed
+         out (Play Console warns when the declaration says the app uses it but
+         the merged manifest lacks the permission). -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <!-- NOTE: ACCESS_BACKGROUND_LOCATION intentionally NOT declared. Google
