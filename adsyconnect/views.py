@@ -1513,11 +1513,49 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                 continue
             ChatGroupMembership.objects.get_or_create(group=group, user=m)
 
+        # Opening activity notices.
+        self._system_msg(group, f'{self._actor_name()} গ্রুপটি তৈরি করেছেন')
+        added_names = ', '.join(
+            self._display_name(m) for m in members if m.id != request.user.id
+        )
+        if added_names:
+            self._system_msg(
+                group, f'{self._actor_name()} {added_names}-কে যোগ করেছেন')
+
         data = ChatGroupSerializer(group, context={'request': request}).data
         # Tell every member their group list changed.
         for m in members:
             _broadcast_to_user(m.id, {'type': 'group_updated', 'group': data})
         return Response(data, status=status.HTTP_201_CREATED)
+
+    def _actor_name(self):
+        u = self.request.user
+        return u.first_name or u.username or 'Someone'
+
+    @staticmethod
+    def _display_name(user):
+        return user.first_name or user.username or 'Someone'
+
+    def _system_msg(self, group, text):
+        """Post a centered activity notice into the group and push it to every
+        member's socket, so everyone sees what admins/members did."""
+        msg = GroupMessage.objects.create(
+            group=group,
+            sender=self.request.user,
+            message_type='system',
+            content=text,
+        )
+        group.last_message_at = msg.created_at
+        group.last_message_preview = text[:80]
+        group.save(update_fields=['last_message_at', 'last_message_preview'])
+        payload = GroupMessageSerializer(
+            msg, context={'request': self.request}
+        ).data
+        for member_id in group.memberships.values_list('user_id', flat=True):
+            _broadcast_to_user(member_id, {
+                'type': 'group_message',
+                'message': payload,
+            })
 
     def _require_member(self, group):
         if not group.is_member(self.request.user):
@@ -1537,14 +1575,24 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             return err
         name = (request.data.get('name') or '').strip()
         updates = []
-        if name:
-            group.name = name[:80]
+        renamed_to = None
+        if name and name[:80] != group.name:
+            renamed_to = name[:80]
+            group.name = renamed_to
             updates.append('name')
-        if 'image' in request.FILES:
+        photo_changed = 'image' in request.FILES
+        if photo_changed:
             group.image = request.FILES['image']
             updates.append('image')
         if updates:
             group.save(update_fields=updates + ['updated_at'])
+        if renamed_to:
+            self._system_msg(
+                group,
+                f'{self._actor_name()} গ্রুপের নাম "{renamed_to}" করেছেন')
+        if photo_changed:
+            self._system_msg(
+                group, f'{self._actor_name()} গ্রুপের ছবি বদলেছেন')
         return Response(
             ChatGroupSerializer(group, context={'request': request}).data
         )
@@ -1569,6 +1617,13 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         updated = ChatGroupMembership.objects.filter(
             group=group, user_id=user_id
         ).update(role='admin')
+        if updated:
+            target = User.objects.filter(id=user_id).first()
+            if target:
+                self._system_msg(
+                    group,
+                    f'{self._actor_name()} {self._display_name(target)}-কে '
+                    'অ্যাডমিন বানিয়েছেন')
         return Response({'promoted': bool(updated)})
 
     @action(detail=True, methods=['post'])
@@ -1588,6 +1643,13 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             return Response({'error': 'গ্রুপে অন্তত একজন অ্যাডমিন থাকতে হবে'},
                             status=400)
         updated = admins.filter(user_id=user_id).update(role='member')
+        if updated:
+            target = User.objects.filter(id=user_id).first()
+            if target:
+                self._system_msg(
+                    group,
+                    f'{self._actor_name()} {self._display_name(target)}-কে '
+                    'অ্যাডমিন থেকে সরিয়েছেন')
         return Response({'demoted': bool(updated)})
 
     @action(detail=True, methods=['post'])
@@ -1632,20 +1694,24 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         raw_ids = request.data.get('user_ids') or []
         if isinstance(raw_ids, str):
             raw_ids = [x for x in raw_ids.split(',') if x.strip()]
-        added = 0
+        added_users = []
         for u in User.objects.filter(id__in=[str(x).strip() for x in raw_ids]):
             _, created = ChatGroupMembership.objects.get_or_create(
                 group=group, user=u
             )
             if created:
-                added += 1
+                added_users.append(u)
                 _broadcast_to_user(u.id, {
                     'type': 'group_updated',
                     'group': ChatGroupSerializer(
                         group, context={'request': request}
                     ).data,
                 })
-        return Response({'added': added})
+        if added_users:
+            names = ', '.join(self._display_name(u) for u in added_users)
+            self._system_msg(
+                group, f'{self._actor_name()} {names}-কে যোগ করেছেন')
+        return Response({'added': len(added_users)})
 
     @action(detail=True, methods=['post'])
     def remove_member(self, request, pk=None):
@@ -1657,9 +1723,15 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         if user_id == str(request.user.id):
             return Response({'error': 'নিজেকে remove করতে leave ব্যবহার করুন'},
                             status=400)
+        target = User.objects.filter(id=user_id).first()
         deleted, _ = ChatGroupMembership.objects.filter(
             group=group, user_id=user_id
         ).delete()
+        if deleted and target:
+            self._system_msg(
+                group,
+                f'{self._actor_name()} {self._display_name(target)}-কে '
+                'গ্রুপ থেকে বাদ দিয়েছেন')
         return Response({'removed': bool(deleted)})
 
     @action(detail=True, methods=['post'])
@@ -1675,6 +1747,8 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         if not remaining.exists():
             group.delete()
             return Response({'left': True, 'deleted': True})
+        # Announce the departure to whoever remains.
+        self._system_msg(group, f'{self._actor_name()} গ্রুপ ছেড়েছেন')
         # Never leave a group admin-less.
         if not remaining.filter(role='admin').exists():
             oldest = remaining.order_by('joined_at').first()

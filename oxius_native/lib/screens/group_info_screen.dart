@@ -210,10 +210,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       _groupId, uid);
                   if (!mounted) return;
                   if (ok) {
-                    AdsyToast.success(this.context, 'অ্যাডমিন বানানো হয়েছে');
+                    AdsyToast.success(context, 'অ্যাডমিন বানানো হয়েছে');
                     _refresh();
                   } else {
-                    AdsyToast.error(this.context, 'করা যায়নি');
+                    AdsyToast.error(context, 'করা যায়নি');
                   }
                 },
               ),
@@ -228,10 +228,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       _groupId, uid);
                   if (!mounted) return;
                   if (ok) {
-                    AdsyToast.info(this.context, 'অ্যাডমিন থেকে সরানো হয়েছে');
+                    AdsyToast.info(context, 'অ্যাডমিন থেকে সরানো হয়েছে');
                     _refresh();
                   } else {
-                    AdsyToast.error(this.context, 'করা যায়নি');
+                    AdsyToast.error(context, 'করা যায়নি');
                   }
                 },
               ),
@@ -246,10 +246,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                     _groupId, uid);
                 if (!mounted) return;
                 if (ok) {
-                  AdsyToast.info(this.context, 'Remove করা হয়েছে');
+                  AdsyToast.info(context, 'Remove করা হয়েছে');
                   _refresh();
                 } else {
-                  AdsyToast.error(this.context, 'Remove করা যায়নি');
+                  AdsyToast.error(context, 'Remove করা যায়নি');
                 }
               },
             ),
@@ -282,19 +282,19 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                 fontWeight: FontWeight.w700)),
       ),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          // Header: photo + name + count
+          // Header: photo + name + count — compact.
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 22),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
             child: Column(
               children: [
                 Stack(
                   children: [
                     Container(
-                      width: 88,
-                      height: 88,
+                      width: 66,
+                      height: 66,
                       decoration: const BoxDecoration(
                           shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
                       clipBehavior: Clip.antiAlias,
@@ -304,20 +304,20 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => const Icon(
                                   Icons.groups,
-                                  size: 40,
+                                  size: 30,
                                   color: Color(0xFF3B82F6)))
                           : const Icon(Icons.groups,
-                              size: 40, color: Color(0xFF3B82F6)),
+                              size: 30, color: Color(0xFF3B82F6)),
                     ),
                     if (_isAdmin)
                       Positioned(
-                        bottom: 0,
-                        right: 0,
+                        bottom: -1,
+                        right: -1,
                         child: InkWell(
                           onTap: _changePhoto,
                           child: Container(
-                            width: 28,
-                            height: 28,
+                            width: 24,
+                            height: 24,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: const Color(0xFF2563EB),
@@ -325,13 +325,13 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                                   Border.all(color: Colors.white, width: 2),
                             ),
                             child: const Icon(Icons.camera_alt,
-                                size: 14, color: Colors.white),
+                                size: 12, color: Colors.white),
                           ),
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -340,8 +340,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                               color: Color(0xFF0F172A))),
                     ),
                     if (_isAdmin) ...[
@@ -349,20 +349,20 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       InkWell(
                         onTap: _rename,
                         child: Icon(Icons.edit_outlined,
-                            size: 17, color: Colors.grey.shade600),
+                            size: 15, color: Colors.grey.shade500),
                       ),
                     ],
                   ],
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text('${members.length} জন মেম্বার',
                     style:
-                        TextStyle(fontSize: 12.5, color: Colors.grey.shade600)),
+                        TextStyle(fontSize: 12, color: Colors.grey.shade500)),
               ],
             ),
           ),
-          const SizedBox(height: 10),
-          // Quick actions
+          const SizedBox(height: 8),
+          // Quick actions — dense rows.
           Container(
             color: Colors.white,
             child: Column(
@@ -385,21 +385,22 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           // Members
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.only(top: 4, bottom: 4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Text('মেম্বার (${members.length})',
-                      style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A))),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+                  child: Text('মেম্বার · ${members.length}',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: Colors.grey.shade500)),
                 ),
                 ...members.map(_memberTile),
               ],
@@ -413,12 +414,20 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   Widget _actionTile(IconData icon, String label, VoidCallback onTap,
       {bool danger = false}) {
     final color = danger ? const Color(0xFFDC2626) : const Color(0xFF334155);
-    return ListTile(
-      leading: Icon(icon, color: color, size: 22),
-      title: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 14.5, fontWeight: FontWeight.w600)),
+    return InkWell(
       onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 14),
+            Text(label,
+                style: TextStyle(
+                    color: color, fontSize: 14, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -434,56 +443,63 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     final avatar = AppConfig.getAbsoluteUrl((u['avatar'] ?? '').toString());
     final isAdminRow = m['role'] == 'admin';
     final isMe = uid == _myId;
-    return ListTile(
+    return InkWell(
       onTap: (_isAdmin && !isMe) ? () => _memberActions(m) : null,
-      leading: Container(
-        width: 42,
-        height: 42,
-        decoration: const BoxDecoration(
-            shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
-        clipBehavior: Clip.antiAlias,
-        alignment: Alignment.center,
-        child: avatar.isNotEmpty
-            ? Image.network(avatar,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Text(
-                    display.isNotEmpty ? display[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                        color: Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w700)))
-            : Text(display.isNotEmpty ? display[0].toUpperCase() : '?',
-                style: const TextStyle(
-                    color: Color(0xFF3B82F6), fontWeight: FontWeight.w700)),
-      ),
-      title: Row(
-        children: [
-          Flexible(
-            child: Text(isMe ? '$display (আপনি)' : display,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 14.5, fontWeight: FontWeight.w600)),
-          ),
-          if (isAdminRow) ...[
-            const SizedBox(width: 6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: const Text('অ্যাডমিন',
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF059669))),
+              width: 38,
+              height: 38,
+              decoration: const BoxDecoration(
+                  shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+              clipBehavior: Clip.antiAlias,
+              alignment: Alignment.center,
+              child: avatar.isNotEmpty
+                  ? Image.network(avatar,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Text(
+                          display.isNotEmpty ? display[0].toUpperCase() : '?',
+                          style: const TextStyle(
+                              color: Color(0xFF3B82F6),
+                              fontWeight: FontWeight.w700)))
+                  : Text(display.isNotEmpty ? display[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                          color: Color(0xFF3B82F6),
+                          fontWeight: FontWeight.w700)),
             ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(isMe ? '$display (আপনি)' : display,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600)),
+            ),
+            if (isAdminRow) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text('অ্যাডমিন',
+                    style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF059669))),
+              ),
+            ],
+            if (_isAdmin && !isMe) ...[
+              const SizedBox(width: 4),
+              Icon(Icons.more_vert, size: 17, color: Colors.grey.shade400),
+            ],
           ],
-        ],
+        ),
       ),
-      trailing: (_isAdmin && !isMe)
-          ? Icon(Icons.more_vert, size: 18, color: Colors.grey.shade500)
-          : null,
     );
   }
 }

@@ -178,6 +178,9 @@ class GroupMessage(models.Model):
         ('image', 'Image'),
         ('video', 'Video'),
         ('document', 'Document'),
+        # Auto-generated activity notice (member added/removed, renamed, …),
+        # rendered as a centered chip in the chat instead of a bubble.
+        ('system', 'System'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -214,6 +217,9 @@ class GroupMessage(models.Model):
     def get_preview(self):
         if self.is_deleted:
             return 'Message deleted'
+        if self.message_type == 'system':
+            text = self.content or ''
+            return text[:60]
         if self.message_type == 'voice':
             return '🎤 Voice message'
         if self.message_type == 'image':

@@ -596,6 +596,32 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   Widget _buildRow(int i) {
     final raw = _messages[i];
+    // Activity notices (member added/removed, renamed, …) render as a
+    // centered pill so everyone sees what happened.
+    if ((raw['message_type'] ?? '').toString() == 'system') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 40),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8EDF3),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              (raw['content'] ?? '').toString(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF64748B),
+                height: 1.35,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final mapped = _bubbleMessage(raw);
     final isMe = mapped['isMe'] == true;
     // Show the avatar when the sender changes (like the 1:1 list).
