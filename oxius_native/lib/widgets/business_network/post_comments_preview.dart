@@ -1092,7 +1092,8 @@ class _CommentItemState extends State<_CommentItem> {
                                               ),
                                             ),
                                             FirstLinkPreview(
-                                                text: extractedMessage),
+                                                text: extractedMessage,
+                                                compact: true),
                                           ],
                                         );
                                       }
@@ -1280,6 +1281,7 @@ class _CommentItemState extends State<_CommentItem> {
                         FirstLinkPreview(
                           text: HtmlContentUtils.toPlainText(
                               widget.comment.content),
+                          compact: true,
                         ),
                       ],
                     ),

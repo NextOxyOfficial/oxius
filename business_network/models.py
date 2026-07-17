@@ -314,6 +314,9 @@ class BusinessNetworkPost(models.Model):
     )
     media = models.ManyToManyField(BusinessNetworkMedia, blank=True, related_name='business_network_posts')
     tags = models.ManyToManyField(BusinessNetworkPostTag, blank=True, related_name='business_network_posts')
+    # Shares that are NOT reposts (sent to a chat, external apps, etc.).
+    # share_count in the serializer = reshares.count() + this.
+    external_share_count = models.PositiveIntegerField(default=0)
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')
     is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

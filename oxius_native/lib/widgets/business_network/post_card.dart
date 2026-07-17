@@ -396,6 +396,14 @@ class _PostCardState extends State<PostCard> {
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
+        // Count non-repost shares (chat / external) and bump the badge.
+        onShared: () {
+          BusinessNetworkService.trackShare(_post.sharedFrom?.id ?? _post.id);
+          if (mounted) {
+            setState(() =>
+                _post = _post.copyWith(shareCount: _post.shareCount + 1));
+          }
+        },
         // Repost-to-profile composer inside the share sheet.
         onRepost: (caption) async {
           if (!AuthService.isAuthenticated) {
@@ -410,6 +418,10 @@ class _PostCardState extends State<PostCard> {
           if (result != null) {
             // Prepend the fresh repost to the feed (no reload).
             widget.onReshared?.call(result);
+            if (mounted) {
+              setState(() =>
+                  _post = _post.copyWith(shareCount: _post.shareCount + 1));
+            }
             return true;
           }
           return false;

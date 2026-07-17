@@ -19,6 +19,11 @@ urlpatterns = [
     ),
     path("posts/save/", UserSavedPostListCreateView.as_view(), name="user-saved-posts"),
     path("posts/<str:post_id>/reshare/", reshare_post, name="post-reshare"),
+    path(
+        "posts/<str:post_id>/track-share/",
+        track_post_share,
+        name="post-track-share",
+    ),
     path("news/<str:news_id>/reshare/", reshare_news, name="news-reshare"),
     path("posts/search/", BusinessNetworkPostSearchView.as_view(), name="post-search"),
     path(

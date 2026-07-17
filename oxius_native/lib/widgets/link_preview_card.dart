@@ -14,12 +14,17 @@ class FirstLinkPreview extends StatelessWidget {
   final bool bare;
   final bool onDark;
 
+  /// Compact mode (comments etc.): the same standard thumbnail-left card used
+  /// in chat, but with the normal skeleton-less quiet loading.
+  final bool compact;
+
   const FirstLinkPreview({
     super.key,
     required this.text,
     this.margin = const EdgeInsets.only(top: 6),
     this.bare = false,
     this.onDark = false,
+    this.compact = false,
   });
 
   @override
@@ -29,7 +34,8 @@ class FirstLinkPreview extends StatelessWidget {
 
     return Container(
       margin: margin,
-      child: LinkPreviewCard(url: url, bare: bare, onDark: onDark),
+      child: LinkPreviewCard(
+          url: url, bare: bare, onDark: onDark, compact: compact),
     );
   }
 }
@@ -38,12 +44,14 @@ class LinkPreviewCard extends StatefulWidget {
   final String url;
   final bool bare;
   final bool onDark;
+  final bool compact;
 
   const LinkPreviewCard({
     super.key,
     required this.url,
     this.bare = false,
     this.onDark = false,
+    this.compact = false,
   });
 
   @override
@@ -73,9 +81,11 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // In chat (bare) show nothing while loading — the grey skeleton
-          // read as a stray background box. Elsewhere keep the skeleton.
-          return widget.bare ? const SizedBox.shrink() : _buildLoading();
+          // In chat (bare) and comments (compact) show nothing while loading —
+          // the grey skeleton read as a stray box. Elsewhere keep the skeleton.
+          return (widget.bare || widget.compact)
+              ? const SizedBox.shrink()
+              : _buildLoading();
         }
 
         final data = snapshot.data;
@@ -262,11 +272,10 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       }
     })();
 
-    // In chat, every preview uses one standard, social-app card: a white
-    // rounded bordered box with the thumbnail on the LEFT and the title +
-    // domain on the RIGHT (like Messenger/WhatsApp). It reads cleanly on both
-    // the blue (own) and light (received) bubbles.
-    if (widget.bare) {
+    // In chat (bare) and comments (compact), every preview uses one standard,
+    // social-app card: a white rounded bordered box with the thumbnail on the
+    // LEFT and the title + domain on the RIGHT (like Messenger/WhatsApp).
+    if (widget.bare || widget.compact) {
       return _buildChatPreviewCard(data, domain, hasImage);
     }
 

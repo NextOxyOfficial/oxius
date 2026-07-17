@@ -148,6 +148,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
+        // Count non-repost shares (chat / external) and bump the badge.
+        onShared: () {
+          BusinessNetworkService.trackShare(_post.sharedFrom?.id ?? _post.id);
+          if (mounted) {
+            setState(() =>
+                _post = _post.copyWith(shareCount: _post.shareCount + 1));
+          }
+        },
         // Same repost-to-profile composer as the feed's post card.
         onRepost: (caption) async {
           if (!AuthService.isAuthenticated) return false;
@@ -156,6 +164,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             targetId,
             caption: caption,
           );
+          if (result != null && mounted) {
+            setState(() =>
+                _post = _post.copyWith(shareCount: _post.shareCount + 1));
+          }
           return result != null;
         },
       ),

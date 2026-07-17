@@ -236,9 +236,10 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
         return out
 
     def get_share_count(self, obj):
-        """How many times this post has been reshared."""
+        """Reshares PLUS non-repost shares (sent to chat / external apps)."""
         cache = self._prefetched(obj, "reshares")
-        return len(cache) if cache is not None else obj.reshares.count()
+        reshares = len(cache) if cache is not None else obj.reshares.count()
+        return reshares + (obj.external_share_count or 0)
 
     def get_shared_from_details(self, obj):
         """Shallow copy of the original post for a reshare — enough to render the

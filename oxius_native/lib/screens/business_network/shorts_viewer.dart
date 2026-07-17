@@ -1119,6 +1119,10 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
+        // Count non-repost shares (chat / external).
+        onShared: () {
+          BusinessNetworkService.trackShare(_post.sharedFrom?.id ?? _post.id);
+        },
         // Repost this short to the user's own profile/feed.
         onRepost: (caption) async {
           if (!AuthService.isAuthenticated) return false;

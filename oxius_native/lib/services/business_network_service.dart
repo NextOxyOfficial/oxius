@@ -103,6 +103,26 @@ class BusinessNetworkService {
     }
   }
 
+  /// Count a non-repost share (send-to-chat, WhatsApp, etc.) on a post.
+  /// Returns the new total share count, or null on failure.
+  static Future<int?> trackShare(int postId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final res = await http.post(
+        Uri.parse('$_baseUrl/posts/$postId/track-share/'),
+        headers: headers,
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return int.tryParse('${data['share_count']}');
+      }
+      return null;
+    } catch (e) {
+      debugPrint('trackShare failed: $e');
+      return null;
+    }
+  }
+
   /// Reshare an Adsy News story to the user's Business Network feed. News ids
   /// are strings, and the story is always the source, so there is no root to
   /// collapse the way [resharePost] does.

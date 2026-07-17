@@ -1184,6 +1184,27 @@ def increment_media_views(request, media_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+def track_post_share(request, post_id):
+    """Count a non-repost share (send-to-chat, WhatsApp, copy-to-app, etc.).
+
+    Atomic F() increment — no race with concurrent shares. Returns the new
+    total share count so the client can update its badge immediately.
+    """
+    from django.db.models import F
+
+    updated = BusinessNetworkPost.objects.filter(
+        id=post_id, is_banned=False
+    ).update(external_share_count=F("external_share_count") + 1)
+    if not updated:
+        return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+    post = BusinessNetworkPost.objects.get(id=post_id)
+    return Response({
+        "share_count": post.reshares.count() + post.external_share_count,
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def reshare_post(request, post_id):
     """Reshare (repost) another user's post to your own profile/feed.
 

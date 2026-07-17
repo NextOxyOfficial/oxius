@@ -24,6 +24,10 @@ class AdsyShareData {
   final Future<bool> Function(String caption)? onRepost;
   final String? repostHint;
 
+  // Fired once per successful non-repost share action (chat send, WhatsApp,
+  // native share, …) so the caller can bump the post's share counter.
+  final VoidCallback? onShared;
+
   const AdsyShareData({
     required this.title,
     required this.url,
@@ -34,6 +38,7 @@ class AdsyShareData {
     this.hashtags = const [],
     this.onRepost,
     this.repostHint,
+    this.onShared,
   });
 
   String get cleanTitle {
@@ -276,6 +281,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
       _sendingBatch = false;
     });
     if (ok > 0) {
+      data.onShared?.call();
       AdsyToast.success(context, '$ok জনকে পাঠানো হয়েছে');
       Navigator.of(context).pop(); // close the share sheet after sending
     } else {
@@ -561,11 +567,13 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
   }
 
   Future<void> _nativeShare() async {
+    data.onShared?.call();
     Navigator.pop(context);
     await AdsyShareSheet.nativeShare(context, data: data);
   }
 
   Future<void> _openShareUrl(String url) async {
+    data.onShared?.call();
     Navigator.pop(context);
     final ok = await UrlLauncherUtils.launchExternalUrl(url);
     if (!ok && mounted) {
@@ -581,12 +589,13 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     // nothing appeared on tap).
     final navigator = Navigator.of(context, rootNavigator: true);
     final content = data.chatShareContent;
+    final onShared = data.onShared;
     navigator.pop();
     await showModalBottomSheet<void>(
       context: navigator.context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ChatPickerSheet(content: content),
+      builder: (_) => _ChatPickerSheet(content: content, onShared: onShared),
     );
   }
 
@@ -916,8 +925,9 @@ class _SharePreview extends StatelessWidget {
 /// chat interface renders the contained URL as a link-preview card.
 class _ChatPickerSheet extends StatefulWidget {
   final String content;
+  final VoidCallback? onShared;
 
-  const _ChatPickerSheet({required this.content});
+  const _ChatPickerSheet({required this.content, this.onShared});
 
   @override
   State<_ChatPickerSheet> createState() => _ChatPickerSheetState();
@@ -1052,6 +1062,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
       _sendingBatch = false;
     });
     if (ok > 0) {
+      widget.onShared?.call();
       AdsyToast.success(context, '$ok জনকে পাঠানো হয়েছে');
       Navigator.of(context).pop(); // close the picker after sending
     } else {
