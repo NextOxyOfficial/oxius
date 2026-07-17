@@ -103,6 +103,30 @@ class BusinessNetworkService {
     }
   }
 
+  /// Attach a NEW video to an existing post (edit flow). Multipart upload;
+  /// returns the full updated post, or null on failure.
+  static Future<BusinessNetworkPost?> addPostVideo(
+      int postId, String filePath) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      headers.remove('Content-Type');
+      final req = http.MultipartRequest(
+          'POST', Uri.parse('$_baseUrl/posts/$postId/add-video/'));
+      req.headers.addAll(headers);
+      req.files.add(await http.MultipartFile.fromPath('video', filePath));
+      final streamed = await req.send().timeout(const Duration(minutes: 5));
+      final body = await streamed.stream.bytesToString();
+      if (streamed.statusCode == 200) {
+        return BusinessNetworkPost.fromJson(jsonDecode(body));
+      }
+      debugPrint('addPostVideo -> ${streamed.statusCode} $body');
+      return null;
+    } catch (e) {
+      debugPrint('addPostVideo failed: $e');
+      return null;
+    }
+  }
+
   /// Count a non-repost share (send-to-chat, WhatsApp, etc.) on a post.
   /// Returns the new total share count, or null on failure.
   static Future<int?> trackShare(int postId) async {

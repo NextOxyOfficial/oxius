@@ -1184,6 +1184,59 @@ def increment_media_views(request, media_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+def add_post_video(request, post_id):
+    """Attach a NEW video to an existing post (edit flow).
+
+    Multipart body: {video: <file>}. Author-only, honors the same 2-video
+    cap and thumbnail pipeline as post creation. Returns the full updated
+    post so the editor can refresh in place.
+    """
+    post = BusinessNetworkPost.objects.filter(
+        id=post_id, is_banned=False
+    ).first()
+    if post is None:
+        return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+    if post.author_id != request.user.id:
+        return Response(
+            {"error": "You can only edit your own post"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    video_file = request.FILES.get("video")
+    if video_file is None:
+        return Response({"error": "video file required"}, status=400)
+    if video_file.size > 200 * 1024 * 1024:
+        return Response(
+            {"videos": "Video is too large (max 200 MB)."}, status=400
+        )
+    existing_videos = post.media.filter(type="video").count()
+    if existing_videos >= 2:
+        return Response(
+            {"error": "সর্বোচ্চ ২ টি ভিডিও দেওয়া যাবে"}, status=400
+        )
+
+    post_media = BusinessNetworkMedia.objects.create(
+        type="video", video=video_file
+    )
+    try:
+        if post_media.video and post_media.video.path:
+            thumb_file = generate_video_thumbnail(post_media.video.path)
+            if thumb_file:
+                post_media.thumbnail = thumb_file
+                post_media.save(update_fields=["thumbnail"])
+    except Exception as thumb_err:
+        print(f"Could not generate video thumbnail: {thumb_err}")
+    post.media.add(post_media)
+
+    return Response(
+        BusinessNetworkPostSerializer(
+            post, context={"request": request, "full_detail": True}
+        ).data
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def track_post_share(request, post_id):
     """Count a non-repost share (send-to-chat, WhatsApp, copy-to-app, etc.).
 

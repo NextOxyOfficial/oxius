@@ -40,12 +40,16 @@ class _EditPostScreenState extends State<EditPostScreen> {
   late final List<String> _tags;
   late String _visibility;
   bool _isSaving = false;
-  // Media edits: existing media marked for removal + freshly-picked photos.
+  // Media edits: existing media marked for removal + freshly-picked photos
+  // and videos.
   final Set<int> _removedMediaIds = {};
   final List<String> _newImages = []; // base64
+  final List<String> _newVideoPaths = []; // local file paths
   bool _isCompressing = false;
 
   static const int _maxPhotos = 12;
+  static const int _maxVideos = 2;
+  static const int _maxVideoDurationSeconds = 180; // 3 minutes
 
   bool get _hasChanges {
     return _titleText.trim() != widget.post.title.trim() ||
@@ -53,6 +57,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         _visibility != widget.post.visibility ||
         _removedMediaIds.isNotEmpty ||
         _newImages.isNotEmpty ||
+        _newVideoPaths.isNotEmpty ||
         !_listEquals(_tags, widget.post.tags.map((tag) => tag.tag).toList());
   }
 
@@ -174,7 +179,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     setState(() => _isSaving = true);
     try {
-      final updated = await BusinessNetworkService.updatePost(
+      var updated = await BusinessNetworkService.updatePost(
         postId: widget.post.id,
         title: title,
         content: content,
@@ -191,6 +196,20 @@ class _EditPostScreenState extends State<EditPostScreen> {
         setState(() => _isSaving = false);
         return;
       }
+
+      // New videos upload separately (multipart, same pipeline as create);
+      // each call returns the freshly-updated post.
+      for (final path in _newVideoPaths) {
+        final withVideo =
+            await BusinessNetworkService.addPostVideo(widget.post.id, path);
+        if (!mounted) return;
+        if (withVideo != null) {
+          updated = withVideo;
+        } else {
+          _showSnack('একটি ভিডিও আপলোড করা যায়নি', isError: true);
+        }
+      }
+      if (!mounted) return;
 
       Navigator.pop(context, updated);
     } catch (_) {
@@ -763,12 +782,37 @@ class _EditPostScreenState extends State<EditPostScreen> {
     }
   }
 
+  // How many videos the post will have after this edit is saved.
+  int get _effectiveVideoCount {
+    final kept = widget.post.media
+        .where((m) => m.isVideo && !_removedMediaIds.contains(m.id))
+        .length;
+    return kept + _newVideoPaths.length;
+  }
+
+  Future<void> _pickNewVideo() async {
+    if (_effectiveVideoCount >= _maxVideos) {
+      AdsyToast.warning(context, 'সর্বোচ্চ $_maxVideos টি ভিডিও দেওয়া যাবে');
+      return;
+    }
+    try {
+      final XFile? video = await ImagePicker().pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(seconds: _maxVideoDurationSeconds),
+      );
+      if (video == null || !mounted) return;
+      setState(() => _newVideoPaths.add(video.path));
+    } catch (_) {
+      if (mounted) AdsyToast.error(context, 'ভিডিও বাছাই করা যায়নি');
+    }
+  }
+
   Widget _buildMediaPreview() {
     final existing = widget.post.media
         .where((m) => !_removedMediaIds.contains(m.id))
         .toList();
 
-    final videoCount = existing.where((m) => m.isVideo).length;
+    final videoCount = _effectiveVideoCount;
 
     // Header, count badges, actions and limits copied from the create screen
     // so editing feels identical to composing.
@@ -815,7 +859,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                '$videoCount/2 videos',
+                '$videoCount/$_maxVideos videos',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
@@ -833,7 +877,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        if (existing.isNotEmpty || _newImages.isNotEmpty) ...[
+        if (existing.isNotEmpty ||
+            _newImages.isNotEmpty ||
+            _newVideoPaths.isNotEmpty) ...[
           SizedBox(
             height: 82,
             child: ListView(
@@ -862,6 +908,43 @@ class _EditPostScreenState extends State<EditPostScreen> {
                   ),
                   const SizedBox(width: 8),
                 ],
+                // Freshly-picked videos (uploaded on save) — same dark tile
+                // with a VIDEO badge as the create screen.
+                for (var i = 0; i < _newVideoPaths.length; i++) ...[
+                  _removableThumb(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        width: 82,
+                        height: 82,
+                        color: Colors.grey.shade800,
+                        child: const Stack(
+                          children: [
+                            Center(
+                              child: Icon(Icons.play_circle_fill,
+                                  color: Colors.white, size: 32),
+                            ),
+                            Positioned(
+                              bottom: 4,
+                              left: 4,
+                              child: Text(
+                                'VIDEO',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    onRemove: () =>
+                        setState(() => _newVideoPaths.removeAt(i)),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ],
             ),
           ),
@@ -884,8 +967,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                 icon: Icons.videocam_outlined,
                 iconColor: const Color(0xFFDC2626),
                 label: 'ভিডিও',
-                onTap: () => AdsyToast.info(context,
-                    'এডিট করার সময় নতুন ভিডিও যোগ করা যায় না'),
+                onTap: _pickNewVideo,
               ),
             ),
           ],
@@ -893,7 +975,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         const SizedBox(height: 8),
         // Same limits line as the create screen.
         Text(
-          'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং ২ টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ৩ মিনিটের মধ্যে হতে হবে',
+          'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ৩ মিনিটের মধ্যে হতে হবে',
           style: TextStyle(
             fontSize: 11.5,
             color: Colors.grey.shade500,

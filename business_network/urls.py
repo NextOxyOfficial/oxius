@@ -24,6 +24,11 @@ urlpatterns = [
         track_post_share,
         name="post-track-share",
     ),
+    path(
+        "posts/<str:post_id>/add-video/",
+        add_post_video,
+        name="post-add-video",
+    ),
     path("news/<str:news_id>/reshare/", reshare_news, name="news-reshare"),
     path("posts/search/", BusinessNetworkPostSearchView.as_view(), name="post-search"),
     path(
