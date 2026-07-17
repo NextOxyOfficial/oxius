@@ -200,7 +200,12 @@ class GroupMessage(models.Model):
         db_table = 'adsyconnect_group_messages'
         ordering = ['created_at']
         indexes = [
-            models.Index(fields=['group', 'created_at']),
+            # Name must match migration 0009 exactly, or makemigrations keeps
+            # detecting a phantom rename.
+            models.Index(
+                fields=['group', 'created_at'],
+                name='adsy_grpmsg_grp_created_idx',
+            ),
         ]
 
     def get_preview(self):
