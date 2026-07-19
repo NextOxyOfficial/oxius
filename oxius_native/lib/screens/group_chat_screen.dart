@@ -198,6 +198,61 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _messageFocusNode.requestFocus();
   }
 
+  /// Edits allowed only within 10 minutes of sending.
+  bool _withinEditWindow(Map<String, dynamic> raw) {
+    final t = DateTime.tryParse((raw['created_at'] ?? '').toString());
+    if (t == null) return false;
+    return DateTime.now().toUtc().difference(t.toUtc()).inMinutes < 10;
+  }
+
+  Future<void> _editGroupMessage(Map<String, dynamic> raw) async {
+    final controller =
+        TextEditingController(text: (raw['content'] ?? '').toString());
+    final newText = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Edit Message',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 4,
+          minLines: 1,
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.all(10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () =>
+                  Navigator.pop(ctx, controller.text.trim()),
+              child: const Text('Save')),
+        ],
+      ),
+    );
+    if (newText == null || newText.isEmpty || !mounted) return;
+    final res = await AdsyConnectService.editGroupMessage(
+        _groupId, (raw['id'] ?? '').toString(), newText);
+    if (!mounted) return;
+    if (res != null) {
+      await _loadMessages();
+    } else {
+      AdsyToast.error(context, 'এডিট করা যায়নি (১০ মিনিট পেরিয়ে গেছে?)');
+    }
+  }
+
   Future<void> _deleteGroupMessage(Map<String, dynamic> raw) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -784,16 +839,23 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         // Swipe-to-reply (same gesture as 1:1).
         onReply: (_) => _setReplyingTo(raw),
         // Long-press options — the SHARED sheet used by the 1:1 chat.
+        // Edit shows only for own text messages within 10 minutes.
         onLongPress: () => showChatMessageOptions(
           context,
           message: mapped,
           onReply: () => _setReplyingTo(raw),
+          onEdit: isMe && _withinEditWindow(raw)
+              ? () => _editGroupMessage(raw)
+              : null,
           onDelete: isMe ? () => _deleteGroupMessage(raw) : null,
         ),
         onOptions: () => showChatMessageOptions(
           context,
           message: mapped,
           onReply: () => _setReplyingTo(raw),
+          onEdit: isMe && _withinEditWindow(raw)
+              ? () => _editGroupMessage(raw)
+              : null,
           onDelete: isMe ? () => _deleteGroupMessage(raw) : null,
         ),
         onPlayVoice: _playVoice,

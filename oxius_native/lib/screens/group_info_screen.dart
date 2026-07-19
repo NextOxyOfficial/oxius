@@ -6,6 +6,7 @@ import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/chat/member_picker_sheet.dart';
 import '../widgets/common/adsy_toast.dart';
+import 'business_network/profile_screen.dart';
 
 /// Group settings / management. What each side can do:
 ///
@@ -487,7 +488,14 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     final isAdminRow = m['role'] == 'admin';
     final isMe = uid == _myId;
     return InkWell(
-      onTap: (_isAdmin && !isMe) ? () => _memberActions(m) : null,
+      // Row tap opens the member's BN profile; admin actions moved to ⋮.
+      onTap: uid.isEmpty
+          ? null
+          : () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => ProfileScreen(userId: uid)),
+              ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
@@ -547,7 +555,16 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             ],
             if (_isAdmin && !isMe) ...[
               const SizedBox(width: 4),
-              Icon(Icons.more_vert, size: 17, color: Colors.grey.shade400),
+              // Admin member-management sheet.
+              InkWell(
+                onTap: () => _memberActions(m),
+                borderRadius: BorderRadius.circular(999),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.more_vert,
+                      size: 17, color: Colors.grey.shade400),
+                ),
+              ),
             ],
           ],
         ),

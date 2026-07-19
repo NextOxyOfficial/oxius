@@ -1238,7 +1238,14 @@ class MessageViewSet(viewsets.ModelViewSet):
                 {'error': 'Cannot edit deleted messages'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+        # Edits are only allowed within 10 minutes of sending.
+        if timezone.now() - message.created_at > timezone.timedelta(minutes=10):
+            return Response(
+                {'error': 'মেসেজ পাঠানোর ১০ মিনিটের মধ্যে এডিট করা যায়'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         new_content = request.data.get('content', '').strip()
         if not new_content:
             return Response(
@@ -1636,6 +1643,41 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             return err
         group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path='edit-message')
+    def edit_message(self, request, pk=None):
+        """Edit a group text message — sender only, within 10 minutes."""
+        group = self.get_object()
+        err = self._require_member(group)
+        if err:
+            return err
+        msg_id = str(request.data.get('message_id') or '').strip()
+        new_content = (request.data.get('content') or '').strip()
+        if not new_content:
+            return Response({'error': 'Content is required'}, status=400)
+        msg = GroupMessage.objects.filter(id=msg_id, group=group).first()
+        if msg is None:
+            return Response({'error': 'মেসেজ পাওয়া যায়নি'}, status=404)
+        if msg.sender_id != request.user.id:
+            return Response({'error': 'শুধু নিজের মেসেজ এডিট করা যায়'},
+                            status=403)
+        if msg.message_type != 'text' or msg.is_deleted:
+            return Response({'error': 'এই মেসেজ এডিট করা যায় না'}, status=400)
+        if timezone.now() - msg.created_at > timezone.timedelta(minutes=10):
+            return Response(
+                {'error': 'মেসেজ পাঠানোর ১০ মিনিটের মধ্যে এডিট করা যায়'},
+                status=400)
+        msg.content = new_content
+        msg.save(update_fields=['content'])
+        payload = GroupMessageSerializer(
+            msg, context={'request': request}
+        ).data
+        for member_id in group.memberships.values_list('user_id', flat=True):
+            _broadcast_to_user(member_id, {
+                'type': 'group_message',
+                'message': payload,
+            })
+        return Response(payload)
 
     @action(detail=True, methods=['post'], url_path='delete-message')
     def delete_message(self, request, pk=None):

@@ -1679,14 +1679,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   void _showMessageOptions(Map<String, dynamic> message) {
     // Shared sheet (also used by group chats) — options appear only when
-    // their callback is passed.
+    // their callback is passed. Edit is limited to 10 minutes after send.
     final isMe = message['isMe'] == true;
     final isDeleted = _isMessageDeleted(message);
+    final sentAt = message['timestamp'];
+    final withinEditWindow = sentAt is DateTime &&
+        DateTime.now().difference(sentAt).inMinutes < 10;
     showChatMessageOptions(
       context,
       message: {...message, 'isDeleted': isDeleted},
       onReply: () => _setReplyingTo(message),
-      onEdit: isMe ? () => _showEditMessageDialog(message) : null,
+      onEdit: isMe && withinEditWindow
+          ? () => _showEditMessageDialog(message)
+          : null,
       onDelete: isMe ? () => _deleteMessage(message) : null,
     );
   }

@@ -1044,6 +1044,26 @@ class AdsyConnectService {
 
   /// Send a media message (voice/image/video/document) into a group.
   /// Pass either [filePath] or [mediaBytes] (+ [fileName]).
+  /// Edit a group text message (sender only, within 10 minutes).
+  static Future<Map<String, dynamic>?> editGroupMessage(
+      String groupId, String messageId, String content) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/edit-message/'),
+        headers: headers,
+        body: jsonEncode({'message_id': messageId, 'content': content}),
+      );
+      if (response.statusCode == 200) {
+        return Map<String, dynamic>.from(jsonDecode(response.body));
+      }
+      return null;
+    } catch (e) {
+      debugPrint('editGroupMessage failed: $e');
+      return null;
+    }
+  }
+
   /// Soft-delete a group message for everyone (sender or a group admin).
   static Future<bool> deleteGroupMessage(
       String groupId, String messageId) async {
