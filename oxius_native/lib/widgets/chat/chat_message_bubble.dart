@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
+import '../../services/business_network_service.dart';
 import '../../utils/shared_post_message.dart';
 import '../../utils/url_launcher_utils.dart';
 import '../../widgets/chat_video_player.dart';
@@ -70,24 +71,18 @@ class ChatReplyQuoteCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: border),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
+        // Quote look: a small quote glyph beside the sender, no side bar.
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 3,
-              height: 32,
-              decoration: BoxDecoration(
-                color: accent,
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.format_quote_rounded, size: 14, color: accent),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
                     sender.isEmpty ? 'Reply' : sender,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -98,19 +93,20 @@ class ChatReplyQuoteCard extends StatelessWidget {
                       letterSpacing: -0.1,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    preview,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: previewColor,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              preview,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+                color: previewColor,
+                height: 1.25,
               ),
             ),
           ],
@@ -585,7 +581,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => _sharedThumbFallback(),
                       )
-                    : _sharedThumbFallback(),
+                    : _SharedThumbResolver(postUrl: shared.postUrl),
               ),
               Expanded(
                 child: Padding(
@@ -626,14 +622,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     );
   }
 
-  Widget _sharedThumbFallback() {
-    return Container(
-      color: const Color(0xFFF1F5F9),
-      alignment: Alignment.center,
-      child: const Icon(Icons.image_rounded,
-          size: 24, color: Color(0xFF9CA3AF)),
-    );
-  }
+  Widget _sharedThumbFallback() => const _SharedThumbIcon();
 
   Widget _buildVoiceContent(Map<String, dynamic> message, bool isMe) {
     final duration = (message['voiceDuration'] as int?) ??
@@ -988,6 +977,85 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           ),
         ],
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shared-post thumbnail fallback
+// ---------------------------------------------------------------------------
+
+/// Grey placeholder icon for a shared-post card with no usable image.
+class _SharedThumbIcon extends StatelessWidget {
+  const _SharedThumbIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFF1F5F9),
+      alignment: Alignment.center,
+      child:
+          const Icon(Icons.image_rounded, size: 24, color: Color(0xFF9CA3AF)),
+    );
+  }
+}
+
+/// Resolves the REAL first-media thumbnail for shared-post messages whose
+/// embedded thumb is empty (old/corrupted payloads, video posts without a
+/// server thumbnail): pulls the post by its slug and uses its media. Results
+/// are memoized per-URL so scrolling doesn't refetch.
+class _SharedThumbResolver extends StatefulWidget {
+  final String postUrl;
+  const _SharedThumbResolver({required this.postUrl});
+
+  // url -> resolved thumb ('' = known to have none).
+  static final Map<String, String> _cache = {};
+
+  @override
+  State<_SharedThumbResolver> createState() => _SharedThumbResolverState();
+}
+
+class _SharedThumbResolverState extends State<_SharedThumbResolver> {
+  String? _thumb;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final url = widget.postUrl;
+    final cached = _SharedThumbResolver._cache[url];
+    if (cached != null) {
+      _thumb = cached;
+      return;
+    }
+    final match =
+        RegExp(r'/business-network/posts/([^/?#]+)').firstMatch(url);
+    if (match == null) {
+      _SharedThumbResolver._cache[url] = '';
+      return;
+    }
+    final post =
+        await BusinessNetworkService.getPostByIdentifier(match.group(1)!);
+    final resolved = post?.shareThumbUrl ?? '';
+    _SharedThumbResolver._cache[url] = resolved;
+    if (mounted && resolved.isNotEmpty) {
+      setState(() => _thumb = resolved);
+    } else {
+      _thumb = resolved;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = _thumb ?? '';
+    if (t.isEmpty) return const _SharedThumbIcon();
+    return Image.network(
+      AppConfig.getAbsoluteUrl(t),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => const _SharedThumbIcon(),
     );
   }
 }

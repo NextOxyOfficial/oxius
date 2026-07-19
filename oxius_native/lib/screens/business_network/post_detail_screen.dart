@@ -142,8 +142,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         description: HtmlContentUtils.previewText(plainPostContent, 140),
         url:
             'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
-        imageUrl: _post.media.isNotEmpty
-            ? _post.media.first.bestThumbnailUrl
+        imageUrl: _post.shareThumbUrl.isNotEmpty
+            ? _post.shareThumbUrl
             : _post.user.image ?? _post.user.avatar,
         subject: 'Business Network Post',
         eyebrow: 'Business Network',

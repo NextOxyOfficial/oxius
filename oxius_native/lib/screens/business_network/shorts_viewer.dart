@@ -1114,8 +1114,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         description: HtmlContentUtils.previewText(plainPostContent, 140),
         url:
             'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
-        imageUrl:
-            _post.media.isNotEmpty ? _post.media.first.bestThumbnailUrl : null,
+        imageUrl: _post.shareThumbUrl.isNotEmpty ? _post.shareThumbUrl : null,
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
@@ -1601,17 +1600,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                           }
                         });
                       },
-                      child: RichText(
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        text: TextSpan(
-                          children: [
-                            // Reels-style author row: avatar chip before the name.
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: Container(
+                      // Avatar on the left; name + location stacked on the
+                      // right so the address hugs the name, not the block.
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                                Container(
                                   width: 34,
                                   height: 34,
                                   decoration: BoxDecoration(
@@ -1636,8 +1630,17 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                         : const _AvatarFallback(),
                                   ),
                                 ),
-                              ),
-                            ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                RichText(
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  text: TextSpan(
+                                    children: [
                             TextSpan(
                               text: post.user.name,
                               style: const TextStyle(
@@ -1721,40 +1724,43 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                 ),
                               ),
                             ],
-                          ],
-                        ),
+                                    ],
+                                  ),
+                                ),
+                                // Address hugs the name — same column, tiny gap.
+                                if (post.user.locationLabel.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.location_on_rounded,
+                                            size: 12.5,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.7)),
+                                        const SizedBox(width: 3),
+                                        Flexible(
+                                          child: Text(
+                                            post.user.locationLabel,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.78),
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    // Location under the NAME (not under the avatar): indent
-                    // past the 34px avatar chip + 8px gap so it lines up with
-                    // where the name text starts.
-                    if (post.user.locationLabel.isNotEmpty) ...[
-                      const SizedBox(height: 3),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 42),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.location_on_rounded,
-                                size: 13,
-                                color: Colors.white.withValues(alpha: 0.7)),
-                            const SizedBox(width: 3),
-                            Flexible(
-                              child: Text(
-                                post.user.locationLabel,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.78),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                     // Title removed — show only the description, like the BN feed.
                     if (post.content.trim().isNotEmpty) ...[
                       const SizedBox(height: 8),

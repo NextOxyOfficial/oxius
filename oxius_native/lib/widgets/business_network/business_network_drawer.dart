@@ -32,7 +32,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
     final user = AuthService.currentUser;
     final screenWidth = MediaQuery.of(context).size.width;
     // Responsive width: ~90% of screen, capped for a roomier, native feel.
-    final drawerWidth = math.min(screenWidth * 0.90, 340.0);
+    final drawerWidth = math.min(screenWidth * 0.84, 320.0);
 
     return Drawer(
       width: drawerWidth,

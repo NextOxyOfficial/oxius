@@ -76,6 +76,54 @@ class AdsyConnectService {
     };
   }
 
+  /// REST typing heartbeat for 1:1 chats. The server stores it AND relays a
+  /// websocket event to the other user — so typing works even when the
+  /// SENDER's socket is down. Fire-and-forget.
+  static Future<void> sendTypingHeartbeat(
+      String chatroomId, bool isTyping) async {
+    try {
+      final headers = await _getHeaders();
+      await http
+          .post(
+            Uri.parse('$baseUrl/typing-status/update_typing/'),
+            headers: headers,
+            body: jsonEncode({'chatroom': chatroomId, 'is_typing': isTyping}),
+          )
+          .timeout(const Duration(seconds: 6));
+    } catch (e) {
+      debugPrint('typing heartbeat failed: $e');
+    }
+  }
+
+  /// Poll fallback for the RECEIVER: true when the other side of [chatroomId]
+  /// reported typing within the last ~7 seconds.
+  static Future<bool> isOtherUserTyping(String chatroomId) async {
+    try {
+      final headers = await _getHeaders();
+      final res = await http
+          .get(
+            Uri.parse('$baseUrl/typing-status/?chatroom=$chatroomId'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 6));
+      if (res.statusCode != 200) return false;
+      final data = jsonDecode(res.body);
+      final List<dynamic> rows =
+          data is List ? data : (data['results'] as List? ?? const []);
+      final now = DateTime.now().toUtc();
+      for (final row in rows) {
+        if (row is! Map || row['is_typing'] != true) continue;
+        final at = DateTime.tryParse('${row['updated_at'] ?? ''}');
+        if (at != null && now.difference(at.toUtc()).inSeconds <= 7) {
+          return true;
+        }
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // Get or create chat room with a user
   static Future<Map<String, dynamic>> getOrCreateChatRoom(String userId) async {
     try {

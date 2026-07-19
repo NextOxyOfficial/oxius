@@ -369,6 +369,20 @@ class BusinessNetworkFollowerSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["id", "created_at"]
 
+    def to_representation(self, instance):
+        # The followers/following sheets render a follow/unfollow button per
+        # row, so each listed user carries the VIEWER's follow status (cheap:
+        # request-scoped relation sets, no extra queries).
+        data = super().to_representation(instance)
+        for key, uid in (
+            ("follower_details", instance.follower_id),
+            ("following_details", instance.following_id),
+        ):
+            details = data.get(key)
+            if isinstance(details, dict):
+                details["isFollowing"] = _is_following(self.context, uid)
+        return data
+
 
 class AbnAdsPanelCategorySerializer(serializers.ModelSerializer):
     class Meta:

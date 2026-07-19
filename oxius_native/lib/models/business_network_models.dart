@@ -35,6 +35,27 @@ class BusinessNetworkPost {
   // When this post is a reshare of an Adsy News story, the embedded story.
   final SharedNewsPreview? sharedNews;
 
+  /// Thumbnail for share cards (chat share, previews): the first media that
+  /// actually HAS a thumbnail. A video post whose first media lacks a server
+  /// thumbnail used to share an empty thumb and render a grey placeholder in
+  /// chat — scan the rest (and the reshared original) before giving up.
+  String get shareThumbUrl {
+    for (final m in media) {
+      final t = m.bestThumbnailUrl;
+      if (t.isNotEmpty) return t;
+    }
+    final sf = sharedFrom;
+    if (sf != null) {
+      final direct = (sf.mediaThumbUrl ?? '').trim();
+      if (direct.isNotEmpty) return direct;
+      for (final m in sf.media) {
+        final t = m.bestThumbnailUrl;
+        if (t.isNotEmpty) return t;
+      }
+    }
+    return '';
+  }
+
   BusinessNetworkPost({
     required this.id,
     required this.title,

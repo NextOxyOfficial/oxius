@@ -66,5 +66,31 @@ def getAdminNotice(request):
 
     queryset = queryset.order_by("-created_at")
 
+    # Opt-in pagination: the app's inbox passes ?page=N and expects
+    # {results, next, count}. Without the param the legacy plain-array
+    # response is kept for older clients. (Previously `page` was ignored and
+    # the ENTIRE notice history shipped in one response.)
+    page_param = request.GET.get("page")
+    if page_param:
+        from django.core.paginator import EmptyPage, Paginator
+
+        paginator = Paginator(queryset, 20)
+        try:
+            page_obj = paginator.page(int(page_param))
+        except (EmptyPage, ValueError):
+            return Response({"results": [], "next": None, "count": paginator.count})
+        serializer = AdminNoticeSerializer(page_obj.object_list, many=True)
+        # NOTE: `next` must be a string (the app casts it to String?).
+        next_page = (
+            f"?page={page_obj.next_page_number()}" if page_obj.has_next() else None
+        )
+        return Response(
+            {
+                "results": serializer.data,
+                "next": next_page,
+                "count": paginator.count,
+            }
+        )
+
     serializer = AdminNoticeSerializer(queryset, many=True)
     return Response(serializer.data)

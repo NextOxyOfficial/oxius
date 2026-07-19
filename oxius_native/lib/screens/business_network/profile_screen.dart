@@ -3125,6 +3125,23 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
   int _page = 1;
   bool _hasMore = true;
   final ScrollController _scrollController = ScrollController();
+  // Local overrides after a follow/unfollow tap (key: user id).
+  final Map<String, bool> _followState = {};
+  final Set<String> _followBusy = {};
+
+  Future<void> _toggleFollow(String uid, bool currentlyFollowing) async {
+    if (uid.isEmpty || _followBusy.contains(uid)) return;
+    _followBusy.add(uid);
+    // Optimistic flip; rolled back below if the API call fails.
+    setState(() => _followState[uid] = !currentlyFollowing);
+    final ok = currentlyFollowing
+        ? await BusinessNetworkService.unfollowUser(uid)
+        : await BusinessNetworkService.followUser(uid);
+    _followBusy.remove(uid);
+    if (!ok && mounted) {
+      setState(() => _followState[uid] = currentlyFollowing);
+    }
+  }
 
   @override
   void initState() {
@@ -3345,6 +3362,17 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                   userData['headline']?.toString()
                               : null;
 
+                          // Follow button state for this row (never for self).
+                          final String rowUid =
+                              userData['id']?.toString() ?? '';
+                          final String selfUid =
+                              AuthService.currentUser?.id.toString() ?? '';
+                          final bool isSelfRow =
+                              rowUid.isNotEmpty && rowUid == selfUid;
+                          final bool rowFollowing = _followState[rowUid] ??
+                              (userData['isFollowing'] == true ||
+                                  userData['is_following'] == true);
+
                           return InkWell(
                             onTap: () => widget
                                 .onUserTap(userData['id']?.toString() ?? ''),
@@ -3446,9 +3474,46 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                       ],
                                     ),
                                   ),
-                                  // Arrow
-                                  Icon(Icons.chevron_right_rounded,
-                                      size: 18, color: Colors.grey.shade400),
+                                  // Follow/unfollow on the right (arrow only
+                                  // for the viewer's own row).
+                                  if (!isSelfRow &&
+                                      rowUid.isNotEmpty &&
+                                      AuthService.isAuthenticated)
+                                    GestureDetector(
+                                      onTap: () => _toggleFollow(
+                                          rowUid, rowFollowing),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: rowFollowing
+                                              ? const Color(0xFFF1F5F9)
+                                              : const Color(0xFF3B82F6),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: rowFollowing
+                                              ? Border.all(
+                                                  color: const Color(
+                                                      0xFFE2E8F0))
+                                              : null,
+                                        ),
+                                        child: Text(
+                                          rowFollowing
+                                              ? 'Following'
+                                              : 'Follow',
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: rowFollowing
+                                                ? const Color(0xFF475569)
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    Icon(Icons.chevron_right_rounded,
+                                        size: 18, color: Colors.grey.shade400),
                                 ],
                               ),
                             ),

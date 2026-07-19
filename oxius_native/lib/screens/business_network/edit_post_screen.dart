@@ -479,13 +479,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
     required int maxLines,
     required ValueChanged<String> onChanged,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    // Plain page field — no card box — matching the create-post composer.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: FlutterMentions(
         key: mentionKey,
         defaultText: defaultText,
@@ -507,17 +503,17 @@ class _EditPostScreenState extends State<EditPostScreen> {
         minLines: minLines,
         maxLines: maxLines,
         onChanged: onChanged,
-        style: const TextStyle(
-          fontSize: 14,
-          height: 1.45,
-          color: Color(0xFF111827),
-          letterSpacing: 0,
+        // Same type scale as the create-post composer.
+        style: TextStyle(
+          fontSize: 15.5,
+          color: Colors.grey.shade800,
+          height: 1.5,
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15.5),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+          contentPadding: EdgeInsets.zero,
         ),
         onSearchChanged: (trigger, value) async {
           if (trigger == '@') {

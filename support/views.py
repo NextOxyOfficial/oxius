@@ -1,4 +1,5 @@
 from rest_framework import generics, status, permissions
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
@@ -14,12 +15,21 @@ from .serializers import (
 )
 
 
+class InboxTicketPagination(PageNumberPagination):
+    """The inbox's Support tab paginates via ?page=N (20 per page). Without
+    this the endpoint returned EVERY ticket in one plain array and the app's
+    infinite scroll had no `next` to follow."""
+
+    page_size = 20
+
+
 class SupportTicketListCreateView(generics.ListCreateAPIView):
     """
     List all support tickets for the current user or create a new one
     """
 
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = InboxTicketPagination
 
     def get_queryset(self):
         # PRIVACY: this endpoint feeds the user-facing inbox, so it must show
@@ -29,8 +39,8 @@ class SupportTicketListCreateView(generics.ListCreateAPIView):
         # opt in explicitly (?scope=all) for admin tooling.
         user = self.request.user
         if user.is_staff and self.request.query_params.get("scope") == "all":
-            return SupportTicket.objects.all()
-        return SupportTicket.objects.filter(user=user)
+            return SupportTicket.objects.all().order_by("-created_at")
+        return SupportTicket.objects.filter(user=user).order_by("-created_at")
 
     def get_serializer_class(self):
         if self.request.method == "POST":

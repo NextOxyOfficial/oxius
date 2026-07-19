@@ -279,6 +279,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   Timer? _onlineStatusTimer;
   Timer? _remoteTypingResetTimer;
   Timer? _activeChatHeartbeat;
+  // Repeats the REST typing heartbeat while the user keeps typing, so the
+  // receiver's poll fallback (below) sees a fresh `updated_at`.
+  Timer? _typingHeartbeatTimer;
   StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
   Map<String, dynamic>? _replyingToMessage;
 
@@ -469,6 +472,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         chatroomId: widget.chatroomId,
         isTyping: false,
       );
+      // Clear the REST heartbeat too so pollers don't see a stale "typing".
+      AdsyConnectService.sendTypingHeartbeat(widget.chatroomId, false);
     }
     // Make sure we don't leave any focus capturing pointer events on the
     // returning chat-list screen.
@@ -481,6 +486,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _activeChatHeartbeat?.cancel();
     _realtimeSubscription?.cancel();
     _remoteTypingResetTimer?.cancel();
+    _typingHeartbeatTimer?.cancel();
     _messageController.dispose();
     _searchController.dispose();
     _itemPositionsListener.itemPositions
@@ -571,6 +577,21 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         chatroomId: widget.chatroomId,
         isTyping: isCurrentlyTyping,
       );
+      // REST path too — works when the socket is down, and the server relays
+      // it to the other user over their socket.
+      AdsyConnectService.sendTypingHeartbeat(
+          widget.chatroomId, isCurrentlyTyping);
+      _typingHeartbeatTimer?.cancel();
+      if (isCurrentlyTyping) {
+        // Keep `updated_at` fresh while typing continues so the receiver's
+        // 4s poll (7s freshness window) doesn't flicker off mid-typing.
+        _typingHeartbeatTimer =
+            Timer.periodic(const Duration(seconds: 3), (_) {
+          if (_isTyping) {
+            AdsyConnectService.sendTypingHeartbeat(widget.chatroomId, true);
+          }
+        });
+      }
     }
   }
 
@@ -949,6 +970,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _messagePollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (mounted && !_isLoadingMessages) {
         _checkForNewMessages();
+        _pollTypingStatus();
         _statusPollCounter++;
         if (_statusPollCounter >= 8) {
           _statusPollCounter = 0;
@@ -956,6 +978,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
     });
+  }
+
+  /// Poll fallback for the typing bubble: mirrors the websocket event when
+  /// the socket is down. Fresh heartbeats (<=7s) count as typing.
+  Future<void> _pollTypingStatus() async {
+    final typing =
+        await AdsyConnectService.isOtherUserTyping(widget.chatroomId);
+    if (!mounted || typing == _isOtherUserTyping) return;
+    setState(() => _isOtherUserTyping = typing);
   }
 
   Future<void> _checkForNewMessages() async {

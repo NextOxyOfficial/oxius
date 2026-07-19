@@ -389,7 +389,8 @@ class _PostCardState extends State<PostCard> {
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
+                // Slightly darker so the names read clearly on white.
+                color: Color(0xFF3F4A5A),
               ),
             ),
           ),
@@ -408,8 +409,8 @@ class _PostCardState extends State<PostCard> {
         description: HtmlContentUtils.previewText(plainPostContent, 140),
         url:
             'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
-        imageUrl: _post.media.isNotEmpty
-            ? _post.media.first.bestThumbnailUrl
+        imageUrl: _post.shareThumbUrl.isNotEmpty
+            ? _post.shareThumbUrl
             : _post.user.image ?? _post.user.avatar,
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
