@@ -1,7 +1,14 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-/// Google + Facebook social-login button row, shared by the login and register
-/// screens. [onProvider] is called with `'google'` or `'facebook'`.
+/// Social-login buttons shared by the login and register screens.
+/// [onProvider] is called with `'google'`, `'facebook'` or `'apple'`.
+///
+/// On iOS a "Continue with Apple" button renders ABOVE the row — App Store
+/// guideline 4.8 requires Apple sign-in with equal prominence whenever other
+/// third-party logins are offered.
 class SocialLoginButtons extends StatelessWidget {
   const SocialLoginButtons({
     super.key,
@@ -14,9 +21,16 @@ class SocialLoginButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showApple = !kIsWeb && Platform.isIOS;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (showApple) ...[
+          _AppleButton(
+            onPressed: enabled ? () => onProvider('apple') : null,
+          ),
+          const SizedBox(height: 12),
+        ],
         Row(
           children: [
             Expanded(
@@ -49,6 +63,58 @@ class SocialLoginButtons extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Black "Continue with Apple" button per Apple's Human Interface Guidelines.
+class _AppleButton extends StatelessWidget {
+  const _AppleButton({required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F2937).withValues(alpha: 0.18),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.apple, size: 24, color: Colors.white),
+            SizedBox(width: 8),
+            Text(
+              'Continue with Apple',
+              style: TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

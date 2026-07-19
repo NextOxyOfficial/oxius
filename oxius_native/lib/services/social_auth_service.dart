@@ -52,6 +52,37 @@ class SocialAuthService {
     }
   }
 
+  /// Sign in with Apple (App Store guideline 4.8 — required alongside other
+  /// third-party logins) and return a Firebase ID token. iOS only.
+  /// Returns `null` if the user cancels the Apple sheet.
+  static Future<String?> signInWithApple() async {
+    try {
+      final provider = AppleAuthProvider()
+        ..addScope('email')
+        ..addScope('name');
+      // firebase_auth runs the native ASAuthorization flow itself — no extra
+      // plugin or nonce handling needed.
+      final UserCredential userCred =
+          await FirebaseAuth.instance.signInWithProvider(provider);
+      return userCred.user?.getIdToken(true);
+    } on FirebaseAuthException catch (e) {
+      // The user closing the Apple sheet surfaces as canceled/web-context-
+      // canceled — treat as a plain cancellation, not an error.
+      const cancelCodes = {
+        'canceled',
+        'cancelled',
+        'user-cancelled',
+        'web-context-canceled',
+        'web-context-cancelled',
+      };
+      if (cancelCodes.contains(e.code)) return null;
+      rethrow;
+    } on PlatformException catch (e) {
+      if ((e.code).toLowerCase().contains('cancel')) return null;
+      rethrow;
+    }
+  }
+
   /// Sign in with Facebook and return a Firebase ID token.
   /// Returns `null` if the user cancels.
   static Future<String?> signInWithFacebook() async {

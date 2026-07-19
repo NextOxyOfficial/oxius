@@ -372,6 +372,8 @@ class AuthService {
         idToken = await SocialAuthService.signInWithGoogle();
       } else if (provider == 'facebook') {
         idToken = await SocialAuthService.signInWithFacebook();
+      } else if (provider == 'apple') {
+        idToken = await SocialAuthService.signInWithApple();
       } else {
         throw Exception('Unsupported provider: $provider');
       }
