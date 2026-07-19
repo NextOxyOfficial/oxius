@@ -3568,10 +3568,19 @@ class AllProductsListView(generics.ListAPIView):
                 "sale_price",
                 "-sale_price",
                 "random",
+                "-order_count",
             ]
             if ordering in valid_orderings:
                 if ordering == "random":
                     queryset = queryset.order_by("?")
+                elif ordering == "-order_count":
+                    # Best sellers — order_count is a model property, so rank
+                    # by the equivalent annotation instead.
+                    from django.db.models import Count
+
+                    queryset = queryset.annotate(
+                        _order_total=Count("orderitem", distinct=True)
+                    ).order_by("-_order_total", "-created_at")
                 else:
                     queryset = queryset.order_by(ordering)
             else:
@@ -6835,4 +6844,61 @@ def email_resubscribe(request):
     return _unsub_page(
         "আবার সাবস্ক্রাইব হয়েছেন ✅",
         f"<strong>{email}</strong> ঠিকানায় AdsyClub-এর আপডেট ইমেইল আবার চালু হলো।",
+    )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def top_stores(request):
+    """Public: stores ranked by orders then catalog size — powers the
+    eShop page's Top Stores slider."""
+    from django.db.models import Count
+
+    try:
+        limit = min(max(int(request.query_params.get("limit", 10)), 1), 30)
+    except (TypeError, ValueError):
+        limit = 10
+
+    rows = (
+        public_product_queryset(Product.objects.all())
+        .exclude(owner__store_username__isnull=True)
+        .exclude(owner__store_username="")
+        .values(
+            "owner_id",
+            "owner__store_name",
+            "owner__store_username",
+            "owner__store_logo",
+            "owner__image",
+            "owner__kyc",
+            "owner__is_pro",
+        )
+        .annotate(
+            product_count=Count("id", distinct=True),
+            order_total=Count("orderitem", distinct=True),
+        )
+        .order_by("-order_total", "-product_count")[:limit]
+    )
+
+    def _media(path):
+        if not path:
+            return None
+        path = str(path)
+        if path.startswith("http://") or path.startswith("https://"):
+            return path
+        return f"{settings.MEDIA_URL}{path}"
+
+    return Response(
+        [
+            {
+                "store_name": r["owner__store_name"] or r["owner__store_username"],
+                "store_username": r["owner__store_username"],
+                "store_logo": _media(r["owner__store_logo"]),
+                "image": _media(r["owner__image"]),
+                "kyc": bool(r["owner__kyc"]),
+                "is_pro": bool(r["owner__is_pro"]),
+                "product_count": r["product_count"],
+                "order_total": r["order_total"],
+            }
+            for r in rows
+        ]
     )

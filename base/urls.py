@@ -211,6 +211,9 @@ urlpatterns = [
         "my-products/stats/", UserProductStatsView.as_view(), name="user-product-stats"
     ),
     path(
+        "top-stores/", top_stores, name="top-stores"
+    ),
+    path(
         "store/<str:store_username>/", StoreDetailsView.as_view(), name="store-details"
     ),
     path(
