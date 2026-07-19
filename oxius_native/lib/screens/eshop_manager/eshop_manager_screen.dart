@@ -732,7 +732,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
       color: const Color(0xFF10B981),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(2, 12, 2, 90),
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -741,15 +741,10 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
             _dashStoreHeader(),
             const SizedBox(height: 18),
             _dashLabel(t('eshop_overview', fallback: 'ওভারভিউ')),
-            // Flat 2×2 stats — hairline dividers instead of separate cards.
+            // 2×2 stats in one quiet card with hairline dividers.
             Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: Color(0xFFE9EDF2)),
-                  bottom: BorderSide(color: Color(0xFFE9EDF2)),
-                ),
-              ),
+              decoration: _dashCardDeco(),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   IntrinsicHeight(
@@ -856,19 +851,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     final desc = (store?.storeDescription ?? '').trim();
     final address = (store?.storeAddress ?? '').trim();
     return Material(
-      color: Colors.white,
+      color: Colors.transparent,
       child: InkWell(
         onTap: _openStoreEditor,
+        borderRadius: BorderRadius.circular(14),
         child: Ink(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              top: BorderSide(color: Color(0xFFE9EDF2)),
-              bottom: BorderSide(color: Color(0xFFE9EDF2)),
-            ),
-          ),
+          decoration: _dashCardDeco(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1130,6 +1120,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
   String _dashDate(DateTime? d) =>
       d == null ? '—' : '${d.day}/${d.month}/${d.year}';
 
+  // One shared card look for every dashboard section — quiet, native-app
+  // style (rounded, hairline border, no shadows or gradients).
+  BoxDecoration _dashCardDeco() => BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE9EDF2)),
+      );
+
   // Small fact tile for the store-details block (label over value).
   Widget _dashMetaTile(String label, String value) {
     return Expanded(
@@ -1172,14 +1170,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: color,
-                      letterSpacing: -0.6)),
-              const SizedBox(height: 4),
+                      letterSpacing: -0.4)),
+              const SizedBox(height: 3),
               Text(label,
                   style:
-                      const TextStyle(fontSize: 12.5, color: Color(0xFF64748B))),
+                      const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
             ],
           ),
         ),
@@ -1189,52 +1187,19 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
 
   Widget _dashProductStatus(int active, int outOfStock, int total) {
     final inactive = (total - active - outOfStock).clamp(0, total);
+    // Counts only — no progress bar (user request), same card language as
+    // the rest of the dashboard.
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
-      // No bottom hairline — the section ends clean (user request).
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE9EDF2)),
-        ),
-      ),
-      child: Column(
+      decoration: _dashCardDeco(),
+      child: Row(
         children: [
-          Row(
-            children: [
-              _statusPill(t('eshop_active', fallback: 'অ্যাক্টিভ'), active,
-                  const Color(0xFF10B981)),
-              _statusPill(t('eshop_out_of_stock', fallback: 'স্টক আউট'),
-                  outOfStock, const Color(0xFFDC2626)),
-              _statusPill(t('eshop_inactive', fallback: 'ইনঅ্যাক্টিভ'), inactive,
-                  const Color(0xFF94A3B8)),
-            ],
-          ),
-          if (total > 0) ...[
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Row(
-                children: [
-                  if (active > 0)
-                    Expanded(
-                        flex: active,
-                        child: Container(
-                            height: 8, color: const Color(0xFF10B981))),
-                  if (outOfStock > 0)
-                    Expanded(
-                        flex: outOfStock,
-                        child: Container(
-                            height: 8, color: const Color(0xFFDC2626))),
-                  if (inactive > 0)
-                    Expanded(
-                        flex: inactive,
-                        child: Container(
-                            height: 8, color: const Color(0xFFCBD5E1))),
-                ],
-              ),
-            ),
-          ],
+          _statusPill(t('eshop_active', fallback: 'অ্যাক্টিভ'), active,
+              const Color(0xFF10B981)),
+          _statusPill(t('eshop_out_of_stock', fallback: 'স্টক আউট'),
+              outOfStock, const Color(0xFFDC2626)),
+          _statusPill(t('eshop_inactive', fallback: 'ইনঅ্যাক্টিভ'), inactive,
+              const Color(0xFF94A3B8)),
         ],
       ),
     );
@@ -1246,7 +1211,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
         children: [
           Text('$count',
               style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w800, color: color)),
+                  fontSize: 16.5, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 2),
           Text(label,
               style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
@@ -1260,13 +1225,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 26),
         alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Color(0xFFE9EDF2)),
-            bottom: BorderSide(color: Color(0xFFE9EDF2)),
-          ),
-        ),
+        decoration: _dashCardDeco(),
         child: Column(
           children: [
             Icon(Icons.receipt_long_rounded,
@@ -1283,13 +1242,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     }
     final recent = _orders.take(3).toList();
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE9EDF2)),
-          bottom: BorderSide(color: Color(0xFFE9EDF2)),
-        ),
-      ),
+      decoration: _dashCardDeco(),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           for (int i = 0; i < recent.length; i++) ...[
@@ -1402,13 +1356,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
   // Flat quick-action strip — single bordered band with hairline separators.
   Widget _dashQuickActions() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE9EDF2)),
-          bottom: BorderSide(color: Color(0xFFE9EDF2)),
-        ),
-      ),
+      decoration: _dashCardDeco(),
+      clipBehavior: Clip.antiAlias,
       child: IntrinsicHeight(
         child: Row(
           children: [
