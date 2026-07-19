@@ -656,13 +656,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       onScrollToMessage: (_) {},
     );
 
-    // Group-only: name the sender above a new speaker's message run.
-    if (!isMe && showAvatar) {
+    // Group-only: name the sender above EVERY received message — labelling
+    // only the first message of a run left long runs looking anonymous once
+    // the label scrolled away ("kon user message korche seta dekha jacche
+    // na"). Runs keep a slightly tighter gap.
+    if (!isMe) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 46, top: 6, bottom: 2),
+            padding: EdgeInsets.only(
+                left: 46, top: showAvatar ? 6 : 2, bottom: 2),
             child: Text(
               _senderName(raw),
               style: const TextStyle(
