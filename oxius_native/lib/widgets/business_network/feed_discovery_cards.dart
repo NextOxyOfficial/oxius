@@ -247,10 +247,10 @@ class _DiscoveryStore<T> {
 // ── Micro gigs ──────────────────────────────────────────────────────────────
 final _microStore = _DiscoveryStore<MicroGig>();
 
-// Gigs the user completed this session — the card shows a "done" state in place
-// (instead of instantly swapping in a new task, which killed scroll intent).
-// Cleared on feed refresh so completed tasks then drop out of the feed.
-final Set<String> _submittedGigSlugs = {};
+// Completed gigs live in MicrogigService.submittedGigSlugs — a global,
+// cross-surface registry (feed card, gig list, details screen all report
+// there) — so the card shows its "done" state no matter where the task was
+// completed, without a reload.
 
 // Bumped on pull-to-refresh; micro-gig cards listen and reload fresh gigs
 // (with showSubmitted:false, so completed ones are excluded).
@@ -261,7 +261,6 @@ final ValueNotifier<int> _microGigsResetTick = ValueNotifier<int>(0);
 void resetMicroGigsFeed() {
   _microStore.data = null;
   _microStore.inFlight = null;
-  _submittedGigSlugs.clear();
   _microGigsResetTick.value++;
 }
 
@@ -284,13 +283,20 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
   void initState() {
     super.initState();
     _microGigsResetTick.addListener(_onFeedReset);
+    // A submission made on ANY surface flips this card to its done state.
+    MicrogigService.submissionTick.addListener(_onSubmissionChange);
     _loadGigs();
   }
 
   @override
   void dispose() {
     _microGigsResetTick.removeListener(_onFeedReset);
+    MicrogigService.submissionTick.removeListener(_onSubmissionChange);
     super.dispose();
+  }
+
+  void _onSubmissionChange() {
+    if (mounted) setState(() {});
   }
 
   // Feed was refreshed — refetch gigs (submitted ones are now excluded).
@@ -314,19 +320,18 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
     if (_gigs.isEmpty) return const SizedBox.shrink();
     final gig = _gigs[widget.index % _gigs.length];
     final categoryImg = gig.categoryDetails?.image ?? '';
-    final isDone = _submittedGigSlugs.contains(gig.slug);
+    final isDone = MicrogigService.submittedGigSlugs.contains(gig.slug);
 
     Future<void> openGig() async {
-      final submitted = await Navigator.push<bool>(
+      // Completed: the details screen records the slug in
+      // MicrogigService.markSubmitted, whose tick listener repaints this card
+      // with the "সম্পন্ন" state in place — do NOT swap in a new task (that
+      // killed the user's intent to scroll). It drops out of the feed on the
+      // next pull-to-refresh.
+      await Navigator.push<bool>(
           context,
           MaterialPageRoute(
               builder: (_) => GigDetailsScreen(gigSlug: gig.slug)));
-      // Completed: mark it done and show a "সম্পন্ন" state in place — do NOT
-      // swap in a new task (that killed the user's intent to scroll). It drops
-      // out of the feed on the next pull-to-refresh.
-      if (submitted == true && mounted) {
-        setState(() => _submittedGigSlugs.add(gig.slug));
-      }
     }
 
     return Container(

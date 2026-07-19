@@ -8,6 +8,19 @@ import 'package:flutter/foundation.dart';
 class MicrogigService {
   static String get baseUrl => ApiService.baseUrl;
 
+  /// Gig slugs the user submitted this session — shared by every surface
+  /// (feed cards, gig list, details) so a completion made anywhere flips the
+  /// card to its "টাস্ক কমপ্লিট হয়েছে" state without a reload.
+  static final Set<String> submittedGigSlugs = <String>{};
+
+  /// Bumped whenever [markSubmitted] records a new slug; listeners rebuild.
+  static final ValueNotifier<int> submissionTick = ValueNotifier<int>(0);
+
+  static void markSubmitted(String slug) {
+    if (slug.isEmpty) return;
+    if (submittedGigSlugs.add(slug)) submissionTick.value++;
+  }
+
   /// Get pending tasks for current user with pagination and filtering
   /// [page] - Page number (starts from 1)
   /// [filter] - Filter type: 'all', 'pending', 'approved', 'rejected'
@@ -90,9 +103,12 @@ class MicrogigService {
       final uri = Uri.parse('$baseUrl/micro-gigs/')
           .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
+      // MUST be authenticated: the backend's "hide gigs the user already
+      // submitted" filter only runs for logged-in requests. This used to send
+      // bare headers, so completed tasks kept showing as "earn now" cards.
       final response = await http.get(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (response.statusCode == 200) {

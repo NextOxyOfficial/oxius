@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
@@ -61,11 +63,27 @@ class _PostCardState extends State<PostCard> {
   // Hidden by the viewer — the card renders as an inline undo strip.
   bool _isHidden = false;
   bool _isLiking = false; // Prevent double-clicking
+  // Live share-count updates (shares made from shorts/detail/anywhere reach
+  // this card without a feed reload).
+  StreamSubscription<MapEntry<int, int>>? _shareCountSub;
 
   @override
   void initState() {
     super.initState();
     _post = widget.post;
+    _shareCountSub = BusinessNetworkService.shareCountUpdates.listen((e) {
+      // Shares on a reshare are tracked against the ORIGINAL post id.
+      if (!mounted) return;
+      if (e.key == (_post.sharedFrom?.id ?? _post.id)) {
+        setState(() => _post = _post.copyWith(shareCount: e.value));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _shareCountSub?.cancel();
+    super.dispose();
   }
 
   @override

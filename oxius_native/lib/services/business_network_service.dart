@@ -127,6 +127,14 @@ class BusinessNetworkService {
     }
   }
 
+  /// App-wide share-count updates: (postId, authoritative server count).
+  /// Every surface that shows a share badge (feed card, post detail, shorts)
+  /// listens here, so a share made anywhere updates everywhere — no reload.
+  static final StreamController<MapEntry<int, int>> _shareCountCtrl =
+      StreamController<MapEntry<int, int>>.broadcast();
+  static Stream<MapEntry<int, int>> get shareCountUpdates =>
+      _shareCountCtrl.stream;
+
   /// Count a non-repost share (send-to-chat, WhatsApp, etc.) on a post.
   /// Returns the new total share count, or null on failure.
   static Future<int?> trackShare(int postId) async {
@@ -138,7 +146,11 @@ class BusinessNetworkService {
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        return int.tryParse('${data['share_count']}');
+        final count = int.tryParse('${data['share_count']}');
+        if (count != null) {
+          _shareCountCtrl.add(MapEntry(postId, count));
+        }
+        return count;
       }
       return null;
     } catch (e) {

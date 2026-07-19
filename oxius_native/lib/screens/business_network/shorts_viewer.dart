@@ -1725,29 +1725,34 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                         ),
                       ),
                     ),
-                    // Location under the name (city, upazila) when available.
+                    // Location under the NAME (not under the avatar): indent
+                    // past the 34px avatar chip + 8px gap so it lines up with
+                    // where the name text starts.
                     if (post.user.locationLabel.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.location_on_rounded,
-                              size: 13,
-                              color: Colors.white.withValues(alpha: 0.7)),
-                          const SizedBox(width: 3),
-                          Flexible(
-                            child: Text(
-                              post.user.locationLabel,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.78),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                      const SizedBox(height: 3),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 42),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.location_on_rounded,
+                                size: 13,
+                                color: Colors.white.withValues(alpha: 0.7)),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                post.user.locationLabel,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.78),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                     // Title removed — show only the description, like the BN feed.

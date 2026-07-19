@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
 import '../services/ads_service.dart';
+import '../services/microgig_service.dart';
 import '../utils/image_compressor.dart';
 import '../utils/url_launcher_utils.dart';
 import 'terms_and_conditions_screen.dart';
@@ -76,6 +77,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           _hasSubmitted = gigData['user_has_submitted'] ?? false;
           _isLoading = false;
         });
+        // Sync surfaces that show this gig as an "earn now" card (e.g. the
+        // BN feed) when the server says it was already submitted.
+        if (_hasSubmitted) MicrogigService.markSubmitted(widget.gigSlug);
       }
     } catch (e) {
       if (mounted) {
@@ -171,6 +175,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Record globally FIRST so every open surface (feed card, gig list)
+        // flips to its completed state even if this screen is gone.
+        MicrogigService.markSubmitted(widget.gigSlug);
         if (mounted) {
           AdsyToast.success(context, 'Order Submitted Successfully!');
           // Return true to indicate successful submission

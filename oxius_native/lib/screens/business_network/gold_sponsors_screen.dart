@@ -185,9 +185,8 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                  child: IntrinsicHeight(
-                    child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       _buildLogo(sponsor.logo),
                       const SizedBox(width: 12),
@@ -226,7 +225,6 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            const Spacer(),
                             Row(
                               children: [
                                 _buildViewsChip(sponsor.views),
@@ -238,7 +236,6 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                         ),
                       ),
                     ],
-                    ),
                   ),
                 ),
               ),
@@ -250,10 +247,12 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   }
 
   Widget _buildLogo(String? logo) {
-    // Square logo whose height matches the info column (IntrinsicHeight in the
-    // parent Row), giving a larger, balanced left block.
-    return AspectRatio(
-      aspectRatio: 1,
+    // FIXED square logo. It used to be AspectRatio(1) stretched to the info
+    // column's intrinsic height — on devices where the Bengali text renders
+    // taller, the logo ballooned and squeezed/truncated the right column.
+    return SizedBox(
+      width: 64,
+      height: 64,
       child: Container(
       decoration: BoxDecoration(
         color: Colors.white,

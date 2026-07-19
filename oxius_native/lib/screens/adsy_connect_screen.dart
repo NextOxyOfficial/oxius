@@ -789,56 +789,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       return const ChatListSkeleton();
     }
 
-    if (_chatConversations.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Image.asset(
-                  'assets/images/chat_icon.png',
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      size: 48,
-                      color: Color(0xFF3B82F6),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'No conversations yet',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Start chatting with other users',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
+    // NOTE: no full-screen "No conversations yet" here — even with zero
+    // chats the search bar, group/archive buttons, tabs and groups must stay
+    // visible (a user can have groups but no 1:1 chats). The per-tab empty
+    // state below handles the empty list area.
     final chatsToShow = _filteredChats;
     final isFiltering = _chatSearchQuery.trim().isNotEmpty;
 
