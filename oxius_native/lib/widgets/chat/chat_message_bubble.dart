@@ -64,7 +64,6 @@ class ChatReplyQuoteCard extends StatelessWidget {
     return GestureDetector(
       onTap: replyToId.isNotEmpty ? () => onTapReply(replyToId) : null,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: bg,
@@ -389,36 +388,66 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             RegExp(r'^(https?:\/\/|www\.)\S+$', caseSensitive: false)
                 .hasMatch(text.trim()));
 
+    // Quoted TEXT replies get the WhatsApp-style attached layout: the quote
+    // card sits flush at the top of the bubble (its own tinted bg, rounded),
+    // and the reply text below shares the bubble bg, hugging the quote's
+    // rounded border — no wide bubble-colored frame around the quote.
+    final attachedQuote =
+        quoteCard != null && !isDeleted && !isMedia && !previewOnly;
+
+    final decoration = BoxDecoration(
+      // Messenger-standard surfaces: one solid brand blue for own
+      // messages, quiet gray for received — no gradients. Preview-only
+      // messages are transparent so only the card shows.
+      color: previewOnly
+          ? Colors.transparent
+          : isMe
+              ? const Color(0xFF2563EB)
+              : const Color(0xFFF1F5F9),
+      border: widget.isSearchHit
+          ? Border.all(
+              color: widget.isCurrentSearchHit
+                  ? const Color(0xFFF59E0B)
+                  : const Color(0xFFFBBF24).withValues(alpha: 0.65),
+              width: widget.isCurrentSearchHit ? 2 : 1,
+            )
+          : null,
+      borderRadius: BorderRadius.only(
+        topLeft: const Radius.circular(18),
+        topRight: const Radius.circular(18),
+        bottomLeft: Radius.circular(isMe ? 18 : 5),
+        bottomRight: Radius.circular(isMe ? 5 : 18),
+      ),
+    );
+
+    if (attachedQuote) {
+      return Container(
+        decoration: decoration,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+              child: quoteCard,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+              child: _buildContent(message, isMe, null),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: previewOnly
           ? EdgeInsets.zero
           : isMedia
               ? const EdgeInsets.all(3)
               : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        // Messenger-standard surfaces: one solid brand blue for own
-        // messages, quiet gray for received — no gradients. Preview-only
-        // messages are transparent so only the card shows.
-        color: previewOnly
-            ? Colors.transparent
-            : isMe
-                ? const Color(0xFF2563EB)
-                : const Color(0xFFF1F5F9),
-        border: widget.isSearchHit
-            ? Border.all(
-                color: widget.isCurrentSearchHit
-                    ? const Color(0xFFF59E0B)
-                    : const Color(0xFFFBBF24).withValues(alpha: 0.65),
-                width: widget.isCurrentSearchHit ? 2 : 1,
-              )
-            : null,
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(18),
-          topRight: const Radius.circular(18),
-          bottomLeft: Radius.circular(isMe ? 18 : 5),
-          bottomRight: Radius.circular(isMe ? 5 : 18),
-        ),
-      ),
+      decoration: decoration,
       child: isDeleted
           ? _buildDeletedContent(isMe)
           : _buildContent(message, isMe, quoteCard),
@@ -461,7 +490,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [quoteCard, child],
+        children: [quoteCard, const SizedBox(height: 6), child],
       );
     }
 

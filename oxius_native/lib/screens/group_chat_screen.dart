@@ -386,10 +386,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         // ignored the null result, so photos vanished without any error.
         Map<String, dynamic>? res;
         if (i < _compressedImages.length && _compressedImages[i].isNotEmpty) {
+          // Strip the data-URI prefix (compressToBase64 returns
+          // "data:image/jpeg;base64,...") — raw base64Decode threw on it and
+          // every send failed with a generic error.
+          final b64 = _compressedImages[i].contains(',')
+              ? _compressedImages[i]
+                  .substring(_compressedImages[i].indexOf(',') + 1)
+              : _compressedImages[i];
           res = await AdsyConnectService.sendGroupMediaMessage(
             groupId: _groupId,
             messageType: 'image',
-            mediaBytes: base64Decode(_compressedImages[i]),
+            mediaBytes: base64Decode(b64),
             fileName: 'photo_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
           );
         } else {
