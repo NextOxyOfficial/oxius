@@ -198,6 +198,12 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
+  /// Apple guideline 5.1.1(v): phone and date of birth must be OPTIONAL on
+  /// iOS — they are not essential to the app's core functionality. Android
+  /// keeps the existing required flow.
+  bool get _relaxedPersonalInfo =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
   bool _validateForm() {
     _errors.clear();
     var isValid = true;
@@ -223,8 +229,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
-      _errors['phone'] = _t('reg_err_phone_req', 'ফোন নম্বর দিন');
-      isValid = false;
+      if (!_relaxedPersonalInfo) {
+        _errors['phone'] = _t('reg_err_phone_req', 'ফোন নম্বর দিন');
+        isValid = false;
+      }
     } else if (!RegExp(r'^(?:\+?88)?01[3-9]\d{8}$').hasMatch(phone)) {
       _errors['phone'] = _t('reg_err_phone_invalid', 'ফোন নম্বরটা ঠিক নেই');
       isValid = false;
@@ -249,21 +257,23 @@ class _RegisterPageState extends State<RegisterPage> {
       isValid = false;
     }
 
-    if (_selectedDateOfBirth == null) {
+    if (_selectedDateOfBirth == null && !_relaxedPersonalInfo) {
       _errors['date_of_birth'] = _t('reg_err_dob', 'জন্ম তারিখ দিন');
       isValid = false;
     }
 
     final age = _ageController.text.trim();
     if (age.isEmpty) {
-      _errors['age'] = _t('reg_err_age_req', 'বয়স দরকার');
-      isValid = false;
+      if (!_relaxedPersonalInfo) {
+        _errors['age'] = _t('reg_err_age_req', 'বয়স দরকার');
+        isValid = false;
+      }
     } else if (!RegExp(r'^\d+$').hasMatch(age)) {
       _errors['age'] = _t('reg_err_age_invalid', 'বয়সটা ঠিক নেই');
       isValid = false;
     }
 
-    if (_gender.isEmpty) {
+    if (_gender.isEmpty && !_relaxedPersonalInfo) {
       _errors['gender'] = _t('reg_err_gender', 'জেন্ডার সিলেক্ট করুন');
       isValid = false;
     }
@@ -325,11 +335,15 @@ class _RegisterPageState extends State<RegisterPage> {
             '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
         'email': _emailController.text.trim(),
         'username': _emailController.text.trim(),
-        'phone': _phoneController.text.trim(),
+        // Optional on iOS — omit empties so backend validation stays happy.
+        if (_phoneController.text.trim().isNotEmpty)
+          'phone': _phoneController.text.trim(),
         'password': _passwordController.text,
-        'date_of_birth': _dateOfBirthController.text,
-        'age': int.parse(_ageController.text),
-        'gender': _gender,
+        if (_dateOfBirthController.text.trim().isNotEmpty)
+          'date_of_birth': _dateOfBirthController.text,
+        if (int.tryParse(_ageController.text.trim()) != null)
+          'age': int.parse(_ageController.text.trim()),
+        if (_gender.isNotEmpty) 'gender': _gender,
         'country': _country,
         'state': _selectedRegion ?? '',
         'city': _selectedCity ?? '',
@@ -712,7 +726,9 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         const SizedBox(height: 12),
         _buildTextField(
-          label: _t('reg_phone', 'ফোন নম্বর'),
+          label: _relaxedPersonalInfo
+              ? '${_t('reg_phone', 'ফোন নম্বর')} (${_t('reg_optional', 'ঐচ্ছিক')})'
+              : _t('reg_phone', 'ফোন নম্বর'),
           hintText: _t('reg_phone_hint', 'আপনার ফোন নম্বর লিখুন'),
           controller: _phoneController,
           icon: Icons.phone_outlined,
@@ -723,7 +739,9 @@ class _RegisterPageState extends State<RegisterPage> {
         _buildTwoColumnRow(
           isMobile: isMobile,
           left: _buildDateField(
-            label: _t('reg_dob', 'জন্ম তারিখ'),
+            label: _relaxedPersonalInfo
+                ? '${_t('reg_dob', 'জন্ম তারিখ')} (${_t('reg_optional', 'ঐচ্ছিক')})'
+                : _t('reg_dob', 'জন্ম তারিখ'),
             hintText: _t('reg_dob_hint', 'জন্ম তারিখ সিলেক্ট করুন'),
             controller: _dateOfBirthController,
             icon: Icons.event_outlined,
@@ -734,7 +752,9 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         const SizedBox(height: 12),
         _buildDropdownField(
-          label: _t('reg_gender', 'জেন্ডার'),
+          label: _relaxedPersonalInfo
+              ? '${_t('reg_gender', 'জেন্ডার')} (${_t('reg_optional', 'ঐচ্ছিক')})'
+              : _t('reg_gender', 'জেন্ডার'),
           hintText: _t('reg_gender_hint', 'জেন্ডার সিলেক্ট করুন'),
           icon: Icons.wc_rounded,
           value: _gender.isEmpty ? null : _gender,

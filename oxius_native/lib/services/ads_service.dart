@@ -262,6 +262,9 @@ class AdsService {
   static const _appOpenCooldown = Duration(minutes: 4);
 
   static void loadAppOpen() {
+    // Apple guideline 4 (Design): users must not be forced to view an ad
+    // before using the app — app-open ads are Android-only.
+    if (kIsWeb || Platform.isIOS) return;
     if (!placementActive('app_open') || _appOpenAd != null) return;
     final unit = adUnitId('app_open');
     if (unit == null) return;
@@ -277,6 +280,7 @@ class AdsService {
   }
 
   static void showAppOpenIfReady() {
+    if (kIsWeb || Platform.isIOS) return; // no forced launch ads on iOS
     if (_appOpenShowing || _fullScreenTooSoon()) return;
     if (DateTime.now().difference(_lastAppOpen) < _appOpenCooldown) return;
     final ad = _appOpenAd;

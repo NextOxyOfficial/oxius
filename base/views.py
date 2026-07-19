@@ -113,8 +113,14 @@ def register(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+    # Phone is optional on iOS (Apple guideline 5.1.1). Normalize empty to
+    # None so the unique constraint / duplicate check only applies to real
+    # numbers — otherwise the second phoneless signup would collide on "".
+    if not str(data.get("phone") or "").strip():
+        data["phone"] = None
+
     # Check if user with phone or email already exists
-    if User.objects.filter(phone=data.get("phone")).exists():
+    if data.get("phone") and User.objects.filter(phone=data.get("phone")).exists():
         return Response(
             {"error": "User with this phone number already exists"},
             status=status.HTTP_400_BAD_REQUEST,
