@@ -5,6 +5,7 @@ All transactional emails for users and admin notifications.
 """
 import logging
 import random
+import requests
 from datetime import timedelta
 from email.utils import formataddr, parseaddr
 from smtplib import SMTPRecipientsRefused
@@ -745,6 +746,24 @@ def _dispatch_async(target, *args, **kwargs):
                 pass
 
     threading.Thread(target=_run, daemon=True).start()
+
+
+def _admin_button(label, url):
+    """Single primary action button used by admin notification emails.
+
+    NOTE: five admin notifications (new registration, recharge, balance, KYC,
+    blocked users) referenced this helper without it being defined — every one
+    of them raised NameError inside the caller's try/except and silently never
+    sent. Defining it revives them all."""
+    return f"""
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px auto 4px;">
+  <tr>
+    <td style="padding:6px;">
+      <a href="{url}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 26px;border-radius:10px;">{label}</a>
+    </td>
+  </tr>
+</table>
+"""
 
 
 def _action_buttons(approve_url, reject_url):
@@ -1856,6 +1875,95 @@ def send_test_email(to_email=None):
 # ============================================================
 # ADMIN NOTIFICATION EMAILS
 # ============================================================
+
+def _device_from_ua(ua):
+    """Human-readable device summary from a raw User-Agent string."""
+    ua = ua or ""
+    low = ua.lower()
+    if 'dart' in low or 'okhttp' in low or 'adsyclub' in low:
+        return 'AdsyClub অ্যাপ (মোবাইল)'
+    os_name = 'Unknown device'
+    if 'android' in low:
+        os_name = 'Android'
+    elif 'iphone' in low or 'ipad' in low or 'ios' in low:
+        os_name = 'iPhone/iPad'
+    elif 'windows' in low:
+        os_name = 'Windows PC'
+    elif 'mac os' in low or 'macintosh' in low:
+        os_name = 'Mac'
+    elif 'linux' in low:
+        os_name = 'Linux'
+    browser = ''
+    for key, label in (('edg', 'Edge'), ('opr', 'Opera'), ('chrome', 'Chrome'),
+                       ('safari', 'Safari'), ('firefox', 'Firefox')):
+        if key in low:
+            browser = label
+            break
+    return f"{os_name}{' · ' + browser if browser else ''}"
+
+
+def _location_from_ip(ip):
+    """Best-effort city/country from the IP (free ip-api.com, 4s cap).
+    Returns '' for private/empty IPs or on any failure — never blocks."""
+    if not ip or ip.startswith(('10.', '192.168.', '127.', '172.16.', '172.17.',
+                                '172.18.', '172.19.', '172.2', '172.3', '::1')):
+        return ''
+    try:
+        resp = requests.get(
+            f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city",
+            timeout=4,
+        )
+        data = resp.json()
+        if data.get('status') == 'success':
+            parts = [p for p in (data.get('city'), data.get('regionName'),
+                                 data.get('country')) if p]
+            return ', '.join(parts)
+    except Exception:
+        pass
+    return ''
+
+
+def send_login_notification_email(user, ip='', user_agent=''):
+    """Security email on every successful login: device, IP, location, time —
+    with a clear 'wasn't you? change your password' action.
+
+    NOTE: the login view has always tried to send this, but the function did
+    not exist — the import failed inside its try/except and NO login mail was
+    ever delivered. This implements it."""
+    if not user.email:
+        return False
+    name = user.name or user.first_name or user.username or ''
+    device = _device_from_ua(user_agent)
+    location = _location_from_ip(ip)
+    when = timezone.localtime().strftime("%d %B %Y, %I:%M %p")
+    subject = "নতুন লগইন — আপনার AdsyClub অ্যাকাউন্ট"
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 6px;">প্রিয় {name or 'ইউজার'},</p>
+<p style="color:#374151;font-size:14.5px;line-height:1.6;margin:0 0 16px;">আপনার AdsyClub অ্যাকাউন্টে এইমাত্র একটি সফল লগইন হয়েছে। নিরাপত্তার স্বার্থে বিস্তারিত নিচে দেওয়া হলো:</p>
+
+{_info_table(
+    _info_row("সময়", when) +
+    _info_row("ডিভাইস", device) +
+    _info_row("IP অ্যাড্রেস", ip or "N/A") +
+    (_info_row("লোকেশন (আনুমানিক)", location) if location else "")
+)}
+
+<p style="color:#374151;font-size:13.5px;line-height:1.6;margin:16px 0 6px;">✅ <b>এটা যদি আপনি হয়ে থাকেন</b> — কিছুই করতে হবে না।</p>
+<p style="color:#b91c1c;font-size:13.5px;line-height:1.6;margin:0 0 14px;">⚠️ <b>এটা যদি আপনি না হন</b> — এখনই নিচের বাটন থেকে পাসওয়ার্ড পরিবর্তন করুন এবং আমাদের সাপোর্টে জানান।</p>
+
+{_admin_button("পাসওয়ার্ড পরিবর্তন করুন", SITE_URL + "/settings")}
+
+<p style="text-align:center;color:#9ca3af;font-size:12px;margin:8px 0 0;">লোকেশনটি IP-ভিত্তিক আনুমানিক হিসাব — সামান্য ভিন্ন হতে পারে।</p>
+"""
+
+    html = _base_template(subject, body)
+    return _send_email(
+        subject, [user.email],
+        f"New login to your AdsyClub account at {when} from {ip or 'unknown IP'}",
+        html,
+    )
+
 
 def notify_admin_new_registration(user):
     """Notify admin when a new user registers"""

@@ -790,6 +790,19 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             qs = qs.filter(mine_archived)
         else:
             qs = qs.exclude(mine_archived)
+
+        # Per-user delete ("চ্যাট মুছুন" = clear): a cleared room must STAY
+        # OUT of the list until NEW activity arrives after the clear point.
+        # Without this the app removed the row locally but the next 4s poll
+        # resurrected it from this endpoint.
+        cleared_hidden = (
+            Q(user1=user, cleared_at_user1__isnull=False)
+            & Q(last_message_at__lte=F('cleared_at_user1'))
+        ) | (
+            Q(user2=user, cleared_at_user2__isnull=False)
+            & Q(last_message_at__lte=F('cleared_at_user2'))
+        )
+        qs = qs.exclude(cleared_hidden)
         return qs
 
     @action(detail=False, methods=['post'])

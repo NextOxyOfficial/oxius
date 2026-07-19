@@ -1505,110 +1505,150 @@ class _HomeScreenState extends State<HomeScreen> {
             return;
           }
 
-          debugPrint('🔵 Showing confirmation dialog...');
+          debugPrint('🔵 Showing confirmation sheet...');
 
-          // Show clean professional confirmation dialog
-          final bool? confirmed = await showDialog<bool>(
+          // Professional bottom-sheet confirmation (replaces the old dialog).
+          final u = AuthService.currentUser;
+          final displayName = [u?.firstName ?? '', u?.lastName ?? '']
+              .where((s) => s.trim().isNotEmpty)
+              .join(' ')
+              .trim();
+          final bool? confirmed = await showModalBottomSheet<bool>(
             context: context,
-            barrierDismissible: false,
-            builder: (BuildContext dialogContext) {
-              return AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            backgroundColor: Colors.transparent,
+            builder: (BuildContext sheetContext) {
+              final bottomInset = MediaQuery.of(sheetContext).padding.bottom;
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(20)),
                 ),
-                contentPadding: const EdgeInsets.all(24),
-                content: Column(
+                padding: EdgeInsets.fromLTRB(20, 8, 20, bottomInset + 16),
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Simple icon
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF2F2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.logout_rounded,
-                        color: Color(0xFFEF4444),
-                        size: 28,
+                    Center(
+                      child: Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCBD5E1),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-
-                    // Title
-                    const Text(
-                      'Logout',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Message
-                    Text(
-                      'Are you sure you want to logout?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Action buttons
+                    const SizedBox(height: 18),
                     Row(
                       children: [
-                        // Cancel button
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () =>
-                                Navigator.of(dialogContext).pop(false),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.grey.shade700,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFEF2F2),
+                            shape: BoxShape.circle,
                           ),
+                          child: const Icon(Icons.logout_rounded,
+                              color: Color(0xFFEF4444), size: 23),
                         ),
                         const SizedBox(width: 12),
-
-                        // Logout button
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () =>
-                                Navigator.of(dialogContext).pop(true),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEF4444),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'লগ আউট করবেন?',
+                                style: TextStyle(
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              'Logout',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                              const SizedBox(height: 2),
+                              Text(
+                                displayName.isNotEmpty
+                                    ? '$displayName হিসেবে লগইন করা আছে'
+                                    : 'আপনার অ্যাকাউন্ট থেকে সাইন আউট হবে',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: Color(0xFF64748B)),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border:
+                            Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline_rounded,
+                              size: 16, color: Color(0xFF64748B)),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'আপনার ব্যালেন্স, পোস্ট ও ডেটা নিরাপদ থাকবে — যেকোনো সময় আবার লগইন করতে পারবেন।',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.5,
+                                  color: Color(0xFF475569)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            Navigator.of(sheetContext).pop(true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF4444),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                        child: const Text(
+                          'লগ আউট',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 44,
+                      child: OutlinedButton(
+                        onPressed: () =>
+                            Navigator.of(sheetContext).pop(false),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF334155),
+                          side:
+                              const BorderSide(color: Color(0xFFE2E8F0)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                        child: const Text(
+                          'বাতিল',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                      ),
                     ),
                   ],
                 ),

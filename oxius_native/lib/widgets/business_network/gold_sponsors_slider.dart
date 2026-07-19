@@ -372,10 +372,20 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
     return onTap != null ? GestureDetector(onTap: onTap, child: row) : row;
   }
 
+  /// Any URL the sponsor has: website first, else their profile link — so a
+  /// sponsor with EITHER stored still gets a visible, tappable URL row.
+  String? get _sponsorUrl {
+    final w = widget.sponsor.website?.trim();
+    if (w != null && w.isNotEmpty) return w;
+    final p = widget.sponsor.profileUrl?.trim();
+    if (p != null && p.isNotEmpty) return p;
+    return null;
+  }
+
   bool get _hasContactInfo {
     return (widget.sponsor.contactEmail?.trim().isNotEmpty ?? false) ||
         (widget.sponsor.phoneNumber?.trim().isNotEmpty ?? false) ||
-        (widget.sponsor.website?.trim().isNotEmpty ?? false);
+        _sponsorUrl != null;
   }
 
   bool get _showLegacySponsorDetail => false;
@@ -474,11 +484,11 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
                 widget.sponsor.phoneNumber!.trim(),
                 null,
               ),
-            if (widget.sponsor.website?.trim().isNotEmpty ?? false)
+            if (_sponsorUrl != null)
               _buildContactRow(
                 Icons.language_rounded,
-                widget.sponsor.website!.trim(),
-                () => _launchUrl(widget.sponsor.website!.trim()),
+                _sponsorUrl!,
+                () => _launchUrl(_sponsorUrl!),
               ),
           ],
           if (widget.sponsor.profileUrl != null &&
@@ -691,11 +701,11 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
               widget.sponsor.phoneNumber!.trim(),
               null,
             ),
-          if (widget.sponsor.website?.trim().isNotEmpty ?? false)
+          if (_sponsorUrl != null)
             _buildContactRow(
               Icons.language_rounded,
-              widget.sponsor.website!.trim(),
-              () => _launchUrl(widget.sponsor.website!.trim()),
+              _sponsorUrl!,
+              () => _launchUrl(_sponsorUrl!),
             ),
         ],
       ),

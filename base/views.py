@@ -324,6 +324,26 @@ def social_login(request):
     refresh = RefreshToken.for_user(user)
     user_data = UserSerializer(user, context={"request": request}).data
 
+    # Security email on social LOGIN (not on fresh signup — those already get
+    # the welcome pack). Async so the response stays snappy.
+    if not created:
+        try:
+            import threading
+            from .email_service import send_login_notification_email
+
+            _ip = (
+                request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
+                or request.META.get("REMOTE_ADDR", "")
+            )
+            _ua = request.META.get("HTTP_USER_AGENT", "")
+            threading.Thread(
+                target=send_login_notification_email,
+                args=(user, _ip, _ua),
+                daemon=True,
+            ).start()
+        except Exception as email_err:
+            print(f"Social login email error (non-blocking): {email_err}")
+
     return Response(
         {
             "refresh": str(refresh),
