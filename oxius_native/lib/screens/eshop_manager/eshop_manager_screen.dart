@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../config/app_config.dart';
 import '../../services/auth_service.dart';
 import '../../services/eshop_manager_service.dart';
 import '../../models/eshop_manager_models.dart';
@@ -872,17 +874,43 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               children: [
                 Row(
               children: [
-                // Store avatar — shop icon (no background)
-                Image.asset(
-                  'assets/images/icons/shop.png',
-                  width: 54,
-                  height: 54,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                      Icons.storefront_rounded,
-                      size: 44,
-                      color: green),
-                ),
+                // Store avatar — the REAL uploaded logo when there is one,
+                // else the shop icon.
+                Builder(builder: (_) {
+                  final logo =
+                      AppConfig.getAbsoluteUrl(store?.storeLogo ?? '');
+                  if (logo.isEmpty) {
+                    return Image.asset(
+                      'assets/images/icons/shop.png',
+                      width: 54,
+                      height: 54,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                          Icons.storefront_rounded,
+                          size: 44,
+                          color: green),
+                    );
+                  }
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      logo,
+                      width: 54,
+                      height: 54,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        'assets/images/icons/shop.png',
+                        width: 54,
+                        height: 54,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                            Icons.storefront_rounded,
+                            size: 44,
+                            color: green),
+                      ),
+                    ),
+                  );
+                }),
                 const SizedBox(width: 13),
                 Expanded(
                   child: Column(
@@ -992,48 +1020,138 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               ],
                 ),
                 // Store details inline on the dashboard (the old "স্টোর"
-                // section) — only the rows that actually have content.
-                if (desc.isNotEmpty || address.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Container(height: 1, color: const Color(0xFFF1F5F9)),
-                  if (desc.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Text(
-                        desc,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 12.5,
-                            color: Color(0xFF475569),
-                            height: 1.45),
-                      ),
+                // section): description, address, public URL and key dates —
+                // informative at a glance, editable via the pencil.
+                const SizedBox(height: 12),
+                Container(height: 1, color: const Color(0xFFF1F5F9)),
+                if (desc.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      desc,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Color(0xFF475569),
+                          height: 1.45),
                     ),
-                  if (address.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined,
-                              size: 13.5, color: Color(0xFF94A3B8)),
-                          const SizedBox(width: 5),
-                          Expanded(
-                            child: Text(
-                              address,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 12, color: Color(0xFF64748B)),
-                            ),
+                  ),
+                if (address.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_on_outlined,
+                            size: 13.5, color: Color(0xFF94A3B8)),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            address,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 12, color: Color(0xFF64748B)),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                ],
+                  ),
+                // Public store link + one-tap copy.
+                if (uname.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.link_rounded,
+                            size: 14, color: Color(0xFF94A3B8)),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(children: [
+                              const TextSpan(
+                                  text: 'adsyclub.com/eshop/',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF64748B))),
+                              TextSpan(
+                                  text: uname,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: green)),
+                            ]),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(
+                                text: 'https://adsyclub.com/eshop/$uname'));
+                            AdsyToast.success(
+                                context,
+                                t('eshop_link_copied',
+                                    fallback: 'স্টোর লিংক কপি হয়েছে'));
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.copy_rounded,
+                                size: 14, color: Color(0xFF64748B)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 10),
+                // Key facts: joined date · product slots · pro renewal.
+                Row(
+                  children: [
+                    _dashMetaTile(
+                        t('eshop_ov_joined_date', fallback: 'জয়েন করেছেন'),
+                        _dashDate(store?.createdAt)),
+                    _dashMetaTile(
+                        t('eshop_ov_product_slots',
+                            fallback: 'প্রোডাক্ট স্লট'),
+                        '$_currentProductCount / $_productLimit'),
+                    _dashMetaTile(
+                        t('eshop_ov_renew_date', fallback: 'রিনিউ ডেট'),
+                        _dashDate(AuthService.currentUser?.proValidity)),
+                  ],
+                ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  String _dashDate(DateTime? d) =>
+      d == null ? '—' : '${d.day}/${d.month}/${d.year}';
+
+  // Small fact tile for the store-details block (label over value).
+  Widget _dashMetaTile(String label, String value) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF94A3B8))),
+          const SizedBox(height: 2),
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF334155))),
+        ],
       ),
     );
   }
