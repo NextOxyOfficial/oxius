@@ -23,11 +23,15 @@ class TransferTab extends StatefulWidget {
   final String userPhone;
   final VoidCallback onTransferSuccess;
 
+  /// Prefilled recipient (email/phone) — e.g. from an AdsyPay QR scan.
+  final String? initialContact;
+
   const TransferTab({
     super.key,
     required this.balance,
     required this.userPhone,
     required this.onTransferSuccess,
+    this.initialContact,
   });
 
   @override
@@ -42,6 +46,15 @@ class _TransferTabState extends State<TransferTab> {
   String? _contactError;
   String? _amountError;
   String? _termsError;
+
+  @override
+  void initState() {
+    super.initState();
+    final prefill = (widget.initialContact ?? '').trim();
+    if (prefill.isNotEmpty) {
+      _contactController.text = prefill;
+    }
+  }
 
   @override
   void dispose() {

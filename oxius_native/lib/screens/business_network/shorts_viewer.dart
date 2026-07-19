@@ -1788,8 +1788,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                   ? TextOverflow.visible
                                   : TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.82),
-                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.86),
+                                fontSize: 14.5,
                                 fontWeight: FontWeight.w400,
                                 height: 1.4,
                               ),

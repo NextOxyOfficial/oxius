@@ -633,8 +633,6 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
           totalProducts: _currentProductCount,
           onProductAdded: _handleProductAdded,
         );
-      case 4:
-        return _buildStoreSection();
       case 5:
         return StoreReviewsTab(
           onCountChanged: (c) {
@@ -657,8 +655,6 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
         return t('eshop_my_orders', fallback: 'আমার অর্ডার');
       case 3:
         return t('eshop_new_product', fallback: 'নতুন প্রোডাক্ট');
-      case 4:
-        return t('eshop_store', fallback: 'স্টোর');
       case 5:
         return t('eshop_reviews', fallback: 'রিভিউ');
       default:
@@ -666,25 +662,46 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     }
   }
 
-  // Store section: full editable store card, gets the whole screen.
-  Widget _buildStoreSection() {
-    if (_storeDetails == null) {
-      return const Center(
-          child: AdsyLoadingIndicator(color: Color(0xFF10B981)));
-    }
-    return AdsyRefreshIndicator(
-      onRefresh: _refreshData,
-      color: const Color(0xFF10B981),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(2, 12, 2, 90),
-        child: StoreDetailsCard(
-          storeDetails: _storeDetails!,
-          products: _products,
-          orders: _orders,
-          productLimit: _productLimit,
-          totalProducts: _totalProducts,
-          onStoreUpdated: _handleStoreUpdated,
+  // Store editing now opens FROM the dashboard as a bottom sheet — the full
+  // editable card (logo/banner/name/description/address) is reused as-is.
+  void _openStoreEditor() {
+    if (_storeDetails == null) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.92,
+          color: const Color(0xFFF8FAFC),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 40),
+                  child: StoreDetailsCard(
+                    storeDetails: _storeDetails!,
+                    products: _products,
+                    orders: _orders,
+                    productLimit: _productLimit,
+                    totalProducts: _totalProducts,
+                    onStoreUpdated: _handleStoreUpdated,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -834,10 +851,12 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     const green = Color(0xFF059669);
     const dark = Color(0xFF0F172A);
     const slate = Color(0xFF64748B);
+    final desc = (store?.storeDescription ?? '').trim();
+    final address = (store?.storeAddress ?? '').trim();
     return Material(
       color: Colors.white,
       child: InkWell(
-        onTap: () => _selectSection(4),
+        onTap: _openStoreEditor,
         child: Ink(
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -848,7 +867,10 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
               children: [
                 // Store avatar — shop icon (no background)
                 Image.asset(
@@ -956,7 +978,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Manage affordance
+                // Edit affordance — opens the full store editor sheet.
                 Container(
                   width: 34,
                   height: 34,
@@ -964,9 +986,50 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(11),
                   ),
-                  child: const Icon(Icons.arrow_forward_ios_rounded,
-                      color: slate, size: 13),
+                  child: const Icon(Icons.edit_rounded,
+                      color: slate, size: 15),
                 ),
+              ],
+                ),
+                // Store details inline on the dashboard (the old "স্টোর"
+                // section) — only the rows that actually have content.
+                if (desc.isNotEmpty || address.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(height: 1, color: const Color(0xFFF1F5F9)),
+                  if (desc.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        desc,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF475569),
+                            height: 1.45),
+                      ),
+                    ),
+                  if (address.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.location_on_outlined,
+                              size: 13.5, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              address,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 12, color: Color(0xFF64748B)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ],
             ),
           ),
@@ -1010,11 +1073,11 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     final inactive = (total - active - outOfStock).clamp(0, total);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+      // No bottom hairline — the section ends clean (user request).
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
           top: BorderSide(color: Color(0xFFE9EDF2)),
-          bottom: BorderSide(color: Color(0xFFE9EDF2)),
         ),
       ),
       child: Column(
@@ -1368,8 +1431,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                     ? Icons.add_circle_rounded
                     : Icons.lock_rounded,
                 t('eshop_new_product', fallback: 'নতুন প্রোডাক্ট')),
-            _drawerItem(4, Icons.storefront_rounded,
-                t('eshop_store', fallback: 'স্টোর')),
+            // NOTE: no separate "স্টোর" item — store details live on the
+            // Dashboard now (edit opens from there).
             _drawerItem(5, Icons.reviews_rounded,
                 t('eshop_reviews', fallback: 'রিভিউ'),
                 badge: _reviewCount > 0 ? '$_reviewCount' : null),

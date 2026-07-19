@@ -57,13 +57,8 @@ class _HeaderActionsState extends State<HeaderActions> {
             ),
           ),
           onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => AdsyPayQrModal(
-                qrData: 'adsypay://pay/${user.id}',
-                title: '${user.firstName ?? user.username}\'s QR',
-              ),
-            );
+            AdsyPayQrSheet.show(context,
+                qrData: 'adsypay://pay/${user.id}');
           },
           padding: const EdgeInsets.all(3),
           constraints: const BoxConstraints(),

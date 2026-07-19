@@ -33,7 +33,8 @@ class PostActions extends StatelessWidget {
             onTap: onLike,
             borderRadius: BorderRadius.circular(999),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+              // Tighter on the right so the count reads with the icon.
+              padding: const EdgeInsets.fromLTRB(10, 11, 4, 11),
               child: Image.asset(
                 post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
                 width: 19,
@@ -47,13 +48,29 @@ class PostActions extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 11),
-              child: Text(
-                '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w500,
-                ),
+              // Reserve the PLURAL width up front (invisible sizing text) so
+              // "1 like" → "2 likes" never nudges the row sideways.
+              child: Stack(
+                children: [
+                  Opacity(
+                    opacity: 0,
+                    child: Text(
+                      '${_formatCount(post.likesCount)} likes',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

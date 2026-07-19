@@ -89,9 +89,14 @@ class ResharedPostCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Text (few lines) + "আরও পড়ুন" → original post detail.
+            // Text/details — tapping ANYWHERE here opens the original post
+            // (the name row above keeps opening the profile, and a video tap
+            // below keeps opening shorts).
             if (fullText.isNotEmpty)
-              Padding(
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onOpenPost,
+                child: Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,6 +125,7 @@ class ResharedPostCard extends StatelessWidget {
                         ),
                       ),
                   ],
+                ),
                 ),
               ),
             // Full media gallery (multiple photos + video), same as the feed.

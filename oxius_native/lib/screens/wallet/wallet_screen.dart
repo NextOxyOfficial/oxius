@@ -24,7 +24,19 @@ const _slate800 = Color(0xFF1E293B);
 class WalletScreen extends StatefulWidget {
   final String? paymentCallbackUrl;
 
-  const WalletScreen({super.key, this.paymentCallbackUrl});
+  /// Open on a specific tab (0=deposit, 1=withdraw, 2=transfer).
+  final int? initialTab;
+
+  /// Prefill the transfer recipient (email/phone) — used by the AdsyPay QR
+  /// scan flow so the user only types the amount + password.
+  final String? initialTransferContact;
+
+  const WalletScreen({
+    super.key,
+    this.paymentCallbackUrl,
+    this.initialTab,
+    this.initialTransferContact,
+  });
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
@@ -32,7 +44,7 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   WalletBalance? _balance;
-  int _currentTab = 0;
+  late int _currentTab = widget.initialTab ?? 0;
   String _transactionTab = 'sent'; // 'sent' or 'received'
   List<Transaction> _sentTransactions = [];
   List<Transaction> _receivedTransactions = [];
@@ -379,6 +391,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           : TransferTab(
                               balance: _balance?.balance ?? 0.0,
                               userPhone: _userState.userEmail,
+                              initialContact: widget.initialTransferContact,
                               onTransferSuccess: () async {
                                 await _loadBalance();
                                 await _loadTransactions();

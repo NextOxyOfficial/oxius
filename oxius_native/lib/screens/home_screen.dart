@@ -1179,8 +1179,8 @@ class _HomeScreenState extends State<HomeScreen> {
             InkWell(
               onTap: () {
                 setState(() => _isDropdownOpen = false);
-                // Navigate to settings or show subscription details
-                Navigator.pushNamed(context, '/settings');
+                // Pro membership tile → the upgrade/manage Pro page.
+                Navigator.pushNamed(context, '/upgrade-to-pro');
               },
               child: Container(
                 padding: const EdgeInsets.all(14), // p-3.5
@@ -1935,13 +1935,8 @@ class _HomeScreenState extends State<HomeScreen> {
         // QR Code button
         GestureDetector(
           onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => AdsyPayQrModal(
-                qrData: 'adsypay://pay/${user.id}',
-                title: '${user.firstName ?? user.username}\'s QR',
-              ),
-            );
+            AdsyPayQrSheet.show(context,
+                qrData: 'adsypay://pay/${user.id}');
           },
           child: Container(
             width: 40,
