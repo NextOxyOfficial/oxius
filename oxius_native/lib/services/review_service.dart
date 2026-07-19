@@ -131,6 +131,37 @@ class ReviewService {
 
   /// Reviews left on the current store owner's products (paginated).
   /// Returns `{reviews: List<StoreReview>, hasMore: bool, total: int}`.
+  /// Public: reviews on ANY store's products (vendor page Reviews section).
+  static Future<Map<String, dynamic>> getPublicStoreReviews(
+      String storeUsername,
+      {int page = 1}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            '$baseUrl/reviews/store/$storeUsername/reviews/?page=$page'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List list = (data['results'] ?? data['data'] ?? []) as List;
+        final reviews = list
+            .map((e) => StoreReview.fromJson(e as Map<String, dynamic>))
+            .toList();
+        final total = data['total_count'] ?? data['count'] ?? reviews.length;
+        return {
+          'reviews': reviews,
+          'hasMore': data['next'] != null,
+          'total':
+              total is int ? total : int.tryParse('$total') ?? reviews.length,
+        };
+      }
+      return {'reviews': <StoreReview>[], 'hasMore': false, 'total': 0};
+    } catch (e) {
+      debugPrint('❌ Error loading public store reviews: $e');
+      return {'reviews': <StoreReview>[], 'hasMore': false, 'total': 0};
+    }
+  }
+
   static Future<Map<String, dynamic>> getStoreReviews({int page = 1}) async {
     try {
       final token = await AuthService.getValidToken();

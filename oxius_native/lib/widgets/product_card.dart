@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oxius_native/utils/image_utils.dart';
 import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
-import 'package:oxius_native/widgets/common/adsy_loading.dart';
+
+// Marketplace card palette (screenshot-matched): white surface, green price,
+// red discount pill, amber stars.
+const _cardGreen = Color(0xFF16A34A);
+const _cardDark = Color(0xFF111827);
+const _cardSlate50 = Color(0xFFF8FAFC);
+const _cardSlate400 = Color(0xFF94A3B8);
+const _cardSlate500 = Color(0xFF64748B);
+const _cardAmber = Color(0xFFF59E0B);
+const _cardRed = Color(0xFFEF4444);
 
 class ProductCardLayout {
+  /// Height of the text block under the square image: rating row + category
+  /// + name + price/bag row. Grows with the system text scale so nothing
+  /// clips on large-font devices.
   static double detailsHeight(double screenWidth, {double textScale = 1.0}) {
     final double base;
     if (screenWidth < 360) {
-      base = 112.0;
+      base = 104.0;
     } else if (screenWidth > 600) {
-      base = 128.0;
+      base = 116.0;
     } else {
-      base = 120.0;
+      base = 108.0;
     }
-    // ~76px of the details block is text (price, title, store row); when the
-    // device renders text larger (system font scale / different font
-    // metrics) the old fixed estimate clipped the Buy Now button with a
-    // "BOTTOM OVERFLOWED" stripe. Grow the reserve with the text scale and
-    // keep a small constant slack for per-device glyph differences.
     final ts = textScale.clamp(1.0, 1.6);
-    return base + 10.0 + (ts - 1.0) * 76.0;
+    return base + (ts - 1.0) * 70.0;
   }
 
   static double cardHeight({
@@ -78,7 +85,11 @@ class ProductCardLayout {
   }
 }
 
-class ProductCard extends StatefulWidget {
+/// The app's main product card — clean marketplace look: big rounded image
+/// with discount pill, then rating stars, category, name and price
+/// (struck-through regular + green sale). A compact dark Buy pill on the
+/// price row keeps the quick Buy Now flow.
+class ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
   final bool isLoading;
   final VoidCallback onBuyNow;
@@ -93,423 +104,286 @@ class ProductCard extends StatefulWidget {
   });
 
   @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  bool _hovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenWidth = screenSize.width;
-    final isSmallScreen = screenWidth < 360;
-    final isLargeScreen = screenWidth > 600;
-
-    final p = widget.product;
-    final title = p['name'] ?? p['title'] ?? 'Product';
+    final p = product;
+    final title = (p['name'] ?? p['title'] ?? 'Product').toString();
     final regular = p['regular_price'] ?? p['price'];
     final sale = p['sale_price'];
     final imageUrl = _getProductImageUrl(p);
     final discount = _calcDiscount(sale, regular);
+    final hasDiscount = discount > 0;
     final isFreeDelivery = p['is_free_delivery'] == true;
+    final rating = _rating(p);
+    final reviews = _reviews(p);
+    final owner = p['owner_details'] is Map<String, dynamic>
+        ? p['owner_details'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final storeName =
+        (owner['store_name'] ?? owner['name'] ?? '').toString().trim();
+    final storeVerified =
+        owner['kyc'] == true || owner['is_verified'] == true;
+    final storePro = owner['is_pro'] == true;
 
-    // Responsive sizing
-    final buttonHeight = isSmallScreen
-        ? 32.0
-        : isLargeScreen
-            ? 44.0
-            : 36.0;
-    final iconSize = isSmallScreen
-        ? 12.0
-        : isLargeScreen
-            ? 16.0
-            : 14.0;
-    final textSize = isSmallScreen
-        ? 11.0
-        : isLargeScreen
-            ? 14.0
-            : 12.0;
-    final priceTextSize = isSmallScreen
-        ? 14.0
-        : isLargeScreen
-            ? 18.0
-            : 15.0;
-    final navigationCallback = widget.onTap ??
+    final navigationCallback = onTap ??
         () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  ProductDetailsScreen(product: widget.product),
+              builder: (context) => ProductDetailsScreen(product: product),
             ),
           );
         };
 
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Image Section - Square aspect ratio like eshop_section
-            // Wrap image in InkWell for navigation
-            InkWell(
-              onTap: navigationCallback,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              child: MouseRegion(
-                onEnter: (_) => setState(() => _hovered = true),
-                onExit: (_) => setState(() => _hovered = false),
-                child: AspectRatio(
-                  aspectRatio: 1.0, // Square image
-                  child: Stack(
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(12)),
-                          child: imageUrl.isNotEmpty
-                              ? AppImage.network(
-                                  imageUrl,
-                                  fit: BoxFit.cover,
-                                  errorWidget: Container(
-                                    color: Colors.grey.shade100,
-                                    child: Icon(
-                                      Icons.shopping_bag_outlined,
-                                      size: 32,
-                                      color: Colors.purple.shade300,
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  color: Colors.grey.shade100,
-                                  child: Icon(
-                                    Icons.shopping_bag_outlined,
-                                    size: 32,
-                                    color: Colors.purple.shade300,
-                                  ),
-                                ),
+    return GestureDetector(
+      onTap: navigationCallback,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Image: rounded, discount pill, free-delivery, wishlist ──
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _cardSlate50,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: imageUrl.isNotEmpty
+                        ? AppImage.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: const Center(
+                              child: Icon(Icons.image_outlined,
+                                  size: 30, color: _cardSlate400),
+                            ),
+                          )
+                        : const Center(
+                            child: Icon(Icons.image_outlined,
+                                size: 30, color: _cardSlate400),
+                          ),
+                  ),
+                ),
+                if (hasDiscount)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _cardRed,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '-$discount%',
+                        style: GoogleFonts.inter(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
                         ),
                       ),
+                    ),
+                  ),
+                if (isFreeDelivery)
+                  Positioned(
+                    bottom: 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: _cardGreen.withValues(alpha: 0.92),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.local_shipping_rounded,
+                              size: 11, color: Colors.white),
+                          const SizedBox(width: 3),
+                          Text(
+                            'FREE',
+                            style: GoogleFonts.inter(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
 
-                      // Discount Badge - Top Left (like eshop_section)
-                      if (discount > 0)
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade500,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.flash_on,
-                                    size: iconSize - 2, color: Colors.white),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '$discount% OFF',
-                                  style: AppFonts.roboto(
-                                    fontSize: textSize - 1,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
+          // ── Rating stars + count (REAL data — unrated shows outlines) ──
+          Row(
+            children: [
+              ...List.generate(5, (i) {
+                final filled = i < rating.round();
+                return Icon(
+                  filled ? Icons.star_rounded : Icons.star_border_rounded,
+                  size: 14,
+                  color: _cardAmber,
+                );
+              }),
+              if (reviews > 0) ...[
+                const SizedBox(width: 4),
+                Text(
+                  '($reviews)',
+                  style:
+                      GoogleFonts.inter(fontSize: 11, color: _cardSlate500),
+                ),
+              ],
+            ],
+          ),
+
+          // ── Store name + verified/pro badges ──
+          if (storeName.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    storeName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: _cardSlate500,
+                    ),
+                  ),
+                ),
+                if (storeVerified) ...[
+                  const SizedBox(width: 3),
+                  const Icon(Icons.verified,
+                      size: 12, color: Color(0xFF2563EB)),
+                ],
+                if (storePro) ...[
+                  const SizedBox(width: 3),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Text(
+                      'PRO',
+                      style: GoogleFonts.inter(
+                        fontSize: 7.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+
+          // ── Name ──
+          const SizedBox(height: 2),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
+              color: _cardDark,
+            ),
+          ),
+
+          // ── Price row + quick-buy bag ──
+          const SizedBox(height: 3),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    if (hasDiscount) ...[
+                      Flexible(
+                        child: Text(
+                          '৳${_formatPrice(regular)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            color: _cardSlate400,
+                            decoration: TextDecoration.lineThrough,
                           ),
                         ),
-
-                      // Free Delivery Badge - Bottom Left (like eshop_section)
-                      if (isFreeDelivery)
-                        Positioned(
-                          bottom: 8,
-                          left: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade600.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.local_shipping,
-                                    size: 12, color: Colors.white),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'FREE DELIVERY',
-                                  style: AppFonts.roboto(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                      ),
+                      const SizedBox(width: 5),
+                    ],
+                    Flexible(
+                      child: Text(
+                        '৳${_formatPrice(hasDiscount ? sale : regular)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: _cardGreen,
                         ),
-
-                      // Quick View overlay (hover) - Like eshop_section
-                      Positioned.fill(
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 150),
-                          opacity: _hovered ? 1 : 0,
-                          child: Container(
-                            color: Colors.black.withValues(alpha: 0.0),
-                            child: Center(
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black87,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                onPressed: () {
-                                  if (widget.onTap != null) widget.onTap!();
-                                },
-                                icon: const Icon(Icons.remove_red_eye_outlined,
-                                    size: 16),
-                                label: const Text('Quick View'),
-                              ),
-                            ),
-                          ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Quick Buy Now — plain dark icon + label, no background.
+              GestureDetector(
+                onTap: isLoading ? null : onBuyNow,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.shopping_bag_outlined,
+                          size: 14, color: _cardDark),
+                      const SizedBox(width: 3),
+                      Text(
+                        'Buy',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: _cardDark,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-
-            // Details - Reduced padding for more compact layout
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    // Wrap product info in InkWell (price, title, store)
-                    InkWell(
-                      onTap: navigationCallback,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Price Section - Reduced bottom margin
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 2),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: '৳',
-                                        style: AppFonts.roboto(
-                                          fontSize: textSize - 1,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: _formatPrice(sale ?? regular),
-                                        style: AppFonts.roboto(
-                                          fontSize: priceTextSize,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey.shade800,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                if (sale != null &&
-                                    _toNum(sale) != null &&
-                                    regular != null &&
-                                    _toNum(regular) != null &&
-                                    _toNum(sale)! < _toNum(regular)!)
-                                  Text.rich(
-                                    TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: '৳',
-                                          style: AppFonts.roboto(
-                                            fontSize: 10,
-                                            color: Colors.grey.shade400,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: _formatPrice(regular),
-                                          style: AppFonts.roboto(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade400,
-                                            decoration:
-                                                TextDecoration.lineThrough,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-
-                          // Product Title - Moved above store name (Vue: mb-2) - EXACT MATCH
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 3),
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppFonts.roboto(
-                                fontSize: textSize,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade800,
-                              ),
-                            ),
-                          ),
-
-                          // Store Link - Moved below product name (Vue: mb-3) - EXACT MATCH
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 2),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Color(0xFF3B82F6),
-                                        Color(0xFF8B5CF6)
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Color(0x1A000000),
-                                        blurRadius: 2,
-                                        offset: Offset(0, 1),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Center(
-                                    child: Icon(Icons.storefront_outlined,
-                                        size: 10, color: Colors.white),
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Expanded(
-                                  child: Text(
-                                    _getStoreName(p),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppFonts.roboto(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // End of product info InkWell
-
-                    const Spacer(),
-                    const SizedBox(height: 2),
-
-                    // Full Width Buy Now Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: widget.isLoading ? null : widget.onBuyNow,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF374151),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            vertical: isSmallScreen ? 8 : 10,
-                            horizontal: 8,
-                          ),
-                          minimumSize: Size(double.infinity, buttonHeight),
-                        ),
-                        child: widget.isLoading
-                            ? SizedBox(
-                                width: iconSize,
-                                height: iconSize,
-                                child: const AdsyLoadingIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.shopping_cart_outlined,
-                                      size: iconSize),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      'Buy Now',
-                                      style: AppFonts.roboto(
-                                        fontSize: textSize,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ), // End Buy Now Button
-                  ], // End Column children (details column)
-                ), // End Column
-              ), // End Padding
-            ), // End Expanded
-          ], // End Column children (main column)
-        ), // End Column
-      ), // End Container
-    ); // End Material
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
-  // Helper methods
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  double _rating(Map<String, dynamic> p) {
+    final r = p['average_rating'] ?? p['rating'];
+    return double.tryParse('${r ?? ''}') ?? 0;
+  }
+
+  int _reviews(Map<String, dynamic> p) {
+    final r = p['total_reviews'] ?? p['reviews_count'] ?? p['review_count'];
+    return int.tryParse('${r ?? ''}') ?? 0;
+  }
+
   int _calcDiscount(dynamic sale, dynamic regular) {
     final saleNum = _toNum(sale);
     final regularNum = _toNum(regular);
@@ -529,10 +403,9 @@ class _ProductCardState extends State<ProductCard> {
     if (n == null) return '';
     final s = n.toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
-    return s; // currency symbol added in Text
+    return s;
   }
 
-  // Helper methods
   String _getProductImageUrl(Map<String, dynamic> product) {
     // Try image_details first (ProductMediaSerializer)
     if (product['image_details'] != null && product['image_details'] is List) {
@@ -565,46 +438,18 @@ class _ProductCardState extends State<ProductCard> {
       return url;
     }
 
-    // Use AppConfig to get the correct base URL (localhost in debug, production in release)
+    // Use AppConfig to get the correct base URL (localhost in debug,
+    // production in release).
     final baseUrl = AppConfig.mediaBaseUrl;
-    debugPrint('ProductCard: Making absolute URL from "$url" using base: $baseUrl');
 
     // Handle Django media URLs
     if (url.startsWith('/media/') || url.startsWith('media/')) {
-      final finalUrl = '$baseUrl${url.startsWith('/') ? url : '/$url'}';
-      debugPrint('ProductCard: Media URL result: $finalUrl');
-      return finalUrl;
+      return '$baseUrl${url.startsWith('/') ? url : '/$url'}';
     }
     if (url.startsWith('/')) {
       return '$baseUrl$url';
     }
     return '$baseUrl/$url';
-  }
-
-  String _getStoreName(Map<String, dynamic> product) {
-    // Try owner_details first
-    if (product['owner_details'] != null && product['owner_details'] is Map) {
-      final ownerDetails = product['owner_details'] as Map;
-      if (ownerDetails['store_name'] != null &&
-          ownerDetails['store_name'].toString().isNotEmpty) {
-        return ownerDetails['store_name'].toString();
-      }
-      if (ownerDetails['name'] != null &&
-          ownerDetails['name'].toString().isNotEmpty) {
-        return ownerDetails['name'].toString();
-      }
-    }
-
-    // Try direct fields
-    if (product['store_name'] != null &&
-        product['store_name'].toString().isNotEmpty) {
-      return product['store_name'].toString();
-    }
-    if (product['owner'] != null && product['owner'].toString().isNotEmpty) {
-      return product['owner'].toString();
-    }
-
-    return 'AdsyClub Store';
   }
 
   double? _toNum(dynamic value) {
