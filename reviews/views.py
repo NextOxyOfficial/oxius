@@ -2,7 +2,7 @@ from rest_framework import generics, status, permissions
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -158,6 +158,37 @@ class UserReviewsListView(generics.ListAPIView):
         return Review.objects.filter(
             user=self.request.user
         ).select_related('product').order_by('-created_at')
+
+
+class PublicStoreReviewsListView(generics.ListAPIView):
+    """Public: list approved reviews on any store's products (by username) —
+    powers the vendor page's Reviews section."""
+    serializer_class = ReviewSerializer
+    permission_classes = [AllowAny]
+    pagination_class = ReviewPagination
+
+    def get_queryset(self):
+        store_owner = get_object_or_404(
+            User, store_username=self.kwargs['store_username']
+        )
+        return Review.objects.filter(
+            product__owner=store_owner,
+            is_approved=True
+        ).select_related('product', 'user').order_by('-created_at')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            result = self.get_paginated_response(serializer.data)
+            result.data['total_count'] = queryset.count()
+            return result
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            'results': serializer.data,
+            'total_count': queryset.count()
+        })
 
 
 class StoreReviewsListView(generics.ListAPIView):
