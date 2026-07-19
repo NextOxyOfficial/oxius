@@ -275,6 +275,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   bool _isUserNearBottom = true;
   bool _isOtherUserOnline = false;
   bool _isOtherUserTyping = false;
+  // Counterpart deactivated (deleted) or suspended — profile link disabled.
+  bool _counterpartDisabled = false;
   String? _lastSeenTime;
   Timer? _onlineStatusTimer;
   Timer? _remoteTypingResetTimer;
@@ -864,6 +866,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _isLoadingChatroomStatus = false;
         });
         return;
+      }
+
+      // Deactivated/suspended counterpart → the profile link goes dead.
+      final rawOther = details['other_user'];
+      if (rawOther is Map) {
+        final other = Map<String, dynamic>.from(rawOther);
+        final disabled =
+            other['is_active'] == false || other['is_suspended'] == true;
+        if (disabled != _counterpartDisabled) {
+          _counterpartDisabled = disabled;
+        }
       }
 
       Map<String, dynamic>? blockStatus;
@@ -2299,7 +2312,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('Error picking images: $e');
       setState(() => _isCompressingImages = false);
       if (mounted) {
-        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
+        AdsyToast.error(context, 'ছবি সিলেক্ট করা যায়নি');
       }
     }
   }
@@ -2433,7 +2446,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     } catch (e) {
       debugPrint('Error picking document: $e');
       if (mounted) {
-        AdsyToast.error(context, 'ফাইল বাছাই করা যায়নি');
+        AdsyToast.error(context, 'ফাইল সিলেক্ট করা যায়নি');
       }
     }
   }
@@ -3195,6 +3208,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _openUserProfile() {
+    // Deleted/suspended accounts have no visitable profile.
+    if (_counterpartDisabled) {
+      AdsyToast.info(context, 'একাউন্ট সাসপেন্ডেড);
+      return;
+    }
     FocusManager.instance.primaryFocus?.unfocus();
     final route = MaterialPageRoute(
       settings: RouteSettings(

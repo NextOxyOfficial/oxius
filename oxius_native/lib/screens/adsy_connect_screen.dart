@@ -559,6 +559,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         'isOnline': _parseBool(otherUser['is_online'] ?? otherUser['isOnline']),
         'isTyping': false,
         'isVerified': otherUser['is_verified'] ?? false,
+        // Deleted (deactivated) / suspended account flags — the tile labels
+        // the name and the profile link is disabled.
+        'isDeleted': otherUser['is_active'] == false,
+        'isSuspended': otherUser['is_suspended'] == true,
         'isMuted': room['is_muted'] == true,
         'isArchived': room['is_archived'] == true,
         'isMutual': room['is_mutual'] == true,
@@ -1484,6 +1488,32 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                   fontWeight: FontWeight.w600,
                                   fontStyle: FontStyle.italic,
                                   color: Color(0xFF10B981),
+                                ),
+                              ),
+                            ],
+                            // Deactivated/suspended account chip beside the
+                            // name.
+                            if (chat['isDeleted'] == true ||
+                                chat['isSuspended'] == true) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF2F2),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                      color: const Color(0xFFFECACA)),
+                                ),
+                                child: Text(
+                                  chat['isDeleted'] == true
+                                      ? '\u0987\u0989\u099c\u09be\u09b0 \u09a1\u09bf\u09b2\u09bf\u099f\u09c7\u09a1'
+                                      : '\u09b8\u09be\u09b8\u09aa\u09c7\u09a8\u09cd\u09a1\u09c7\u09a1',
+                                  style: const TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFB91C1C),
+                                  ),
                                 ),
                               ),
                             ],

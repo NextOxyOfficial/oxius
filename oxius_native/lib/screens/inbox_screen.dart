@@ -653,6 +653,22 @@ class _InboxScreenState extends State<InboxScreen>
                       ],
                     ),
                   ),
+                  // Settings shortcut (top-right).
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.settings_outlined,
+                          color: Color(0xFF64748B), size: 20),
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/settings'),
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
+                      tooltip: 'Settings',
+                    ),
+                  ),
                 ],
               ),
             ),

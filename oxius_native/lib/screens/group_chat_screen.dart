@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -257,13 +258,28 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     if (_selectedImages.isEmpty) return;
     final count = _selectedImages.length;
     setState(() => _isUploadingAttachment = true);
+    var failures = 0;
     try {
       for (int i = 0; i < count; i++) {
-        await AdsyConnectService.sendGroupMediaMessage(
-          groupId: _groupId,
-          messageType: 'image',
-          filePath: _selectedImages[i].path,
-        );
+        // Upload the COMPRESSED image (the preview bytes) when available —
+        // multi-MB originals over slow uplinks timed out and the old loop
+        // ignored the null result, so photos vanished without any error.
+        Map<String, dynamic>? res;
+        if (i < _compressedImages.length && _compressedImages[i].isNotEmpty) {
+          res = await AdsyConnectService.sendGroupMediaMessage(
+            groupId: _groupId,
+            messageType: 'image',
+            mediaBytes: base64Decode(_compressedImages[i]),
+            fileName: 'photo_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
+          );
+        } else {
+          res = await AdsyConnectService.sendGroupMediaMessage(
+            groupId: _groupId,
+            messageType: 'image',
+            filePath: _selectedImages[i].path,
+          );
+        }
+        if (res == null) failures++;
         if (i < count - 1) {
           await Future.delayed(const Duration(milliseconds: 300));
         }
@@ -274,6 +290,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         _compressedImages.clear();
         _isUploadingAttachment = false;
       });
+      if (failures > 0) {
+        AdsyToast.error(
+            context,
+            failures == count
+                ? 'ছবি পাঠানো যায়নি — আবার চেষ্টা করুন'
+                : '$failures টি ছবি পাঠানো যায়নি');
+      }
       await _loadMessages();
     } catch (_) {
       if (mounted) {
@@ -724,6 +747,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final sender = Map<String, dynamic>.from(raw['sender'] ?? {});
     final uid = (sender['id'] ?? '').toString();
     if (uid.isEmpty) return;
+    if (sender['is_active'] == false || sender['is_suspended'] == true) {
+      AdsyToast.info(context, 'এই অ্যাকাউন্টটি সাসপেন্ডেড');
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => ProfileScreen(userId: uid)),

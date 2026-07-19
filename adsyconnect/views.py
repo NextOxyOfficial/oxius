@@ -364,12 +364,30 @@ def _receiver_follows_sender(message):
     ).exists()
 
 
+def _json_safe(value):
+    """Recursively convert UUIDs/datetimes to strings so the channel layer's
+    msgpack/json encoder never chokes. Group-message broadcasts carried raw
+    UUID objects from serializer .data and SILENTLY failed — realtime group
+    delivery was down and clients only saw new messages via polling."""
+    import datetime as _dt
+
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, (uuid.UUID, _dt.datetime, _dt.date)):
+        return str(value)
+    return value
+
+
 def _broadcast_to_user(user_id, event):
     channel_layer = get_channel_layer()
     if channel_layer is None:
         return
     try:
-        async_to_sync(channel_layer.group_send)(f'user_{user_id}', event)
+        async_to_sync(channel_layer.group_send)(
+            f'user_{user_id}', _json_safe(event)
+        )
     except Exception as exc:
         logger.warning(
             'AdsyConnect broadcast failed for user %s and event %s: %s',

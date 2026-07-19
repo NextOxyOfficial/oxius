@@ -17,8 +17,11 @@ class UserBasicSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'avatar', 
-                  'is_online', 'profession', 'is_pro', 'kyc']
+        # is_active/is_suspended let chat clients label deleted/suspended
+        # accounts and disable their profile links.
+        fields = ['id', 'username', 'first_name', 'last_name', 'avatar',
+                  'is_online', 'profession', 'is_pro', 'kyc',
+                  'is_active', 'is_suspended']
     
     def get_avatar(self, obj):
         if hasattr(obj, 'image') and obj.image:
