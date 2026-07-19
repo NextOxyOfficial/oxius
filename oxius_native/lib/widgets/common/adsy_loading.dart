@@ -440,15 +440,19 @@ class AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
   }
 
   double _triggerPullExtent(BuildContext context) {
+    // Standard-feel trigger (~96px with the default displacement). The old
+    // value (displacement+128, min 156, PLUS the 32px activation) demanded a
+    // ~200px drag — normal pulls released below it and nothing happened,
+    // which read as "pull-to-refresh is broken" on every screen using this.
     final height = MediaQuery.sizeOf(context).height;
     return math.min(
-      math.max(widget.displacement + 128, 156.0),
-      height * 0.28,
+      math.max(widget.displacement + 56, 88.0),
+      height * 0.20,
     );
   }
 
   double _activationPullExtent() {
-    return 32.0;
+    return 16.0;
   }
 
   double _activePullExtent(double rawPull) {

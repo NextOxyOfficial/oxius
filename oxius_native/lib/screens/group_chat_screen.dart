@@ -38,6 +38,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   List<Map<String, dynamic>> _messages = [];
   List<String> _typingNames = [];
   bool _loading = true;
+  // Messenger-style timestamps: tap a message to reveal its time, tap it
+  // again (or anywhere outside) to hide.
+  String? _timeShownId;
   Timer? _pollTimer;
   Timer? _typingPollTimer;
   DateTime _lastTypingSent = DateTime.fromMillisecondsSinceEpoch(0);
@@ -447,7 +450,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       'voiceDuration':
           int.tryParse('${m['voice_duration'] ?? ''}') ?? 0,
       'isDeleted': m['is_deleted'] == true,
-      'showTimestamp': true,
+      // Time stays hidden until the message is tapped (Messenger-style).
+      'showTimestamp': (m['id'] ?? '').toString() == _timeShownId,
       'timeDisplay': _formatTime(
           DateTime.tryParse((m['created_at'] ?? '').toString())),
       'isSeen': false,
@@ -551,11 +555,20 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                             style: TextStyle(
                                 fontSize: 13, color: Colors.grey.shade600)),
                       )
-                    : ListView.builder(
-                        controller: _scroll,
-                        padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
-                        itemCount: _messages.length,
-                        itemBuilder: (_, i) => _buildRow(i),
+                    : GestureDetector(
+                        // Tap on empty list area hides any revealed time.
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          if (_timeShownId != null) {
+                            setState(() => _timeShownId = null);
+                          }
+                        },
+                        child: ListView.builder(
+                          controller: _scroll,
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+                          itemCount: _messages.length,
+                          itemBuilder: (_, i) => _buildRow(i),
+                        ),
                       ),
           ),
           _buildTypingIndicator(),
@@ -635,45 +648,63 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             .toString();
     final showAvatar = !isMe && thisSender != prevSender;
 
-    final bubble = ChatMessageBubble(
-      key: ValueKey(mapped['id']),
-      message: mapped,
-      showAvatar: showAvatar,
-      userName: _senderName(raw),
-      userAvatar: _senderAvatar(raw),
-      playingVoiceMessageId: _playingVoiceId,
-      voicePosition: _voicePosition,
-      voiceDuration: _voiceDuration,
-      onReply: (_) {},
-      onPlayVoice: _playVoice,
-      onViewImage: _viewImage,
-      onDownloadDoc: (path, name) {
-        final url = mapped['mediaUrl']?.toString();
-        if (url != null && url.isNotEmpty) {
-          UrlLauncherUtils.launchExternalUrl(url);
-        }
-      },
-      onScrollToMessage: (_) {},
+    final msgId = mapped['id'].toString();
+    // Tap a message to reveal its time; tapping it again hides it. Media
+    // taps (image viewer, voice play) keep their own handlers — the deepest
+    // gesture wins, so this only fires on plain bubble areas.
+    final bubble = GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => setState(
+          () => _timeShownId = _timeShownId == msgId ? null : msgId),
+      child: ChatMessageBubble(
+        key: ValueKey(msgId),
+        message: mapped,
+        // Avatar lives in the run header (Messenger-style), not per bubble.
+        showAvatar: false,
+        userName: _senderName(raw),
+        userAvatar: _senderAvatar(raw),
+        playingVoiceMessageId: _playingVoiceId,
+        voicePosition: _voicePosition,
+        voiceDuration: _voiceDuration,
+        onReply: (_) {},
+        onPlayVoice: _playVoice,
+        onViewImage: _viewImage,
+        onDownloadDoc: (path, name) {
+          final url = mapped['mediaUrl']?.toString();
+          if (url != null && url.isNotEmpty) {
+            UrlLauncherUtils.launchExternalUrl(url);
+          }
+        },
+        onScrollToMessage: (_) {},
+      ),
     );
 
-    // Group-only: name the sender above EVERY received message — labelling
-    // only the first message of a run left long runs looking anonymous once
-    // the label scrolled away ("kon user message korche seta dekha jacche
-    // na"). Runs keep a slightly tighter gap.
-    if (!isMe) {
+    // Facebook-standard run header: avatar + name aligned together above the
+    // FIRST message of a speaker's run.
+    if (!isMe && showAvatar) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(
-                left: 46, top: showAvatar ? 6 : 2, bottom: 2),
-            child: Text(
-              _senderName(raw),
-              style: const TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF2563EB),
-              ),
+            padding: const EdgeInsets.only(left: 6, top: 10, bottom: 3),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _runHeaderAvatar(raw),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    _senderName(raw),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           bubble,
@@ -681,6 +712,39 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       );
     }
     return bubble;
+  }
+
+  /// Small circular avatar for the run header (initial fallback).
+  Widget _runHeaderAvatar(Map<String, dynamic> raw) {
+    final url = (_senderAvatar(raw) ?? '').trim();
+    final name = _senderName(raw);
+    Widget fallback() => Center(
+          child: Text(
+            name.isNotEmpty ? name[0].toUpperCase() : '?',
+            style: const TextStyle(
+              color: Color(0xFF3B82F6),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        );
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFFEFF6FF),
+      ),
+      child: url.isEmpty
+          ? fallback()
+          : ClipOval(
+              child: Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => fallback(),
+              ),
+            ),
+    );
   }
 
   /// Bottom-left typing line: one person → "Name টাইপ করছেন…", several →
