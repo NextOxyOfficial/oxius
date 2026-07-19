@@ -15,20 +15,20 @@ const _cardAmber = Color(0xFFF59E0B);
 const _cardRed = Color(0xFFEF4444);
 
 class ProductCardLayout {
-  /// Height of the text block under the square image: rating row + category
-  /// + name + price/bag row. Grows with the system text scale so nothing
-  /// clips on large-font devices.
+  /// Height of the text block under the square image: rating row + store row
+  /// + 2-line name + price/buy row. Grows with the system text scale so
+  /// nothing clips on large-font devices.
   static double detailsHeight(double screenWidth, {double textScale = 1.0}) {
     final double base;
     if (screenWidth < 360) {
-      base = 104.0;
+      base = 122.0;
     } else if (screenWidth > 600) {
-      base = 116.0;
+      base = 134.0;
     } else {
-      base = 108.0;
+      base = 126.0;
     }
     final ts = textScale.clamp(1.0, 1.6);
-    return base + (ts - 1.0) * 70.0;
+    return base + (ts - 1.0) * 88.0;
   }
 
   static double cardHeight({
@@ -290,14 +290,15 @@ class ProductCard extends StatelessWidget {
             ),
           ],
 
-          // ── Name ──
+          // ── Name (2-line clamp) ──
           const SizedBox(height: 2),
           Text(
             title,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 13.5,
+              height: 1.25,
               fontWeight: FontWeight.w700,
               color: _cardDark,
             ),

@@ -344,6 +344,63 @@ class EshopService {
     }
   }
 
+  /// Best-selling products (ranked by order count on the backend).
+  static Future<List<Map<String, dynamic>>> fetchBestSellingProducts(
+      {int limit = 10}) async {
+    try {
+      final uri = Uri.parse('$baseUrl/all-products/').replace(queryParameters: {
+        'ordering': '-order_count',
+        'page': '1',
+        'page_size': limit.toString(),
+      });
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return _extractProductList(json.decode(response.body));
+      }
+      return [];
+    } catch (e) {
+      debugPrint('EshopService: Error fetching best sellers: $e');
+      return [];
+    }
+  }
+
+  /// Top stores (ranked by orders then catalog size) for the eShop slider.
+  static Future<List<Map<String, dynamic>>> fetchTopStores(
+      {int limit = 10}) async {
+    try {
+      final uri = Uri.parse('$baseUrl/top-stores/')
+          .replace(queryParameters: {'limit': limit.toString()});
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return data
+              .whereType<Map<String, dynamic>>()
+              .map(_normalizeStore)
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      debugPrint('EshopService: Error fetching top stores: $e');
+      return [];
+    }
+  }
+
   static Future<Map<String, dynamic>?> fetchProductDetails({
     dynamic productId,
     String? slug,

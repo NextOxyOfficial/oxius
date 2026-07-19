@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oxius_native/utils/image_utils.dart';
-import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+
+// Clean marketplace palette — matches the eShop / vendor store pages.
+const _dealGreen = Color(0xFF22C55E);
+const _dealDark = Color(0xFF111827);
+const _dealSlate50 = Color(0xFFF8FAFC);
+const _dealSlate200 = Color(0xFFE2E8F0);
+const _dealSlate400 = Color(0xFF94A3B8);
 
 class HotDealsSection extends StatefulWidget {
   final Function(String)? onCategorySelected;
@@ -86,20 +93,14 @@ class _HotDealsSectionState extends State<HotDealsSection> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        height: 200,
+        margin: const EdgeInsets.fromLTRB(10, 12, 10, 0),
+        height: 120,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.pink.shade400, Colors.orange.shade500],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
+          color: _dealSlate50,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(
-          child: AdsyLoadingIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
+          child: AdsyLoadingIndicator(color: _dealGreen),
         ),
       );
     }
@@ -108,84 +109,39 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(4, 8, 4, 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.pink.shade400, Colors.orange.shade500],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.flash_on,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _translationService.t('special_deals',
-                          fallback: 'বিশেষ অফার'),
-                      style: AppFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        _translationService.t('limited_time',
-                            fallback: 'সীমিত সময়'),
-                        style: AppFonts.roboto(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Scrollable Cards
-                SizedBox(
-                  height: 95,
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    itemCount: _specialDeals.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 4),
-                    itemBuilder: (context, index) {
-                      final deal = _specialDeals[index];
-                      return _buildDealCard(deal);
-                    },
-                  ),
-                ),
-              ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header — clean section title + limited-time pill.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 14, 10, 8),
+          child: Text(
+            _translationService.t('special_deals', fallback: 'বিশেষ অফার'),
+            style: GoogleFonts.inter(
+              fontSize: 16.5,
+              fontWeight: FontWeight.w800,
+              color: _dealDark,
+              letterSpacing: -0.3,
             ),
           ),
-        ],
-      ),
+        ),
+
+        // Scrollable Cards
+        SizedBox(
+          height: 122,
+          child: ListView.separated(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            itemCount: _specialDeals.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final deal = _specialDeals[index];
+              return _buildDealCard(deal);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -228,108 +184,83 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       // Fixed width — the old IntrinsicWidth wrapper asked the infinite-width
       // image for its intrinsic size, which is unbounded, so in release builds
       // the whole card silently failed to lay out and the strip looked empty.
-      child: Container(
-          width: 78,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.5),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              // Image with badge
-              Container(
-                height: 55,
-                decoration: BoxDecoration(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      badgeColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // Product Image
-                    if (imageUrl.isNotEmpty)
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(12)),
-                        child: AppImage.network(
-                          imageUrl,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.contain,
-                          errorWidget: Container(
-                            color: Colors.grey.shade100,
-                            child: Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 32,
-                              color: Colors.grey.shade400,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        color: Colors.grey.shade100,
+      child: SizedBox(
+        width: 80,
+        child: Column(
+          children: [
+            // Image card with badge (vendor category-rail style).
+            Container(
+              width: 80,
+              height: 74,
+              decoration: BoxDecoration(
+                color: _dealSlate50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: _dealSlate200),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (imageUrl.isNotEmpty)
+                    AppImage.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: const Center(
                         child: Icon(
                           Icons.shopping_bag_outlined,
-                          size: 32,
-                          color: Colors.grey.shade400,
+                          size: 26,
+                          color: _dealSlate400,
                         ),
                       ),
-
-                    // Badge
-                    Positioned(
-                      top: 3,
-                      left: 3,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: badgeColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          badge,
-                          style: AppFonts.roboto(
-                            fontSize: 8,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+                    )
+                  else
+                    const Center(
+                      child: Icon(
+                        Icons.shopping_bag_outlined,
+                        size: 26,
+                        color: _dealSlate400,
+                      ),
+                    ),
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: badgeColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        badge,
+                        style: GoogleFonts.inter(
+                          fontSize: 7.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              // Name - Single line with ellipsis
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                child: Text(
-                  name,
-                  style: AppFonts.roboto(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade800,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 4),
+            // Name — up to two lines so longer names stay readable.
+            Text(
+              name,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                height: 1.25,
+                fontWeight: FontWeight.w600,
+                color: _dealDark,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
+      ),
     );
   }
 }

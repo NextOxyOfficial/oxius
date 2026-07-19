@@ -30,13 +30,11 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
   String? _error;
   int _currentSlide = 0;
   Timer? _autoplayTimer;
-  Timer? _progressTimer;
-  double _progressWidth = 0.0;
 
-  // Touch handling
-  double _touchStartX = 0;
-  double _touchEndX = 0;
-  bool _isHandlingTouch = false;
+  // Peek carousel: the next banner stays partially visible on the right so
+  // it's obvious there are more slides waiting. A single banner gets the
+  // full width (no peek to hint at).
+  PageController _pageController = PageController(viewportFraction: 0.92);
 
   @override
   void initState() {
@@ -47,7 +45,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
   @override
   void dispose() {
     _autoplayTimer?.cancel();
-    _progressTimer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -66,6 +64,10 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
         setState(() {
           _banners = response;
           _isLoading = false;
+          if (_banners.length <= 1) {
+            _pageController.dispose();
+            _pageController = PageController();
+          }
         });
 
         // Start autoplay if there are multiple banners
@@ -85,37 +87,11 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
   }
 
   void _startAutoplay() {
-    _progressTimer?.cancel();
     _autoplayTimer?.cancel();
-
-    setState(() {
-      _progressWidth = 0.0;
-    });
-
-    // Progress bar animation
-    _progressTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (mounted && !_isHandlingTouch) {
-        setState(() {
-          _progressWidth += (100 / (widget.autoplayInterval / 100));
-          if (_progressWidth >= 100) {
-            _progressWidth = 0.0;
-          }
-        });
-      }
-    });
-
-    // Slide transition
     _autoplayTimer = Timer.periodic(
         Duration(milliseconds: widget.autoplayInterval), (timer) {
-      if (mounted && !_isHandlingTouch) {
-        _nextSlide();
-      }
+      if (mounted) _nextSlide();
     });
-  }
-
-  void _stopAutoplay() {
-    _progressTimer?.cancel();
-    _autoplayTimer?.cancel();
   }
 
   void _resetAutoplay() {
@@ -126,52 +102,28 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
 
   void _nextSlide() {
     if (_banners.isEmpty) return;
-    setState(() {
-      _currentSlide = (_currentSlide + 1) % _banners.length;
-    });
-  }
-
-  void _previousSlide() {
-    if (_banners.isEmpty) return;
-    setState(() {
-      _currentSlide = (_currentSlide - 1 + _banners.length) % _banners.length;
-    });
+    _animateToSlide((_currentSlide + 1) % _banners.length);
   }
 
   void _goToSlide(int index) {
-    setState(() {
-      _currentSlide = index;
-    });
+    _animateToSlide(index);
     _resetAutoplay();
   }
 
-  void _handleTouchStart(TapDownDetails details) {
-    _isHandlingTouch = true;
-    _touchStartX = details.globalPosition.dx;
-    _stopAutoplay();
-  }
-
-  void _handleTouchEnd(TapUpDetails details) {
-    _touchEndX = details.globalPosition.dx;
-    _isHandlingTouch = false;
-
-    final swipeDiff = _touchEndX - _touchStartX;
-    const minSwipeDistance = 50.0;
-
-    if (swipeDiff > minSwipeDistance) {
-      _previousSlide(); // Swipe right = previous slide
-    } else if (swipeDiff < -minSwipeDistance) {
-      _nextSlide(); // Swipe left = next slide
-    } else {
-      _openCurrentBanner();
+  void _animateToSlide(int index) {
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeOutCubic,
+      );
     }
-
-    _resetAutoplay();
+    setState(() => _currentSlide = index);
   }
 
-  Future<void> _openCurrentBanner() async {
-    if (_banners.isEmpty || _currentSlide >= _banners.length) return;
-    final banner = _banners[_currentSlide];
+  Future<void> _openBanner(int index) async {
+    if (_banners.isEmpty || index >= _banners.length) return;
+    final banner = _banners[index];
     final target = (banner['link'] ??
             banner['link_url'] ??
             banner['linkUrl'] ??
@@ -212,20 +164,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: _buildContent(),
-      ),
+      child: _buildContent(),
     );
   }
 
@@ -235,11 +174,14 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       return AspectRatio(
         aspectRatio: 2.0, // 50% height (2:1 ratio)
         child: Container(
-          color: Colors.grey.shade200,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: const Center(
             child: AdsyLoadingIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
             ),
           ),
         ),
@@ -251,7 +193,10 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       return AspectRatio(
         aspectRatio: 2.0,
         child: Container(
-          color: Colors.grey.shade200,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -285,7 +230,10 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       return AspectRatio(
         aspectRatio: 2.0,
         child: Container(
-          color: Colors.grey.shade200,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -310,121 +258,70 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       );
     }
 
-    // Banner Slider
-    return GestureDetector(
-      onTapDown: _handleTouchStart,
-      onTapUp: _handleTouchEnd,
-      child: Stack(
-        children: [
-          // Banners
-          AspectRatio(
-            aspectRatio: 2.0,
-            child: Stack(
-              children: [
-                for (int i = 0; i < _banners.length; i++)
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 500),
-                    opacity: i == _currentSlide ? 1.0 : 0.0,
-                    child: _buildBannerItem(_banners[i], i),
-                  ),
-              ],
+    // Banner Slider — peek carousel: next slide shows on the right edge.
+    final singleBanner = _banners.length == 1;
+    return Stack(
+      children: [
+        AspectRatio(
+          aspectRatio: 2.08,
+          child: PageView.builder(
+            controller: _pageController,
+            padEnds: false,
+            onPageChanged: (i) {
+              setState(() => _currentSlide = i);
+              _resetAutoplay();
+            },
+            itemCount: _banners.length,
+            itemBuilder: (_, i) => Padding(
+              padding: EdgeInsets.only(right: singleBanner ? 0 : 8),
+              child: GestureDetector(
+                onTap: () => _openBanner(i),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: _buildBannerItem(_banners[i], i),
+                ),
+              ),
             ),
           ),
+        ),
 
-          // Dots Indicator
-          if (_banners.length > 1)
-            Positioned(
-              bottom: 8,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(_banners.length, (index) {
-                      return GestureDetector(
-                        onTap: () => _goToSlide(index),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: index == _currentSlide
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.5),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ),
-            ),
-
-          // Progress Bar
-          if (_banners.length > 1 && widget.autoplayEnabled)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+        // Dots Indicator
+        if (_banners.length > 1)
+          Positioned(
+            bottom: 8,
+            left: 0,
+            right: 0,
+            child: Center(
               child: Container(
-                height: 2,
-                color: Colors.white.withValues(alpha: 0.2),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: _progressWidth / 100,
-                  child: Container(
-                    color: Colors.white,
-                  ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-            ),
-
-          // Swipe Hint
-          if (widget.showSwipeHint && _banners.length > 1)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.1),
-                child: Center(
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.chevron_left,
-                            size: 16, color: Colors.grey.shade700),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Swipe to see more',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade700,
-                          ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_banners.length, (index) {
+                    return GestureDetector(
+                      onTap: () => _goToSlide(index),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: index == _currentSlide
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.5),
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(width: 8),
-                        Icon(Icons.chevron_right,
-                            size: 16, color: Colors.grey.shade700),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  }),
                 ),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 

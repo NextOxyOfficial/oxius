@@ -1056,7 +1056,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   /// Horizontal category slider on Home (image + name), "See all" → tab 2.
   Widget _buildCategoryRail() {
     return SizedBox(
-      height: 108,
+      height: 124,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -1098,10 +1098,12 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   const SizedBox(height: 4),
                   Text(
                     c['name']?.toString() ?? '',
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 11,
+                      height: 1.25,
                       fontWeight:
                           selected ? FontWeight.w800 : FontWeight.w600,
                       color: selected ? _greenDark : _dark,
@@ -1155,7 +1157,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   Widget _buildBestSellerRail() {
     final items = _bestSellers.take(8).toList();
     return SizedBox(
-      height: 258,
+      height: 278,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -1308,10 +1310,11 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             const SizedBox(height: 2),
             Text(
               p['name']?.toString() ?? 'Product',
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
                 fontSize: 13.5,
+                height: 1.25,
                 fontWeight: FontWeight.w700,
                 color: _dark,
               ),
