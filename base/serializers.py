@@ -780,11 +780,27 @@ class ProductSerializer(serializers.ModelSerializer):
     benefits = ProductBenefitSerializer(many=True, read_only=True)
     order_count = serializers.SerializerMethodField()
     total_items_ordered = serializers.SerializerMethodField()
+    # Real review data for product cards (stars are rendered from these —
+    # without them every card faked a 5-star row).
+    average_rating = serializers.SerializerMethodField()
+    total_reviews = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = "__all__"
         read_only_fields = ["slug"]
+
+    def get_average_rating(self, obj):
+        try:
+            return float(obj.rating_stats.average_rating)
+        except Exception:
+            return 0.0
+
+    def get_total_reviews(self, obj):
+        try:
+            return obj.rating_stats.total_reviews
+        except Exception:
+            return 0
 
     def get_order_count(self, obj):
         return obj.order_count
