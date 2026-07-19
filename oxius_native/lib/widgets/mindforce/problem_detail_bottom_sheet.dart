@@ -327,7 +327,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     } catch (e) {
       setState(() => _isCompressing = false);
       if (mounted) {
-        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
+        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
       }
     }
   }

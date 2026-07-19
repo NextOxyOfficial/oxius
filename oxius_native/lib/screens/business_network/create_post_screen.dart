@@ -167,7 +167,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
+        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
       }
     }
   }
@@ -242,7 +242,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        AdsyToast.error(context, 'ভিডিও বাছাই করা যায়নি');
+        AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
       }
     }
   }

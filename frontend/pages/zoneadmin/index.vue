@@ -505,7 +505,7 @@
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1">এলাকা (উপজেলা) *</label>
                   <select v-model="managerForm.area" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
-                    <option value="">— এলাকা বাছাই করুন —</option>
+                    <option value="">— এলাকা সিলেক্ট  করুন —</option>
                     <option v-for="a in areas" :key="a" :value="a">{{ a }}</option>
                   </select>
                 </div>
@@ -731,7 +731,7 @@
                       <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">পেমেন্ট মাধ্যম</label>
                         <select v-model="settingsForm.payout_method" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
-                          <option value="">— বাছাই করুন —</option>
+                          <option value="">— সিলেক্ট  করুন —</option>
                           <option value="bkash">bKash</option>
                           <option value="nagad">Nagad</option>
                           <option value="rocket">Rocket</option>

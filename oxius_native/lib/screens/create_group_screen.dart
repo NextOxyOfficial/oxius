@@ -155,7 +155,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       return;
     }
     if (_selected.isEmpty) {
-      AdsyToast.warning(context, 'অন্তত একজন মেম্বার বাছাই করুন');
+      AdsyToast.warning(context, 'অন্তত একজন মেম্বার সিলেক্ট  করুন');
       return;
     }
     setState(() => _creating = true);

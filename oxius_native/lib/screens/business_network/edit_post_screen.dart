@@ -773,7 +773,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _isCompressing = false);
-        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
+        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
       }
     }
   }
@@ -799,7 +799,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
       if (video == null || !mounted) return;
       setState(() => _newVideoPaths.add(video.path));
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ভিডিও বাছাই করা যায়নি');
+      if (mounted) AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
     }
   }
 

@@ -204,7 +204,7 @@ class TranslationService extends ChangeNotifier {
       'el_videos': 'ভিডিও',
       'el_lessons': 'অধ্যায়',
       'el_total': 'মোট',
-      'el_filter_search': 'বাছাই ও খোঁজ',
+      'el_filter_search': 'সিলেক্ট  ও খোঁজ',
       'el_lesson': 'অধ্যায়',
       'el_all_lessons': 'সব অধ্যায়',
       'el_search_hint': 'নাম বা বিবরণ দিয়ে খুঁজুন',

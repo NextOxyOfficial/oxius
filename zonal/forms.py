@@ -29,7 +29,7 @@ class ZonalOfficeAdminForm(forms.ModelForm):
     division = forms.ChoiceField(
         required=False,
         label="Division",
-        help_text="বিভাগ বাছাই করলে নিচের City তালিকা শুধু সেই বিভাগের জেলা/শহর দেখাবে।",
+        help_text="বিভাগ সিলেক্ট  করলে নিচের City তালিকা শুধু সেই বিভাগের জেলা/শহর দেখাবে।",
     )
 
     class Meta:
@@ -39,8 +39,8 @@ class ZonalOfficeAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        division_choices = [("", "— বিভাগ বাছাই করুন —")]
-        city_choices = [("", "— শহর/জেলা বাছাই করুন —")]
+        division_choices = [("", "— বিভাগ সিলেক্ট  করুন —")]
+        city_choices = [("", "— শহর/জেলা সিলেক্ট  করুন —")]
         division_by_city = {}
         try:
             from cities.models import City, Region

@@ -249,7 +249,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isCompressingImages = false);
-        AdsyToast.error(context, 'ছবি বাছাই করা যায়নি');
+        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
       }
     }
   }
@@ -313,7 +313,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       if (video == null) return;
       await _sendMedia(video.path, 'video');
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ভিডিও বাছাই করা যায়নি');
+      if (mounted) AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
     }
   }
 
@@ -328,7 +328,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       await _sendMedia(path, 'document',
           fileName: result!.files.single.name);
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ডকুমেন্ট বাছাই করা যায়নি');
+      if (mounted) AdsyToast.error(context, 'ডকুমেন্ট সিলেক্ট  করা যায়নি');
     }
   }
 

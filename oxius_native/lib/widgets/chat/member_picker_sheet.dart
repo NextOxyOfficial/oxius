@@ -79,7 +79,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                     borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 10),
-              const Text('মেম্বার বাছাই করুন',
+              const Text('মেম্বার সিলেক্ট  করুন',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
