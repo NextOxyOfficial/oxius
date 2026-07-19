@@ -607,52 +607,69 @@ class ChatMessageInput extends StatelessWidget {
   }
 
   Widget _buildReplyPreview() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
-        border: Border(
-          top: BorderSide(
-            color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
-            width: 1,
-          ),
-          left: const BorderSide(color: Color(0xFF3B82F6), width: 3),
+    // Quote-style card (same language as the bubbles' quote card): rounded
+    // tinted surface with a quote glyph — no side bar.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.18)),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  replyFromName!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF3B82F6),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.format_quote_rounded,
+                          size: 14, color: Color(0xFF3B82F6)),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          replyFromName!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  replyPreviewText!,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    replyPreviewText!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Color(0xFF4B5563),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-          ),
-          GestureDetector(
-            onTap: onCancelReply,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              child: Icon(Icons.close_rounded,
-                  size: 18, color: Colors.grey.shade500),
+            GestureDetector(
+              onTap: onCancelReply,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                child: Icon(Icons.close_rounded,
+                    size: 18, color: Colors.grey.shade500),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -409,9 +409,10 @@ class _PostCardState extends State<PostCard> {
         description: HtmlContentUtils.previewText(plainPostContent, 140),
         url:
             'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
-        imageUrl: _post.shareThumbUrl.isNotEmpty
-            ? _post.shareThumbUrl
-            : _post.user.image ?? _post.user.avatar,
+        // Text-only posts share with NO thumb — the chat card then renders a
+        // clean text-only preview instead of a placeholder image box.
+        imageUrl:
+            _post.shareThumbUrl.isNotEmpty ? _post.shareThumbUrl : null,
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),

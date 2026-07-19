@@ -421,33 +421,37 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     );
 
     if (attachedQuote) {
+      // Quote sits FLUSH at the bubble top — no padding above/beside it, so
+      // its corners merge with the bubble's rounding (the clip handles it).
+      // IntrinsicWidth keeps the bubble hugging its content: short texts get
+      // a narrow bubble, the quote stretches to match the widest line.
       return Container(
         decoration: decoration,
         clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
-              child: quoteCard,
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
-              child: _buildContent(message, isMe, null),
-            ),
-          ],
+        child: IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              quoteCard,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+                child: _buildContent(message, isMe, null),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     return Container(
-      padding: previewOnly
+      padding: previewOnly || isMedia
           ? EdgeInsets.zero
-          : isMedia
-              ? const EdgeInsets.all(3)
-              : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: decoration,
+          : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: isMedia
+          // Media stands alone — no bubble background behind photos/videos.
+          ? const BoxDecoration(color: Colors.transparent)
+          : decoration,
       child: isDeleted
           ? _buildDeletedContent(isMe)
           : _buildContent(message, isMe, quoteCard),
@@ -610,17 +614,21 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(
-                      width: 78,
-                      child: thumb.isNotEmpty
-                          ? Image.network(
-                              thumb,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _sharedThumbFallback(),
-                            )
-                          : _SharedThumbResolver(postUrl: shared.postUrl),
-                    ),
+                    // Thumb only when the post actually HAS one — text-only
+                    // posts get a clean text card (the resolver collapses to
+                    // nothing when the fetched post has no media).
+                    if (thumb.isNotEmpty)
+                      SizedBox(
+                        width: 78,
+                        child: Image.network(
+                          thumb,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _sharedThumbFallback(),
+                        ),
+                      )
+                    else
+                      _SharedThumbResolver(postUrl: shared.postUrl),
                     Flexible(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -1094,11 +1102,16 @@ class _SharedThumbResolverState extends State<_SharedThumbResolver> {
   @override
   Widget build(BuildContext context) {
     final t = _thumb ?? '';
-    if (t.isEmpty) return const _SharedThumbIcon();
-    return Image.network(
-      AppConfig.getAbsoluteUrl(t),
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const _SharedThumbIcon(),
+    // No media on the post (or still resolving) → collapse entirely so the
+    // card reads as a clean text-only preview.
+    if (t.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      width: 78,
+      child: Image.network(
+        AppConfig.getAbsoluteUrl(t),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      ),
     );
   }
 }

@@ -946,8 +946,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ),
         );
     return Container(
-      width: 22,
-      height: 22,
+      width: 28,
+      height: 28,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         color: Color(0xFFEFF6FF),

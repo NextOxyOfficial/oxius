@@ -279,6 +279,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   bool _isOtherUserTyping = false;
   // Counterpart deactivated (deleted) or suspended — profile link disabled.
   bool _counterpartDisabled = false;
+  // Tap-to-reveal timestamp (group-chat parity): the tapped message shows
+  // its full date+time; tapping again hides it.
+  String? _tappedTimeMessageId;
   String? _lastSeenTime;
   Timer? _onlineStatusTimer;
   Timer? _remoteTypingResetTimer;
@@ -3429,6 +3432,21 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
+  /// "Jul 08, 5:31 PM"-style stamp for the tap-to-reveal row.
+  String _fullTimeStamp(Map<String, dynamic> message) {
+    final t = message['timestamp'];
+    if (t is! DateTime) return (message['timeDisplay'] ?? '').toString();
+    final local = t.toLocal();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final h = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final ampm = local.hour >= 12 ? 'PM' : 'AM';
+    return '${months[local.month - 1]} ${local.day}, '
+        '$h:${local.minute.toString().padLeft(2, '0')} $ampm';
+  }
+
   Widget _buildMessageBubble(Map<String, dynamic> message, bool showAvatar) {
     final messageId = message['id']?.toString() ?? '';
     final isSearchHit = _isSearchMode &&
@@ -3437,9 +3455,26 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _searchMatchedMessageIds.contains(messageId);
     final isCurrentSearchHit =
         isSearchHit && _currentSearchMessageId == messageId;
-    return ChatMessageBubble(
+    // Tap a message to reveal its date+time under it (tap again to hide) —
+    // same interaction as group chats. Smart time separators stay as-is.
+    final tapped =
+        messageId.isNotEmpty && messageId == _tappedTimeMessageId;
+    final display = tapped
+        ? {
+            ...message,
+            'showTimestamp': true,
+            'timeDisplay': _fullTimeStamp(message),
+          }
+        : message;
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: messageId.isEmpty
+          ? null
+          : () => setState(() => _tappedTimeMessageId =
+              _tappedTimeMessageId == messageId ? null : messageId),
+      child: ChatMessageBubble(
       key: ValueKey(messageId.isNotEmpty ? messageId : message.hashCode),
-      message: message,
+      message: display,
       showAvatar: showAvatar,
       userName: widget.userName,
       userAvatar: widget.userAvatar,
@@ -3459,6 +3494,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       onViewImage: _viewImage,
       onDownloadDoc: _downloadDocument,
       onScrollToMessage: _scrollToMessageId,
+      ),
     );
   }
 
