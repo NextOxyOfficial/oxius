@@ -555,67 +555,81 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final subtitle = shared.caption.trim().isNotEmpty
         ? shared.caption.trim()
         : 'Business Network পোস্ট';
-    return InkWell(
-      onTap: () {
-        if (shared.postUrl.isNotEmpty) {
-          UrlLauncherUtils.launchExternalUrl(shared.postUrl);
-        }
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
+    // The card HUGS its content: short titles/captions get a narrow card,
+    // and the old full width (~320) is now the MAXIMUM, not the default.
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: InkWell(
+          onTap: () {
+            if (shared.postUrl.isNotEmpty) {
+              UrlLauncherUtils.launchExternalUrl(shared.postUrl);
+            }
+          },
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                width: 78,
-                child: thumb.isNotEmpty
-                    ? Image.network(
-                        thumb,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _sharedThumbFallback(),
-                      )
-                    : _SharedThumbResolver(postUrl: shared.postUrl),
-              ),
-              Expanded(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          height: 1.25,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: IntrinsicWidth(
+              child: IntrinsicHeight(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      width: 78,
+                      child: thumb.isNotEmpty
+                          ? Image.network(
+                              thumb,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  _sharedThumbFallback(),
+                            )
+                          : _SharedThumbResolver(postUrl: shared.postUrl),
+                    ),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF111827),
+                                height: 1.25,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              subtitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF6B7280),
+                                  height: 1.3),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 12, color: Color(0xFF6B7280), height: 1.3),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

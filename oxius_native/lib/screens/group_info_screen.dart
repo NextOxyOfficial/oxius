@@ -203,14 +203,17 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               ListTile(
                 leading: const Icon(Icons.admin_panel_settings_outlined,
                     color: Color(0xFF2563EB)),
-                title: const Text('অ্যাডমিন বানান'),
+                title: const Text('কো-অ্যাডমিন বানান'),
+                subtitle: const Text(
+                    'গ্রুপ ম্যানেজমেন্টের সব ক্ষমতা পাবেন',
+                    style: TextStyle(fontSize: 11.5)),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final ok = await AdsyConnectService.promoteGroupAdmin(
                       _groupId, uid);
                   if (!mounted) return;
                   if (ok) {
-                    AdsyToast.success(context, 'অ্যাডমিন বানানো হয়েছে');
+                    AdsyToast.success(context, 'কো-অ্যাডমিন বানানো হয়েছে');
                     _refresh();
                   } else {
                     AdsyToast.error(context, 'করা যায়নি');
@@ -221,14 +224,14 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               ListTile(
                 leading: const Icon(Icons.remove_moderator_outlined,
                     color: Color(0xFFD97706)),
-                title: const Text('অ্যাডমিন থেকে সরান'),
+                title: const Text('কো-অ্যাডমিন থেকে সরান'),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final ok = await AdsyConnectService.demoteGroupAdmin(
                       _groupId, uid);
                   if (!mounted) return;
                   if (ok) {
-                    AdsyToast.info(context, 'অ্যাডমিন থেকে সরানো হয়েছে');
+                    AdsyToast.info(context, 'কো-অ্যাডমিন থেকে সরানো হয়েছে');
                     _refresh();
                   } else {
                     AdsyToast.error(context, 'করা যায়নি');
@@ -479,19 +482,28 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             ),
             if (isAdminRow) ...[
               const SizedBox(width: 6),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text('অ্যাডমিন',
-                    style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF059669))),
-              ),
+              // Creator = অ্যাডমিন (green); promoted admins = কো-অ্যাডমিন
+              // (indigo) — same powers, distinct label.
+              Builder(builder: (_) {
+                final isCreatorRow = uid == _creatorId;
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isCreatorRow
+                        ? const Color(0xFFECFDF5)
+                        : const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(isCreatorRow ? 'অ্যাডমিন' : 'কো-অ্যাডমিন',
+                      style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          color: isCreatorRow
+                              ? const Color(0xFF059669)
+                              : const Color(0xFF4F46E5))),
+                );
+              }),
             ],
             if (_isAdmin && !isMe) ...[
               const SizedBox(width: 4),

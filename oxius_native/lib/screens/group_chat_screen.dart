@@ -15,6 +15,7 @@ import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
 import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_toast.dart';
+import 'business_network/profile_screen.dart';
 import 'group_info_screen.dart';
 
 /// Group conversation. Reuses the SAME polished pieces as the 1:1 chat —
@@ -687,24 +688,29 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 6, top: 10, bottom: 3),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _runHeaderAvatar(raw),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    _senderName(raw),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF475569),
+            // Tapping the avatar/name opens the sender's BN profile.
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _openSenderProfile(raw),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _runHeaderAvatar(raw),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      _senderName(raw),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF475569),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           bubble,
@@ -712,6 +718,16 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       );
     }
     return bubble;
+  }
+
+  void _openSenderProfile(Map<String, dynamic> raw) {
+    final sender = Map<String, dynamic>.from(raw['sender'] ?? {});
+    final uid = (sender['id'] ?? '').toString();
+    if (uid.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProfileScreen(userId: uid)),
+    );
   }
 
   /// Small circular avatar for the run header (initial fallback).

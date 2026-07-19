@@ -1636,7 +1636,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                 self._system_msg(
                     group,
                     f'{self._actor_name()} {self._display_name(target)}-কে '
-                    'অ্যাডমিন বানিয়েছেন')
+                    'কো-অ্যাডমিন বানিয়েছেন')
         return Response({'promoted': bool(updated)})
 
     @action(detail=True, methods=['post'])
@@ -1662,7 +1662,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                 self._system_msg(
                     group,
                     f'{self._actor_name()} {self._display_name(target)}-কে '
-                    'অ্যাডমিন থেকে সরিয়েছেন')
+                    'কো-অ্যাডমিন থেকে সরিয়েছেন')
         return Response({'demoted': bool(updated)})
 
     @action(detail=True, methods=['post'])
