@@ -858,13 +858,16 @@ class AdsyConnectService {
   }
 
   static Future<Map<String, dynamic>?> sendGroupMessage(
-      String groupId, String content) async {
+      String groupId, String content, {String? replyTo}) async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
         Uri.parse('$baseUrl/groups/$groupId/messages/'),
         headers: headers,
-        body: jsonEncode({'content': content}),
+        body: jsonEncode({
+          'content': content,
+          if (replyTo != null && replyTo.isNotEmpty) 'reply_to': replyTo,
+        }),
       );
       if (response.statusCode == 201) {
         return Map<String, dynamic>.from(jsonDecode(response.body));
@@ -1041,6 +1044,23 @@ class AdsyConnectService {
 
   /// Send a media message (voice/image/video/document) into a group.
   /// Pass either [filePath] or [mediaBytes] (+ [fileName]).
+  /// Soft-delete a group message for everyone (sender or a group admin).
+  static Future<bool> deleteGroupMessage(
+      String groupId, String messageId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/delete-message/'),
+        headers: headers,
+        body: jsonEncode({'message_id': messageId}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('deleteGroupMessage failed: $e');
+      return false;
+    }
+  }
+
   static Future<Map<String, dynamic>?> sendGroupMediaMessage({
     required String groupId,
     required String messageType,

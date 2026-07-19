@@ -26,6 +26,8 @@ class GroupInfoScreen extends StatefulWidget {
 class _GroupInfoScreenState extends State<GroupInfoScreen> {
   late Map<String, dynamic> _group;
   bool _muted = false;
+  // Member-list search query (lowercased).
+  String _memberQuery = '';
 
   String get _groupId => (_group['id'] ?? '').toString();
   String get _myId => AuthService.currentUser?.id ?? '';
@@ -405,13 +407,51 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                           letterSpacing: 0.2,
                           color: Colors.grey.shade500)),
                 ),
-                ...members.map(_memberTile),
+                // Member search — filters the list as you type.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: TextField(
+                    onChanged: (v) =>
+                        setState(() => _memberQuery = v.trim().toLowerCase()),
+                    style: const TextStyle(fontSize: 13.5),
+                    decoration: InputDecoration(
+                      hintText: 'মেম্বার খুঁজুন',
+                      hintStyle: TextStyle(
+                          color: Colors.grey.shade500, fontSize: 13),
+                      prefixIcon: Icon(Icons.search_rounded,
+                          size: 18, color: Colors.grey.shade500),
+                      prefixIconConstraints:
+                          const BoxConstraints(minWidth: 36, minHeight: 0),
+                      isDense: true,
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                ...members.where(_matchesMemberQuery).map(_memberTile),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  bool _matchesMemberQuery(Map<String, dynamic> m) {
+    if (_memberQuery.isEmpty) return true;
+    final u = Map<String, dynamic>.from(m['user'] ?? {});
+    final haystack = [
+      u['first_name'] ?? '',
+      u['last_name'] ?? '',
+      u['username'] ?? '',
+    ].join(' ').toLowerCase();
+    return haystack.contains(_memberQuery);
   }
 
   Widget _actionTile(IconData icon, String label, VoidCallback onTap,

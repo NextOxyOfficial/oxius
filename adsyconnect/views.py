@@ -1637,6 +1637,33 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=True, methods=['post'], url_path='delete-message')
+    def delete_message(self, request, pk=None):
+        """Soft-delete a group message for everyone. Sender-only (an admin
+        may also remove any message — moderation)."""
+        group = self.get_object()
+        err = self._require_member(group)
+        if err:
+            return err
+        msg_id = str(request.data.get('message_id') or '').strip()
+        msg = GroupMessage.objects.filter(id=msg_id, group=group).first()
+        if msg is None:
+            return Response({'error': 'মেসেজ পাওয়া যায়নি'}, status=404)
+        if msg.sender_id != request.user.id and not group.is_admin(request.user):
+            return Response({'error': 'শুধু নিজের মেসেজ মুছতে পারবেন'},
+                            status=403)
+        msg.is_deleted = True
+        msg.save(update_fields=['is_deleted'])
+        payload = GroupMessageSerializer(
+            msg, context={'request': request}
+        ).data
+        for member_id in group.memberships.values_list('user_id', flat=True):
+            _broadcast_to_user(member_id, {
+                'type': 'group_message',
+                'message': payload,
+            })
+        return Response({'deleted': True})
+
     @action(detail=True, methods=['post'])
     def promote_admin(self, request, pk=None):
         """Make another member an admin — admin only."""
@@ -1796,7 +1823,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
 
         if request.method == 'GET':
             membership = group.memberships.filter(user=request.user).first()
-            qs = group.messages.select_related('sender')
+            qs = group.messages.select_related('sender', 'reply_to__sender')
             if membership and membership.cleared_at:
                 qs = qs.filter(created_at__gt=membership.cleared_at)
             msgs = list(qs.order_by('-created_at')[:100])[::-1]
@@ -1818,6 +1845,14 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                 voice_duration = int(str(raw_dur).strip())
         except (TypeError, ValueError):
             voice_duration = None
+        # Optional quote reply — must reference a message in THIS group.
+        reply_to = None
+        reply_id = str(request.data.get('reply_to') or '').strip()
+        if reply_id:
+            reply_to = GroupMessage.objects.filter(
+                id=reply_id, group=group
+            ).first()
+
         message = GroupMessage.objects.create(
             group=group,
             sender=request.user,
@@ -1826,6 +1861,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             media_file=media,
             file_name=(request.data.get('file_name') or '').strip() or None,
             voice_duration=voice_duration,
+            reply_to=reply_to,
         )
         group.last_message_at = message.created_at
         group.last_message_preview = (

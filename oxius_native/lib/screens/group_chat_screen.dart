@@ -12,8 +12,10 @@ import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
 import '../utils/image_compressor.dart';
 import '../utils/url_launcher_utils.dart';
+import '../utils/video_upload_helper.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
+import '../widgets/chat/message_options_sheet.dart';
 import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_toast.dart';
 import 'business_network/profile_screen.dart';
@@ -43,6 +45,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   // Messenger-style timestamps: tap a message to reveal its time, tap it
   // again (or anywhere outside) to hide.
   String? _timeShownId;
+  // Active quote-reply target (raw group message) — mirrors the 1:1 chat.
+  Map<String, dynamic>? _replyingTo;
   Timer? _pollTimer;
   Timer? _typingPollTimer;
   DateTime _lastTypingSent = DateTime.fromMillisecondsSinceEpoch(0);
@@ -157,12 +161,73 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
     _messageController.clear();
-    final res = await AdsyConnectService.sendGroupMessage(_groupId, text);
+    final replyId = (_replyingTo?['id'] ?? '').toString();
+    if (_replyingTo != null) setState(() => _replyingTo = null);
+    final res = await AdsyConnectService.sendGroupMessage(
+      _groupId,
+      text,
+      replyTo: replyId.isNotEmpty ? replyId : null,
+    );
     if (!mounted) return;
     if (res != null) {
       await _loadMessages();
     } else {
       AdsyToast.error(context, 'মেসেজ পাঠানো যায়নি');
+    }
+  }
+
+  /// Short human preview of a raw group message (for the reply bar).
+  String _rawPreview(Map<String, dynamic> m) {
+    switch ((m['message_type'] ?? 'text').toString()) {
+      case 'voice':
+        return '🎤 Voice message';
+      case 'image':
+        return '📷 Photo';
+      case 'video':
+        return '🎥 Video';
+      case 'document':
+        return '📄 ${m['file_name'] ?? 'Document'}';
+      default:
+        final t = (m['content'] ?? '').toString();
+        return t.length > 60 ? '${t.substring(0, 60)}…' : t;
+    }
+  }
+
+  void _setReplyingTo(Map<String, dynamic> raw) {
+    setState(() => _replyingTo = raw);
+    _messageFocusNode.requestFocus();
+  }
+
+  Future<void> _deleteGroupMessage(Map<String, dynamic> raw) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Delete Message?',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: const Text('This message will be removed for everyone.',
+            style: TextStyle(fontSize: 13)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              style:
+                  FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final ok = await AdsyConnectService.deleteGroupMessage(
+        _groupId, (raw['id'] ?? '').toString());
+    if (!mounted) return;
+    if (ok) {
+      await _loadMessages();
+    } else {
+      AdsyToast.error(context, 'মুছা যায়নি');
     }
   }
 
@@ -310,10 +375,21 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     try {
       final XFile? video =
           await _imagePicker.pickVideo(source: ImageSource.gallery);
-      if (video == null) return;
-      await _sendMedia(video.path, 'video');
+      if (video == null || !mounted) return;
+      // 3-minute cap (over-limit → Google Drive sheet) + compression.
+      setState(() => _isUploadingAttachment = true);
+      final prepared = await VideoUploadHelper.prepareForUpload(
+          context, video.path,
+          driveHint: true);
+      if (!mounted) return;
+      setState(() => _isUploadingAttachment = false);
+      if (prepared == null) return;
+      await _sendMedia(prepared, 'video');
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
+      if (mounted) {
+        setState(() => _isUploadingAttachment = false);
+        AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
+      }
     }
   }
 
@@ -474,6 +550,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       'voiceDuration':
           int.tryParse('${m['voice_duration'] ?? ''}') ?? 0,
       'isDeleted': m['is_deleted'] == true,
+      // Quote-reply metadata — the bubble renders its standard quote card.
+      'replyToId': m['reply_to']?.toString(),
+      'replyPreview': m['reply_preview']?.toString(),
+      'replyToSender': m['reply_sender_name']?.toString(),
       // Time stays hidden until the message is tapped (Messenger-style).
       'showTimestamp': (m['id'] ?? '').toString() == _timeShownId,
       'timeDisplay': _formatTime(
@@ -609,12 +689,23 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             isCompressingImages: _isCompressingImages,
             compressedImages: _compressedImages,
             recordDuration: Duration(seconds: _recordSeconds),
+            replyFromName: _replyingTo != null
+                ? ((Map<String, dynamic>.from(
+                                _replyingTo!['sender'] ?? {})['id'] ??
+                            '')
+                        .toString() ==
+                        _myId
+                    ? 'You'
+                    : _senderName(_replyingTo!))
+                : null,
+            replyPreviewText:
+                _replyingTo != null ? _rawPreview(_replyingTo!) : null,
             onSend: _sendText,
             onStartRecording: _startRecording,
             onStopRecording: _stopAndSendRecording,
             onCancelRecording: _cancelRecording,
             onUnblock: () {},
-            onCancelReply: () {},
+            onCancelReply: () => setState(() => _replyingTo = null),
             onShowAttachmentOptions: _showAttachmentOptions,
             onSendImages: _sendSelectedImages,
             onCancelImagePreview: () => setState(() {
@@ -690,7 +781,21 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         playingVoiceMessageId: _playingVoiceId,
         voicePosition: _voicePosition,
         voiceDuration: _voiceDuration,
-        onReply: (_) {},
+        // Swipe-to-reply (same gesture as 1:1).
+        onReply: (_) => _setReplyingTo(raw),
+        // Long-press options — the SHARED sheet used by the 1:1 chat.
+        onLongPress: () => showChatMessageOptions(
+          context,
+          message: mapped,
+          onReply: () => _setReplyingTo(raw),
+          onDelete: isMe ? () => _deleteGroupMessage(raw) : null,
+        ),
+        onOptions: () => showChatMessageOptions(
+          context,
+          message: mapped,
+          onReply: () => _setReplyingTo(raw),
+          onDelete: isMe ? () => _deleteGroupMessage(raw) : null,
+        ),
         onPlayVoice: _playVoice,
         onViewImage: _viewImage,
         onDownloadDoc: (path, name) {

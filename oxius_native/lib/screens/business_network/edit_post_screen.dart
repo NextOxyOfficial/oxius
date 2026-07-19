@@ -5,6 +5,7 @@ import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../utils/image_compressor.dart';
+import '../../utils/video_upload_helper.dart';
 import '../../widgets/link_preview_card.dart';
 
 import '../../config/app_config.dart';
@@ -797,9 +798,19 @@ class _EditPostScreenState extends State<EditPostScreen> {
         maxDuration: const Duration(seconds: _maxVideoDurationSeconds),
       );
       if (video == null || !mounted) return;
-      setState(() => _newVideoPaths.add(video.path));
+      // Hard 3-min verify (gallery picks can ignore maxDuration) + compress.
+      setState(() => _isCompressing = true);
+      final prepared =
+          await VideoUploadHelper.prepareForUpload(context, video.path);
+      if (!mounted) return;
+      setState(() => _isCompressing = false);
+      if (prepared == null) return;
+      setState(() => _newVideoPaths.add(prepared));
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
+      if (mounted) {
+        setState(() => _isCompressing = false);
+        AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
+      }
     }
   }
 

@@ -10,6 +10,7 @@ import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/image_compressor.dart';
 import '../../utils/network_error_handler.dart';
+import '../../utils/video_upload_helper.dart';
 import '../../utils/api_error.dart';
 import '../../widgets/api_error_ui.dart';
 import '../../widgets/link_preview_card.dart';
@@ -223,9 +224,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         // If we fail to read duration, allow selection to proceed
       }
 
+      // Compress (≤720p re-encode) before upload — shared app-wide rule.
+      final prepared =
+          await VideoUploadHelper.prepareForUpload(context, video.path);
+      if (!mounted) return;
+      if (prepared == null) {
+        setState(() {
+          _isCompressing = false;
+          _compressionStatus = '';
+        });
+        return;
+      }
+
       setState(() {
         _selectedVideos.add({
-          'path': video.path,
+          'path': prepared,
           'name': video.name,
         });
         _isCompressing = false;

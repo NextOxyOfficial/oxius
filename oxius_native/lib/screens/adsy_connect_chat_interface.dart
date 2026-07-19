@@ -22,6 +22,8 @@ import '../services/fcm_service.dart';
 import '../widgets/chat/chat_app_bar.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
+import '../widgets/chat/message_options_sheet.dart';
+import '../utils/video_upload_helper.dart';
 import 'business_network/profile_screen.dart';
 import 'call_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -1676,128 +1678,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _showMessageOptions(Map<String, dynamic> message) {
-    final messageType = message['type']?.toString() ?? 'text';
+    // Shared sheet (also used by group chats) — options appear only when
+    // their callback is passed.
     final isMe = message['isMe'] == true;
     final isDeleted = _isMessageDeleted(message);
-    final isTextLike = messageType == 'text';
-    final canEdit = isMe && isTextLike && !isDeleted;
-    final canCopy = isTextLike &&
-        !isDeleted &&
-        (message['message'] ?? '').toString().trim().isNotEmpty;
-    final canReply = !isDeleted;
-    final canDelete = isMe && !isDeleted;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      useSafeArea: true,
-      builder: (sheetContext) => Container(
-        margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.82)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.09),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E8F0),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              if (canReply)
-                _buildMessageOptionTile(
-                  sheetContext: sheetContext,
-                  icon: Icons.reply_rounded,
-                  iconColor: const Color(0xFF10B981),
-                  label: 'Reply',
-                  onTap: () => _setReplyingTo(message),
-                ),
-              if (canCopy)
-                _buildMessageOptionTile(
-                  sheetContext: sheetContext,
-                  icon: Icons.copy_rounded,
-                  iconColor: const Color(0xFF6366F1),
-                  label: 'Copy text',
-                  onTap: () {
-                    final text = (message['message'] ?? '').toString();
-                    Clipboard.setData(ClipboardData(text: text));
-                    if (mounted) {
-                      AdsyToast.success(context, 'Message copied');
-                    }
-                  },
-                ),
-              if (canEdit)
-                _buildMessageOptionTile(
-                  sheetContext: sheetContext,
-                  icon: Icons.edit_rounded,
-                  iconColor: const Color(0xFF3B82F6),
-                  label: 'Edit Message',
-                  onTap: () => _showEditMessageDialog(message),
-                ),
-              if (canDelete)
-                _buildMessageOptionTile(
-                  sheetContext: sheetContext,
-                  icon: Icons.delete_outline_rounded,
-                  iconColor: const Color(0xFFEF4444),
-                  label: 'Delete Message',
-                  destructive: true,
-                  onTap: () => _deleteMessage(message),
-                ),
-              const SizedBox(height: 10),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMessageOptionTile({
-    required BuildContext sheetContext,
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required VoidCallback onTap,
-    bool destructive = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      child: ListTile(
-        minVerticalPadding: 12,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        tileColor: Colors.white.withValues(alpha: 0.78),
-        leading: SizedBox(
-          width: 42,
-          height: 42,
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        title: Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color:
-                destructive ? const Color(0xFFEF4444) : const Color(0xFF1F2937),
-          ),
-        ),
-        onTap: () {
-          Navigator.pop(sheetContext);
-          onTap();
-        },
-      ),
+    showChatMessageOptions(
+      context,
+      message: {...message, 'isDeleted': isDeleted},
+      onReply: () => _setReplyingTo(message),
+      onEdit: isMe ? () => _showEditMessageDialog(message) : null,
+      onDelete: isMe ? () => _deleteMessage(message) : null,
     );
   }
 
@@ -2370,12 +2260,22 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         source: ImageSource.gallery,
       );
 
-      if (video != null) {
-        _sendMediaMessage(video.path, 'video');
+      if (video != null && mounted) {
+        // 3-minute cap (over-limit → Google Drive sheet) + compression.
+        setState(() => _isSendingMessage = true);
+        final prepared = await VideoUploadHelper.prepareForUpload(
+            context, video.path,
+            driveHint: true);
+        if (!mounted) return;
+        setState(() => _isSendingMessage = false);
+        if (prepared != null) {
+          _sendMediaMessage(prepared, 'video');
+        }
       }
     } catch (e) {
       debugPrint('Error picking video: $e');
       if (mounted) {
+        setState(() => _isSendingMessage = false);
         AdsyToast.error(context, 'Failed to pick video');
       }
     }
@@ -3210,7 +3110,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   void _openUserProfile() {
     // Deleted/suspended accounts have no visitable profile.
     if (_counterpartDisabled) {
-      AdsyToast.info(context, 'একাউন্ট সাসপেন্ডেড);
+      AdsyToast.info(context, 'একাউন্ট সাসপেন্ডেড');
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();

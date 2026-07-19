@@ -104,6 +104,8 @@ dependencies:
   # Video Playback
   video_player: ^2.8.2
   chewie: ^1.7.5
+  # Video upload compression (≤720p re-encode before upload)
+  video_compress: ^3.1.4
 
   visibility_detector: ^0.4.0+2
   scrollable_positioned_list: ^0.3.8

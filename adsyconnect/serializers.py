@@ -345,14 +345,39 @@ class GroupMemberSerializer(serializers.ModelSerializer):
 class GroupMessageSerializer(serializers.ModelSerializer):
     sender = UserBasicSerializer(read_only=True)
     media_url = serializers.SerializerMethodField()
+    # Quote-reply metadata (same shape the 1:1 bubbles consume).
+    reply_to = serializers.SerializerMethodField()
+    reply_preview = serializers.SerializerMethodField()
+    reply_sender_name = serializers.SerializerMethodField()
 
     class Meta:
         model = GroupMessage
         fields = [
             'id', 'group', 'sender', 'message_type', 'content', 'media_url',
             'file_name', 'voice_duration', 'created_at', 'is_deleted',
+            'reply_to', 'reply_preview', 'reply_sender_name',
         ]
         read_only_fields = ['id', 'sender', 'created_at', 'is_deleted']
+
+    def get_reply_to(self, obj):
+        return str(obj.reply_to_id) if obj.reply_to_id else None
+
+    def get_reply_preview(self, obj):
+        r = obj.reply_to
+        if not r:
+            return None
+        if r.is_deleted:
+            return 'Message removed'
+        return r.get_preview()
+
+    def get_reply_sender_name(self, obj):
+        r = obj.reply_to
+        if not r or not r.sender:
+            return None
+        return (
+            f'{r.sender.first_name or ""} {r.sender.last_name or ""}'.strip()
+            or r.sender.username
+        )
 
     def get_media_url(self, obj):
         if not obj.media_file:

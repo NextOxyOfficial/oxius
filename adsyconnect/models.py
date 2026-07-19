@@ -199,6 +199,11 @@ class GroupMessage(models.Model):
     )
     file_name = models.CharField(max_length=255, blank=True, null=True)
     voice_duration = models.IntegerField(blank=True, null=True)
+    # Quote reply — mirrors the 1:1 chat's reply UX.
+    reply_to = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='replies',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
 
