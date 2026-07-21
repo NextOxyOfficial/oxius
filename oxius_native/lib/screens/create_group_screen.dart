@@ -379,8 +379,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             child: Stack(
               children: [
                 Container(
-                  width: 96,
-                  height: 96,
+                  width: 110,
+                  height: 110,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _imagePath == null ? const Color(0xFFF1F5F9) : null,
@@ -388,9 +388,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: _imagePath != null
                       ? Image.file(File(_imagePath!),
-                          width: 96, height: 96, fit: BoxFit.cover)
+                          width: 110, height: 110, fit: BoxFit.cover)
                       : const Icon(Icons.groups_rounded,
-                          size: 42, color: Color(0xFF334155)),
+                          size: 48, color: Color(0xFF334155)),
                 ),
                 Positioned(
                   bottom: 0,
@@ -472,14 +472,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      width: 26,
-                      height: 26,
+                      width: 32,
+                      height: 32,
                       decoration: const BoxDecoration(
                         color: Color(0xFFF1F5F9),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.edit_rounded,
-                          size: 13, color: Color(0xFF334155)),
+                          size: 16, color: Color(0xFF334155)),
                     ),
                   ],
                 ),
@@ -666,21 +666,20 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 ],
               ),
             ),
+            // + to add, ✓ when added (no radio look).
             AnimatedContainer(
               duration: const Duration(milliseconds: 160),
-              width: 23,
-              height: 23,
+              width: 26,
+              height: 26,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: sel ? _blue : Colors.transparent,
-                border: Border.all(
-                  color: sel ? _blue : Colors.grey.shade400,
-                  width: 1.6,
-                ),
+                color: sel ? _blue : const Color(0xFFF1F5F9),
               ),
-              child: sel
-                  ? const Icon(Icons.check, size: 15, color: Colors.white)
-                  : null,
+              child: Icon(
+                sel ? Icons.check_rounded : Icons.add_rounded,
+                size: 16,
+                color: sel ? Colors.white : const Color(0xFF64748B),
+              ),
             ),
           ],
         ),
