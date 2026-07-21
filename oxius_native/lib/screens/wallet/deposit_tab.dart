@@ -348,7 +348,10 @@ class _DepositTabState extends State<DepositTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    // No nested scrollable: the wallet page scrolls as one — an inner
+    // SingleChildScrollView swallowed vertical drags over the form and made
+    // the page feel stuck.
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

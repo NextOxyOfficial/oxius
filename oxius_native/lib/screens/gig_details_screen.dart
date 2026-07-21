@@ -9,7 +9,10 @@ import 'package:http/http.dart' as http;
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
 import '../services/ads_service.dart';
+import '../services/auth_service.dart';
 import '../services/microgig_service.dart';
+import '../widgets/common/adsy_dialog.dart';
+import 'verification_screen.dart';
 import '../utils/image_compressor.dart';
 import '../utils/url_launcher_utils.dart';
 import 'terms_and_conditions_screen.dart';
@@ -133,6 +136,27 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
   }
 
   Future<void> _submitGig() async {
+    // KYC gate: only verified accounts may earn from micro gig tasks.
+    final user = AuthService.currentUser;
+    if (user == null || !user.isVerified) {
+      final goVerify = await AdsyDialog.confirm(
+        context,
+        title: 'KYC ভেরিফিকেশন প্রয়োজন',
+        message:
+            'মাইক্রো গিগ টাস্ক জমা দিতে হলে আগে আপনার KYC অনুমোদিত হতে হবে। ভেরিফিকেশন সম্পন্ন করে আবার চেষ্টা করুন।',
+        confirmLabel: 'ভেরিফাই করুন',
+        cancelLabel: 'পরে করব',
+        icon: Icons.verified_user_outlined,
+      );
+      if (goVerify == true && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const VerificationScreen()),
+        );
+      }
+      return;
+    }
+
     // Validate form
     if (_submitDetailsController.text.trim().isEmpty ||
         !_acceptedTerms ||

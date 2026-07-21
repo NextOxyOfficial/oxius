@@ -337,7 +337,8 @@ class _TransferTabState extends State<TransferTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    // No nested scrollable — see deposit_tab: it blocked page scrolling.
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

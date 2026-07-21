@@ -144,7 +144,8 @@ class _WithdrawTabState extends State<WithdrawTab> {
     final totalDeduction =
         amount > 0 ? WalletService.calculateWithdrawalTotal(amount) : 0.0;
 
-    return SingleChildScrollView(
+    // No nested scrollable — see deposit_tab: it blocked page scrolling.
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

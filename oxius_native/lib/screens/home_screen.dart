@@ -636,21 +636,45 @@ class _HomeScreenState extends State<HomeScreen> {
                       duration: const Duration(milliseconds: 300),
                       transform: Matrix4.translationValues(
                         0,
-                        headerVisible ? 0 : -(topPadding + 56.0),
+                        // +18 covers the corner flares below the bar.
+                        headerVisible ? 0 : -(topPadding + 56.0 + 18.0),
                         0,
                       ),
                       curve: Curves.easeInOut,
                       child: child,
                     );
                   },
-                  child: Material(
-                    elevation: 4,
-                    shadowColor: Colors.black.withValues(alpha: 0.15),
-                    color: Colors.white,
-                    child: SafeArea(
-                      bottom: false,
-                      child: _buildFixedHeader(context),
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Material(
+                        elevation: 4,
+                        shadowColor: Colors.black.withValues(alpha: 0.15),
+                        color: const Color(0xFF90CAF9),
+                        child: SafeArea(
+                          bottom: false,
+                          child: _buildFixedHeader(context),
+                        ),
+                      ),
+                      // The two corners descend BELOW the header with a
+                      // concave curve — the edge flares down, not up.
+                      SizedBox(
+                        height: 18,
+                        child: Row(
+                          children: [
+                            CustomPaint(
+                              size: const Size(18, 18),
+                              painter: _HeaderCornerPainter(isLeft: true),
+                            ),
+                            const Spacer(),
+                            CustomPaint(
+                              size: const Size(18, 18),
+                              painter: _HeaderCornerPainter(isLeft: false),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1790,34 +1814,54 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, _) {
           return Row(
             children: [
-              // Menu Button
+              // Menu Button — modern two-bar burger, no background box.
               Builder(
-                builder: (context) => Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.menu_rounded,
-                      color: Color(0xFF1F2937),
-                      size: 22,
+                builder: (context) => GestureDetector(
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 22,
+                          height: 2.6,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D47A1),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          width: 13,
+                          height: 2.6,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D47A1),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ],
                     ),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                    tooltip: 'Menu',
-                    padding: EdgeInsets.zero,
                   ),
                 ),
               ),
 
               const SizedBox(width: 12),
 
-              // Logo
-              _buildDynamicLogo(context),
-
-              const Spacer(),
+              // Greeting for logged-in users; logo only for guests.
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: userState.isAuthenticated &&
+                          userState.currentUser != null
+                      ? _buildGreeting(userState)
+                      : _buildDynamicLogo(context),
+                ),
+              ),
+              const SizedBox(width: 8),
 
               // Right side actions
               _buildHeaderActions(context, userState),
@@ -1825,6 +1869,72 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
+    );
+  }
+
+  /// Bangla time-of-day wish shown under the user's name.
+  String _greetingLine() {
+    final h = DateTime.now().hour;
+    if (h >= 5 && h < 12) return 'শুভ সকাল ☀️';
+    if (h >= 12 && h < 17) return 'শুভ দুপুর 🌤️';
+    if (h >= 17 && h < 20) return 'শুভ সন্ধ্যা 🌆';
+    return 'শুভ রাত্রি 🌙';
+  }
+
+  // Deep navy on the light-blue header — professional, high contrast.
+  static const _greetNavy = Color(0xFF0D47A1);
+  static const _greetNavySoft = Color(0xFF1E4976);
+
+  Widget _buildGreeting(UserStateService userState) {
+    final user = userState.currentUser;
+    final first = (user?.firstName ?? '').trim();
+    final name = first.isNotEmpty
+        ? first
+        : ((user?.displayName ?? '').trim().isNotEmpty
+            ? user!.displayName
+            : 'বন্ধু');
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          text: TextSpan(
+            children: [
+              const TextSpan(
+                text: 'হাই, ',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: _greetNavySoft,
+                ),
+              ),
+              TextSpan(
+                text: name,
+                style: const TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.w800,
+                  color: _greetNavy,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          _greetingLine(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: _greetNavySoft,
+            letterSpacing: 0.1,
+          ),
+        ),
+      ],
     );
   }
 
@@ -2122,4 +2232,46 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+/// Concave fillet under the fixed header: each side corner "descends" from
+/// the header's bottom edge and curves inward — the flare points DOWN into
+/// the page instead of the usual rounded-card corner.
+class _HeaderCornerPainter extends CustomPainter {
+  final bool isLeft;
+
+  const _HeaderCornerPainter({required this.isLeft});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = const Color(0xFF90CAF9);
+    final path = Path();
+    if (isLeft) {
+      // White sliver hugging the left screen edge; the arc bulges toward
+      // the top-left so the corner reads as flaring DOWN from the header.
+      path.moveTo(0, size.height);
+      path.lineTo(0, 0);
+      path.lineTo(size.width, 0);
+      path.arcToPoint(
+        Offset(0, size.height),
+        radius: Radius.circular(size.width),
+        clockwise: false,
+      );
+    } else {
+      path.moveTo(size.width, size.height);
+      path.lineTo(size.width, 0);
+      path.lineTo(0, 0);
+      path.arcToPoint(
+        Offset(size.width, size.height),
+        radius: Radius.circular(size.width),
+        clockwise: true,
+      );
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeaderCornerPainter oldDelegate) =>
+      oldDelegate.isLeft != isLeft;
 }

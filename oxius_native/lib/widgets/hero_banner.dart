@@ -269,7 +269,11 @@ class _HeroBannerState extends State<HeroBanner> {
     // Mobile layout: slider, then service grid
     return Column(
       children: [
-        _buildHeroSlider(bannerHeight),
+        // Side breathing room so the rounded banner reads as a card.
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: _buildHeroSlider(bannerHeight),
+        ),
         const SizedBox(height: 8),
         _buildFeaturedNewsTicker(),
         const SizedBox(height: 6),
