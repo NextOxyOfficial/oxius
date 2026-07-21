@@ -2874,9 +2874,13 @@ class ContentMonetizationEarningsView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        from datetime import timedelta
+
         conf = ContentMonetizationSettings.current()
         period = current_period()
         start, end = period_bounds(period)
+        # Month close + holdback review window = when cleared earnings pay out.
+        expected_payout = (end + timedelta(days=conf.holdback_days)).date()
 
         # Live personal points (cheap: only this creator's rows this month).
         # Fraud-signal internals stay server-side.
@@ -2922,6 +2926,7 @@ class ContentMonetizationEarningsView(APIView):
                 "fraud_flagged": bool(row and row.status == "held"),
                 "min_payout": str(conf.min_payout),
                 "holdback_days": conf.holdback_days,
+                "expected_payout_date": expected_payout.strftime("%d-%m-%Y"),
                 "history": history,
             }
         )
