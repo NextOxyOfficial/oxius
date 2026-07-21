@@ -1234,6 +1234,40 @@ class ContentMonetizationSettings(models.Model):
     required_views = models.PositiveIntegerField(default=20000)
     required_video_posts = models.PositiveIntegerField(default=10)
     required_image_posts = models.PositiveIntegerField(default=10)
+
+    # ── Earnings (revenue-pool model) ──────────────────────────────────────
+    # A fixed monthly pool is split among approved creators by their share of
+    # engagement points. Fraudulent volume can only dilute the pool, never
+    # inflate the total payout. 0 = earnings accrual paused.
+    monthly_pool_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0,
+        help_text="Total BDT distributed among creators each month. 0 pauses earnings.",
+    )
+    point_view = models.PositiveIntegerField(
+        default=1, help_text="Points per valid content view.")
+    point_like = models.PositiveIntegerField(
+        default=3, help_text="Points per like received.")
+    point_comment = models.PositiveIntegerField(
+        default=5, help_text="Points per comment received.")
+    point_follower = models.PositiveIntegerField(
+        default=10, help_text="Points per new follower gained.")
+    min_payout = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100,
+        help_text="Amounts below this roll over to the next month.",
+    )
+    holdback_days = models.PositiveIntegerField(
+        default=7,
+        help_text="Review window after month close before earnings clear.",
+    )
+    viewer_min_account_age_days = models.PositiveIntegerField(
+        default=7,
+        help_text="Views from accounts younger than this carry no points.",
+    )
+    viewer_daily_view_cap = models.PositiveIntegerField(
+        default=30,
+        help_text="Max valid views one viewer can contribute to a creator per day.",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -1312,6 +1346,55 @@ class ContentMonetizationApplication(models.Model):
 
     def __str__(self):
         return f"{self.user.email or self.user.username} — {self.status}"
+
+
+class CreatorMonthlyEarning(models.Model):
+    """One approved creator's earnings for one calendar month (pool model).
+
+    Points are recomputed by `compute_monetization_earnings` (daily cron +
+    once after month close); `amount` is that creator's share of the monthly
+    pool. Lifecycle: accruing (current month) → held (fraud review) or
+    cleared → paid (credited to AdsyPay by admin) / forfeited (fraud).
+    """
+
+    STATUS_CHOICES = [
+        ("accruing", "Accruing"),
+        ("held", "Held for review"),
+        ("cleared", "Cleared"),
+        ("paid", "Paid"),
+        ("forfeited", "Forfeited"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="monetization_earnings"
+    )
+    period = models.CharField(max_length=7)  # "YYYY-MM"
+    valid_views = models.PositiveIntegerField(default=0)
+    likes = models.PositiveIntegerField(default=0)
+    comments = models.PositiveIntegerField(default=0)
+    followers_gained = models.PositiveIntegerField(default=0)
+    total_points = models.PositiveIntegerField(default=0)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default="accruing"
+    )
+    # Phase 2 fraud job writes this; admins review high scores first.
+    fraud_score = models.PositiveIntegerField(default=0)
+    note = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["user", "period"]
+        ordering = ["-period"]
+        verbose_name = "Creator Monthly Earning"
+        verbose_name_plural = "Creator Monthly Earnings"
+
+    def __str__(self):
+        return (
+            f"{self.user.email or self.user.username} {self.period}: "
+            f"{self.total_points} pts / {self.amount} ({self.status})"
+        )
 
 
 class PostSeen(models.Model):

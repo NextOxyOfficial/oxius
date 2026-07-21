@@ -359,6 +359,60 @@ class ContentMonetizationSettingsAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(CreatorMonthlyEarning)
+class CreatorMonthlyEarningAdmin(admin.ModelAdmin):
+    """Monthly pool shares per approved creator. Review held rows (sorted by
+    fraud_score), then mark cleared → paid after crediting AdsyPay."""
+
+    list_display = [
+        "user",
+        "period",
+        "valid_views",
+        "likes",
+        "comments",
+        "followers_gained",
+        "total_points",
+        "amount",
+        "status",
+        "fraud_score",
+        "updated_at",
+    ]
+    list_filter = ["status", "period"]
+    search_fields = ["user__email", "user__username", "user__name", "user__phone"]
+    readonly_fields = [
+        "user",
+        "period",
+        "valid_views",
+        "likes",
+        "comments",
+        "followers_gained",
+        "total_points",
+        "created_at",
+        "updated_at",
+    ]
+    ordering = ["-period", "-fraud_score"]
+    actions = ["mark_cleared", "mark_paid", "mark_held", "mark_forfeited"]
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description="Mark selected as cleared")
+    def mark_cleared(self, request, queryset):
+        queryset.exclude(status="paid").update(status="cleared")
+
+    @admin.action(description="Mark selected as paid (after AdsyPay credit)")
+    def mark_paid(self, request, queryset):
+        queryset.update(status="paid")
+
+    @admin.action(description="Hold selected for review")
+    def mark_held(self, request, queryset):
+        queryset.exclude(status="paid").update(status="held")
+
+    @admin.action(description="Forfeit selected (fraud)")
+    def mark_forfeited(self, request, queryset):
+        queryset.exclude(status="paid").update(status="forfeited")
+
+
 @admin.register(ContentMonetizationCustomRequirement)
 class ContentMonetizationCustomRequirementAdmin(admin.ModelAdmin):
     """Per-user monetization bar overrides (blank field = global value)."""

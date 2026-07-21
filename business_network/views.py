@@ -2845,3 +2845,83 @@ class ContentMonetizationApplyView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+class ContentMonetizationEarningsView(APIView):
+    """Approved creator's earnings: live points for the current month, the
+    stored pool share (refreshed by the daily compute job) and history."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .models import (
+            ContentMonetizationApplication,
+            ContentMonetizationSettings,
+            CreatorMonthlyEarning,
+        )
+        from .monetization import (
+            creator_points,
+            current_period,
+            period_bounds,
+        )
+
+        app = ContentMonetizationApplication.objects.filter(
+            user=request.user, status="approved"
+        ).first()
+        if app is None:
+            return Response(
+                {"error": "Monetization is not active on this account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        conf = ContentMonetizationSettings.current()
+        period = current_period()
+        start, end = period_bounds(period)
+
+        # Live personal points (cheap: only this creator's rows this month).
+        # Fraud-signal internals stay server-side.
+        points = creator_points(request.user, start, end, conf)
+        points.pop("top10_share", None)
+        points.pop("young_share", None)
+
+        # Pool share comes from the stored row the daily job refreshes —
+        # computing every creator's points on-request would be too heavy.
+        row = CreatorMonthlyEarning.objects.filter(
+            user=request.user, period=period
+        ).first()
+
+        history = [
+            {
+                "period": e.period,
+                "valid_views": e.valid_views,
+                "likes": e.likes,
+                "comments": e.comments,
+                "followers_gained": e.followers_gained,
+                "total_points": e.total_points,
+                "amount": str(e.amount),
+                "status": e.status,
+            }
+            for e in CreatorMonthlyEarning.objects.filter(
+                user=request.user
+            ).exclude(period=period)[:12]
+        ]
+
+        return Response(
+            {
+                "period": period,
+                "points": points,
+                "weights": {
+                    "view": conf.point_view,
+                    "like": conf.point_like,
+                    "comment": conf.point_comment,
+                    "follower": conf.point_follower,
+                },
+                "pool_amount": str(conf.monthly_pool_amount),
+                "estimated_amount": str(row.amount) if row else None,
+                "current_status": row.status if row else "accruing",
+                "fraud_flagged": bool(row and row.status == "held"),
+                "min_payout": str(conf.min_payout),
+                "holdback_days": conf.holdback_days,
+                "history": history,
+            }
+        )

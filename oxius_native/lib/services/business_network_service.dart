@@ -1073,6 +1073,40 @@ class BusinessNetworkService {
   }
 
   /// Upload profile picture
+  /// Upload the profile cover/banner — same endpoint, 'banner_image' field.
+  static Future<bool> uploadProfileBanner(dynamic imageFile) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final dio = Dio();
+      FormData formData;
+      if (imageFile is File) {
+        formData = FormData.fromMap({
+          'banner_image': await MultipartFile.fromFile(
+            imageFile.path,
+            filename: 'banner.jpg',
+          ),
+        });
+      } else {
+        final bytes = await imageFile.readAsBytes();
+        formData = FormData.fromMap({
+          'banner_image': MultipartFile.fromBytes(
+            bytes,
+            filename: 'banner.jpg',
+          ),
+        });
+      }
+      final response = await dio.patch(
+        '${ApiService.baseUrl}/user/profile/update/',
+        data: formData,
+        options: Options(headers: headers),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error uploading profile banner: $e');
+      return false;
+    }
+  }
+
   static Future<bool> uploadProfilePicture(dynamic imageFile) async {
     try {
       final headers = await ApiService.getHeaders();

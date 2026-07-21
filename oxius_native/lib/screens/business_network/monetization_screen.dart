@@ -24,7 +24,9 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   final PageController _tipController =
       PageController(viewportFraction: 0.92);
 
-  static const _accent = Color(0xFF7C3AED);
+  // Brand green — monetization is about earning, and it matches the
+  // eShop/AdsyConnect concept palette (ink text + green accent).
+  static const _accent = Color(0xFF16A34A);
 
   // Useful growth tips shown as a swipeable slider under the hero.
   static const _tips = [
@@ -87,22 +89,23 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F172A)),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF111827)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'Content Monetization',
           style: TextStyle(
             fontSize: 16.5,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF111827),
+            letterSpacing: -0.3,
           ),
         ),
         shape: const Border(

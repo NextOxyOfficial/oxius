@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
+import '../../utils/adsy_image_upload.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
-import '../../utils/image_compressor.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/notification_service.dart';
 import '../../services/adsyconnect_service.dart';
@@ -835,105 +834,16 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Future<void> _handleProfilePictureUpload() async {
     try {
-      // Show options: Camera or Gallery
-      final source = await showModalBottomSheet<ImageSource>(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (context) => Padding(
-          padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 12, bottom: 8),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  ListTile(
-                    leading:
-                        const Icon(Icons.camera_alt, color: Color(0xFF3B82F6)),
-                    title: const Text('Take Photo'),
-                    onTap: () => Navigator.pop(context, ImageSource.camera),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.photo_library,
-                        color: Color(0xFF3B82F6)),
-                    title: const Text('Choose from Gallery'),
-                    onTap: () => Navigator.pop(context, ImageSource.gallery),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
-        ),
+      // Universal flow: source sheet → crop (confirm) → compress.
+      final XFile? uploadFile = await AdsyImageUpload.pick(
+        context,
+        title: 'ছবি ঠিক করুন',
+        targetKb: 80,
       );
+      if (uploadFile == null) return;
 
-      if (source == null) return;
-
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 2048,
-        maxHeight: 2048,
-        imageQuality: 96,
-      );
-
-      if (image == null) return;
-
-      // Let the user crop + rotate to a square before upload.
-      final cropped = await ImageCropper().cropImage(
-        sourcePath: image.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        compressQuality: 95,
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'ছবি ঠিক করুন',
-            toolbarColor: const Color(0xFF2563EB),
-            toolbarWidgetColor: Colors.white,
-            activeControlsWidgetColor: const Color(0xFF2563EB),
-            lockAspectRatio: true,
-            hideBottomControls: false,
-          ),
-          IOSUiSettings(
-            title: 'ছবি ঠিক করুন',
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-            rotateButtonsHidden: false,
-          ),
-        ],
-      );
-      if (cropped == null) return; // user cancelled the crop
-      final XFile picked = XFile(cropped.path);
-
-      // Show loading
       if (mounted) {
         AdsyToast.info(context, 'Uploading profile picture...');
-      }
-
-      // Compress before upload (fallback to the cropped XFile on failure)
-      XFile uploadFile = picked;
-      final compressed = await ImageCompressor.compressToBytes(
-        picked,
-        targetSize: 80 * 1024,
-      );
-      if (compressed != null) {
-        uploadFile = XFile.fromData(
-          compressed,
-          name: 'profile.jpg',
-          mimeType: 'image/jpeg',
-        );
       }
 
       // Upload to server (pass XFile directly for cross-platform support)

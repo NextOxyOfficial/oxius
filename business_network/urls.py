@@ -265,6 +265,11 @@ urlpatterns = [
         ContentMonetizationApplyView.as_view(),
         name="monetization-apply",
     ),
+    path(
+        "monetization/earnings/",
+        ContentMonetizationEarningsView.as_view(),
+        name="monetization-earnings",
+    ),
     # Gold Sponsors endpoints
     path("gold-sponsors/", include("business_network.gold_sponsors.urls")),
 ]

@@ -22,6 +22,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../../utils/adsy_image_upload.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
   const ProfileOptionsScreen({super.key});
@@ -165,7 +166,31 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   }
 
   String _resolvedBannerUrl() {
+    // Prefer the dedicated profile banner; fall back to the store banner.
+    final profileBanner = _stringValue(_profileData?['banner_image']);
+    if (profileBanner.isNotEmpty) return _mediaUrl(profileBanner);
     return _mediaUrl(_stringValue(_profileData?['store_banner']));
+  }
+
+  /// Pick → crop (3:1) → compress → upload the profile banner.
+  Future<void> _uploadBanner() async {
+    final file = await AdsyImageUpload.pick(
+      context,
+      ratioX: 3,
+      ratioY: 1,
+      title: 'ব্যানার ঠিক করুন',
+      targetKb: 220,
+    );
+    if (file == null || !mounted) return;
+    AdsyToast.info(context, 'ব্যানার আপলোড হচ্ছে...');
+    final ok = await BusinessNetworkService.uploadProfileBanner(file);
+    if (!mounted) return;
+    if (ok) {
+      AdsyToast.success(context, 'ব্যানার আপডেট হয়েছে');
+      await _loadProfileSummary(refreshAuth: true);
+    } else {
+      AdsyToast.error(context, 'আপলোড করা যায়নি, আবার চেষ্টা করুন');
+    }
   }
 
   int _resolvedPostCount() => _intValue(_profileData?['post_count']);
@@ -451,6 +476,44 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                         onTap: () => _shareProfile(context),
                       ),
                     ],
+                  ),
+                ),
+              ),
+              // Banner upload: plain "Add banner" when empty, a small edit
+              // chip when one is already set.
+              Positioned(
+                bottom: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: _uploadBanner,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          bannerUrl.isEmpty
+                              ? Icons.add_photo_alternate_outlined
+                              : Icons.edit_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          bannerUrl.isEmpty ? 'Add banner' : 'Edit',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

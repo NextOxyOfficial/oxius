@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../config/app_config.dart';
 import '../services/adsyconnect_service.dart';
+import '../utils/adsy_image_upload.dart';
 import '../services/user_search_service.dart';
 import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_pro_badge.dart';
@@ -146,8 +146,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   Future<void> _pickPhoto() async {
     try {
-      final picked = await ImagePicker()
-          .pickImage(source: ImageSource.gallery, imageQuality: 80);
+      // Universal flow: source sheet → crop (square, confirm) → compress.
+      final picked = await AdsyImageUpload.pick(
+        context,
+        title: 'গ্রুপ ছবি ঠিক করুন',
+        compress: false, // preview needs a real file path; upload compresses
+      );
       if (picked != null && mounted) {
         setState(() => _imagePath = picked.path);
       }

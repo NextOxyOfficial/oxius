@@ -1871,8 +1871,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: _t('settings_profile_photo_sub',
                         'অ্যাপ আর প্রোফাইলে দেখা যাবে।'),
                     preview: Container(
-                      width: 78,
-                      height: 78,
+                      width: 112,
+                      height: 112,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _primarySoftColor,
