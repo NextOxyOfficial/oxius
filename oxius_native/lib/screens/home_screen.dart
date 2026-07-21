@@ -648,9 +648,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Material(
-                        elevation: 4,
-                        shadowColor: Colors.black.withValues(alpha: 0.15),
-                        color: const Color(0xFF90CAF9),
+                        elevation: 6,
+                        shadowColor: Colors.black.withValues(alpha: 0.22),
+                        // Off-white with a whisper of gray — softer than
+                        // pure white without reading as a colored bar.
+                        color: const Color(0xFFFBFCFD),
                         child: SafeArea(
                           bottom: false,
                           child: _buildFixedHeader(context),
@@ -1830,7 +1832,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 22,
                           height: 2.6,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0D47A1),
+                            color: const Color(0xFF1F2937),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -1839,7 +1841,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 13,
                           height: 2.6,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0D47A1),
+                            color: const Color(0xFF1F2937),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -1881,9 +1883,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'শুভ রাত্রি 🌙';
   }
 
-  // Deep navy on the light-blue header — professional, high contrast.
-  static const _greetNavy = Color(0xFF0D47A1);
-  static const _greetNavySoft = Color(0xFF1E4976);
+  // Teal accent for the greeting — cool, professional.
+  static const _greetTeal = Color(0xFF0D9488);
+  static const _greetInk = Color(0xFF1F2937);
 
   Widget _buildGreeting(UserStateService userState) {
     final user = userState.currentUser;
@@ -1907,7 +1909,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: _greetNavySoft,
+                  color: _greetInk,
                 ),
               ),
               TextSpan(
@@ -1915,7 +1917,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: const TextStyle(
                   fontSize: 15.5,
                   fontWeight: FontWeight.w800,
-                  color: _greetNavy,
+                  color: _greetTeal,
                   letterSpacing: -0.2,
                 ),
               ),
@@ -1930,7 +1932,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
-            color: _greetNavySoft,
+            color: Color(0xFF6B7280),
             letterSpacing: 0.1,
           ),
         ),
@@ -2244,7 +2246,7 @@ class _HeaderCornerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFF90CAF9);
+    final paint = Paint()..color = const Color(0xFFFBFCFD);
     final path = Path();
     if (isLeft) {
       // White sliver hugging the left screen edge; the arc bulges toward

@@ -14,6 +14,8 @@ import '../../config/app_config.dart';
 import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_sheet.dart';
+import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class PostCommentsPreview extends StatefulWidget {
@@ -1295,83 +1297,58 @@ class _CommentItemState extends State<_CommentItem> {
   }
 
   void _showEditDeleteOptions() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Edit option (only for comment author)
-            if (_isCommentAuthor) ...[
-              ListTile(
-                leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
-                title: const Text('Edit Comment'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final plainContent =
-                      HtmlContentUtils.toPlainText(widget.comment.content)
-                          .replaceAllMapped(
-                    RegExp(r'@([^@]+?)  '),
-                    (match) => '@${match.group(1)} ',
-                  );
-                  _editController.text = plainContent;
-                  setState(() => _isEditing = true);
-                },
-              ),
-              const Divider(height: 1),
-            ],
-            // Delete option (for both comment author and post owner)
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Delete Comment',
-                  style: TextStyle(color: Colors.red)),
-              onTap: () async {
-                Navigator.pop(context);
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Delete Comment'),
-                    content: const Text(
-                        'Are you sure you want to delete this comment?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete',
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true) {
-                  final success = await BusinessNetworkService.deleteComment(
-                      widget.comment.id);
-                  if (!mounted) return;
-
-                  if (success) {
-                    widget.onCommentDeleted?.call();
-                    if (mounted && context.mounted) {
-                      AdsyToast.info(context, 'Comment deleted');
-                    }
-                  } else {
-                    if (mounted && context.mounted) {
-                      AdsyToast.error(context, 'Failed to delete comment');
-                    }
-                  }
-                }
-              },
-            ),
-          ],
+    AdsySheet.show(
+      context,
+      children: [
+        if (_isCommentAuthor)
+          AdsySheetAction(
+            icon: Icons.edit_outlined,
+            title: 'কমেন্ট এডিট করুন',
+            onTap: () {
+              final plainContent =
+                  HtmlContentUtils.toPlainText(widget.comment.content)
+                      .replaceAllMapped(
+                RegExp(r'@([^@]+?)  '),
+                (match) => '@${match.group(1)} ',
+              );
+              _editController.text = plainContent;
+              if (mounted) setState(() => _isEditing = true);
+            },
+          ),
+        AdsySheetAction(
+          icon: Icons.delete_outline_rounded,
+          title: 'কমেন্ট মুছুন',
+          destructive: true,
+          onTap: _confirmDeleteComment,
         ),
-      ),
+      ],
     );
+  }
+
+  Future<void> _confirmDeleteComment() async {
+    final confirm = await AdsyDialog.confirm(
+      context,
+      title: 'কমেন্ট মুছবেন?',
+      message: 'এই কমেন্টটি মুছে ফেলা হবে, এটি আর ফেরানো যাবে না।',
+      confirmLabel: 'মুছুন',
+      cancelLabel: 'বাতিল',
+      destructive: true,
+      icon: Icons.delete_outline_rounded,
+    );
+    if (confirm != true) return;
+    final success =
+        await BusinessNetworkService.deleteComment(widget.comment.id);
+    if (!mounted) return;
+    if (success) {
+      widget.onCommentDeleted?.call();
+      if (mounted && context.mounted) {
+        AdsyToast.info(context, 'কমেন্ট মুছে ফেলা হয়েছে');
+      }
+    } else {
+      if (mounted && context.mounted) {
+        AdsyToast.error(context, 'কমেন্ট মুছতে ব্যর্থ');
+      }
+    }
   }
 
   String _formatTimeAgo(String dateString) {

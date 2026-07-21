@@ -336,6 +336,34 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     return false;
   }
 
+  // The chat lives in a root OverlayEntry with its OWN nested Navigator, so
+  // the Android hardware back button (routed to the ROOT navigator) would pop
+  // the chat-list route underneath instead of closing this chat — landing the
+  // user on the page before the list. As a WidgetsBindingObserver added AFTER
+  // the root navigator, our didPopRoute runs first; handle back here.
+  @override
+  Future<bool> didPopRoute() async {
+    if (!mounted) return false;
+    // In search mode, back exits search first.
+    if (_isSearchMode) {
+      _closeSearch();
+      return true;
+    }
+    // A sheet/dialog opened on this overlay's local navigator? Dismiss it.
+    final localNav = Navigator.of(context);
+    if (localNav.canPop()) {
+      localNav.pop();
+      return true;
+    }
+    // Overlay mode: close the chat, revealing the list (never pop the root).
+    if (widget.onClose != null) {
+      widget.onClose!();
+      return true;
+    }
+    // Plain route mode (not an overlay): let the Navigator pop normally.
+    return false;
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {

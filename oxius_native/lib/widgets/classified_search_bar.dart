@@ -904,21 +904,56 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                 builder: (_, scrollController) => Container(
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24)),
                   ),
                   child: Column(
                     children: [
                       const SizedBox(height: 10),
+                      // Drag handle
                       Container(
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: const Color(0xFFE2E8F0),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
+                      // Header: title + close (AdsyConnect sheet concept)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                        padding: const EdgeInsets.fromLTRB(20, 12, 10, 6),
+                        child: Row(
+                          children: [
+                            const Text(
+                              'সেবা খুঁজুন',
+                              style: TextStyle(
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF111827),
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(sheetCtx),
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF1F5F9),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close_rounded,
+                                    size: 18, color: Color(0xFF64748B)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Compact search field — matches the inline bar style.
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
                         child: TextField(
                           controller: sheetController,
                           autofocus: true,
@@ -926,37 +961,49 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                           onChanged: onChanged,
                           onSubmitted: runSearch,
                           style: AppFonts.inter(
-                              fontSize: 15, color: const Color(0xFF111827)),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF111827)),
                           decoration: InputDecoration(
                             hintText: _ts.t('classified_search_placeholder',
                                 fallback: 'সেবা বা ক্যাটাগরি খুঁজুন...'),
+                            hintStyle: AppFonts.inter(
+                                fontSize: 14, color: const Color(0xFF94A3B8)),
                             prefixIcon: const Icon(Icons.search_rounded,
-                                color: Color(0xFF06B6D4)),
+                                size: 20, color: Color(0xFF94A3B8)),
+                            prefixIconConstraints: const BoxConstraints(
+                                minWidth: 40, minHeight: 40),
                             suffixIcon: query.isNotEmpty
                                 ? IconButton(
                                     icon: const Icon(Icons.close_rounded,
-                                        size: 20),
+                                        size: 18, color: Color(0xFF94A3B8)),
                                     onPressed: () {
                                       sheetController.clear();
                                       onChanged('');
                                     },
                                   )
                                 : null,
+                            isDense: true,
                             filled: true,
                             fillColor: const Color(0xFFF8FAFC),
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                                horizontal: 12, vertical: 11),
+                            border: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12)),
+                              borderSide:
+                                  BorderSide(color: Color(0xFFE2E8F0)),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            enabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12)),
+                              borderSide:
+                                  BorderSide(color: Color(0xFFE2E8F0)),
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
+                            focusedBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12)),
+                              borderSide: BorderSide(
                                   color: Color(0xFF06B6D4), width: 1.4),
                             ),
                           ),
@@ -1063,12 +1110,13 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
   }
 
   Widget _sheetSectionLabel(String text) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-        child: Text(text,
+        padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+        child: Text(text.toUpperCase(),
             style: AppFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF64748B))),
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF94A3B8),
+                letterSpacing: 0.6)),
       );
 
   Widget _sheetSuggestions(ValueChanged<String> onPick) {
@@ -1078,23 +1126,39 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       return const SizedBox.shrink();
     }
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
       children: [
         _sheetSectionLabel(_ts.t('popular_searches', fallback: 'জনপ্রিয় খোঁজ')),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 6,
+          runSpacing: 6,
           children: _popularSearches
-              .map((s) => ActionChip(
-                    label: Text(s,
-                        style: AppFonts.inter(
-                            fontSize: 12.5, color: const Color(0xFF0F766E))),
-                    backgroundColor: const Color(0xFFECFEFF),
-                    side: const BorderSide(color: Color(0xFFA5F3FC)),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999)),
-                    onPressed: () => onPick(s),
+              .map((s) => GestureDetector(
+                    onTap: () => onPick(s),
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.north_east_rounded,
+                              size: 11, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 4),
+                          Text(s,
+                              style: AppFonts.inter(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF334155))),
+                        ],
+                      ),
+                    ),
                   ))
               .toList(),
         ),
@@ -1135,13 +1199,14 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
         CompositedTransformTarget(
           link: _layerLink,
           child: Container(
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: highlightBorder
                     ? const Color(0xFF06B6D4)
-                    : Colors.grey.shade300,
+                    : const Color(0xFFE2E8F0),
                 width: highlightBorder ? 1.2 : 1,
               ),
             ),
@@ -1153,30 +1218,31 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
               onTap: widget.embedded ? _openSearchSheet : null,
               textInputAction: TextInputAction.search,
               style: AppFonts.inter(
-                fontSize: isMobile ? 15 : 16,
-                height: 1.4,
+                fontSize: 14,
+                height: 1.2,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF111827),
                 letterSpacing: -0.2,
               ),
               decoration: InputDecoration(
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: isMobile ? 14 : 16,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
                 ),
                 prefixIcon: Padding(
-                  padding: const EdgeInsets.only(left: 12, right: 8),
+                  padding: const EdgeInsets.only(left: 12, right: 6),
                   child: Icon(
                     Icons.search_rounded,
-                    size: 22,
+                    size: 20,
                     color: highlightBorder
                         ? const Color(0xFF06B6D4)
-                        : Colors.grey.shade600,
+                        : const Color(0xFF94A3B8),
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: 38,
+                  minHeight: 38,
                 ),
                 suffixIcon: _loadingSearchResults && hasQuery
                     ? const Padding(
@@ -1206,22 +1272,24 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                     : (_animatedHint.isEmpty ? placeholder : '$_animatedHint|'),
                 hintStyle: AppFonts.inter(
                   color: Colors.grey.shade400,
-                  fontSize: isMobile ? 15 : 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                   letterSpacing: -0.1,
                 ),
                 filled: true,
                 fillColor: Colors.transparent,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
+                // Radius must match the outer container (12); an 18px inner
+                // border warped the visible corners.
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide.none,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
+                enabledBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide.none,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide.none,
                 ),
               ),

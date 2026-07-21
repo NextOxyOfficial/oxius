@@ -539,15 +539,14 @@ class _InboxScreenState extends State<InboxScreen>
 
   @override
   Widget build(BuildContext context) {
-    // The rounded/clipped header must budget for the status bar itself —
-    // SafeArea consumes the inset from inside PreferredSize, so a fixed
-    // height overflowed (and clipped) the content on real devices.
-    final topInset = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: Colors.white,
       // Clean concept-style header: white, bold title, minimal actions.
+      // NOTE: Scaffold already adds the status-bar inset to a custom appBar's
+      // height — adding it to preferredSize too doubled it on real devices.
+      // 64 is content height only; the inner SafeArea sits below the inset.
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60 + topInset),
+        preferredSize: const Size.fromHeight(64),
         child: Container(
           decoration: const BoxDecoration(
             color: Colors.white,

@@ -41,17 +41,13 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
             : width < 1100
                 ? 5
                 : 6;
-    final childAspectRatio = width < 340
-        ? 0.90
-        : width < 390
-            ? 0.80
-            : width < 760
-                ? 0.82
-                : 0.86;
+    // Fixed row height (exactly the tile content height) instead of an
+    // aspect ratio — ratio-based cells left big empty bands on phones.
+    final tileExtent = width < 390 ? 92.0 : 98.0;
     final spacing = width < 390 ? 8.0 : 10.0;
 
     if (widget.isLoading) {
-      return _buildLoadingSkeleton(crossAxisCount, childAspectRatio);
+      return _buildLoadingSkeleton(crossAxisCount, tileExtent);
     }
 
     if (widget.categories.isEmpty) {
@@ -69,7 +65,7 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
           crossAxisCount: crossAxisCount,
           mainAxisSpacing: spacing,
           crossAxisSpacing: spacing,
-          childAspectRatio: childAspectRatio,
+          mainAxisExtent: tileExtent,
         ),
         itemCount:
             widget.categories.length + (widget.trailingTile != null ? 1 : 0),
@@ -91,7 +87,7 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
     );
   }
 
-  Widget _buildLoadingSkeleton(int crossAxisCount, double childAspectRatio) {
+  Widget _buildLoadingSkeleton(int crossAxisCount, double tileExtent) {
     final width = MediaQuery.of(context).size.width;
     final spacing = width < 390 ? 8.0 : 10.0;
 
@@ -105,7 +101,7 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
           crossAxisCount: crossAxisCount,
           mainAxisSpacing: spacing,
           crossAxisSpacing: spacing,
-          childAspectRatio: childAspectRatio,
+          mainAxisExtent: tileExtent,
         ),
         itemCount: crossAxisCount * 2,
         itemBuilder: (context, index) => const _LoadingTile(),
@@ -135,10 +131,10 @@ class _CategoryTileState extends State<_CategoryTile> {
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.of(context).size.width < 390;
-    final highlightColor = const Color(0xFF0F766E);
-    final labelColor =
-        widget.isSelected ? const Color(0xFF065F46) : const Color(0xFF334155);
+    const labelColor = Color(0xFF334155);
 
+    // Plain tap target — the scale press is the only feedback; no gray
+    // InkWell splash/highlight and no selected background box.
     return GestureDetector(
       onTapDown:
           widget.onTap == null ? null : (_) => setState(() => _pressed = true),
@@ -150,60 +146,43 @@ class _CategoryTileState extends State<_CategoryTile> {
               setState(() => _pressed = false);
               widget.onTap?.call();
             },
+      behavior: HitTestBehavior.opaque,
       child: AnimatedScale(
-        scale: _pressed ? 0.96 : 1.0,
+        scale: _pressed ? 0.94 : 1.0,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: widget.onTap,
-            child: Padding(
-              padding:
-                  EdgeInsets.fromLTRB(compact ? 2 : 4, 5, compact ? 2 : 4, 6),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    curve: Curves.easeOut,
-                    width: compact ? 46 : 50,
-                    height: compact ? 46 : 50,
-                    decoration: BoxDecoration(
-                      color: widget.isSelected
-                          ? highlightColor.withValues(alpha: 0.10)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Center(
-                      child: _CategoryImage(
-                        url: widget.category.getIconAsset(),
-                        categoryTitle: widget.category.title,
-                        size: compact ? 28 : 31,
-                      ),
-                    ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(compact ? 2 : 4, 4, compact ? 2 : 4, 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: compact ? 46 : 50,
+                height: compact ? 46 : 50,
+                child: Center(
+                  child: _CategoryImage(
+                    url: widget.category.getIconAsset(),
+                    categoryTitle: widget.category.title,
+                    size: compact ? 28 : 31,
                   ),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    height: compact ? 28 : 30,
-                    child: Text(
-                      widget.category.title,
-                      textAlign: TextAlign.center,
-                      style: AppText.tileLabel(color: labelColor).copyWith(
-                        fontSize: compact ? 11 : 11.5,
-                        fontWeight: widget.isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w600,
-                        height: 1.15,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: compact ? 28 : 30,
+                child: Text(
+                  widget.category.title,
+                  textAlign: TextAlign.center,
+                  style: AppText.tileLabel(color: labelColor).copyWith(
+                    fontSize: compact ? 11 : 11.5,
+                    fontWeight: FontWeight.w600,
+                    height: 1.15,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
       ),

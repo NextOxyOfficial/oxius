@@ -497,27 +497,21 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
           Stack(
             children: [
               // Banner — tap opens it full-screen in the BN media viewer.
-              // Softly rounded bottom corners give the header a card feel.
               GestureDetector(
                 onTap: bannerUrl.isNotEmpty
                     ? () => _openBannerViewer(bannerUrl, name, avatarUrl)
                     : null,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(20),
-                  ),
-                  child: SizedBox(
-                    height: 130,
-                    width: double.infinity,
-                    child: bannerUrl.isNotEmpty
-                        ? Image.network(
-                            bannerUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildHeaderBannerFallback(),
-                          )
-                        : _buildHeaderBannerFallback(),
-                  ),
+                child: SizedBox(
+                  height: 158,
+                  width: double.infinity,
+                  child: bannerUrl.isNotEmpty
+                      ? Image.network(
+                          bannerUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _buildHeaderBannerFallback(),
+                        )
+                      : _buildHeaderBannerFallback(),
                 ),
               ),
               // Share button (back removed — bottom nav handles navigation)
@@ -575,7 +569,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               // chip when one is already set.
               if (!_bannerUploading)
               Positioned(
-                bottom: 10,
+                bottom: 28,
                 right: 12,
                 child: GestureDetector(
                   onTap: _uploadBanner,
@@ -612,12 +606,19 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               ),
             ],
           ),
-          // Info section on plain white; the banner above carries the
-          // rounded BOTTOM corners, so no overlap trickery here.
-          Container(
+          // White info sheet — its rounded TOP corners rise 18px over the
+          // banner, so the banner peeks through the corner notches (the
+          // radius sits on the WHITE, not the banner).
+          Transform.translate(
+            offset: const Offset(0, -18),
+            child: Container(
               width: double.infinity,
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 72, 16, 8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(22)),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 78, 16, 8),
               child: Column(
               children: [
                 // Name row
@@ -700,11 +701,12 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               ],
             ),
           ),
+          ),
             ],
           ),
           // Centered large avatar — floats over the banner seam.
           Positioned(
-            top: 70,
+            top: 84,
             left: 0,
             right: 0,
             child: Center(
