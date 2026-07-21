@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../business_network/adsypay_qr_modal.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 /// Header Actions - Inbox, QR Code, Profile
 class HeaderActions extends StatefulWidget {
@@ -130,30 +131,7 @@ class _HeaderActionsState extends State<HeaderActions> {
               Positioned(
                 top: -4,
                 right: -6,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.indigo.shade500, Colors.purple.shade600],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.shield, size: avatarSize * 0.25, color: Colors.white),
-                      const SizedBox(width: 2),
-                      Text(
-                        'Pro',
-                        style: TextStyle(
-                          fontSize: avatarSize * 0.22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                child: const AdsyProBadge(),
               ),
             
             // Verified Badge

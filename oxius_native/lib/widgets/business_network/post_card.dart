@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:oxius_native/widgets/common/adsy_sheet.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -543,149 +544,70 @@ class _PostCardState extends State<PostCard> {
 
   void _showPostOptions() {
     final isSelf = _isSelfPost();
+    final isReshare = _post.sharedFrom != null;
 
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        final isReshare = _post.sharedFrom != null;
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 10, bottom: 6),
-                width: 38,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E8F0),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              if (_post.media.isNotEmpty)
-                _menuTile(
-                  icon: Icons.download_rounded,
-                  color: const Color(0xFF3B82F6),
-                  title: _downloadMenuTitle(),
-                  onTap: _handleDownloadMedia,
-                ),
-              // Reshares hide Save in the actions row — offer it here instead.
-              if (isReshare)
-                _menuTile(
-                  icon:
-                      _post.isSaved ? Icons.bookmark : Icons.bookmark_border,
-                  color: const Color(0xFF7C3AED),
-                  title: _post.isSaved ? 'Unsave' : 'Save',
-                  subtitle: 'পরে দেখার জন্য সেভ করুন',
-                  onTap: _handleSave,
-                ),
-              if (isSelf) ...[
-                _menuTile(
-                  icon: Icons.edit_outlined,
-                  color: const Color(0xFF2563EB),
-                  title: 'Edit post',
-                  onTap: _handleEditPost,
-                ),
-                _menuTile(
-                  icon: Icons.delete_outline_rounded,
-                  color: const Color(0xFFDC2626),
-                  title: 'Delete post',
-                  danger: true,
-                  onTap: _handleDeletePost,
-                ),
-              ],
-              if (!isSelf) ...[
-                _menuTile(
-                  icon: Icons.share_outlined,
-                  color: const Color(0xFF3B82F6),
-                  title: 'Share post',
-                  onTap: _handleShare,
-                ),
-                _menuTile(
-                  icon: Icons.flag_outlined,
-                  color: const Color(0xFFEA580C),
-                  title: 'Report',
-                  onTap: _handleReportPost,
-                ),
-                _menuTile(
-                  icon: Icons.visibility_off_outlined,
-                  color: const Color(0xFF64748B),
-                  title: 'Hide this post',
-                  onTap: _handleHidePost,
-                ),
-                _menuTile(
-                  icon: Icons.block_rounded,
-                  color: const Color(0xFFDC2626),
-                  title: 'Block user',
-                  danger: true,
-                  onTap: _handleBlockUser,
-                ),
-              ],
-              const SizedBox(height: 8),
-            ],
+    // Unified AdsySheet design — same look as AdsyConnect's New Chat sheet.
+    AdsySheet.show(
+      context,
+      children: [
+        if (_post.media.isNotEmpty)
+          AdsySheetAction(
+            icon: Icons.download_rounded,
+            title: _downloadMenuTitle(),
+            subtitle: 'ছবি/ভিডিও ডিভাইসে সেভ করুন',
+            onTap: _handleDownloadMedia,
           ),
-        );
-      },
-    );
-  }
-
-  Widget _menuTile({
-    required IconData icon,
-    required Color color,
-    required String title,
-    String? subtitle,
-    bool danger = false,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(context);
-        onTap();
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 18, color: color),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                      color: danger
-                          ? const Color(0xFFDC2626)
-                          : const Color(0xFF0F172A),
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 1),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                          fontSize: 11.5, color: Color(0xFF94A3B8)),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+        // Reshares hide Save in the actions row — offer it here instead.
+        if (isReshare)
+          AdsySheetAction(
+            icon: _post.isSaved ? Icons.bookmark : Icons.bookmark_border,
+            title: _post.isSaved ? 'Unsave' : 'Save',
+            subtitle: 'পরে দেখার জন্য সেভ করুন',
+            onTap: _handleSave,
+          ),
+        if (isSelf) ...[
+          AdsySheetAction(
+            icon: Icons.edit_outlined,
+            title: 'Edit post',
+            subtitle: 'পোস্টটি সম্পাদনা করুন',
+            onTap: _handleEditPost,
+          ),
+          AdsySheetAction(
+            icon: Icons.delete_outline_rounded,
+            title: 'Delete post',
+            subtitle: 'পোস্টটি স্থায়ীভাবে মুছে ফেলুন',
+            destructive: true,
+            onTap: _handleDeletePost,
+          ),
+        ],
+        if (!isSelf) ...[
+          AdsySheetAction(
+            icon: Icons.share_outlined,
+            title: 'Share post',
+            subtitle: 'বন্ধুদের সাথে শেয়ার করুন',
+            onTap: _handleShare,
+          ),
+          AdsySheetAction(
+            icon: Icons.flag_outlined,
+            title: 'Report',
+            subtitle: 'আপত্তিকর মনে হলে রিপোর্ট করুন',
+            onTap: _handleReportPost,
+          ),
+          AdsySheetAction(
+            icon: Icons.visibility_off_outlined,
+            title: 'Hide this post',
+            subtitle: 'এই পোস্টটি ফিডে আর দেখতে চাই না',
+            onTap: _handleHidePost,
+          ),
+          AdsySheetAction(
+            icon: Icons.block_rounded,
+            title: 'Block user',
+            subtitle: 'এই ইউজারের কিছু আর দেখবেন না',
+            destructive: true,
+            onTap: _handleBlockUser,
+          ),
+        ],
+      ],
     );
   }
 

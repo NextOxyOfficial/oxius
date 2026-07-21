@@ -20,6 +20,7 @@ import 'rideshare_map_widget.dart';
 import 'custom_location_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 part 'rideshare_passenger_panel_active_ride.dart';
 part 'rideshare_passenger_panel_booking.dart';

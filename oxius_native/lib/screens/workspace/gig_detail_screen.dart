@@ -11,6 +11,7 @@ import '../wallet/wallet_screen.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class GigDetailScreen extends StatefulWidget {
   final String gigId;
@@ -915,21 +916,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                             child: Icon(Icons.verified,
                                 size: 14, color: Colors.blue)),
                       if (user?['is_pro'] == true)
-                        Container(
-                          margin: const EdgeInsets.only(left: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                                colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: const Text('PRO',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold)),
-                        ),
+                        const AdsyProBadge(),
                     ],
                   ),
                   const SizedBox(height: 2),
@@ -1650,25 +1637,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                             size: 12, color: Colors.blue),
                                       ),
                                     if (user?['is_pro'] == true)
-                                      Container(
-                                        margin: const EdgeInsets.only(left: 3),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 4, vertical: 1),
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                              colors: [
-                                                Color(0xFFF59E0B),
-                                                Color(0xFFF97316)
-                                              ]),
-                                          borderRadius:
-                                              BorderRadius.circular(3),
-                                        ),
-                                        child: const Text('PRO',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 7,
-                                                fontWeight: FontWeight.bold)),
-                                      ),
+                                      const AdsyProBadge(),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
@@ -1848,23 +1817,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                               child: Icon(Icons.verified,
                                   size: 12, color: Colors.blue)),
                         if (user?['is_pro'] == true)
-                          Container(
-                            margin: const EdgeInsets.only(left: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 3, vertical: 1),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(colors: [
-                                Color(0xFFF59E0B),
-                                Color(0xFFF97316)
-                              ]),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                            child: const Text('PRO',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 7,
-                                    fontWeight: FontWeight.bold)),
-                          ),
+                          const AdsyProBadge(),
                       ],
                     ),
                     Row(

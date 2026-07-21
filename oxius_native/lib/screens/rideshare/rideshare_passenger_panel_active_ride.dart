@@ -13,21 +13,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
   }
 
   Widget _buildProBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4F46E5),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        'Pro',
-        style: GoogleFonts.inter(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-        ),
-      ),
-    );
+    return const AdsyProBadge();
   }
 
   Widget _buildTripsBadge(int completedTrips) {

@@ -12,6 +12,7 @@ import '../../widgets/linkify_text.dart';
 import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class ProblemDetailBottomSheet extends StatefulWidget {
   final String problemId;
@@ -548,25 +549,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     ),
                     if (_problem!.userDetails.isPro) ...[
                       const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 2),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'PRO',
-                          style: TextStyle(
-                            fontSize: 8,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
+                      const AdsyProBadge(),
                     ],
                     if (_problem!.userDetails.kyc) ...[
                       const SizedBox(width: 4),
@@ -924,28 +907,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                                 ),
                                 if (comment.userDetails.isPro) ...[
                                   const SizedBox(width: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFFFFD700),
-                                          Color(0xFFFFA500)
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Text(
-                                      'PRO',
-                                      style: TextStyle(
-                                        fontSize: 7,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ),
+                                  const AdsyProBadge(),
                                 ],
                                 if (comment.userDetails.kyc) ...[
                                   const SizedBox(width: 3),

@@ -205,7 +205,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             if (!isAdminRow)
               ListTile(
                 leading: const Icon(Icons.admin_panel_settings_outlined,
-                    color: Color(0xFF2563EB)),
+                    color: Color(0xFF334155)),
                 title: const Text('কো-অ্যাডমিন বানান'),
                 subtitle: const Text(
                     'গ্রুপ ম্যানেজমেন্টের সব ক্ষমতা পাবেন',
@@ -311,9 +311,9 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                               errorBuilder: (_, __, ___) => const Icon(
                                   Icons.groups,
                                   size: 30,
-                                  color: Color(0xFF3B82F6)))
+                                  color: Color(0xFF334155)))
                           : const Icon(Icons.groups,
-                              size: 30, color: Color(0xFF3B82F6)),
+                              size: 30, color: Color(0xFF334155)),
                     ),
                     if (_isAdmin)
                       Positioned(
@@ -326,7 +326,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                             height: 24,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: const Color(0xFF2563EB),
+                              color: const Color(0xFF111827),
                               border:
                                   Border.all(color: Colors.white, width: 2),
                             ),
@@ -513,11 +513,11 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       errorBuilder: (_, __, ___) => Text(
                           display.isNotEmpty ? display[0].toUpperCase() : '?',
                           style: const TextStyle(
-                              color: Color(0xFF3B82F6),
+                              color: Color(0xFF334155),
                               fontWeight: FontWeight.w700)))
                   : Text(display.isNotEmpty ? display[0].toUpperCase() : '?',
                       style: const TextStyle(
-                          color: Color(0xFF3B82F6),
+                          color: Color(0xFF334155),
                           fontWeight: FontWeight.w700)),
             ),
             const SizedBox(width: 12),

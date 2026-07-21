@@ -8,6 +8,7 @@ import 'order_chat_screen.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class GigsOrderedTab extends StatefulWidget {
   const GigsOrderedTab({super.key});
@@ -565,23 +566,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                                   size: 12, color: Colors.blue),
                             ),
                           if (seller?['is_pro'] == true)
-                            Container(
-                              margin: const EdgeInsets.only(left: 3),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [
-                                  Color(0xFFF59E0B),
-                                  Color(0xFFF97316)
-                                ]),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: const Text('PRO',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 7,
-                                      fontWeight: FontWeight.bold)),
-                            ),
+                            const AdsyProBadge(),
                         ],
                       ),
                       const SizedBox(height: 4),

@@ -5,6 +5,7 @@ import '../../utils/time_utils.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class PostHeader extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -137,24 +138,7 @@ class PostHeader extends StatelessWidget {
                           const TextSpan(text: ' '),
                           WidgetSpan(
                             alignment: PlaceholderAlignment.middle,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.indigo.shade600,
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.18)),
-                              ),
-                              child: const Text(
-                                'Pro',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
+                            child: const AdsyProBadge(),
                           ),
                         ],
                       ],

@@ -34,6 +34,7 @@ import 'shorts_player_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -1446,24 +1447,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ],
                         if (_userData?['is_pro'] == true) ...[
                           const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'Pro',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                          const AdsyProBadge(),
                         ],
                       ],
                     ),
@@ -3432,30 +3416,7 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                                     color: Color(0xFF3B82F6)),
                                               ),
                                             if (userData['is_pro'] == true)
-                                              Container(
-                                                margin: const EdgeInsets.only(
-                                                    left: 3),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 4,
-                                                        vertical: 1),
-                                                decoration: BoxDecoration(
-                                                  gradient:
-                                                      const LinearGradient(
-                                                          colors: [
-                                                        Color(0xFFF59E0B),
-                                                        Color(0xFFF97316)
-                                                      ]),
-                                                  borderRadius:
-                                                      BorderRadius.circular(3),
-                                                ),
-                                                child: const Text('PRO',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 8,
-                                                        fontWeight:
-                                                            FontWeight.w700)),
-                                              ),
+                                              const AdsyProBadge(),
                                           ],
                                         ),
                                         if (profession != null &&

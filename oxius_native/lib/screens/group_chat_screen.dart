@@ -327,7 +327,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.insert_drive_file_outlined,
-                  color: Color(0xFF2563EB)),
+                  color: Color(0xFF111827)),
               title: const Text('ডকুমেন্ট'),
               onTap: () {
                 Navigator.pop(ctx);
@@ -651,11 +651,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final memberCount =
         _group['member_count'] ?? (_group['members'] as List? ?? []).length;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
-        elevation: 0.5,
+        elevation: 0,
+        shape: const Border(
+          bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF334155)),
           onPressed: () => Navigator.of(context).pop(),
@@ -669,16 +672,16 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 width: 38,
                 height: 38,
                 decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+                    shape: BoxShape.circle, color: Color(0xFFF1F5F9)),
                 clipBehavior: Clip.antiAlias,
                 alignment: Alignment.center,
                 child: (_group['image_url'] ?? '').toString().isNotEmpty
                     ? Image.network(_group['image_url'].toString(),
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const Icon(Icons.groups,
-                            size: 20, color: Color(0xFF3B82F6)))
+                            size: 20, color: Color(0xFF111827)))
                     : const Icon(Icons.groups,
-                        size: 20, color: Color(0xFF3B82F6)),
+                        size: 20, color: Color(0xFF111827)),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -939,7 +942,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           child: Text(
             name.isNotEmpty ? name[0].toUpperCase() : '?',
             style: const TextStyle(
-              color: Color(0xFF3B82F6),
+              color: Color(0xFF111827),
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
             ),
@@ -950,7 +953,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       height: 28,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color(0xFFEFF6FF),
+        color: Color(0xFFF1F5F9),
       ),
       child: url.isEmpty
           ? fallback()

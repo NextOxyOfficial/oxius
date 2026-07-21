@@ -7,6 +7,7 @@ import '../../services/adsyconnect_service.dart';
 import '../../services/fcm_service.dart';
 import '../../screens/business_network/search_screen.dart';
 import 'dart:async';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class BusinessNetworkHeader extends StatefulWidget
     implements PreferredSizeWidget {
@@ -518,28 +519,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
           Positioned(
             top: -8,
             right: -12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.indigo.shade600,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.shield, size: 10, color: Colors.white),
-                  const SizedBox(width: 2),
-                  const Text(
-                    'Pro',
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: const AdsyProBadge(),
           ),
 
         // Verified Badge

@@ -14,6 +14,8 @@ import 'support/create_ticket_screen.dart';
 import 'support/ticket_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class InboxScreen extends StatefulWidget {
   final int initialTab;
@@ -539,78 +541,38 @@ class _InboxScreenState extends State<InboxScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      // Clean concept-style header: white, bold title, minimal actions.
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
+        preferredSize: const Size.fromHeight(58),
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                const Color(0xFF3B82F6).withValues(alpha: 0.02),
-              ],
-            ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
             border: Border(
-              bottom: BorderSide(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                width: 1,
-              ),
+              bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1),
             ),
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
               child: Row(
                 children: [
-                  // Back Button
-                  Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded,
-                          color: Color(0xFF3B82F6), size: 20),
-                      onPressed: () => Navigator.pop(context),
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded,
+                        color: Color(0xFF111827), size: 22),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  // Icon Badge
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      'assets/images/chat_icon.png',
-                      width: 20,
-                      height: 20,
-                      color: Colors.white,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
-                          Icons.forum_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        );
-                      },
-                    ),
+                  const SizedBox(width: 2),
+                  // Brand icon beside the title.
+                  Image.asset(
+                    'assets/images/chat_icon.png',
+                    width: 30,
+                    height: 30,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.forum_rounded,
+                        color: Color(0xFF111827),
+                        size: 26),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   // Title Section
                   Expanded(
                     child: Column(
@@ -620,55 +582,44 @@ class _InboxScreenState extends State<InboxScreen>
                         const Text(
                           'AdsyConnect',
                           style: TextStyle(
-                            color: Color(0xFF1F2937),
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.3,
+                            color: Color(0xFF111827),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 3),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.circle,
-                              size: 6,
-                              color: const Color(0xFF10B981),
-                            ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                'Chats, Notifications & Support',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -0.1,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 1),
+                        Text(
+                          'Chats, Notifications & Support',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: -0.1,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
                   // Settings shortcut (top-right).
                   Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(10),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.settings_outlined,
-                          color: Color(0xFF64748B), size: 20),
+                          color: Color(0xFF475569), size: 19),
                       onPressed: () =>
                           Navigator.pushNamed(context, '/settings'),
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(9),
                       constraints: const BoxConstraints(),
                       tooltip: 'Settings',
                     ),
                   ),
+                  const SizedBox(width: 8),
                 ],
               ),
             ),
@@ -677,44 +628,59 @@ class _InboxScreenState extends State<InboxScreen>
       ),
       body: Column(
         children: [
-          // Tab Bar
+          // Segmented-pill tab switcher (concept design): active tab is a
+          // white pill sliding inside a soft gray track.
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 0),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-              ),
+            margin: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(999),
             ),
             child: TabBar(
               controller: _tabController,
-              indicatorColor: const Color(0xFF3B82F6),
-              labelColor: const Color(0xFF3B82F6),
-              unselectedLabelColor: const Color(0xFF6B7280),
-              indicatorWeight: 3,
+              indicator: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.07),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              overlayColor:
+                  const WidgetStatePropertyAll(Colors.transparent),
+              labelColor: const Color(0xFF111827),
+              unselectedLabelColor: const Color(0xFF64748B),
               labelPadding: const EdgeInsets.symmetric(horizontal: 4),
               labelStyle: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2),
               unselectedLabelStyle: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                   letterSpacing: -0.2),
               tabAlignment: TabAlignment.fill,
               isScrollable: false,
               tabs: [
                 Tab(
+                  height: 38,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
                         'assets/images/chat_icon.png',
-                        width: 20,
-                        height: 20,
+                        width: 17,
+                        height: 17,
                         errorBuilder: (context, error, stackTrace) {
                           return const Icon(Icons.chat_bubble_rounded,
-                              size: 20);
+                              size: 17);
                         },
                       ),
                       const SizedBox(width: 4),
@@ -728,7 +694,7 @@ class _InboxScreenState extends State<InboxScreen>
                             vertical: 2,
                           ),
                           decoration: const BoxDecoration(
-                            color: Color(0xFF3B82F6),
+                            color: Color(0xFFF59E0B),
                             borderRadius:
                                 BorderRadius.all(Radius.circular(999)),
                           ),
@@ -748,11 +714,12 @@ class _InboxScreenState extends State<InboxScreen>
                   ),
                 ),
                 Tab(
+                  height: 38,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.notifications_rounded, size: 20),
+                      const Icon(Icons.notifications_rounded, size: 17),
                       const SizedBox(width: 4),
                       const Text('Updates'),
                       if (updatesCount > 0) ...[
@@ -784,11 +751,12 @@ class _InboxScreenState extends State<InboxScreen>
                   ),
                 ),
                 Tab(
+                  height: 38,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.support_agent_rounded, size: 20),
+                      const Icon(Icons.support_agent_rounded, size: 17),
                       const SizedBox(width: 4),
                       const Text('Support'),
                       if (supportTicketsCount > 0) ...[
@@ -834,10 +802,10 @@ class _InboxScreenState extends State<InboxScreen>
                     flex: 2,
                     child: Container(
                       height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                        borderRadius: BorderRadius.circular(8),
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -923,13 +891,13 @@ class _InboxScreenState extends State<InboxScreen>
                           icon: const Icon(Icons.done_all_rounded, size: 16),
                           label: const Text('Mark Read'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF10B981),
-                            side: const BorderSide(color: Color(0xFF10B981)),
+                            foregroundColor: const Color(0xFF111827),
+                            side: const BorderSide(color: Color(0xFFE2E8F0)),
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             textStyle: const TextStyle(
                                 fontSize: 13, fontWeight: FontWeight.w700),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(999)),
                           ),
                         ),
                       ),
@@ -947,13 +915,14 @@ class _InboxScreenState extends State<InboxScreen>
                           icon: const Icon(Icons.add_rounded, size: 16),
                           label: const Text('New Ticket'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: const Color(0xFF111827),
                             foregroundColor: Colors.white,
+                            elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             textStyle: const TextStyle(
                                 fontSize: 13, fontWeight: FontWeight.w700),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(999)),
                           ),
                         ),
                       ),
@@ -969,29 +938,23 @@ class _InboxScreenState extends State<InboxScreen>
               controller: _tabController,
               children: [
                 AdsyConnectScreen(initialChatId: widget.initialChatId),
-                _buildUpdatesList(),
-                _buildTicketsList(),
+                Stack(
+                  children: [
+                    _buildUpdatesList(),
+                    AdsyBackToTop(controller: _updatesScrollController),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    _buildTicketsList(),
+                    AdsyBackToTop(controller: _ticketsScrollController),
+                  ],
+                ),
               ],
             ),
           ),
         ],
       ),
-      floatingActionButton: _activeTab == 'chat'
-          ? FloatingActionButton(
-              onPressed: _showNewChatModal,
-              backgroundColor: const Color(0xFF3B82F6),
-              child: Image.asset(
-                'assets/images/chat_icon.png',
-                width: 24,
-                height: 24,
-                color: Colors.white,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.chat_bubble_rounded,
-                      color: Colors.white);
-                },
-              ),
-            )
-          : null,
     );
   }
 
@@ -1508,15 +1471,6 @@ class _InboxScreenState extends State<InboxScreen>
     }
   }
 
-  void _showNewChatModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _NewChatModal(parentContext: this.context),
-    );
-  }
-
   void _showUpdateDetailsBottomSheet(Map<String, dynamic> update) {
     // Mark as read immediately
     _markUpdateAsRead(update);
@@ -1783,16 +1737,18 @@ class _InboxScreenState extends State<InboxScreen>
   }
 }
 
-class _NewChatModal extends StatefulWidget {
+/// User-search modal to start a brand-new 1:1 chat. Public so the
+/// AdsyConnect list's "নতুন চ্যাট" action can open the exact same flow.
+class NewChatModal extends StatefulWidget {
   final BuildContext parentContext;
 
-  const _NewChatModal({required this.parentContext});
+  const NewChatModal({super.key, required this.parentContext});
 
   @override
-  State<_NewChatModal> createState() => _NewChatModalState();
+  State<NewChatModal> createState() => _NewChatModalState();
 }
 
-class _NewChatModalState extends State<_NewChatModal> {
+class _NewChatModalState extends State<NewChatModal> {
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
@@ -2111,8 +2067,7 @@ class _NewChatModalState extends State<_NewChatModal> {
                                   // Avatar
                                   CircleAvatar(
                                     radius: 22,
-                                    backgroundColor: const Color(0xFF3B82F6)
-                                        .withValues(alpha: 0.1),
+                                    backgroundColor: const Color(0xFFF1F5F9),
                                     backgroundImage: _getUserImageUrl(user) !=
                                             null
                                         ? NetworkImage(_getUserImageUrl(user)!)
@@ -2121,7 +2076,7 @@ class _NewChatModalState extends State<_NewChatModal> {
                                         ? Text(
                                             userInitial,
                                             style: const TextStyle(
-                                              color: Color(0xFF3B82F6),
+                                              color: Color(0xFF334155),
                                               fontWeight: FontWeight.w600,
                                               fontSize: 14,
                                             ),
@@ -2163,26 +2118,7 @@ class _NewChatModalState extends State<_NewChatModal> {
                                             // Pro pill — same as the feed.
                                             if (user['is_pro'] == true) ...[
                                               const SizedBox(width: 4),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 1.5),
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      const Color(0xFF3B82F6),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: const Text(
-                                                  'Pro',
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
+                                              const AdsyProBadge(),
                                             ],
                                           ],
                                         ),
@@ -2205,20 +2141,19 @@ class _NewChatModalState extends State<_NewChatModal> {
                                   Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF3B82F6)
-                                          .withValues(alpha: 0.08),
+                                      color: const Color(0xFFF1F5F9),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Image.asset(
                                       'assets/images/chat_icon.png',
                                       width: 16,
                                       height: 16,
-                                      color: const Color(0xFF3B82F6),
+                                      color: const Color(0xFF334155),
                                       errorBuilder:
                                           (context, error, stackTrace) {
-                                        return Icon(
+                                        return const Icon(
                                           Icons.chat_bubble_outline_rounded,
-                                          color: const Color(0xFF3B82F6),
+                                          color: Color(0xFF334155),
                                           size: 16,
                                         );
                                       },

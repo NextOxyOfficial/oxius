@@ -17,6 +17,7 @@ import '../../widgets/login_prompt_dialog.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class ShortsViewer extends StatefulWidget {
   final List<BusinessNetworkPost> posts;
@@ -1664,25 +1665,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                               const TextSpan(text: ' '),
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.middle,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.indigo.shade600,
-                                    borderRadius: BorderRadius.circular(999),
-                                    border: Border.all(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.18)),
-                                  ),
-                                  child: const Text(
-                                    'Pro',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
+                                child: const AdsyProBadge(),
                               ),
                             ],
                             // Inline follow beside the name. Hidden entirely

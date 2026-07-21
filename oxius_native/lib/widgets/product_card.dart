@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oxius_native/utils/image_utils.dart';
 import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 // Marketplace card palette (screenshot-matched): white surface, green price,
 // red discount pill, amber stars.
@@ -268,23 +269,7 @@ class ProductCard extends StatelessWidget {
                 ],
                 if (storePro) ...[
                   const SizedBox(width: 3),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 4, vertical: 1),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                          colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: Text(
-                      'PRO',
-                      style: GoogleFonts.inter(
-                        fontSize: 7.5,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  const AdsyProBadge(),
                 ],
               ],
             ),

@@ -12,6 +12,8 @@ import '../utils/network_error_handler.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import '../widgets/product_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 
 // Clean marketplace palette (screenshot-matched): white surfaces, green
 // accent, near-black text.
@@ -61,8 +63,6 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
   // 0 = Home, 1 = Best Seller, 2 = Categories, 3 = About
   int _tab = 0;
-  // Back-to-top button appears after a long scroll.
-  bool _showBackToTop = false;
 
   // Public store reviews (About tab).
   List<dynamic> _storeReviews = [];
@@ -96,18 +96,6 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         _fetchProducts(loadMore: true);
       }
     }
-    final showTop = _scrollController.position.pixels > 600;
-    if (showTop != _showBackToTop) {
-      setState(() => _showBackToTop = showTop);
-    }
-  }
-
-  void _scrollToTop() {
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 420),
-      curve: Curves.easeOutCubic,
-    );
   }
 
   Future<void> _loadData({bool refresh = false}) async {
@@ -647,25 +635,10 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      floatingActionButton: _showBackToTop
-          ? Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: SizedBox(
-                width: 42,
-                height: 42,
-                child: FloatingActionButton(
-                  onPressed: _scrollToTop,
-                  backgroundColor: _dark,
-                  elevation: 3,
-                  shape: const CircleBorder(),
-                  child: const Icon(Icons.keyboard_arrow_up_rounded,
-                      color: Colors.white, size: 26),
-                ),
-              ),
-            )
-          : null,
       body: SafeArea(
-        child: AdsyRefreshIndicator(
+        child: Stack(
+          children: [
+            AdsyRefreshIndicator(
           color: _green,
           onRefresh: () => _loadData(refresh: true),
           child: CustomScrollView(
@@ -713,6 +686,10 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               ],
             ],
           ),
+            ),
+            // Universal back-to-top.
+            AdsyBackToTop(controller: _scrollController),
+          ],
         ),
       ),
     );
@@ -1286,23 +1263,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   ],
                   if (storePro) ...[
                     const SizedBox(width: 3),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                            colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: Text(
-                        'PRO',
-                        style: GoogleFonts.inter(
-                          fontSize: 7.5,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    const AdsyProBadge(),
                   ],
                 ],
               ),

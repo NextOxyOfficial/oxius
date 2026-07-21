@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
+import '../services/user_suggestions_service.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'create_group_screen.dart';
 import 'group_chat_screen.dart';
+import 'inbox_screen.dart' show NewChatModal;
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
@@ -14,6 +20,9 @@ import '../utils/shared_post_message.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
+import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
+import 'package:oxius_native/widgets/common/adsy_sheet.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 /// Chat-list buckets. Spam is hidden from every tab except its own so junk
 /// never clutters real conversations.
@@ -55,7 +64,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   };
 
   final TextEditingController _chatSearchController = TextEditingController();
+  final ScrollController _listScrollController = ScrollController();
   String _chatSearchQuery = '';
+  // Header search: collapsed to an icon; expands elastically on tap.
+  bool _chatSearchOpen = false;
   _ChatTab _activeChatTab = _ChatTab.all;
   List<Map<String, dynamic>> _groups = [];
   bool _loadingGroups = false;
@@ -180,6 +192,106 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     setState(() {
       _chatSearchQuery = next;
     });
+    _schedulePeopleSearch(next);
+  }
+
+  // ── Smart search: also surface OTHER users (people you haven't chatted
+  // with yet) under the matched conversations, social-media style. ──
+
+  Timer? _peopleDebounce;
+  List<Map<String, dynamic>> _peopleResults = [];
+  bool _peopleSearching = false;
+
+  void _schedulePeopleSearch(String query) {
+    _peopleDebounce?.cancel();
+    final q = query.trim();
+    if (q.length < 2) {
+      if (_peopleResults.isNotEmpty || _peopleSearching) {
+        setState(() {
+          _peopleResults = [];
+          _peopleSearching = false;
+        });
+      }
+      return;
+    }
+    setState(() => _peopleSearching = true);
+    _peopleDebounce = Timer(const Duration(milliseconds: 450), () {
+      _searchPeople(q);
+    });
+  }
+
+  Future<void> _searchPeople(String query) async {
+    try {
+      final token = await AuthService.getValidToken();
+      final headers = <String, String>{'Content-Type': 'application/json'};
+      if (token != null) headers['Authorization'] = 'Bearer $token';
+
+      final uri =
+          Uri.parse('${ApiService.baseUrl}/bn/users/search/').replace(
+        queryParameters: {
+          'q': query,
+          'page_size': '10',
+          'exclude_self': '1',
+        },
+      );
+      final response = await http.get(uri, headers: headers);
+      if (!mounted) return;
+      // Stale response (query changed while in flight) — drop it.
+      if (query != _chatSearchQuery.trim()) return;
+
+      final results = <Map<String, dynamic>>[];
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Users already present in the chat list stay in the চ্যাট section.
+        final knownIds = _chatConversations
+            .map((c) => (c['userId'] ?? '').toString())
+            .toSet();
+        if (data['results'] is List) {
+          for (final item in data['results']) {
+            if (item is! Map) continue;
+            final user = Map<String, dynamic>.from(item);
+            final id = user['id']?.toString() ?? '';
+            if (id.isEmpty || knownIds.contains(id)) continue;
+            results.add(user);
+          }
+        }
+      }
+      setState(() {
+        _peopleResults = results;
+        _peopleSearching = false;
+      });
+    } catch (e) {
+      debugPrint('People search failed: $e');
+      if (mounted) setState(() => _peopleSearching = false);
+    }
+  }
+
+  /// Start (or resume) a 1:1 chat with a user found via smart search.
+  Future<void> _startChatWithUser(Map<String, dynamic> user) async {
+    try {
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(
+        user['id'].toString(),
+      );
+      if (!mounted) return;
+      final name = (user['first_name'] != null && user['last_name'] != null)
+          ? '${user['first_name']} ${user['last_name']}'.trim()
+          : (user['username'] ?? 'User').toString();
+      await _openChat(<String, dynamic>{
+        'id': chatroom['id'].toString(),
+        'userId': user['id'].toString(),
+        'userName': name,
+        'userAvatar': user['profile_picture'] ?? user['image'],
+        'profession': user['profession'],
+        'isOnline': false,
+        'unreadCount': 0,
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final message = e is AdsyChatException
+          ? e.message
+          : 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।';
+      AdsyToast.error(context, message);
+    }
   }
 
   void _startOnlineStatusPolling() {
@@ -305,7 +417,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _onlineStatusTimer?.cancel();
     _realtimeSubscription?.cancel();
     _removeActiveChatOverlay(refreshAfterClose: false);
+    _peopleDebounce?.cancel();
     _chatSearchController.dispose();
+    _listScrollController.dispose();
     super.dispose();
   }
 
@@ -371,7 +485,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       if (q.isEmpty) return true;
       final name = (chat['userName'] ?? '').toString().toLowerCase();
       final msg = (chat['lastMessage'] ?? '').toString().toLowerCase();
-      return name.contains(q) || msg.contains(q);
+      // Only REAL text messages count as message matches — call logs,
+      // shared-post placeholders etc. produce noise (e.g. searching "call"
+      // matching every "Video call · 02:13" row).
+      return name.contains(q) ||
+          (_searchableMessage(msg) && msg.contains(q));
     }).toList();
 
     // The main (সব) tab shows GROUPS inline with 1:1 chats, sorted together
@@ -558,7 +676,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         'unreadCount': room['unread_count'] ?? 0,
         'isOnline': _parseBool(otherUser['is_online'] ?? otherUser['isOnline']),
         'isTyping': false,
-        'isVerified': otherUser['is_verified'] ?? false,
+        // Backend sends kyc (verified) + is_pro on chat counterparts.
+        'isVerified':
+            otherUser['kyc'] == true || otherUser['is_verified'] == true,
+        'isPro': otherUser['is_pro'] == true,
         // Deleted (deactivated) / suspended account flags — the tile labels
         // the name and the profile link is disabled.
         'isDeleted': otherUser['is_active'] == false,
@@ -612,6 +733,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     // Already showing this exact chat — nothing to do.
     if (_activeOverlayChatroomId == chatroomId) return;
 
+    // Optimistic: clear the unread badge instantly — no reload needed.
+    if ((chat['unreadCount'] ?? 0) != 0 && mounted) {
+      setState(() => chat['unreadCount'] = 0);
+    }
+
     // Open the chat overlay immediately so the tap always feels responsive.
     // Previously we awaited markChatroomAsRead() here while holding an
     // open-guard; a slow/hung request left that guard stuck, so further taps
@@ -644,7 +770,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final entry = OverlayEntry(
       builder: (_) => Positioned.fill(
         child: Material(
-          color: const Color(0xFFF0F9FF),
+          color: const Color(0xFFF8FAFC),
           child: ScaffoldMessenger(
             child: Navigator(
               onGenerateRoute: (settings) {
@@ -662,6 +788,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       userAvatar: chat['userAvatar']?.toString(),
                       profession: chat['profession']?.toString(),
                       isOnline: _parseBool(chat['isOnline']),
+                      isVerified: _parseBool(chat['isVerified']),
+                      isPro: _parseBool(chat['isPro']),
                       onClose: _closeActiveChatOverlay,
                     ),
                   );
@@ -802,80 +930,49 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
     return Stack(
       children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _chatSearchController,
-                      style: const TextStyle(fontSize: 14),
-                      textAlignVertical: TextAlignVertical.center,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.search_rounded,
-                            color: Colors.grey.shade500, size: 20),
-                        // Tight icon box so the icon + hint read as one line
-                        // instead of the icon floating far from the text.
-                        prefixIconConstraints:
-                            const BoxConstraints(minWidth: 38, minHeight: 0),
-                        hintText: 'Search chats',
-                        hintStyle: TextStyle(
-                            color: Colors.grey.shade500, fontSize: 14),
-                        isDense: true,
-                        filled: true,
-                        fillColor: const Color(0xFFF1F5F9),
-                        contentPadding: const EdgeInsets.only(
-                            left: 4, right: 12, top: 11, bottom: 11),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
+        AdsyRefreshIndicator(
+          onRefresh: _activeChatTab == _ChatTab.groups
+              ? _loadGroups
+              : _refreshChats,
+          color: const Color(0xFF111827),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification scrollInfo) {
+              if (_activeChatTab != _ChatTab.groups &&
+                  !isFiltering &&
+                  scrollInfo.metrics.pixels >=
+                      scrollInfo.metrics.maxScrollExtent - 200) {
+                _loadMoreChats();
+              }
+              return false;
+            },
+            // Everything scrolls together — search, contacts rail, header
+            // and tabs are NOT sticky (concept design).
+            child: CustomScrollView(
+              controller: _listScrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 6),
+                      // Story-style rail: quick access to recent chats.
+                      if (_chatSearchQuery.trim().isEmpty)
+                        _buildContactsRail(),
+                      // "Chats" header: title + expanding search + menu
+                      // (chat filters now live inside the "…" menu).
+                      _buildChatsHeader(),
+                      const SizedBox(height: 4),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  // Create a new group chat.
-                  InkWell(
-                    onTap: _openCreateGroup,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      height: 44,
-                      width: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Icon(Icons.group_add_outlined,
-                          color: Colors.grey.shade700, size: 21),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Archived chats entry point.
-                  InkWell(
-                    onTap: _openArchivedChats,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      height: 44,
-                      width: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Icon(Icons.archive_outlined,
-                          color: Colors.grey.shade700, size: 21),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            _buildChatTabs(),
-            Expanded(
-              child: _activeChatTab == _ChatTab.groups
-                  ? _buildGroupsList()
-                  : chatsToShow.isEmpty && (isFiltering || !_isLoadingChats)
-                  ? Center(
+                ),
+                if (isFiltering)
+                  ..._buildSmartSearchSlivers(chatsToShow)
+                else if (_activeChatTab == _ChatTab.groups)
+                  ..._buildGroupSlivers()
+                else if (chatsToShow.isEmpty && !_isLoadingChats)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 70),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -887,9 +984,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                 size: 46, color: Colors.grey.shade300),
                           const SizedBox(height: 10),
                           Text(
-                            isFiltering
-                                ? 'No results found'
-                                : _chatTabEmptyMessage,
+                            _chatTabEmptyMessage,
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey.shade600,
@@ -898,22 +993,12 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           ),
                         ],
                       ),
-                    )
-                  : AdsyRefreshIndicator(
-                      onRefresh: _refreshChats,
-                      color: const Color(0xFF3B82F6),
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (ScrollNotification scrollInfo) {
-                          if (!isFiltering &&
-                              scrollInfo.metrics.pixels >=
-                                  scrollInfo.metrics.maxScrollExtent - 200) {
-                            _loadMoreChats();
-                          }
-                          return false;
-                        },
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 8),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+                    sliver: SliverList.builder(
                           itemCount: chatsToShow.length + (isFiltering ? 0 : 1),
                           itemBuilder: (context, index) {
                             if (!isFiltering && index == chatsToShow.length) {
@@ -927,14 +1012,13 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF3B82F6)
-                                              .withValues(alpha: 0.1),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFF1F5F9),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
                                           Icons.check_circle_rounded,
-                                          color: Color(0xFF3B82F6),
+                                          color: Color(0xFF111827),
                                           size: 28,
                                         ),
                                       ),
@@ -975,67 +1059,506 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                             return _buildChatItem(chat);
                           },
                         ),
+                  ),
+                const SliverToBoxAdapter(child: SizedBox(height: 96)),
+              ],
+            ),
+          ),
+        ),
+        // Universal back-to-top (same widget everywhere).
+        AdsyBackToTop(controller: _listScrollController, bottom: 18),
+        // Floating "+ New Chat" pill (concept design) — opens the quick
+        // actions sheet.
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 16,
+          child: Center(
+            child: GestureDetector(
+              onTap: _showNewChatSheet,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF111827),
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.22),
+                      blurRadius: 14,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_rounded, color: Colors.white, size: 19),
+                    SizedBox(width: 6),
+                    Text(
+                      'New Chat',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.1,
                       ),
                     ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
         ),
       ],
     );
   }
 
-  // Bottom sheet of per-conversation actions (long-press).
-  void _showChatActions(Map<String, dynamic> chat) {
-    final id = chat['id']?.toString() ?? '';
-    if (id.isEmpty) return;
-    final bool muted = chat['isMuted'] == true;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-                width: 38,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: const Color(0xFFCBD5E1),
-                    borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 6),
-            _chatActionTile(ctx, Icons.archive_outlined, 'আর্কাইভ করুন',
-                () => _archiveChat(chat)),
-            _chatActionTile(
-                ctx,
-                muted ? Icons.notifications_active_outlined
-                      : Icons.notifications_off_outlined,
-                muted ? 'আনমিউট করুন' : 'মিউট করুন',
-                () => _muteChat(chat, !muted)),
-            _chatActionTile(ctx, Icons.delete_outline_rounded, 'চ্যাট মুছুন',
-                () => _deleteChat(chat), danger: true),
-            const SizedBox(height: 8),
-          ],
-        ),
+  // ── Concept-design pieces: contacts rail, Chats header, New Chat sheet ──
+
+  /// Horizontal story-style rail of the most recent 1:1 chats. First slot is
+  /// the "+" tile (create group). Tap an avatar to jump into that chat.
+  Widget _buildContactsRail() {
+    final recent = _chatConversations
+        .where((c) => c['isGroup'] != true)
+        .take(12)
+        .toList();
+    if (recent.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 84,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
+        itemCount: recent.length + 1,
+        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        itemBuilder: (_, i) {
+          if (i == 0) {
+            // "+" tile — create a group chat.
+            return GestureDetector(
+              onTap: _openCreateGroup,
+              child: SizedBox(
+                width: 56,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: const Icon(Icons.add_rounded,
+                          color: Color(0xFF334155), size: 24),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'নতুন গ্রুপ',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF475569),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          final chat = recent[i - 1];
+          final avatar =
+              AppConfig.getAbsoluteUrl(chat['userAvatar']?.toString() ?? '');
+          final name = (chat['userName'] ?? '').toString();
+          final firstName = name.split(' ').first;
+          final isOnline = chat['isOnline'] == true;
+          return GestureDetector(
+            onTap: () => unawaited(_openChat(chat)),
+            child: SizedBox(
+              width: 56,
+              child: Column(
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 54,
+                        height: 54,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFF1F5F9),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: avatar.isNotEmpty
+                            ? Image.network(
+                                avatar,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Center(
+                                  child: Text(
+                                    name.isNotEmpty
+                                        ? name[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                      color: Color(0xFF334155),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Text(
+                                  name.isNotEmpty
+                                      ? name[0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    color: Color(0xFF334155),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                      ),
+                      if (isOnline)
+                        Positioned(
+                          bottom: 1,
+                          right: 1,
+                          child: Container(
+                            width: 13,
+                            height: 13,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    firstName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _chatActionTile(BuildContext ctx, IconData icon, String label,
-      VoidCallback onTap, {bool danger = false}) {
-    final color = danger ? const Color(0xFFDC2626) : const Color(0xFF334155);
-    return ListTile(
-      leading: Icon(icon, color: color, size: 22),
-      title: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 14.5, fontWeight: FontWeight.w600)),
-      onTap: () {
-        Navigator.pop(ctx);
-        onTap();
-      },
+  /// "Chats" title + elastically expanding search + overflow menu. While the
+  /// search is open the "…" menu hides (concept design).
+  Widget _buildChatsHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 6, 0),
+      child: Row(
+        children: [
+          const Text(
+            'Chats',
+            style: TextStyle(
+              fontSize: 16.5,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF111827),
+              letterSpacing: -0.3,
+            ),
+          ),
+          // Quick filters: all chats / group chats — hidden while the
+          // search input is expanded so it gets the full width.
+          if (!_chatSearchOpen) ...[
+            const SizedBox(width: 8),
+            _quickFilterIcon(_ChatTab.all, Icons.chat_bubble_outline_rounded),
+            const SizedBox(width: 5),
+            _quickFilterIcon(_ChatTab.groups, Icons.groups_outlined),
+          ],
+          // Active filter chip for menu-only filters — tap ✕ to reset.
+          if (_activeChatTab != _ChatTab.all &&
+              _activeChatTab != _ChatTab.groups &&
+              !_chatSearchOpen) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => setState(() => _activeChatTab = _ChatTab.all),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF111827),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _chatTabLabel(_activeChatTab),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.close_rounded,
+                        size: 13, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(width: 10),
+          // Expanding search input — grows from the right.
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 280),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) => SizeTransition(
+                  sizeFactor: animation,
+                  axis: Axis.horizontal,
+                  axisAlignment: 1, // expand towards the left
+                  child: FadeTransition(opacity: animation, child: child),
+                ),
+                child: _chatSearchOpen
+                    ? Container(
+                        key: const ValueKey('chat_search_open'),
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: TextField(
+                          controller: _chatSearchController,
+                          autofocus: true,
+                          style: const TextStyle(fontSize: 13.5),
+                          textAlignVertical: TextAlignVertical.center,
+                          decoration: InputDecoration(
+                            hintText: 'Search chats',
+                            hintStyle: TextStyle(
+                                color: Colors.grey.shade500, fontSize: 13),
+                            isDense: true,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(
+                        key: ValueKey('chat_search_closed')),
+              ),
+            ),
+          ),
+          // Search toggle: magnifier ↔ close.
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _chatSearchOpen = !_chatSearchOpen;
+                if (!_chatSearchOpen) _chatSearchController.clear();
+              });
+            },
+            icon: Icon(
+              _chatSearchOpen ? Icons.close_rounded : Icons.search_rounded,
+              color: const Color(0xFF64748B),
+              size: 21,
+            ),
+          ),
+          if (!_chatSearchOpen)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_horiz_rounded,
+                  color: Color(0xFF64748B), size: 22),
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+              onSelected: (v) {
+                if (v == 'archived') {
+                  _openArchivedChats();
+                  return;
+                }
+                if (v == 'group') {
+                  _openCreateGroup();
+                  return;
+                }
+                // Filter selections.
+                final tab = _ChatTab.values
+                    .cast<_ChatTab?>()
+                    .firstWhere((t) => 'tab_${t!.name}' == v,
+                        orElse: () => null);
+                if (tab != null) {
+                  setState(() => _activeChatTab = tab);
+                  if (tab == _ChatTab.groups && !_groupsLoadedOnce) {
+                    _loadGroups();
+                  }
+                }
+              },
+              itemBuilder: (_) => [
+                for (final t in _ChatTab.values)
+                  PopupMenuItem(
+                    value: 'tab_${t.name}',
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(_chatTabIcon(t),
+                            size: 17,
+                            color: _activeChatTab == t
+                                ? const Color(0xFF111827)
+                                : const Color(0xFF64748B)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _chatTabLabel(t),
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: _activeChatTab == t
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: const Color(0xFF111827),
+                            ),
+                          ),
+                        ),
+                        if (_tabCount(t) > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              '${_tabCount(t)}',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF475569),
+                              ),
+                            ),
+                          ),
+                        if (_activeChatTab == t) ...[
+                          const SizedBox(width: 6),
+                          const Icon(Icons.check_rounded,
+                              size: 16, color: Color(0xFF111827)),
+                        ],
+                      ],
+                    ),
+                  ),
+                const PopupMenuDivider(),
+                const PopupMenuItem(
+                  value: 'archived',
+                  height: 42,
+                  child: Row(
+                    children: [
+                      Icon(Icons.archive_outlined,
+                          size: 17, color: Color(0xFF64748B)),
+                      SizedBox(width: 10),
+                      Text('আর্কাইভড চ্যাট',
+                          style: TextStyle(fontSize: 13.5)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'group',
+                  height: 42,
+                  child: Row(
+                    children: [
+                      Icon(Icons.group_add_outlined,
+                          size: 17, color: Color(0xFF64748B)),
+                      SizedBox(width: 10),
+                      Text('নতুন গ্রুপ তৈরি করুন',
+                          style: TextStyle(fontSize: 13.5)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// The same user-search flow the old floating bubble used to open.
+  void _openUserSearchModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => NewChatModal(parentContext: context),
+    ).then((_) {
+      // A brand-new chatroom may exist now — show it without a manual reload.
+      if (mounted) unawaited(_loadChats());
+    });
+  }
+
+  /// Concept-style quick actions sheet behind the "+ New Chat" pill —
+  /// built on the shared AdsySheet kit (this sheet IS the design source).
+  void _showNewChatSheet() {
+    AdsySheet.show(
+      context,
+      children: [
+        AdsySheetAction(
+          icon: Icons.person_search_rounded,
+          title: 'নতুন চ্যাট',
+          subtitle: 'নাম দিয়ে খুঁজে যে কারো সাথে মেসেজ শুরু করুন',
+          onTap: _openUserSearchModal,
+        ),
+        AdsySheetAction(
+          icon: Icons.group_add_outlined,
+          title: 'নতুন গ্রুপ',
+          subtitle: 'বন্ধুদের নিয়ে একটি গ্রুপ চ্যাট তৈরি করুন',
+          onTap: _openCreateGroup,
+        ),
+        AdsySheetAction(
+          icon: Icons.archive_outlined,
+          title: 'আর্কাইভড চ্যাট',
+          subtitle: 'আর্কাইভ করা চ্যাটগুলো দেখুন ও ফিরিয়ে আনুন',
+          onTap: _openArchivedChats,
+        ),
+      ],
+    );
+  }
+
+  // Bottom sheet of per-conversation actions (long-press) — unified
+  // AdsySheet design.
+  void _showChatActions(Map<String, dynamic> chat) {
+    final id = chat['id']?.toString() ?? '';
+    if (id.isEmpty) return;
+    final bool muted = chat['isMuted'] == true;
+    AdsySheet.show(
+      context,
+      children: [
+        AdsySheetAction(
+          icon: Icons.archive_outlined,
+          title: 'আর্কাইভ করুন',
+          subtitle: 'চ্যাটটি তালিকা থেকে সরিয়ে রাখুন',
+          onTap: () => _archiveChat(chat),
+        ),
+        AdsySheetAction(
+          icon: muted
+              ? Icons.notifications_active_outlined
+              : Icons.notifications_off_outlined,
+          title: muted ? 'আনমিউট করুন' : 'মিউট করুন',
+          subtitle: muted
+              ? 'নোটিফিকেশন আবার চালু হবে'
+              : 'এই চ্যাটের নোটিফিকেশন বন্ধ থাকবে',
+          onTap: () => _muteChat(chat, !muted),
+        ),
+        AdsySheetAction(
+          icon: Icons.delete_outline_rounded,
+          title: 'চ্যাট মুছুন',
+          subtitle: 'আপনার দিক থেকে চ্যাটটি মুছে যাবে',
+          destructive: true,
+          onTap: () => _deleteChat(chat),
+        ),
+      ],
     );
   }
 
@@ -1133,43 +1656,58 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
   }
 
-  Widget _buildGroupsList() {
+  /// Groups tab content as slivers so it scrolls together with the header
+  /// area in the main CustomScrollView.
+  List<Widget> _buildGroupSlivers() {
     if (_loadingGroups) {
-      return const Center(child: AdsyLoadingIndicator());
+      return const [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 70),
+            child: Center(child: AdsyLoadingIndicator()),
+          ),
+        ),
+      ];
     }
     if (_groups.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.groups_outlined, size: 46, color: Colors.grey.shade300),
-            const SizedBox(height: 10),
-            Text('এখনো কোনো গ্রুপ চ্যাট নেই',
-                style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500)),
-            const SizedBox(height: 14),
-            FilledButton.icon(
-              onPressed: _openCreateGroup,
-              style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB)),
-              icon: const Icon(Icons.group_add_outlined, size: 18),
-              label: const Text('গ্রুপ তৈরি করুন'),
+      return [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 70),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.groups_outlined,
+                    size: 46, color: Colors.grey.shade300),
+                const SizedBox(height: 10),
+                Text('এখনো কোনো গ্রুপ চ্যাট নেই',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 14),
+                FilledButton.icon(
+                  onPressed: _openCreateGroup,
+                  style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF111827)),
+                  icon: const Icon(Icons.group_add_outlined, size: 18),
+                  label: const Text('গ্রুপ তৈরি করুন'),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      );
+      ];
     }
-    return AdsyRefreshIndicator(
-      onRefresh: _loadGroups,
-      color: const Color(0xFF3B82F6),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        itemCount: _groups.length,
-        itemBuilder: (_, i) => _buildGroupItem(_groups[i]),
+    return [
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+        sliver: SliverList.builder(
+          itemCount: _groups.length,
+          itemBuilder: (_, i) => _buildGroupItem(_groups[i]),
+        ),
       ),
-    );
+    ];
   }
 
   Widget _buildGroupItem(Map<String, dynamic> group) {
@@ -1191,31 +1729,23 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       onTap: () => _openGroup(group),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            bottom: BorderSide(
-              color: const Color(0xFFE5E7EB).withValues(alpha: 0.4),
-              width: 0.5,
-            ),
-          ),
-        ),
+        color: Colors.white,
         child: Row(
           children: [
             Container(
               width: 48,
               height: 48,
               decoration: const BoxDecoration(
-                  shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+                  shape: BoxShape.circle, color: Color(0xFFF1F5F9)),
               clipBehavior: Clip.antiAlias,
               alignment: Alignment.center,
               child: imageUrl.isNotEmpty
                   ? Image.network(imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const Icon(Icons.groups,
-                          color: Color(0xFF3B82F6), size: 24))
+                          color: Color(0xFF334155), size: 24))
                   : const Icon(Icons.groups,
-                      color: Color(0xFF3B82F6), size: 24),
+                      color: Color(0xFF334155), size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1263,85 +1793,349 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     );
   }
 
-  // Horizontal scrollable pill tabs: All / Mutual / Groups / Non-followers /
-  // Maybe spam. Spam is bucketed away from the other tabs.
-  Widget _buildChatTabs() {
-    const tabs = [
-      (_ChatTab.all, 'সব', Icons.chat_bubble_outline_rounded),
-      (_ChatTab.mutual, 'মিউচুয়াল', Icons.handshake_outlined),
-      (_ChatTab.groups, 'গ্রুপ', Icons.groups_outlined),
-      (_ChatTab.nonFollowers, 'নন-ফলোয়ার', Icons.person_outline_rounded),
-      (_ChatTab.spam, 'স্প্যাম', Icons.report_gmailerrorred_rounded),
+  /// Small circular quick-filter toggle beside the "Chats" title.
+  Widget _quickFilterIcon(_ChatTab tab, IconData icon) {
+    final active = _activeChatTab == tab;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _activeChatTab = tab);
+        if (tab == _ChatTab.groups && !_groupsLoadedOnce) _loadGroups();
+      },
+      child: Container(
+        width: 30,
+        height: 30,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFF111827) : const Color(0xFFF1F5F9),
+          shape: BoxShape.circle,
+        ),
+        // The main chats filter wears the AdsyConnect brand icon.
+        child: tab == _ChatTab.all
+            ? AdsyChatIcon(
+                size: 15,
+                color: active ? Colors.white : const Color(0xFF64748B),
+              )
+            : Icon(icon,
+                size: 16,
+                color: active ? Colors.white : const Color(0xFF64748B)),
+      ),
+    );
+  }
+
+  /// Social-style search results: matched conversations first ("চ্যাট"),
+  /// then other platform users ("নতুন মানুষ") to start a chat with.
+  List<Widget> _buildSmartSearchSlivers(
+      List<Map<String, dynamic>> chatsToShow) {
+    final nothingFound =
+        chatsToShow.isEmpty && _peopleResults.isEmpty && !_peopleSearching;
+    return [
+      if (chatsToShow.isNotEmpty) ...[
+        SliverToBoxAdapter(child: _searchSectionLabel('চ্যাট')),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(4, 2, 4, 0),
+          sliver: SliverList.builder(
+            itemCount: chatsToShow.length,
+            itemBuilder: (context, index) =>
+                _buildChatItem(chatsToShow[index]),
+          ),
+        ),
+      ],
+      if (_peopleSearching)
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 26),
+            child: Center(child: AdsyLoadingIndicator()),
+          ),
+        )
+      else if (_peopleResults.isNotEmpty) ...[
+        SliverToBoxAdapter(child: _searchSectionLabel('নতুন মানুষ')),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(4, 2, 4, 0),
+          sliver: SliverList.builder(
+            itemCount: _peopleResults.length,
+            itemBuilder: (context, index) =>
+                _buildPersonTile(_peopleResults[index]),
+          ),
+        ),
+      ],
+      if (nothingFound)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 70),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.search_off_rounded,
+                    size: 46, color: Colors.grey.shade300),
+                const SizedBox(height: 10),
+                Text(
+                  'No results found',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
     ];
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
-        itemCount: tabs.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) {
-          final (tab, label, icon) = tabs[i];
-          final active = _activeChatTab == tab;
-          final count = _tabCount(tab);
-          return InkWell(
-            onTap: () {
-              setState(() => _activeChatTab = tab);
-              if (tab == _ChatTab.groups && !_groupsLoadedOnce) {
-                _loadGroups();
-              }
-            },
-            borderRadius: BorderRadius.circular(999),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-              decoration: BoxDecoration(
-                color: active ? const Color(0xFF3B82F6) : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(999),
+  }
+
+  Widget _searchSectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 2),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF94A3B8),
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// A platform user (no existing conversation) in smart-search results.
+  Widget _buildPersonTile(Map<String, dynamic> user) {
+    final name = (user['first_name'] != null && user['last_name'] != null)
+        ? '${user['first_name']} ${user['last_name']}'.trim()
+        : (user['username'] ?? 'User').toString();
+    final avatar = AppConfig.getAbsoluteUrl(
+        (user['image'] ?? user['profile_picture'] ?? '').toString());
+    final profession = (user['profession'] ?? '').toString();
+    final verified = user['kyc'] == true || user['is_verified'] == true;
+    final isPro = user['is_pro'] == true;
+
+    return InkWell(
+      onTap: () => unawaited(_startChatWithUser(user)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        color: Colors.white,
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFF1F5F9),
               ),
-              child: Row(
-                children: [
-                  // Brand chat icon for the main tab; Material icons elsewhere.
-                  if (tab == _ChatTab.all)
-                    AdsyChatIcon(
-                        size: 15, color: active ? Colors.white : null)
-                  else
-                    Icon(icon,
-                        size: 15,
-                        color: active ? Colors.white : Colors.grey.shade600),
-                  const SizedBox(width: 5),
-                  Text(label,
-                      style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              active ? Colors.white : const Color(0xFF475569))),
-                  if (count > 0) ...[
-                    const SizedBox(width: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: active
-                            ? Colors.white.withValues(alpha: 0.25)
-                            : Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(999),
+              clipBehavior: Clip.antiAlias,
+              child: avatar.isNotEmpty
+                  ? Image.network(
+                      avatar,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : '?',
+                          style: const TextStyle(
+                            color: Color(0xFF334155),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                      child: Text('$count',
-                          style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
-                              color: active
-                                  ? Colors.white
-                                  : const Color(0xFF475569))),
+                    )
+                  : Center(
+                      child: Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : '?',
+                        style: const TextStyle(
+                          color: Color(0xFF334155),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                  ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                      ),
+                      if (verified) ...[
+                        const SizedBox(width: 4),
+                        const Icon(Icons.verified,
+                            size: 14, color: Color(0xFF2563EB)),
+                      ],
+                      if (isPro) ...[
+                        const SizedBox(width: 4),
+                        const AdsyProBadge(),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    profession.isNotEmpty
+                        ? profession
+                        : 'নতুন চ্যাট শুরু করুন',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
                 ],
               ),
             ),
-          );
-        },
+            const SizedBox(width: 8),
+            // Follow — this is a brand-new person after all.
+            GestureDetector(
+              onTap: () => unawaited(_toggleFollowPerson(user)),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: user['is_following'] == true
+                      ? Colors.white
+                      : const Color(0xFF111827),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: user['is_following'] == true
+                        ? const Color(0xFFE2E8F0)
+                        : const Color(0xFF111827),
+                  ),
+                ),
+                child: Text(
+                  user['is_following'] == true ? 'Following' : 'Follow',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: user['is_following'] == true
+                        ? const Color(0xFF64748B)
+                        : Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Plain brand chat icon (no background) — tap row to chat.
+            const AdsyChatIcon(size: 20, color: Color(0xFF334155)),
+          ],
+        ),
       ),
     );
+  }
+
+  /// True when a chat-list preview is genuine user text worth matching in
+  /// search (skips call logs, shared posts and system placeholders).
+  bool _searchableMessage(String lowerMsg) {
+    final m = lowerMsg.trim();
+    if (m.isEmpty) return false;
+    const nonText = [
+      'video call',
+      'audio call',
+      'message removed',
+      'no messages yet',
+      'photo',
+      'voice message',
+    ];
+    for (final p in nonText) {
+      if (m.startsWith(p) || m.startsWith('📷') || m.startsWith('🎤')) {
+        return false;
+      }
+    }
+    if (m.contains('একটি পোস্ট')) return false;
+    return true;
+  }
+
+  /// Optimistic follow/unfollow from the smart-search person tile.
+  Future<void> _toggleFollowPerson(Map<String, dynamic> user) async {
+    final id = user['id']?.toString() ?? '';
+    if (id.isEmpty) return;
+    final wasFollowing = user['is_following'] == true;
+    setState(() => user['is_following'] = !wasFollowing);
+    final ok = wasFollowing
+        ? await UserSuggestionsService.unfollowUser(id)
+        : await UserSuggestionsService.followUser(id);
+    if (!ok && mounted) {
+      setState(() => user['is_following'] = wasFollowing);
+      AdsyToast.error(context, 'করা যায়নি, আবার চেষ্টা করুন');
+    }
+  }
+
+  /// Preview text with the search query highlighted (soft yellow marker).
+  Widget _highlightedText(String text, TextStyle base) {
+    final q = _chatSearchQuery.trim();
+    if (q.isEmpty) {
+      return Text(text,
+          maxLines: 1, overflow: TextOverflow.ellipsis, style: base);
+    }
+    final idx = text.toLowerCase().indexOf(q.toLowerCase());
+    if (idx < 0) {
+      return Text(text,
+          maxLines: 1, overflow: TextOverflow.ellipsis, style: base);
+    }
+    return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        style: base,
+        children: [
+          TextSpan(text: text.substring(0, idx)),
+          TextSpan(
+            text: text.substring(idx, idx + q.length),
+            style: base.copyWith(
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF111827),
+              backgroundColor: const Color(0x55FACC15),
+            ),
+          ),
+          TextSpan(text: text.substring(idx + q.length)),
+        ],
+      ),
+    );
+  }
+
+  // Chat filter labels/icons — the filters live inside the Chats "…" menu.
+  String _chatTabLabel(_ChatTab tab) {
+    switch (tab) {
+      case _ChatTab.all:
+        return 'সব';
+      case _ChatTab.mutual:
+        return 'মিউচুয়াল';
+      case _ChatTab.groups:
+        return 'গ্রুপ';
+      case _ChatTab.nonFollowers:
+        return 'নন-ফলোয়ার';
+      case _ChatTab.spam:
+        return 'স্প্যাম';
+    }
+  }
+
+  IconData _chatTabIcon(_ChatTab tab) {
+    switch (tab) {
+      case _ChatTab.all:
+        return Icons.chat_bubble_outline_rounded;
+      case _ChatTab.mutual:
+        return Icons.handshake_outlined;
+      case _ChatTab.groups:
+        return Icons.groups_outlined;
+      case _ChatTab.nonFollowers:
+        return Icons.person_outline_rounded;
+      case _ChatTab.spam:
+        return Icons.report_gmailerrorred_rounded;
+    }
   }
 
   Widget _buildChatItem(Map<String, dynamic> chat) {
@@ -1381,18 +2175,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       onTap: () => unawaited(_openChat(chat)),
       onLongPress: () => _showChatActions(chat),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        decoration: BoxDecoration(
-          color: hasUnread
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.02)
-              : Colors.white,
-          border: Border(
-            bottom: BorderSide(
-              color: const Color(0xFFE5E7EB).withValues(alpha: 0.4),
-              width: 0.5,
-            ),
-          ),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        color: Colors.white,
         child: Row(
           children: [
             // Avatar with online indicator
@@ -1404,7 +2188,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   height: 48,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFFEFF6FF),
+                    color: Color(0xFFF1F5F9),
                   ),
                   child: ClipOval(
                     child: chat['userAvatar'] != null &&
@@ -1418,7 +2202,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                 child: Text(
                                   chat['userName'][0].toUpperCase(),
                                   style: const TextStyle(
-                                    color: Color(0xFF3B82F6),
+                                    color: Color(0xFF334155),
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -1430,7 +2214,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                             child: Text(
                               chat['userName'][0].toUpperCase(),
                               style: const TextStyle(
-                                color: Color(0xFF3B82F6),
+                                color: Color(0xFF334155),
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -1479,6 +2263,15 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (chat['isVerified'] == true) ...[
+                              const SizedBox(width: 4),
+                              const Icon(Icons.verified,
+                                  size: 14, color: Color(0xFF2563EB)),
+                            ],
+                            if (chat['isPro'] == true) ...[
+                              const SizedBox(width: 4),
+                              const AdsyProBadge(),
+                            ],
                             if (isTyping) ...[
                               const SizedBox(width: 4),
                               const Text(
@@ -1532,7 +2325,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           fontSize: 11.5,
                           fontWeight: FontWeight.w500,
                           color: hasUnread
-                              ? const Color(0xFF3B82F6)
+                              ? const Color(0xFF111827)
                               : Colors.grey.shade500,
                         ),
                       ),
@@ -1554,9 +2347,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     ),
                   ],
                   const SizedBox(height: 2),
-                  Text(
-                    chat['lastMessage'],
-                    style: TextStyle(
+                  _highlightedText(
+                    (chat['lastMessage'] ?? '').toString(),
+                    TextStyle(
                       fontSize: 13,
                       fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                       color: hasUnread
@@ -1564,8 +2357,6 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           : const Color(0xFF6B7280),
                       letterSpacing: -0.1,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -1573,12 +2364,13 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             const SizedBox(width: 6),
             // Unread badge
             if (hasUnread)
+              // Amber unread badge, matching the concept design.
               Container(
                 constraints: const BoxConstraints(minWidth: 19),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2.5),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFFF59E0B),
                   borderRadius: BorderRadius.all(Radius.circular(999)),
                 ),
                 child: Text(
@@ -1671,7 +2463,9 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
       'userName': name.isNotEmpty ? name : username,
       'userAvatar': otherUser['avatar'],
       'lastMessage': preview,
-      'isVerified': otherUser['is_verified'] == true,
+      'isVerified':
+          otherUser['kyc'] == true || otherUser['is_verified'] == true,
+      'isPro': otherUser['is_pro'] == true,
     };
   }
 
@@ -1801,7 +2595,11 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
                       if (room['isVerified'] == true) ...[
                         const SizedBox(width: 4),
                         const Icon(Icons.verified,
-                            size: 14, color: Color(0xFF3B82F6)),
+                            size: 14, color: Color(0xFF2563EB)),
+                      ],
+                      if (room['isPro'] == true) ...[
+                        const SizedBox(width: 4),
+                        const AdsyProBadge(),
                       ],
                     ],
                   ),
@@ -1819,7 +2617,7 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
             TextButton.icon(
               onPressed: () => _unarchive(room),
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF3B82F6),
+                foregroundColor: const Color(0xFF111827),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 minimumSize: Size.zero,

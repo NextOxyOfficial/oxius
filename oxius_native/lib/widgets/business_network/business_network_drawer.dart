@@ -12,6 +12,7 @@ import 'drawer_news.dart';
 import 'drawer_hashtags.dart';
 import 'drawer_featured_product.dart';
 import 'drawer_contributors.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 /// Side drawer used across the Business Network screens.
 ///
@@ -214,25 +215,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
                               ],
                               if (user.isPro) ...[
                                 const SizedBox(width: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                    vertical: 1,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF59E0B),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'PRO',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.4,
-                                    ),
-                                  ),
-                                ),
+                                const AdsyProBadge(),
                               ],
                             ],
                           ),

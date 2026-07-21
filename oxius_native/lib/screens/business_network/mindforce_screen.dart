@@ -13,6 +13,7 @@ import '../../widgets/mindforce/problem_detail_bottom_sheet.dart';
 import 'profile_options.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -904,24 +905,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                   ],
                                   if (_isUserPro(problem)) ...[
                                     const SizedBox(width: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 1.5),
-                                      decoration: BoxDecoration(
-                                        color: _ink,
-                                        borderRadius:
-                                            BorderRadius.circular(999),
-                                      ),
-                                      child: const Text(
-                                        'PRO',
-                                        style: TextStyle(
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                          letterSpacing: 0.3,
-                                        ),
-                                      ),
-                                    ),
+                                    const AdsyProBadge(),
                                   ],
                                 ],
                               ),

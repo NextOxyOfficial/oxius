@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 /// A scrolling text widget for long usernames that don't fit in the AppBar.
 class MarqueeText extends StatefulWidget {
@@ -153,28 +154,20 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Concept design: clean white bar, dark ink icons, hairline divider.
     return AppBar(
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF3B82F6).withValues(alpha: 0.95),
-              const Color(0xFF6366F1).withValues(alpha: 0.95),
-              const Color(0xFF8B5CF6).withValues(alpha: 0.95),
-            ],
-          ),
-        ),
-      ),
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
       elevation: 0,
+      shape: const Border(
+        bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+      ),
       leadingWidth: 40,
       leading: Padding(
         padding: const EdgeInsets.only(left: 4),
         child: IconButton(
           icon: const Icon(Icons.arrow_back_rounded,
-              color: Colors.white, size: 22),
+              color: Color(0xFF111827), size: 22),
           onPressed: () {
             if (isSearchMode) {
               onCloseSearch();
@@ -197,7 +190,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       controller: searchController,
       focusNode: searchFocusNode,
       style: const TextStyle(
-        color: Colors.white,
+        color: Color(0xFF111827),
         fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
@@ -205,7 +198,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       decoration: InputDecoration(
         hintText: 'Search messages',
         hintStyle: TextStyle(
-          color: Colors.white.withValues(alpha: 0.7),
+          color: Colors.grey.shade400,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -230,14 +223,14 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.notifications_off_rounded,
                 size: 16,
-                color: Colors.white,
+                color: Color(0xFF64748B),
               ),
             ),
           ],
@@ -251,61 +244,32 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     return Stack(
       children: [
         Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.3),
-                blurRadius: 12,
-                spreadRadius: 2,
-              ),
-            ],
+            color: Color(0xFFF1F5F9),
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border:
-                  Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.2),
-                  Colors.white.withValues(alpha: 0.1),
-                ],
-              ),
-            ),
-            child: avatarUrl.isNotEmpty
-                ? ClipOval(
-                    child: Image.network(
-                      avatarUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _initials(),
-                    ),
-                  )
-                : _initials(),
-          ),
+          clipBehavior: Clip.antiAlias,
+          child: avatarUrl.isNotEmpty
+              ? Image.network(
+                  avatarUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _initials(),
+                )
+              : _initials(),
         ),
         if (isOnline)
           Positioned(
-            bottom: 2,
-            right: 2,
+            bottom: 0,
+            right: 0,
             child: Container(
               width: 12,
               height: 12,
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.5),
-                    blurRadius: 6,
-                    spreadRadius: 1,
-                  ),
-                ],
+                border: Border.all(color: Colors.white, width: 2),
               ),
             ),
           ),
@@ -318,8 +282,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: Text(
         userName.isNotEmpty ? userName[0].toUpperCase() : '?',
         style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
+          color: Color(0xFF334155),
+          fontSize: 15,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -362,16 +326,10 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               final needsScroll = textPainter.width > availableWidth;
 
               const nameStyle = TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
                 letterSpacing: -0.3,
-                shadows: [
-                  Shadow(
-                      color: Colors.black26,
-                      offset: Offset(0, 1),
-                      blurRadius: 2),
-                ],
               );
 
               if (needsScroll) {
@@ -391,88 +349,32 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         if (isVerified) ...[
           const SizedBox(width: 4),
-          // White ring so the blue tick stays readable on the purple
-          // gradient header instead of melting into it.
-          Container(
-            padding: const EdgeInsets.all(1.5),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.verified,
-                size: 14, color: Color(0xFF3B82F6)),
-          ),
+          const Icon(Icons.verified, size: 15, color: Color(0xFF2563EB)),
         ],
         if (isPro) ...[
           const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
-              ),
-              borderRadius: BorderRadius.circular(4),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: const Text(
-              'PRO',
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
+          const AdsyProBadge(),
         ],
       ],
     );
   }
 
   Widget _buildStatusRow() {
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isOnline ? const Color(0xFF10B981) : Colors.grey.shade400,
-            boxShadow: isOnline
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.5),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          isTyping
-              ? 'Typing...'
-              : isOnline
-                  ? 'Online'
-                  : lastSeenLabel,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isTyping
-                ? const Color(0xFF93C5FD)
-                : isOnline
-                    ? const Color(0xFF10B981)
-                    : Colors.white.withValues(alpha: 0.7),
-          ),
-        ),
-      ],
+    return Text(
+      isTyping
+          ? 'Typing...'
+          : isOnline
+              ? 'Online'
+              : lastSeenLabel,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: isTyping
+            ? const Color(0xFF16A34A)
+            : isOnline
+                ? const Color(0xFF16A34A)
+                : const Color(0xFF94A3B8),
+      ),
     );
   }
 
@@ -487,8 +389,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               hasMatches
                   ? '${currentMatchPosition + 1}/$searchMatchCount'
                   : '0/0',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.9),
+              style: const TextStyle(
+                color: Color(0xFF64748B),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -498,16 +400,17 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       IconButton(
         onPressed: hasMatches ? onPrevMatch : null,
         icon: const Icon(Icons.keyboard_arrow_up_rounded,
-            color: Colors.white, size: 22),
+            color: Color(0xFF111827), size: 22),
       ),
       IconButton(
         onPressed: hasMatches ? onNextMatch : null,
         icon: const Icon(Icons.keyboard_arrow_down_rounded,
-            color: Colors.white, size: 22),
+            color: Color(0xFF111827), size: 22),
       ),
       IconButton(
         onPressed: onCloseSearch,
-        icon: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+        icon: const Icon(Icons.close_rounded,
+            color: Color(0xFF111827), size: 20),
       ),
     ];
   }
@@ -515,17 +418,19 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   List<Widget> _buildNormalActions() {
     return [
       IconButton(
-        onPressed: () => onStartCall('audio'),
-        icon: const Icon(Icons.call_rounded, color: Colors.white, size: 24),
+        onPressed: () => onStartCall('video'),
+        icon: const Icon(Icons.videocam_outlined,
+            color: Color(0xFF111827), size: 24),
       ),
       IconButton(
-        onPressed: () => onStartCall('video'),
-        icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 26),
+        onPressed: () => onStartCall('audio'),
+        icon: const Icon(Icons.call_outlined,
+            color: Color(0xFF111827), size: 22),
       ),
       Builder(
         builder: (ctx) => IconButton(
           icon: const Icon(Icons.more_vert_rounded,
-              color: Colors.white, size: 24),
+              color: Color(0xFF111827), size: 24),
           onPressed: () => _showActionMenu(ctx),
         ),
       ),
@@ -604,21 +509,21 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             value: 'search',
             icon: Icons.search_rounded,
             label: 'Search messages',
-            iconColor: const Color(0xFF3B82F6),
+            iconColor: const Color(0xFF334155),
           ),
           _menuItem(
             close: close,
             value: 'view_profile',
             icon: Icons.person_rounded,
             label: 'View ABN Profile',
-            iconColor: const Color(0xFF3B82F6),
+            iconColor: const Color(0xFF334155),
           ),
           _menuItem(
             close: close,
             value: 'clear_chat',
             icon: Icons.cleaning_services_rounded,
             label: 'Clear messages',
-            iconColor: const Color(0xFF8B5CF6),
+            iconColor: const Color(0xFF334155),
           ),
           _menuItem(
             close: close,

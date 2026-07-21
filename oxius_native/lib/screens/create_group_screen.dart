@@ -7,6 +7,7 @@ import '../config/app_config.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/user_search_service.dart';
 import '../widgets/common/adsy_loading.dart';
+import '../widgets/common/adsy_pro_badge.dart';
 import '../widgets/common/adsy_toast.dart';
 
 /// Create a new AdsyConnect group.
@@ -39,13 +40,16 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   // Search results (all users) while a query is typed.
   List<Map<String, dynamic>> _searchResults = [];
   bool _searching = false;
+  // Concept UI: name shows as text + pen, search collapses to an icon.
+  bool _editingName = false;
+  bool _memberSearchOpen = false;
   int _seq = 0;
 
   bool _creating = false;
   String? _imagePath;
 
   static const int _pageSize = 20;
-  static const Color _blue = Color(0xFF2563EB);
+  static const Color _blue = Color(0xFF111827);
 
   @override
   void initState() {
@@ -93,6 +97,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           'name':
               name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
           'avatar': u['avatar'] ?? u['image'],
+          'isVerified': u['kyc'] == true || u['is_verified'] == true,
+          'isPro': u['is_pro'] == true,
         };
       }).where(
           (u) => (u['id'] as String).isNotEmpty && !existing.contains(u['id']));
@@ -126,6 +132,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   'id': u.id,
                   'name': u.name.isNotEmpty ? u.name : (u.username ?? 'User'),
                   'avatar': u.image ?? u.avatar,
+                  'isVerified': u.isVerified,
+                  'isPro': u.isPro,
                 })
             .toList();
         _searching = false;
@@ -204,43 +212,96 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 // ── Selected member avatars ──
                 if (_selected.isNotEmpty)
                   SliverToBoxAdapter(child: _buildSelectedRow()),
-                // ── Search ──
+                // ── Members header: title + expanding chat-style search ──
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                    child: TextField(
-                      controller: _search,
-                      style: const TextStyle(fontSize: 14),
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.search_rounded,
-                            color: Colors.grey.shade500, size: 20),
-                        prefixIconConstraints:
-                            const BoxConstraints(minWidth: 40, minHeight: 0),
-                        hintText: 'মেম্বার সার্চ করুন',
-                        hintStyle: TextStyle(
-                            color: Colors.grey.shade400, fontSize: 14),
-                        isDense: true,
-                        filled: true,
-                        fillColor: const Color(0xFFF1F5F9),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                    padding: const EdgeInsets.fromLTRB(20, 6, 8, 0),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'মেম্বার',
+                          style: TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF111827),
+                            letterSpacing: -0.2,
+                          ),
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: _blue, width: 1.3),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 280),
+                              switchInCurve: Curves.easeOutCubic,
+                              switchOutCurve: Curves.easeInCubic,
+                              transitionBuilder: (child, animation) =>
+                                  SizeTransition(
+                                sizeFactor: animation,
+                                axis: Axis.horizontal,
+                                axisAlignment: 1,
+                                child: FadeTransition(
+                                    opacity: animation, child: child),
+                              ),
+                              child: _memberSearchOpen
+                                  ? Container(
+                                      key: const ValueKey(
+                                          'member_search_open'),
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F5F9),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                      ),
+                                      child: TextField(
+                                        controller: _search,
+                                        autofocus: true,
+                                        style: const TextStyle(
+                                            fontSize: 13.5),
+                                        textAlignVertical:
+                                            TextAlignVertical.center,
+                                        decoration: InputDecoration(
+                                          hintText: 'মেম্বার সার্চ করুন',
+                                          hintStyle: TextStyle(
+                                              color: Colors.grey.shade500,
+                                              fontSize: 13),
+                                          isDense: true,
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 10),
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(
+                                      key: ValueKey('member_search_closed')),
+                            ),
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _memberSearchOpen = !_memberSearchOpen;
+                              if (!_memberSearchOpen) _search.clear();
+                            });
+                          },
+                          icon: Icon(
+                            _memberSearchOpen
+                                ? Icons.close_rounded
+                                : Icons.search_rounded,
+                            color: const Color(0xFF64748B),
+                            size: 21,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 // ── Section label ──
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(22, 12, 22, 4),
+                    padding: const EdgeInsets.fromLTRB(22, 6, 22, 4),
                     child: Text(
                       _search.text.trim().isEmpty
                           ? 'আপনার রিসেন্ট চ্যাট একটিভিটি থেকে'
@@ -304,98 +365,138 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     );
   }
 
-  // Big centered photo picker with a camera badge, name field underneath.
+  // Big centered photo picker with a camera badge; the group name shows as
+  // text + edit pen — tapping the pen reveals a compact inline input.
   Widget _buildIdentityHeader() {
+    final typedName = _name.text.trim();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
       child: Column(
         children: [
           InkWell(
             onTap: _pickPhoto,
-            borderRadius: BorderRadius.circular(40),
+            borderRadius: BorderRadius.circular(48),
             child: Stack(
               children: [
                 Container(
-                  width: 76,
-                  height: 76,
+                  width: 96,
+                  height: 96,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: _imagePath == null
-                        ? const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
-                          )
-                        : null,
+                    color: _imagePath == null ? const Color(0xFFF1F5F9) : null,
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: _imagePath != null
                       ? Image.file(File(_imagePath!),
-                          width: 76, height: 76, fit: BoxFit.cover)
+                          width: 96, height: 96, fit: BoxFit.cover)
                       : const Icon(Icons.groups_rounded,
-                          size: 34, color: Color(0xFF3B82F6)),
+                          size: 42, color: Color(0xFF334155)),
                 ),
                 Positioned(
-                  bottom: -1,
-                  right: -1,
+                  bottom: 0,
+                  right: 0,
                   child: Container(
-                    width: 26,
-                    height: 26,
+                    width: 30,
+                    height: 30,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _blue,
                       border: Border.all(color: Colors.white, width: 2.5),
                     ),
                     child: const Icon(Icons.camera_alt_rounded,
-                        size: 12, color: Colors.white),
+                        size: 14, color: Colors.white),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          TextField(
-            controller: _name,
-            maxLength: 80,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            decoration: InputDecoration(
-              hintText: 'গ্রুপের নাম দিন',
-              hintStyle: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400),
-              prefixIcon: Icon(Icons.groups_2_outlined,
-                  size: 19, color: Colors.grey.shade500),
-              prefixIconConstraints:
-                  const BoxConstraints(minWidth: 42, minHeight: 0),
-              counterText: '',
-              isDense: true,
-              filled: true,
-              fillColor: const Color(0xFFF1F5F9),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+          const SizedBox(height: 12),
+          if (_editingName)
+            // Compact chat-style input, shown only while editing.
+            TextField(
+              controller: _name,
+              autofocus: true,
+              maxLength: 80,
+              textAlign: TextAlign.center,
+              style:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              onSubmitted: (_) => setState(() => _editingName = false),
+              onTapOutside: (_) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                setState(() => _editingName = false);
+              },
+              decoration: InputDecoration(
+                hintText: 'গ্রুপের নাম দিন',
+                hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w400),
+                counterText: '',
+                isDense: true,
+                filled: true,
+                fillColor: const Color(0xFFF1F5F9),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  borderSide: BorderSide.none,
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: _blue, width: 1.3),
+            )
+          else
+            // Name as plain text + edit pen (concept-minimal).
+            InkWell(
+              onTap: () => setState(() => _editingName = true),
+              borderRadius: BorderRadius.circular(999),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        typedName.isEmpty ? 'গ্রুপের নাম দিন' : typedName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: typedName.isEmpty
+                              ? FontWeight.w500
+                              : FontWeight.w800,
+                          color: typedName.isEmpty
+                              ? Colors.grey.shade400
+                              : const Color(0xFF111827),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 26,
+                      height: 26,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.edit_rounded,
+                          size: 13, color: Color(0xFF334155)),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  // Selected members as avatar bubbles with a ✕ badge (Messenger-style).
+  // Selected members as avatar bubbles with a ✕ badge — wraps onto new
+  // lines instead of a single horizontal slider.
   Widget _buildSelectedRow() {
-    return SizedBox(
-      height: 86,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 6, 6),
+      child: Wrap(
+        runSpacing: 10,
         children: _selected.values.map((u) {
           final name = u['name'].toString();
           final avatar =
@@ -542,13 +643,28 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             const SizedBox(width: 13),
             Expanded(
-              child: Text(name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937))),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1F2937))),
+                  ),
+                  if (u['isVerified'] == true) ...[
+                    const SizedBox(width: 4),
+                    const Icon(Icons.verified,
+                        size: 14, color: Color(0xFF2563EB)),
+                  ],
+                  if (u['isPro'] == true) ...[
+                    const SizedBox(width: 4),
+                    const AdsyProBadge(fontSize: 9),
+                  ],
+                ],
+              ),
             ),
             AnimatedContainer(
               duration: const Duration(milliseconds: 160),
@@ -575,7 +691,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Widget _initial(String name) => Text(
         name.isNotEmpty ? name[0].toUpperCase() : '?',
         style: const TextStyle(
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF334155),
             fontSize: 17,
             fontWeight: FontWeight.w700),
       );

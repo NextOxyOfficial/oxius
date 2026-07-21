@@ -49,17 +49,17 @@ class ChatReplyQuoteCard extends StatelessWidget {
     final replyToId = message['replyToId']?.toString() ?? '';
 
     final accent =
-        isMe ? Colors.white.withValues(alpha: 0.95) : const Color(0xFF3B82F6);
+        const Color(0xFF111827);
     final bg = isMe
-        ? Colors.white.withValues(alpha: 0.18)
-        : const Color(0xFF3B82F6).withValues(alpha: 0.08);
+        ? Colors.black.withValues(alpha: 0.08)
+        : const Color(0xFF111827).withValues(alpha: 0.08);
     final border = isMe
-        ? Colors.white.withValues(alpha: 0.22)
-        : const Color(0xFF3B82F6).withValues(alpha: 0.18);
+        ? Colors.black.withValues(alpha: 0.14)
+        : const Color(0xFF111827).withValues(alpha: 0.18);
     final titleColor =
-        isMe ? Colors.white.withValues(alpha: 0.95) : const Color(0xFF111827);
+        const Color(0xFF111827);
     final previewColor =
-        isMe ? Colors.white.withValues(alpha: 0.85) : const Color(0xFF4B5563);
+        const Color(0xFF4B5563);
 
     return GestureDetector(
       onTap: replyToId.isNotEmpty ? () => onTapReply(replyToId) : null,
@@ -331,7 +331,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           child: Text(
             widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
             style: const TextStyle(
-              color: Color(0xFF3B82F6),
+              color: Color(0xFF111827),
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -344,7 +344,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       margin: const EdgeInsets.only(right: 6, bottom: 2),
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color(0xFFEFF6FF),
+        color: Color(0xFFF1F5F9),
       ),
       child: avatarUrl.isEmpty
           ? fallback()
@@ -402,7 +402,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       color: previewOnly
           ? Colors.transparent
           : isMe
-              ? const Color(0xFF2563EB)
+              ? const Color(0xFFFACC15)
               : const Color(0xFFF1F5F9),
       border: widget.isSearchHit
           ? Border.all(
@@ -463,14 +463,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(Icons.block_rounded,
-            size: 14, color: isMe ? Colors.white70 : Colors.grey.shade500),
+            size: 14, color: isMe ? const Color(0xFF6B7280) : Colors.grey.shade500),
         const SizedBox(width: 6),
         Text(
           'Message removed',
           style: TextStyle(
             fontSize: 13.5,
             fontStyle: FontStyle.italic,
-            color: isMe ? Colors.white70 : Colors.grey.shade500,
+            color: isMe ? const Color(0xFF6B7280) : Colors.grey.shade500,
           ),
         ),
       ],
@@ -550,11 +550,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               text,
               style: TextStyle(
                 fontSize: 16,
-                color: isMe ? Colors.white : const Color(0xFF1F2937),
+                color: const Color(0xFF1F2937),
                 height: 1.38,
               ),
               linkStyle: TextStyle(
-                color: isMe ? Colors.white : const Color(0xFF2563EB),
+                color: const Color(0xFF111827),
                 decoration: TextDecoration.none,
               ),
             ),
@@ -566,7 +566,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 fontSize: 10.5,
                 fontWeight: FontWeight.w600,
                 color: isMe
-                    ? Colors.white.withValues(alpha: 0.72)
+                    ? const Color(0xFF111827).withValues(alpha: 0.6)
                     : const Color(0xFF64748B),
               ),
             ),
@@ -694,14 +694,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isMe
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    ? Colors.black.withValues(alpha: 0.08)
+                    : const Color(0xFF111827).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 size: 28,
-                color: isMe ? Colors.white : const Color(0xFF3B82F6),
+                color: const Color(0xFF111827),
               ),
             ),
             const SizedBox(width: 12),
@@ -717,8 +717,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
                       decoration: BoxDecoration(
                         color: isMe
-                            ? Colors.white.withValues(alpha: 0.85)
-                            : const Color(0xFF3B82F6).withValues(alpha: 0.65),
+                            ? const Color(0xFF111827).withValues(alpha: 0.7)
+                            : const Color(0xFF111827).withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -733,7 +733,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: isMe
-                        ? Colors.white.withValues(alpha: 0.9)
+                        ? const Color(0xFF111827).withValues(alpha: 0.8)
                         : const Color(0xFF6B7280),
                   ),
                 ),
@@ -779,7 +779,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     } else if (lowerDetail.contains('cancel')) {
       accent = const Color(0xFF9CA3AF);
     } else {
-      accent = const Color(0xFF3B82F6);
+      accent = const Color(0xFF111827);
     }
 
     return Row(
@@ -790,11 +790,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           height: 34,
           decoration: BoxDecoration(
             color: isMe
-                ? Colors.white.withValues(alpha: 0.18)
+                ? Colors.black.withValues(alpha: 0.08)
                 : accent.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 18, color: isMe ? Colors.white : accent),
+          child: Icon(icon, size: 18, color: isMe ? const Color(0xFF111827) : accent),
         ),
         const SizedBox(width: 10),
         Flexible(
@@ -810,7 +810,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.1,
-                  color: isMe ? Colors.white : const Color(0xFF111827),
+                  color: const Color(0xFF111827),
                 ),
               ),
               if (detail.isNotEmpty) ...[
@@ -820,12 +820,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isMe
-                        ? Colors.white.withValues(alpha: 0.18)
+                        ? Colors.black.withValues(alpha: 0.08)
                         : accent.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
                       color: isMe
-                          ? Colors.white.withValues(alpha: 0.20)
+                          ? Colors.black.withValues(alpha: 0.10)
                           : accent.withValues(alpha: 0.25),
                     ),
                   ),
@@ -836,7 +836,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isMe ? Colors.white.withValues(alpha: 0.95) : accent,
+                      color: isMe ? const Color(0xFF111827) : accent,
                     ),
                   ),
                 ),
@@ -947,7 +947,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               color: Colors.transparent,
               border: Border.all(
                 color: isMe
-                    ? Colors.white.withValues(alpha: 0.3)
+                    ? Colors.black.withValues(alpha: 0.12)
                     : const Color(0xFF10B981).withValues(alpha: 0.3),
                 width: 1.5,
               ),
@@ -956,7 +956,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             child: Icon(
               Icons.insert_drive_file_rounded,
               size: 20,
-              color: isMe ? Colors.white : const Color(0xFF10B981),
+              color: isMe ? const Color(0xFF111827) : const Color(0xFF10B981),
             ),
           ),
           const SizedBox(width: 10),
@@ -970,7 +970,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isMe ? Colors.white : const Color(0xFF1F2937),
+                    color: const Color(0xFF1F2937),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -985,7 +985,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: isMe
-                          ? Colors.white.withValues(alpha: 0.7)
+                          ? const Color(0xFF111827).withValues(alpha: 0.6)
                           : const Color(0xFF6B7280),
                     ),
                   ),
@@ -994,7 +994,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     Icons.download_rounded,
                     size: 12,
                     color: isMe
-                        ? Colors.white.withValues(alpha: 0.7)
+                        ? const Color(0xFF111827).withValues(alpha: 0.6)
                         : const Color(0xFF6B7280),
                   ),
                 ],
@@ -1023,7 +1023,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 : Icons.done_rounded,
             size: 14,
             color: message['isSeen'] == true
-                ? const Color(0xFF3B82F6)
+                ? const Color(0xFF111827)
                 : Colors.grey.shade400,
           ),
         ],

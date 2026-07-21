@@ -363,7 +363,7 @@ class ChatMessageInput extends StatelessWidget {
         if (isUploadingAttachment && !isCompressingImages)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+            color: const Color(0xFF111827).withValues(alpha: 0.1),
             child: Row(
               children: [
                 const SizedBox(
@@ -372,7 +372,7 @@ class ChatMessageInput extends StatelessWidget {
                   child: AdsyLoadingIndicator(
                     strokeWidth: 2,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                        AlwaysStoppedAnimation<Color>(Color(0xFF111827)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -380,7 +380,7 @@ class ChatMessageInput extends StatelessWidget {
                   'Uploading...',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF3B82F6),
+                    color: Color(0xFF111827),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -399,46 +399,26 @@ class ChatMessageInput extends StatelessWidget {
         // gradient instead.
         SafeArea(
           top: false,
+          // Concept-minimal composer: plain "+", soft pill input, mic/send.
           child: Container(
-            margin: const EdgeInsets.fromLTRB(8, 4, 8, 8),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.88),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.84)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(6, 6, 8, 8),
             child: Row(
               children: [
-                // Attachment button
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.attach_file_rounded, size: 22),
-                    color: const Color(0xFF3B82F6),
-                    padding: EdgeInsets.zero,
-                    onPressed: onShowAttachmentOptions,
-                  ),
+                // Attachment "+" — plain icon, no box.
+                IconButton(
+                  icon: const Icon(Icons.add_rounded, size: 26),
+                  color: const Color(0xFF111827),
+                  onPressed: onShowAttachmentOptions,
                 ),
-                const SizedBox(width: 8),
                 // Text field
                 Expanded(
+                  // Rounded-rect (not stadium) so multi-line messages keep a
+                  // clean card shape instead of ballooning into an oval.
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
+                      color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: TextField(
                       controller: messageController,
@@ -453,33 +433,31 @@ class ChatMessageInput extends StatelessWidget {
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           color: Colors.grey.shade400,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
+                          horizontal: 18,
+                          vertical: 11,
                         ),
                       ),
                       onSubmitted: (_) => onSend(),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 // Send / Mic button
                 if (isTyping)
                   Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF18C29C), Color(0xFF2563EB)],
-                      ),
-                      borderRadius: BorderRadius.circular(18),
+                    width: 42,
+                    height: 42,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF111827),
+                      shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.send_rounded, size: 22),
+                      icon: const Icon(Icons.send_rounded, size: 20),
                       color: Colors.white,
                       padding: EdgeInsets.zero,
                       onPressed: onSend,
@@ -488,17 +466,13 @@ class ChatMessageInput extends StatelessWidget {
                 else
                   GestureDetector(
                     onLongPress: onStartRecording,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: const Icon(
-                        Icons.mic_rounded,
-                        size: 22,
-                        color: Color(0xFF10B981),
+                    child: const SizedBox(
+                      width: 42,
+                      height: 42,
+                      child: Icon(
+                        Icons.mic_none_rounded,
+                        size: 24,
+                        color: Color(0xFF111827),
                       ),
                     ),
                   ),
@@ -525,7 +499,7 @@ class ChatMessageInput extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF111827),
                 ),
               ),
               TextButton.icon(
@@ -535,7 +509,7 @@ class ChatMessageInput extends StatelessWidget {
                 style: TextButton.styleFrom(
                   foregroundColor: isUploadingAttachment
                       ? Colors.grey
-                      : const Color(0xFF3B82F6),
+                      : const Color(0xFF111827),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 ),
@@ -614,10 +588,10 @@ class ChatMessageInput extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+          color: const Color(0xFF111827).withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.18)),
+              color: const Color(0xFF111827).withValues(alpha: 0.18)),
         ),
         child: Row(
           children: [
@@ -630,7 +604,7 @@ class ChatMessageInput extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.format_quote_rounded,
-                          size: 14, color: Color(0xFF3B82F6)),
+                          size: 14, color: Color(0xFF111827)),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,6 +26,7 @@ import '../utils/video_upload_helper.dart';
 import 'business_network/profile_screen.dart';
 import 'call_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import 'package:oxius_native/widgets/common/adsy_report_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../utils/url_launcher_utils.dart';
@@ -1728,12 +1728,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      color: const Color(0xFF111827).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.edit_rounded,
-                      color: Color(0xFF3B82F6),
+                      color: Color(0xFF111827),
                       size: 20,
                     ),
                   ),
@@ -1770,7 +1770,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                    borderSide: const BorderSide(color: Color(0xFF111827)),
                   ),
                   contentPadding: const EdgeInsets.all(12),
                 ),
@@ -1865,7 +1865,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF111827),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -2095,7 +2095,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                     _buildAttachmentOption(
                       icon: Icons.camera_alt_rounded,
                       label: 'Camera',
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF111827),
                       onTap: () {
                         Navigator.pop(context);
                         _pickImageFromCamera();
@@ -2867,21 +2867,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       // is opaque black, so a transparent Scaffold leaks black behind the
       // status bar / app bar / during transition animations. Use the first
       // gradient color so the screen looks seamless before the body paints.
-      backgroundColor: const Color(0xFFF0F9FF),
+      backgroundColor: Colors.white,
       extendBodyBehindAppBar: false,
       appBar: _buildAppBar(),
+      // Concept design: plain white canvas — the bubbles carry the color.
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFFF0F9FF),
-              const Color(0xFFFAF5FF),
-              const Color(0xFFFDF2F8),
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: Stack(
           children: [
             Column(
@@ -3049,28 +3040,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 child: AnimatedOpacity(
                   opacity: _isUserNearBottom ? 0.0 : 1.0,
                   duration: const Duration(milliseconds: 300),
-                  child: GestureDetector(
+                  // Universal scroll-jump circle (same as back-to-top).
+                  child: AdsyScrollCircleButton(
                     onTap: _scrollToBottom,
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
+                    up: false,
                   ),
                 ),
               ),
@@ -3151,7 +3124,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              color: const Color(0xFF111827).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const AdsyChatIcon(size: 48),
@@ -3357,7 +3330,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           children: [
             ListTile(
               leading:
-                  const Icon(Icons.download_rounded, color: Color(0xFF3B82F6)),
+                  const Icon(Icons.download_rounded, color: Color(0xFF111827)),
               title: const Text('Download Image'),
               onTap: () async {
                 Navigator.pop(context);

@@ -61,7 +61,7 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
         ),
         callToActionTextStyle: NativeTemplateTextStyle(
           textColor: Colors.white,
-          backgroundColor: const Color(0xFF2563EB),
+          backgroundColor: const Color(0xFF16A34A),
           size: 14,
           style: NativeTemplateFontStyle.bold,
         ),
@@ -125,13 +125,19 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
               ],
             ),
           ),
-          // Medium native template needs ~320dp of height to lay out the
-          // media, headline and CTA without clipping.
-          SizedBox(
-            height: 320,
-            width: double.infinity,
-            child: AdWidget(ad: ad),
-          ),
+          // Medium native template height flexes with the device text scale —
+          // a fixed 320 clipped the CTA on phones with larger fonts.
+          Builder(builder: (context) {
+            final textScale =
+                MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.6);
+            final height =
+                (356.0 + (textScale - 1.0) * 140.0).clamp(356.0, 440.0);
+            return SizedBox(
+              height: height,
+              width: double.infinity,
+              child: AdWidget(ad: ad),
+            );
+          }),
         ],
       ),
     );

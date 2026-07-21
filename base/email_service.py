@@ -1840,7 +1840,7 @@ def send_support_reply_email(ticket, reply_message=""):
 """
     html = _base_template(
         subject, body,
-        "কথোপকথন চালিয়ে যেতে অ্যাপ বা ওয়েবসাইট থেকে রিপ্লাই দিন — আমরা আছি।",
+        "চ্যাট চালিয়ে যেতে অ্যাপ বা ওয়েবসাইট থেকে রিপ্লাই দিন — আমরা আছি।",
     )
     return _send_email(subject, user.email, text, html)
 

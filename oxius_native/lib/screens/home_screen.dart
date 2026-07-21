@@ -41,6 +41,7 @@ import 'package:app_badge_plus/app_badge_plus.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/home/home_popup_dialog.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool autoRefreshOnOpen;
@@ -2088,40 +2089,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Positioned(
                 top: -6,
                 right: -10,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0xFF6366F1).withValues(alpha: 0.4),
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.shield,
-                        size: 10,
-                        color: Colors.white,
-                      ),
-                      SizedBox(width: 2),
-                      Text(
-                        'Pro',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                child: const AdsyProBadge(),
               ),
 
             // Verified badge (bottom-right)

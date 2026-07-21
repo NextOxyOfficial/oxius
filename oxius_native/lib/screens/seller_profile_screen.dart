@@ -13,6 +13,7 @@ import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 /// Seller Profile Screen - Display seller information and their listings
 class SellerProfileScreen extends StatefulWidget {
@@ -369,22 +370,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                           ],
                           if (isPro) ...[
                             const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 3),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [
-                                  Color(0xFF4F46E5),
-                                  Color(0xFF2563EB)
-                                ]),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: const Text('PRO',
-                                  style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800)),
-                            ),
+                            const AdsyProBadge(),
                           ],
                           const SizedBox(width: 8),
                           GestureDetector(

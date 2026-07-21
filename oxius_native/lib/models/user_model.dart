@@ -8,6 +8,7 @@ class User {
   final String? phone;
   final String? email;
   final bool isVerified;
+  final bool isPro;
 
   User({
     required this.id,
@@ -19,6 +20,7 @@ class User {
     this.phone,
     this.email,
     this.isVerified = false,
+    this.isPro = false,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -42,7 +44,9 @@ class User {
       profession: json['profession'],
       phone: json['phone'],
       email: json['email'],
-      isVerified: json['is_verified'] ?? false,
+      // Backend serializers use kyc for the verified flag.
+      isVerified: json['is_verified'] ?? (json['kyc'] == true),
+      isPro: json['is_pro'] == true,
     );
   }
 
@@ -57,6 +61,7 @@ class User {
       if (phone != null) 'phone': phone,
       if (email != null) 'email': email,
       'is_verified': isVerified,
+      'is_pro': isPro,
     };
   }
 }

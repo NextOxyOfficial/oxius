@@ -23,6 +23,7 @@ import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 // Design tokens
 const _indigo = Color(0xFF6366F1);
@@ -1834,21 +1835,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   Widget _buildProBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: _indigo,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        'Pro',
-        style: GoogleFonts.inter(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-        ),
-      ),
-    );
+    return const AdsyProBadge();
   }
 
   Widget _buildTripsBadge(int completedTrips) {

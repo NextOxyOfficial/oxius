@@ -21,6 +21,7 @@ import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
+import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
   const ProfileOptionsScreen({super.key});
@@ -514,23 +515,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                     ],
                     if (isPro) ...[
                       const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'PRO',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
+                      const AdsyProBadge(),
                     ],
                   ],
                 ),

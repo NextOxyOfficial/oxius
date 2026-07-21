@@ -13,6 +13,7 @@ import '../models/cart_item.dart';
 import 'vendor_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 
 // Clean marketplace palette — matches the vendor store page.
 const _green = Color(0xFF22C55E);
@@ -41,7 +42,6 @@ class _EshopScreenState extends State<EshopScreen> {
   bool _isSearching = false;
   bool _isLoadingMore = false;
   bool _hasMoreResults = true;
-  bool _showBackToTop = false;
 
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _searchResults = [];
@@ -312,12 +312,6 @@ class _EshopScreenState extends State<EshopScreen> {
   }
 
   void _onScroll() {
-    final showTop = _scrollController.hasClients &&
-        _scrollController.position.pixels > 600;
-    if (showTop != _showBackToTop) {
-      setState(() => _showBackToTop = showTop);
-    }
-
     if (_isLoadingMore || !_hasMoreResults || _isSearchActive) return;
 
     final maxScroll = _scrollController.position.maxScrollExtent;
@@ -327,15 +321,6 @@ class _EshopScreenState extends State<EshopScreen> {
     if (currentScroll >= maxScroll - 200) {
       _loadMoreProducts();
     }
-  }
-
-  void _scrollToTop() {
-    if (!_scrollController.hasClients) return;
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 420),
-      curve: Curves.easeOutCubic,
-    );
   }
 
   String _normalizeSearchQuery(String query) {
@@ -678,23 +663,6 @@ class _EshopScreenState extends State<EshopScreen> {
         key: _scaffoldKey,
         backgroundColor: Colors.white,
         endDrawer: _buildCategoryDrawer(),
-        floatingActionButton: _showBackToTop && !_isSearchActive
-            ? Padding(
-                padding: const EdgeInsets.only(bottom: 64),
-                child: SizedBox(
-                  width: 42,
-                  height: 42,
-                  child: FloatingActionButton(
-                    onPressed: _scrollToTop,
-                    backgroundColor: _dark,
-                    elevation: 3,
-                    shape: const CircleBorder(),
-                    child: const Icon(Icons.keyboard_arrow_up_rounded,
-                        color: Colors.white, size: 26),
-                  ),
-                ),
-              )
-            : null,
         body: SafeArea(
           bottom: false,
           child: Stack(
@@ -709,6 +677,10 @@ class _EshopScreenState extends State<EshopScreen> {
                   ),
                 ],
               ),
+
+              // Universal back-to-top (hidden during search overlay).
+              if (!_isSearchActive)
+                AdsyBackToTop(controller: _scrollController, bottom: 78),
 
               // Mobile Sticky Navigation at bottom — SafeArea handles iOS
               // home indicator and Android gesture / 3-button nav bar insets.
