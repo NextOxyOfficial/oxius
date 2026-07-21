@@ -559,15 +559,21 @@ def update_profile_picture(request):
     """Update user profile picture"""
     try:
         user = request.user
-        
-        if 'image' not in request.FILES:
+
+        # Accepts the profile picture ('image') and/or the profile
+        # cover/banner ('banner_image') — same endpoint, same auth.
+        updated = False
+        if 'image' in request.FILES:
+            user.image = request.FILES['image']
+            updated = True
+        if 'banner_image' in request.FILES:
+            user.banner_image = request.FILES['banner_image']
+            updated = True
+        if not updated:
             return Response(
                 {"message": "No image file provided"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Update user image
-        user.image = request.FILES['image']
         user.save()
         
         # Return updated user data

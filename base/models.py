@@ -77,6 +77,10 @@ def generate_unique_username(user):
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to="images/", blank=True, null=True)
+    # Business Network profile cover/banner.
+    banner_image = models.ImageField(
+        upload_to="profile_banners/", blank=True, null=True
+    )
     # SECURITY: default is EMPTY, not "000000". A shared/known default OTP let
     # anyone reset any idle account's password by sending otp="000000". An empty
     # OTP can never match a submitted code, so a reset is only possible right
