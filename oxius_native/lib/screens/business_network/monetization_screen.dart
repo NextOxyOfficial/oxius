@@ -19,36 +19,39 @@ class MonetizationScreen extends StatefulWidget {
 
 class _MonetizationScreenState extends State<MonetizationScreen> {
   Map<String, dynamic>? _status;
+  Map<String, dynamic>? _earnings;
   bool _loading = true;
   int _tipPage = 0;
   final PageController _tipController =
       PageController(viewportFraction: 0.92);
 
-  // Brand green — monetization is about earning, and it matches the
-  // eShop/AdsyConnect concept palette (ink text + green accent).
-  static const _accent = Color(0xFF16A34A);
+  // Business Network master blue — the page lives inside BN, so it follows
+  // the BN palette (header/nav blue) instead of the commerce green.
+  static const _accent = Color(0xFF2563EB);
+  static const _accentSoft = Color(0xFF3B82F6);
+  static const _ink = Color(0xFF111827);
 
   // Useful growth tips shown as a swipeable slider under the hero.
   static const _tips = [
     (
       Icons.groups_rounded,
-      'Grow your audience',
-      'Post consistently and engage with others — genuine followers are the foundation of monetization.'
+      'ফলোয়ার বাড়ান',
+      'নিয়মিত পোস্ট করুন এবং অন্যদের সাথে যুক্ত থাকুন — আসল ফলোয়ারই মনিটাইজেশনের ভিত্তি।'
     ),
     (
       Icons.video_library_rounded,
-      'Mix video & photos',
-      'Share both video and photo posts. Video drives reach; photos keep your profile rich and active.'
+      'ভিডিও ও ছবি দুটোই দিন',
+      'ভিডিও রিচ বাড়ায়, আর ছবি প্রোফাইলকে সমৃদ্ধ রাখে — তাই দুই ধরনের পোস্টই করুন।'
     ),
     (
       Icons.visibility_rounded,
-      'Earn more views',
-      'Share your posts, use relevant tags and post at busy hours to boost how many people see your content.'
+      'ভিউ বাড়ান',
+      'পোস্ট শেয়ার করুন, প্রাসঙ্গিক ট্যাগ ব্যবহার করুন এবং ব্যস্ত সময়ে পোস্ট করুন — বেশি মানুষ দেখবে।'
     ),
     (
       Icons.verified_rounded,
-      'Quality wins',
-      'Original, helpful content gets recommended more — and keeps your monetization healthy long-term.'
+      'মানসম্মত কনটেন্টই জেতে',
+      'নিজের তৈরি, কাজে লাগার মতো কনটেন্ট বেশি রেকমেন্ড হয় — মনিটাইজেশনও দীর্ঘমেয়াদে সুস্থ থাকে।'
     ),
   ];
 
@@ -66,9 +69,16 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
 
   Future<void> _load() async {
     final status = await BusinessNetworkService.getMonetizationStatus();
+    Map<String, dynamic>? earnings;
+    if (status != null &&
+        status['applied'] == true &&
+        (status['application_status'] ?? '') == 'approved') {
+      earnings = await BusinessNetworkService.getMonetizationEarnings();
+    }
     if (!mounted) return;
     setState(() {
       _status = status;
+      _earnings = earnings;
       _loading = false;
     });
   }
@@ -89,22 +99,22 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF111827)),
+          icon: const Icon(Icons.arrow_back_rounded, color: _ink),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
-          'Content Monetization',
+          'কনটেন্ট মনিটাইজেশন',
           style: TextStyle(
             fontSize: 16.5,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF111827),
+            color: _ink,
             letterSpacing: -0.3,
           ),
         ),
@@ -138,7 +148,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               size: 40, color: Color(0xFF94A3B8)),
           const SizedBox(height: 10),
           const Text(
-            'Could not load your monetization status',
+            'মনিটাইজেশন স্ট্যাটাস লোড করা যায়নি',
             style: TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 12),
@@ -147,7 +157,10 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               setState(() => _loading = true);
               _load();
             },
-            child: const Text('Try again'),
+            child: const Text(
+              'আবার চেষ্টা করুন',
+              style: TextStyle(color: _accent),
+            ),
           ),
         ],
       ),
@@ -162,37 +175,116 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics()),
-      padding: const EdgeInsets.fromLTRB(2, 16, 2, 28),
+      padding: const EdgeInsets.only(bottom: 28),
       children: [
         _buildStatusHero(),
-        const SizedBox(height: 16),
         if (approved) ...[
-          _sectionLabel('Your reach'),
+          if (_earnings != null) ...[
+            _sectionDivider(),
+            _buildEarningsSummary(),
+            _sectionDivider(),
+            _sectionHeader('এই মাসের পয়েন্ট',
+                'ভ্যালিড ভিউ ও এনগেজমেন্ট থেকে পয়েন্ট জমা হয়।'),
+            _buildPointsBreakdown(),
+          ],
+          _sectionDivider(),
+          _sectionHeader('আপনার রিচ',
+              'আপনার প্রোফাইল এই মুহূর্তে যেখানে দাঁড়িয়ে আছে।'),
           _buildStatsGrid(),
-          const SizedBox(height: 16),
-          _buildComingSoon(),
+          if (_earnings != null &&
+              (_earnings!['history'] as List? ?? []).isNotEmpty) ...[
+            _sectionDivider(),
+            _sectionHeader('আগের মাসগুলো',
+                'মাস শেষে চূড়ান্ত হিসাব ও পেমেন্ট স্ট্যাটাস।'),
+            _buildEarningsHistory(),
+          ],
+          _sectionDivider(),
+          _buildHowEarningsWork(),
         ] else ...[
-          const SizedBox(height: 4),
           _buildTipsSlider(),
-          const SizedBox(height: 20),
-          _sectionLabel('Requirements'),
+          _sectionDivider(),
+          _sectionHeader('শর্তসমূহ',
+              'মনিটাইজেশনের আবেদন করতে নিচের ৪টি শর্ত পূরণ করতে হবে।'),
           _buildRequirementTiles(),
-          const SizedBox(height: 16),
-          _sectionLabel('Why monetize'),
+          _sectionDivider(),
+          _sectionHeader('কেন মনিটাইজেশন করবেন',
+              'মনিটাইজড ক্রিয়েটর হিসেবে যা যা পাবেন —'),
           _buildBenefits(),
-          const SizedBox(height: 16),
-          _sectionLabel('How it works'),
+          _sectionDivider(),
+          _sectionHeader('যেভাবে কাজ করে',
+              'মাত্র ৩টি ধাপে আয় শুরু করতে পারবেন।'),
           _buildHowItWorks(),
           if (!applied) ...[
-            const SizedBox(height: 20),
-            _buildApplyButton(),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildApplyButton(),
+            ),
           ],
         ],
       ],
     );
   }
 
+  // ── Section chrome (plain: soft band divider + Bangla header) ────────────
+
+  Widget _sectionDivider() {
+    return Container(
+      height: 8,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      color: const Color(0xFFF8FAFC),
+    );
+  }
+
+  Widget _sectionHeader(String title, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF64748B),
+              height: 1.45,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Status hero ──────────────────────────────────────────────────────────
+
+  int _metCount() {
+    final pairs = [
+      (_asInt(_status!['followers']), _asInt(_status!['required_followers'])),
+      (_asInt(_status!['views']), _asInt(_status!['required_views'])),
+      (
+        _asInt(_status!['video_posts']),
+        _asInt(_status!['required_video_posts'])
+      ),
+      (
+        _asInt(_status!['image_posts']),
+        _asInt(_status!['required_image_posts'])
+      ),
+    ];
+    return pairs.where((p) => p.$1 >= p.$2 && p.$2 > 0).length +
+        pairs.where((p) => p.$2 <= 0).length;
+  }
+
+  static const _bnDigits = ['০', '১', '২', '৩', '৪'];
 
   Widget _buildStatusHero() {
     final applied = _status!['applied'] == true;
@@ -209,83 +301,122 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         case 'approved':
           icon = Icons.verified_rounded;
           color = const Color(0xFF059669);
-          title = 'Monetization active';
+          title = 'মনিটাইজেশন চালু আছে';
           subtitle =
-              'Your content is monetized. Keep posting quality content to grow your earnings.';
+              'আপনার কনটেন্ট এখন মনিটাইজড। নিয়মিত মানসম্মত পোস্ট করতে থাকুন — আয় বাড়তে থাকবে।';
           break;
         case 'rejected':
           icon = Icons.info_outline_rounded;
           color = const Color(0xFFDC2626);
-          title = 'Application not approved';
+          title = 'আবেদন অনুমোদিত হয়নি';
           subtitle =
-              'Your application was reviewed but not approved this time. Contact support for details.';
+              'এবার আপনার আবেদন অনুমোদন করা যায়নি। বিস্তারিত জানতে সাপোর্টে যোগাযোগ করুন।';
           break;
         default:
           icon = Icons.hourglass_top_rounded;
           color = const Color(0xFFD97706);
-          title = 'Application under review';
+          title = 'আবেদন রিভিউ চলছে';
           subtitle =
-              "Our team is reviewing your application. You'll be notified once a decision is made.";
+              'আমাদের টিম আপনার আবেদন যাচাই করছে। সিদ্ধান্ত হলে নোটিফিকেশনের মাধ্যমে জানিয়ে দেওয়া হবে।';
       }
     } else if (eligible) {
       icon = Icons.monetization_on_rounded;
       color = _accent;
-      title = "You're eligible to apply";
+      title = 'আপনি আবেদনের যোগ্য!';
       subtitle =
-          'You have met all the requirements. Submit your application below to start earning.';
+          'অভিনন্দন — সবগুলো শর্ত পূরণ হয়েছে। নিচের বাটনে ট্যাপ করে আবেদন জমা দিন।';
     } else {
       icon = Icons.monetization_on_rounded;
       color = _accent;
-      title = 'Grow toward monetization';
+      title = 'মনিটাইজেশনের পথে এগিয়ে চলুন';
       subtitle =
-          'Meet the requirements below to unlock the application and start earning from your content.';
+          'নিচের শর্তগুলো পূরণ করলেই আবেদন করতে পারবেন এবং আপনার কনটেন্ট থেকে আয় শুরু হবে।';
     }
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
+    final showProgress = !applied;
+    final met = showProgress ? _metCount() : 0;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 24, color: color),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 24, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: _ink,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF64748B),
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          if (showProgress) ...[
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
+                const Text(
+                  'সার্বিক অগ্রগতি',
+                  style: TextStyle(
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                    color: Color(0xFF334155),
                   ),
                 ),
-                const SizedBox(height: 3),
                 Text(
-                  subtitle,
+                  '৪টির মধ্যে ${_bnDigits[met.clamp(0, 4)]}টি শর্ত পূরণ হয়েছে',
                   style: const TextStyle(
-                    fontSize: 12.5,
-                    color: Color(0xFF64748B),
-                    height: 1.45,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: _accent,
                   ),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 7),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: met / 4,
+                minHeight: 7,
+                backgroundColor: const Color(0xFFF1F5F9),
+                valueColor: const AlwaysStoppedAnimation<Color>(_accentSoft),
+              ),
+            ),
+            const SizedBox(height: 18),
+          ],
         ],
       ),
     );
@@ -297,7 +428,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 118,
+          height: 116,
           child: PageView.builder(
             controller: _tipController,
             itemCount: _tips.length,
@@ -305,13 +436,12 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
             itemBuilder: (context, i) {
               final tip = _tips[i];
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
                   decoration: BoxDecoration(
-                    color: _accent.withValues(alpha: 0.05),
+                    color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: _accent.withValues(alpha: 0.15)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,7 +450,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: _accent.withValues(alpha: 0.12),
+                          color: _accent.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(11),
                         ),
                         alignment: Alignment.center,
@@ -337,7 +467,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                               style: const TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF0F172A),
+                                color: _ink,
                               ),
                             ),
                             const SizedBox(height: 3),
@@ -346,7 +476,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: Color(0xFF475569),
-                                height: 1.4,
+                                height: 1.45,
                               ),
                             ),
                           ],
@@ -386,40 +516,35 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     const benefits = [
       (
         Icons.payments_outlined,
-        'Earn from your content',
-        'Get paid for the views and engagement your posts and shorts generate.'
+        'কনটেন্ট থেকে আয়',
+        'আপনার পোস্ট ও শর্টসে আসা ভিউ এবং এনগেজমেন্ট অনুযায়ী টাকা পাবেন।'
       ),
       (
         Icons.insights_outlined,
-        'Creator insights',
-        'Track how your content performs and grow your reach over time.'
+        'ক্রিয়েটর ইনসাইট',
+        'কোন কনটেন্ট কেমন পারফর্ম করছে তা দেখে নিজের রিচ আরও বাড়াতে পারবেন।'
       ),
       (
         Icons.workspace_premium_outlined,
-        'Creator recognition',
-        'Monetized creators get priority placement in feeds and discovery.'
+        'ক্রিয়েটর স্বীকৃতি',
+        'মনিটাইজড ক্রিয়েটরদের কনটেন্ট ফিড ও ডিসকভারিতে অগ্রাধিকার পায়।'
       ),
     ];
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           for (final b in benefits)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: _accent.withValues(alpha: 0.08),
+                      color: _accent.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     alignment: Alignment.center,
@@ -433,7 +558,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                         Text(
                           b.$2,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1E293B),
                           ),
@@ -442,9 +567,9 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                         Text(
                           b.$3,
                           style: const TextStyle(
-                            fontSize: 11.5,
+                            fontSize: 12,
                             color: Color(0xFF64748B),
-                            height: 1.4,
+                            height: 1.45,
                           ),
                         ),
                       ],
@@ -460,67 +585,45 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
 
   // ── Requirements ─────────────────────────────────────────────────────────
 
-  Widget _sectionLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 2, bottom: 8),
-      child: Text(
-        text.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF94A3B8),
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-
   Widget _buildRequirementTiles() {
     final tiles = [
       (
         Icons.group_outlined,
-        'Followers',
+        'ফলোয়ার',
         _asInt(_status!['followers']),
         _asInt(_status!['required_followers']),
       ),
       (
         Icons.visibility_outlined,
-        'Content views',
+        'কনটেন্ট ভিউ',
         _asInt(_status!['views']),
         _asInt(_status!['required_views']),
       ),
       (
         Icons.videocam_outlined,
-        'Video posts',
+        'ভিডিও পোস্ট',
         _asInt(_status!['video_posts']),
         _asInt(_status!['required_video_posts']),
       ),
       (
         Icons.photo_outlined,
-        'Photo posts',
+        'ছবি পোস্ট',
         _asInt(_status!['image_posts']),
         _asInt(_status!['required_image_posts']),
       ),
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < tiles.length; i++)
-            _requirementTile(
-              tiles[i].$1,
-              tiles[i].$2,
-              tiles[i].$3,
-              tiles[i].$4,
-              isLast: i == tiles.length - 1,
-            ),
-        ],
-      ),
+    return Column(
+      children: [
+        for (var i = 0; i < tiles.length; i++)
+          _requirementTile(
+            tiles[i].$1,
+            tiles[i].$2,
+            tiles[i].$3,
+            tiles[i].$4,
+            isLast: i == tiles.length - 1,
+          ),
+      ],
     );
   }
 
@@ -536,7 +639,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     final met = current >= required;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
         border: isLast
             ? null
@@ -546,17 +649,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 20, color: const Color(0xFF475569)),
-          ),
-          const SizedBox(width: 12),
+          Icon(icon, size: 21, color: const Color(0xFF475569)),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,7 +661,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                     Text(
                       label,
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.5,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1E293B),
                       ),
@@ -590,14 +684,14 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                     minHeight: 6,
                     backgroundColor: const Color(0xFFF1F5F9),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      met ? const Color(0xFF059669) : _accent,
+                      met ? const Color(0xFF059669) : _accentSoft,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Icon(
             met ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
             size: 20,
@@ -614,34 +708,29 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   Widget _buildHowItWorks() {
     const steps = [
       (
-        '1',
-        'Meet the requirements',
-        'Grow your followers, views and post enough video & photo content.'
+        '১',
+        'শর্তগুলো পূরণ করুন',
+        'ফলোয়ার ও ভিউ বাড়ান এবং পর্যাপ্ত ভিডিও ও ছবি পোস্ট করুন।'
       ),
       (
-        '2',
-        'Apply with one tap',
-        'Accept the Terms & Community Guidelines and submit your application.'
+        '২',
+        'এক ট্যাপে আবেদন করুন',
+        'শর্তাবলি ও কমিউনিটি গাইডলাইন মেনে আপনার আবেদন জমা দিন।'
       ),
       (
-        '3',
-        'Get reviewed & earn',
-        'Our team reviews your profile. Once approved, your content starts earning.'
+        '৩',
+        'রিভিউয়ের পর আয় শুরু',
+        'আমাদের টিম আপনার প্রোফাইল যাচাই করবে। অনুমোদন পেলেই আপনার কনটেন্ট থেকে আয় শুরু হবে।'
       ),
     ];
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           for (final s in steps)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -670,7 +759,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                         Text(
                           s.$2,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1E293B),
                           ),
@@ -679,9 +768,9 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                         Text(
                           s.$3,
                           style: const TextStyle(
-                            fontSize: 11.5,
+                            fontSize: 12,
                             color: Color(0xFF64748B),
-                            height: 1.4,
+                            height: 1.45,
                           ),
                         ),
                       ],
@@ -706,7 +795,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         onPressed: eligible ? _openApplySheet : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: _accent,
-          disabledBackgroundColor: const Color(0xFFE2E8F0),
+          disabledBackgroundColor: const Color(0xFFF1F5F9),
           foregroundColor: Colors.white,
           disabledForegroundColor: const Color(0xFF94A3B8),
           elevation: 0,
@@ -715,7 +804,9 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           ),
         ),
         child: Text(
-          eligible ? 'Apply for Monetization' : 'Keep growing to unlock',
+          eligible
+              ? 'মনিটাইজেশনের জন্য আবেদন করুন'
+              : 'শর্ত পূরণ হলেই আবেদন খুলে যাবে',
           style: const TextStyle(
             fontSize: 14.5,
             fontWeight: FontWeight.w700,
@@ -739,71 +830,327 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     final stats = [
       (
         Icons.group_outlined,
-        'Followers',
+        'ফলোয়ার',
         _formatCount(_asInt(_status!['followers']))
       ),
       (
         Icons.visibility_outlined,
-        'Content views',
+        'কনটেন্ট ভিউ',
         _formatCount(_asInt(_status!['views']))
       ),
       (
         Icons.videocam_outlined,
-        'Video posts',
+        'ভিডিও পোস্ট',
         _formatCount(_asInt(_status!['video_posts']))
       ),
       (
         Icons.photo_outlined,
-        'Photo posts',
+        'ছবি পোস্ট',
         _formatCount(_asInt(_status!['image_posts']))
       ),
     ];
 
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 1.9,
-      children: [
-        for (final s in stats)
-          Container(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Icon(s.$1, size: 16, color: const Color(0xFF64748B)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        s.$2,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 1.9,
+        children: [
+          for (final s in stats)
+            Container(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Icon(s.$1, size: 16, color: const Color(0xFF64748B)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          s.$2,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF64748B),
+                          ),
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    s.$3,
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: _ink,
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── Approved: earnings ───────────────────────────────────────────────────
+
+  String _taka(dynamic v) {
+    final s = (v ?? '0').toString();
+    final d = double.tryParse(s) ?? 0;
+    if (d == d.roundToDouble()) return '৳${d.round()}';
+    return '৳${d.toStringAsFixed(2)}';
+  }
+
+  Widget _buildEarningsSummary() {
+    final e = _earnings!;
+    final flagged = e['fraud_flagged'] == true;
+    final holdback = _asInt(e['holdback_days']);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'এই মাসের আনুমানিক আয়',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _taka(e['estimated_amount']),
+            style: const TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              color: _accent,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'চূড়ান্ত হিসাব মাস শেষে হয়। রিভিউয়ের ($holdback দিন) পর টাকা আপনার AdsyPay ব্যালেন্সে যোগ হবে। সর্বনিম্ন পেআউট ${_taka(e['min_payout'])} — এর কম হলে পরের মাসে যোগ হয়ে থাকবে।',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF64748B),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(
+                flagged
+                    ? Icons.warning_amber_rounded
+                    : Icons.check_circle_rounded,
+                size: 17,
+                color: flagged
+                    ? const Color(0xFFD97706)
+                    : const Color(0xFF059669),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  flagged
+                      ? 'অ্যাকাউন্ট স্ট্যাটাস: সতর্কতা — অস্বাভাবিক ভিউ অ্যাক্টিভিটি রিভিউ চলছে, এই মাসের আয় সাময়িকভাবে আটকে আছে।'
+                      : 'অ্যাকাউন্ট স্ট্যাটাস: সুস্থ',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: flagged
+                        ? const Color(0xFF92400E)
+                        : const Color(0xFF059669),
+                    height: 1.45,
+                  ),
                 ),
-                const SizedBox(height: 6),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPointsBreakdown() {
+    final e = _earnings!;
+    final p = (e['points'] as Map?) ?? {};
+    final w = (e['weights'] as Map?) ?? {};
+    final rows = [
+      (
+        Icons.visibility_outlined,
+        'ভ্যালিড ভিউ',
+        _asInt(p['valid_views']),
+        _asInt(w['view']),
+      ),
+      (
+        Icons.favorite_outline_rounded,
+        'লাইক',
+        _asInt(p['likes']),
+        _asInt(w['like']),
+      ),
+      (
+        Icons.mode_comment_outlined,
+        'কমেন্ট',
+        _asInt(p['comments']),
+        _asInt(w['comment']),
+      ),
+      (
+        Icons.person_add_alt_outlined,
+        'নতুন ফলোয়ার',
+        _asInt(p['followers_gained']),
+        _asInt(w['follower']),
+      ),
+    ];
+
+    return Column(
+      children: [
+        for (var i = 0; i < rows.length; i++)
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFF1F5F9)),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(rows[i].$1, size: 20, color: const Color(0xFF475569)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    rows[i].$2,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                ),
                 Text(
-                  s.$3,
+                  '${_formatCount(rows[i].$3)} × ${rows[i].$4}',
                   style: const TextStyle(
-                    fontSize: 19,
+                    fontSize: 12,
+                    color: Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  width: 74,
+                  child: Text(
+                    '${_formatCount(rows[i].$3 * rows[i].$4)} পয়েন্ট',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: _accent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'মোট পয়েন্ট',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                  color: _ink,
+                ),
+              ),
+              Text(
+                _formatCount(
+                    _asInt(((_earnings!['points'] as Map?) ?? {})['total_points'])),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: _ink,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  static const _earningStatusBn = {
+    'accruing': 'চলমান',
+    'held': 'রিভিউয়ে আটকে',
+    'cleared': 'ক্লিয়ারড',
+    'paid': 'পরিশোধিত',
+    'forfeited': 'বাতিল',
+  };
+
+  Widget _buildEarningsHistory() {
+    final history = (_earnings!['history'] as List? ?? []);
+    return Column(
+      children: [
+        for (var i = 0; i < history.length; i++)
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
+            decoration: BoxDecoration(
+              border: i == history.length - 1
+                  ? null
+                  : const Border(
+                      bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                    ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (history[i]['period'] ?? '').toString(),
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${_formatCount(_asInt(history[i]['total_points']))} পয়েন্ট • ${_earningStatusBn[(history[i]['status'] ?? '').toString()] ?? ''}',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  _taka(history[i]['amount']),
+                  style: TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                    color: (history[i]['status'] == 'paid')
+                        ? const Color(0xFF059669)
+                        : _ink,
                   ),
                 ),
               ],
@@ -813,41 +1160,28 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     );
   }
 
-  Widget _buildComingSoon() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.query_stats_rounded,
-              size: 22, color: Color(0xFF64748B)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Earnings analytics',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Detailed earnings and performance statistics are coming soon.',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: Color(0xFF64748B),
-                    height: 1.4,
-                  ),
-                ),
-              ],
+  Widget _buildHowEarningsWork() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            'আয় কীভাবে হিসাব হয়',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+              letterSpacing: -0.2,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'প্রতি মাসে AdsyClub একটি নির্দিষ্ট রেভিনিউ পুল সব মনিটাইজড ক্রিয়েটরের মধ্যে ভাগ করে — যার পয়েন্ট যত বেশি, তার ভাগ তত বড়। শুধু আসল (ভ্যালিড) ভিউ ও এনগেজমেন্টে পয়েন্ট জমা হয়; ফেক বা এক্সচেঞ্জ ভিউ ধরা পড়লে আয় আটকে যায় এবং বারবার হলে মনিটাইজেশন বাতিল হতে পারে। তাই মানসম্মত কনটেন্টই আয়ের সবচেয়ে নিরাপদ পথ।',
+            style: TextStyle(
+              fontSize: 12,
+              color: Color(0xFF64748B),
+              height: 1.55,
             ),
           ),
         ],

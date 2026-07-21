@@ -207,6 +207,18 @@ def process_gold_sponsor_lifecycle():
 
 
 @shared_task
+def compute_monetization_earnings_task(period=None):
+    """Daily (Celery Beat): refresh approved creators' points + pool shares
+    for the current month. Schedule a second run a few days into each month
+    with the previous period to finalize it after the holdback window."""
+    from .monetization import compute_period_earnings
+
+    summary = compute_period_earnings(period)
+    logger.info("compute_monetization_earnings_task: %s", summary)
+    return summary
+
+
+@shared_task
 def send_weekly_bn_digests():
     """Weekly community digest to recently-active users — the social-network
     style follow-up that pulls people back into Business Network."""

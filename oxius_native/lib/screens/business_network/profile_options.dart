@@ -37,6 +37,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   late Animation<double> _fadeAnimation;
   Map<String, dynamic>? _profileData;
   int _mediaRefreshTick = 0;
+  bool _bannerUploading = false;
+  double _bannerProgress = 0;
 
   @override
   void initState() {
@@ -182,9 +184,18 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       targetKb: 220,
     );
     if (file == null || !mounted) return;
-    AdsyToast.info(context, 'ব্যানার আপলোড হচ্ছে...');
-    final ok = await BusinessNetworkService.uploadProfileBanner(file);
+    setState(() {
+      _bannerUploading = true;
+      _bannerProgress = 0;
+    });
+    final ok = await BusinessNetworkService.uploadProfileBanner(
+      file,
+      onProgress: (p) {
+        if (mounted) setState(() => _bannerProgress = p);
+      },
+    );
     if (!mounted) return;
+    setState(() => _bannerUploading = false);
     if (ok) {
       AdsyToast.success(context, 'ব্যানার আপডেট হয়েছে');
       await _loadProfileSummary(refreshAuth: true);
@@ -216,7 +227,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       // over the typically light banner.
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF1F5F9),
+        backgroundColor: Colors.white,
         body: AdsyRefreshIndicator(
           color: const Color(0xFF6366F1),
           onRefresh: () => _loadProfileSummary(refreshAuth: true),
@@ -440,11 +451,13 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   }) {
     return Container(
       color: Colors.white,
-      child: Column(
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          // Banner + avatar stack
+          Column(
+            children: [
+          // Banner + action buttons
           Stack(
-            clipBehavior: Clip.none,
             children: [
               // Banner
               SizedBox(
@@ -479,11 +492,47 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                   ),
                 ),
               ),
+              // Uploading overlay: scrim + live percentage over the banner.
+              if (_bannerUploading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'আপলোড হচ্ছে ${(_bannerProgress * 100).round()}%',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: 160,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: LinearProgressIndicator(
+                              value: _bannerProgress,
+                              minHeight: 5,
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.25),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               // Banner upload: plain "Add banner" when empty, a small edit
               // chip when one is already set.
+              if (!_bannerUploading)
               Positioned(
-                bottom: 10,
-                right: 10,
+                bottom: 24,
+                right: 12,
                 child: GestureDetector(
                   onTap: _uploadBanner,
                   child: Container(
@@ -517,46 +566,20 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                   ),
                 ),
               ),
-              // Centered large avatar
-              Positioned(
-                bottom: -60,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.10),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: avatarUrl.isNotEmpty
-                          ? Image.network(
-                              avatarUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _buildAvatarPlaceholder(name),
-                            )
-                          : _buildAvatarPlaceholder(name),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
-          // Profile info below banner
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 74, 16, 16),
-            child: Column(
+          // White sheet — rounded top corners rise over the banner.
+          Transform.translate(
+            offset: const Offset(0, -16),
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 84, 16, 8),
+              child: Column(
               children: [
                 // Name row
                 Row(
@@ -636,6 +659,43 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                   ],
                 ),
               ],
+            ),
+            ),
+          ),
+            ],
+          ),
+          // Centered large avatar — floats above the rounded sheet seam.
+          Positioned(
+            top: 70,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(color: Colors.white, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: avatarUrl.isNotEmpty
+                      ? Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _buildAvatarPlaceholder(name),
+                        )
+                      : _buildAvatarPlaceholder(name),
+                ),
+              ),
             ),
           ),
         ],
@@ -848,13 +908,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         MaterialPageRoute(builder: (context) => const VerificationScreen()),
       ),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFBEB),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFFDE68A)),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        color: const Color(0xFFFFFBEB),
         child: Row(
           children: [
             const Icon(Icons.verified_user_outlined,
@@ -883,40 +938,34 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     required String title,
     required List<_MenuItem> items,
   }) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 2, bottom: 6),
-            child: Text(
-              title.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF94A3B8),
-                letterSpacing: 0.8,
-              ),
+    // Plain page: a soft band separates sections, rows run full width with
+    // hairline dividers — no card boxes.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(height: 8, color: const Color(0xFFF8FAFC)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF94A3B8),
+              letterSpacing: 0.8,
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFF1F5F9)),
-            ),
-            child: Column(
-              children: items.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                final isLast = index == items.length - 1;
-                return _buildMenuItemWidget(item, isLast: isLast);
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
+        ),
+        Column(
+          children: items.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final isLast = index == items.length - 1;
+            return _buildMenuItemWidget(item, isLast: isLast);
+          }).toList(),
+        ),
+        const SizedBox(height: 6),
+      ],
     );
   }
 
@@ -925,19 +974,13 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       color: Colors.transparent,
       child: InkWell(
         onTap: item.onTap,
-        borderRadius: isLast
-            ? const BorderRadius.only(
-                bottomLeft: Radius.circular(14),
-                bottomRight: Radius.circular(14),
-              )
-            : null,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             border: isLast
                 ? null
-                : Border(
-                    bottom: BorderSide(color: Colors.grey.shade100),
+                : const Border(
+                    bottom: BorderSide(color: Color(0xFFF1F5F9)),
                   ),
           ),
           child: Row(
@@ -982,38 +1025,36 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   }
 
   Widget _buildLogoutButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _showLogoutDialog(context),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 13),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFECACA)),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Sign Out',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFEF4444),
+    return Column(
+      children: [
+        Container(height: 8, color: const Color(0xFFF8FAFC)),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showLogoutDialog(context),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout_rounded,
+                      color: Color(0xFFEF4444), size: 18),
+                  SizedBox(width: 8),
+                  Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFEF4444),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 

@@ -527,6 +527,11 @@ CELERY_BEAT_SCHEDULE = {
         # which fired at 4am Dhaka).
         "schedule": crontab(day_of_week="fri", hour=10, minute=0),
     },
+    "daily-monetization-earnings": {
+        "task": "business_network.tasks.compute_monetization_earnings_task",
+        # Nightly refresh of the current month's creator points/pool shares.
+        "schedule": crontab(hour=3, minute=30),
+    },
     "auto-approve-tasks": {
         "task": "base.tasks.check_and_auto_approve_tasks",
         "schedule": timedelta(minutes=30),  # Run every 30 minutes

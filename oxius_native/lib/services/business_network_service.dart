@@ -1074,7 +1074,10 @@ class BusinessNetworkService {
 
   /// Upload profile picture
   /// Upload the profile cover/banner — same endpoint, 'banner_image' field.
-  static Future<bool> uploadProfileBanner(dynamic imageFile) async {
+  static Future<bool> uploadProfileBanner(
+    dynamic imageFile, {
+    void Function(double progress)? onProgress,
+  }) async {
     try {
       final headers = await ApiService.getHeaders();
       final dio = Dio();
@@ -1099,6 +1102,9 @@ class BusinessNetworkService {
         '${ApiService.baseUrl}/user/profile/update/',
         data: formData,
         options: Options(headers: headers),
+        onSendProgress: (sent, total) {
+          if (onProgress != null && total > 0) onProgress(sent / total);
+        },
       );
       return response.statusCode == 200;
     } catch (e) {
@@ -1519,6 +1525,25 @@ class BusinessNetworkService {
       return null;
     } catch (e) {
       debugPrint('Error fetching monetization status: $e');
+      return null;
+    }
+  }
+
+  /// Approved creator's earnings: live points, pool share, history.
+  /// Null when not approved or on error.
+  static Future<Map<String, dynamic>?> getMonetizationEarnings() async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/monetization/earnings/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error fetching monetization earnings: $e');
       return null;
     }
   }

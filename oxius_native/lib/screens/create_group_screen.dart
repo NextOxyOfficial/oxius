@@ -673,15 +673,15 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             // + to add, ✓ when added (no radio look).
             AnimatedContainer(
               duration: const Duration(milliseconds: 160),
-              width: 26,
-              height: 26,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: sel ? _blue : const Color(0xFFF1F5F9),
               ),
               child: Icon(
                 sel ? Icons.check_rounded : Icons.add_rounded,
-                size: 16,
+                size: 19,
                 color: sel ? Colors.white : const Color(0xFF64748B),
               ),
             ),

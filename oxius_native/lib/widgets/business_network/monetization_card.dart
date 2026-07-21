@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../services/business_network_service.dart';
 import '../common/adsy_toast.dart';
@@ -53,13 +53,9 @@ class _MonetizationCardState extends State<MonetizationCard> {
     // eligible/applied states tap through to the full monetization page.
     if (!applied && !eligible) {
       return Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        color: const Color(0xFFF8FAFC),
         child: _buildProgressState(),
       );
     }
@@ -71,13 +67,9 @@ class _MonetizationCardState extends State<MonetizationCard> {
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        color: const Color(0xFFF8FAFC),
         child: applied ? _buildAppliedState(appStatus) : _buildEligibleState(),
       ),
     );
@@ -128,7 +120,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
           child: Row(
             children: [
               const Icon(Icons.monetization_on_outlined,
-                  size: 20, color: Color(0xFF7C3AED)),
+                  size: 20, color: Color(0xFF2563EB)),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -145,7 +137,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
                 style: const TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF7C3AED),
+                  color: Color(0xFF2563EB),
                 ),
               ),
               const SizedBox(width: 4),
@@ -193,12 +185,12 @@ class _MonetizationCardState extends State<MonetizationCard> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF7C3AED),
+                        color: Color(0xFF2563EB),
                       ),
                     ),
                     SizedBox(width: 2),
                     Icon(Icons.arrow_forward_rounded,
-                        size: 14, color: Color(0xFF7C3AED)),
+                        size: 14, color: Color(0xFF2563EB)),
                   ],
                 ),
               ),
@@ -240,7 +232,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
-              color: met ? const Color(0xFF059669) : const Color(0xFF7C3AED),
+              color: met ? const Color(0xFF059669) : const Color(0xFF2563EB),
             ),
           ),
           const SizedBox(width: 6),
@@ -281,7 +273,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
     return Row(
       children: [
         const Icon(Icons.workspace_premium_rounded,
-            size: 22, color: Color(0xFF7C3AED)),
+            size: 22, color: Color(0xFF2563EB)),
         const SizedBox(width: 10),
         const Expanded(
           child: Column(
@@ -307,7 +299,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
         TextButton(
           onPressed: _openApplySheet,
           style: TextButton.styleFrom(
-            backgroundColor: const Color(0xFF7C3AED),
+            backgroundColor: const Color(0xFF2563EB),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             shape: RoundedRectangleBorder(
@@ -483,7 +475,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
             child: Row(
               children: [
                 Icon(Icons.workspace_premium_rounded,
-                    size: 24, color: Color(0xFF7C3AED)),
+                    size: 24, color: Color(0xFF2563EB)),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -539,7 +531,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
                         height: 22,
                         child: Checkbox(
                           value: _accepted,
-                          activeColor: const Color(0xFF7C3AED),
+                          activeColor: const Color(0xFF2563EB),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -568,7 +560,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
                   child: ElevatedButton(
                     onPressed: _accepted && !_submitting ? _submit : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7C3AED),
+                      backgroundColor: const Color(0xFF2563EB),
                       disabledBackgroundColor: const Color(0xFFE2E8F0),
                       foregroundColor: Colors.white,
                       disabledForegroundColor: const Color(0xFF94A3B8),
@@ -614,11 +606,11 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F3FF),
+              color: const Color(0xFFEFF6FF),
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
-            child: Icon(icon, size: 19, color: const Color(0xFF7C3AED)),
+            child: Icon(icon, size: 19, color: const Color(0xFF2563EB)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -686,7 +678,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
                   const Padding(
                     padding: EdgeInsets.only(top: 6),
                     child: Icon(Icons.circle,
-                        size: 5, color: Color(0xFF7C3AED)),
+                        size: 5, color: Color(0xFF2563EB)),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
