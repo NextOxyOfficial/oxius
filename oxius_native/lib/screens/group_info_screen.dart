@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_config.dart';
+import '../widgets/common/adsy_dialog.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/chat/member_picker_sheet.dart';
@@ -167,22 +168,13 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   Future<bool?> _confirm(String title, String body, String action) {
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('বাতিল')),
-          FilledButton(
-              style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626)),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(action)),
-        ],
-      ),
+    return AdsyDialog.confirm(
+      context,
+      title: title,
+      message: body,
+      confirmLabel: action,
+      cancelLabel: 'বাতিল',
+      destructive: true,
     );
   }
 

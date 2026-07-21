@@ -543,13 +543,23 @@ class _InboxScreenState extends State<InboxScreen>
       backgroundColor: Colors.white,
       // Clean concept-style header: white, bold title, minimal actions.
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(58),
+        preferredSize: const Size.fromHeight(64),
         child: Container(
-          decoration: const BoxDecoration(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
             color: Colors.white,
-            border: Border(
-              bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+            // Rounded BOTTOM corners — the header sits like a card over the
+            // page, with a soft drop shadow tracing the rounded edge.
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(18),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: SafeArea(
             child: Padding(
@@ -628,10 +638,13 @@ class _InboxScreenState extends State<InboxScreen>
       ),
       body: Column(
         children: [
+          // Soft band right under the header so its rounded BOTTOM corners
+          // stay visible against the white page.
+          Container(height: 8, color: const Color(0xFFF8FAFC)),
           // Segmented-pill tab switcher (concept design): active tab is a
           // white pill sliding inside a soft gray track.
           Container(
-            margin: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+            margin: const EdgeInsets.fromLTRB(12, 8, 12, 6),
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),

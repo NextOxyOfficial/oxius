@@ -1,6 +1,10 @@
+﻿import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../services/business_network_service.dart';
+import '../../widgets/common/adsy_loading.dart';
+import 'monetization_sections.dart';
 import '../../widgets/business_network/monetization_card.dart'
     show MonetizationApplySheet;
 
@@ -22,6 +26,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   Map<String, dynamic>? _earnings;
   bool _loading = true;
   int _tipPage = 0;
+  Timer? _tipTimer;
   final PageController _tipController =
       PageController(viewportFraction: 0.92);
 
@@ -59,10 +64,21 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   void initState() {
     super.initState();
     _load();
+    // Auto-advance the tips slider; manual swipes just re-sync _tipPage.
+    _tipTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted || !_tipController.hasClients) return;
+      final next = (_tipPage + 1) % _tips.length;
+      _tipController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   @override
   void dispose() {
+    _tipTimer?.cancel();
     _tipController.dispose();
     super.dispose();
   }
@@ -123,27 +139,25 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         ),
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(_accent),
-              ),
-            )
-          : _status == null
-              ? _buildError()
-              : RefreshIndicator(
-                  color: _accent,
-                  onRefresh: _load,
-                  child: _buildBody(),
-                ),
+          ? const Center(child: AdsyLoadingIndicator())
+          : RefreshIndicator(
+              color: _accent,
+              onRefresh: _load,
+              child: _status == null ? _buildError() : _buildBody(),
+            ),
     );
   }
 
   Widget _buildError() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    // Scrollable so pull-to-refresh works from the error state too.
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics()),
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
           const Icon(Icons.wifi_off_rounded,
               size: 40, color: Color(0xFF94A3B8)),
           const SizedBox(height: 10),
@@ -163,7 +177,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
             ),
           ),
         ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -179,27 +194,18 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
       children: [
         _buildStatusHero(),
         if (approved) ...[
+          _sectionDivider(),
           if (_earnings != null) ...[
-            _sectionDivider(),
             _buildEarningsSummary(),
             _sectionDivider(),
-            _sectionHeader('এই মাসের পয়েন্ট',
-                'ভ্যালিড ভিউ ও এনগেজমেন্ট থেকে পয়েন্ট জমা হয়।'),
-            _buildPointsBreakdown(),
+            _sectionHeader('বিস্তারিত',
+                'অ্যানালিটিক্স, কনটেন্ট আয় ও পেআউট — আলাদা পেজে গুছিয়ে।'),
+            _buildDetailMenu(),
+          ] else ...[
+            _sectionHeader('আপনার রিচ',
+                'আপনার প্রোফাইল এই মুহূর্তে যেখানে দাঁড়িয়ে আছে।'),
+            _buildStatsGrid(),
           ],
-          _sectionDivider(),
-          _sectionHeader('আপনার রিচ',
-              'আপনার প্রোফাইল এই মুহূর্তে যেখানে দাঁড়িয়ে আছে।'),
-          _buildStatsGrid(),
-          if (_earnings != null &&
-              (_earnings!['history'] as List? ?? []).isNotEmpty) ...[
-            _sectionDivider(),
-            _sectionHeader('আগের মাসগুলো',
-                'মাস শেষে চূড়ান্ত হিসাব ও পেমেন্ট স্ট্যাটাস।'),
-            _buildEarningsHistory(),
-          ],
-          _sectionDivider(),
-          _buildHowEarningsWork(),
         ] else ...[
           _buildTipsSlider(),
           _sectionDivider(),
@@ -918,7 +924,9 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   Widget _buildEarningsSummary() {
     final e = _earnings!;
     final flagged = e['fraud_flagged'] == true;
+    final forfeited = (e['current_status'] ?? '') == 'forfeited';
     final holdback = _asInt(e['holdback_days']);
+    final payoutDate = (e['expected_payout_date'] ?? '').toString();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -953,30 +961,56 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               height: 1.5,
             ),
           ),
+          if (payoutDate.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.event_available_outlined,
+                    size: 16, color: Color(0xFF475569)),
+                const SizedBox(width: 6),
+                Text(
+                  'সম্ভাব্য পেমেন্ট তারিখ: $payoutDate',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             children: [
               Icon(
-                flagged
-                    ? Icons.warning_amber_rounded
-                    : Icons.check_circle_rounded,
+                forfeited
+                    ? Icons.cancel_rounded
+                    : flagged
+                        ? Icons.warning_amber_rounded
+                        : Icons.check_circle_rounded,
                 size: 17,
-                color: flagged
-                    ? const Color(0xFFD97706)
-                    : const Color(0xFF059669),
+                color: forfeited
+                    ? const Color(0xFFDC2626)
+                    : flagged
+                        ? const Color(0xFFD97706)
+                        : const Color(0xFF059669),
               ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  flagged
-                      ? 'অ্যাকাউন্ট স্ট্যাটাস: সতর্কতা — অস্বাভাবিক ভিউ অ্যাক্টিভিটি রিভিউ চলছে, এই মাসের আয় সাময়িকভাবে আটকে আছে।'
-                      : 'অ্যাকাউন্ট স্ট্যাটাস: সুস্থ',
+                  forfeited
+                      ? 'অ্যাকাউন্ট স্ট্যাটাস: এই মাসের আয় নীতিমালা লঙ্ঘনের কারণে বাতিল হয়েছে। বারবার হলে মনিটাইজেশন স্থায়ীভাবে বন্ধ হতে পারে।'
+                      : flagged
+                          ? 'অ্যাকাউন্ট স্ট্যাটাস: সতর্কতা — অস্বাভাবিক ভিউ অ্যাক্টিভিটি রিভিউ চলছে, এই মাসের আয় সাময়িকভাবে আটকে আছে।'
+                          : 'অ্যাকাউন্ট স্ট্যাটাস: সুস্থ',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: flagged
-                        ? const Color(0xFF92400E)
-                        : const Color(0xFF059669),
+                    color: forfeited
+                        ? const Color(0xFF991B1B)
+                        : flagged
+                            ? const Color(0xFF92400E)
+                            : const Color(0xFF059669),
                     height: 1.45,
                   ),
                 ),
@@ -988,204 +1022,93 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     );
   }
 
-  Widget _buildPointsBreakdown() {
-    final e = _earnings!;
-    final p = (e['points'] as Map?) ?? {};
-    final w = (e['weights'] as Map?) ?? {};
+  // Approved overview: clean menu into the detail pages so the main screen
+  // stays a short summary instead of one long scroll.
+  Widget _buildDetailMenu() {
     final rows = [
       (
-        Icons.visibility_outlined,
-        'ভ্যালিড ভিউ',
-        _asInt(p['valid_views']),
-        _asInt(w['view']),
+        Icons.insights_outlined,
+        'অ্যানালিটিক্স',
+        'পয়েন্ট, দৈনিক ভিউ ও রিচ',
+        () => MonetizationAnalyticsScreen(
+              earnings: _earnings!,
+              status: _status!,
+            ),
       ),
       (
-        Icons.favorite_outline_rounded,
-        'লাইক',
-        _asInt(p['likes']),
-        _asInt(w['like']),
+        Icons.article_outlined,
+        'কনটেন্ট অনুযায়ী আয়',
+        'কোন কনটেন্ট থেকে কত পয়েন্ট ও আয়',
+        () => MonetizationContentScreen(earnings: _earnings!),
       ),
       (
-        Icons.mode_comment_outlined,
-        'কমেন্ট',
-        _asInt(p['comments']),
-        _asInt(w['comment']),
+        Icons.receipt_long_outlined,
+        'পেআউট হিস্ট্রি',
+        'পেমেন্ট তথ্য ও আগের মাসগুলোর হিসাব',
+        () => MonetizationPayoutScreen(earnings: _earnings!),
       ),
       (
-        Icons.person_add_alt_outlined,
-        'নতুন ফলোয়ার',
-        _asInt(p['followers_gained']),
-        _asInt(w['follower']),
+        Icons.help_outline_rounded,
+        'আয় কীভাবে হিসাব হয়',
+        'পয়েন্ট রেট ও নীতিমালা',
+        () => MonetizationInfoScreen(earnings: _earnings!),
       ),
     ];
 
     return Column(
       children: [
         for (var i = 0; i < rows.length; i++)
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFF1F5F9)),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => rows[i].$4()),
               ),
-            ),
-            child: Row(
-              children: [
-                Icon(rows[i].$1, size: 20, color: const Color(0xFF475569)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    rows[i].$2,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                ),
-                Text(
-                  '${_formatCount(rows[i].$3)} × ${rows[i].$4}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: 74,
-                  child: Text(
-                    '${_formatCount(rows[i].$3 * rows[i].$4)} পয়েন্ট',
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: _accent,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'মোট পয়েন্ট',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w800,
-                  color: _ink,
-                ),
-              ),
-              Text(
-                _formatCount(
-                    _asInt(((_earnings!['points'] as Map?) ?? {})['total_points'])),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: _ink,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  static const _earningStatusBn = {
-    'accruing': 'চলমান',
-    'held': 'রিভিউয়ে আটকে',
-    'cleared': 'ক্লিয়ারড',
-    'paid': 'পরিশোধিত',
-    'forfeited': 'বাতিল',
-  };
-
-  Widget _buildEarningsHistory() {
-    final history = (_earnings!['history'] as List? ?? []);
-    return Column(
-      children: [
-        for (var i = 0; i < history.length; i++)
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
-            decoration: BoxDecoration(
-              border: i == history.length - 1
-                  ? null
-                  : const Border(
-                      bottom: BorderSide(color: Color(0xFFF1F5F9)),
-                    ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        (history[i]['period'] ?? '').toString(),
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1E293B),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                decoration: BoxDecoration(
+                  border: i == rows.length - 1
+                      ? null
+                      : const Border(
+                          bottom: BorderSide(color: Color(0xFFF1F5F9)),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${_formatCount(_asInt(history[i]['total_points']))} পয়েন্ট • ${_earningStatusBn[(history[i]['status'] ?? '').toString()] ?? ''}',
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          color: Color(0xFF94A3B8),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-                Text(
-                  _taka(history[i]['amount']),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: (history[i]['status'] == 'paid')
-                        ? const Color(0xFF059669)
-                        : _ink,
-                  ),
+                child: Row(
+                  children: [
+                    Icon(rows[i].$1, size: 21, color: const Color(0xFF475569)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            rows[i].$2,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            rows[i].$3,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded,
+                        size: 20, color: Color(0xFFCBD5E1)),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildHowEarningsWork() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            'আয় কীভাবে হিসাব হয়',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: _ink,
-              letterSpacing: -0.2,
-            ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'প্রতি মাসে AdsyClub একটি নির্দিষ্ট রেভিনিউ পুল সব মনিটাইজড ক্রিয়েটরের মধ্যে ভাগ করে — যার পয়েন্ট যত বেশি, তার ভাগ তত বড়। শুধু আসল (ভ্যালিড) ভিউ ও এনগেজমেন্টে পয়েন্ট জমা হয়; ফেক বা এক্সচেঞ্জ ভিউ ধরা পড়লে আয় আটকে যায় এবং বারবার হলে মনিটাইজেশন বাতিল হতে পারে। তাই মানসম্মত কনটেন্টই আয়ের সবচেয়ে নিরাপদ পথ।',
-            style: TextStyle(
-              fontSize: 12,
-              color: Color(0xFF64748B),
-              height: 1.55,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

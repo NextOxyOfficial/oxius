@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/common/adsy_dialog.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -1612,33 +1613,19 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     );
   }
 
-  void _showStopConfirmation(String gigId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Stop this gig?'),
-          content: const Text(
-            'This action will permanently stop the current gig and cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _handleGigAction(gigId, 'completed', false);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child:
-                  const Text('Stop Gig', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
+  Future<void> _showStopConfirmation(String gigId) async {
+    final confirmed = await AdsyDialog.confirm(
+      context,
+      title: 'Stop this gig?',
+      message:
+          'This action will permanently stop the current gig and cannot be undone.',
+      confirmLabel: 'Stop Gig',
+      destructive: true,
+      icon: Icons.stop_circle_outlined,
     );
+    if (confirmed == true) {
+      _handleGigAction(gigId, 'completed', false);
+    }
   }
 
   Color _getStatusColor(String status, bool isActive) {

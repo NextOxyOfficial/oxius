@@ -17,6 +17,7 @@ import '../../utils/mention_navigator.dart';
 import '../../utils/business_network_media_downloader.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
+import '../../widgets/common/adsy_dialog.dart';
 import '../../widgets/common/adsy_report_sheet.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import '../../widgets/common/adsy_toast.dart';
@@ -692,24 +693,14 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _handleDeletePost() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Post'),
-        content: const Text(
-            'Are you sure you want to delete this post? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+    final confirmed = await AdsyDialog.confirm(
+      context,
+      title: 'Delete Post',
+      message:
+          'Are you sure you want to delete this post? This action cannot be undone.',
+      confirmLabel: 'Delete',
+      destructive: true,
+      icon: Icons.delete_outline_rounded,
     );
 
     if (confirmed == true) {
@@ -760,26 +751,15 @@ class _PostCardState extends State<PostCard> {
     }
 
     // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Block User'),
-        content: Text(
-          username != null && username.isNotEmpty
-              ? 'Block @$username? You will no longer see their posts.'
-              : 'Block ${_post.user.name}? You will no longer see their posts.',
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Block'),
-          ),
-        ],
-      ),
+    final confirmed = await AdsyDialog.confirm(
+      context,
+      title: 'Block User',
+      message: username != null && username.isNotEmpty
+          ? 'Block @$username? You will no longer see their posts.'
+          : 'Block ${_post.user.name}? You will no longer see their posts.',
+      confirmLabel: 'Block',
+      destructive: true,
+      icon: Icons.block_rounded,
     );
 
     if (confirmed != true || !mounted) return;

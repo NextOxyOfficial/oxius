@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/business_network_service.dart';
 import '../common/adsy_toast.dart';
@@ -17,11 +18,15 @@ class MonetizationCard extends StatefulWidget {
 }
 
 class _MonetizationCardState extends State<MonetizationCard> {
+  static const _dismissPrefKey = 'monetization_approved_card_dismissed';
+
   Map<String, dynamic>? _status;
   bool _loading = true;
   // Progress state is collapsed by default (just the header + arrow) so the
   // card stays small; tapping the header expands the requirement checklist.
   bool _expanded = false;
+  // The approved congratulation is one-time news — permanently dismissible.
+  bool _approvedDismissed = false;
 
   @override
   void initState() {
@@ -30,12 +35,24 @@ class _MonetizationCardState extends State<MonetizationCard> {
   }
 
   Future<void> _load() async {
-    final status = await BusinessNetworkService.getMonetizationStatus();
+    final results = await Future.wait([
+      BusinessNetworkService.getMonetizationStatus(),
+      SharedPreferences.getInstance(),
+    ]);
     if (!mounted) return;
     setState(() {
-      _status = status;
+      _status = results[0] as Map<String, dynamic>?;
+      _approvedDismissed = (results[1] as SharedPreferences)
+              .getBool(_dismissPrefKey) ??
+          false;
       _loading = false;
     });
+  }
+
+  Future<void> _dismissApproved() async {
+    setState(() => _approvedDismissed = true);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_dismissPrefKey, true);
   }
 
   int _asInt(dynamic v) =>
@@ -48,6 +65,11 @@ class _MonetizationCardState extends State<MonetizationCard> {
     final eligible = _status!['eligible'] == true;
     final applied = _status!['applied'] == true;
     final appStatus = (_status!['application_status'] ?? '').toString();
+
+    // Approved congratulation permanently closed by the user.
+    if (applied && appStatus == 'approved' && _approvedDismissed) {
+      return const SizedBox.shrink();
+    }
 
     // Progress state manages its own tap (expand/collapse). The compact
     // eligible/applied states tap through to the full monetization page.
@@ -373,6 +395,21 @@ class _MonetizationCardState extends State<MonetizationCard> {
             ],
           ),
         ),
+        if (appStatus == 'approved') ...[
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: _dismissApproved,
+            behavior: HitTestBehavior.opaque,
+            child: const Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(
+                Icons.close_rounded,
+                size: 18,
+                color: Color(0xFF94A3B8),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

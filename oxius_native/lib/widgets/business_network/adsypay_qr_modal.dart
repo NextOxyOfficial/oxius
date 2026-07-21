@@ -208,17 +208,8 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
             child: Row(
               children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Color(0xFF10B981), _greenDark]),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: const Icon(Icons.account_balance_wallet_rounded,
-                      color: Colors.white, size: 22),
-                ),
+                const Icon(Icons.account_balance_wallet_rounded,
+                    color: Color(0xFF10B981), size: 30),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Column(

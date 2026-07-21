@@ -18,6 +18,7 @@ import '../widgets/chat/chat_message_input.dart';
 import '../widgets/chat/message_options_sheet.dart';
 import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_toast.dart';
+import '../widgets/common/adsy_dialog.dart';
 import 'business_network/profile_screen.dart';
 import 'group_info_screen.dart';
 
@@ -254,26 +255,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   Future<void> _deleteGroupMessage(Map<String, dynamic> raw) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text('Delete Message?',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-        content: const Text('This message will be removed for everyone.',
-            style: TextStyle(fontSize: 13)),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          FilledButton(
-              style:
-                  FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete')),
-        ],
-      ),
+    final confirmed = await AdsyDialog.confirm(
+      context,
+      title: 'Delete Message?',
+      message: 'This message will be removed for everyone.',
+      confirmLabel: 'Delete',
+      destructive: true,
+      icon: Icons.delete_outline_rounded,
     );
     if (confirmed != true || !mounted) return;
     final ok = await AdsyConnectService.deleteGroupMessage(

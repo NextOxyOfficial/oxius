@@ -6,6 +6,7 @@ import '../../utils/html_content_utils.dart';
 import '../../utils/payment_policy.dart';
 import '../ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
@@ -533,24 +534,14 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
     final sponsorId = int.tryParse((sponsor['id'] ?? '').toString());
     if (sponsorId == null) return;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Sponsorship'),
-        content: const Text(
-            'Are you sure you want to delete this sponsorship? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+    final confirmed = await AdsyDialog.confirm(
+      context,
+      title: 'Delete Sponsorship',
+      message:
+          'Are you sure you want to delete this sponsorship? This action cannot be undone.',
+      confirmLabel: 'Delete',
+      destructive: true,
+      icon: Icons.delete_outline_rounded,
     );
     if (confirmed != true || !mounted) return;
 

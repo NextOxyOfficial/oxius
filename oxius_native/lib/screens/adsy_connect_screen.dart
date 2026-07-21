@@ -23,6 +23,7 @@ import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import 'package:oxius_native/widgets/common/adsy_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 
 /// Chat-list buckets. Spam is hidden from every tab except its own so junk
 /// never clutters real conversations.
@@ -201,6 +202,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   Timer? _peopleDebounce;
   List<Map<String, dynamic>> _peopleResults = [];
   bool _peopleSearching = false;
+  // People-section filter: 'all' | 'following' | 'new'.
+  String _peopleFilter = 'all';
 
   void _schedulePeopleSearch(String query) {
     _peopleDebounce?.cancel();
@@ -1598,22 +1601,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   Future<void> _deleteChat(Map<String, dynamic> chat) async {
     final id = chat['id']?.toString() ?? '';
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('চ্যাট মুছবেন?'),
-        content: const Text('আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে।'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('বাতিল')),
-          FilledButton(
-              style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626)),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('মুছুন')),
-        ],
-      ),
+    final confirm = await AdsyDialog.confirm(
+      context,
+      title: 'চ্যাট মুছবেন?',
+      message: 'আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে।',
+      confirmLabel: 'মুছুন',
+      cancelLabel: 'বাতিল',
+      destructive: true,
+      icon: Icons.delete_outline_rounded,
     );
     if (confirm != true) return;
     final res = await AdsyConnectService.clearConversation(id);
@@ -1849,14 +1844,28 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         )
       else if (_peopleResults.isNotEmpty) ...[
         SliverToBoxAdapter(child: _searchSectionLabel('নতুন মানুষ')),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(4, 2, 4, 0),
-          sliver: SliverList.builder(
-            itemCount: _peopleResults.length,
-            itemBuilder: (context, index) =>
-                _buildPersonTile(_peopleResults[index]),
+        SliverToBoxAdapter(child: _buildPeopleFilterTabs()),
+        if (_filteredPeople().isEmpty)
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 26),
+              child: Center(
+                child: Text(
+                  'এই ফিল্টারে কেউ নেই',
+                  style: TextStyle(fontSize: 12.5, color: Color(0xFF94A3B8)),
+                ),
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(4, 2, 4, 0),
+            sliver: SliverList.builder(
+              itemCount: _filteredPeople().length,
+              itemBuilder: (context, index) =>
+                  _buildPersonTile(_filteredPeople()[index]),
+            ),
           ),
-        ),
       ],
       if (nothingFound)
         SliverToBoxAdapter(
@@ -1897,6 +1906,64 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             letterSpacing: 0.2,
           ),
         ),
+      ),
+    );
+  }
+
+  /// People search results narrowed by the active filter tab.
+  List<Map<String, dynamic>> _filteredPeople() {
+    switch (_peopleFilter) {
+      case 'following':
+        return _peopleResults
+            .where((u) => u['is_following'] == true)
+            .toList();
+      case 'new':
+        return _peopleResults
+            .where((u) => u['is_following'] != true)
+            .toList();
+      default:
+        return _peopleResults;
+    }
+  }
+
+  Widget _buildPeopleFilterTabs() {
+    const tabs = [
+      ('all', 'সব'),
+      ('following', 'ফলোয়িং'),
+      ('new', 'নতুন'),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+      child: Row(
+        children: [
+          for (final t in tabs) ...[
+            GestureDetector(
+              onTap: () => setState(() => _peopleFilter = t.$1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: _peopleFilter == t.$1
+                      ? const Color(0xFF111827)
+                      : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  t.$2,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: _peopleFilter == t.$1
+                        ? Colors.white
+                        : const Color(0xFF64748B),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ],
       ),
     );
   }
@@ -2028,9 +2095,6 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            // Plain brand chat icon (no background) — tap row to chat.
-            const AdsyChatIcon(size: 20, color: Color(0xFF334155)),
           ],
         ),
       ),

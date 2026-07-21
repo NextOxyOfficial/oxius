@@ -278,17 +278,10 @@ class _WalletScreenState extends State<WalletScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [_indigo, _violet]),
-                borderRadius: BorderRadius.circular(9),
-              ),
-              child: const Icon(
-                Icons.account_balance_wallet_outlined,
-                size: 16,
-                color: Colors.white,
-              ),
+            const Icon(
+              Icons.account_balance_wallet_rounded,
+              size: 24,
+              color: _indigo,
             ),
             const SizedBox(width: 8),
             Text(

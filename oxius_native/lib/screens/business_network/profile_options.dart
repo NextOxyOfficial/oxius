@@ -11,6 +11,7 @@ import 'notifications_screen.dart';
 import 'create_post_screen.dart';
 import 'shorts_player_screen.dart';
 import 'blocked_users_screen.dart';
+import 'post_media_viewer_screen.dart';
 import '../inbox_screen.dart';
 import '../workspace/workspace_screen.dart';
 import '../settings_screen.dart';
@@ -22,6 +23,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import '../../utils/adsy_image_upload.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
@@ -202,6 +204,41 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     } else {
       AdsyToast.error(context, 'আপলোড করা যায়নি, আবার চেষ্টা করুন');
     }
+  }
+
+  /// Full-screen banner preview through the standard BN media viewer.
+  void _openBannerViewer(String bannerUrl, String name, String avatarUrl) {
+    final user = AuthService.currentUser;
+    final post = BusinessNetworkPost(
+      id: 0,
+      title: '',
+      user: BusinessNetworkUser(
+        id: 0,
+        uuid: user?.id,
+        name: name,
+        avatar: avatarUrl,
+        image: avatarUrl,
+        isVerified: _resolvedVerified(user),
+        isPro: _resolvedPro(user),
+      ),
+      content: '',
+      media: [PostMedia(id: 0, image: bannerUrl, type: 'image', post: 0)],
+      tags: const [],
+      likesCount: 0,
+      commentsCount: 0,
+      isLiked: false,
+      isSaved: false,
+      createdAt: '',
+      comments: const [],
+      postLikes: const [],
+    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PostMediaViewerScreen(post: post, initialIndex: 0),
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   int _resolvedPostCount() => _intValue(_profileData?['post_count']);
@@ -459,30 +496,37 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
           // Banner + action buttons
           Stack(
             children: [
-              // Banner
-              SizedBox(
-                height: 130,
-                width: double.infinity,
-                child: bannerUrl.isNotEmpty
-                    ? Image.network(
-                        bannerUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _buildHeaderBannerFallback(),
-                      )
-                    : _buildHeaderBannerFallback(),
+              // Banner — tap opens it full-screen in the BN media viewer.
+              // Softly rounded bottom corners give the header a card feel.
+              GestureDetector(
+                onTap: bannerUrl.isNotEmpty
+                    ? () => _openBannerViewer(bannerUrl, name, avatarUrl)
+                    : null,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(20),
+                  ),
+                  child: SizedBox(
+                    height: 130,
+                    width: double.infinity,
+                    child: bannerUrl.isNotEmpty
+                        ? Image.network(
+                            bannerUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _buildHeaderBannerFallback(),
+                          )
+                        : _buildHeaderBannerFallback(),
+                  ),
+                ),
               ),
-              // Back & share buttons
+              // Share button (back removed — bottom nav handles navigation)
               SafeArea(
                 bottom: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                   child: Row(
                     children: [
-                      _buildGlassButton(
-                        icon: Icons.arrow_back_rounded,
-                        onTap: () => Navigator.pop(context),
-                      ),
                       const Spacer(),
                       _buildGlassButton(
                         icon: Icons.share_outlined,
@@ -531,7 +575,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               // chip when one is already set.
               if (!_bannerUploading)
               Positioned(
-                bottom: 24,
+                bottom: 10,
                 right: 12,
                 child: GestureDetector(
                   onTap: _uploadBanner,
@@ -568,17 +612,12 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               ),
             ],
           ),
-          // White sheet — rounded top corners rise over the banner.
-          Transform.translate(
-            offset: const Offset(0, -16),
-            child: Container(
+          // Info section on plain white; the banner above carries the
+          // rounded BOTTOM corners, so no overlap trickery here.
+          Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              padding: const EdgeInsets.fromLTRB(16, 84, 16, 8),
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(16, 72, 16, 8),
               child: Column(
               children: [
                 // Name row
@@ -660,11 +699,10 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 ),
               ],
             ),
-            ),
           ),
             ],
           ),
-          // Centered large avatar — floats above the rounded sheet seam.
+          // Centered large avatar — floats over the banner seam.
           Positioned(
             top: 70,
             left: 0,
@@ -1058,44 +1096,20 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Sign Out',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              AuthService.logout();
-              final rootNavigator = FCMService.navigatorKey.currentState ??
-                  Navigator.of(context, rootNavigator: true);
-              rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child:
-                const Text('Sign Out', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    final confirmed = await AdsyDialog.confirm(
+      context,
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out?',
+      confirmLabel: 'Sign Out',
+      destructive: true,
+      icon: Icons.logout_rounded,
     );
+    if (confirmed != true || !context.mounted) return;
+    AuthService.logout();
+    final rootNavigator = FCMService.navigatorKey.currentState ??
+        Navigator.of(context, rootNavigator: true);
+    rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   Widget _buildAvatarPlaceholder(String name) {
