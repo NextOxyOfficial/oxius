@@ -149,6 +149,109 @@ def fraud_score(points):
     return min(score, 100)
 
 
+def creator_content_breakdown(user, start, end, conf, limit=10):
+    """Per-post engagement + points inside [start, end) for the earnings
+    page's "which content earned what" list, plus a daily-views series for
+    the analytics chart. Uses the same account-age gate as creator_points
+    (per-viewer daily cap skipped — display-level detail)."""
+    from .models import (
+        BusinessNetworkMediaView,
+        BusinessNetworkPost,
+        BusinessNetworkPostComment,
+        BusinessNetworkPostLike,
+    )
+
+    view_qs = (
+        BusinessNetworkMediaView.objects.filter(
+            media__business_network_posts__author=user,
+            created_at__gte=start,
+            created_at__lt=end,
+        )
+        .exclude(user=user)
+        .filter(
+            created_at__gte=F("user__date_joined")
+            + timedelta(days=conf.viewer_min_account_age_days)
+        )
+    )
+
+    posts = {}
+
+    def bucket(post_id):
+        return posts.setdefault(
+            post_id, {"views": 0, "likes": 0, "comments": 0}
+        )
+
+    for row in view_qs.values("media__business_network_posts__id").annotate(
+        n=Count("id")
+    ):
+        pid = row["media__business_network_posts__id"]
+        if pid:
+            bucket(pid)["views"] += row["n"]
+
+    for row in (
+        BusinessNetworkPostLike.objects.filter(
+            post__author=user, created_at__gte=start, created_at__lt=end
+        )
+        .exclude(user=user)
+        .values("post_id")
+        .annotate(n=Count("id"))
+    ):
+        bucket(row["post_id"])["likes"] += row["n"]
+
+    for row in (
+        BusinessNetworkPostComment.objects.filter(
+            post__author=user, created_at__gte=start, created_at__lt=end
+        )
+        .exclude(author=user)
+        .values("post_id")
+        .annotate(n=Count("id"))
+    ):
+        bucket(row["post_id"])["comments"] += row["n"]
+
+    for stats in posts.values():
+        stats["points"] = (
+            stats["views"] * conf.point_view
+            + stats["likes"] * conf.point_like
+            + stats["comments"] * conf.point_comment
+        )
+
+    top_ids = sorted(posts, key=lambda p: -posts[p]["points"])[:limit]
+    top_content = []
+    if top_ids:
+        for post in BusinessNetworkPost.objects.filter(
+            id__in=top_ids
+        ).prefetch_related("media"):
+            stats = posts[post.id]
+            first_media = next(iter(post.media.all()), None)
+            thumb = ""
+            media_type = "image"
+            if first_media is not None:
+                media_type = first_media.type
+                f = first_media.thumbnail or first_media.image
+                if f:
+                    thumb = f.url
+            excerpt = (post.title or post.content or "").strip()[:80]
+            top_content.append(
+                {
+                    "post_id": post.id,
+                    "excerpt": excerpt,
+                    "thumbnail": thumb,
+                    "media_type": media_type,
+                    **stats,
+                }
+            )
+        top_content.sort(key=lambda c: -c["points"])
+
+    daily_views = [
+        {"date": str(row["created_at__date"]), "views": row["n"]}
+        for row in view_qs.values("created_at__date")
+        .annotate(n=Count("id"))
+        .order_by("created_at__date")
+    ]
+
+    return {"top_content": top_content, "daily_views": daily_views}
+
+
 def compute_period_earnings(period=None):
     """(Re)compute every approved creator's points + pool share for a month.
 

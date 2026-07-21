@@ -2860,6 +2860,7 @@ class ContentMonetizationEarningsView(APIView):
             CreatorMonthlyEarning,
         )
         from .monetization import (
+            creator_content_breakdown,
             creator_points,
             current_period,
             period_bounds,
@@ -2894,6 +2895,23 @@ class ContentMonetizationEarningsView(APIView):
             user=request.user, period=period
         ).first()
 
+        # Per-content breakdown + daily views for the analytics section.
+        breakdown = creator_content_breakdown(request.user, start, end, conf)
+        # Attribute the stored month amount across content by point share so
+        # the user sees roughly which content earned what.
+        from decimal import Decimal
+
+        my_points = points.get("total_points") or 0
+        amount = row.amount if row else None
+        for c in breakdown["top_content"]:
+            if amount is not None and my_points > 0:
+                share = (amount * c["points"] / my_points).quantize(
+                    Decimal("0.01")
+                )
+                c["estimated_amount"] = str(share)
+            else:
+                c["estimated_amount"] = None
+
         history = [
             {
                 "period": e.period,
@@ -2927,6 +2945,8 @@ class ContentMonetizationEarningsView(APIView):
                 "min_payout": str(conf.min_payout),
                 "holdback_days": conf.holdback_days,
                 "expected_payout_date": expected_payout.strftime("%d-%m-%Y"),
+                "top_content": breakdown["top_content"],
+                "daily_views": breakdown["daily_views"],
                 "history": history,
             }
         )
