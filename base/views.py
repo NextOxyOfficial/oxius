@@ -1556,6 +1556,14 @@ def getMicroGigPostTasks(request, email):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def postMicroGigPostTask(request):
+    # Earning from micro gigs requires an approved KYC — enforced here so
+    # older app builds can't bypass the client-side gate.
+    if not request.user.kyc:
+        return Response(
+            {"error": "KYC verification required to submit micro gig tasks."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     data = request.data.copy()
     data["user"] = request.user.id
     gig_id = data.get("gig")
@@ -2106,16 +2114,28 @@ def _send_smsinbd_message(phone, message):
     except json.JSONDecodeError:
         response_data = None
 
-    if not 200 <= response.status_code < 300:
-        return False, f"SMS service returned HTTP {response.status_code}"
-
     if isinstance(response_data, dict):
+        # Newer smsinbd responses: {"success": bool, "error": {code, message}}
+        if "success" in response_data:
+            if response_data.get("success") is True:
+                return True, str(response_data.get("message", "SMS sent"))
+            err = response_data.get("error") or {}
+            detail = (
+                f"{err.get('code', '')} {err.get('message', '')}".strip()
+                if isinstance(err, dict)
+                else str(err)
+            )
+            return False, detail or response_text or "SMS provider rejected"
+
         provider_status = str(response_data.get("status", "")).lower()
         if provider_status in {"success", "sent", "submitted"}:
             return True, response_data.get("message", "SMS sent")
 
         provider_message = response_data.get("message") or response_text
         return False, provider_message or "SMS provider rejected the request"
+
+    if not 200 <= response.status_code < 300:
+        return False, f"SMS service returned HTTP {response.status_code}"
 
     success_words = ("success", "sent", "submitted", "accepted")
     if any(word in response_text.lower() for word in success_words):
