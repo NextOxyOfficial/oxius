@@ -3514,10 +3514,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         : message;
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTap: messageId.isEmpty
-          ? null
-          : () => setState(() => _tappedTimeMessageId =
-              _tappedTimeMessageId == messageId ? null : messageId),
+      // Message rows span the full width (translucent), so THIS handler wins
+      // the gesture arena over the outer keyboard-dismiss detector. With the
+      // keyboard open, any tap — on a bubble or the space beside it — must
+      // dismiss the keyboard first; time-reveal is the next tap's job.
+      onTap: () {
+        if (MediaQuery.of(context).viewInsets.bottom > 0) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          return;
+        }
+        if (messageId.isEmpty) return;
+        setState(() => _tappedTimeMessageId =
+            _tappedTimeMessageId == messageId ? null : messageId);
+      },
       child: ChatMessageBubble(
       key: ValueKey(messageId.isNotEmpty ? messageId : message.hashCode),
       message: display,

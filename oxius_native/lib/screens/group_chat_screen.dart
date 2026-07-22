@@ -885,9 +885,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     : Stack(
                         children: [
                           GestureDetector(
-                            // Tap on empty list area hides any revealed time.
+                            // Tap on empty list area: dismiss the keyboard
+                            // and hide any revealed time.
                             behavior: HitTestBehavior.translucent,
                             onTap: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
                               if (_timeShownId != null) {
                                 setState(() => _timeShownId = null);
                               }
@@ -1078,8 +1080,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     // gesture wins, so this only fires on plain bubble areas.
     final bubble = GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTap: () => setState(
-          () => _timeShownId = _timeShownId == msgId ? null : msgId),
+      // With the keyboard open, any tap on the history dismisses it FIRST —
+      // time-reveal is the next tap's job (same behavior as the 1:1 chat).
+      onTap: () {
+        if (MediaQuery.of(context).viewInsets.bottom > 0) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          return;
+        }
+        setState(() => _timeShownId = _timeShownId == msgId ? null : msgId);
+      },
       child: ChatMessageBubble(
         key: ValueKey(msgId),
         message: mapped,
