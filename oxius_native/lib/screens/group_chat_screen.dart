@@ -57,6 +57,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   // Shows the jump-to-bottom circle once the user scrolls up a bit.
   bool _showJumpToBottom = false;
 
+  // @mention composer state — suggestions come ONLY from this group's
+  // members. Non-null query = the panel is visible; [_mentionStart] is the
+  // index of the '@' being completed.
+  String? _mentionQuery;
+  int _mentionStart = -1;
+
   // Input state — mirrors the 1:1 interface so ChatMessageInput drops in.
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
@@ -143,6 +149,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   // Throttled typing heartbeat — at most one ping per 2.5s while typing.
   void _onInputChanged() {
+    _updateMentionQuery();
     final hasText = _messageController.text.trim().isNotEmpty;
     if (hasText != _isTyping) setState(() => _isTyping = hasText);
     if (!hasText) return;
@@ -151,6 +158,94 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       _lastTypingSent = now;
       AdsyConnectService.setGroupTyping(_groupId);
     }
+  }
+
+  // ── @mention composing ───────────────────────────────────────────────────
+
+  void _clearMentionQuery() {
+    if (_mentionQuery == null) return;
+    if (mounted) {
+      setState(() {
+        _mentionQuery = null;
+        _mentionStart = -1;
+      });
+    } else {
+      _mentionQuery = null;
+      _mentionStart = -1;
+    }
+  }
+
+  /// Watches the text before the cursor for an in-progress "@query" and
+  /// drives the member-suggestion panel from it.
+  void _updateMentionQuery() {
+    final text = _messageController.text;
+    final sel = _messageController.selection;
+    if (!sel.isValid || !sel.isCollapsed) return _clearMentionQuery();
+    final cursor = sel.baseOffset.clamp(0, text.length);
+    final upto = text.substring(0, cursor);
+    final at = upto.lastIndexOf('@');
+    if (at < 0) return _clearMentionQuery();
+    // '@' must start the message or follow whitespace (not an email etc.).
+    if (at > 0 && !RegExp(r'\s').hasMatch(upto[at - 1])) {
+      return _clearMentionQuery();
+    }
+    final q = upto.substring(at + 1);
+    if (q.contains('\n') || q.length > 30) return _clearMentionQuery();
+    if (q != _mentionQuery || at != _mentionStart) {
+      setState(() {
+        _mentionQuery = q;
+        _mentionStart = at;
+      });
+    }
+  }
+
+  /// Group members (self excluded) matching the current query — the panel
+  /// never suggests anyone outside this group.
+  List<Map<String, String>> _mentionMatches() {
+    final q = (_mentionQuery ?? '').trim().toLowerCase();
+    final out = <Map<String, String>>[];
+    for (final raw in (_group['members'] as List? ?? const [])) {
+      if (raw is! Map) continue;
+      final u = Map<String, dynamic>.from((raw['user'] ?? {}) as Map);
+      final uid = (u['id'] ?? '').toString();
+      if (uid.isEmpty || uid == _myId) continue;
+      final name = [
+        (u['first_name'] ?? '').toString(),
+        (u['last_name'] ?? '').toString(),
+      ].where((s) => s.isNotEmpty).join(' ').trim();
+      final display =
+          name.isNotEmpty ? name : (u['username'] ?? '').toString();
+      if (display.isEmpty) continue;
+      if (q.isNotEmpty && !display.toLowerCase().contains(q)) continue;
+      out.add({
+        'id': uid,
+        'name': display,
+        'avatar': (u['avatar'] ?? '').toString(),
+      });
+    }
+    return out;
+  }
+
+  /// Replace the in-progress "@query" with the chosen member. Stored in the
+  /// same delimited format as BN posts (double space after the name) so
+  /// [MentionParser] renders it as a tappable blue mention everywhere.
+  void _insertMention(String name) {
+    final text = _messageController.text;
+    final sel = _messageController.selection;
+    final cursor =
+        sel.isValid ? sel.baseOffset.clamp(0, text.length) : text.length;
+    if (_mentionStart < 0 || _mentionStart >= cursor) {
+      return _clearMentionQuery();
+    }
+    final mention = '@$name  ';
+    final newText = text.replaceRange(_mentionStart, cursor, mention);
+    _messageController.value = TextEditingValue(
+      text: newText,
+      selection:
+          TextSelection.collapsed(offset: _mentionStart + mention.length),
+    );
+    _clearMentionQuery();
+    _messageFocusNode.requestFocus();
   }
 
   Future<void> _pollTyping() async {
@@ -774,6 +869,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       ),
           ),
           _buildTypingIndicator(),
+          // Member @mention suggestions — floats directly above the input.
+          if (_mentionQuery != null) _buildMentionPanel(),
           // The SAME input bar as the 1:1 chat: text, attachments with image
           // preview strip, and mic recording UI.
           ChatMessageInput(
@@ -818,6 +915,74 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ],
       ),
     ));
+  }
+
+  /// Compact member list shown while composing an @mention — group members
+  /// only, filtered live by what's typed after the '@'.
+  Widget _buildMentionPanel() {
+    final matches = _mentionMatches();
+    if (matches.isEmpty) return const SizedBox.shrink();
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 208),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+      ),
+      child: ListView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        itemCount: matches.length,
+        itemBuilder: (_, i) {
+          final m = matches[i];
+          final avatar = m['avatar'] ?? '';
+          return InkWell(
+            onTap: () => _insertMention(m['name']!),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                        shape: BoxShape.circle, color: Color(0xFFF1F5F9)),
+                    clipBehavior: Clip.antiAlias,
+                    alignment: Alignment.center,
+                    child: avatar.isNotEmpty
+                        ? Image.network(avatar,
+                            fit: BoxFit.cover,
+                            width: 32,
+                            height: 32,
+                            errorBuilder: (_, __, ___) => const Icon(
+                                Icons.person_rounded,
+                                size: 18,
+                                color: Color(0xFF94A3B8)))
+                        : const Icon(Icons.person_rounded,
+                            size: 18, color: Color(0xFF94A3B8)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      m['name']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.alternate_email_rounded,
+                      size: 16, color: Color(0xFF94A3B8)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildRow(int i) {

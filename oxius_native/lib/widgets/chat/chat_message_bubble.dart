@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
 import '../../services/business_network_service.dart';
+import '../../utils/mention_navigator.dart';
+import '../../utils/mention_parser.dart';
 import '../../utils/shared_post_message.dart';
 import '../../utils/url_launcher_utils.dart';
 import '../../widgets/chat_video_player.dart';
@@ -575,18 +577,45 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           // meaning — don't also print the raw link. Only show the message
           // text when there's actual text alongside the link.
           if (!urlOnly)
-            LinkifyText(
-              text,
-              style: TextStyle(
-                fontSize: 16,
-                color: const Color(0xFF1F2937),
-                height: 1.38,
-              ),
-              linkStyle: TextStyle(
-                color: const Color(0xFF111827),
-                decoration: TextDecoration.none,
-              ),
-            ),
+            // Messages carrying @mentions (group chat) render them as blue
+            // tappable names — tap opens that member's BN profile. Everything
+            // else keeps the plain linkified text path.
+            (MentionParser.hasMentions(text)
+                ? Builder(
+                    builder: (ctx) => Text.rich(
+                      TextSpan(
+                        children: MentionParser.parseTextWithMentionsAndLinks(
+                          text,
+                          ctx,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF1F2937),
+                            height: 1.38,
+                          ),
+                          linkStyle: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF111827),
+                            height: 1.38,
+                            decoration: TextDecoration.none,
+                          ),
+                          onMentionTap: (name) =>
+                              MentionNavigator.open(ctx, name),
+                        ),
+                      ),
+                    ),
+                  )
+                : LinkifyText(
+                    text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: const Color(0xFF1F2937),
+                      height: 1.38,
+                    ),
+                    linkStyle: TextStyle(
+                      color: const Color(0xFF111827),
+                      decoration: TextDecoration.none,
+                    ),
+                  )),
           if (isEdited) ...[
             const SizedBox(height: 4),
             Text(
@@ -1066,12 +1095,17 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     if (t.isEmpty || t.length > 40) return null;
     // Every grapheme must be pictographic (with ZWJ/variation/skin-tone
     // modifiers and whitespace allowed as glue).
+    // The valid_regexps lint (Dart 3.12+) doesn't recognize the
+    // Extended_Pictographic unicode property, but the runtime does — this
+    // regex is exercised by every emoji-only message in production.
     final emojiOnly = RegExp(
+      // ignore: valid_regexps
       r'^(?:\p{Extended_Pictographic}[\u{FE0F}\u{200D}\u{1F3FB}-\u{1F3FF}]*'
       r'|[\u{200D}\u{FE0F}\s])+$',
       unicode: true,
     ).hasMatch(t);
     if (!emojiOnly) return null;
+    // ignore: valid_regexps
     final count = RegExp(r'\p{Extended_Pictographic}', unicode: true)
         .allMatches(t)
         .length;
