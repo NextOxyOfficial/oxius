@@ -2898,14 +2898,17 @@ class FCMService {
     // ADSYCONNECT GROUP MESSAGES
     // ============================================
     else if (type == 'group_message') {
-      // Groups live in the AdsyConnect list (main tab shows them inline) —
-      // open the list; the group id can't be opened as a 1:1 chat.
-      _log('   → Navigating to AdsyConnect for group message');
+      // Open the GROUP chat directly (fast path via initialGroupId) — the
+      // push payload carries group_id; falling back to the list only when
+      // it's missing.
+      final groupId = data['group_id']?.toString();
+      _log('   → Navigating to AdsyConnect group chat: $groupId');
       _dismissBlockingChatOverlay();
       navigator.push(
         MaterialPageRoute(
           builder: (context) => InboxScreen(
             initialTab: 0, // AdsyConnect tab is index 0
+            initialGroupId: groupId,
           ),
         ),
       );

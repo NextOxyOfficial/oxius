@@ -31,9 +31,11 @@ import '../utils/adsy_ios_scale.dart';
 enum _ChatTab { all, mutual, groups, nonFollowers, spam }
 
 class AdsyConnectScreen extends StatefulWidget {
-  const AdsyConnectScreen({super.key, this.initialChatId});
+  const AdsyConnectScreen({super.key, this.initialChatId, this.initialGroupId});
 
   final String? initialChatId;
+  // Push-tap deep link: open this GROUP chat immediately.
+  final String? initialGroupId;
 
   @override
   State<AdsyConnectScreen> createState() => _AdsyConnectScreenState();
@@ -99,6 +101,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if ((widget.initialChatId ?? '').isNotEmpty) {
       unawaited(_openInitialChatIfNeeded());
     }
+    if ((widget.initialGroupId ?? '').isNotEmpty) {
+      unawaited(_openInitialGroupIfNeeded());
+    }
     unawaited(AdsyConnectRealtimeService.instance.connect());
     _realtimeSubscription = AdsyConnectRealtimeService.instance.events.listen(
       _handleRealtimeEvent,
@@ -151,7 +156,70 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         _applyIncomingMessageToList(event['message']);
       }
       unawaited(_refreshChatsInBackground());
+      return;
     }
+
+    if (type == 'group_message') {
+      _applyIncomingGroupMessage(event['message']);
+      return;
+    }
+
+    if (type == 'group_updated') {
+      unawaited(_loadGroups());
+    }
+  }
+
+  /// Instantly reflect an incoming GROUP message on the list — preview,
+  /// time and unread badge — without waiting for a reload.
+  void _applyIncomingGroupMessage(dynamic message) {
+    if (message is! Map) return;
+    final groupId = (message['group'] ?? '').toString();
+    if (groupId.isEmpty) return;
+
+    final index =
+        _groups.indexWhere((g) => (g['id'] ?? '').toString() == groupId);
+    if (index == -1) {
+      // Unknown group (just added?) — the full reload brings it in.
+      unawaited(_loadGroups());
+      return;
+    }
+
+    final sender = message['sender'] is Map
+        ? Map<String, dynamic>.from(message['sender'] as Map)
+        : <String, dynamic>{};
+    final senderId = (sender['id'] ?? '').toString();
+    final myId = AuthService.currentUser?.id.toString() ?? '';
+    final senderName = _getFullName(sender);
+
+    var preview = (message['content'] ?? '').toString();
+    if (SharedPostMessage.tryDecode(preview) != null) {
+      preview = '📎 একটি পোস্ট';
+    } else {
+      preview = _formatReplyPreview(preview) ?? preview;
+    }
+    switch ((message['message_type'] ?? 'text').toString()) {
+      case 'voice':
+        preview = '🎤 Voice message';
+      case 'image':
+        preview = '📷 Photo';
+      case 'video':
+        preview = '🎥 Video';
+      case 'document':
+        preview = '📄 Document';
+    }
+
+    setState(() {
+      final g = Map<String, dynamic>.from(_groups[index]);
+      g['last_message_preview'] =
+          senderName.isNotEmpty ? '$senderName: $preview' : preview;
+      g['last_message_at'] = (message['created_at'] ?? '').toString();
+      if (senderId.isNotEmpty && senderId != myId) {
+        g['unread_count'] = ((g['unread_count'] as num?) ?? 0).toInt() + 1;
+      }
+      _groups
+        ..removeAt(index)
+        ..insert(0, g);
+    });
   }
 
   /// Instantly reflect an incoming message on the chat list — preview, time,
@@ -913,6 +981,36 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if (refreshAfterClose && mounted) {
       unawaited(_refreshChats());
     }
+  }
+
+  /// Push-tap deep link for GROUP messages: fetch the groups once, find the
+  /// target and open its chat screen directly — the user lands INSIDE the
+  /// group, not on the list.
+  bool _didOpenInitialGroup = false;
+
+  Future<void> _openInitialGroupIfNeeded() async {
+    if (_didOpenInitialGroup || !mounted) return;
+    final groupId = widget.initialGroupId;
+    if (groupId == null || groupId.isEmpty) return;
+    _didOpenInitialGroup = true;
+
+    var group = _groups.cast<Map<String, dynamic>?>().firstWhere(
+          (g) => (g?['id'] ?? '').toString() == groupId,
+          orElse: () => null,
+        );
+    if (group == null) {
+      final gs = await AdsyConnectService.getGroups();
+      group = gs
+          .whereType<Map>()
+          .map((g) => Map<String, dynamic>.from(g))
+          .cast<Map<String, dynamic>?>()
+          .firstWhere(
+            (g) => (g?['id'] ?? '').toString() == groupId,
+            orElse: () => null,
+          );
+    }
+    if (group == null || !mounted) return;
+    await _openGroup(group);
   }
 
   Future<void> _openInitialChatIfNeeded() async {
@@ -1765,6 +1863,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final imageUrl = (group['image_url'] ?? '').toString();
     final lastAt =
         DateTime.tryParse((group['last_message_at'] ?? '').toString());
+    final unread = ((group['unread_count'] as num?) ?? 0).toInt();
     return InkWell(
       onTap: () => _openGroup(group),
       child: Container(
@@ -1821,12 +1920,41 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     preview.isNotEmpty ? preview : '$memberCount জন মেম্বার',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 13, color: Color(0xFF6B7280)),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight:
+                          unread > 0 ? FontWeight.w600 : FontWeight.w400,
+                      color: unread > 0
+                          ? const Color(0xFF1F2937)
+                          : const Color(0xFF6B7280),
+                    ),
                   ),
                 ],
               ),
             ),
+            // Unread badge — same amber pill as the 1:1 rows.
+            if (unread > 0) ...[
+              const SizedBox(width: 6),
+              Container(
+                constraints: const BoxConstraints(minWidth: 19),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2.5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF59E0B),
+                  borderRadius: BorderRadius.all(Radius.circular(999)),
+                ),
+                child: Text(
+                  unread.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    height: 1.1,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

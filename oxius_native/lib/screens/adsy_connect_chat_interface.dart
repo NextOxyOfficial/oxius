@@ -13,6 +13,7 @@ import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/adsy_ios_scale.dart';
+import '../utils/chat_history_cache.dart';
 import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/skeleton_loader.dart';
@@ -313,6 +314,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _startActiveChatHeartbeat();
     _isOtherUserOnline = widget.isOnline;
     _loadChatroomStatus();
+    // Instant open: seed from the in-memory history cache so a previously
+    // visited chat paints its messages with NO spinner; the fetch below then
+    // reconciles with fresh server data (stale-while-revalidate).
+    final cached = ChatHistoryCache.get('room:${widget.chatroomId}');
+    if (cached != null && cached.isNotEmpty) {
+      _messages = cached;
+      _isLoadingMessages = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrollToBottom();
+      });
+    }
     _loadMessages();
     _loadOnlineStatus();
     unawaited(AdsyConnectRealtimeService.instance.connect());
@@ -505,6 +517,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   @override
   void dispose() {
+    // Snapshot the freshest history (including messages sent/received during
+    // this visit) so re-opening this chat is instant.
+    if (_messages.isNotEmpty) {
+      ChatHistoryCache.put('room:${widget.chatroomId}', _messages);
+    }
     if (_isTyping) {
       AdsyConnectRealtimeService.instance.sendTypingStatus(
         chatroomId: widget.chatroomId,
@@ -1103,7 +1120,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   Future<void> _loadMessages({bool loadMore = false}) async {
     if (!loadMore) {
       setState(() {
-        _isLoadingMessages = true;
+        // SWR: never throw a spinner over already-visible (cached) history.
+        _isLoadingMessages = _messages.isEmpty;
         _currentPage = 1;
       });
     }
@@ -1141,6 +1159,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
 
         if (!loadMore) {
+          // Keep the instant-open cache fresh for the next visit.
+          ChatHistoryCache.put('room:${widget.chatroomId}', _messages);
           _scrollToBottom();
           // Mark messages as read when opening chat
           _markMessagesAsRead();

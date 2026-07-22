@@ -10,6 +10,7 @@ import 'package:record/record.dart';
 
 import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
+import '../utils/chat_history_cache.dart';
 import '../utils/image_compressor.dart';
 import '../utils/mention_navigator.dart';
 import '../utils/url_launcher_utils.dart';
@@ -111,6 +112,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _group = Map<String, dynamic>.from(widget.group);
     _messageController.addListener(_onInputChanged);
     _scroll.addListener(_onScrollChanged);
+    // Instant open: paint cached history with no spinner; the fetch below
+    // reconciles with fresh data (stale-while-revalidate).
+    final cached = ChatHistoryCache.get('group:$_groupId');
+    if (cached != null && cached.isNotEmpty) {
+      _messages = cached;
+      _loading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _scroll.hasClients) {
+          _scroll.jumpTo(_scroll.position.maxScrollExtent);
+        }
+      });
+    }
     _loadMessages(initial: true);
     _pollTimer =
         Timer.periodic(const Duration(seconds: 5), (_) => _loadMessages());
@@ -302,6 +315,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       _messages = msgs;
       _loading = false;
     });
+    // Keep the instant-open cache fresh for the next visit.
+    ChatHistoryCache.put('group:$_groupId', _messages);
     if (initial || (changed && wasNearBottom)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scroll.hasClients) {
@@ -1135,7 +1150,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF475569),
                       ),

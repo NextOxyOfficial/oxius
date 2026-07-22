@@ -21,12 +21,15 @@ import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 class InboxScreen extends StatefulWidget {
   final int initialTab;
   final String? initialChatId;
+  // Push-tap deep link: open this GROUP chat directly (fast path).
+  final String? initialGroupId;
   final String? initialTicketId;
 
   const InboxScreen({
     super.key,
     this.initialTab = 0, // 0 = AdsyConnect, 1 = Updates, 2 = Support
     this.initialChatId,
+    this.initialGroupId,
     this.initialTicketId,
   });
 
@@ -944,7 +947,10 @@ class _InboxScreenState extends State<InboxScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                AdsyConnectScreen(initialChatId: widget.initialChatId),
+                AdsyConnectScreen(
+                  initialChatId: widget.initialChatId,
+                  initialGroupId: widget.initialGroupId,
+                ),
                 Stack(
                   children: [
                     _buildUpdatesList(),

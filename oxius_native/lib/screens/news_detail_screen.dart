@@ -473,25 +473,11 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     );
   }
 
-  /// "By Author · read time · N comments" — the concept's byline strip.
+  /// "read time · N comments" — the byline strip. The author already fronts
+  /// the source card above, so repeating "লিখেছেন X" here was redundant.
   Widget _buildBylineRow(NewsPost post) {
-    final authorName = post.authorDetails?.displayName ?? 'AdsyNews';
     return Row(
       children: [
-        Flexible(
-          child: Text(
-            _isBn ? 'লিখেছেন $authorName' : 'By $authorName',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: _ink,
-            ),
-          ),
-        ),
-        const Text('  ·  ',
-            style: TextStyle(fontSize: 12.5, color: _faint)),
         Text(
           _isBn
               ? '${post.readTime} মিনিটের পড়া'
