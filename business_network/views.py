@@ -433,7 +433,32 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         - Interest graph: tags and posts my trusted network engages with.
         - Own posts remain visible but are intentionally demoted from the top.
         - Same freshness band gets a stable per-user shuffle to avoid a stale wall.
+
+        `?feed=following` bypasses the ranked feed entirely: newest-first posts
+        from people the user follows only (used by the Shorts "Following" tab).
+        `&media=video` additionally keeps only posts that carry a video.
         """
+        if self.request.query_params.get("feed") == "following":
+            if not self.request.user.is_authenticated:
+                return BusinessNetworkPost.objects.none()
+            following_ids = list(
+                BusinessNetworkFollowerModel.objects.filter(
+                    follower=self.request.user
+                ).values_list("following_id", flat=True)
+            )
+            qs = (
+                BusinessNetworkPost.objects.filter(
+                    author_id__in=following_ids,
+                    is_banned=False,
+                    visibility__in=["public", "followers"],
+                )
+                .select_related("author")
+                .order_by("-created_at")
+            )
+            if self.request.query_params.get("media") == "video":
+                qs = qs.filter(media__type="video").distinct()
+            return qs
+
         if not self.request.user.is_authenticated:
             # For unauthenticated users, show recent PUBLIC posts only —
             # followers-only/private posts and banned content must not leak
