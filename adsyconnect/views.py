@@ -1869,6 +1869,11 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             if membership and membership.cleared_at:
                 qs = qs.filter(created_at__gt=membership.cleared_at)
             msgs = list(qs.order_by('-created_at')[:100])[::-1]
+            # Opening the group marks it read — the list's unread badge
+            # (ChatGroupSerializer.unread_count) counts from this stamp.
+            if membership:
+                membership.last_read_at = timezone.now()
+                membership.save(update_fields=['last_read_at'])
             return Response(GroupMessageSerializer(
                 msgs, many=True, context={'request': request}
             ).data)

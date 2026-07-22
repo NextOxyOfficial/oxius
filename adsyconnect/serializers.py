@@ -395,13 +395,15 @@ class ChatGroupSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     member_count = serializers.SerializerMethodField()
     my_role = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
     members = GroupMemberSerializer(source='memberships', many=True, read_only=True)
 
     class Meta:
         model = ChatGroup
         fields = [
             'id', 'name', 'image_url', 'creator', 'member_count', 'my_role',
-            'members', 'last_message_at', 'last_message_preview', 'created_at',
+            'unread_count', 'members', 'last_message_at',
+            'last_message_preview', 'created_at',
         ]
         read_only_fields = fields
 
@@ -425,3 +427,25 @@ class ChatGroupSerializer(serializers.ModelSerializer):
             return None
         m = obj.memberships.filter(user=user).first()
         return m.role if m else None
+
+    def get_unread_count(self, obj):
+        """Messages by others since the member last opened the group.
+
+        Cutoff = last_read_at, else cleared_at, else joined_at — so a fresh
+        member doesn't inherit the whole history as unread.
+        """
+        user = getattr(self.context.get('request'), 'user', None)
+        if not user or not getattr(user, 'is_authenticated', False):
+            return 0
+        m = obj.memberships.filter(user=user).first()
+        if m is None:
+            return 0
+        cutoff = m.last_read_at or m.cleared_at or m.joined_at
+        qs = (
+            obj.messages.filter(is_deleted=False)
+            .exclude(sender=user)
+            .exclude(message_type='system')
+        )
+        if cutoff:
+            qs = qs.filter(created_at__gt=cutoff)
+        return qs.count()

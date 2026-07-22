@@ -158,6 +158,9 @@ class ChatGroupMembership(models.Model):
     joined_at = models.DateTimeField(auto_now_add=True)
     # Everything before this stays hidden for the member (like 1:1 clear).
     cleared_at = models.DateTimeField(null=True, blank=True)
+    # Unread tracking: messages after this are "unread" for the member.
+    # Stamped every time the member opens the group (GET messages).
+    last_read_at = models.DateTimeField(null=True, blank=True)
     muted = models.BooleanField(default=False)
     # Typing heartbeat: set on every keystroke batch; a member counts as
     # "typing" while this is a few seconds fresh (clients poll it).
