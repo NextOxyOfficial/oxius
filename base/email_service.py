@@ -1889,9 +1889,19 @@ def send_test_email(to_email=None):
 # ============================================================
 
 def _device_from_ua(ua):
-    """Human-readable device summary from a raw User-Agent string."""
-    ua = ua or ""
+    """Human-readable device summary from a raw User-Agent string OR the
+    app's X-Device-Name header (a plain model string like
+    "samsung SM-G991B (Android 14)" — shown with the device model)."""
+    ua = (ua or "").strip()
     low = ua.lower()
+    # X-Device-Name values are short human model strings, never real UAs —
+    # detect "not a UA" and show the model directly.
+    if ua and len(ua) <= 80 and not any(
+        marker in low
+        for marker in ('mozilla', 'applewebkit', 'dart', 'okhttp',
+                       'curl', 'python', 'http')
+    ):
+        return f'AdsyClub অ্যাপ — {ua}'
     if 'dart' in low or 'okhttp' in low or 'adsyclub' in low:
         return 'AdsyClub অ্যাপ (মোবাইল)'
     os_name = 'Unknown device'

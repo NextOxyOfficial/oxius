@@ -341,7 +341,12 @@ def social_login(request):
                 request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
                 or request.META.get("REMOTE_ADDR", "")
             )
-            _ua = request.META.get("HTTP_USER_AGENT", "")
+            # The app sends its device model in X-Device-Name — far more
+            # useful in the security email than a generic Dart user-agent.
+            _ua = (
+                request.META.get("HTTP_X_DEVICE_NAME", "").strip()
+                or request.META.get("HTTP_USER_AGENT", "")
+            )
             threading.Thread(
                 target=send_login_notification_email,
                 args=(user, _ip, _ua),
@@ -1957,7 +1962,12 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                             request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
                             or request.META.get("REMOTE_ADDR", "")
                         )
-                        ua = request.META.get("HTTP_USER_AGENT", "")
+                        # Prefer the app's X-Device-Name (device model) over
+                        # the generic Dart user-agent.
+                        ua = (
+                            request.META.get("HTTP_X_DEVICE_NAME", "").strip()
+                            or request.META.get("HTTP_USER_AGENT", "")
+                        )
                         t = threading.Thread(
                             target=send_login_notification_email,
                             args=(logged_in_user, ip, ua),
