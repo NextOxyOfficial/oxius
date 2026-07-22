@@ -51,6 +51,23 @@ workflows:
           cd oxius_native
           flutter pub get
 
+      # The Firestore precompiled-framework download (invertase git + ~300MB
+      # curl from GitHub releases) occasionally dies with "Connection reset by
+      # peer" on CI. Install pods explicitly with retries so one transient
+      # network failure doesn't kill the whole build; `flutter build ipa`
+      # then reuses the installed pods.
+      - name: Install CocoaPods dependencies (with retry)
+        script: |
+          cd oxius_native/ios
+          ok=0
+          for i in 1 2 3; do
+            if pod install --repo-update; then ok=1; break; fi
+            echo "pod install attempt $i failed — cleaning partial caches, retrying in 20s"
+            pod cache clean FirebaseFirestore --all || true
+            sleep 20
+          done
+          [ "$ok" = "1" ] || exit 1
+
       - name: Build iOS IPA (release)
         script: |
           cd oxius_native

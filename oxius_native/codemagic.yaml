@@ -41,7 +41,16 @@ workflows:
       - name: Install CocoaPods dependencies
         script: |
           cd ios
-          pod install --repo-update --verbose
+          # Retry: the Firestore precompiled-framework download sometimes
+          # fails transiently ("Connection reset by peer") on CI.
+          ok=0
+          for i in 1 2 3; do
+            if pod install --repo-update --verbose; then ok=1; break; fi
+            echo "pod install attempt $i failed — retrying in 20s"
+            pod cache clean FirebaseFirestore --all || true
+            sleep 20
+          done
+          [ "$ok" = "1" ] || exit 1
       
       - name: Set up Firebase configuration
         script: |
@@ -132,7 +141,16 @@ workflows:
       - name: Install CocoaPods dependencies
         script: |
           cd ios
-          pod install --repo-update --verbose
+          # Retry: the Firestore precompiled-framework download sometimes
+          # fails transiently ("Connection reset by peer") on CI.
+          ok=0
+          for i in 1 2 3; do
+            if pod install --repo-update --verbose; then ok=1; break; fi
+            echo "pod install attempt $i failed — retrying in 20s"
+            pod cache clean FirebaseFirestore --all || true
+            sleep 20
+          done
+          [ "$ok" = "1" ] || exit 1
       
       - name: Set up Firebase configuration
         script: |
@@ -195,7 +213,14 @@ workflows:
       
       - name: Install CocoaPods dependencies
         script: |
-          cd ios && pod install --repo-update
+          cd ios
+          ok=0
+          for i in 1 2 3; do
+            if pod install --repo-update; then ok=1; break; fi
+            echo "pod install attempt $i failed — retrying in 20s"
+            sleep 20
+          done
+          [ "$ok" = "1" ] || exit 1
       
       - name: Set up Firebase configuration
         script: |
