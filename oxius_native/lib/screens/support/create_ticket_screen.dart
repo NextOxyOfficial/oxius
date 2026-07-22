@@ -52,208 +52,271 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     }
   }
 
+  static const _ink = Color(0xFF111827);
+  static const _slate = Color(0xFF64748B);
+
+  InputDecoration _fieldDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
+      isDense: true,
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      border: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(color: _ink, width: 1.3),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    );
+  }
+
+  Widget _fieldLabel(String label, String helper) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
+        const SizedBox(height: 2),
+        Text(helper,
+            style: const TextStyle(fontSize: 11.5, color: _slate, height: 1.4)),
+      ],
+    );
+  }
+
+  Widget _stepRow(String number, String title, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9), shape: BoxShape.circle),
+            alignment: Alignment.center,
+            child: Text(number,
+                style: const TextStyle(
+                    fontSize: 11.5, fontWeight: FontWeight.w800, color: _ink)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1E293B))),
+                const SizedBox(height: 1),
+                Text(subtitle,
+                    style: const TextStyle(
+                        fontSize: 11.5, color: _slate, height: 1.4)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.close_rounded, color: _ink),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Create Support Ticket',
+          'সাপোর্ট টিকিট',
           style: TextStyle(
-            color: Color(0xFF1F2937),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
+            color: _ink,
+            fontSize: 16.5,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.3,
           ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: const Color(0xFFE5E7EB),
-          ),
+        shape: const Border(
+          bottom: BorderSide(color: Color(0xFFF1F5F9)),
         ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
           children: [
-            // Info Card
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                ),
-              ),
+            // Intro — what this is and what to expect.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.info_outline_rounded,
-                    color: const Color(0xFF3B82F6),
-                    size: 20,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                        color: Color(0xFFF1F5F9), shape: BoxShape.circle),
+                    child: const Icon(Icons.support_agent_rounded,
+                        size: 23, color: Color(0xFF334155)),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Our support team will respond to your ticket within 24 hours.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: const Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w500,
-                        height: 1.35,
-                      ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('কী সমস্যায় পড়েছেন?',
+                            style: TextStyle(
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w800,
+                                color: _ink,
+                                letterSpacing: -0.2)),
+                        SizedBox(height: 3),
+                        Text(
+                          'সমস্যাটি লিখে জানান — আমাদের সাপোর্ট টিম ২৪ ঘণ্টার মধ্যে উত্তর দেবে। উত্তরটি এই অ্যাপের Support ট্যাবেই পাবেন।',
+                          style: TextStyle(
+                              fontSize: 12.5, color: _slate, height: 1.5),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            Container(
+              height: 8,
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              color: const Color(0xFFF8FAFC),
+            ),
 
-            // Title Field
-            Text(
-              'Subject',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF374151),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                hintText: 'Brief description of your issue',
-                hintStyle: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey.shade400,
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF9FAFB),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF3B82F6), width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 14,
-                ),
-              ),
-              style: const TextStyle(fontSize: 15, height: 1.35),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a subject';
-                }
-                if (value.trim().length < 5) {
-                  return 'Subject must be at least 5 characters';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
-
-            // Message Field
-            Text(
-              'Message',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF374151),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _messageController,
-              maxLines: 8,
-              decoration: InputDecoration(
-                hintText: 'Describe your issue in detail...',
-                hintStyle: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey.shade400,
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF9FAFB),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF3B82F6), width: 2),
-                ),
-                contentPadding: const EdgeInsets.all(14),
-              ),
-              style: const TextStyle(fontSize: 15, height: 1.4),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a message';
-                }
-                if (value.trim().length < 20) {
-                  return 'Message must be at least 20 characters';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // Submit Button
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitTicket,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            // Form
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _fieldLabel('বিষয়', 'এক লাইনে সমস্যাটা কী — যেমন "টাকা উত্তোলন হচ্ছে না"'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _titleController,
+                    decoration:
+                        _fieldDecoration('সংক্ষেপে সমস্যার বিষয় লিখুন'),
+                    style: const TextStyle(fontSize: 14, height: 1.35),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'বিষয় লিখুন';
+                      }
+                      if (value.trim().length < 5) {
+                        return 'বিষয় কমপক্ষে ৫ অক্ষরের হতে হবে';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: AdsyLoadingIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Submit Ticket',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                  const SizedBox(height: 18),
+                  _fieldLabel('বিস্তারিত',
+                      'কখন, কোন পেজে, কী করতে গিয়ে সমস্যা হয়েছে — যত বিস্তারিত লিখবেন তত দ্রুত সমাধান পাবেন'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _messageController,
+                    maxLines: 7,
+                    decoration:
+                        _fieldDecoration('সমস্যাটি বিস্তারিত লিখুন...'),
+                    style: const TextStyle(fontSize: 14, height: 1.45),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'বিস্তারিত লিখুন';
+                      }
+                      if (value.trim().length < 20) {
+                        return 'কমপক্ষে ২০ অক্ষরে সমস্যাটি বর্ণনা করুন';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Submit — ink, AdsyConnect-style
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submitTicket,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _ink,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFFE2E8F0),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: AdsyLoadingIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'টিকিট জমা দিন',
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Container(
+              height: 8,
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              color: const Color(0xFFF8FAFC),
+            ),
+
+            // How it works — simple 3 steps.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('যেভাবে কাজ করে',
+                      style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: _ink)),
+                  const SizedBox(height: 10),
+                  _stepRow('১', 'টিকিট জমা দিন',
+                      'বিষয় ও বিস্তারিত লিখে জমা দিলেই টিকিট তৈরি হয়ে যাবে।'),
+                  _stepRow('২', 'টিম রিভিউ করবে',
+                      'আমাদের সাপোর্ট টিম আপনার সমস্যাটি যাচাই করবে।'),
+                  _stepRow('৩', '২৪ ঘণ্টার মধ্যে উত্তর',
+                      'Support ট্যাবে উত্তর আসবে, নোটিফিকেশনও পাবেন।'),
+                ],
               ),
             ),
 
             // Safe area bottom padding for devices with gesture navigation
-            SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
           ],
         ),
       ),

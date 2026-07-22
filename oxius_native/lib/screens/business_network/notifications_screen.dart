@@ -420,6 +420,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: BusinessNetworkHeader(
+        showFlares: false,
         onMenuTap: () {
           if (isMobile) {
             WidgetsBinding.instance.addPostFrameCallback((_) {

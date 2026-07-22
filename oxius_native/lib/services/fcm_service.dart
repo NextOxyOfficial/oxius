@@ -2881,6 +2881,10 @@ class FCMService {
       final chatId =
           data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
       _log('   → Navigating to AdsyConnect chat: $chatId');
+      // If the user is INSIDE another chat, that full-screen overlay sits
+      // above the root Navigator — the pushed route would be hidden behind
+      // it and the tap would appear to do nothing. Close it first.
+      _dismissBlockingChatOverlay();
       navigator.push(
         MaterialPageRoute(
           builder: (context) => InboxScreen(
@@ -2897,6 +2901,7 @@ class FCMService {
       // Groups live in the AdsyConnect list (main tab shows them inline) —
       // open the list; the group id can't be opened as a 1:1 chat.
       _log('   → Navigating to AdsyConnect for group message');
+      _dismissBlockingChatOverlay();
       navigator.push(
         MaterialPageRoute(
           builder: (context) => InboxScreen(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/adsy_ios_scale.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
@@ -629,7 +630,10 @@ class _InboxScreenState extends State<InboxScreen>
           ),
         ),
       ),
-      body: Column(
+      // iOS renders the same logical sizes visually smaller — boost text on
+      // iOS only (Android unchanged).
+      body: AdsyIosTextBoost(
+          child: Column(
         children: [
           // Segmented-pill tab switcher (concept design): active tab is a
           // white pill sliding inside a soft gray track.
@@ -957,7 +961,7 @@ class _InboxScreenState extends State<InboxScreen>
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
+import '../../utils/adsy_ios_scale.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 /// A scrolling text widget for long usernames that don't fit in the AppBar.
@@ -244,8 +245,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     return Stack(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 40 * adsyIosBoxScale(),
+          height: 40 * adsyIosBoxScale(),
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: Color(0xFFF1F5F9),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:video_player/video_player.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -28,6 +29,9 @@ class ShortsViewer extends StatefulWidget {
   final String? initialVideoUrl;
   final Future<void> Function()? onRequestMore;
   final bool allLoaded;
+  // 'discover' (ranked, all users) or 'following' (followed users only).
+  final String feedScope;
+  final void Function(String scope)? onFeedScopeChanged;
 
   const ShortsViewer({
     super.key,
@@ -39,6 +43,8 @@ class ShortsViewer extends StatefulWidget {
     this.initialVideoUrl,
     this.onRequestMore,
     this.allLoaded = false,
+    this.feedScope = 'discover',
+    this.onFeedScopeChanged,
   });
 
   @override
@@ -465,20 +471,125 @@ class _ShortsViewerState extends State<ShortsViewer> {
     }
   }
 
+  Widget _buildScopeTab(String label, String scope) {
+    final active = widget.feedScope == scope;
+    return GestureDetector(
+      onTap: () => widget.onFeedScopeChanged?.call(scope),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: active
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.55),
+                fontSize: 15,
+                fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
+              ),
+            ),
+            const SizedBox(height: 3),
+            Container(
+              height: 2.5,
+              width: 20,
+              decoration: BoxDecoration(
+                color: active ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Back arrow + Discover/Following tabs + views pill. Also shown on the
+  /// empty state so the user can always switch tabs or leave.
+  Widget _buildTopBar({required bool showViews}) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: widget.onClose,
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+            ),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildScopeTab('Discover', 'discover'),
+                  const SizedBox(width: 6),
+                  _buildScopeTab('Following', 'following'),
+                ],
+              ),
+            ),
+            if (showViews && _currentIndex < _items.length)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(999),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.16)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.visibility_outlined,
+                        size: 16, color: Colors.white.withValues(alpha: 0.9)),
+                    const SizedBox(width: 6),
+                    Text(
+                      _currentViewsCount().toString(),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.92),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              // Balances the back button so the tabs stay centered.
+              const SizedBox(width: 48),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_items.isEmpty) {
       return Container(
         color: Colors.black,
-        child: Center(
-          child: Text(
-            'No shorts yet',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+        child: Stack(
+          children: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  widget.feedScope == 'following'
+                      ? 'No videos from people you follow yet'
+                      : 'No shorts yet',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
-          ),
+            _buildTopBar(showViews: false),
+          ],
         ),
       );
     }
@@ -667,57 +778,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
               );
             },
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: widget.onClose,
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  const SizedBox(width: 6),
-                  const Text(
-                    'Shorts',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (_currentIndex < _items.length)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.16)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.visibility_outlined,
-                              size: 16,
-                              color: Colors.white.withValues(alpha: 0.9)),
-                          const SizedBox(width: 6),
-                          Text(
-                            _currentViewsCount().toString(),
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.92),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
+          _buildTopBar(showViews: true),
         ],
       ),
     );
@@ -762,8 +823,6 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   String? _errorUrl;
   String? _errorText;
   bool _showPlayHint = false;
-  // Non-null while the user drags the seekbar dot (milliseconds position).
-  double? _scrubValue;
   int _commentsCount = 0;
   int _viewsCount = 0;
   late BusinessNetworkPost _post;
@@ -1106,6 +1165,15 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     }
   }
 
+  void _bumpShareCount() {
+    if (!mounted) return;
+    setState(() {
+      _post = _post.copyWith(shareCount: _post.shareCount + 1);
+    });
+    // Propagate so the feed card shows the new count too (no reload).
+    widget.onShare?.call(_post);
+  }
+
   Future<void> _handleShare() async {
     final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
     await AdsyShareSheet.show(
@@ -1119,9 +1187,11 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
-        // Count non-repost shares (chat / external).
+        // Count non-repost shares (chat / external). Bump the rail counter
+        // immediately — no reload needed to see the new total.
         onShared: () {
           BusinessNetworkService.trackShare(_post.sharedFrom?.id ?? _post.id);
+          _bumpShareCount();
         },
         // Repost this short to the user's own profile/feed.
         onRepost: (caption) async {
@@ -1131,6 +1201,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
             targetId,
             caption: caption,
           );
+          if (result != null) _bumpShareCount();
           return result != null;
         },
       ),
@@ -1451,49 +1522,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               bottom: 10,
               child: SafeArea(
                 top: false,
-                child: ValueListenableBuilder<VideoPlayerValue>(
-                  valueListenable: _controller!,
-                  builder: (context, value, _) {
-                    final maxMs = value.duration.inMilliseconds.toDouble();
-                    if (maxMs <= 0) return const SizedBox.shrink();
-                    final posMs = _scrubValue ??
-                        value.position.inMilliseconds
-                            .clamp(0, value.duration.inMilliseconds)
-                            .toDouble();
-                    final scrubbing = _scrubValue != null;
-                    final emphasized = scrubbing || _showPlayHint;
-                    return SizedBox(
-                      height: 26,
-                      child: SliderTheme(
-                        data: SliderThemeData(
-                          trackHeight: emphasized ? 4 : 2.5,
-                          activeTrackColor: Colors.white,
-                          inactiveTrackColor:
-                              Colors.white.withValues(alpha: 0.25),
-                          thumbColor: Colors.white,
-                          thumbShape: RoundSliderThumbShape(
-                            enabledThumbRadius: emphasized ? 7 : 4.5,
-                            elevation: 0,
-                            pressedElevation: 0,
-                          ),
-                          overlayShape: SliderComponentShape.noOverlay,
-                          trackShape: const RectangularSliderTrackShape(),
-                        ),
-                        child: Slider(
-                          value: posMs.clamp(0, maxMs),
-                          max: maxMs,
-                          onChangeStart: (v) =>
-                              setState(() => _scrubValue = v),
-                          onChanged: (v) => setState(() => _scrubValue = v),
-                          onChangeEnd: (v) {
-                            _controller!
-                                .seekTo(Duration(milliseconds: v.round()));
-                            setState(() => _scrubValue = null);
-                          },
-                        ),
-                      ),
-                    );
-                  },
+                child: _SmoothShortsSeekBar(
+                  controller: _controller!,
+                  emphasized: _showPlayHint,
                 ),
               ),
             ),
@@ -1559,7 +1590,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     ],
                     _ActionButton(
                       iconPath: 'assets/icons/share.png',
-                      label: 'Share',
+                      label: _compact(post.shareCount),
                       onTap: _handleShare,
                     ),
                   ],
@@ -1899,6 +1930,130 @@ class _AvatarFallback extends StatelessWidget {
     return Container(
       color: const Color(0xFF334155),
       child: const Icon(Icons.person_rounded, size: 20, color: Colors.white70),
+    );
+  }
+}
+
+/// Seekbar that moves SMOOTHLY. The video controller only reports its
+/// position every ~250-500ms (platform polling), so binding a Slider to it
+/// directly makes the dot jump in visible steps. This widget interpolates:
+/// every frame (Ticker) it estimates the position as
+/// `lastReportedPosition + wall-clock elapsed × playbackSpeed`, re-anchoring
+/// whenever the controller reports a fresh position.
+class _SmoothShortsSeekBar extends StatefulWidget {
+  final VideoPlayerController controller;
+  // True while paused (scrub mode) — thicker track and bigger dot.
+  final bool emphasized;
+
+  const _SmoothShortsSeekBar({
+    required this.controller,
+    required this.emphasized,
+  });
+
+  @override
+  State<_SmoothShortsSeekBar> createState() => _SmoothShortsSeekBarState();
+}
+
+class _SmoothShortsSeekBarState extends State<_SmoothShortsSeekBar>
+    with SingleTickerProviderStateMixin {
+  late final Ticker _ticker;
+  // Non-null while the user drags the dot (milliseconds position).
+  double? _scrubValue;
+  Duration _anchorPosition = Duration.zero;
+  DateTime _anchorTime = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = createTicker((_) {
+      if (mounted) setState(() {});
+    });
+    widget.controller.addListener(_onVideoUpdate);
+    _onVideoUpdate();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SmoothShortsSeekBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onVideoUpdate);
+      widget.controller.addListener(_onVideoUpdate);
+      _onVideoUpdate();
+    }
+  }
+
+  void _onVideoUpdate() {
+    if (!mounted) return;
+    final value = widget.controller.value;
+    // Re-anchor the estimate on every real position report.
+    _anchorPosition = value.position;
+    _anchorTime = DateTime.now();
+    // Tick only while playing — no battery burn on paused videos.
+    if (value.isPlaying && !_ticker.isActive) {
+      _ticker.start();
+    } else if (!value.isPlaying && _ticker.isActive) {
+      _ticker.stop();
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onVideoUpdate);
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  double _estimatedPositionMs(VideoPlayerValue value, double maxMs) {
+    if (!value.isPlaying) {
+      return value.position.inMilliseconds.toDouble().clamp(0, maxMs);
+    }
+    final elapsedMs = DateTime.now().difference(_anchorTime).inMilliseconds *
+        value.playbackSpeed;
+    return (_anchorPosition.inMilliseconds + elapsedMs).clamp(0, maxMs);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final value = widget.controller.value;
+    final maxMs = value.duration.inMilliseconds.toDouble();
+    if (maxMs <= 0) return const SizedBox.shrink();
+
+    final posMs = _scrubValue ?? _estimatedPositionMs(value, maxMs);
+    final scrubbing = _scrubValue != null;
+    final emphasized = scrubbing || widget.emphasized;
+
+    return SizedBox(
+      height: 26,
+      child: SliderTheme(
+        data: SliderThemeData(
+          trackHeight: emphasized ? 4 : 2.5,
+          activeTrackColor: Colors.white,
+          inactiveTrackColor: Colors.white.withValues(alpha: 0.25),
+          thumbColor: Colors.white,
+          thumbShape: RoundSliderThumbShape(
+            enabledThumbRadius: emphasized ? 7 : 4.5,
+            elevation: 0,
+            pressedElevation: 0,
+          ),
+          overlayShape: SliderComponentShape.noOverlay,
+          trackShape: const RectangularSliderTrackShape(),
+        ),
+        child: Slider(
+          value: posMs.clamp(0, maxMs),
+          max: maxMs,
+          onChangeStart: (v) => setState(() => _scrubValue = v),
+          onChanged: (v) => setState(() => _scrubValue = v),
+          onChangeEnd: (v) {
+            widget.controller.seekTo(Duration(milliseconds: v.round()));
+            // Anchor to the seek target so the dot doesn't snap back to the
+            // pre-seek position while the platform catches up.
+            _anchorPosition = Duration(milliseconds: v.round());
+            _anchorTime = DateTime.now();
+            setState(() => _scrubValue = null);
+          },
+        ),
+      ),
     );
   }
 }

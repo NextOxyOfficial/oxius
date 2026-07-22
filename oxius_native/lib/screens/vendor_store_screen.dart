@@ -607,7 +607,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     height: 16,
                     color: Colors.white,
                     errorBuilder: (_, __, ___) => const Icon(
-                        Icons.ios_share_rounded,
+                        Icons.share_outlined,
                         size: 16),
                   ),
                   label: Text(
@@ -892,7 +892,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   width: 17,
                   height: 17,
                   errorBuilder: (_, __, ___) => const Icon(
-                      Icons.ios_share_rounded,
+                      Icons.share_outlined,
                       color: _dark,
                       size: 18),
                 ),

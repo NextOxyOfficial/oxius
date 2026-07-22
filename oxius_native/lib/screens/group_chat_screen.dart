@@ -16,6 +16,8 @@ import '../utils/video_upload_helper.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
 import '../widgets/chat/message_options_sheet.dart';
+import '../utils/adsy_ios_scale.dart';
+import '../widgets/common/adsy_back_to_top.dart';
 import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_toast.dart';
 import '../widgets/common/adsy_dialog.dart';
@@ -52,6 +54,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Timer? _typingPollTimer;
   DateTime _lastTypingSent = DateTime.fromMillisecondsSinceEpoch(0);
   final ScrollController _scroll = ScrollController();
+  // Shows the jump-to-bottom circle once the user scrolls up a bit.
+  bool _showJumpToBottom = false;
 
   // Input state — mirrors the 1:1 interface so ChatMessageInput drops in.
   final TextEditingController _messageController = TextEditingController();
@@ -76,11 +80,30 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   String get _groupId => (_group['id'] ?? '').toString();
   String get _myId => AuthService.currentUser?.id ?? '';
 
+  void _onScrollChanged() {
+    if (!_scroll.hasClients) return;
+    final away =
+        _scroll.position.maxScrollExtent - _scroll.position.pixels > 300;
+    if (away != _showJumpToBottom && mounted) {
+      setState(() => _showJumpToBottom = away);
+    }
+  }
+
+  void _jumpToBottom() {
+    if (!_scroll.hasClients) return;
+    _scroll.animateTo(
+      _scroll.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _group = Map<String, dynamic>.from(widget.group);
     _messageController.addListener(_onInputChanged);
+    _scroll.addListener(_onScrollChanged);
     _loadMessages(initial: true);
     _pollTimer =
         Timer.periodic(const Duration(seconds: 5), (_) => _loadMessages());
@@ -145,11 +168,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         .map<Map<String, dynamic>>((m) => Map<String, dynamic>.from(m))
         .toList();
     final changed = msgs.length != _messages.length;
+    // Only auto-jump when the user is already at (or near) the bottom —
+    // yanking them down while they read older messages is hostile.
+    final wasNearBottom = !_scroll.hasClients ||
+        _scroll.position.pixels >= _scroll.position.maxScrollExtent - 120;
     setState(() {
       _messages = msgs;
       _loading = false;
     });
-    if (initial || changed) {
+    if (initial || (changed && wasNearBottom)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scroll.hasClients) {
           _scroll.jumpTo(_scroll.position.maxScrollExtent);
@@ -638,7 +665,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Widget build(BuildContext context) {
     final memberCount =
         _group['member_count'] ?? (_group['members'] as List? ?? []).length;
-    return Scaffold(
+    // iOS-only text boost — same logical sizes render smaller on iPhones.
+    return AdsyIosTextBoost(
+        child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -712,20 +741,36 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                             style: TextStyle(
                                 fontSize: 13, color: Colors.grey.shade600)),
                       )
-                    : GestureDetector(
-                        // Tap on empty list area hides any revealed time.
-                        behavior: HitTestBehavior.translucent,
-                        onTap: () {
-                          if (_timeShownId != null) {
-                            setState(() => _timeShownId = null);
-                          }
-                        },
-                        child: ListView.builder(
-                          controller: _scroll,
-                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
-                          itemCount: _messages.length,
-                          itemBuilder: (_, i) => _buildRow(i),
-                        ),
+                    : Stack(
+                        children: [
+                          GestureDetector(
+                            // Tap on empty list area hides any revealed time.
+                            behavior: HitTestBehavior.translucent,
+                            onTap: () {
+                              if (_timeShownId != null) {
+                                setState(() => _timeShownId = null);
+                              }
+                            },
+                            child: ListView.builder(
+                              controller: _scroll,
+                              padding:
+                                  const EdgeInsets.fromLTRB(8, 12, 8, 8),
+                              itemCount: _messages.length,
+                              itemBuilder: (_, i) => _buildRow(i),
+                            ),
+                          ),
+                          // Quick jump-to-bottom (same circle as back-to-top,
+                          // pointing down) — appears once scrolled up.
+                          if (_showJumpToBottom)
+                            Positioned(
+                              bottom: 12,
+                              right: 16,
+                              child: AdsyScrollCircleButton(
+                                onTap: _jumpToBottom,
+                                up: false,
+                              ),
+                            ),
+                        ],
                       ),
           ),
           _buildTypingIndicator(),
@@ -772,7 +817,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildRow(int i) {
@@ -937,8 +982,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ),
         );
     return Container(
-      width: 28,
-      height: 28,
+      width: 28 * adsyIosBoxScale(),
+      height: 28 * adsyIosBoxScale(),
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         color: Color(0xFFF1F5F9),

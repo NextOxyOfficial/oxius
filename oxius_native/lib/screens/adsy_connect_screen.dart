@@ -24,6 +24,7 @@ import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import 'package:oxius_native/widgets/common/adsy_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
+import '../utils/adsy_ios_scale.dart';
 
 /// Chat-list buckets. Spam is hidden from every tab except its own so junk
 /// never clutters real conversations.
@@ -93,6 +94,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _loadChats();
     // Groups show inline in the main list, so load them up front too.
     unawaited(_loadGroups());
+    // Push-tap deep link: open the target chat IMMEDIATELY (single-room
+    // fetch) instead of waiting for the full chat list to load first.
+    if ((widget.initialChatId ?? '').isNotEmpty) {
+      unawaited(_openInitialChatIfNeeded());
+    }
     unawaited(AdsyConnectRealtimeService.instance.connect());
     _realtimeSubscription = AdsyConnectRealtimeService.instance.events.listen(
       _handleRealtimeEvent,
@@ -156,21 +162,56 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final roomId = (message['chatroom'] ?? '').toString();
     if (roomId.isEmpty) return;
 
-    final index = _chatConversations
-        .indexWhere((c) => (c['id'] ?? '').toString() == roomId);
-    if (index == -1) {
-      // Brand-new conversation — the background refresh inserts it.
-      return;
-    }
-
-    final preview =
+    final rawPreview =
         (message['display_content'] ?? message['content'] ?? '').toString();
+    // Same sanitization as _parseChatRooms — the socket payload carries the
+    // RAW content, so reply markers / shared-post JSON leaked into the list.
+    String preview = rawPreview;
+    if (SharedPostMessage.tryDecode(rawPreview) != null) {
+      preview = '📎 একটি পোস্ট শেয়ার করা হয়েছে';
+    } else {
+      preview = _formatReplyPreview(rawPreview) ?? rawPreview;
+    }
     final createdAt =
         DateTime.tryParse((message['created_at'] ?? '').toString()) ??
             DateTime.now();
-    final senderId =
-        (message['sender'] is Map ? message['sender']['id'] : null)?.toString();
-    final isFromPeer = senderId != null &&
+    final sender = message['sender'] is Map
+        ? Map<String, dynamic>.from(message['sender'] as Map)
+        : <String, dynamic>{};
+    final senderId = (sender['id'] ?? '').toString();
+
+    final index = _chatConversations
+        .indexWhere((c) => (c['id'] ?? '').toString() == roomId);
+
+    if (index == -1) {
+      // Room not in the loaded list (deep page / brand-new). Build a minimal
+      // entry from the socket payload so the chat surfaces at the top NOW —
+      // the background page-1 refresh then reconciles authoritative data.
+      final myId = AuthService.currentUser?.id.toString() ?? '';
+      final fromPeer = senderId.isNotEmpty && senderId != myId;
+      if (!fromPeer) return; // own echo for an unloaded room — refresh covers it
+      setState(() {
+        _chatConversations.insert(0, <String, dynamic>{
+          'id': roomId,
+          'userId': senderId,
+          'userName': _getFullName(sender),
+          'userAvatar': sender['avatar'],
+          'profession': sender['profession'] ?? '',
+          'lastMessage': preview.isNotEmpty ? preview : 'নতুন মেসেজ',
+          'timestamp': createdAt,
+          'unreadCount': 1,
+          'isOnline': true,
+          'isTyping': false,
+          'isVerified':
+              sender['kyc'] == true || sender['is_verified'] == true,
+          'isPro': sender['is_pro'] == true,
+          'isGroup': message['is_group'] == true,
+        });
+      });
+      return;
+    }
+
+    final isFromPeer = senderId.isNotEmpty &&
         senderId == (_chatConversations[index]['userId'] ?? '').toString();
 
     setState(() {
@@ -1122,14 +1163,18 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   /// Horizontal story-style rail of the most recent 1:1 chats. First slot is
   /// the "+" tile (create group). Tap an avatar to jump into that chat.
   Widget _buildContactsRail() {
-    final recent = _chatConversations
-        .where((c) => c['isGroup'] != true)
-        .take(12)
-        .toList();
+    // Online contacts lead the rail; within each group keep recency order
+    // (the list itself is already most-recent-first).
+    final candidates =
+        _chatConversations.where((c) => c['isGroup'] != true).take(20).toList();
+    final recent = [
+      ...candidates.where((c) => c['isOnline'] == true),
+      ...candidates.where((c) => c['isOnline'] != true),
+    ].take(12).toList();
     if (recent.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 84,
+      height: 84 * adsyIosBoxScale(),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
@@ -1141,12 +1186,12 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             return GestureDetector(
               onTap: _openCreateGroup,
               child: SizedBox(
-                width: 56,
+                width: 56 * adsyIosBoxScale(),
                 child: Column(
                   children: [
                     Container(
-                      width: 54,
-                      height: 54,
+                      width: 54 * adsyIosBoxScale(),
+                      height: 54 * adsyIosBoxScale(),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         shape: BoxShape.circle,
@@ -1180,15 +1225,15 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           return GestureDetector(
             onTap: () => unawaited(_openChat(chat)),
             child: SizedBox(
-              width: 56,
+              width: 56 * adsyIosBoxScale(),
               child: Column(
                 children: [
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        width: 54,
-                        height: 54,
+                        width: 54 * adsyIosBoxScale(),
+                        height: 54 * adsyIosBoxScale(),
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Color(0xFFF1F5F9),
@@ -2243,13 +2288,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         color: Colors.white,
         child: Row(
           children: [
-            // Avatar with online indicator
+            // Avatar with online indicator (iOS gets a slightly bigger box —
+            // it renders visually smaller there).
             Stack(
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 48 * adsyIosBoxScale(),
+                  height: 48 * adsyIosBoxScale(),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Color(0xFFF1F5F9),

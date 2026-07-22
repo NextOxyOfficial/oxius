@@ -627,7 +627,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                 duration: const Duration(milliseconds: 300),
                 transform: Matrix4.translationValues(
                   0,
-                  _isChromeVisible ? 0 : -(headerHeight + 16),
+                  // +18 covers the corner flares strip below the bar,
+                  // +16 clears the drop shadow.
+                  _isChromeVisible ? 0 : -(headerHeight + 18 + 16),
                   0,
                 ),
                 curve: Curves.easeInOut,

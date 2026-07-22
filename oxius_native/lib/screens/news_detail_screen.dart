@@ -138,14 +138,56 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Concept design: with a hero image the photo runs edge-to-edge under
+    // the status bar and floating glass buttons replace the app bar.
+    final hasHero = !_loading && _error == null && _post?.image != null;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
+      appBar: hasHero ? null : _buildAppBar(),
       body: _loading
           ? const Center(child: AdsyLoadingIndicator())
           : _error != null
               ? _buildErrorState()
-              : _buildContent(),
+              : hasHero
+                  ? Stack(
+                      children: [
+                        _buildContent(),
+                        _buildHeroOverlayButtons(),
+                      ],
+                    )
+                  : _buildContent(),
+    );
+  }
+
+  Widget _buildHeroOverlayButtons() {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+        child: Row(
+          children: [
+            _glassCircle(Icons.arrow_back_rounded,
+                () => Navigator.pop(context)),
+            const Spacer(),
+            _glassCircle(Icons.share_outlined, _sharePost),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _glassCircle(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.38),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+        ),
+        child: Icon(icon, size: 19, color: Colors.white),
+      ),
     );
   }
 
@@ -267,36 +309,52 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (post.image != null) _buildHeroImage(post),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 16, 18, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (post.tags.isNotEmpty) ...[
-                      _buildTags(post),
-                      const SizedBox(height: 12),
-                    ],
-                    Text(
-                      post.title,
-                      style: const TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.3,
-                        color: _ink,
-                        height: 1.3,
+              // White sheet rises over the hero with rounded top corners
+              // (concept design); flat when there is no hero image.
+              Transform.translate(
+                offset: Offset(0, post.image != null ? -24 : 0),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: post.image != null
+                        ? const BorderRadius.vertical(
+                            top: Radius.circular(26))
+                        : BorderRadius.zero,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(12, 18, 12, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSourceRow(post),
+                      const SizedBox(height: 16),
+                      Text(
+                        post.title,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.4,
+                          color: _ink,
+                          height: 1.28,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    _buildMetaRow(post),
-                    const SizedBox(height: 16),
-                    const Divider(color: _hairline, height: 1, thickness: 1),
-                    const SizedBox(height: 4),
-                    _buildArticleBody(post),
-                    if (post.comments.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      _buildCommentsSection(post),
+                      _buildBylineRow(post),
+                      if (post.tags.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _buildTags(post),
+                      ],
+                      const SizedBox(height: 14),
+                      const Divider(
+                          color: _hairline, height: 1, thickness: 1),
+                      const SizedBox(height: 4),
+                      _buildArticleBody(post),
+                      if (post.comments.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _buildCommentsSection(post),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
               if (_latestPosts.isNotEmpty) _buildLatestNewsSection(),
@@ -309,33 +367,167 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   }
 
   Widget _buildHeroImage(NewsPost post) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: CachedNetworkImage(
-            imageUrl: post.image!,
-            fit: BoxFit.cover,
-            memCacheWidth: 1280,
-            fadeInDuration: const Duration(milliseconds: 120),
-            placeholder: (context, url) => Container(
-              color: _hairline,
-              child: const Center(child: AdsyLoadingIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: _hairline,
-              child: const Icon(
-                Icons.image_not_supported_outlined,
-                size: 36,
-                color: _faint,
-              ),
-            ),
+    // Full-bleed hero: runs under the status bar, edge to edge; the white
+    // sheet below covers its bottom 24px with rounded corners.
+    final topPad = MediaQuery.of(context).padding.top;
+    return SizedBox(
+      height: 280 + topPad,
+      width: double.infinity,
+      child: CachedNetworkImage(
+        imageUrl: post.image!,
+        fit: BoxFit.cover,
+        memCacheWidth: 1280,
+        fadeInDuration: const Duration(milliseconds: 120),
+        placeholder: (context, url) => Container(
+          color: _hairline,
+          child: const Center(child: AdsyLoadingIndicator()),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: _hairline,
+          child: const Icon(
+            Icons.image_not_supported_outlined,
+            size: 36,
+            color: _faint,
           ),
         ),
       ),
     );
+  }
+
+  /// Concept "source card" row: circular source avatar, name + verified,
+  /// relative time, and a share circle on the right.
+  Widget _buildSourceRow(NewsPost post) {
+    final author = post.authorDetails;
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFFF1F5F9),
+            image: author?.image != null
+                ? DecorationImage(
+                    image: CachedNetworkImageProvider(author!.image!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          child: author?.image == null
+              ? const Icon(Icons.newspaper_rounded, size: 20, color: _faint)
+              : null,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      author?.displayName ?? 'AdsyNews',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: _ink,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.verified_rounded,
+                      size: 15, color: Color(0xFF2563EB)),
+                ],
+              ),
+              const SizedBox(height: 1),
+              // Profession under the name (concept); falls back to the
+              // relative time when the author has none.
+              Text(
+                (author?.profession ?? '').trim().isNotEmpty
+                    ? author!.profession!.trim()
+                    : _relativeTime(post.createdAt),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 11.5, color: _muted),
+              ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: _sharePost,
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: _border),
+            ),
+            child: const Icon(Icons.share_outlined,
+                size: 17, color: Color(0xFF334155)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// "By Author · read time · N comments" — the concept's byline strip.
+  Widget _buildBylineRow(NewsPost post) {
+    final authorName = post.authorDetails?.displayName ?? 'AdsyNews';
+    return Row(
+      children: [
+        Flexible(
+          child: Text(
+            _isBn ? 'লিখেছেন $authorName' : 'By $authorName',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: _ink,
+            ),
+          ),
+        ),
+        const Text('  ·  ',
+            style: TextStyle(fontSize: 12.5, color: _faint)),
+        Text(
+          _isBn
+              ? '${post.readTime} মিনিটের পড়া'
+              : '${post.readTime} min read',
+          style: const TextStyle(fontSize: 12, color: _muted),
+        ),
+        const Spacer(),
+        const Icon(Icons.mode_comment_outlined, size: 14, color: _muted),
+        const SizedBox(width: 4),
+        Text(
+          '${post.commentCount}',
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF334155),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _relativeTime(DateTime dt) {
+    final diff = DateTime.now().difference(dt.toLocal());
+    if (diff.inMinutes < 1) return _isBn ? 'এইমাত্র' : 'Just now';
+    if (diff.inMinutes < 60) {
+      return _isBn
+          ? '${diff.inMinutes} মিনিট আগে'
+          : '${diff.inMinutes} minutes ago';
+    }
+    if (diff.inHours < 24) {
+      return _isBn ? '${diff.inHours} ঘণ্টা আগে' : '${diff.inHours} hours ago';
+    }
+    if (diff.inDays < 7) {
+      return _isBn ? '${diff.inDays} দিন আগে' : '${diff.inDays} days ago';
+    }
+    return _post?.formattedDate ?? '';
   }
 
   Widget _buildTags(NewsPost post) {
@@ -360,80 +552,6 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
           ),
         );
       }).toList(),
-    );
-  }
-
-  Widget _buildMetaRow(NewsPost post) {
-    final author = post.authorDetails;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _hairline,
-            border: Border.all(color: _border),
-            image: author?.image != null
-                ? DecorationImage(
-                    image: CachedNetworkImageProvider(author!.image!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: author?.image == null
-              ? const Icon(Icons.person_outline_rounded,
-                  size: 18, color: _faint)
-              : null,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                author?.displayName ?? 'AdsyNews',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.1,
-                  color: _ink,
-                ),
-              ),
-              if (author?.profession != null &&
-                  author!.profession!.isNotEmpty) ...[
-                const SizedBox(height: 1),
-                Text(
-                  author.profession!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11.5, color: _muted),
-                ),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              post.formattedDate,
-              style: const TextStyle(fontSize: 12, color: _muted),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              _isBn
-                  ? '${post.readTime} মিনিটের পড়া'
-                  : '${post.readTime} min read',
-              style: const TextStyle(fontSize: 11.5, color: _faint),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -617,7 +735,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
 
   Widget _buildLatestNewsSection() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 24, 18, 0),
+      padding: const EdgeInsets.fromLTRB(12, 24, 12, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

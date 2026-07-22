@@ -519,6 +519,35 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     if (shared != null) {
       return wrapWithQuote(_buildSharedPostContent(shared, isMe));
     }
+    // Emoji-only messages render BIG (WhatsApp/Messenger style) — at normal
+    // text size a lone emoji looks tiny and unprofessional.
+    final emojiOnlySize = _emojiOnlyFontSize(text);
+    if (emojiOnlySize != null) {
+      return wrapWithQuote(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(text.trim(), style: TextStyle(fontSize: emojiOnlySize)),
+            if (isEdited)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Edited',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: isMe
+                        ? const Color(0xFF111827).withValues(alpha: 0.6)
+                        : const Color(0xFF64748B),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
     // Default: text with link preview. When the whole message is just one
     // URL, the big meta card carries the meaning — shrink the raw link to a
     // muted one-liner under it (kept so the link survives if the preview
@@ -1029,6 +1058,28 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         ],
       ],
     );
+  }
+
+  /// Big font size when the message is ONLY emoji (up to 5), else null.
+  static double? _emojiOnlyFontSize(String text) {
+    final t = text.trim();
+    if (t.isEmpty || t.length > 40) return null;
+    // Every grapheme must be pictographic (with ZWJ/variation/skin-tone
+    // modifiers and whitespace allowed as glue).
+    final emojiOnly = RegExp(
+      r'^(?:\p{Extended_Pictographic}[\u{FE0F}\u{200D}\u{1F3FB}-\u{1F3FF}]*'
+      r'|[\u{200D}\u{FE0F}\s])+$',
+      unicode: true,
+    ).hasMatch(t);
+    if (!emojiOnly) return null;
+    final count = RegExp(r'\p{Extended_Pictographic}', unicode: true)
+        .allMatches(t)
+        .length;
+    if (count == 0) return null;
+    if (count == 1) return 44;
+    if (count <= 3) return 34;
+    if (count <= 5) return 28;
+    return null;
   }
 }
 

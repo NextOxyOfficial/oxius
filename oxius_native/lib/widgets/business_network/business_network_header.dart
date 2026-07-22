@@ -8,25 +8,32 @@ import '../../services/fcm_service.dart';
 import '../../screens/business_network/search_screen.dart';
 import 'dart:async';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import 'package:oxius_native/widgets/common/adsy_header_flare.dart';
 
 class BusinessNetworkHeader extends StatefulWidget
     implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
   final VoidCallback? onSearchTap;
   final VoidCallback? onProfileTap;
+  // Corner flares suit the feed, where content scrolls under the bar. In an
+  // appBar slot over a plain page they just read as a dead 18px band.
+  final bool showFlares;
 
   const BusinessNetworkHeader({
     super.key,
     this.onMenuTap,
     this.onSearchTap,
     this.onProfileTap,
+    this.showFlares = true,
   });
 
   @override
   State<BusinessNetworkHeader> createState() => _BusinessNetworkHeaderState();
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  // +18 for the homepage-style corner flares under the bar.
+  Size get preferredSize =>
+      Size.fromHeight(kToolbarHeight + (showFlares ? 18 : 0));
 }
 
 class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
@@ -98,97 +105,125 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 640;
 
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0.5,
-      automaticallyImplyLeading: false,
-      toolbarHeight: kToolbarHeight,
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-      ),
-      title: Row(
-        children: [
-          // Sidebar Toggle (Mobile Only)
-          if (isMobile) ...[
-            InkWell(
-              onTap: widget.onMenuTap,
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.transparent,
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 18,
-                        height: 2,
+    // Same design language as the homepage header: off-white bar, soft
+    // drop shadow, and the two corners flaring DOWN into the page.
+    // NOTE: no Expanded here — the feed screen mounts this header as a
+    // Positioned OVERLAY (unbounded height), where an Expanded column
+    // stretched over the whole screen and swallowed every scroll touch.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          elevation: 6,
+          shadowColor: Colors.black.withValues(alpha: 0.22),
+          color: const Color(0xFFFBFCFD),
+          child: SafeArea(
+            bottom: false,
+            child: SizedBox(
+              height: kToolbarHeight,
+              child: Row(
+                children: [
+                  const SizedBox(width: 16),
+                  // Sidebar Toggle (Mobile Only)
+                  if (isMobile) ...[
+                    InkWell(
+                      onTap: widget.onMenuTap,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade700,
-                          borderRadius: BorderRadius.circular(1),
+                          shape: BoxShape.circle,
+                          color: Colors.transparent,
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 18,
+                                height: 2,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade700,
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                width: 14,
+                                height: 2,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade700,
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                width: 18,
+                                height: 2,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade700,
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: 14,
-                        height: 2,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade700,
-                          borderRadius: BorderRadius.circular(1),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: 18,
-                        height: 2,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade700,
-                          borderRadius: BorderRadius.circular(1),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
+                    ),
+                    const SizedBox(width: 8),
+                  ],
 
-          // Logo (Dynamic with Fallback)
-          InkWell(
-            onTap: () {
-              // Navigate to business network home
-              final rootNavigator =
-                  FCMService.navigatorKey.currentState ?? Navigator.of(context);
-              rootNavigator.pushNamedAndRemoveUntil(
-                '/business-network',
-                (route) => route.isFirst,
-              );
-            },
-            child: Row(
-              children: [
-                _businessNetworkLogoUrl != null &&
-                        _businessNetworkLogoUrl!.isNotEmpty
-                    ? (_businessNetworkLogoUrl!.toLowerCase().contains('.svg')
-                        ? SvgPicture.network(
-                            _businessNetworkLogoUrl!,
-                            height: 32,
-                            fit: BoxFit.contain,
-                            placeholderBuilder: (context) {
-                              return const Text(
+                  // Logo (Dynamic with Fallback)
+                  InkWell(
+                    onTap: () {
+                      // Navigate to business network home
+                      final rootNavigator =
+                          FCMService.navigatorKey.currentState ??
+                              Navigator.of(context);
+                      rootNavigator.pushNamedAndRemoveUntil(
+                        '/business-network',
+                        (route) => route.isFirst,
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        _businessNetworkLogoUrl != null &&
+                                _businessNetworkLogoUrl!.isNotEmpty
+                            ? (_businessNetworkLogoUrl!
+                                    .toLowerCase()
+                                    .contains('.svg')
+                                ? SvgPicture.network(
+                                    _businessNetworkLogoUrl!,
+                                    height: 32,
+                                    fit: BoxFit.contain,
+                                    placeholderBuilder: (context) {
+                                      return const Text(
+                                        'Business Network',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black87,
+                                          letterSpacing: -0.3,
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : AppImage.network(
+                                    _businessNetworkLogoUrl!,
+                                    height: 32,
+                                    fit: BoxFit.contain,
+                                    errorWidget: const Text(
+                                      'Business Network',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
+                                  ))
+                            : const Text(
                                 'Business Network',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -196,223 +231,204 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                                   color: Colors.black87,
                                   letterSpacing: -0.3,
                                 ),
-                              );
-                            },
-                          )
-                        : AppImage.network(
-                            _businessNetworkLogoUrl!,
-                            height: 32,
-                            fit: BoxFit.contain,
-                            errorWidget: const Text(
-                              'Business Network',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
-                                letterSpacing: -0.3,
                               ),
+                        const SizedBox(width: 16),
+                        if (!isMobile)
+                          const Text(
+                            'Business Network',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                              letterSpacing: -0.3,
                             ),
-                          ))
-                    : const Text(
-                        'Business Network',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                const SizedBox(width: 16),
-                if (!isMobile)
-                  const Text(
-                    'Business Network',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                      letterSpacing: -0.3,
+                          ),
+                      ],
                     ),
                   ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        // Search Button
-        IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SearchScreen(),
-              ),
-            );
-          },
-          icon: const Icon(Icons.search, size: 26),
-          color: Colors.grey.shade700,
-          tooltip: 'Search',
-        ),
-
-        // AdsyClub Button (Desktop Only)
-        if (!isMobile) ...[
-          const SizedBox(width: 4),
-          _buildNavButton(
-            label: 'AdsyClub',
-            icon: Icons.bar_chart_rounded,
-            gradient: LinearGradient(
-              colors: [Colors.blue.shade600, Colors.blue.shade600],
-            ),
-            onTap: () {
-              Navigator.pushNamed(context, '/eshop');
-            },
-          ),
-        ],
-
-        // AdsyNews Button (Desktop Only)
-        if (!isMobile) ...[
-          const SizedBox(width: 4),
-          _buildNavButton(
-            label: 'AdsyNews',
-            icon: Icons.newspaper,
-            gradient: LinearGradient(
-              colors: [Colors.amber.shade600, Colors.amber.shade600],
-            ),
-            onTap: () {
-              Navigator.pushNamed(context, '/adsy-news');
-            },
-          ),
-        ],
-
-        // User Section
-        if (user != null) ...[
-          // Inbox Button with Notification Badge
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(
-                onPressed: () {
-                  // Navigate to Inbox
-                  Navigator.pushNamed(context, '/inbox');
-                },
-                icon: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                  const Spacer(),
+                  // Search Button
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SearchScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.search, size: 26),
+                    color: Colors.grey.shade700,
+                    tooltip: 'Search',
                   ),
-                  child: Center(
-                    child: Image.asset(
-                      'assets/images/chat_icon.png',
-                      width: 24,
-                      height: 24,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
-                          Icons.chat_bubble_outline,
-                          size: 24,
-                          color: Color(0xFF3B82F6),
-                        );
+
+                  // AdsyClub Button (Desktop Only)
+                  if (!isMobile) ...[
+                    const SizedBox(width: 4),
+                    _buildNavButton(
+                      label: 'AdsyClub',
+                      icon: Icons.bar_chart_rounded,
+                      gradient: LinearGradient(
+                        colors: [Colors.blue.shade600, Colors.blue.shade600],
+                      ),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/eshop');
                       },
                     ),
-                  ),
-                ),
-                tooltip: 'Inbox',
-              ),
-              // Notification Badge
-              if (_totalNotificationCount > 0)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
+                  ],
+
+                  // AdsyNews Button (Desktop Only)
+                  if (!isMobile) ...[
+                    const SizedBox(width: 4),
+                    _buildNavButton(
+                      label: 'AdsyNews',
+                      icon: Icons.newspaper,
+                      gradient: LinearGradient(
+                        colors: [Colors.amber.shade600, Colors.amber.shade600],
+                      ),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/adsy-news');
+                      },
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
-                    ),
-                    child: Center(
-                      child: Text(
-                        _totalNotificationCount > 99
-                            ? '99+'
-                            : _totalNotificationCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          height: 1,
+                  ],
+
+                  // User Section
+                  if (user != null) ...[
+                    // Inbox Button with Notification Badge
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            // Navigate to Inbox
+                            Navigator.pushNamed(context, '/inbox');
+                          },
+                          icon: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/images/chat_icon.png',
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.chat_bubble_outline,
+                                    size: 24,
+                                    color: Color(0xFF3B82F6),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          tooltip: 'Inbox',
                         ),
+                        // Notification Badge
+                        if (_totalNotificationCount > 0)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 1.5),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 18,
+                                minHeight: 18,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _totalNotificationCount > 99
+                                      ? '99+'
+                                      : _totalNotificationCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    // User Profile Button
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: InkWell(
+                        onTap: () {
+                          widget.onProfileTap?.call();
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: _buildMobileUserAvatar(user),
                       ),
                     ),
-                  ),
-                ),
-            ],
-          ),
-
-          // User Profile Button
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: InkWell(
-              onTap: () {
-                widget.onProfileTap?.call();
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: _buildMobileUserAvatar(user),
+                  ] else ...[
+                    // Login Button
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: isMobile
+                          ? IconButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/login');
+                              },
+                              icon: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey.shade100,
+                                  border:
+                                      Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: Icon(
+                                  Icons.person,
+                                  size: 20,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            )
+                          : OutlinedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/login');
+                              },
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                side: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              child: const Text(
+                                'Login/Register',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-        ] else ...[
-          // Login Button
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: isMobile
-                ? IconButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/login');
-                    },
-                    icon: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey.shade100,
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Icon(
-                        Icons.person,
-                        size: 20,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  )
-                : OutlinedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/login');
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      side: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    child: const Text(
-                      'Login/Register',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-          ),
-        ],
+        ),
+        if (widget.showFlares) const AdsyHeaderFlares(),
       ],
     );
   }

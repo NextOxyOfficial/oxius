@@ -138,9 +138,11 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
           ),
           const SizedBox(height: 12),
           
-          // Posts List
+          // Posts List — height fits the card's content exactly (image 100 +
+          // padded text block); anything taller leaves a dead band above the
+          // price row via the card's internal Spacer.
           SizedBox(
-              height: 200,
+              height: 186,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 2),

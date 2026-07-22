@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../config/app_config.dart';
+import '../../services/adsyconnect_service.dart';
 import '../../services/user_search_service.dart';
 import '../common/adsy_loading.dart';
 
@@ -17,6 +18,10 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
   final TextEditingController _search = TextEditingController();
   final Map<String, Map<String, dynamic>> _selected = {};
   List<Map<String, dynamic>> _results = [];
+  // People you already chat with — shown BEFORE any search so known faces
+  // are one tap away (searching a common name floods with strangers).
+  List<Map<String, dynamic>> _recent = [];
+  bool _loadingRecent = true;
   bool _searching = false;
   int _seq = 0;
 
@@ -24,6 +29,38 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
   void initState() {
     super.initState();
     _search.addListener(_onChanged);
+    _loadRecentPartners();
+  }
+
+  Future<void> _loadRecentPartners() async {
+    try {
+      final rooms = await AdsyConnectService.getChatRooms(page: 1, pageSize: 30);
+      if (!mounted) return;
+      final seen = <String>{};
+      final recent = <Map<String, dynamic>>[];
+      for (final r in rooms) {
+        if (r['is_group'] == true) continue;
+        final u = r['other_user'] ?? {};
+        final id = (u['id'] ?? '').toString();
+        if (id.isEmpty || seen.contains(id)) continue;
+        seen.add(id);
+        final name = [
+          (u['first_name'] ?? '').toString(),
+          (u['last_name'] ?? '').toString(),
+        ].where((s) => s.isNotEmpty).join(' ');
+        recent.add({
+          'id': id,
+          'name': name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
+          'avatar': u['avatar'] ?? u['image'],
+        });
+      }
+      setState(() {
+        _recent = recent;
+        _loadingRecent = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingRecent = false);
+    }
   }
 
   @override
@@ -100,26 +137,44 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                 ),
               ),
               Flexible(
-                child: _searching
-                    ? const Padding(
+                child: Builder(builder: (context) {
+                  final searchMode = _search.text.trim().isNotEmpty;
+                  // No query → known people (recent chat partners) up front.
+                  final list = searchMode ? _results : _recent;
+                  final busy = searchMode ? _searching : _loadingRecent;
+                  if (busy) {
+                    return const Padding(
                         padding: EdgeInsets.all(20),
-                        child: AdsyLoadingIndicator())
-                    : _results.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(22),
-                            child: Text(
-                                _search.text.trim().isEmpty
-                                    ? 'নাম লিখে সার্চ করুন'
-                                    : 'কেউ পাওয়া যায়নি',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey.shade600)),
-                          )
-                        : ListView.builder(
+                        child: AdsyLoadingIndicator());
+                  }
+                  if (list.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(22),
+                      child: Text(
+                          searchMode
+                              ? 'কেউ পাওয়া যায়নি'
+                              : 'নাম লিখে সার্চ করুন',
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade600)),
+                    );
+                  }
+                  return ListView.builder(
                             shrinkWrap: true,
-                            itemCount: _results.length,
-                            itemBuilder: (_, i) {
-                              final u = _results[i];
+                            itemCount: list.length + (searchMode ? 0 : 1),
+                            itemBuilder: (_, index) {
+                              if (!searchMode && index == 0) {
+                                return const Padding(
+                                  padding: EdgeInsets.fromLTRB(16, 8, 16, 2),
+                                  child: Text('আপনার পরিচিতরা',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF94A3B8),
+                                          letterSpacing: 0.3)),
+                                );
+                              }
+                              final i = searchMode ? index : index - 1;
+                              final u = list[i];
                               final id = u['id'].toString();
                               final sel = _selected.containsKey(id);
                               final avatar = AppConfig.getAbsoluteUrl(
@@ -163,7 +218,8 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                                 }),
                               );
                             },
-                          ),
+                          );
+                }),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),

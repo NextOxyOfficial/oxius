@@ -12,6 +12,7 @@ import '../services/auth_service.dart';
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
+import '../utils/adsy_ios_scale.dart';
 import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/skeleton_loader.dart';
@@ -407,8 +408,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final positions = _itemPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
 
+    // "Near bottom" = the newest (or second-newest) bubble is on screen —
+    // slightly forgiving so a hair of scroll doesn't break auto-stick.
     final bottomVisible =
-        positions.any((p) => p.index == 0 && p.itemTrailingEdge > 0);
+        positions.any((p) => p.index <= 1 && p.itemTrailingEdge > 0);
     if (bottomVisible != _isUserNearBottom && mounted) {
       setState(() {
         _isUserNearBottom = bottomVisible;
@@ -1269,12 +1272,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _scrollToBottom() {
-    if (!_itemScrollController.isAttached) return;
-    _itemScrollController.scrollTo(
-      index: 0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    // After the frame that actually contains the new message — scrolling
+    // synchronously targeted the OLD bottom item and left the fresh message
+    // hidden below the fold until the user scrolled by hand.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_itemScrollController.isAttached) return;
+      _itemScrollController.scrollTo(
+        index: 0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   void _scrollToMessageId(String messageId) {
@@ -2890,7 +2898,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // iOS-only text boost: same logical sizes look smaller on iPhones.
+    return AdsyIosTextBoost(
+        child: Scaffold(
       // Must NOT be transparent: a MaterialPageRoute's underlying background
       // is opaque black, so a transparent Scaffold leaks black behind the
       // status bar / app bar / during transition animations. Use the first
@@ -2905,9 +2915,22 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           children: [
             Column(
               children: [
-                // Messages List
+                // Messages List — tapping anywhere on it (or starting a
+                // scroll drag) dismisses the keyboard so the history gets
+                // the full screen back.
                 Expanded(
-                  child: _isLoadingMessages
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
+                    child: NotificationListener<ScrollStartNotification>(
+                      onNotification: (n) {
+                        if (n.dragDetails != null) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        }
+                        return false;
+                      },
+                      child: _isLoadingMessages
                       ? ListView.builder(
                           padding: const EdgeInsets.all(16),
                           itemCount: 8,
@@ -3053,6 +3076,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                 return _buildMessageBubble(message, showAvatar);
                               },
                             ),
+                    ),
+                  ),
                 ),
                 // Animated "other user is typing" bubble, just above the input
                 _buildTypingIndicator(),
@@ -3078,7 +3103,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           ],
         ),
       ),
-    );
+    ));
   }
 
   PreferredSizeWidget _buildAppBar() {

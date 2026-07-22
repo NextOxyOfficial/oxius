@@ -687,7 +687,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
               const SizedBox(height: 6),
               _profileOptionTile(
-                icon: Icons.ios_share_rounded,
+                icon: Icons.share_outlined,
                 color: const Color(0xFF3B82F6),
                 title: 'আরও শেয়ার করুন',
                 subtitle: 'WhatsApp, Facebook, X, Messenger…',
@@ -992,6 +992,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: BusinessNetworkHeader(
+        showFlares: false,
         onMenuTap: () {
           if (isMobile) {
             // Delay to ensure Scaffold is built

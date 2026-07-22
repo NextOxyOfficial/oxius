@@ -221,11 +221,21 @@ class BusinessNetworkService {
     int pageSize = 5,
     String? olderThan,
     bool forceRefresh = false,
+    // 'following' = newest-first posts from followed users only (Shorts tab).
+    String? feed,
+    // Server-side "post has a video" filter — only honored with feed scopes.
+    bool videoOnly = false,
   }) async {
     try {
       String url = '$_baseUrl/posts/?page=$page&page_size=$pageSize';
       if (olderThan != null) {
         url += '&older_than=$olderThan';
+      }
+      if (feed != null && feed.isNotEmpty) {
+        url += '&feed=$feed';
+      }
+      if (videoOnly) {
+        url += '&media=video';
       }
 
       // First try without auth to avoid token issues
@@ -261,7 +271,7 @@ class BusinessNetworkService {
         final uid = AuthService.currentUser?.id ?? 'anon';
         try {
           data = await ApiCache.getOrFetch<Map<String, dynamic>>(
-            'bn:feed:$uid:p1:s$pageSize',
+            'bn:feed:$uid:p1:s$pageSize${feed != null ? ':$feed' : ''}${videoOnly ? ':v' : ''}',
             fetchData,
             freshTtl: const Duration(seconds: 45),
             staleTtl: const Duration(hours: 6),
@@ -316,6 +326,9 @@ class BusinessNetworkService {
     int pageSize = 12,
     int pageWindow = 3,
     Set<int> excludePostIds = const {},
+    // 'following' switches from the ranked discover feed to newest-first
+    // posts by followed users, filtered to videos server-side.
+    String? feed,
   }) async {
     // Fetch the whole page window IN PARALLEL. The old serial loop made
     // opening Shorts wait for up to three back-to-back feed requests —
@@ -323,7 +336,12 @@ class BusinessNetworkService {
     final results = await Future.wait(
       List.generate(
         pageWindow,
-        (index) => getPosts(page: startPage + index, pageSize: pageSize),
+        (index) => getPosts(
+          page: startPage + index,
+          pageSize: pageSize,
+          feed: feed,
+          videoOnly: feed == 'following',
+        ),
       ),
     );
 

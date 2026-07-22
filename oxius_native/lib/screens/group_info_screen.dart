@@ -427,13 +427,43 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                     ),
                   ),
                 ),
-                ...members.where(_matchesMemberQuery).map(_memberTile),
+                ..._rankedMembers(members)
+                    .where(_matchesMemberQuery)
+                    .map(_memberTile),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Admin first, co-admins next, then everyone else (original order kept
+  /// inside each group — List.sort isn't stable in Dart).
+  List<Map<String, dynamic>> _rankedMembers(List<Map<String, dynamic>> all) {
+    int rank(Map<String, dynamic> m) {
+      if (m['role'] != 'admin') return 2;
+      final uid =
+          (Map<String, dynamic>.from(m['user'] ?? {})['id'] ?? '').toString();
+      return uid == _creatorId ? 0 : 1;
+    }
+
+    return [
+      ...all.where((m) => rank(m) == 0),
+      ...all.where((m) => rank(m) == 1),
+      ...all.where((m) => rank(m) == 2),
+    ];
+  }
+
+  static const _bnMonths = [
+    'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+    'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
+  ];
+
+  String _formatJoined(dynamic raw) {
+    final dt = DateTime.tryParse((raw ?? '').toString())?.toLocal();
+    if (dt == null) return '';
+    return '${dt.day} ${_bnMonths[dt.month - 1]} ${dt.year}';
   }
 
   bool _matchesMemberQuery(Map<String, dynamic> m) {
@@ -479,6 +509,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     final avatar = AppConfig.getAbsoluteUrl((u['avatar'] ?? '').toString());
     final isAdminRow = m['role'] == 'admin';
     final isMe = uid == _myId;
+    final isOnline = u['is_online'] == true;
+    final joined = _formatJoined(m['joined_at']);
     return InkWell(
       // Row tap opens the member's BN profile; admin actions moved to ⋮.
       onTap: uid.isEmpty
@@ -514,11 +546,49 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(isMe ? '$display (আপনি)' : display,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(isMe ? '$display (আপনি)' : display,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  // Online (green dot + label) · joined date
+                  Row(
+                    children: [
+                      if (isOnline) ...[
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                              color: Color(0xFF22C55E),
+                              shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text('অনলাইন',
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF16A34A))),
+                        if (joined.isNotEmpty)
+                          const Text(' · ',
+                              style: TextStyle(
+                                  fontSize: 11, color: Color(0xFF94A3B8))),
+                      ],
+                      if (joined.isNotEmpty)
+                        Flexible(
+                          child: Text('যোগ দিয়েছেন $joined',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 11, color: Color(0xFF94A3B8))),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             if (isAdminRow) ...[
               const SizedBox(width: 6),
