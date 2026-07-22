@@ -14,12 +14,12 @@ from django.core.management.base import BaseCommand
 PLAY_URL = "https://play.google.com/store/apps/details?id=com.oxius.app"
 APPSTORE_URL = "https://apps.apple.com/app/id6760218370"
 
-PUSH_TITLE = "নতুন আপডেট এসেছে 🎉"
+PUSH_TITLE = "নতুন আপডেট এসেছে"
 PUSH_BODY = (
     "AdsyClub-এর নতুন ভার্সন এখন লাইভ — আরও দ্রুত, আরও সুন্দর। "
     "অ্যাপ চালিয়ে যেতে এখনই আপডেট করুন।"
 )
-EMAIL_SUBJECT = "AdsyClub-এর গুরুত্বপূর্ণ নতুন আপডেট এসেছে 🎉"
+EMAIL_SUBJECT = "AdsyClub-এর গুরুত্বপূর্ণ নতুন আপডেট এসেছে"
 
 
 def _email_html():
@@ -28,7 +28,7 @@ def _email_html():
     body = f"""
 <tr><td class="ec-pad" style="padding:8px 36px 0;">
 <h1 style="margin:0 0 12px;color:#0f172a;font-size:22px;font-weight:800;line-height:1.3;">
-নতুন আপডেট এসেছে 🎉</h1>
+নতুন আপডেট এসেছে</h1>
 <p style="margin:0 0 14px;color:#475569;font-size:15px;line-height:1.7;">
 AdsyClub-এর নতুন ভার্সন <strong>(v8.1.30)</strong> এখন Google Play ও App Store-এ লাইভ।
 এই আপডেটে অ্যাপ আরও দ্রুত, আরও সুন্দর এবং নতুন অনেক ফিচার যুক্ত হয়েছে —

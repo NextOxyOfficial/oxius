@@ -177,7 +177,19 @@ def _base_template(title, body_content, footer_note=""):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="x-apple-disable-message-reformatting">
 <title>{title}</title>
+<!-- Same fonts as the website: Inter (Latin) + Hind Siliguri (Bengali). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+/* Force the brand font onto every text element — inline styles set size/
+   colour/weight but not family, so this wins where the client honours
+   embedded CSS (Gmail, Apple Mail, …); others fall back to the system stack. */
+body, table, td, th, div, p, span, a, strong, b, em,
+h1, h2, h3, h4, h5, h6, li {{
+  font-family: 'Inter','Hind Siliguri',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif !important;
+}}
 @media only screen and (max-width:600px) {{
   .ec-wrap {{ padding-left:4px !important; padding-right:4px !important; padding-top:16px !important; }}
   .ec-pad {{ padding-left:16px !important; padding-right:16px !important; }}
@@ -190,7 +202,7 @@ def _base_template(title, body_content, footer_note=""):
 }}
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<body style="margin:0;padding:0;background-color:#eef1f5;font-family:'Inter','Hind Siliguri',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="ec-wrap" style="background-color:#eef1f5;padding:32px 14px;">
 <tr><td align="center">
 <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:600px;max-width:600px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
