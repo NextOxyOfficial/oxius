@@ -28,14 +28,19 @@ subprojects {
 // fails with "Inconsistent JVM-target compatibility". Normalize every
 // subproject to Java/Kotlin 17.
 subprojects {
-    afterEvaluate {
-        extensions.findByType(com.android.build.gradle.BaseExtension::class.java)
-            ?.apply {
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_17
-                    targetCompatibility = JavaVersion.VERSION_17
+    // plugins.withId fires immediately when the plugin is already applied,
+    // so this works even though :app forces early evaluation
+    // (afterEvaluate would throw "project is already evaluated" here).
+    listOf("com.android.library", "com.android.application").forEach { pluginId ->
+        plugins.withId(pluginId) {
+            extensions.findByType(com.android.build.gradle.BaseExtension::class.java)
+                ?.apply {
+                    compileOptions {
+                        sourceCompatibility = JavaVersion.VERSION_17
+                        targetCompatibility = JavaVersion.VERSION_17
+                    }
                 }
-            }
+        }
     }
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java)
         .configureEach {
