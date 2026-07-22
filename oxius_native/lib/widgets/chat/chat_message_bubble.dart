@@ -144,6 +144,10 @@ class ChatMessageBubble extends StatefulWidget {
   final void Function(String? filePath, String fileName) onDownloadDoc;
   final void Function(String messageId) onScrollToMessage;
   final VoidCallback? onOptions;
+  // Custom @mention resolution. Group chat passes a resolver that matches
+  // the name against the GROUP'S member list (direct profile open) instead
+  // of the default global name search.
+  final void Function(String mentionName)? onMentionTap;
 
   const ChatMessageBubble({
     super.key,
@@ -163,6 +167,7 @@ class ChatMessageBubble extends StatefulWidget {
     required this.onDownloadDoc,
     required this.onScrollToMessage,
     this.onOptions,
+    this.onMentionTap,
   });
 
   @override
@@ -598,8 +603,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                             height: 1.38,
                             decoration: TextDecoration.none,
                           ),
-                          onMentionTap: (name) =>
-                              MentionNavigator.open(ctx, name),
+                          onMentionTap: (name) => widget.onMentionTap != null
+                              ? widget.onMentionTap!(name)
+                              : MentionNavigator.open(ctx, name),
                         ),
                       ),
                     ),

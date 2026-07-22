@@ -11,6 +11,7 @@ import 'package:record/record.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
 import '../utils/image_compressor.dart';
+import '../utils/mention_navigator.dart';
 import '../utils/url_launcher_utils.dart';
 import '../utils/video_upload_helper.dart';
 import '../widgets/chat/chat_message_bubble.dart';
@@ -224,6 +225,36 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       });
     }
     return out;
+  }
+
+  /// Tapping a rendered @mention: the mentioned person is (almost always) a
+  /// member of THIS group, so match the name against the member list and open
+  /// that exact profile — never a same-named stranger from global search.
+  /// Falls back to the global resolver only if no member matches (e.g. the
+  /// person left the group after being mentioned).
+  void _openMentionedMember(String name) {
+    String norm(String s) =>
+        s.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    final target = norm(name);
+    for (final raw in (_group['members'] as List? ?? const [])) {
+      if (raw is! Map) continue;
+      final u = Map<String, dynamic>.from((raw['user'] ?? {}) as Map);
+      final fullName = [
+        (u['first_name'] ?? '').toString(),
+        (u['last_name'] ?? '').toString(),
+      ].where((s) => s.isNotEmpty).join(' ').trim();
+      final display =
+          fullName.isNotEmpty ? fullName : (u['username'] ?? '').toString();
+      if (display.isEmpty || norm(display) != target) continue;
+      final uid = (u['id'] ?? '').toString();
+      if (uid.isEmpty) continue;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ProfileScreen(userId: uid)),
+      );
+      return;
+    }
+    MentionNavigator.open(context, name);
   }
 
   /// Replace the in-progress "@query" with the chosen member. Stored in the
@@ -1041,6 +1072,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         showAvatar: false,
         userName: _senderName(raw),
         userAvatar: _senderAvatar(raw),
+        // Mention tap: resolve against THIS group's members (direct profile
+        // open) instead of the default global name search.
+        onMentionTap: _openMentionedMember,
         playingVoiceMessageId: _playingVoiceId,
         voicePosition: _voicePosition,
         voiceDuration: _voiceDuration,
