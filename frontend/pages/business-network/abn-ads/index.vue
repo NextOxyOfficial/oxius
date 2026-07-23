@@ -1,61 +1,101 @@
 <template>
   <UContainer class="mt-3">
     <div class="min-h-screen bg-gray-50">
-      <!-- Top Navigation -->
-      <div class="bg-white border-b border-gray-200 shadow-sm rounded-md">
-        <div class="mx-auto px-4">
-          <div class="flex items-center justify-between h-16">
-            <div class="flex items-center space-x-4">
-              <div class="text-lg font-medium text-emerald-500">
-                ABN Ads Panel
-              </div>
-              <div class="hidden md:flex space-x-3">
-                <button
-                  class="px-4 py-1.5 text-sm font-medium transition-colors border rounded-md"
-                  :class="
-                    activeTab === 'my-ads'
-                      ? 'border-emerald-500 text-emerald-500'
-                      : 'border-gray-300 text-gray-800 hover:border-gray-400'
-                  "
-                  @click="activeTab = 'my-ads'"
+      <!-- ── Hero header ─────────────────────────────────────────── -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md"
+      >
+        <div
+          class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10"
+        ></div>
+        <div
+          class="absolute -bottom-20 -left-10 w-44 h-44 rounded-full bg-white/10"
+        ></div>
+        <div class="relative px-5 py-6 sm:px-7">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center"
                 >
-                  My Ads
-                </button>
-                <button
-                  class="px-4 py-1.5 text-sm font-medium transition-colors border rounded-md"
-                  :class="
-                    activeTab === 'abn-ads'
-                      ? 'border-emerald-500 text-emerald-500'
-                      : 'border-gray-300 text-gray-800 hover:border-gray-400'
-                  "
-                  @click="activeTab = 'abn-ads'"
-                >
-                  ABN Ads Support
-                </button>
+                  <UIcon name="i-heroicons-megaphone" class="w-5 h-5" />
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight">
+                  ABN Ads Panel
+                </h1>
               </div>
+              <p class="mt-1.5 text-sm text-emerald-50/90 max-w-md">
+                {{ $t("ads_hero_sub") }}
+              </p>
             </div>
-            <div class="flex items-center space-x-3">
-              <!-- Account Balance -->
+            <div class="flex items-center gap-3">
               <div
-                class="hidden md:flex items-center px-3 py-1.5 bg-gray-100 text-sm rounded-md"
+                class="flex items-center px-3.5 py-2 bg-white/15 backdrop-blur rounded-xl text-sm"
               >
-                <span class="text-gray-600 mr-1">Balance:</span>
-                <span
-                  class="font-semibold"
-                  :class="
-                    user?.user?.balance < 200
-                      ? 'text-red-500'
-                      : 'text-emerald-500'
-                  "
-                >
-                  ৳{{ user?.user?.balance }}
-                </span>
+                <UIcon name="i-heroicons-wallet" class="w-4 h-4 mr-1.5" />
+                <span class="font-semibold">৳{{ user?.user?.balance }}</span>
                 <span
                   v-if="user?.user?.balance < 200"
-                  class="ml-1 text-sm text-red-500 font-medium"
-                  >Low!</span
+                  class="ml-1.5 text-[11px] font-bold bg-red-500 px-1.5 py-0.5 rounded"
+                  >Low</span
                 >
               </div>
+              <button
+                @click="navigateTo('/business-network/abn-ads/create')"
+                class="flex items-center gap-1.5 px-4 py-2 bg-white text-emerald-700 hover:bg-emerald-50 font-semibold text-sm rounded-xl shadow-sm transition-colors"
+              >
+                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                {{ $t("ads_create_new") }}
+              </button>
+            </div>
+          </div>
+          <!-- Tabs -->
+          <div class="mt-5 inline-flex bg-white/15 backdrop-blur rounded-xl p-1">
+            <button
+              class="px-4 py-1.5 text-sm font-medium rounded-lg transition-colors"
+              :class="
+                activeTab === 'my-ads'
+                  ? 'bg-white text-emerald-700 shadow-sm'
+                  : 'text-white/85 hover:text-white'
+              "
+              @click="activeTab = 'my-ads'"
+            >
+              {{ $t("ads_my_ads") }}
+            </button>
+            <button
+              class="px-4 py-1.5 text-sm font-medium rounded-lg transition-colors"
+              :class="
+                activeTab === 'abn-ads'
+                  ? 'bg-white text-emerald-700 shadow-sm'
+                  : 'text-white/85 hover:text-white'
+              "
+              @click="activeTab = 'abn-ads'"
+            >
+              {{ $t("ads_support_tab") }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── How it works steps ──────────────────────────────────── -->
+      <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div
+          v-for="(step, i) in panelSteps"
+          :key="i"
+          class="bg-white border border-gray-100 rounded-xl px-3.5 py-3 flex items-start gap-2.5 shadow-sm"
+        >
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            :class="step.bg"
+          >
+            <UIcon :name="step.icon" class="w-4 h-4" :class="step.color" />
+          </div>
+          <div>
+            <div class="text-[13px] font-semibold text-gray-800">
+              {{ $t(step.title) }}
+            </div>
+            <div class="text-[11.5px] text-gray-500 leading-snug mt-0.5">
+              {{ $t(step.desc) }}
             </div>
           </div>
         </div>
@@ -65,40 +105,30 @@
         <!-- Low Balance Alert -->
         <div
           v-if="user?.user?.balance < 200"
-          class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center justify-between"
+          class="mb-4 bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-xl flex flex-wrap items-center justify-between gap-2"
         >
           <div class="flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2 text-red-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <UIcon
+              name="i-heroicons-exclamation-circle"
+              class="w-5 h-5 mr-2 text-red-500 shrink-0"
+            />
             <span class="text-sm">
-              Your account balance is low (৳{{ user?.user?.balance }}). Please
-              recharge to continue posting ads.
+              {{ $t("ads_low_balance_msg") }} (৳{{ user?.user?.balance }})
             </span>
           </div>
-          <button
-            class="text-sm font-medium bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-md transition-colors"
+          <NuxtLink
+            to="/deposit-withdraw"
+            class="text-sm font-medium bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg transition-colors"
           >
-            Recharge Now
-          </button>
+            {{ $t("ads_recharge_now") }}
+          </NuxtLink>
         </div>
 
         <div class="flex flex-col lg:flex-row gap-6">
           <!-- Main Content - Ads List -->
           <div class="w-full lg:w-2/3 space-y-5">
             <!-- Date Filter - Moved here from top navigation -->
-            <div class="bg-white rounded-md shadow-sm p-4 mb-2">
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-2">
               <h2
                 class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
@@ -150,7 +180,7 @@
             </div>
 
             <!-- Performance Report -->
-            <div class="bg-white rounded-md shadow-sm p-4 mb-5">
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-5">
               <h2
                 class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
@@ -171,37 +201,85 @@
                 {{ $t("ads_overview") }}
               </h2>
 
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="bg-blue-50 rounded-md p-2.5 text-center">
-                  <div class="text-lg font-semibold text-blue-600">
-                    {{ totalViews }}
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div
+                  class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
+                >
+                  <div
+                    class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                  >
+                    <UIcon
+                      name="i-heroicons-eye"
+                      class="w-4.5 h-4.5 text-blue-600"
+                    />
                   </div>
-                  <div class="text-xs text-gray-600">
-                    {{ $t("ads_total_views") }}
-                  </div>
-                </div>
-                <div class="bg-green-50 rounded-md p-2.5 text-center">
-                  <div class="text-lg font-semibold text-green-600">
-                    {{ totalClicks }}
-                  </div>
-                  <div class="text-xs text-gray-600">
-                    {{ $t("ads_total_clicks") }}
-                  </div>
-                </div>
-                <div class="bg-purple-50 rounded-md p-2.5 text-center">
-                  <div class="text-lg font-semibold text-purple-600">
-                    ৳{{ totalSpent }}
-                  </div>
-                  <div class="text-xs text-gray-600">
-                    {{ $t("ads_total_spent") }}
+                  <div>
+                    <div class="text-lg font-bold text-gray-800 leading-none">
+                      {{ totalViews }}
+                    </div>
+                    <div class="text-[11.5px] text-gray-500 mt-1">
+                      {{ $t("ads_total_views") }}
+                    </div>
                   </div>
                 </div>
-                <div class="bg-amber-50 rounded-md p-2.5 text-center">
-                  <div class="text-lg font-semibold text-amber-600">
-                    {{ activeAdsCount }}
+                <div
+                  class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
+                >
+                  <div
+                    class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center shrink-0"
+                  >
+                    <UIcon
+                      name="i-heroicons-cursor-arrow-rays"
+                      class="w-4.5 h-4.5 text-green-600"
+                    />
                   </div>
-                  <div class="text-xs text-gray-600">
-                    {{ $t("ads_active") }}
+                  <div>
+                    <div class="text-lg font-bold text-gray-800 leading-none">
+                      {{ totalClicks }}
+                    </div>
+                    <div class="text-[11.5px] text-gray-500 mt-1">
+                      {{ $t("ads_total_clicks") }}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
+                >
+                  <div
+                    class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center shrink-0"
+                  >
+                    <UIcon
+                      name="i-heroicons-banknotes"
+                      class="w-4.5 h-4.5 text-purple-600"
+                    />
+                  </div>
+                  <div>
+                    <div class="text-lg font-bold text-gray-800 leading-none">
+                      ৳{{ totalSpent }}
+                    </div>
+                    <div class="text-[11.5px] text-gray-500 mt-1">
+                      {{ $t("ads_total_spent") }}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
+                >
+                  <div
+                    class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0"
+                  >
+                    <UIcon
+                      name="i-heroicons-bolt"
+                      class="w-4.5 h-4.5 text-amber-600"
+                    />
+                  </div>
+                  <div>
+                    <div class="text-lg font-bold text-gray-800 leading-none">
+                      {{ activeAdsCount }}
+                    </div>
+                    <div class="text-[11.5px] text-gray-500 mt-1">
+                      {{ $t("ads_active") }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -244,111 +322,32 @@
                 </div>
               </div>
             </div>
-            <div class="flex gap-4 justify-between items-center mb-4">
-              <!-- Create Ad Button - Moved below performance report -->
-              <div class="flex justify-center pl-4">
-                <button
-                  @click="navigateTo('/business-network/abn-ads/create')"
-                  class="flex items-center text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-md px-3 py-2 border border-emerald-500 text-sm"
-                  :disabled="isLoading"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4 mr-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  <svg
-                    v-if="isLoading"
-                    class="animate-spin h-3 w-3 mr-1 text-current"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Create New Ad
-                </button>
-              </div>
-
-              <!-- Mobile Account Balance -->
-              <div
-                class="md:hidden flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm rounded-md w-fit mx-auto"
-              >
-                <span class="text-gray-600 mr-1">Balance:</span>
-                <span
-                  class="font-semibold"
-                  :class="isLowBalance ? 'text-red-500' : 'text-emerald-500'"
-                >
-                  ৳{{ accountBalance }}
-                </span>
-                <span
-                  v-if="isLowBalance"
-                  class="ml-1 text-sm text-red-500 font-medium"
-                  >Low!</span
-                >
-              </div>
-            </div>
 
             <!-- Empty State -->
             <div
               v-if="postedAds.length === 0"
-              class="text-center py-12 bg-white rounded-md shadow-sm"
+              class="text-center py-12 bg-white rounded-xl border border-gray-100 shadow-sm"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-12 w-12 mx-auto text-gray-600 mb-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+              <div
+                class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-50 flex items-center justify-center"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                <UIcon
+                  name="i-heroicons-megaphone"
+                  class="w-7 h-7 text-emerald-500"
                 />
-              </svg>
-              <p class="text-gray-600 text-sm">No ads posted yet</p>
+              </div>
+              <p class="text-gray-700 text-sm font-medium">
+                {{ $t("ads_empty_title") }}
+              </p>
+              <p class="text-gray-500 text-xs mt-1 max-w-xs mx-auto">
+                {{ $t("ads_empty_sub") }}
+              </p>
               <button
                 @click="navigateTo('/business-network/abn-ads/create')"
-                class="mt-3 flex items-center mx-auto text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-md px-3 py-1 border border-emerald-500 text-sm"
+                class="mt-4 inline-flex items-center gap-1.5 mx-auto bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors rounded-xl px-4 py-2 text-sm shadow-sm"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Post Your First Ad
+                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                {{ $t("ads_post_first") }}
               </button>
             </div>
 
@@ -356,7 +355,7 @@
             <div
               v-for="ad in paginatedAds"
               :key="ad.id"
-              class="bg-white rounded-md shadow-sm overflow-hidden hover:shadow-sm transition-shadow"
+              class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
             >
               <div class="flex flex-col md:flex-row">
                 <!-- Ad Image -->
@@ -886,7 +885,7 @@
           <!-- Right Sidebar - Tutorials and Tips -->
           <div class="w-full lg:w-1/3 space-y-5">
             <!-- Tutorial Videos Section -->
-            <div class="bg-white rounded-md shadow-sm p-4">
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <h2
                 class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
@@ -975,7 +974,7 @@
             </div>
 
             <!-- Tips Section -->
-            <div class="bg-white rounded-md shadow-sm p-4">
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <h2
                 class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
@@ -993,7 +992,7 @@
                     d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                   />
                 </svg>
-                Tips for Better Ads
+                {{ $t("ads_tips_title") }}
               </h2>
 
               <div class="space-y-2">
@@ -1003,15 +1002,15 @@
                   class="border-l-[3px] border-emerald-100 pl-2 py-1"
                 >
                   <h3 class="text-sm font-medium text-gray-800">
-                    {{ tip.title }}
+                    {{ $t(tip.title) }}
                   </h3>
-                  <p class="text-sm text-gray-600">{{ tip.description }}</p>
+                  <p class="text-sm text-gray-600">{{ $t(tip.description) }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Useful Steps Section -->
-            <div class="bg-white rounded-md shadow-sm p-4">
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <h2
                 class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
@@ -1029,7 +1028,7 @@
                     d="M13 10V3L4 14h7v7l9-11h-7z"
                   />
                 </svg>
-                Useful Steps
+                {{ $t("ads_useful_steps") }}
               </h2>
 
               <div class="space-y-2">
@@ -1057,9 +1056,11 @@
                         </svg>
                       </div>
                       <div>
-                        <div class="text-sm font-medium">Pro Package</div>
+                        <div class="text-sm font-medium">
+                          {{ $t("ads_side_pro_t") }}
+                        </div>
                         <div class="text-sm text-gray-600">
-                          ৳149/month or ৳1499/year
+                          {{ $t("ads_side_pro_d") }}
                         </div>
                       </div>
                     </div>
@@ -1105,10 +1106,10 @@
                       </div>
                       <div>
                         <div class="text-sm font-medium">
-                          Sell Products on eShop
+                          {{ $t("ads_side_shop_t") }}
                         </div>
                         <div class="text-sm text-gray-600">
-                          Expand your business online
+                          {{ $t("ads_side_shop_d") }}
                         </div>
                       </div>
                     </div>
@@ -1154,10 +1155,10 @@
                       </div>
                       <div>
                         <div class="text-sm font-medium">
-                          Create Community Workspace
+                          {{ $t("ads_side_comm_t") }}
                         </div>
                         <div class="text-sm text-gray-600">
-                          Connect with others on ABN
+                          {{ $t("ads_side_comm_d") }}
                         </div>
                       </div>
                     </div>
@@ -2244,6 +2245,38 @@ const { t } = useI18n();
 const abnAds = ref([]);
 // State
 const activeTab = ref("my-ads");
+
+// "How it works" steps shown under the hero
+const panelSteps = [
+  {
+    icon: "i-heroicons-plus-circle",
+    bg: "bg-emerald-50",
+    color: "text-emerald-600",
+    title: "ads_step1_t",
+    desc: "ads_step1_d",
+  },
+  {
+    icon: "i-heroicons-shield-check",
+    bg: "bg-amber-50",
+    color: "text-amber-600",
+    title: "ads_step2_t",
+    desc: "ads_step2_d",
+  },
+  {
+    icon: "i-heroicons-rocket-launch",
+    bg: "bg-blue-50",
+    color: "text-blue-600",
+    title: "ads_step3_t",
+    desc: "ads_step3_d",
+  },
+  {
+    icon: "i-heroicons-chart-bar",
+    bg: "bg-purple-50",
+    color: "text-purple-600",
+    title: "ads_step4_t",
+    desc: "ads_step4_d",
+  },
+];
 const showCreateAdModal = ref(false);
 const editingAdIndex = ref(null);
 const isLoading = ref(false);
@@ -2756,23 +2789,11 @@ const tutorialVideos = ref([
   },
 ]);
 
-// Sample ad tips
+// Ad tips (i18n keys)
 const adTips = ref([
-  {
-    title: "Use High-Quality Images",
-    description:
-      "Eye-catching visuals can significantly increase ad engagement.",
-  },
-  {
-    title: "Write a Clear and Concise Description",
-    description:
-      "Highlight the key benefits of your product or service in a few words.",
-  },
-  {
-    title: "Target the Right Audience",
-    description:
-      "Ensure your ad reaches the people who are most likely to be interested.",
-  },
+  { title: "ads_tip1_t", description: "ads_tip1_d" },
+  { title: "ads_tip2_t", description: "ads_tip2_d" },
+  { title: "ads_tip3_t", description: "ads_tip3_d" },
 ]);
 //calculate total views using computed
 const totalViews = computed(() => {
