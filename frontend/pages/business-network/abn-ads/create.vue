@@ -94,23 +94,6 @@
               </div>
             </div>
 
-            <!-- Category -->
-            <div>
-              <label class="block text-sm font-medium text-gray-800 mb-1">
-                Category <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="form.category"
-                required
-                class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
-              >
-                <option value="">Select Category</option>
-                <option v-for="c in categories" :key="c.id" :value="c.id">
-                  {{ c.name }}
-                </option>
-              </select>
-            </div>
-
             <!-- Description -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
@@ -557,15 +540,17 @@
                   </option>
                 </select>
               </div>
-              <button
-                type="button"
-                @click="addLocation"
-                :disabled="!selDivision"
-                class="mt-2 px-3 py-1.5 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors inline-flex items-center gap-1.5"
-              >
-                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
-                লোকেশন যোগ করুন
-              </button>
+              <div class="mt-2 flex justify-end">
+                <button
+                  type="button"
+                  @click="addLocation"
+                  :disabled="!selDivision"
+                  class="px-3 py-1.5 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors inline-flex items-center gap-1.5"
+                >
+                  <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                  লোকেশন যোগ করুন
+                </button>
+              </div>
               <div
                 v-if="selectedLocations.length"
                 class="mt-2 flex flex-wrap gap-1.5"
@@ -936,12 +921,8 @@ const steps = [
   "Estimated views পূর্ণ হলে বিজ্ঞাপন স্বয়ংক্রিয়ভাবে বন্ধ হবে — প্যানেল থেকে performance দেখুন।",
 ];
 
-async function loadCategories() {
-  const res = await get("/bn/abn-ads-categories/");
-  const d = res.data;
-  categories.value = Array.isArray(d) ? d : d?.results ?? [];
-}
-await loadCategories();
+// Category is auto-assigned server-side (the Interest Brain classifies the
+// ad content itself) — no user-facing category picker.
 loadRegions();
 
 function onImagePicked(e) {

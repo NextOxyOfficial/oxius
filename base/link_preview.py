@@ -103,10 +103,17 @@ def link_preview(request):
         image = _meta(html, "og:image") or _meta(html, "twitter:image", False)
         site_name = _meta(html, "og:site_name") or domain
 
-        # Detect an anti-bot interstitial so we don't show its junk title.
-        low = (title or "").lower()
-        if any(m in low for m in ("just a moment", "attention required",
-                                  "access denied", "are you a robot")):
+        # Detect an anti-bot interstitial or login wall so we don't show its
+        # junk title (Facebook/Instagram serve "log in or sign up" pages to
+        # non-browser fetches — that text is not the link's real preview).
+        low = f"{title or ''} {description or ''}".lower()
+        if any(m in low for m in (
+            "just a moment", "attention required", "access denied",
+            "are you a robot", "log in or sign up", "log into facebook",
+            "log in to facebook", "you must log in",
+            "content isn't available", "this page isn't available",
+            "page not found", "login • instagram",
+        )):
             is_blocked = True
             title = description = image = None
 

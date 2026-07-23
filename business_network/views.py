@@ -2161,6 +2161,13 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
         media_ids = request.data.pop("media_ids", None)  # pre-uploaded videos
         data = request.data
         data["user"] = request.user.id
+        # No user-facing category picker — the Interest Brain classifies ad
+        # content itself, so an omitted category falls back to General.
+        if not data.get("category"):
+            default_cat = AbnAdsPanelCategory.objects.first()
+            if default_cat is None:
+                default_cat = AbnAdsPanelCategory.objects.create(name="General")
+            data["category"] = default_cat.pk
         serializer = self.get_serializer(data=data)
 
         try:

@@ -369,7 +369,14 @@ class Message(models.Model):
             return "Message deleted"
 
         if self.message_type == 'text':
-            text = self._clean_reply_text(self.content or '')
+            raw = self.content or ''
+            # A shared post's structured payload (base64 envelope) must never
+            # leak into chat-list previews or push-notification bodies.
+            if raw.startswith('ADSYPOST'):
+                return '📎 একটি পোস্ট শেয়ার করা হয়েছে'
+            text = self._clean_reply_text(raw)
+            if text.startswith('ADSYPOST'):
+                return '📎 একটি পোস্ট শেয়ার করা হয়েছে'
             return text[:50] + '...' if len(text) > 50 else text
         elif self.message_type == 'image':
             return "📷 Photo"
