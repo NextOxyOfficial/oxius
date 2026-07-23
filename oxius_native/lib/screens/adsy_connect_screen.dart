@@ -954,6 +954,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _activeOverlayChatroomId = chatroomId;
     _activeChatOverlay = entry;
     overlay.insert(entry);
+    // Rebuild so the list route's PopScope starts blocking back (it must
+    // close this overlay, not pop the list) — see build().
+    if (mounted) setState(() {});
 
     // While this chat overlay is up, internal link taps inside it must close
     // it first (it sits above the root navigator) so the destination shows on
@@ -977,6 +980,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if (entry != null && entry.mounted) {
       entry.remove();
     }
+
+    // Rebuild so the list route's PopScope releases back again.
+    if (mounted) setState(() {});
 
     if (refreshAfterClose && mounted) {
       unawaited(_refreshChats());
@@ -1070,7 +1076,18 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final chatsToShow = _filteredChats;
     final isFiltering = _chatSearchQuery.trim().isNotEmpty;
 
-    return Stack(
+    // Hardware/gesture back with a 1:1 chat overlay open must close the
+    // OVERLAY (revealing this list) — not pop the list route underneath.
+    // The overlay's own didPopRoute observer can lose the race against
+    // WidgetsApp's (registration order), so guard the route itself too.
+    return PopScope(
+      canPop: _activeChatOverlay == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _activeChatOverlay != null) {
+          _closeActiveChatOverlay();
+        }
+      },
+      child: Stack(
       children: [
         AdsyRefreshIndicator(
           onRefresh: _activeChatTab == _ChatTab.groups
@@ -1253,6 +1270,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           ),
         ),
       ],
+      ),
     );
   }
 

@@ -53,7 +53,7 @@ class AdsService {
   /// Fetch config and (if enabled) initialize the SDK. Safe to call more
   /// than once; never throws. No-op on web (google_mobile_ads is mobile-only).
   static Future<void> init() async {
-    if (_initialized || kIsWeb) return;
+    if (_initialized) return;
     _initialized = true;
     try {
       var enabled = false;
@@ -70,10 +70,12 @@ class AdsService {
             if (placements is Map) {
               _placements = Map<String, dynamic>.from(placements);
             }
-            final rating = (data['content_rating'] ?? 'G').toString();
-            await MobileAds.instance.updateRequestConfiguration(
-              RequestConfiguration(maxAdContentRating: rating),
-            );
+            if (!kIsWeb) {
+              final rating = (data['content_rating'] ?? 'G').toString();
+              await MobileAds.instance.updateRequestConfiguration(
+                RequestConfiguration(maxAdContentRating: rating),
+              );
+            }
           }
         }
       } catch (e) {
@@ -84,7 +86,7 @@ class AdsService {
       // Google's sample ads in debug builds so placements can be previewed.
       if (!enabled) {
         if (!kDebugMode) {
-          debugPrint('[ads] disabled by server config');
+          debugPrint('[ads] AdMob disabled by server config');
           return;
         }
         _testMode = true;
@@ -103,6 +105,10 @@ class AdsService {
         }
         debugPrint('[ads] server config off — debug test-ads preview');
       }
+
+      // google_mobile_ads is mobile-only — on web the hybrid slots still run
+      // (house ads via the serve API); only the AdMob fallback is skipped.
+      if (kIsWeb) return;
 
       await MobileAds.instance.initialize();
       _sdkReady = true;
@@ -124,6 +130,13 @@ class AdsService {
   /// Whether this placement should render (sdk ready + enabled + has an id).
   static bool placementActive(String key) =>
       _sdkReady && (adUnitId(key) ?? '').isNotEmpty;
+
+  /// Hybrid feed/list SLOTS (house ads + AdMob fallback). House ads come from
+  /// our own serve API and don't need the AdMob SDK at all — so these slots
+  /// stay active on web/debug/AdMob-off; the serve API simply returns no ad
+  /// when nothing matches (the slot renders nothing). Only an explicit
+  /// `placements[key] = false` in the server config turns a slot off.
+  static bool hybridSlotActive(String key) => _placements[key] != false;
 
   /// Platform + format appropriate AdMob unit id for a placement. In test
   /// mode this is Google's sample unit for the placement's format, so every

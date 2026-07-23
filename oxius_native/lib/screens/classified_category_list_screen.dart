@@ -938,7 +938,7 @@ class _ClassifiedCategoryListScreenState
   }
 
   Widget _buildPostsList(List<ClassifiedPost> posts, {bool isNearby = false}) {
-    final adsOn = AdsService.placementActive('classified_list_native');
+    final adsOn = AdsService.hybridSlotActive('classified_list_native');
     final every =
         adsOn ? AdsService.feedFrequency('classified_list_native', fallback: 6) : 0;
     final block = every + 1;

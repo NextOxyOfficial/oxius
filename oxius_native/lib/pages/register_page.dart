@@ -11,6 +11,7 @@ import '../services/fcm_service.dart';
 import '../services/geo_service.dart';
 import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
+import '../utils/adsy_image_upload.dart';
 import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/profile_completion_sheet.dart';
@@ -146,35 +147,46 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _pickImage() async {
     try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
+      // Same crop flow as everywhere else (1:1 avatar) — web keeps the plain
+      // picker since image_cropper needs a platform view there.
+      final XFile? pickedFile;
+      if (kIsWeb) {
+        pickedFile = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          imageQuality: 85,
+        );
+      } else {
+        pickedFile = await AdsyImageUpload.pick(
+          context,
+          title: 'প্রোফাইল ছবি ঠিক করুন',
+          compress: false,
+        );
+      }
 
       if (pickedFile == null) {
         return;
       }
+      final chosen = pickedFile;
 
       // Compress before storing for upload (fallback to original bytes)
       final Uint8List? compressed = await ImageCompressor.compressToBytes(
-        pickedFile,
+        chosen,
         targetSize: 80 * 1024,
       );
-      final bytes = compressed ?? await pickedFile.readAsBytes();
+      final bytes = compressed ?? await chosen.readAsBytes();
       final mimeType = compressed != null
           ? 'image/jpeg'
-          : (pickedFile.mimeType ?? 'image/jpeg');
+          : (chosen.mimeType ?? 'image/jpeg');
 
       setState(() {
         _profileImageBytes = bytes;
-        _profileImageName = pickedFile.name;
+        _profileImageName = chosen.name;
         _profileImageBase64 = 'data:$mimeType;base64,${base64Encode(bytes)}';
         if (!kIsWeb) {
           try {
-            _profileImageFile = File(pickedFile.path);
+            _profileImageFile = File(chosen.path);
           } catch (_) {
             _profileImageFile = null;
           }

@@ -47,16 +47,22 @@ except Exception as e:
     traceback.print_exc()
 
 
-def send_fcm_notification(fcm_token, title, body, data=None):
+def send_fcm_notification(fcm_token, title, body, data=None,
+                          channel_id='oxius_messages', android_sound='default',
+                          ios_sound='default'):
     """
     Send FCM notification to a single device
-    
+
     Args:
         fcm_token (str): The FCM token of the device
         title (str): Notification title
         body (str): Notification body
         data (dict): Additional data payload
-    
+        channel_id (str): Android notification channel (chat messages use
+            'oxius_chat_messages' which carries the AdsyConnect tone)
+        android_sound (str): raw resource name (no extension) or 'default'
+        ios_sound (str): bundled sound filename or 'default'
+
     Returns:
         bool: True if successful, False otherwise
     """
@@ -83,8 +89,8 @@ def send_fcm_notification(fcm_token, title, body, data=None):
             android=messaging.AndroidConfig(
                 priority='high',
                 notification=messaging.AndroidNotification(
-                    sound='default',
-                    channel_id='oxius_messages',
+                    sound=android_sound,
+                    channel_id=channel_id,
                     color='#10B981',
                 ),
             ),
@@ -98,7 +104,7 @@ def send_fcm_notification(fcm_token, title, body, data=None):
                 },
                 payload=messaging.APNSPayload(
                     aps=messaging.Aps(
-                        sound='default',
+                        sound=ios_sound,
                         mutable_content=True,
                     ),
                 ),
@@ -398,7 +404,11 @@ def send_message_notification(recipient_user, sender_user, sender_name, message_
                 'sender_id': str(sender_user.id),
                 'chat_id': str(chat_id),
                 'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            }
+            },
+            # AdsyConnect brand tone (Android channel carries the sound; the
+            # raw resource ships in the app as res/raw/message_tone.mp3).
+            channel_id='oxius_chat_messages',
+            android_sound='message_tone',
         )
         if result:
             success_count += 1

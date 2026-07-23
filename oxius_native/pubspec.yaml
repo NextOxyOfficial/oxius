@@ -80,6 +80,8 @@ dependencies:
   flutter_background_service_android: ^6.3.0
   
   # Utilities
+  # Device model for the login security email (X-Device-Name header)
+  device_info_plus: ^11.3.0
   flutter_inappwebview: ^6.1.5
   url_launcher: ^6.2.1
   package_info_plus: 9.0.0

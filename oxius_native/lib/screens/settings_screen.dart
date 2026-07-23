@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import '../utils/adsy_image_upload.dart';
 
 import '../config/app_config.dart';
 import '../models/geo_location.dart';
@@ -560,6 +561,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return '$value${separator}v=$_mediaRefreshTick';
   }
 
+  // Kept for potential reuse by other panels; the photo/banner pickers now go
+  // through AdsyImageUpload (source sheet + crop + compress in one flow).
+  // ignore: unused_element
   Future<ImageSource?> _selectImageSource({
     required String title,
   }) {
@@ -986,22 +990,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return;
     }
 
-    final picker = ImagePicker();
-    final source = await _selectImageSource(
+    // The app-wide crop flow (source sheet → crop/rotate → compress) — the
+    // old raw picker here skipped cropping entirely despite enableCropper.
+    final image = await AdsyImageUpload.pick(
+      context,
       title: fieldName == 'image'
           ? _t('settings_profile_photo', 'প্রোফাইল ছবি')
           : _t('settings_banner_image', 'ব্যানার ছবি'),
-    );
-
-    if (source == null) {
-      return;
-    }
-
-    final image = await picker.pickImage(
-      source: source,
-      maxWidth: fieldName == 'image' ? 2048 : 2400,
-      maxHeight: fieldName == 'image' ? 2048 : 1800,
-      imageQuality: fieldName == 'image' ? 96 : 94,
+      ratioX: 1,
+      ratioY: 1,
+      // Banners crop freely so the full image survives; avatars lock to 1:1.
+      freeCrop: fieldName != 'image',
+      compress: false,
     );
 
     if (image == null) {
@@ -1871,8 +1871,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: _t('settings_profile_photo_sub',
                         'অ্যাপ আর প্রোফাইলে দেখা যাবে।'),
                     preview: Container(
-                      width: 112,
-                      height: 112,
+                      width: 140,
+                      height: 140,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _primarySoftColor,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'utils/app_fonts.dart';
+import 'utils/adsy_ios_scale.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'config/app_config.dart';
@@ -319,7 +320,11 @@ class MyApp extends StatelessWidget {
               // Global tap-to-dismiss keyboard. Wrapping at MaterialApp.builder
               // level means every screen inherits the behavior without each
               // route needing its own GestureDetector.
-              return AppUpdateGate(
+              // AdsyIosTextBoost: iOS renders text visually smaller than
+              // Android at the same logical size — boost EVERY screen once
+              // (idempotent; the older per-screen chat wrappers become no-ops).
+              return AdsyIosTextBoost(
+                child: AppUpdateGate(
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
@@ -341,6 +346,7 @@ class MyApp extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
                 ),
               );
             },

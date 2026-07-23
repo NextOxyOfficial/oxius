@@ -58,6 +58,9 @@ def send_group_push_notification(
                     'sender_id': str(sender_id),
                     'click_action': 'FLUTTER_NOTIFICATION_CLICK',
                 },
+                # Same AdsyConnect message tone as 1:1 chats.
+                channel_id='oxius_chat_messages',
+                android_sound='message_tone',
             )
             if ok:
                 sent += 1

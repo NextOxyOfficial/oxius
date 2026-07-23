@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/utils/adsy_ios_scale.dart';
 import '../services/scroll_direction_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
@@ -144,7 +145,8 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                 label: 'Messages',
                 isSelected: false,
                 // AdsyConnect brand icon instead of the generic bubble.
-                customIcon: const AdsyChatIcon(size: 24),
+                customIcon: AdsyChatIcon(
+                    size: 24 * (adsyIosBoxScale() == 1.0 ? 1.0 : 1.12)),
                 onTap: () => _handleNavigation('Messages'),
               ),
               _buildNavItem(
@@ -244,14 +246,17 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                               : (isSelected
                                   ? const Color(0xFF3B82F6)
                                   : Colors.grey.shade600),
-                          size: isHighlighted ? 20 : 24,
+                          // Icons don't follow the text scaler — bump them
+                          // on iOS so the bar matches Android visually.
+                          size: (isHighlighted ? 20 : 24) *
+                              (adsyIosBoxScale() == 1.0 ? 1.0 : 1.12),
                         ),
                   ),
                 const SizedBox(height: 4),
                 Text(
                   label,
                   style: AppFonts.roboto(
-                    fontSize: 10,
+                    fontSize: 10.5,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isHighlighted
                         ? const Color(0xFF10B981)

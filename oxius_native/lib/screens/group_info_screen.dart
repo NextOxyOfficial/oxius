@@ -184,6 +184,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     final isAdminRow = m['role'] == 'admin';
     final isCreatorRow = uid == _creatorId;
     if (!_isAdmin || uid == _myId) return;
+    // Nobody manages the creator (main admin) — nothing to show.
+    if (isCreatorRow) return;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -233,11 +235,14 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                   }
                 },
               ),
-            ListTile(
-              leading: const Icon(Icons.person_remove_outlined,
-                  color: Color(0xFFDC2626)),
-              title: const Text('গ্রুপ থেকে remove করুন',
-                  style: TextStyle(color: Color(0xFFDC2626))),
+            // The creator (main admin) can never be removed — co-admins
+            // don't get the option at all.
+            if (!isCreatorRow)
+              ListTile(
+                leading: const Icon(Icons.person_remove_outlined,
+                    color: Color(0xFFDC2626)),
+                title: const Text('গ্রুপ থেকে remove করুন',
+                    style: TextStyle(color: Color(0xFFDC2626))),
               onTap: () async {
                 Navigator.pop(ctx);
                 final ok = await AdsyConnectService.removeGroupMember(

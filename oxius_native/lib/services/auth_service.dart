@@ -8,6 +8,7 @@ import 'rideshare_driver_presence_service.dart';
 import 'social_auth_service.dart';
 import 'fcm_service.dart';
 import '../screens/suspended_account_screen.dart';
+import '../utils/device_name.dart';
 import 'package:flutter/foundation.dart';
 
 class User {
@@ -303,10 +304,14 @@ class AuthService {
   static Future<AuthResponse?> login(String email, String password) async {
     try {
       debugPrint('Attempting login with email: $email'); // Debug log
+      // Device model rides along so the login security email can name the
+      // exact device instead of a generic "mobile app".
+      final deviceName = await DeviceName.get();
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/auth/login/'),
         headers: {
           'Content-Type': 'application/json',
+          if (deviceName.isNotEmpty) 'X-Device-Name': deviceName,
         },
         body: jsonEncode({
           'email': email,
@@ -384,9 +389,13 @@ class AuthService {
     }
 
     try {
+      final deviceName = await DeviceName.get();
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/auth/social/'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          if (deviceName.isNotEmpty) 'X-Device-Name': deviceName,
+        },
         body: jsonEncode({
           'provider': provider,
           'id_token': idToken,

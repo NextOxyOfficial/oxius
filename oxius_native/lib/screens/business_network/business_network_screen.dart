@@ -339,7 +339,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   // Server-config driven: insert a MAX native ad after every N posts, at
   // slots that don't collide with suggestions (every 10th) or sponsored
   // products (every 5th).
-  bool get _feedAdsActive => AdsService.placementActive('bn_feed_native');
+  bool get _feedAdsActive => AdsService.hybridSlotActive('bn_feed_native');
   int get _feedAdFrequency => AdsService.feedFrequency('bn_feed_native');
 
   bool _isAdSlot(int i) =>
@@ -794,7 +794,18 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         );
 
       case _FeedSlotType.nativeAd:
-        return FeedNativeAdCard(key: ValueKey('feed_ad_${slot.slotIndex}'));
+        // Attribute the ad to the post ABOVE it — that creator earns the
+        // ad-revenue share for this slot's views.
+        final adIdx = slot.slotIndex ?? 0;
+        final prevPost = (adIdx > 0 && adIdx - 1 < visiblePosts.length)
+            ? visiblePosts[adIdx - 1]
+            : null;
+        return FeedNativeAdCard(
+          key: ValueKey('feed_ad_${slot.slotIndex}'),
+          creatorId: prevPost == null
+              ? null
+              : (prevPost.user.uuid ?? prevPost.user.id.toString()),
+        );
 
       case _FeedSlotType.microGigs:
         return FeedMicroGigsCard(

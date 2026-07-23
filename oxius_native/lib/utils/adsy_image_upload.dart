@@ -26,6 +26,9 @@ class AdsyImageUpload {
     /// false → return the cropped FILE (real path, uncompressed) for callers
     /// that need `.path` (e.g. previews via Image.file) and compress later.
     bool compress = true,
+    /// true → no locked aspect: the user may adjust freely or keep the whole
+    /// image (banners — the display crops visually, the file stays full).
+    bool freeCrop = false,
   }) async {
     ImageSource? source;
     await AdsySheet.show(
@@ -58,7 +61,8 @@ class AdsyImageUpload {
     // Crop + rotate; pressing done in the cropper IS the confirm step.
     final cropped = await ImageCropper().cropImage(
       sourcePath: image.path,
-      aspectRatio: CropAspectRatio(ratioX: ratioX, ratioY: ratioY),
+      aspectRatio:
+          freeCrop ? null : CropAspectRatio(ratioX: ratioX, ratioY: ratioY),
       compressQuality: 95,
       uiSettings: [
         AndroidUiSettings(
@@ -66,13 +70,13 @@ class AdsyImageUpload {
           toolbarColor: const Color(0xFF111827),
           toolbarWidgetColor: Colors.white,
           activeControlsWidgetColor: const Color(0xFF16A34A),
-          lockAspectRatio: true,
+          lockAspectRatio: !freeCrop,
           hideBottomControls: false,
         ),
         IOSUiSettings(
           title: title,
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
+          aspectRatioLockEnabled: !freeCrop,
+          resetAspectRatioEnabled: freeCrop,
           rotateButtonsHidden: false,
         ),
       ],

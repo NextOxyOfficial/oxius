@@ -175,7 +175,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
     // Bold page title on top; when the site blocks scraping (no title), fall
     // back to the URL itself (scheme-stripped) so the two lines never repeat
     // the same domain twice. The muted line below is always the domain.
-    final rawTitle = (data.title ?? '').trim();
+    final rawTitle = _cleanTitle((data.title ?? '').trim());
     final title = rawTitle.isNotEmpty
         ? rawTitle
         : data.url.replaceFirst(RegExp(r'^https?://'), '');
@@ -183,6 +183,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       onTap: () => UrlLauncherUtils.launchExternalUrl(data.url),
       borderRadius: BorderRadius.circular(12),
       child: Container(
+        constraints: const BoxConstraints(minHeight: 76),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -194,7 +195,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                width: 78,
+                width: 92,
                 child: hasImage
                     ? Image.network(
                         data.imageUrl!,
@@ -206,7 +207,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
+                      horizontal: 12, vertical: 12),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -244,6 +245,28 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
         ),
       ),
     );
+  }
+
+  // Login-wall / anti-bot page titles (Facebook, Instagram etc.) are not the
+  // link's real preview — treat them as "no title" so the URL shows instead.
+  static const _junkTitleMarkers = [
+    'log in or sign up',
+    'log into facebook',
+    'log in to facebook',
+    'you must log in',
+    "content isn't available",
+    "this page isn't available",
+    'just a moment',
+    'attention required',
+    'access denied',
+  ];
+
+  String _cleanTitle(String title) {
+    final low = title.toLowerCase();
+    for (final m in _junkTitleMarkers) {
+      if (low.contains(m)) return '';
+    }
+    return title;
   }
 
   Widget _chatThumbFallback(LinkPreviewData data) {

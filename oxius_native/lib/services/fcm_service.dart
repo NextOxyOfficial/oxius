@@ -1579,6 +1579,19 @@ class FCMService {
       enableVibration: true,
     );
 
+    // AdsyConnect chat messages get their own channel with the brand tone
+    // (res/raw/message_tone.mp3). Separate channel because Android locks a
+    // channel's sound after creation — 'oxius_messages' keeps the default.
+    const AndroidNotificationChannel chatChannel = AndroidNotificationChannel(
+      'oxius_chat_messages', // id
+      'Chat Messages', // name
+      description: 'AdsyConnect chat message alerts',
+      importance: Importance.high,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound('message_tone'),
+      enableVibration: true,
+    );
+
     // Create high-priority call notification channel with ringtone.
     // audioAttributesUsage = notificationRingtone marks this channel as a
     // phone-call style alert so Android applies the higher audio priority and
@@ -1617,6 +1630,7 @@ class FCMService {
             AndroidFlutterLocalNotificationsPlugin>();
 
     await androidPlugin?.createNotificationChannel(channel);
+    await androidPlugin?.createNotificationChannel(chatChannel);
     await androidPlugin?.createNotificationChannel(callChannel);
     await androidPlugin?.createNotificationChannel(rideChannel);
   }
@@ -2494,14 +2508,25 @@ class FCMService {
         return;
       }
 
-      const AndroidNotificationDetails androidDetails =
+      // Chat messages ring with the AdsyConnect tone on their own channel;
+      // everything else keeps the default sound.
+      final isChatMessage =
+          (data['type']?.toString() ?? '') == 'message' ||
+              (data['type']?.toString() ?? '') == 'group_message';
+
+      final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
-        'oxius_messages',
-        'Oxius Messages',
-        channelDescription: 'Notifications for messages and updates',
+        isChatMessage ? 'oxius_chat_messages' : 'oxius_messages',
+        isChatMessage ? 'Chat Messages' : 'Oxius Messages',
+        channelDescription: isChatMessage
+            ? 'AdsyConnect chat message alerts'
+            : 'Notifications for messages and updates',
         importance: Importance.high,
         priority: Priority.high,
         playSound: true,
+        sound: isChatMessage
+            ? const RawResourceAndroidNotificationSound('message_tone')
+            : null,
         enableVibration: true,
         icon: '@mipmap/ic_launcher',
       );
@@ -2513,7 +2538,7 @@ class FCMService {
         sound: 'default',
       );
 
-      const NotificationDetails notificationDetails = NotificationDetails(
+      final NotificationDetails notificationDetails = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );

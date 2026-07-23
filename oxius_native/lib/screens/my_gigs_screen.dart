@@ -1322,7 +1322,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           else
             Builder(builder: (context) {
               // Interleave a native ad after every N gigs (server-tuned).
-              final adsOn = AdsService.placementActive('gig_list_native');
+              final adsOn = AdsService.hybridSlotActive('gig_list_native');
               final every = adsOn
                   ? AdsService.feedFrequency('gig_list_native', fallback: 5)
                   : 0;

@@ -584,6 +584,10 @@ class AutoPlaySingleVideoPreview extends StatefulWidget {
 }
 
 class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> {
+  /// Feed-wide mute preference: muting one video mutes every video the user
+  /// scrolls to next (and survives feed rebuilds), like Facebook's feed.
+  static final ValueNotifier<bool> feedMuted = ValueNotifier<bool>(false);
+
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   // Aspect ratio measured from the thumbnail so the box is sized correctly even
@@ -601,6 +605,15 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     // Only measure the thumbnail up front (cheap). The heavy video controller
     // is created lazily the first time the tile scrolls near the viewport.
     _resolveThumbAspect();
+    feedMuted.addListener(_applyMute);
+  }
+
+  void _applyMute() {
+    final c = _controller;
+    if (c != null && _isInitialized) {
+      c.setVolume(feedMuted.value ? 0.0 : 1.0);
+    }
+    if (mounted) setState(() {});
   }
 
   @override
@@ -658,7 +671,8 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
       _controller = controller;
       await controller.initialize();
       await controller.setLooping(true);
-      await controller.setVolume(1.0);
+      // Honour the sticky feed-wide mute choice.
+      await controller.setVolume(feedMuted.value ? 0.0 : 1.0);
 
       if (!mounted) {
         controller.dispose();
@@ -704,6 +718,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
 
   @override
   void dispose() {
+    feedMuted.removeListener(_applyMute);
     _disposeController();
     super.dispose();
   }
@@ -805,6 +820,33 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
                 onTap: widget.onTap,
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
+              ),
+            ),
+          ),
+        // Mute toggle — AFTER the full-bleed tap layer so it wins the tap.
+        // The choice is feed-wide and sticky (see [feedMuted]).
+        if (!_hasError && _isInitialized)
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: GestureDetector(
+              onTap: () => feedMuted.value = !feedMuted.value,
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  shape: BoxShape.circle,
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                ),
+                child: Icon(
+                  feedMuted.value
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
           ),

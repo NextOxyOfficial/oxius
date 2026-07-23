@@ -3,16 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../services/ads_service.dart';
+import '../../services/house_ads_service.dart';
+import 'house_ad_card.dart';
 
-/// Business Network feed native ad slot (Google AdMob).
+/// Business Network feed native ad slot — HYBRID waterfall.
 ///
-/// Uses the SDK's native TEMPLATE rendering (no platform-side factory
-/// needed): a medium template styled to sit flush with the feed's post
-/// cards, under a small "Sponsored" strip. Renders nothing until the ad
-/// actually loads, so the feed never shows an empty grey box.
+/// First asks the ABN Ads Panel for a matching advertiser (house) ad; only
+/// when none is available does it fall back to Google AdMob. Both paths are
+/// tracked so viewer rewards + creator earnings count every ad exposure.
 class FeedNativeAdCard extends StatefulWidget {
   final String placementKey;
-  const FeedNativeAdCard({super.key, this.placementKey = 'bn_feed_native'});
+  // Owner of the content this ad slot follows (creator revenue share).
+  final String? creatorId;
+  const FeedNativeAdCard({
+    super.key,
+    this.placementKey = 'bn_feed_native',
+    this.creatorId,
+  });
 
   @override
   State<FeedNativeAdCard> createState() => _FeedNativeAdCardState();
@@ -23,15 +30,34 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
   NativeAd? _ad;
   bool _loaded = false;
   bool _failed = false;
+  HouseAd? _houseAd;
+  bool _admobTracked = false;
+
+  // Serve-API placement key: 'bn_feed_native' → 'bn_feed' etc.
+  String get _housePlacement =>
+      widget.placementKey.replaceAll('_native', '').replaceAll('_fullscreen', '');
 
   // Keep the loaded ad alive while the feed recycles items — otherwise every
   // scroll-away disposes and re-requests the ad (wasted fill + flicker).
   @override
-  bool get wantKeepAlive => _loaded;
+  bool get wantKeepAlive => _loaded || _houseAd != null;
 
   @override
   void initState() {
     super.initState();
+    _loadHybrid();
+  }
+
+  Future<void> _loadHybrid() async {
+    // 1) House ad first — 100% of that revenue stays on the platform.
+    final house = await HouseAdsService.fetch(_housePlacement);
+    if (!mounted) return;
+    if (house != null) {
+      setState(() => _houseAd = house);
+      updateKeepAlive();
+      return;
+    }
+    // 2) AdMob fallback.
     _load();
   }
 
@@ -71,6 +97,16 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
           if (mounted) {
             setState(() => _loaded = true);
             updateKeepAlive();
+            // Count the AdMob exposure too — viewer rewards + creator share.
+            if (!_admobTracked) {
+              _admobTracked = true;
+              HouseAdsService.track(
+                eventType: 'impression',
+                placement: _housePlacement,
+                source: 'admob',
+                creatorId: widget.creatorId,
+              );
+            }
           }
         },
         onAdFailedToLoad: (ad, error) {
@@ -92,6 +128,14 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final house = _houseAd;
+    if (house != null) {
+      return HouseAdCard(
+        ad: house,
+        placement: _housePlacement,
+        creatorId: widget.creatorId,
+      );
+    }
     final ad = _ad;
     if (ad == null || _failed || !_loaded) return const SizedBox.shrink();
 

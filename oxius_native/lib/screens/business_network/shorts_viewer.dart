@@ -8,6 +8,8 @@ import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/ads_service.dart';
+import '../../services/house_ads_service.dart';
+import '../../widgets/ads/house_ad_card.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/network_error_handler.dart';
@@ -249,10 +251,14 @@ class _ShortsCommentsBottomSheetState
 }
 
 class _ShortItem {
-  final BusinessNetworkPost post;
-  final PostMedia media;
+  final BusinessNetworkPost? post;
+  final PostMedia? media;
+  // Non-null = this reel slot is a BOOSTED (sponsored) short.
+  final HouseAd? boost;
 
-  const _ShortItem({required this.post, required this.media});
+  const _ShortItem({this.post, this.media, this.boost});
+
+  bool get isBoost => boost != null;
 }
 
 class _ShortsViewerState extends State<ShortsViewer> {
@@ -305,8 +311,26 @@ class _ShortsViewerState extends State<ShortsViewer> {
   int _findInitialIndex(String? initialVideoUrl, List<_ShortItem> items) {
     final target = (initialVideoUrl ?? '').trim();
     if (target.isEmpty) return 0;
-    final idx = items.indexWhere((e) => e.media.bestUrl == target);
+    final idx = items.indexWhere((e) => e.media?.bestUrl == target);
     return idx < 0 ? 0 : idx;
+  }
+
+  // ── Boosted shorts: every N swipes ask the ads panel for a sponsored
+  // short and slide it into the reel right after the current page. ──
+  final Set<int> _boostCheckedIndexes = {};
+  static const int _boostEvery = 6;
+
+  Future<void> _maybeInsertBoost(int index) async {
+    if (index <= 0 || index % _boostEvery != 0) return;
+    if (_boostCheckedIndexes.contains(index)) return;
+    _boostCheckedIndexes.add(index);
+    final ad = await HouseAdsService.fetch('shorts_reel');
+    final videoUrl = (ad?.boostedPost?['video_url'] ?? '').toString();
+    if (!mounted || ad == null || videoUrl.isEmpty) return;
+    setState(() {
+      final at = (index + 1).clamp(0, _items.length);
+      _items.insert(at, _ShortItem(boost: ad));
+    });
   }
 
   // Full-screen ad every N shorts (server-tuned, default 5). Pauses the
@@ -321,6 +345,17 @@ class _ShortsViewerState extends State<ShortsViewer> {
     final wasPlaying = _activeController?.value.isPlaying ?? false;
     _activeController?.pause();
     await AdsService.showInterstitial('shorts_fullscreen');
+    // The creator whose short the viewer just watched gets the revenue
+    // share for this post-swipe ad view.
+    final u = _items[index].post?.user;
+    if (u != null) {
+      HouseAdsService.track(
+        eventType: 'impression',
+        placement: 'shorts_fullscreen',
+        source: 'admob',
+        creatorId: u.uuid ?? u.id.toString(),
+      );
+    }
     if (!mounted) return;
     if (wasPlaying) _activeController?.play();
   }
@@ -348,7 +383,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
   int _currentViewsCount() {
     if (_currentIndex < 0 || _currentIndex >= _items.length) return 0;
     final item = _items[_currentIndex];
-    return _mediaViewsOverrides[item.media.id] ?? item.media.views;
+    final media = item.media;
+    if (media == null) return 0; // sponsored slot — no views pill
+    return _mediaViewsOverrides[media.id] ?? media.views;
   }
 
   @override
@@ -363,9 +400,10 @@ class _ShortsViewerState extends State<ShortsViewer> {
             .where((m) => m.isVideo)
             .map((m) => _ShortItem(post: p, media: m)))
         .toList();
-    final existingIds = _items.map((e) => e.media.id).toSet();
+    final existingIds =
+        _items.where((e) => e.media != null).map((e) => e.media!.id).toSet();
     final fresh = incoming
-        .where((e) => !existingIds.contains(e.media.id))
+        .where((e) => e.media != null && !existingIds.contains(e.media!.id))
         .toList()
       ..shuffle();
 
@@ -416,13 +454,15 @@ class _ShortsViewerState extends State<ShortsViewer> {
       if (idx < 0 || idx >= _items.length) continue;
 
       final item = _items[idx];
-      final mediaId = item.media.id;
+      final media = item.media;
+      if (media == null) continue; // sponsored slots manage their own player
+      final mediaId = media.id;
 
       if (_preloadedControllers.containsKey(mediaId)) continue;
       // A live page already owns a controller for this media.
       if (_pageOwnedMediaIds.contains(mediaId)) continue;
 
-      final url = item.media.bestUrl;
+      final url = media.bestUrl;
       if (url.isEmpty) continue;
 
       futures.add(() async {
@@ -459,7 +499,8 @@ class _ShortsViewerState extends State<ShortsViewer> {
     for (final off in offsets) {
       final idx = currentIndex + off;
       if (idx >= 0 && idx < _items.length) {
-        validIds.add(_items[idx].media.id);
+        final m = _items[idx].media;
+        if (m != null) validIds.add(m.id);
       }
     }
     final toRemove = _preloadedControllers.keys
@@ -612,6 +653,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
               _maybeRequestMore(i);
               _preloadVideos(i);
               _maybeShowShortsAd(i);
+              _maybeInsertBoost(i);
             },
             itemBuilder: (context, index) {
               // Show end page (loading or all caught up)
@@ -750,30 +792,38 @@ class _ShortsViewerState extends State<ShortsViewer> {
                 );
               }
               final item = _items[index];
+              // Boosted (sponsored) short — plays inline like any short.
+              if (item.isBoost) {
+                return _SponsoredShortPage(
+                  key: ValueKey('boost_${item.boost!.id}_$index'),
+                  ad: item.boost!,
+                  isActive: index == _currentIndex,
+                );
+              }
               return _ShortVideoPage(
-                key: ValueKey('short_${item.post.id}_${item.media.id}'),
-                post: item.post,
-                media: item.media,
+                key: ValueKey('short_${item.post!.id}_${item.media!.id}'),
+                post: item.post!,
+                media: item.media!,
                 isActive: index == _currentIndex,
-                preloadedController: _preloadedControllers[item.media.id],
+                preloadedController: _preloadedControllers[item.media!.id],
                 onLike: widget.onLike,
                 onComment: widget.onComment,
                 onShare: widget.onShare,
                 onViewsChanged: (nextViews) {
                   if (!mounted) return;
                   setState(() {
-                    _mediaViewsOverrides[item.media.id] = nextViews;
+                    _mediaViewsOverrides[item.media!.id] = nextViews;
                   });
                 },
                 onControllerCreated: (controller) {
                   // Ownership moves to the page: out of the preload map, and
                   // marked so we never spin up a duplicate stream for it.
-                  _preloadedControllers.remove(item.media.id);
-                  _pageOwnedMediaIds.add(item.media.id);
+                  _preloadedControllers.remove(item.media!.id);
+                  _pageOwnedMediaIds.add(item.media!.id);
                   _activeController = controller;
                 },
                 onControllerDisposed: () {
-                  _pageOwnedMediaIds.remove(item.media.id);
+                  _pageOwnedMediaIds.remove(item.media!.id);
                 },
               );
             },
@@ -834,8 +884,159 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   bool _showHeartBurst = false;
   Timer? _heartBurstTimer;
 
+  // Sponsored banner above the author block (house ads only). The short's
+  // creator earns the revenue share for its views.
+  HouseAd? _bannerAd;
+  bool _bannerRequested = false;
+  bool _bannerTracked = false;
+
   Timer? _viewTimer;
   bool _viewCounted = false;
+
+  String get _creatorId =>
+      widget.post.user.uuid ?? widget.post.user.id.toString();
+
+  Future<void> _loadBannerAd() async {
+    if (_bannerRequested) return;
+    _bannerRequested = true;
+    final ad = await HouseAdsService.fetch('shorts_banner');
+    if (!mounted || ad == null) return;
+    setState(() => _bannerAd = ad);
+    if (widget.isActive && !_bannerTracked) {
+      _bannerTracked = true;
+      HouseAdsService.track(
+        eventType: 'impression',
+        placement: 'shorts_banner',
+        adId: ad.id,
+        creatorId: _creatorId,
+      );
+    }
+  }
+
+  /// Tap on the banner → bottom sheet with the full ad details + CTA.
+  void _openBannerAdSheet() {
+    final ad = _bannerAd;
+    if (ad == null) return;
+    HouseAdsService.track(
+      eventType: 'click',
+      placement: 'shorts_banner',
+      adId: ad.id,
+      creatorId: _creatorId,
+    );
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.campaign_outlined,
+                      size: 16, color: Color(0xFF94A3B8)),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'Sponsored',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    ad.advertiser,
+                    style: const TextStyle(
+                        fontSize: 12, color: Color(0xFF94A3B8)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (ad.images.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    ad.images.first,
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              Text(
+                ad.title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              if (ad.description.trim().isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  ad.description,
+                  maxLines: 5,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    color: Color(0xFF475569),
+                    height: 1.45,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    HouseAdsService.track(
+                      eventType: 'cta_click',
+                      placement: 'shorts_banner',
+                      adId: ad.id,
+                      creatorId: _creatorId,
+                    );
+                    HouseAdCard.launchCta(ad);
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF16A34A),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    ad.ctaLabel,
+                    style: const TextStyle(
+                        fontSize: 14.5, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -846,6 +1047,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     _viewsCount = widget.media.views;
     _isFollowing = widget.post.user.isFollowing;
     _init();
+    if (widget.isActive) _loadBannerAd();
   }
 
   /// 12500 -> 12.5K, 3400000 -> 3.4M — keeps rail labels tidy.
@@ -930,6 +1132,16 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         _controller?.setVolume(1.0);
         _controller?.play();
         _maybeScheduleViewCount();
+        _loadBannerAd();
+        if (_bannerAd != null && !_bannerTracked) {
+          _bannerTracked = true;
+          HouseAdsService.track(
+            eventType: 'impression',
+            placement: 'shorts_banner',
+            adId: _bannerAd!.id,
+            creatorId: _creatorId,
+          );
+        }
       } else {
         _controller?.pause();
         _viewTimer?.cancel();
@@ -1614,6 +1826,77 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Sponsored banner ABOVE the name section — tap opens a
+                    // bottom sheet with the full ad details + CTA.
+                    if (_bannerAd != null)
+                      GestureDetector(
+                        onTap: _openBannerAdSheet,
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.18)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_bannerAd!.images.isNotEmpty)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.network(
+                                    _bannerAd!.images.first,
+                                    width: 30,
+                                    height: 30,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        const SizedBox.shrink(),
+                                  ),
+                                )
+                              else
+                                const Icon(Icons.campaign_outlined,
+                                    size: 18, color: Colors.white70),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _bannerAd!.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Sponsored',
+                                      style: TextStyle(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.6),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Icon(Icons.chevron_right_rounded,
+                                  size: 18,
+                                  color:
+                                      Colors.white.withValues(alpha: 0.7)),
+                            ],
+                          ),
+                        ),
+                      ),
                     GestureDetector(
                       onTap: () {
                         // Pause video before navigating
@@ -2053,6 +2336,249 @@ class _SmoothShortsSeekBarState extends State<_SmoothShortsSeekBar>
             setState(() => _scrubValue = null);
           },
         ),
+      ),
+    );
+  }
+}
+
+/// A BOOSTED short — an advertiser-promoted BN short playing inline in the
+/// reel like any other short, marked "Sponsored" with author info and a CTA.
+/// Billable impression fires after 3s of actual playback.
+class _SponsoredShortPage extends StatefulWidget {
+  final HouseAd ad;
+  final bool isActive;
+
+  const _SponsoredShortPage({super.key, required this.ad, required this.isActive});
+
+  @override
+  State<_SponsoredShortPage> createState() => _SponsoredShortPageState();
+}
+
+class _SponsoredShortPageState extends State<_SponsoredShortPage> {
+  VideoPlayerController? _controller;
+  bool _ready = false;
+  bool _billed = false;
+  Timer? _billableTimer;
+
+  String get _videoUrl =>
+      (widget.ad.boostedPost?['video_url'] ?? '').toString();
+  String get _authorName =>
+      (widget.ad.boostedPost?['author_name'] ?? '').toString();
+  String get _authorAvatar =>
+      (widget.ad.boostedPost?['author_avatar'] ?? '').toString();
+  String get _caption =>
+      (widget.ad.boostedPost?['content'] ?? '').toString();
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    try {
+      final c = VideoPlayerController.networkUrl(Uri.parse(_videoUrl));
+      _controller = c;
+      await c.initialize();
+      await c.setLooping(true);
+      await c.setVolume(widget.isActive ? 1.0 : 0.0);
+      if (!mounted) {
+        c.dispose();
+        return;
+      }
+      setState(() => _ready = true);
+      if (widget.isActive) {
+        c.play();
+        _armBillable();
+      }
+    } catch (e) {
+      debugPrint('[boost] video init failed: $e');
+    }
+  }
+
+  void _armBillable() {
+    if (_billed) return;
+    _billableTimer?.cancel();
+    _billableTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted || _billed || !widget.isActive) return;
+      _billed = true;
+      HouseAdsService.track(
+        eventType: 'impression',
+        placement: 'shorts_reel',
+        adId: widget.ad.id,
+      );
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _SponsoredShortPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive != widget.isActive) {
+      if (widget.isActive) {
+        _controller?.setVolume(1.0);
+        _controller?.play();
+        _armBillable();
+      } else {
+        _controller?.pause();
+        _billableTimer?.cancel();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _billableTimer?.cancel();
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _onCta() {
+    HouseAdsService.track(
+      eventType: 'cta_click',
+      placement: 'shorts_reel',
+      adId: widget.ad.id,
+    );
+    HouseAdCard.launchCta(widget.ad);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = _controller;
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (_ready && c != null)
+            FittedBox(
+              fit: BoxFit.cover,
+              clipBehavior: Clip.hardEdge,
+              child: SizedBox(
+                width: c.value.size.width,
+                height: c.value.size.height,
+                child: VideoPlayer(c),
+              ),
+            )
+          else
+            const Center(
+              child: AdsyLoadingIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                strokeWidth: 2.5,
+              ),
+            ),
+          // Bottom gradient + sponsored info + CTA.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(
+                  14, 40, 14, 18 + MediaQuery.of(context).padding.bottom),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.8),
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF334155),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              width: 1.5),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: _authorAvatar.isNotEmpty
+                            ? Image.network(_authorAvatar,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.person_rounded,
+                                    size: 20,
+                                    color: Colors.white70))
+                            : const Icon(Icons.person_rounded,
+                                size: 20, color: Colors.white70),
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _authorName.isNotEmpty
+                                  ? _authorName
+                                  : widget.ad.advertiser,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              'Sponsored',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.65),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_caption.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _caption,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.86),
+                        fontSize: 13.5,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _onCta,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        widget.ad.ctaLabel,
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

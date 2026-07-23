@@ -178,12 +178,13 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
 
   /// Pick → crop (3:1) → compress → upload the profile banner.
   Future<void> _uploadBanner() async {
+    // Free crop: the user frames what they want (or keeps the whole image) —
+    // no forced 3:1 slice, so tap-to-view shows the FULL banner intact.
     final file = await AdsyImageUpload.pick(
       context,
-      ratioX: 3,
-      ratioY: 1,
+      freeCrop: true,
       title: 'ব্যানার ঠিক করুন',
-      targetKb: 220,
+      targetKb: 260,
     );
     if (file == null || !mounted) return;
     setState(() {
@@ -502,7 +503,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                     ? () => _openBannerViewer(bannerUrl, name, avatarUrl)
                     : null,
                 child: SizedBox(
-                  height: 158,
+                  // +50% over the old 158 — the header shows a window into
+                  // the banner (cover); tapping opens the FULL image.
+                  height: 237,
                   width: double.infinity,
                   child: bannerUrl.isNotEmpty
                       ? Image.network(

@@ -461,6 +461,8 @@ class _ReplyInputState extends State<_ReplyInput> {
       GlobalKey<FlutterMentionsState>();
   List<Map<String, dynamic>> _userData = [];
   bool _isSubmitting = false;
+  // Drives the send icon's grow + blue tint while there's text to send.
+  bool _hasText = false;
 
   @override
   void initState() {
@@ -516,25 +518,13 @@ class _ReplyInputState extends State<_ReplyInput> {
 
   @override
   Widget build(BuildContext context) {
+    // Same pill design as the main comment input (grey fill, rounded 20,
+    // blue focus ring) — the reply box used to be a blue-tinted one-off.
     return Container(
-      margin: const EdgeInsets.only(left: 40, top: 6, bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: Colors.blue.shade200,
-          width: 0.5,
-        ),
-      ),
+      margin: const EdgeInsets.only(left: 40, top: 2, bottom: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Icon(Icons.reply, size: 16, color: Colors.blue.shade700),
-          ),
-          const SizedBox(width: 4),
           Expanded(
             child: ConstrainedBox(
               constraints: const BoxConstraints(
@@ -549,14 +539,58 @@ class _ReplyInputState extends State<_ReplyInput> {
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle:
                       TextStyle(fontSize: 14.5, color: Colors.grey.shade500),
-                  border: InputBorder.none,
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide:
+                        BorderSide(color: Colors.grey.shade200, width: 0.5),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide:
+                        BorderSide(color: Colors.grey.shade200, width: 0.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(
+                        color: Color(0xFF3B82F6), width: 1),
+                  ),
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                   isDense: true,
+                  suffixIcon: _isSubmitting
+                      ? Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: AdsyLoadingIndicator(
+                              strokeWidth: 2,
+                              color: const Color(0xFF3B82F6),
+                            ),
+                          ),
+                        )
+                      : IconButton(
+                          onPressed: _handleSubmit,
+                          icon: Icon(
+                            Icons.send,
+                            // Grows + turns blue the moment there's text.
+                            size: _hasText ? 21 : 18,
+                            color: _hasText
+                                ? const Color(0xFF3B82F6)
+                                : Colors.grey.shade400,
+                          ),
+                          padding: const EdgeInsets.all(8),
+                        ),
                 ),
                 // 15px matches the main comment field — 14 read small on iOS.
                 style: const TextStyle(fontSize: 15, height: 1.35),
                 onChanged: (value) async {
+                  final has = value.trim().isNotEmpty;
+                  if (has != _hasText && mounted) {
+                    setState(() => _hasText = has);
+                  }
                   if (value.contains('@')) {
                     final lastAtIndex = value.lastIndexOf('@');
                     final textAfterAt = value.substring(lastAtIndex + 1);
@@ -816,7 +850,9 @@ class _CommentItemState extends State<_CommentItem> {
           : null,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+        // Tight, even rhythm — 12 stacked with the reply box's own margin
+        // left a big blank band above replies.
+        padding: const EdgeInsets.only(bottom: 6),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

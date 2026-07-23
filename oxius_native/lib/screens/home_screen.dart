@@ -18,6 +18,7 @@ import '../widgets/business_network/gold_sponsors_slider.dart';
 import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../services/translation_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -122,6 +123,23 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     _fetchRecentPosts();
     _startMessageCountPolling();
+    _loadBnUnreadCount();
+  }
+
+  // Business Network unread notifications → count badge on the BN grid tile
+  // (the sticky footer's Network item shows its own copy of this badge).
+  int _bnUnreadCount = 0;
+
+  Future<void> _loadBnUnreadCount() async {
+    if (!AuthService.isAuthenticated) return;
+    try {
+      final result = await NotificationService.getNotifications(page: 1);
+      if (mounted && !_disposed) {
+        setState(() => _bnUnreadCount = (result['unreadCount'] as int?) ?? 0);
+      }
+    } catch (_) {
+      // Badge is best-effort — never surface an error for it.
+    }
   }
 
   void _handleInitialScrollIfNeeded() {
@@ -813,7 +831,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             Icons.public_outlined,
                             const Color(0xFFF97316),
                             false,
-                            null),
+                            null,
+                            notifCount: _bnUnreadCount),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
@@ -1303,7 +1322,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNavLink(BuildContext context, String key, IconData icon,
-      Color color, bool hasBadge, String? badgeText) {
+      Color color, bool hasBadge, String? badgeText,
+      {int notifCount = 0}) {
     return InkWell(
       onTap: () {
         debugPrint('🔵 Navigation tapped: $key');
@@ -1406,8 +1426,33 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          // Unread-notification count badge (e.g. Business Network).
+          if (notifCount > 0)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                constraints: const BoxConstraints(minWidth: 20),
+                child: Text(
+                  notifCount > 99 ? '99+' : '$notifCount',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
           // Badge (FREE or PRO)
-          if (hasBadge && badgeText != null)
+          if (hasBadge && badgeText != null && notifCount == 0)
             Positioned(
               top: -4,
               right: -4,
