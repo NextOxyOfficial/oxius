@@ -2127,7 +2127,10 @@ const abnAdsCategories = ref([]);
 async function fetchAbnAdsCategories() {
   try {
     const response = await get("/bn/abn-ads-categories/");
-    abnAdsCategories.value = response.data;
+    // useApi.get never throws — on error data is null. Assigning null here
+    // crashed the whole page at render (.filter on null). Keep it an array.
+    const d = response.data;
+    abnAdsCategories.value = Array.isArray(d) ? d : d?.results ?? [];
   } catch (error) {
     console.error("Error fetching categories:", error);
   }
@@ -2224,7 +2227,10 @@ const postedAds = ref([]);
 async function fetchPostedAds() {
   try {
     const response = await get("/bn/abn-ads-panels/");
-    postedAds.value = response.data;
+    // Same null-guard as categories — never let a failed fetch poison the
+    // list with null (that crashed the page for logged-out visitors).
+    const d = response.data;
+    postedAds.value = Array.isArray(d) ? d : d?.results ?? [];
   } catch (error) {
     console.error("Error fetching posted ads:", error);
   }

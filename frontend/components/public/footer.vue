@@ -46,6 +46,10 @@
                 to: '/mobile-recharge',
               },
               {
+                label: 'Promote on ABN',
+                to: '/business-network/abn-ads',
+              },
+              {
                 label: $t('packeges'),
                 to: '/upgrade-to-pro',
               },
@@ -85,6 +89,10 @@
               {
                 label: $t('earn_money'),
                 to: '/',
+              },
+              {
+                label: 'Promote on ABN',
+                to: '/business-network/abn-ads',
               },
               {
                 label: $t('packeges'),
