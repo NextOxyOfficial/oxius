@@ -190,7 +190,7 @@
               <!-- Create Ad Button - Moved below performance report -->
               <div class="flex justify-center pl-4">
                 <button
-                  @click="showCreateAdModal = true"
+                  @click="navigateTo('/business-network/abn-ads/create')"
                   class="flex items-center text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-md px-3 py-2 border border-emerald-500 text-sm"
                   :disabled="isLoading"
                 >
@@ -273,7 +273,7 @@
               </svg>
               <p class="text-gray-600 text-sm">No ads posted yet</p>
               <button
-                @click="showCreateAdModal = true"
+                @click="navigateTo('/business-network/abn-ads/create')"
                 class="mt-3 flex items-center mx-auto text-emerald-500 font-medium hover:text-emerald-600 transition-colors rounded-md px-3 py-1 border border-emerald-500 text-sm"
               >
                 <svg
