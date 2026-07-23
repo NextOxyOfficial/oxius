@@ -1,33 +1,41 @@
 <template>
   <UContainer class="mt-3 mb-10">
     <div class="max-w-5xl mx-auto">
-      <!-- Page header -->
+      <!-- ── Hero header (same shell as the panel page) ── -->
       <div
-        class="bg-white border border-gray-200 shadow-sm rounded-md px-4 py-3 mb-4 flex items-center justify-between"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-800 to-indigo-900 text-white shadow-md mb-4"
       >
-        <div class="flex items-center gap-3">
-          <NuxtLink
-            to="/business-network/abn-ads"
-            class="p-1.5 rounded-md hover:bg-gray-100 text-gray-600"
-          >
-            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
-          </NuxtLink>
-          <div>
-            <h1 class="text-base font-semibold text-gray-800">
-              Create New Ad
-            </h1>
-            <p class="text-xs text-gray-500">
-              ABN Ads Panel — আপনার বিজ্ঞাপন AdsyClub-এর ইউজারদের কাছে পৌঁছে দিন
-            </p>
-          </div>
-        </div>
         <div
-          class="hidden sm:flex items-center px-3 py-1.5 bg-gray-100 text-sm rounded-md"
+          class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10"
+        ></div>
+        <div
+          class="absolute -bottom-20 -left-10 w-44 h-44 rounded-full bg-white/10"
+        ></div>
+        <div
+          class="relative px-5 py-5 sm:px-7 flex flex-wrap items-center justify-between gap-3"
         >
-          <span class="text-gray-600 mr-1">Balance:</span>
-          <span class="font-semibold text-indigo-700">
-            ৳{{ user?.user?.balance ?? 0 }}
-          </span>
+          <div class="flex items-center gap-3">
+            <NuxtLink
+              to="/business-network/abn-ads"
+              class="p-2 rounded-xl bg-white/15 hover:bg-white/25 transition-colors"
+            >
+              <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
+            </NuxtLink>
+            <div>
+              <h1 class="text-lg sm:text-xl font-bold tracking-tight">
+                নতুন বিজ্ঞাপন তৈরি করুন
+              </h1>
+              <p class="text-xs sm:text-sm text-blue-100/90 mt-0.5">
+                আপনার বিজ্ঞাপন AdsyClub-এর হাজারো ইউজারের কাছে পৌঁছে দিন
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center px-3.5 py-2 bg-white/15 backdrop-blur rounded-xl text-sm"
+          >
+            <UIcon name="i-heroicons-wallet" class="w-4 h-4 mr-1.5" />
+            <span class="font-semibold">৳{{ user?.user?.balance ?? 0 }}</span>
+          </div>
         </div>
       </div>
 
@@ -36,7 +44,7 @@
         <div class="w-full lg:w-3/5">
           <form
             @submit.prevent="submitAd"
-            class="bg-white border border-gray-200 shadow-sm rounded-md p-5 space-y-5"
+            class="bg-white border border-gray-100 shadow-sm rounded-xl p-5 space-y-5"
           >
             <!-- Title -->
             <div>
@@ -584,13 +592,13 @@
               <button
                 type="submit"
                 :disabled="isSubmitting"
-                class="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md transition-colors"
+                class="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl shadow-sm transition-colors"
               >
                 {{ isSubmitting ? "Submitting…" : "Submit Ad" }}
               </button>
               <NuxtLink
                 to="/business-network/abn-ads"
-                class="px-5 py-2.5 text-sm font-medium border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-md transition-colors"
+                class="px-5 py-2.5 text-sm font-medium border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors"
               >
                 Cancel
               </NuxtLink>
@@ -602,7 +610,7 @@
         <!-- ── Info / preview column ────────────────────────────── -->
         <div class="w-full lg:w-2/5 space-y-4">
           <!-- Live preview -->
-          <div class="bg-white border border-gray-200 shadow-sm rounded-md p-4">
+          <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4">
             <h3 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
               <UIcon
                 name="i-heroicons-eye"
@@ -643,7 +651,7 @@
           </div>
 
           <!-- Where the ad shows -->
-          <div class="bg-white border border-gray-200 shadow-sm rounded-md p-4">
+          <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4">
             <h3 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
               <UIcon
                 name="i-heroicons-map-pin"
@@ -667,7 +675,7 @@
           </div>
 
           <!-- How it works -->
-          <div class="bg-white border border-gray-200 shadow-sm rounded-md p-4">
+          <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4">
             <h3 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
               <UIcon
                 name="i-heroicons-light-bulb"
