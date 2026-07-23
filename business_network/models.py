@@ -1570,6 +1570,15 @@ class UserAdProfile(models.Model):
         User, on_delete=models.CASCADE, related_name="ad_profile"
     )
     category_weights = models.JSONField(default=dict, blank=True)
+    # ── Interest Brain (built nightly from real activity, see
+    # interest_brain.py) ──
+    # {segment: 0-100} — e.g. {"food": 100, "tech": 42.5}
+    interest_scores = models.JSONField(default=dict, blank=True)
+    # top segments + activity tags — e.g. ["food", "tech", "high_activity"]
+    segments = models.JSONField(default=list, blank=True)
+    # engagement share on male vs female creators — {"male": 70, "female": 30}
+    gender_affinity = models.JSONField(default=dict, blank=True)
+    brain_built_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

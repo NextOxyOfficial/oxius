@@ -546,5 +546,10 @@ class CreatorAdEarningAdmin(admin.ModelAdmin):
 
 @admin.register(UserAdProfile)
 class UserAdProfileAdmin(admin.ModelAdmin):
-    list_display = ["user", "category_weights", "updated_at"]
+    list_display = [
+        "user", "segments", "gender_affinity", "brain_built_at", "updated_at",
+    ]
     search_fields = ["user__email", "user__username"]
+    readonly_fields = [
+        "interest_scores", "segments", "gender_affinity", "brain_built_at",
+    ]

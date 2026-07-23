@@ -58,11 +58,10 @@ def _user_gender(user):
     return (getattr(user, "gender", "") or "").strip().lower()
 
 
-def _interest_weights(user):
+def _ad_profile(user):
     if not user or not user.is_authenticated:
-        return {}
-    profile = UserAdProfile.objects.filter(user=user).first()
-    return profile.category_weights if profile else {}
+        return None
+    return UserAdProfile.objects.filter(user=user).first()
 
 
 @api_view(["GET"])
@@ -81,7 +80,9 @@ def serve_ad(request):
     # image/video creatives.
     want_boost = placement == "shorts_reel"
 
-    qs = AbnAdsPanel.objects.filter(status="active").select_related("category")
+    qs = AbnAdsPanel.objects.filter(status="active").select_related(
+        "category", "boosted_post__author"
+    )
     candidates = []
     for ad in qs[:200]:
         if want_boost != (ad.format == "boost"):
@@ -146,12 +147,32 @@ def serve_ad(request):
     if not candidates:
         return Response({"fallback": "admob"})
 
-    # Interest-weighted pick: the user's recent ad interests (impressions +
-    # clicks per category, decayed nightly) bias which ad wins the slot.
-    weights = _interest_weights(user)
+    # Interest-weighted pick: ad-category weights (impressions + clicks,
+    # decayed nightly) + the Interest Brain's content segments bias which
+    # ad wins the slot.
+    from .interest_brain import classify_ad
+
+    profile = _ad_profile(user)
+    weights = (profile.category_weights or {}) if profile else {}
+    iscores = (profile.interest_scores or {}) if profile else {}
+    gaff = (profile.gender_affinity or {}) if profile else {}
     scored = []
     for ad in candidates:
         w = 1.0 + float(weights.get(str(ad.category_id), 0))
+        # Interest Brain: an ad whose content segments match the viewer's
+        # interests serves up to 2.5x more often.
+        if iscores:
+            tags = classify_ad(ad)
+            if tags:
+                overlap = max((iscores.get(t, 0) for t in tags), default=0)
+                w *= 1.0 + (float(overlap) / 100.0) * 1.5
+        # Boosted posts: nudge toward creators of the gender this viewer
+        # actually engages with (±50%).
+        if gaff and ad.format == "boost" and ad.boosted_post is not None:
+            author = ad.boosted_post.author
+            ag = (getattr(author, "gender", "") or "").strip().lower()
+            if ag in ("male", "female"):
+                w *= 1.0 + (float(gaff.get(ag, 50)) - 50.0) / 100.0
         # Under-served ads get a boost so budgets drain evenly.
         remaining = 1.0
         if ad.estimated_views:

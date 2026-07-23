@@ -381,3 +381,26 @@ def ads_daily_settlement(target_date=None):
         "viewers_rewarded": rewarded_users,
         "creators_credited": credited_creators,
     }
+
+
+@shared_task
+def build_interest_profiles():
+    """Nightly Interest Brain rebuild: classify every recently-active user
+    into interest segments from their last 30 days of activity (views, video
+    watches, likes, comments, saves, hides, reports, ad clicks). Powers
+    interest-matched ad serving — see interest_brain.py."""
+    from base.models import User
+    from .interest_brain import active_user_ids, build_profile
+
+    ids = active_user_ids()
+    built = errors = 0
+    for user in User.objects.filter(id__in=ids).iterator(chunk_size=100):
+        try:
+            build_profile(user)
+            built += 1
+        except Exception:
+            errors += 1
+            logger.exception("interest brain failed for user %s", user.id)
+
+    logger.info("build_interest_profiles: %s built, %s errors", built, errors)
+    return {"built": built, "errors": errors}

@@ -533,6 +533,12 @@ CELERY_BEAT_SCHEDULE = {
         # + interest-profile decay. Runs before the monetization refresh.
         "schedule": crontab(hour=2, minute=30),
     },
+    "build-interest-profiles": {
+        "task": "business_network.tasks.build_interest_profiles",
+        # Interest Brain: rebuild per-user interest segments from the last
+        # 30 days of activity — after settlement, before morning traffic.
+        "schedule": crontab(hour=3, minute=15),
+    },
     "daily-monetization-earnings": {
         "task": "business_network.tasks.compute_monetization_earnings_task",
         # Nightly refresh of the current month's creator points/pool shares.
