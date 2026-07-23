@@ -460,3 +460,24 @@ def my_reward_status(request):
         "views_to_next": 0 if earned >= cfg.max_daily_diamonds
         else per - (views % per),
     })
+
+
+@api_view(["POST"])
+def toggle_my_ad(request, ad_id):
+    """Advertiser stop/resume for their OWN ad (status is otherwise
+    server-controlled). review/rejected/completed ads can't be toggled."""
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+    ad = AbnAdsPanel.objects.filter(pk=ad_id, user=request.user).first()
+    if ad is None:
+        return Response({"error": "not found"}, status=404)
+    if ad.status == "active":
+        ad.status = "stoped"
+    elif ad.status == "stoped":
+        ad.status = "active"
+    else:
+        return Response(
+            {"error": f"cannot toggle from {ad.status}"}, status=400
+        )
+    ad.save(update_fields=["status"])
+    return Response({"status": ad.status})

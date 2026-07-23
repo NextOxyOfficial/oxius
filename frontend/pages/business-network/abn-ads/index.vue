@@ -116,31 +116,37 @@
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                Date Range Filter
+                {{ $t("ads_date_filter") }}
               </h2>
-              <div class="flex items-center space-x-2">
-                <div class="relative">
-                  <input
-                    type="date"
-                    v-model="dateFilter.from"
-                    class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
-                  />
-                </div>
-                <span class="text-sm text-gray-600">to</span>
-                <div class="relative">
-                  <input
-                    type="date"
-                    v-model="dateFilter.to"
-                    class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
-                  />
-                </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <input
+                  type="date"
+                  v-model="dateFilter.from"
+                  class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+                />
+                <span class="text-sm text-gray-600">{{ $t("ads_to") }}</span>
+                <input
+                  type="date"
+                  v-model="dateFilter.to"
+                  class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+                />
                 <button
                   @click="applyDateFilter"
-                  class="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-100 transition-colors rounded-md"
+                  class="px-3 py-1.5 text-sm bg-emerald-500 hover:bg-emerald-600 text-white transition-colors rounded-md"
                 >
-                  Apply
+                  {{ $t("ads_apply") }}
+                </button>
+                <button
+                  v-if="dateFilterActive"
+                  @click="clearDateFilter"
+                  class="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-100 text-gray-600 transition-colors rounded-md"
+                >
+                  {{ $t("ads_clear") }}
                 </button>
               </div>
+              <p v-if="dateFilterActive" class="mt-2 text-xs text-emerald-600">
+                {{ filteredAds.length }} {{ $t("ads_filter_result") }}
+              </p>
             </div>
 
             <!-- Performance Report -->
@@ -162,27 +168,79 @@
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
-                Overall Performance
+                {{ $t("ads_overview") }}
               </h2>
 
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="bg-blue-50 rounded-md p-2 text-center">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-blue-50 rounded-md p-2.5 text-center">
                   <div class="text-lg font-semibold text-blue-600">
                     {{ totalViews }}
                   </div>
-                  <div class="text-sm text-gray-600">Total Views</div>
+                  <div class="text-xs text-gray-600">
+                    {{ $t("ads_total_views") }}
+                  </div>
                 </div>
-                <!-- <div class="bg-green-50 rounded-md p-2 text-center">
+                <div class="bg-green-50 rounded-md p-2.5 text-center">
                   <div class="text-lg font-semibold text-green-600">
                     {{ totalClicks }}
                   </div>
-                  <div class="text-sm text-gray-600">Total Clicks</div>
-                </div> -->
-                <div class="bg-amber-50 rounded-md p-2 text-center">
-                  <div class="text-lg font-semibold text-amber-600">
-                    {{ postedAds.length }}
+                  <div class="text-xs text-gray-600">
+                    {{ $t("ads_total_clicks") }}
                   </div>
-                  <div class="text-sm text-gray-600">Active Ads</div>
+                </div>
+                <div class="bg-purple-50 rounded-md p-2.5 text-center">
+                  <div class="text-lg font-semibold text-purple-600">
+                    ৳{{ totalSpent }}
+                  </div>
+                  <div class="text-xs text-gray-600">
+                    {{ $t("ads_total_spent") }}
+                  </div>
+                </div>
+                <div class="bg-amber-50 rounded-md p-2.5 text-center">
+                  <div class="text-lg font-semibold text-amber-600">
+                    {{ activeAdsCount }}
+                  </div>
+                  <div class="text-xs text-gray-600">
+                    {{ $t("ads_active") }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- 14-day views/clicks mini bar chart (from AdEvent data) -->
+              <div v-if="dailyStats.length" class="mt-4">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-medium text-gray-600">
+                    {{ $t("ads_last14") }}
+                  </span>
+                  <span class="text-[11px] text-gray-400">
+                    <span class="inline-block w-2 h-2 rounded-sm bg-emerald-400 mr-1"></span
+                    >{{ $t("ads_views") }}
+                    <span class="inline-block w-2 h-2 rounded-sm bg-blue-400 ml-3 mr-1"></span
+                    >{{ $t("ads_clicks") }}
+                  </span>
+                </div>
+                <div class="flex items-end gap-1 h-20">
+                  <div
+                    v-for="d in dailyStats"
+                    :key="d.date"
+                    class="flex-1 flex flex-col justify-end items-center gap-0.5"
+                    :title="`${d.date}: ${d.views} views, ${d.clicks} clicks`"
+                  >
+                    <div
+                      class="w-full rounded-t bg-emerald-400"
+                      :style="{
+                        height:
+                          Math.max(2, (d.views / maxDailyViews) * 64) + 'px',
+                      }"
+                    ></div>
+                    <div
+                      class="w-full rounded-t bg-blue-400"
+                      :style="{
+                        height:
+                          Math.max(1, (d.clicks / maxDailyViews) * 64) + 'px',
+                      }"
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -296,8 +354,8 @@
 
             <!-- List of Ads -->
             <div
-              v-for="(ad, index) in postedAds"
-              :key="index"
+              v-for="ad in paginatedAds"
+              :key="ad.id"
               class="bg-white rounded-md shadow-sm overflow-hidden hover:shadow-sm transition-shadow"
             >
               <div class="flex flex-col md:flex-row">
@@ -405,7 +463,29 @@
                           d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                         />
                       </svg>
-                      <span>{{ ad.views }} views</span>
+                      <span>{{ ad.views }} {{ $t("ads_views") }}</span>
+                    </div>
+                    <div class="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3 w-3 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"
+                        />
+                      </svg>
+                      <span>{{ ad.clicks || 0 }} {{ $t("ads_clicks") }}</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span
+                        >{{ $t("ads_spent") }}: ৳{{ ad.spent || 0 }}</span
+                      >
                     </div>
                     <!-- <div class="flex items-center">
                       <svg
@@ -456,7 +536,39 @@
                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      <span>Budget: ৳{{ ad.budget }}</span>
+                      <span>{{ $t("ads_budget") }}: ৳{{ ad.budget }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Delivery progress: views vs estimated -->
+                  <div v-if="ad.estimated_views" class="mb-2">
+                    <div
+                      class="flex justify-between text-[11px] text-gray-500 mb-0.5"
+                    >
+                      <span>
+                        {{ ad.views }}/{{ ad.estimated_views }}
+                        {{ $t("ads_views") }}
+                      </span>
+                      <span>
+                        {{
+                          Math.min(
+                            100,
+                            Math.round((ad.views / ad.estimated_views) * 100)
+                          )
+                        }}%
+                      </span>
+                    </div>
+                    <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        class="h-full bg-emerald-400 rounded-full"
+                        :style="{
+                          width:
+                            Math.min(
+                              100,
+                              (ad.views / ad.estimated_views) * 100
+                            ) + '%',
+                        }"
+                      ></div>
                     </div>
                   </div>
 
@@ -630,12 +742,14 @@
                         </svg>
                       </button>
                       <button
-                        @click="toggleAdStatus(index)"
+                        v-if="ad.status === 'active' || ad.status === 'stoped'"
+                        @click="toggleAdStatus(ad)"
                         class="p-1 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-md"
                         :title="
-                          ad.status === 'active' ? 'Pause Ad' : 'Activate Ad'
+                          ad.status === 'active'
+                            ? $t('ads_stop')
+                            : $t('ads_resume')
                         "
-                        :disabled="ad.status === 'review'"
                       >
                         <svg
                           v-if="ad.status === 'active'"
@@ -653,7 +767,7 @@
                           />
                         </svg>
                         <svg
-                          v-else-if="ad.status === 'stopped'"
+                          v-else-if="ad.status === 'stoped'"
                           xmlns="http://www.w3.org/2000/svg"
                           class="h-4 w-4"
                           fill="none"
@@ -690,7 +804,7 @@
                         </svg>
                       </button>
                       <button
-                        @click="editAd(index)"
+                        @click="editAd(ad)"
                         class="p-1 text-blue-600 hover:bg-blue-50 border border-gray-200 rounded-md"
                         title="Edit Ad"
                       >
@@ -710,7 +824,7 @@
                         </svg>
                       </button>
                       <button
-                        @click="showDeleteConfirmation(index)"
+                        @click="showDeleteConfirmation(ad)"
                         class="p-1 text-red-600 hover:bg-red-50 border border-gray-200 rounded-md"
                         title="Delete Ad"
                       >
@@ -735,33 +849,35 @@
               </div>
             </div>
 
-            <!-- Pagination -->
-            <div class="flex justify-center mt-6">
+            <!-- Pagination (real, client-side over the filtered list) -->
+            <div v-if="totalPages > 1" class="flex justify-center mt-6">
               <nav class="flex items-center space-x-1">
                 <button
-                  class="px-2 py-1 text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-md"
+                  :disabled="currentAdsPage === 1"
+                  @click="currentAdsPage--"
+                  class="px-2 py-1 text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-md disabled:opacity-40"
                 >
-                  Previous
+                  {{ $t("ads_prev") }}
                 </button>
                 <button
-                  class="px-2 py-1 text-sm bg-emerald-500 text-white rounded-md"
+                  v-for="p in totalPages"
+                  :key="p"
+                  @click="currentAdsPage = p"
+                  class="px-2.5 py-1 text-sm rounded-md"
+                  :class="
+                    p === currentAdsPage
+                      ? 'bg-emerald-500 text-white'
+                      : 'border border-gray-300 text-gray-800 hover:bg-gray-50'
+                  "
                 >
-                  1
+                  {{ p }}
                 </button>
                 <button
-                  class="px-2 py-1 text-sm border border-gray-300 text-gray-800 hover:bg-gray-50 rounded-md"
+                  :disabled="currentAdsPage === totalPages"
+                  @click="currentAdsPage++"
+                  class="px-2 py-1 text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-md disabled:opacity-40"
                 >
-                  2
-                </button>
-                <button
-                  class="px-2 py-1 text-sm border border-gray-300 text-gray-800 hover:bg-gray-50 rounded-md"
-                >
-                  3
-                </button>
-                <button
-                  class="px-2 py-1 text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-md"
-                >
-                  Next
+                  {{ $t("ads_next") }}
                 </button>
               </nav>
             </div>
@@ -788,24 +904,42 @@
                     d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                   />
                 </svg>
-                Tutorial Videos
+                {{ $t("ads_tutorials") }}
               </h2>
 
               <div class="space-y-3">
-                <!-- YouTube Embedded Videos -->
-                <div
+                <!-- Thumbnail link-outs (embeds broke with player config
+                     errors; thumbnails never do) -->
+                <a
                   v-for="(video, idx) in tutorialVideos"
                   :key="idx"
-                  class="border border-gray-100 rounded-md overflow-hidden"
+                  :href="`https://www.youtube.com/watch?v=${video.videoId}`"
+                  target="_blank"
+                  rel="noopener"
+                  class="block border border-gray-100 rounded-md overflow-hidden hover:shadow-sm transition-shadow"
                 >
                   <div class="relative pb-[56.25%] bg-gray-100">
-                    <iframe
-                      class="absolute inset-0 w-full h-full"
-                      :src="video.url"
-                      :title="video.title"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
+                    <img
+                      :src="`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`"
+                      :alt="video.title"
+                      class="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div
+                      class="absolute inset-0 flex items-center justify-center"
+                    >
+                      <div
+                        class="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center"
+                      >
+                        <svg
+                          class="w-5 h-5 text-white ml-0.5"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                   <div class="p-2">
                     <h3 class="text-sm font-medium text-gray-800">
@@ -813,13 +947,16 @@
                     </h3>
                     <p class="text-sm text-gray-600">{{ video.duration }}</p>
                   </div>
-                </div>
+                </a>
               </div>
 
-              <button
+              <a
+                href="https://www.youtube.com/@adsyclub"
+                target="_blank"
+                rel="noopener"
                 class="w-full mt-3 px-4 py-1.5 text-sm border border-emerald-500 text-emerald-500 font-medium hover:bg-emerald-500 hover:text-white transition-colors flex justify-center items-center rounded-md"
               >
-                <span class="mr-1">View All Tutorials</span>
+                <span class="mr-1">{{ $t("ads_all_tutorials") }}</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-3 w-3"
@@ -834,7 +971,7 @@
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </button>
+              </a>
             </div>
 
             <!-- Tips Section -->
@@ -2100,8 +2237,9 @@
 </template>
 
 <script setup>
-const { get, post } = useApi();
+const { get, post, del } = useApi();
 const { user } = useAuth();
+const { t } = useI18n();
 
 const abnAds = ref([]);
 // State
@@ -2238,6 +2376,61 @@ async function fetchPostedAds() {
 
 await fetchPostedAds();
 
+// ── Dashboard stats (daily views/clicks from AdEvent data) ──
+const dailyStats = ref([]);
+
+async function fetchAdStats() {
+  const res = await get("/bn/ads/stats/", { params: { days: 14 } });
+  dailyStats.value = Array.isArray(res.data?.daily) ? res.data.daily : [];
+}
+fetchAdStats();
+
+const maxDailyViews = computed(() =>
+  Math.max(1, ...dailyStats.value.map((d) => d.views))
+);
+
+// ── Date filter + client-side pagination ──
+const dateFilterActive = ref(false);
+const appliedFilter = reactive({ from: "", to: "" });
+const currentAdsPage = ref(1);
+const ADS_PER_PAGE = 6;
+
+const filteredAds = computed(() => {
+  let list = postedAds.value || [];
+  if (dateFilterActive.value) {
+    list = list.filter((ad) => {
+      const created = (ad.created_at || "").slice(0, 10);
+      if (appliedFilter.from && created < appliedFilter.from) return false;
+      if (appliedFilter.to && created > appliedFilter.to) return false;
+      return true;
+    });
+  }
+  return list;
+});
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredAds.value.length / ADS_PER_PAGE))
+);
+
+const paginatedAds = computed(() => {
+  const start = (currentAdsPage.value - 1) * ADS_PER_PAGE;
+  return filteredAds.value.slice(start, start + ADS_PER_PAGE);
+});
+
+// Overview tiles follow the ACTIVE filter, so filtering by date shows that
+// period's numbers.
+const totalClicks = computed(() =>
+  filteredAds.value.reduce((t, ad) => t + (Number(ad.clicks) || 0), 0)
+);
+const totalSpent = computed(() =>
+  filteredAds.value
+    .reduce((t, ad) => t + (Number(ad.spent) || 0), 0)
+    .toFixed(2)
+);
+const activeAdsCount = computed(
+  () => filteredAds.value.filter((ad) => ad.status === "active").length
+);
+
 // Drag handle state
 const dragHandle = ref(null);
 
@@ -2295,19 +2488,30 @@ const clickTrack = (event) => {
   }
 };
 
-// Toggle ad status
-const toggleAdStatus = (index) => {
-  // Don't toggle if ad is in review
-  if (postedAds.value[index].status === "review") return;
-
-  // Toggle between active and stopped
-  postedAds.value[index].status =
-    postedAds.value[index].status === "active" ? "stopped" : "active";
+// Toggle ad status — REAL server call (owner-only endpoint); only
+// active↔stoped can toggle.
+const toggleAdStatus = async (ad) => {
+  const res = await post(`/bn/ads/${ad.id}/toggle/`, {});
+  if (res.data?.status) {
+    ad.status = res.data.status;
+  }
 };
 
-// Apply date filter
+// Apply/clear the date filter (drives filteredAds + the overview tiles).
 const applyDateFilter = () => {
-  // TODO: Implement date filtering logic
+  appliedFilter.from = dateFilter.from;
+  appliedFilter.to = dateFilter.to;
+  dateFilterActive.value = Boolean(dateFilter.from || dateFilter.to);
+  currentAdsPage.value = 1;
+};
+
+const clearDateFilter = () => {
+  dateFilter.from = "";
+  dateFilter.to = "";
+  appliedFilter.from = "";
+  appliedFilter.to = "";
+  dateFilterActive.value = false;
+  currentAdsPage.value = 1;
 };
 
 // Handle ad submission
@@ -2345,9 +2549,9 @@ const handleAdSubmit = async () => {
 };
 
 // Edit ad
-const editAd = (index) => {
-  editingAdIndex.value = index;
-  Object.assign(adForm, postedAds.value[index]);
+const editAd = (ad) => {
+  editingAdIndex.value = postedAds.value.indexOf(ad);
+  Object.assign(adForm, ad);
   showCreateAdModal.value = true;
 };
 
@@ -2402,24 +2606,23 @@ const previewAdFromForm = () => {
 };
 
 // Show delete confirmation
-const showDeleteConfirmation = (index) => {
-  deleteAdIndex.value = index;
+const showDeleteConfirmation = (ad) => {
+  deleteAdIndex.value = postedAds.value.indexOf(ad);
   showDeleteModal.value = true;
 };
 
-// Confirm delete
+// Confirm delete — REAL server delete (owner-scoped on the backend).
 const confirmDelete = async () => {
   isDeleting.value = true;
   try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Delete ad
+    const ad = postedAds.value[deleteAdIndex.value];
+    if (ad?.id) {
+      await del(`/bn/abn-ads-panels/${ad.id}/`);
+    }
     postedAds.value?.splice(deleteAdIndex.value, 1);
     cancelDelete();
   } catch (error) {
     console.error("Error deleting ad:", error);
-    // Handle error appropriately
   } finally {
     isDeleting.value = false;
   }
@@ -2490,8 +2693,15 @@ const getStatusClass = (status) => {
   switch (status) {
     case "active":
       return "bg-green-100 text-green-600";
-    case "stopped":
+    case "review":
+      return "bg-amber-100 text-amber-600";
+    case "rejected":
       return "bg-red-100 text-red-600";
+    case "completed":
+      return "bg-blue-100 text-blue-600";
+    case "stoped":
+    case "stopped":
+      return "bg-gray-200 text-gray-600";
     case "pending":
       return "bg-amber-100 text-amber-600";
     default:
@@ -2499,17 +2709,22 @@ const getStatusClass = (status) => {
   }
 };
 
-// Get status text
+// Get status text (Bangla via i18n)
 const getStatusText = (status) => {
   switch (status) {
     case "active":
-      return "Active";
-    case "stopped":
-      return "Stopped";
+      return t("ads_status_active");
     case "review":
-      return "Under Review";
+      return t("ads_status_review");
+    case "rejected":
+      return t("ads_status_rejected");
+    case "completed":
+      return t("ads_status_completed");
+    case "stoped":
+    case "stopped":
+      return t("ads_status_stopped");
     default:
-      return "Unknown";
+      return status || "—";
   }
 };
 
@@ -2526,15 +2741,17 @@ const prevImage = () => {
 };
 
 // Sample tutorial videos
+// Thumbnail link-outs — swap videoIds for AdsyClub's own tutorials when
+// they're published (thumbnails come straight from img.youtube.com).
 const tutorialVideos = ref([
   {
-    title: "How to Create an Effective Ad",
-    url: "https://www.youtube.com/embed/your_video_id_1",
+    title: "কীভাবে কার্যকর বিজ্ঞাপন তৈরি করবেন",
+    videoId: "R1Yr5H8HTLU",
     duration: "5:30",
   },
   {
-    title: "Tips for Targeting the Right Audience",
-    url: "https://www.youtube.com/embed/your_video_id_2",
+    title: "সঠিক অডিয়েন্স টার্গেট করার টিপস",
+    videoId: "nU-IIXBWlS4",
     duration: "7:15",
   },
 ]);
@@ -2559,6 +2776,9 @@ const adTips = ref([
 ]);
 //calculate total views using computed
 const totalViews = computed(() => {
-  return postedAds.value?.reduce((total, ad) => total + ad.views, 0);
+  return filteredAds.value?.reduce(
+    (total, ad) => total + (Number(ad.views) || 0),
+    0
+  );
 });
 </script>

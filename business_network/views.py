@@ -2128,7 +2128,10 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
     # pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        queryset = AbnAdsPanel.objects.all().order_by("-created_at")
+        # "My Ads": an advertiser only ever sees THEIR OWN ads here.
+        queryset = AbnAdsPanel.objects.filter(
+            user=self.request.user
+        ).order_by("-created_at")
 
         # Filter by category if provided
         category = self.request.query_params.get("category", None)
@@ -2240,6 +2243,15 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
 class AbnAdsPanelRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = AbnAdsPanel.objects.all()
     serializer_class = AbnAdsPanelSerializer
+
+    def get_queryset(self):
+        # Anyone may read; only the OWNER may edit or delete their ad.
+        qs = AbnAdsPanel.objects.all()
+        if self.request.method in ("PUT", "PATCH", "DELETE"):
+            if not self.request.user.is_authenticated:
+                return qs.none()
+            return qs.filter(user=self.request.user)
+        return qs
     permission_classes = [IsAuthenticated]
 
     # IDOR guard: reads are public, but a user may only modify/delete their own
