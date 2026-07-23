@@ -30,12 +30,15 @@ from .models import (
 )
 
 VALID_PLACEMENTS = {
-    "bn_feed", "shorts_banner", "shorts_fullscreen", "app_open",
-    "gigs_list", "sale_list", "news_list", "food_list", "classified_list",
-    "web_feed", "web_banner",
+    "bn_feed", "shorts_banner", "shorts_fullscreen", "shorts_reel",
+    "app_open", "gigs_list", "sale_list", "news_list", "food_list",
+    "classified_list", "web_feed", "web_banner",
 }
 
-VALID_EVENTS = {"impression", "click", "cta_click"}
+VALID_EVENTS = {"impression", "click", "cta_click", "skip"}
+
+# Anti-fraud ceilings (per user per day, cache-enforced).
+MAX_DAILY_EVENTS_PER_USER = 600
 
 
 def _user_age(user):
@@ -71,18 +74,49 @@ def serve_ad(request):
 
     cfg = AdsSystemConfig.get()
     now = timezone.now()
+    today = timezone.localdate().isoformat()
     user = request.user if request.user.is_authenticated else None
+
+    # The shorts reel only carries boosted posts; other placements carry
+    # image/video creatives.
+    want_boost = placement == "shorts_reel"
 
     qs = AbnAdsPanel.objects.filter(status="active").select_related("category")
     candidates = []
     for ad in qs[:200]:
+        if want_boost != (ad.format == "boost"):
+            continue
+        if want_boost and ad.boosted_post_id is None:
+            continue
         # Placement: empty list = everywhere.
-        if ad.placements and placement not in ad.placements:
+        if not want_boost and ad.placements and placement not in ad.placements:
             continue
         # Budget / view cap exhausted → auto-complete lazily.
         if ad.estimated_views and ad.views >= ad.estimated_views:
             AbnAdsPanel.objects.filter(pk=ad.pk).update(status="completed")
             continue
+        # Scheduling window.
+        if ad.start_at and now < ad.start_at:
+            continue
+        if ad.end_at and now > ad.end_at:
+            continue
+        # Daily pacing: stop for today once the daily budget is burned.
+        if ad.daily_budget:
+            spent_today = Decimal(str(cache.get(f"adspend:{ad.pk}:{today}") or 0))
+            if spent_today >= ad.daily_budget:
+                continue
+        # Location targeting: only serve to users we KNOW are in a target
+        # area (unknown location never matches a targeted ad).
+        if ad.target_locations:
+            locs = {str(l).strip().lower() for l in ad.target_locations}
+            user_locs = set()
+            if user is not None:
+                for attr in ("city", "upazila", "state"):
+                    v = (getattr(user, attr, "") or "").strip().lower()
+                    if v:
+                        user_locs.add(v)
+            if not (locs & user_locs):
+                continue
         if user is not None:
             # Gender targeting (only filters when the ad targets a subset
             # AND we actually know the viewer's gender).
@@ -122,7 +156,13 @@ def serve_ad(request):
         remaining = 1.0
         if ad.estimated_views:
             remaining += max(0.0, 1.0 - ad.views / ad.estimated_views)
-        scored.append((ad, w * remaining))
+        # Ad-quality signal: after enough data, a strong CTR earns more
+        # serving, a dead CTR earns less (Facebook relevance-score lite).
+        quality = 1.0
+        if ad.views >= 20:
+            ctr = ad.clicks / ad.views
+            quality = max(0.5, min(1.0 + ctr * 20.0, 2.5))
+        scored.append((ad, w * remaining * quality))
 
     total = sum(s for _, s in scored)
     pick = random.uniform(0, total)
@@ -141,32 +181,69 @@ def serve_ad(request):
         except Exception:
             pass
 
-    request_ctx = {"request": request}
+    def _abs(url):
+        url = request.build_absolute_uri(url)
+        if url.startswith("http://") and "localhost" not in url:
+            url = url.replace("http://", "https://", 1)
+        return url
+
     images = []
+    video_url = ""
     for m in chosen.media.all()[:4]:
         if m.image:
-            url = m.image.url
-            url = request.build_absolute_uri(url)
-            if url.startswith("http://") and "localhost" not in url:
-                url = url.replace("http://", "https://", 1)
-            images.append(url)
+            images.append(_abs(m.image.url))
+        if m.video and not video_url:
+            video_url = _abs(m.video.url)
 
-    return Response({
-        "source": "panel",
-        "ad": {
-            "id": chosen.pk,
-            "title": chosen.title,
-            "description": chosen.description,
-            "images": images,
-            "ad_type": chosen.ad_type,
-            "ad_type_details": chosen.ad_type_details or "",
-            "category": chosen.category_id,
-            "category_name": getattr(chosen.category, "name", ""),
-            "advertiser": (
-                chosen.user.get_full_name() or chosen.user.username
-            ) if chosen.user else "AdsyClub",
-        },
-    })
+    payload = {
+        "id": chosen.pk,
+        "title": chosen.title,
+        "description": chosen.description,
+        "format": chosen.format,
+        "images": images,
+        "video_url": video_url,
+        "companion_banner": (
+            _abs(chosen.companion_banner.url) if chosen.companion_banner else ""
+        ),
+        "ad_type": chosen.ad_type,
+        "ad_type_details": chosen.ad_type_details or "",
+        "category": chosen.category_id,
+        "category_name": getattr(chosen.category, "name", ""),
+        "advertiser": (
+            chosen.user.get_full_name() or chosen.user.username
+        ) if chosen.user else "AdsyClub",
+    }
+
+    # Boosted post: ship everything the shorts reel needs to play it inline.
+    if chosen.format == "boost" and chosen.boosted_post:
+        post = chosen.boosted_post
+        boost_video = ""
+        boost_thumb = ""
+        for m in post.media.all():
+            if getattr(m, "type", "") == "video" and m.video:
+                boost_video = _abs(m.video.url)
+                if m.thumbnail:
+                    boost_thumb = _abs(m.thumbnail.url)
+                break
+        author = post.author
+        payload["boosted_post"] = {
+            "id": post.pk,
+            "video_url": boost_video,
+            "thumbnail": boost_thumb,
+            "content": post.content or "",
+            "author_id": str(author.id) if author else "",
+            "author_name": (
+                author.get_full_name() or author.username
+            ) if author else "",
+            "author_avatar": _abs(author.image.url)
+            if author is not None and getattr(author, "image", None)
+            else "",
+        }
+        if not boost_video:
+            # A boost without a playable video can't run in the reel.
+            return Response({"fallback": "admob"})
+
+    return Response({"source": "panel", "ad": payload})
 
 
 @api_view(["POST"])
@@ -180,6 +257,14 @@ def track_ad_events(request):
     cfg = AdsSystemConfig.get()
     user = request.user if request.user.is_authenticated else None
     today = timezone.localdate()
+
+    # Anti-fraud ceiling: one user can't pump unlimited events in a day.
+    if user is not None:
+        daily_key = f"adevents:{user.id}:{today.isoformat()}"
+        daily_count = cache.get(daily_key) or 0
+        if daily_count >= MAX_DAILY_EVENTS_PER_USER:
+            return Response({"recorded": 0, "capped": True})
+        cache.set(daily_key, daily_count + len(events), 60 * 60 * 26)
 
     created = 0
     viewer_views = 0
@@ -222,18 +307,39 @@ def track_ad_events(request):
         )
         created += 1
 
-        # Panel counters + budget burn (CPV per impression).
+        # Panel counters + budget burn (CPV per billable impression). A
+        # per-user+ad daily dedupe cap keeps repeat exposure from burning
+        # budget beyond the frequency cap.
         if ad is not None:
             if event_type == "impression":
-                AbnAdsPanel.objects.filter(pk=ad.pk).update(
-                    views=F("views") + 1,
-                    spent=F("spent") + Decimal(str(cfg.cpv_rate)),
-                )
-                if ad.estimated_views and ad.views + 1 >= ad.estimated_views:
-                    AbnAdsPanel.objects.filter(pk=ad.pk).update(
-                        status="completed"
+                billable = True
+                if user is not None:
+                    dedupe_key = (
+                        f"adbill:{user.id}:{ad.pk}:{today.isoformat()}"
                     )
-            else:
+                    seen = cache.get(dedupe_key) or 0
+                    if seen >= cfg.daily_frequency_cap:
+                        billable = False
+                    else:
+                        cache.set(dedupe_key, seen + 1, 60 * 60 * 26)
+                if billable:
+                    AbnAdsPanel.objects.filter(pk=ad.pk).update(
+                        views=F("views") + 1,
+                        spent=F("spent") + Decimal(str(cfg.cpv_rate)),
+                    )
+                    # Daily pacing counter (serve stops at daily_budget).
+                    spend_key = f"adspend:{ad.pk}:{today.isoformat()}"
+                    prev = Decimal(str(cache.get(spend_key) or 0))
+                    cache.set(
+                        spend_key,
+                        str(prev + Decimal(str(cfg.cpv_rate))),
+                        60 * 60 * 26,
+                    )
+                    if ad.estimated_views and ad.views + 1 >= ad.estimated_views:
+                        AbnAdsPanel.objects.filter(pk=ad.pk).update(
+                            status="completed"
+                        )
+            elif event_type in ("click", "cta_click"):
                 AbnAdsPanel.objects.filter(pk=ad.pk).update(
                     clicks=F("clicks") + 1
                 )
@@ -264,3 +370,93 @@ def track_ad_events(request):
         profile.save(update_fields=["category_weights", "updated_at"])
 
     return Response({"recorded": created})
+
+
+@api_view(["POST"])
+def upload_ad_video(request):
+    """Multipart video upload for VIDEO-format ads (base64 would be too
+    heavy). Returns the media id to reference from the create call."""
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+    f = request.FILES.get("video")
+    if f is None:
+        return Response({"error": "video file required"}, status=400)
+    if f.size > 60 * 1024 * 1024:
+        return Response({"error": "video too large (max 60MB)"}, status=400)
+    from .models import AbnAdsPanelMedia
+
+    media = AbnAdsPanelMedia.objects.create(video=f)
+    return Response({"media_id": media.pk}, status=201)
+
+
+@api_view(["GET"])
+def my_ad_stats(request):
+    """Advertiser dashboard: daily views/clicks series for the caller's ads
+    (last `days`, default 14) + lifetime totals per ad."""
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+    from datetime import timedelta
+
+    from django.db.models import Count, Q
+
+    days = min(int(request.query_params.get("days") or 14), 60)
+    since = timezone.localdate() - timedelta(days=days - 1)
+
+    my_ads = AbnAdsPanel.objects.filter(user=request.user)
+    daily = (
+        AdEvent.objects.filter(
+            ad__in=my_ads, created_at__date__gte=since, source="panel"
+        )
+        .values("created_at__date")
+        .annotate(
+            views=Count("id", filter=Q(event_type="impression")),
+            clicks=Count(
+                "id", filter=Q(event_type__in=["click", "cta_click"])
+            ),
+        )
+        .order_by("created_at__date")
+    )
+    return Response({
+        "daily": [
+            {
+                "date": str(row["created_at__date"]),
+                "views": row["views"],
+                "clicks": row["clicks"],
+            }
+            for row in daily
+        ],
+        "ads": [
+            {
+                "id": ad.pk,
+                "title": ad.title,
+                "status": ad.status,
+                "views": ad.views,
+                "clicks": ad.clicks,
+                "spent": str(ad.spent),
+                "budget": str(ad.budget),
+            }
+            for ad in my_ads.order_by("-created_at")[:50]
+        ],
+    })
+
+
+@api_view(["GET"])
+def my_reward_status(request):
+    """Viewer reward progress for TODAY — powers the app's reward meter."""
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+    cfg = AdsSystemConfig.get()
+    today = timezone.localdate()
+    row = AdViewerDaily.objects.filter(user=request.user, date=today).first()
+    views = row.views if row else 0
+    per = max(1, cfg.views_per_diamond)
+    earned = min(views // per, cfg.max_daily_diamonds)
+    return Response({
+        "enabled": cfg.viewer_reward_enabled,
+        "today_views": views,
+        "views_per_diamond": per,
+        "max_daily_diamonds": cfg.max_daily_diamonds,
+        "diamonds_earned_today": earned,
+        "views_to_next": 0 if earned >= cfg.max_daily_diamonds
+        else per - (views % per),
+    })

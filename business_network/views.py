@@ -2154,6 +2154,8 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         images_data = request.data.pop("images", None)
+        companion_b64 = request.data.pop("companion_banner_b64", None)
+        media_ids = request.data.pop("media_ids", None)  # pre-uploaded videos
         data = request.data
         data["user"] = request.user.id
         serializer = self.get_serializer(data=data)
@@ -2188,6 +2190,24 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
         abn_ads = serializer.save(
             status="review", estimated_views=estimated
         )
+
+        # Companion banner (base64) — shown under video creatives.
+        if companion_b64 and isinstance(companion_b64, str) and \
+                companion_b64.startswith("data:image"):
+            try:
+                abn_ads.companion_banner = base64ToFile(companion_b64)
+                abn_ads.save(update_fields=["companion_banner"])
+            except Exception as e:
+                print(f"Error processing companion banner: {e}")
+
+        # Pre-uploaded video media (from /ads/upload-video/).
+        if media_ids:
+            if not isinstance(media_ids, list):
+                media_ids = [media_ids]
+            for mid in media_ids[:2]:
+                media = AbnAdsPanelMedia.objects.filter(pk=str(mid)).first()
+                if media:
+                    abn_ads.media.add(media)
 
         # Print or log the serializer errors
 

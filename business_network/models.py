@@ -633,7 +633,32 @@ class AbnAdsPanel(models.Model):
     )
     ad_type = models.CharField(max_length=20, choices=AD_TyPES, default='image')
     ad_type_details= models.TextField(null=True, blank=True)
+    # Creative format: image card / 5s-skippable video (with companion
+    # banner) / boosted BN post (plays inline in the shorts reel).
+    FORMAT_CHOICES = (
+        ('image', 'Image'),
+        ('video', 'Video'),
+        ('boost', 'Boosted Post'),
+    )
+    format = models.CharField(max_length=10, choices=FORMAT_CHOICES, default='image')
+    # Companion banner shown UNDER the video creative (YouTube-style).
+    companion_banner = models.ImageField(
+        upload_to='business_network/abn/banners/', null=True, blank=True
+    )
+    # format='boost': the BN post being promoted into the shorts reel.
+    boosted_post = models.ForeignKey(
+        BusinessNetworkPost, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='boosts',
+    )
     budget = models.DecimalField(max_digits=10, decimal_places=2)
+    # Pacing/scheduling: spread spend across days, run only in a window.
+    daily_budget = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    start_at = models.DateTimeField(null=True, blank=True)
+    end_at = models.DateTimeField(null=True, blank=True)
+    # Location targeting: list of city/upazila names (empty = all Bangladesh).
+    target_locations = models.JSONField(default=list, blank=True)
     STATUS_CHOCES = (
         ('review', 'In Review'),
         ('active', 'Active'),

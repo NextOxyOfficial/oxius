@@ -84,8 +84,94 @@
               ></textarea>
             </div>
 
-            <!-- Images -->
+            <!-- Format -->
             <div>
+              <label class="block text-sm font-medium text-gray-800 mb-1">
+                Ad Format
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  @click="form.format = 'image'"
+                  class="px-3 py-2.5 text-sm border rounded-md"
+                  :class="
+                    form.format === 'image'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : 'border-gray-300 text-gray-700'
+                  "
+                >
+                  🖼️ Image Ad
+                </button>
+                <button
+                  type="button"
+                  @click="form.format = 'video'"
+                  class="px-3 py-2.5 text-sm border rounded-md"
+                  :class="
+                    form.format === 'video'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : 'border-gray-300 text-gray-700'
+                  "
+                >
+                  🎬 Video Ad (5s skippable)
+                </button>
+              </div>
+            </div>
+
+            <!-- Video upload (video format) -->
+            <div v-if="form.format === 'video'" class="space-y-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-800 mb-1">
+                  Ad Video <span class="text-red-500">*</span>
+                  <span class="text-xs font-normal text-gray-500"
+                    >(সর্বোচ্চ 60MB)</span
+                  >
+                </label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  @change="onVideoPicked"
+                  class="block w-full text-sm text-gray-600 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-md file:bg-emerald-50 file:text-emerald-700"
+                />
+                <p v-if="videoUploading" class="mt-1 text-xs text-emerald-600">
+                  ভিডিও আপলোড হচ্ছে…
+                </p>
+                <p
+                  v-else-if="videoMediaId"
+                  class="mt-1 text-xs text-emerald-600"
+                >
+                  ✓ ভিডিও আপলোড হয়েছে
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-800 mb-1">
+                  Companion Banner
+                  <span class="text-xs font-normal text-gray-500"
+                    >(ভিডিওর নিচে দেখাবে)</span
+                  >
+                </label>
+                <div class="flex items-center gap-3">
+                  <img
+                    v-if="companionBanner"
+                    :src="companionBanner"
+                    class="h-14 rounded-md border border-gray-200"
+                  />
+                  <label
+                    class="px-3 py-2 text-sm border border-dashed border-gray-300 rounded-md cursor-pointer text-gray-600 hover:border-emerald-400"
+                  >
+                    {{ companionBanner ? "Change" : "Upload Banner" }}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      class="hidden"
+                      @change="onBannerPicked"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Images -->
+            <div v-if="form.format === 'image'">
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 Ad Images
                 <span class="text-xs font-normal text-gray-500"
@@ -289,6 +375,63 @@
               </p>
             </div>
 
+            <!-- Daily budget (pacing) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-800 mb-1">
+                Daily Budget (৳)
+                <span class="text-xs font-normal text-gray-500"
+                  >— optional, খালি রাখলে একটানা চলবে</span
+                >
+              </label>
+              <input
+                v-model.number="form.daily_budget"
+                type="number"
+                min="0"
+                step="10"
+                placeholder="যেমন 50"
+                class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+
+            <!-- Schedule -->
+            <div>
+              <label class="block text-sm font-medium text-gray-800 mb-1">
+                Schedule
+                <span class="text-xs font-normal text-gray-500"
+                  >— optional</span
+                >
+              </label>
+              <div class="flex items-center gap-3">
+                <input
+                  v-model="form.start_at"
+                  type="date"
+                  class="px-3 py-2 text-sm border border-gray-300 rounded-md"
+                />
+                <span class="text-sm text-gray-500">থেকে</span>
+                <input
+                  v-model="form.end_at"
+                  type="date"
+                  class="px-3 py-2 text-sm border border-gray-300 rounded-md"
+                />
+              </div>
+            </div>
+
+            <!-- Locations -->
+            <div>
+              <label class="block text-sm font-medium text-gray-800 mb-1">
+                Target Locations
+                <span class="text-xs font-normal text-gray-500"
+                  >— comma দিয়ে লিখুন; খালি = সারা বাংলাদেশ</span
+                >
+              </label>
+              <input
+                v-model="locationsText"
+                type="text"
+                placeholder="যেমন: Kushtia, Dhaka"
+                class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+
             <!-- Submit -->
             <div class="pt-2 flex items-center gap-3">
               <button
@@ -429,7 +572,45 @@ const form = reactive({
   min_age: 18,
   max_age: 65,
   placements: [],
+  format: "image",
+  daily_budget: null,
+  start_at: "",
+  end_at: "",
 });
+
+// Video-format uploads
+const videoMediaId = ref(null);
+const videoUploading = ref(false);
+const companionBanner = ref(""); // base64 data URL
+const locationsText = ref("");
+
+async function onVideoPicked(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  videoUploading.value = true;
+  videoMediaId.value = null;
+  try {
+    const fd = new FormData();
+    fd.append("video", file);
+    const res = await post("/bn/ads/upload-video/", fd);
+    videoMediaId.value = res.data?.media_id || null;
+    if (!videoMediaId.value) {
+      errorMsg.value = "ভিডিও আপলোড করা যায়নি — আবার চেষ্টা করুন।";
+    }
+  } finally {
+    videoUploading.value = false;
+    e.target.value = "";
+  }
+}
+
+function onBannerPicked(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => (companionBanner.value = reader.result);
+  reader.readAsDataURL(file);
+  e.target.value = "";
+}
 
 // Placement keys mirror the backend's VALID_PLACEMENTS.
 const placementOptions = [
@@ -532,12 +713,31 @@ async function submitAd() {
     errorMsg.value = "কমপক্ষে একটি audience নির্বাচন করুন।";
     return;
   }
+  if (form.format === "video" && !videoMediaId.value) {
+    errorMsg.value = "Video ad-এর জন্য আগে ভিডিও আপলোড করুন।";
+    return;
+  }
   isSubmitting.value = true;
   try {
-    const res = await post("/bn/abn-ads-panels/", {
+    const payload = {
       ...form,
+      daily_budget: form.daily_budget || null,
+      start_at: form.start_at ? `${form.start_at}T00:00:00+06:00` : null,
+      end_at: form.end_at ? `${form.end_at}T23:59:59+06:00` : null,
+      target_locations: locationsText.value
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       estimated_views: estimatedViews.value,
-    });
+    };
+    if (form.format === "video") {
+      payload.media_ids = [videoMediaId.value];
+      if (companionBanner.value) {
+        payload.companion_banner_b64 = companionBanner.value;
+      }
+      payload.images = []; // video creative — no base64 images
+    }
+    const res = await post("/bn/abn-ads-panels/", payload);
     if (res.data) {
       router.push("/business-network/abn-ads");
     } else {
