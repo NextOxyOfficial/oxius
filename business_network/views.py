@@ -2163,7 +2163,31 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
         except ValidationError as e:
             print(serializer.errors)  # Print validation errors
             raise e
-        abn_ads = serializer.save()
+
+        # Billing: the budget is deducted from the AdsyClub balance up front;
+        # a rejected ad refunds it (admin action). Estimated views come from
+        # the configured CPV rate — never from the client.
+        from decimal import Decimal
+
+        from .models import AdsSystemConfig
+
+        cfg = AdsSystemConfig.get()
+        budget = Decimal(str(serializer.validated_data.get("budget") or 0))
+        if budget <= 0:
+            return Response({"error": "Invalid budget"}, status=400)
+        if request.user.balance < budget:
+            return Response(
+                {"error": "Insufficient balance",
+                 "detail": "আপনার ব্যালেন্সে পর্যাপ্ত টাকা নেই।"},
+                status=400,
+            )
+        request.user.balance -= budget
+        request.user.save(update_fields=["balance"])
+
+        estimated = int(budget / Decimal(str(cfg.cpv_rate))) if cfg.cpv_rate else 0
+        abn_ads = serializer.save(
+            status="review", estimated_views=estimated
+        )
 
         # Print or log the serializer errors
 

@@ -244,3 +244,140 @@ def send_weekly_bn_digests():
             continue
         _time.sleep(0.4)  # SMTP-friendly pacing
     return sent
+
+
+@shared_task
+def ads_daily_settlement(target_date=None):
+    """Nightly ads settlement (runs for YESTERDAY unless target_date given):
+
+    1. Viewer diamond rewards — every `views_per_diamond` tracked ad views
+       (panel + AdMob combined) earns 1 diamond, capped per day. Credited to
+       diamond_balance with a DiamondTransaction "bonus" record + push.
+    2. Creator ad earnings — impressions attributed to a creator's content
+       are valued (panel: cpv * share%; AdMob: admob_view_value * share%),
+       written to the CreatorAdEarning ledger and credited to balance.
+    3. Interest decay — everyone's ad-interest weights shrink so targeting
+       follows RECENT behaviour only (a few days, per config).
+    """
+    from datetime import timedelta
+    from decimal import Decimal
+
+    from django.db.models import Count, Q
+
+    from base.models import DiamondTransaction, User
+    from .models import (
+        AdEvent,
+        AdsSystemConfig,
+        AdViewerDaily,
+        CreatorAdEarning,
+        UserAdProfile,
+    )
+
+    cfg = AdsSystemConfig.get()
+    day = target_date or (timezone.localdate() - timedelta(days=1))
+
+    # ── 1. Viewer diamond rewards ────────────────────────────────────────
+    rewarded_users = 0
+    if cfg.viewer_reward_enabled and cfg.views_per_diamond:
+        rows = AdViewerDaily.objects.filter(date=day, rewarded=False)
+        for row in rows:
+            diamonds = min(
+                row.views // cfg.views_per_diamond, cfg.max_daily_diamonds
+            )
+            row.rewarded = True
+            row.diamonds_awarded = diamonds
+            row.save(update_fields=["rewarded", "diamonds_awarded"])
+            if diamonds <= 0:
+                continue
+            user = row.user
+            user.diamond_balance += diamonds
+            user.save(update_fields=["diamond_balance"])
+            DiamondTransaction.objects.create(
+                user=user,
+                transaction_type="bonus",
+                amount=diamonds,
+                completed=True,
+                approved=True,
+                description=f"Daily ad-view reward for {day} ({row.views} views)",
+            )
+            rewarded_users += 1
+            try:
+                from base.push_notifications import send_push_notification
+
+                send_push_notification(
+                    title="আজকের রিওয়ার্ড 🎁",
+                    body=(
+                        f"গতকাল বিজ্ঞাপন দেখার জন্য আপনি {diamonds} ডায়মন্ড "
+                        "রিওয়ার্ড পেয়েছেন!"
+                    ),
+                    deep_link="https://adsyclub.com/business-network",
+                    notification_type="ad_reward",
+                    users=[user],
+                )
+            except Exception:
+                logger.exception("ad reward push failed for user %s", user.id)
+
+    # ── 2. Creator earnings ──────────────────────────────────────────────
+    share = Decimal(cfg.creator_share_percent) / Decimal(100)
+    cpv = Decimal(str(cfg.cpv_rate))
+    admob_value = Decimal(str(cfg.admob_view_value))
+
+    stats = (
+        AdEvent.objects.filter(
+            created_at__date=day,
+            event_type="impression",
+            creator__isnull=False,
+        )
+        .values("creator")
+        .annotate(
+            panel_views=Count("id", filter=Q(source="panel")),
+            admob_views=Count("id", filter=Q(source="admob")),
+        )
+    )
+    credited_creators = 0
+    for s in stats:
+        amount = (
+            Decimal(s["panel_views"]) * cpv + Decimal(s["admob_views"]) * admob_value
+        ) * share
+        amount = amount.quantize(Decimal("0.01"))
+        row, created = CreatorAdEarning.objects.get_or_create(
+            creator_id=s["creator"],
+            date=day,
+            defaults={
+                "panel_views": s["panel_views"],
+                "admob_views": s["admob_views"],
+                "amount": amount,
+            },
+        )
+        if row.credited:
+            continue
+        if amount > 0:
+            creator = User.objects.filter(id=s["creator"]).first()
+            if creator:
+                creator.balance += amount
+                creator.save(update_fields=["balance"])
+        row.credited = True
+        row.save(update_fields=["credited"])
+        credited_creators += 1
+
+    # ── 3. Interest decay ────────────────────────────────────────────────
+    decay_days = max(1, cfg.interest_decay_days)
+    factor = 0.5 ** (1.0 / decay_days)  # half-life = interest_decay_days
+    for profile in UserAdProfile.objects.exclude(category_weights={}):
+        weights = {
+            k: round(float(v) * factor, 2)
+            for k, v in (profile.category_weights or {}).items()
+            if float(v) * factor >= 0.2
+        }
+        profile.category_weights = weights
+        profile.save(update_fields=["category_weights", "updated_at"])
+
+    logger.info(
+        "ads_daily_settlement %s: %s viewers rewarded, %s creators credited",
+        day, rewarded_users, credited_creators,
+    )
+    return {
+        "date": str(day),
+        "viewers_rewarded": rewarded_users,
+        "creators_credited": credited_creators,
+    }

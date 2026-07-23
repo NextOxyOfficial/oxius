@@ -1,5 +1,6 @@
 from django.urls import include, path
 
+from . import ads_api
 from .optimized_views import CachedBusinessNetworkStatsView, get_device_optimized_feed
 from .prioritized_feed import PrioritizedFeedView
 from .views import *
@@ -165,6 +166,8 @@ urlpatterns = [
         name="media-comment-detail",
     ),
     # abn-ads endpoints
+    path("ads/serve/", ads_api.serve_ad, name="ads-serve"),
+    path("ads/track/", ads_api.track_ad_events, name="ads-track"),
     path(
         "abn-ads-panels/",
         AbnAdsPanelListCreateView.as_view(),

@@ -527,6 +527,12 @@ CELERY_BEAT_SCHEDULE = {
         # which fired at 4am Dhaka).
         "schedule": crontab(day_of_week="fri", hour=10, minute=0),
     },
+    "ads-daily-settlement": {
+        "task": "business_network.tasks.ads_daily_settlement",
+        # Yesterday's ad views → viewer diamond rewards + creator earnings
+        # + interest-profile decay. Runs before the monetization refresh.
+        "schedule": crontab(hour=2, minute=30),
+    },
     "daily-monetization-earnings": {
         "task": "business_network.tasks.compute_monetization_earnings_task",
         # Nightly refresh of the current month's creator points/pool shares.

@@ -19,7 +19,6 @@ admin.site.register(BusinessNetworkMindforceMedia)
 admin.site.register(BusinessNetworkMindforceComment)
 admin.site.register(UserSavedPosts)
 admin.site.register(AbnAdsPanelCategory)
-admin.site.register(AbnAdsPanel)
 admin.site.register(AbnAdsPanelMedia)
 
 # Hidden Posts and Reports Admin
@@ -449,3 +448,103 @@ class ProfileReportAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
     list_editable = ['status']
     raw_id_fields = ['reporter', 'reported_user']
+
+
+# ============================================================
+# ADS SYSTEM ADMIN
+# ============================================================
+
+@admin.register(AbnAdsPanel)
+class AbnAdsPanelAdmin(admin.ModelAdmin):
+    """Advertiser ads review queue. Approve → active (starts serving);
+    Reject → refunds the unspent budget to the advertiser's balance."""
+
+    list_display = [
+        "id", "title", "user", "category", "status", "budget", "spent",
+        "views", "clicks", "estimated_views", "created_at",
+    ]
+    list_filter = ["status", "category", "created_at"]
+    search_fields = ["id", "title", "user__email", "user__username"]
+    readonly_fields = ["id", "views", "clicks", "spent", "created_at", "updated_at"]
+    ordering = ["-created_at"]
+    actions = ["approve_ads", "reject_ads_with_refund"]
+
+    @admin.action(description="Approve selected ads (start serving)")
+    def approve_ads(self, request, queryset):
+        updated = queryset.filter(status__in=["review", "pending", "stoped"]).update(
+            status="active"
+        )
+        self.message_user(request, f"{updated} ad(s) approved and now serving.")
+
+    @admin.action(description="Reject selected ads (refund unspent budget)")
+    def reject_ads_with_refund(self, request, queryset):
+        from decimal import Decimal
+
+        refunded = 0
+        for ad in queryset.exclude(status="rejected"):
+            unspent = Decimal(ad.budget or 0) - Decimal(ad.spent or 0)
+            if ad.user and unspent > 0:
+                ad.user.balance += unspent
+                ad.user.save(update_fields=["balance"])
+            ad.status = "rejected"
+            ad.save(update_fields=["status"])
+            refunded += 1
+        self.message_user(
+            request, f"{refunded} ad(s) rejected; unspent budget refunded."
+        )
+
+
+@admin.register(AdsSystemConfig)
+class AdsSystemConfigAdmin(admin.ModelAdmin):
+    """All the ads-system knobs in one row (singleton)."""
+
+    list_display = [
+        "cpv_rate", "creator_share_percent", "admob_view_value",
+        "viewer_reward_enabled", "views_per_diamond", "max_daily_diamonds",
+        "daily_frequency_cap", "interest_decay_days", "updated_at",
+    ]
+
+    def has_add_permission(self, request):
+        return not AdsSystemConfig.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(AdEvent)
+class AdEventAdmin(admin.ModelAdmin):
+    list_display = [
+        "source", "event_type", "placement", "platform", "ad",
+        "user", "creator", "category", "created_at",
+    ]
+    list_filter = ["source", "event_type", "placement", "platform", "created_at"]
+    search_fields = ["user__email", "creator__email", "ad__id", "ad__title"]
+    readonly_fields = [f.name for f in AdEvent._meta.fields]
+    ordering = ["-created_at"]
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(AdViewerDaily)
+class AdViewerDailyAdmin(admin.ModelAdmin):
+    list_display = ["user", "date", "views", "diamonds_awarded", "rewarded"]
+    list_filter = ["date", "rewarded"]
+    search_fields = ["user__email", "user__username"]
+    ordering = ["-date"]
+
+
+@admin.register(CreatorAdEarning)
+class CreatorAdEarningAdmin(admin.ModelAdmin):
+    list_display = [
+        "creator", "date", "panel_views", "admob_views", "amount", "credited",
+    ]
+    list_filter = ["date", "credited"]
+    search_fields = ["creator__email", "creator__username"]
+    ordering = ["-date"]
+
+
+@admin.register(UserAdProfile)
+class UserAdProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "category_weights", "updated_at"]
+    search_fields = ["user__email", "user__username"]

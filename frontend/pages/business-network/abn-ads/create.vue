@@ -157,6 +157,36 @@
               </div>
             </div>
 
+            <!-- Placements -->
+            <div>
+              <label class="block text-sm font-medium text-gray-800 mb-1">
+                Placements (কোথায় দেখাবে)
+                <span class="text-xs font-normal text-gray-500"
+                  >— কিছু না বাছলে সব জায়গায়</span
+                >
+              </label>
+              <div class="grid grid-cols-2 gap-1.5">
+                <label
+                  v-for="p in placementOptions"
+                  :key="p.value"
+                  class="inline-flex items-center gap-2 px-2.5 py-1.5 border rounded-md cursor-pointer text-sm"
+                  :class="
+                    form.placements.includes(p.value)
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : 'border-gray-300 text-gray-700'
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    class="h-3.5 w-3.5 text-emerald-500 rounded"
+                    :checked="form.placements.includes(p.value)"
+                    @change="togglePlacement(p.value)"
+                  />
+                  <span>{{ p.label }}</span>
+                </label>
+              </div>
+            </div>
+
             <!-- Audience -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
@@ -398,7 +428,26 @@ const form = reactive({
   other: false,
   min_age: 18,
   max_age: 65,
+  placements: [],
 });
+
+// Placement keys mirror the backend's VALID_PLACEMENTS.
+const placementOptions = [
+  { value: "bn_feed", label: "বিজনেস নেটওয়ার্ক ফিড" },
+  { value: "shorts_banner", label: "Shorts ব্যানার" },
+  { value: "shorts_fullscreen", label: "Shorts ফুলস্ক্রিন" },
+  { value: "gigs_list", label: "মাইক্রো গিগস" },
+  { value: "sale_list", label: "সেল লিস্ট" },
+  { value: "news_list", label: "নিউজ" },
+  { value: "food_list", label: "ফুড জোন" },
+  { value: "web_feed", label: "ওয়েবসাইট" },
+];
+
+function togglePlacement(value) {
+  const i = form.placements.indexOf(value);
+  if (i >= 0) form.placements.splice(i, 1);
+  else form.placements.push(value);
+}
 
 // CTA button types — mirrors AbnAdsPanel.AD_TyPES on the backend.
 const adTypes = [
@@ -492,7 +541,11 @@ async function submitAd() {
     if (res.data) {
       router.push("/business-network/abn-ads");
     } else {
+      // Surface the backend's message (e.g. insufficient balance) directly.
+      const detail =
+        res.error?.data?.detail || res.error?.data?.error || null;
       errorMsg.value =
+        detail ||
         "বিজ্ঞাপন জমা দেওয়া যায়নি — তথ্যগুলো আবার দেখে চেষ্টা করুন।";
     }
   } catch (e) {

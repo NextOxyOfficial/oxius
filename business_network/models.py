@@ -634,9 +634,24 @@ class AbnAdsPanel(models.Model):
     ad_type = models.CharField(max_length=20, choices=AD_TyPES, default='image')
     ad_type_details= models.TextField(null=True, blank=True)
     budget = models.DecimalField(max_digits=10, decimal_places=2)
-    STATUS_CHOCES = (('active', 'Active'), ('pending', 'Pending'),('stoped','Stoped'))
+    STATUS_CHOCES = (
+        ('review', 'In Review'),
+        ('active', 'Active'),
+        ('pending', 'Pending'),
+        ('rejected', 'Rejected'),
+        ('stoped', 'Stoped'),
+        ('completed', 'Completed'),
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOCES, default='active')
+    # Where this ad may show. List of placement keys, e.g.
+    # ["bn_feed", "shorts_banner", "gigs_list", "sale_list", "news_list",
+    #  "food_list", "web_feed"]. Empty = all placements.
+    placements = models.JSONField(default=list, blank=True)
+    reject_reason = models.TextField(null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
+    clicks = models.PositiveIntegerField(default=0)
+    # Money consumed so far (views * CPV) — never exceeds budget.
+    spent = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     estimated_views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1424,3 +1439,154 @@ class PostSeen(models.Model):
 
     def __str__(self):
         return f"{self.user_id} saw {self.post_id} x{self.times_seen}"
+
+
+# ============================================================
+# ADS SYSTEM — serving, tracking, viewer rewards, creator share
+# ============================================================
+
+class AdsSystemConfig(models.Model):
+    """Singleton admin knobs for the whole ads system (panel + AdMob hybrid).
+
+    Rates are per VIEW: panel ads burn `cpv_rate` from the advertiser budget;
+    creators earn `creator_share_percent` of what their content generated.
+    AdMob impressions have no direct BDT amount, so `admob_view_value`
+    approximates their worth for creator attribution.
+    """
+
+    # Advertiser side: ৳ per view (200 → ~500 views at 0.40)
+    cpv_rate = models.DecimalField(max_digits=6, decimal_places=2, default=0.40)
+    # Creator share of ad revenue generated ON their content (percent)
+    creator_share_percent = models.PositiveIntegerField(default=40)
+    # Approximate BDT value of ONE AdMob impression for creator attribution
+    admob_view_value = models.DecimalField(max_digits=6, decimal_places=3, default=0.05)
+    # Viewer daily diamond reward: every `views_per_diamond` tracked ad views
+    # earn 1 diamond, capped at `max_daily_diamonds` per day.
+    viewer_reward_enabled = models.BooleanField(default=True)
+    views_per_diamond = models.PositiveIntegerField(default=20)
+    max_daily_diamonds = models.PositiveIntegerField(default=5)
+    # Same ad shown to the same user at most this many times per day
+    daily_frequency_cap = models.PositiveIntegerField(default=4)
+    # Interest profile: how many days a category interest stays boosted
+    interest_decay_days = models.PositiveIntegerField(default=7)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Ads System Config"
+
+    def __str__(self):
+        return "Ads System Config"
+
+    @classmethod
+    def get(cls):
+        obj = cls.objects.first()
+        if obj is None:
+            obj = cls.objects.create()
+        return obj
+
+
+class AdEvent(models.Model):
+    """One row per ad interaction — the raw data every other ads feature
+    (rewards, creator earnings, interest classification, dashboards) is
+    computed from. `ad` is null for AdMob events (only source/placement)."""
+
+    SOURCES = (("panel", "Ads Panel"), ("admob", "AdMob"))
+    EVENT_TYPES = (
+        ("impression", "Impression"),
+        ("click", "Click"),
+        ("cta_click", "CTA Click"),
+    )
+
+    ad = models.ForeignKey(
+        AbnAdsPanel, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="events",
+    )
+    source = models.CharField(max_length=10, choices=SOURCES, default="panel")
+    event_type = models.CharField(max_length=15, choices=EVENT_TYPES)
+    placement = models.CharField(max_length=30, blank=True, default="")
+    platform = models.CharField(max_length=10, blank=True, default="app")
+    # Viewer (null when logged out)
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="ad_events",
+    )
+    # Owner of the content the ad appeared ON/AFTER (BN post author for feed
+    # native + shorts banner + post-swipe shorts ads) — earns the share.
+    creator = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="content_ad_events",
+    )
+    category = models.ForeignKey(
+        AbnAdsPanelCategory, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="ad_events",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "-created_at"], name="adevent_user_idx"),
+            models.Index(fields=["creator", "-created_at"], name="adevent_creator_idx"),
+            models.Index(fields=["ad", "-created_at"], name="adevent_ad_idx"),
+            models.Index(fields=["created_at"], name="adevent_created_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.source}:{self.event_type} @{self.placement}"
+
+
+class UserAdProfile(models.Model):
+    """Per-user ad interest weights — {category_id: weight}. Impressions add
+    a little, clicks add a lot; weights decay so a burst of interest only
+    biases serving for `interest_decay_days`."""
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="ad_profile"
+    )
+    category_weights = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"AdProfile {self.user_id}"
+
+
+class AdViewerDaily(models.Model):
+    """Per-user per-day ad view counter → nightly diamond reward."""
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="ad_viewer_days"
+    )
+    date = models.DateField()
+    views = models.PositiveIntegerField(default=0)
+    diamonds_awarded = models.PositiveIntegerField(default=0)
+    rewarded = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ["user", "date"]
+        indexes = [
+            models.Index(fields=["date", "rewarded"], name="adviewer_date_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} {self.date}: {self.views} views"
+
+
+class CreatorAdEarning(models.Model):
+    """Nightly ledger: what each creator earned from ads on their content.
+    Credited to the user's balance by the settlement task (auditable rows)."""
+
+    creator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="creator_ad_earnings"
+    )
+    date = models.DateField()
+    panel_views = models.PositiveIntegerField(default=0)
+    admob_views = models.PositiveIntegerField(default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    credited = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["creator", "date"]
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.creator_id} {self.date}: ৳{self.amount}"
