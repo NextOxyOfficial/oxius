@@ -694,10 +694,12 @@ class AbnAdsPanel(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
-        if self.estimated_views == self.views:
-            self.status = 'stoped'
+        # View cap reached → completed. Guard on estimated_views: a fresh
+        # ad has views == estimated_views == 0 and must NOT be stopped.
+        if self.estimated_views and self.views >= self.estimated_views:
+            self.status = 'completed'
         super().save(*args, **kwargs)
-    
+
     def __str__(self):
         return self.title
 

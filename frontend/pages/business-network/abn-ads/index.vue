@@ -3,7 +3,7 @@
     <div class="min-h-screen bg-gray-50">
       <!-- ── Hero header ─────────────────────────────────────────── -->
       <div
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-800 to-indigo-900 text-white shadow-md"
       >
         <div
           class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10"
@@ -24,7 +24,7 @@
                   ABN Ads Panel
                 </h1>
               </div>
-              <p class="mt-1.5 text-sm text-emerald-50/90 max-w-md">
+              <p class="mt-1.5 text-sm text-indigo-50/90 max-w-md">
                 {{ $t("ads_hero_sub") }}
               </p>
             </div>
@@ -42,7 +42,7 @@
               </div>
               <button
                 @click="navigateTo('/business-network/abn-ads/create')"
-                class="flex items-center gap-1.5 px-4 py-2 bg-white text-emerald-700 hover:bg-emerald-50 font-semibold text-sm rounded-xl shadow-sm transition-colors"
+                class="flex items-center gap-1.5 px-4 py-2 bg-white text-indigo-800 hover:bg-indigo-50 font-semibold text-sm rounded-xl shadow-sm transition-colors"
               >
                 <UIcon name="i-heroicons-plus" class="w-4 h-4" />
                 {{ $t("ads_create_new") }}
@@ -55,7 +55,7 @@
               class="px-4 py-1.5 text-sm font-medium rounded-lg transition-colors"
               :class="
                 activeTab === 'my-ads'
-                  ? 'bg-white text-emerald-700 shadow-sm'
+                  ? 'bg-white text-indigo-800 shadow-sm'
                   : 'text-white/85 hover:text-white'
               "
               @click="activeTab = 'my-ads'"
@@ -66,7 +66,7 @@
               class="px-4 py-1.5 text-sm font-medium rounded-lg transition-colors"
               :class="
                 activeTab === 'abn-ads'
-                  ? 'bg-white text-emerald-700 shadow-sm'
+                  ? 'bg-white text-indigo-800 shadow-sm'
                   : 'text-white/85 hover:text-white'
               "
               @click="activeTab = 'abn-ads'"
@@ -134,7 +134,7 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 mr-2 text-emerald-500"
+                  class="h-4 w-4 mr-2 text-indigo-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -152,17 +152,17 @@
                 <input
                   type="date"
                   v-model="dateFilter.from"
-                  class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+                  class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-indigo-600 focus:border-indigo-600 rounded-md"
                 />
                 <span class="text-sm text-gray-600">{{ $t("ads_to") }}</span>
                 <input
                   type="date"
                   v-model="dateFilter.to"
-                  class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+                  class="px-3 py-1.5 text-sm border border-gray-300 focus:ring-indigo-600 focus:border-indigo-600 rounded-md"
                 />
                 <button
                   @click="applyDateFilter"
-                  class="px-3 py-1.5 text-sm bg-emerald-500 hover:bg-emerald-600 text-white transition-colors rounded-md"
+                  class="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors rounded-md"
                 >
                   {{ $t("ads_apply") }}
                 </button>
@@ -174,7 +174,7 @@
                   {{ $t("ads_clear") }}
                 </button>
               </div>
-              <p v-if="dateFilterActive" class="mt-2 text-xs text-emerald-600">
+              <p v-if="dateFilterActive" class="mt-2 text-xs text-indigo-700">
                 {{ filteredAds.length }} {{ $t("ads_filter_result") }}
               </p>
             </div>
@@ -186,7 +186,7 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 mr-2 text-emerald-500"
+                  class="h-4 w-4 mr-2 text-indigo-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -226,11 +226,11 @@
                   class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
                 >
                   <div
-                    class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center shrink-0"
+                    class="w-9 h-9 rounded-lg bg-sky-50 flex items-center justify-center shrink-0"
                   >
                     <UIcon
                       name="i-heroicons-cursor-arrow-rays"
-                      class="w-4.5 h-4.5 text-green-600"
+                      class="w-4.5 h-4.5 text-sky-600"
                     />
                   </div>
                   <div>
@@ -291,9 +291,9 @@
                     {{ $t("ads_last14") }}
                   </span>
                   <span class="text-[11px] text-gray-400">
-                    <span class="inline-block w-2 h-2 rounded-sm bg-emerald-400 mr-1"></span
+                    <span class="inline-block w-2 h-2 rounded-sm bg-indigo-400 mr-1"></span
                     >{{ $t("ads_views") }}
-                    <span class="inline-block w-2 h-2 rounded-sm bg-blue-400 ml-3 mr-1"></span
+                    <span class="inline-block w-2 h-2 rounded-sm bg-amber-400 ml-3 mr-1"></span
                     >{{ $t("ads_clicks") }}
                   </span>
                 </div>
@@ -305,14 +305,14 @@
                     :title="`${d.date}: ${d.views} views, ${d.clicks} clicks`"
                   >
                     <div
-                      class="w-full rounded-t bg-emerald-400"
+                      class="w-full rounded-t bg-indigo-400"
                       :style="{
                         height:
                           Math.max(2, (d.views / maxDailyViews) * 64) + 'px',
                       }"
                     ></div>
                     <div
-                      class="w-full rounded-t bg-blue-400"
+                      class="w-full rounded-t bg-amber-400"
                       :style="{
                         height:
                           Math.max(1, (d.clicks / maxDailyViews) * 64) + 'px',
@@ -329,11 +329,11 @@
               class="text-center py-12 bg-white rounded-xl border border-gray-100 shadow-sm"
             >
               <div
-                class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-50 flex items-center justify-center"
+                class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-indigo-50 flex items-center justify-center"
               >
                 <UIcon
                   name="i-heroicons-megaphone"
-                  class="w-7 h-7 text-emerald-500"
+                  class="w-7 h-7 text-indigo-600"
                 />
               </div>
               <p class="text-gray-700 text-sm font-medium">
@@ -344,7 +344,7 @@
               </p>
               <button
                 @click="navigateTo('/business-network/abn-ads/create')"
-                class="mt-4 inline-flex items-center gap-1.5 mx-auto bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors rounded-xl px-4 py-2 text-sm shadow-sm"
+                class="mt-4 inline-flex items-center gap-1.5 mx-auto bg-indigo-700 hover:bg-indigo-800 text-white font-medium transition-colors rounded-xl px-4 py-2 text-sm shadow-sm"
               >
                 <UIcon name="i-heroicons-plus" class="w-4 h-4" />
                 {{ $t("ads_post_first") }}
@@ -393,7 +393,7 @@
                       <div class="flex flex-wrap items-center gap-2 mb-2">
                         <span
                           v-if="ad.category_details && ad.category !== 'none'"
-                          class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm"
+                          class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md text-sm"
                         >
                           {{ ad.category_details?.name }}
                         </span>
@@ -559,7 +559,7 @@
                     </div>
                     <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        class="h-full bg-emerald-400 rounded-full"
+                        class="h-full bg-indigo-400 rounded-full"
                         :style="{
                           width:
                             Math.min(
@@ -620,7 +620,7 @@
                               ''
                             )}`"
                             target="_blank"
-                            class="text-sm text-green-600 flex items-center hover:underline"
+                            class="text-sm text-sky-600 flex items-center hover:underline"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -644,7 +644,7 @@
                               ''
                             )}`"
                             target="_blank"
-                            class="ml-2 text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-md hover:bg-green-200 transition-colors"
+                            class="ml-2 text-sm bg-sky-100 text-sky-700 px-2 py-0.5 rounded-md hover:bg-sky-200 transition-colors"
                           >
                             WhatsApp
                           </a>
@@ -716,7 +716,7 @@
                     <div class="flex space-x-1">
                       <button
                         @click="previewAd(ad)"
-                        class="p-1 text-emerald-600 hover:bg-emerald-50 border border-gray-200 rounded-md"
+                        class="p-1 text-indigo-700 hover:bg-indigo-50 border border-gray-200 rounded-md"
                         title="Preview Ad"
                       >
                         <svg
@@ -865,7 +865,7 @@
                   class="px-2.5 py-1 text-sm rounded-md"
                   :class="
                     p === currentAdsPage
-                      ? 'bg-emerald-500 text-white'
+                      ? 'bg-indigo-600 text-white'
                       : 'border border-gray-300 text-gray-800 hover:bg-gray-50'
                   "
                 >
@@ -891,7 +891,7 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 mr-2 text-emerald-500"
+                  class="h-4 w-4 mr-2 text-indigo-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -953,7 +953,7 @@
                 href="https://www.youtube.com/@adsyclub"
                 target="_blank"
                 rel="noopener"
-                class="w-full mt-3 px-4 py-1.5 text-sm border border-emerald-500 text-emerald-500 font-medium hover:bg-emerald-500 hover:text-white transition-colors flex justify-center items-center rounded-md"
+                class="w-full mt-3 px-4 py-1.5 text-sm border border-indigo-600 text-indigo-600 font-medium hover:bg-indigo-600 hover:text-white transition-colors flex justify-center items-center rounded-md"
               >
                 <span class="mr-1">{{ $t("ads_all_tutorials") }}</span>
                 <svg
@@ -980,7 +980,7 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 mr-2 text-emerald-500"
+                  class="h-4 w-4 mr-2 text-indigo-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -999,7 +999,7 @@
                 <div
                   v-for="(tip, idx) in adTips"
                   :key="idx"
-                  class="border-l-[3px] border-emerald-100 pl-2 py-1"
+                  class="border-l-[3px] border-indigo-100 pl-2 py-1"
                 >
                   <h3 class="text-sm font-medium text-gray-800">
                     {{ $t(tip.title) }}
@@ -1016,7 +1016,7 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 mr-2 text-emerald-500"
+                  class="h-4 w-4 mr-2 text-indigo-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -1033,16 +1033,16 @@
 
               <div class="space-y-2">
                 <button
-                  class="w-full border border-gray-200 rounded-md p-2 hover:border-emerald-500 transition-colors text-left"
+                  class="w-full border border-gray-200 rounded-md p-2 hover:border-indigo-600 transition-colors text-left"
                 >
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
                       <div
-                        class="h-8 w-8 bg-emerald-100 rounded-md flex items-center justify-center mr-2"
+                        class="h-8 w-8 bg-indigo-100 rounded-md flex items-center justify-center mr-2"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4 text-emerald-500"
+                          class="h-4 w-4 text-indigo-600"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -1082,7 +1082,7 @@
                 </button>
 
                 <button
-                  class="w-full border border-gray-200 rounded-md p-2 hover:border-emerald-500 transition-colors text-left"
+                  class="w-full border border-gray-200 rounded-md p-2 hover:border-indigo-600 transition-colors text-left"
                 >
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
@@ -1131,16 +1131,16 @@
                 </button>
 
                 <button
-                  class="w-full border border-gray-200 rounded-md p-2 hover:border-emerald-500 transition-colors text-left"
+                  class="w-full border border-gray-200 rounded-md p-2 hover:border-indigo-600 transition-colors text-left"
                 >
                   <div class="flex justify-between items-center">
                     <div class="flex items-center">
                       <div
-                        class="h-8 w-8 bg-green-100 rounded-md flex items-center justify-center mr-2"
+                        class="h-8 w-8 bg-sky-100 rounded-md flex items-center justify-center mr-2"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4 text-green-600"
+                          class="h-4 w-4 text-sky-600"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -1232,7 +1232,7 @@
                       type="text"
                       id="title"
                       v-model="adForm.title"
-                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                       placeholder="Enter a descriptive title"
                       required
                     />
@@ -1249,7 +1249,7 @@
                     <select
                       id="category"
                       v-model="adForm.category"
-                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                     >
                       <option value="">Select Category</option>
                       <option
@@ -1271,7 +1271,7 @@
                         <input
                           type="checkbox"
                           v-model="adForm.male"
-                          class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
+                          class="form-checkbox h-5 w-5 text-indigo-600 focus:ring-indigo-400 rounded"
                         />
                         <span class="text-sm text-gray-800">Male</span>
                       </label>
@@ -1279,7 +1279,7 @@
                         <input
                           type="checkbox"
                           v-model="adForm.female"
-                          class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
+                          class="form-checkbox h-5 w-5 text-indigo-600 focus:ring-indigo-400 rounded"
                         />
                         <span class="text-sm text-gray-800">Female</span>
                       </label>
@@ -1288,7 +1288,7 @@
                           type="checkbox"
                           v-model="adForm.other"
                           value="other"
-                          class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
+                          class="form-checkbox h-5 w-5 text-indigo-600 focus:ring-indigo-400 rounded"
                         />
                         <span class="text-sm text-gray-800">Other</span>
                       </label>
@@ -1312,7 +1312,7 @@
                       <div class="relative h-1 bg-gray-200 rounded-md">
                         <!-- Track -->
                         <div
-                          class="absolute h-1 bg-emerald-500 rounded-md"
+                          class="absolute h-1 bg-indigo-600 rounded-md"
                           :style="{
                             left: ((adForm.min_age - 13) / 87) * 100 + '%',
                             right:
@@ -1323,7 +1323,7 @@
                         <!-- Min handle -->
                         <button
                           type="button"
-                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-indigo-600 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-indigo-600"
                           :style="{
                             left: ((adForm.min_age - 13) / 87) * 100 + '%',
                           }"
@@ -1334,7 +1334,7 @@
                         <!-- Max handle -->
                         <button
                           type="button"
-                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-emerald-500 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border border-indigo-600 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-indigo-600"
                           :style="{
                             left: ((adForm.max_age - 13) / 87) * 100 + '%',
                           }"
@@ -1367,7 +1367,7 @@
                     <select
                       id="country"
                       v-model="adForm.country"
-                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                       disabled
                     >
                       <option value="bangladesh">Bangladesh</option>
@@ -1388,7 +1388,7 @@
                     <select
                       id="adType"
                       v-model="adForm.ad_type"
-                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                     >
                       <option value="">Select Ad Type</option>
                       <option value="click_to_website">Click to Website</option>
@@ -1410,7 +1410,7 @@
                       :type="adTypeInputTypes[adForm.ad_type]"
                       :id="`${adForm.ad_type}Contact`"
                       v-model="adForm.ad_type_details"
-                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                       :placeholder="adTypePlaceholders[adForm.ad_type]"
                       required
                     />
@@ -1429,7 +1429,7 @@
                       v-model="adForm.description"
                       rows="3"
                       maxlength="150"
-                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                       placeholder="Describe your product or service in detail (max 150 characters)"
                       required
                     ></textarea>
@@ -1539,7 +1539,7 @@
                         type="number"
                         id="budget"
                         v-model.number="adForm.budget"
-                        class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                        class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                         placeholder="Enter ad budget"
                         min="200"
                         required
@@ -1595,20 +1595,20 @@
                     <button
                       type="button"
                       @click="previewAdFromForm"
-                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     >
                       Preview
                     </button>
                     <button
                       type="button"
                       @click="closeCreateAdModal"
-                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      class="px-3 py-1.5 text-sm border border-transparent rounded-md shadow-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 flex items-center"
+                      class="px-3 py-1.5 text-sm border border-transparent rounded-md shadow-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 flex items-center"
                       :disabled="isSubmitting"
                     >
                       <svg
@@ -1684,7 +1684,7 @@
                       <div class="flex flex-wrap items-center gap-2 mb-2">
                         <span
                           v-if="adForm.category && adForm.category !== 'none'"
-                          class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm"
+                          class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md text-sm"
                         >
                           {{
                             abnAdsCategories.find(
@@ -1749,7 +1749,7 @@
                         </div>
                         <div
                           v-else-if="adForm.ad_type === 'whatsapp'"
-                          class="flex items-center text-sm text-green-600"
+                          class="flex items-center text-sm text-sky-600"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -1775,7 +1775,7 @@
                               ''
                             )}`"
                             target="_blank"
-                            class="ml-2 text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-md hover:bg-green-200 transition-colors"
+                            class="ml-2 text-sm bg-sky-100 text-sky-700 px-2 py-0.5 rounded-md hover:bg-sky-200 transition-colors"
                           >
                             WhatsApp
                           </a>
@@ -1848,7 +1848,7 @@
                         <span class="text-sm text-gray-600"
                           >Budget: ৳{{ adForm.budget || "0" }}</span
                         >
-                        <span class="text-sm text-emerald-500">
+                        <span class="text-sm text-indigo-600">
                           Est. Views: {{ adForm.estimated_views }}
                         </span>
                       </div>
@@ -2058,7 +2058,7 @@
                       previewAdData.category &&
                       previewAdData.category !== 'none'
                     "
-                    class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md text-sm"
+                    class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md text-sm"
                   >
                     {{
                       abnAdsCategories.find((cat) => cat.id === adForm.category)
@@ -2134,7 +2134,7 @@
                     v-else-if="previewAdData.ad_type === 'whatsapp'"
                     class="flex items-center"
                   >
-                    <span class="text-sm text-green-600 mr-2">{{
+                    <span class="text-sm text-sky-600 mr-2">{{
                       previewAdData.contactInfo
                     }}</span>
                     <a
@@ -2143,7 +2143,7 @@
                         ''
                       )}`"
                       target="_blank"
-                      class="rounded-md bg-green-100 text-green-700 p-2 hover:bg-green-200 transition-colors"
+                      class="rounded-md bg-sky-100 text-sky-700 p-2 hover:bg-sky-200 transition-colors"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -2225,7 +2225,7 @@
             <div class="mt-4 flex justify-end">
               <button
                 @click="showPreviewModal = false"
-                class="px-4 py-2 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                class="px-4 py-2 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
               >
                 Close Preview
               </button>
@@ -2250,8 +2250,8 @@ const activeTab = ref("my-ads");
 const panelSteps = [
   {
     icon: "i-heroicons-plus-circle",
-    bg: "bg-emerald-50",
-    color: "text-emerald-600",
+    bg: "bg-indigo-50",
+    color: "text-indigo-700",
     title: "ads_step1_t",
     desc: "ads_step1_d",
   },
@@ -2264,8 +2264,8 @@ const panelSteps = [
   },
   {
     icon: "i-heroicons-rocket-launch",
-    bg: "bg-blue-50",
-    color: "text-blue-600",
+    bg: "bg-sky-50",
+    color: "text-sky-600",
     title: "ads_step3_t",
     desc: "ads_step3_d",
   },
@@ -2725,7 +2725,7 @@ const removeImage = (index) => {
 const getStatusClass = (status) => {
   switch (status) {
     case "active":
-      return "bg-green-100 text-green-600";
+      return "bg-sky-100 text-sky-700";
     case "review":
       return "bg-amber-100 text-amber-600";
     case "rejected":
