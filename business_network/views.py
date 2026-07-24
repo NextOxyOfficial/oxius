@@ -1,4 +1,5 @@
 import base64
+import os
 import random
 
 from django.core.cache import cache
@@ -2249,6 +2250,33 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
                 except Exception as e:
                     # Log error but continue processing
                     print(f"Error processing image: {str(e)}")
+
+        # Urgent admin email so a new ad can be reviewed the moment it lands.
+        try:
+            from django.conf import settings
+            from django.core.mail import send_mail
+
+            admin_email = getattr(settings, "ADMIN_ALERT_EMAIL", None) or \
+                os.environ.get("ADMIN_ALERT_EMAIL", "alimulislam50@gmail.com")
+            advertiser = request.user.get_full_name() or request.user.username
+            send_mail(
+                subject=f"📢 নতুন বিজ্ঞাপন রিভিউ দরকার — {abn_ads.title[:50]}",
+                message=(
+                    "একটি নতুন বিজ্ঞাপন জমা পড়েছে, রিভিউ প্রয়োজন।\n\n"
+                    f"টাইটেল: {abn_ads.title}\n"
+                    f"বিজ্ঞাপনদাতা: {advertiser} <{request.user.email}>\n"
+                    f"ফরম্যাট: {abn_ads.format} | অবজেক্টিভ: "
+                    f"{abn_ads.ad_objective}\n"
+                    f"বাজেট: ৳{abn_ads.budget}\n\n"
+                    "রিভিউ করুন: https://adsyclub.com/admin/business_network/"
+                    "abnadspanel/"
+                ),
+                from_email=None,
+                recipient_list=[admin_email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            print(f"Ad review email failed: {e}")
 
         headers = self.get_success_headers(serializer.data)
         return Response(

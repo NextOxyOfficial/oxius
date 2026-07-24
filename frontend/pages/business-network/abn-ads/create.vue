@@ -181,7 +181,7 @@
             <!-- Title -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Ad Title <span class="text-red-500">*</span>
+                বিজ্ঞাপনের টাইটেল <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="form.title"
@@ -196,7 +196,7 @@
             <!-- Format -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Ad Format
+                বিজ্ঞাপনের ধরন
               </label>
               <div class="grid grid-cols-3 gap-2">
                 <button
@@ -209,7 +209,7 @@
                       : 'border-gray-300 text-gray-700'
                   "
                 >
-                  🖼️ Image Ad
+                  🖼️ ছবি বিজ্ঞাপন
                 </button>
                 <button
                   type="button"
@@ -221,7 +221,7 @@
                       : 'border-gray-300 text-gray-700'
                   "
                 >
-                  🎬 Video Ad (5s skippable)
+                  🎬 ভিডিও বিজ্ঞাপন (৫ সেকেন্ড স্কিপেবল)
                 </button>
                 <button
                   type="button"
@@ -233,7 +233,7 @@
                       : 'border-gray-300 text-gray-700'
                   "
                 >
-                  🚀 Boost Post
+                  🚀 পোস্ট বুস্ট
                 </button>
               </div>
             </div>
@@ -241,7 +241,7 @@
             <!-- Description -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Description <span class="text-red-500">*</span>
+                বিবরণ <span class="text-red-500">*</span>
               </label>
               <textarea
                 v-model="form.description"
@@ -279,7 +279,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-800 mb-1">
-                  Companion Banner
+                  সহায়ক ব্যানার
                   <span class="text-xs font-normal text-gray-500"
                     >(ভিডিওর নিচে দেখাবে)</span
                   >
@@ -293,7 +293,7 @@
                   <label
                     class="px-3 py-2 text-sm border border-dashed border-gray-300 rounded-md cursor-pointer text-gray-600 hover:border-indigo-400"
                   >
-                    {{ companionBanner ? "Change" : "Upload Banner" }}
+                    {{ companionBanner ? "পরিবর্তন করুন" : "ব্যানার আপলোড করুন" }}
                     <input
                       type="file"
                       accept="image/*"
@@ -309,7 +309,7 @@
             <div v-if="form.format === 'boost'" class="space-y-3">
               <div>
                 <label class="block text-sm font-medium text-gray-800 mb-1">
-                  Post ID <span class="text-red-500">*</span>
+                  পোস্ট আইডি <span class="text-red-500">*</span>
                 </label>
                 <div class="flex items-center gap-2">
                   <input
@@ -375,7 +375,7 @@
             <!-- Images -->
             <div v-if="form.format === 'image'">
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Ad Images
+                বিজ্ঞাপনের ছবি
                 <span class="text-xs font-normal text-gray-500"
                   >(সর্বোচ্চ ৪টি)</span
                 >
@@ -400,7 +400,7 @@
                   class="w-24 h-24 rounded-md border-2 border-dashed border-gray-300 hover:border-indigo-400 flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:text-indigo-600"
                 >
                   <UIcon name="i-heroicons-photo" class="w-6 h-6" />
-                  <span class="text-[11px] mt-1">Add Image</span>
+                  <span class="text-[11px] mt-1">ছবি যোগ করুন</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -414,7 +414,7 @@
             <!-- Ad type / CTA button -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Ad Button (কী করলে কী হবে)
+                বিজ্ঞাপনের বাটন (কী করলে কী হবে)
                 <span class="text-red-500">*</span>
               </label>
               <div class="grid grid-cols-2 gap-2">
@@ -473,7 +473,7 @@
             <!-- Audience -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Targeted Audience
+                টার্গেট অডিয়েন্স
               </label>
               <div class="flex gap-4">
                 <label class="inline-flex items-center gap-2">
@@ -507,7 +507,7 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <label class="text-sm font-medium text-gray-800">
-                  Age Range
+                  বয়সসীমা
                 </label>
                 <span
                   class="text-sm font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md"
@@ -552,7 +552,7 @@
             <!-- Country -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Country
+                দেশ
               </label>
               <select
                 v-model="form.country"
@@ -569,7 +569,7 @@
             <!-- Budget -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Budget (৳) <span class="text-red-500">*</span>
+                বাজেট (৳) <span class="text-red-500">*</span>
               </label>
               <input
                 v-model.number="form.budget"
@@ -582,7 +582,7 @@
               <div
                 class="mt-2 flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-md px-3 py-2"
               >
-                <span class="text-sm text-indigo-700">Estimated Views</span>
+                <span class="text-sm text-indigo-700">আনুমানিক ভিউ</span>
                 <span
                   v-if="estimating"
                   class="flex items-center gap-1.5 text-sm text-indigo-500"
@@ -622,7 +622,7 @@
             <!-- Daily budget (pacing) -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Daily Budget (৳)
+                দৈনিক বাজেট (৳)
                 <span class="text-xs font-normal text-gray-500"
                   >— optional, খালি রাখলে একটানা চলবে</span
                 >
@@ -640,7 +640,7 @@
             <!-- Schedule -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                Schedule
+                সময়সূচি
                 <span class="text-xs font-normal text-gray-500"
                   >— optional, খালি রাখলে আজ থেকেই চলবে</span
                 >
@@ -829,7 +829,7 @@
                 :disabled="isSubmitting || !policyAgreed"
                 class="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl shadow-sm transition-colors"
               >
-                {{ isSubmitting ? "Submitting…" : "Submit Ad" }}
+                {{ isSubmitting ? "জমা হচ্ছে…" : "বিজ্ঞাপন জমা দিন" }}
               </button>
               <NuxtLink
                 to="/business-network/abn-ads"
@@ -851,31 +851,19 @@
                 name="i-heroicons-eye"
                 class="w-4 h-4 mr-2 text-indigo-600"
               />
-              Ad Preview
+              বিজ্ঞাপনের প্রিভিউ
             </h3>
 
-            <!-- Placement pills -->
-            <div class="flex flex-wrap gap-1.5 mb-3">
-              <button
-                v-for="tab in previewTabs"
-                :key="tab.value"
-                type="button"
-                @click="previewTab = tab.value"
-                class="px-2.5 py-1 text-xs font-medium rounded-full border transition-colors"
-                :class="
-                  previewTab === tab.value
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                "
-              >
-                {{ tab.label }}
-              </button>
-            </div>
+            <p class="text-xs text-gray-500 mb-3">
+              সব জায়গায় আপনার বিজ্ঞাপন যেভাবে দেখাবে — একবারে দেখে নিন।
+            </p>
 
             <!-- ফিড কার্ড -->
+            <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+              ফিড কার্ড
+            </div>
             <div
-              v-if="previewTab === 'feed'"
-              class="border border-gray-200 rounded-md overflow-hidden"
+              class="border border-gray-200 rounded-md overflow-hidden mb-4"
             >
               <img
                 v-if="previewImage"
@@ -899,17 +887,20 @@
                   {{ previewDesc }}
                 </p>
                 <span
-                  class="mt-2 inline-block px-3 py-1 text-xs font-medium bg-gray-900/5 text-gray-900 rounded-md"
+                  class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-gray-900/5 text-gray-900 rounded-full"
                 >
-                  ভিজিট করুন
+                  <UIcon :name="previewCta.icon" class="w-3.5 h-3.5" />
+                  {{ previewCta.label }}
                 </span>
               </div>
             </div>
 
             <!-- কমপ্যাক্ট -->
+            <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+              কমপ্যাক্ট
+            </div>
             <div
-              v-else-if="previewTab === 'compact'"
-              class="flex items-center gap-2.5 p-2 bg-slate-50 rounded-xl"
+              class="flex items-center gap-2.5 p-2 bg-slate-50 rounded-xl mb-4"
             >
               <img
                 v-if="previewImage"
@@ -937,9 +928,11 @@
             </div>
 
             <!-- Shorts ব্যানার -->
+            <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+              Shorts ব্যানার
+            </div>
             <div
-              v-else-if="previewTab === 'shorts'"
-              class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto"
+              class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto mb-4"
               style="aspect-ratio: 9 / 14; max-height: 260px"
             >
               <div
@@ -973,8 +966,10 @@
             </div>
 
             <!-- রিল -->
+            <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+              রিল
+            </div>
             <div
-              v-else
               class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto"
               style="aspect-ratio: 9 / 16; max-height: 260px"
             >
@@ -1010,9 +1005,10 @@
                   </div>
                 </div>
                 <span
-                  class="mt-2 inline-block px-3 py-1 text-xs font-medium bg-white/25 backdrop-blur text-white rounded-md"
+                  class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-white/25 backdrop-blur text-white rounded-full"
                 >
-                  ভিজিট করুন
+                  <UIcon :name="previewCta.icon" class="w-3.5 h-3.5" />
+                  {{ previewCta.label }}
                 </span>
               </div>
             </div>
@@ -1117,13 +1113,13 @@ const objectiveOptions = [
     value: "retargeting",
     emoji: "🔁",
     title: "রিটার্গেটিং",
-    desc: "যারা আগে আগ্রহ দেখিয়েছে তাদের আবার দেখান (প্রিমিয়াম ৳0.50/ভিউ)",
+    desc: "যারা আগে আগ্রহ দেখিয়েছে তাদের আবার দেখান",
   },
   {
     value: "announcement",
     emoji: "📢",
     title: "ঘোষণা",
-    desc: "সবার কাছে একবার করে পৌঁছান — সবচেয়ে সস্তা ৳0.20/ভিউ",
+    desc: "সবার কাছে একবার করে পৌঁছান",
   },
 ];
 
@@ -1285,14 +1281,21 @@ onMounted(() => {
   }
 });
 
-// ── Multi-placement preview tabs ──
-const previewTabs = [
-  { value: "feed", label: "ফিড কার্ড" },
-  { value: "compact", label: "কমপ্যাক্ট" },
-  { value: "shorts", label: "Shorts ব্যানার" },
-  { value: "reel", label: "রিল" },
-];
-const previewTab = ref("feed");
+// ── Preview CTA button reflects the selected Ad Button type (icon + Bangla
+// label) — the same button the live ad will show. ──
+const previewCta = computed(() => {
+  switch (form.ad_type) {
+    case "call_on_whatsapp":
+      return { label: "মেসেজ করুন", icon: "i-heroicons-chat-bubble-left-right" };
+    case "call_on_phone":
+      return { label: "কল করুন", icon: "i-heroicons-phone" };
+    case "email_us":
+      return { label: "ইমেইল করুন", icon: "i-heroicons-envelope" };
+    default:
+      return { label: "ভিজিট করুন", icon: "i-heroicons-arrow-top-right-on-square" };
+  }
+});
+
 const previewImage = computed(() => {
   if (form.format === "boost") return boostThumb.value;
   return form.images.length ? form.images[0] : "";
