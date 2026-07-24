@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../screens/business_network/profile_screen.dart';
 import '../../services/house_ads_service.dart';
 import '../../utils/url_launcher_utils.dart';
 
@@ -21,6 +22,71 @@ class HouseAdCard extends StatefulWidget {
     required this.placement,
     this.creatorId,
   });
+
+  /// Advertiser name + trust badges (blue verified check, Pro pill) — the
+  /// same row every ad surface uses beside the owner's name.
+  static Widget advertiserNameRow(
+    HouseAd ad, {
+    Color color = const Color(0xFF111827),
+    double fontSize = 13.5,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: Text(
+            ad.advertiser,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ),
+        if (ad.advertiserVerified) ...[
+          const SizedBox(width: 3),
+          Icon(Icons.verified,
+              size: fontSize + 1.5, color: const Color(0xFF3B82F6)),
+        ],
+        if (ad.advertiserPro) ...[
+          const SizedBox(width: 4),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'Pro',
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Icon matching the ad's CTA type — shown beside the label on every
+  /// promo chip (feed card, shorts sheet, boost chip, mid-roll).
+  static IconData ctaIcon(HouseAd ad) {
+    switch (ad.adType) {
+      case 'call_on_whatsapp':
+        return Icons.chat_bubble_outline_rounded;
+      case 'call_on_phone':
+        return Icons.call_outlined;
+      case 'email_us':
+        return Icons.mail_outline_rounded;
+      default:
+        return Icons.open_in_new_rounded;
+    }
+  }
 
   /// Launch the ad's CTA action (website / WhatsApp / call / email).
   static void launchCta(HouseAd ad) {
@@ -50,13 +116,62 @@ class HouseAdCard extends StatefulWidget {
 class _HouseAdCardState extends State<HouseAdCard>
     with AutomaticKeepAliveClientMixin {
   bool _impressionTracked = false;
+  // ✕-closed: a brief apology note shows, then the card collapses; the
+  // server mutes this ad + its whole category for this user for 48 hours.
+  bool _closed = false;
+  bool _apologyShowing = false;
+  Timer? _apologyTimer;
 
-  // Video-format state: muted autoplay, 5s countdown then a Skip button.
+  void _closeAd() {
+    setState(() => _apologyShowing = true);
+    HouseAdsService.track(
+      eventType: 'close',
+      placement: widget.placement,
+      adId: widget.ad.id,
+      creatorId: widget.creatorId,
+    );
+    _apologyTimer = Timer(const Duration(milliseconds: 2600), () {
+      if (mounted) setState(() => _closed = true);
+    });
+  }
+
+  /// The gentle "sorry you didn't like this" note every ad surface shows
+  /// for a few seconds after ✕.
+  static Widget apologyNote() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade200),
+          bottom: BorderSide(color: Colors.grey.shade200),
+        ),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.sentiment_dissatisfied_rounded,
+              size: 20, color: Color(0xFF64748B)),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF475569),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Video-format state: muted autoplay, flows in the feed like a post.
   VideoPlayerController? _video;
   bool _videoReady = false;
-  bool _videoSkipped = false;
-  int _skipCountdown = 5;
-  Timer? _countdownTimer;
   Timer? _billableTimer;
 
   bool get _isVideo =>
@@ -102,18 +217,9 @@ class _HouseAdCardState extends State<HouseAdCard>
       }
       setState(() => _videoReady = true);
       c.play();
-      // Billable after 3 seconds of playback.
+      // Billable after 3 seconds of playback (ThruPlay-style).
       _billableTimer = Timer(const Duration(seconds: 3), () {
-        if (mounted && !_videoSkipped) _trackImpression();
-      });
-      _countdownTimer =
-          Timer.periodic(const Duration(seconds: 1), (t) {
-        if (!mounted) return t.cancel();
-        if (_skipCountdown > 0) {
-          setState(() => _skipCountdown--);
-        } else {
-          t.cancel();
-        }
+        if (mounted) _trackImpression();
       });
     } catch (e) {
       debugPrint('[house-ads] video init failed: $e');
@@ -121,25 +227,31 @@ class _HouseAdCardState extends State<HouseAdCard>
     }
   }
 
-  void _skipVideo() {
-    // Skip after 5s: the view already counted (>3s watched) — collapse the
-    // video, keep the compact card + companion banner clickable.
-    setState(() => _videoSkipped = true);
-    _video?.pause();
-    HouseAdsService.track(
-      eventType: 'skip',
-      placement: widget.placement,
-      adId: widget.ad.id,
-      creatorId: widget.creatorId,
-    );
-  }
-
   @override
   void dispose() {
-    _countdownTimer?.cancel();
+    _apologyTimer?.cancel();
     _billableTimer?.cancel();
     _video?.dispose();
     super.dispose();
+  }
+
+  Widget _avatarInitial(String name) => Text(
+        name.isNotEmpty ? name.characters.first.toUpperCase() : 'A',
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF475569),
+        ),
+      );
+
+  /// Advertiser avatar/name → their BN profile.
+  void _openAdvertiserProfile() {
+    final id = widget.ad.advertiserId;
+    if (id.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProfileScreen(userId: id)),
+    );
   }
 
   void _onCtaTap() {
@@ -155,8 +267,14 @@ class _HouseAdCardState extends State<HouseAdCard>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (_closed) return const SizedBox.shrink();
+    if (_apologyShowing) return apologyNote();
     final ad = widget.ad;
     return Container(
+      // Full screen width, edge-to-edge like a regular feed post; also pins
+      // the video Stack's width so the Skip chip can never fall off-screen.
+      width: double.infinity,
+      clipBehavior: Clip.hardEdge,
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -168,94 +286,104 @@ class _HouseAdCardState extends State<HouseAdCard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Feed-post style header: advertiser avatar + name, "Sponsored"
+          // as the meta line underneath. Tapping either opens the
+          // advertiser's BN profile.
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
             child: Row(
               children: [
-                const Icon(Icons.campaign_outlined,
-                    size: 15, color: Color(0xFF94A3B8)),
-                const SizedBox(width: 6),
-                const Text(
-                  'Sponsored',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF94A3B8),
+                GestureDetector(
+                  onTap: _openAdvertiserProfile,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFF1F5F9),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    alignment: Alignment.center,
+                    child: ad.advertiserImage.isNotEmpty
+                        ? Image.network(
+                            ad.advertiserImage,
+                            fit: BoxFit.cover,
+                            width: 36,
+                            height: 36,
+                            errorBuilder: (_, __, ___) =>
+                                _avatarInitial(ad.advertiser),
+                          )
+                        : _avatarInitial(ad.advertiser),
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  ad.advertiser,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF94A3B8),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: _openAdvertiserProfile,
+                        child: HouseAdCard.advertiserNameRow(ad),
+                      ),
+                      const SizedBox(height: 1),
+                      const Row(
+                        children: [
+                          Icon(Icons.campaign_outlined,
+                              size: 12, color: Color(0xFF94A3B8)),
+                          SizedBox(width: 3),
+                          Text(
+                            'Sponsored',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // ✕ — hides this ad + mutes its category for 48h.
+                InkWell(
+                  onTap: _closeAd,
+                  borderRadius: BorderRadius.circular(999),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.close_rounded,
+                        size: 18, color: Colors.grey.shade400),
                   ),
                 ),
               ],
             ),
           ),
           // ── Creative: 5s-skippable video OR image ──
-          if (_isVideo && _videoReady && !_videoSkipped)
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: (_video!.value.aspectRatio <= 0)
-                      ? 16 / 9
-                      : _video!.value.aspectRatio.clamp(0.8, 1.9),
-                  child: VideoPlayer(_video!),
+          // In-feed the video ad flows like a normal post — NO skip button
+          // (nothing is being interrupted). The skippable variant lives in
+          // the mid-roll overlay inside feed videos (post_media_gallery).
+          if (_isVideo && _videoReady)
+            ClipRect(
+              child: AspectRatio(
+                aspectRatio: (_video!.value.aspectRatio <= 0)
+                    ? 16 / 9
+                    : _video!.value.aspectRatio.clamp(0.8, 1.9),
+                // Cover-fill exactly like feed post videos — without this
+                // the platform video view letterboxes (side gaps on web).
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox(
+                    width: _video!.value.size.width > 0
+                        ? _video!.value.size.width
+                        : 16,
+                    height: _video!.value.size.height > 0
+                        ? _video!.value.size.height
+                        : 9,
+                    child: VideoPlayer(_video!),
+                  ),
                 ),
-                // Countdown → Skip button (top-right, YouTube-style).
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: _skipCountdown > 0
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            'Skip in $_skipCountdown',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                      : GestureDetector(
-                          onTap: _skipVideo,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Skip',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                SizedBox(width: 3),
-                                Icon(Icons.close_rounded,
-                                    size: 14, color: Colors.white),
-                              ],
-                            ),
-                          ),
-                        ),
-                ),
-              ],
+              ),
             )
           else if (ad.images.isNotEmpty)
             GestureDetector(
@@ -281,7 +409,7 @@ class _HouseAdCardState extends State<HouseAdCard>
               ),
             ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -309,22 +437,35 @@ class _HouseAdCardState extends State<HouseAdCard>
                   ),
                 ],
                 const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _onCtaTap,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF16A34A),
-                      padding: const EdgeInsets.symmetric(vertical: 11),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                // AdsyConnect-ink soft chip: icon + text, no border, no fill
+                // bar — the one promo-button style used across all ads.
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: InkWell(
+                    onTap: _onCtaTap,
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        color: const Color(0xFF111827).withValues(alpha: 0.06),
                       ),
-                    ),
-                    child: Text(
-                      ad.ctaLabel,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(HouseAdCard.ctaIcon(ad),
+                              size: 15, color: const Color(0xFF111827)),
+                          const SizedBox(width: 6),
+                          Text(
+                            ad.ctaLabel,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

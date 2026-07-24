@@ -393,7 +393,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         !isDeleted &&
         (SharedPostMessage.tryDecode(text) != null ||
             RegExp(r'^(https?:\/\/|www\.)\S+$', caseSensitive: false)
-                .hasMatch(text.trim()));
+                .hasMatch(text.trim()) ||
+            // Emoji-only messages: the big glyphs stand on their own —
+            // no bubble background (Messenger/WhatsApp behaviour).
+            _emojiOnlyFontSize(text) != null);
 
     // Quoted TEXT replies get the WhatsApp-style attached layout: the quote
     // card sits flush at the top of the bubble (its own tinted bg, rounded),

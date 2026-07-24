@@ -7,6 +7,7 @@ import '../screens/eshop_screen.dart';
 import '../config/app_config.dart';
 import '../utils/url_launcher_utils.dart';
 import 'ios_web_redirect_screen.dart';
+import 'ads/advertise_button.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -181,6 +182,10 @@ class _AppFooterState extends State<AppFooter>
           children: [
             // Logo and tagline
             _buildLogoSection(context, isMobile),
+            const SizedBox(height: 12),
+            // Advertise on AdsyClub — borderless soft-tinted button, opens the
+            // web ads panel in an in-app browser tab.
+            const Center(child: AdvertiseButton()),
             const SizedBox(height: 12),
             // Quick links
             _buildNavigationSection(context, isMobile),

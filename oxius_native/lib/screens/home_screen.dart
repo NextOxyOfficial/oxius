@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/footer.dart';
+import '../widgets/greeting_rotator.dart';
 import '../widgets/profile_completion_sheet.dart';
 import '../widgets/mandatory_profile_sheet.dart';
 import '../widgets/mobile_drawer.dart';
@@ -1919,15 +1920,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Bangla time-of-day wish shown under the user's name.
-  String _greetingLine() {
-    final h = DateTime.now().hour;
-    if (h >= 5 && h < 12) return 'শুভ সকাল ☀️';
-    if (h >= 12 && h < 17) return 'শুভ দুপুর 🌤️';
-    if (h >= 17 && h < 20) return 'শুভ সন্ধ্যা 🌆';
-    return 'শুভ রাত্রি 🌙';
-  }
-
   // Teal accent for the greeting — cool, professional.
   static const _greetTeal = Color(0xFF0D9488);
   static const _greetInk = Color(0xFF1F2937);
@@ -1970,11 +1962,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          _greetingLine(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+        const GreetingRotator(
+          style: TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
             color: Color(0xFF6B7280),

@@ -608,7 +608,7 @@ class MonetizationContentScreen extends StatelessWidget {
         padding: const EdgeInsets.only(top: 16, bottom: 28),
         children: [
           _sectionHeader('কোন কনটেন্ট থেকে কত আয়',
-              'পয়েন্ট অনুযায়ী এই মাসের সেরা কনটেন্টগুলো।'),
+              'এই মাসে কোন কনটেন্ট থেকে কত আয় হয়েছে।'),
           if (items.isEmpty)
             _emptyState(Icons.article_outlined,
                 'এই মাসে এখনো কোনো কনটেন্টে এনগেজমেন্ট আসেনি। পোস্ট করতে থাকুন — ভিউ এলেই এখানে হিসাব দেখা যাবে।')
@@ -700,14 +700,8 @@ class MonetizationContentScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                '${_formatCount(_asInt(item['points']))} পয়েন্ট',
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: _accent,
-                ),
-              ),
+              // Points are internal machinery — creators see MONEY, not
+              // points (Facebook-style).
               if (item['estimated_amount'] != null) ...[
                 const SizedBox(height: 2),
                 Text(

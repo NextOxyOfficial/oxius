@@ -12,6 +12,7 @@ import 'drawer_news.dart';
 import 'drawer_hashtags.dart';
 import 'drawer_featured_product.dart';
 import 'drawer_contributors.dart';
+import '../ads/advertise_button.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 
 /// Side drawer used across the Business Network screens.
@@ -64,6 +65,17 @@ class BusinessNetworkDrawer extends StatelessWidget {
                     _section(
                       horizontalPadding: 10,
                       child: DrawerMenu(currentRoute: currentRoute),
+                    ),
+
+                    // Advertise on AdsyClub — sits just below the menu, above
+                    // Useful Links. Opens the web ads panel in an in-app
+                    // browser tab.
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 2),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: AdvertiseButton(),
+                      ),
                     ),
 
                     _sectionDivider(),

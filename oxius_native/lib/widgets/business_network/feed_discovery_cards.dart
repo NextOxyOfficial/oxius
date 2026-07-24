@@ -51,6 +51,11 @@ class FeedDiscoveryCard extends StatelessWidget {
   final VoidCallback onSeeAll;
   final List<FeedDiscoveryItem> items;
 
+  /// When true, items render as compact horizontal list rows (small square
+  /// image + title/price) instead of big-thumb tiles. Each row is ~85% of the
+  /// screen width so the next one visibly peeks from the right edge.
+  final bool listStyle;
+
   const FeedDiscoveryCard({
     super.key,
     required this.icon,
@@ -58,6 +63,7 @@ class FeedDiscoveryCard extends StatelessWidget {
     required this.title,
     required this.onSeeAll,
     required this.items,
+    this.listStyle = false,
   });
 
   @override
@@ -122,16 +128,29 @@ class FeedDiscoveryCard extends StatelessWidget {
             ),
           ),
           // Horizontal tiles
-          SizedBox(
-            height: 176,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (context, i) => _tile(items[i]),
+          if (listStyle)
+            SizedBox(
+              height: 76,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) => _listTile(
+                    items[i], MediaQuery.of(context).size.width * 0.85),
+              ),
+            )
+          else
+            SizedBox(
+              height: 176,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) => _tile(items[i]),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -210,6 +229,76 @@ class FeedDiscoveryCard extends StatelessWidget {
                     fontSize: 11, fontWeight: FontWeight.w600, color: accent),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Compact list-row tile: small rounded image on the left, title + price
+  /// stacked on the right. Width < screen width so the next row peeks.
+  Widget _listTile(FeedDiscoveryItem item, double width) {
+    return GestureDetector(
+      onTap: item.onTap,
+      child: Container(
+        width: width,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEDF0F5)),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 58,
+                height: 58,
+                child: (item.imageUrl != null && item.imageUrl!.isNotEmpty)
+                    ? CachedNetworkImage(
+                        imageUrl: item.imageUrl!,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 160,
+                        placeholder: (c, u) =>
+                            Container(color: const Color(0xFFF1F5F9)),
+                        errorWidget: (c, u, e) => _iconTile(),
+                      )
+                    : _iconTile(),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                      height: 1.25,
+                    ),
+                  ),
+                  if (item.subtitle != null) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      item.subtitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: accent),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -837,6 +926,7 @@ class _FeedWorkspaceGigsCardState extends State<FeedWorkspaceGigsCard> {
       icon: Icons.work_outline_rounded,
       accent: const Color(0xFF059669),
       title: 'ওয়ার্কস্পেস গিগস',
+      listStyle: true,
       onSeeAll: () => Navigator.push(context,
           MaterialPageRoute(builder: (_) => const WorkspaceScreen())),
       items: _gigs.map((g) {

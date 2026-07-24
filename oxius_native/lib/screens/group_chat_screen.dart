@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:record/record.dart';
 
+import '../services/active_chat_tracker.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
 import '../utils/chat_history_cache.dart';
@@ -110,6 +111,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void initState() {
     super.initState();
     _group = Map<String, dynamic>.from(widget.group);
+    // While this group is OPEN its own message pushes stay silent — the
+    // FCM handler compares incoming group_id against this tracker.
+    ActiveChatTracker.setActiveChat((widget.group['id'] ?? '').toString());
     _messageController.addListener(_onInputChanged);
     _scroll.addListener(_onScrollChanged);
     // Instant open: paint cached history with no spinner; the fetch below
@@ -149,6 +153,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   @override
   void dispose() {
+    if (ActiveChatTracker.activeChatId == _groupId) {
+      ActiveChatTracker.clearActiveChat();
+    }
     _pollTimer?.cancel();
     _typingPollTimer?.cancel();
     _recordTimer?.cancel();

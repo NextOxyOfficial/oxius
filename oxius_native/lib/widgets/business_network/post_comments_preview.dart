@@ -523,7 +523,8 @@ class _ReplyInputState extends State<_ReplyInput> {
     return Container(
       margin: const EdgeInsets.only(left: 40, top: 2, bottom: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        // Cancel sits vertically centered against the pill's right edge.
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: ConstrainedBox(
@@ -538,54 +539,61 @@ class _ReplyInputState extends State<_ReplyInput> {
                 decoration: InputDecoration(
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle:
-                      TextStyle(fontSize: 14.5, color: Colors.grey.shade500),
+                      TextStyle(fontSize: 13.5, color: Colors.grey.shade500),
                   filled: true,
                   fillColor: Colors.grey.shade50,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     borderSide:
-                        BorderSide(color: Colors.grey.shade200, width: 0.5),
+                        BorderSide(color: Colors.grey.shade300, width: 0.8),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     borderSide:
-                        BorderSide(color: Colors.grey.shade200, width: 0.5),
+                        BorderSide(color: Colors.grey.shade300, width: 0.8),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     borderSide: const BorderSide(
                         color: Color(0xFF3B82F6), width: 1),
                   ),
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                   isDense: true,
+                  // Keeps the pill short — the suffix icon no longer forces
+                  // a 48px minimum height.
+                  suffixIconConstraints:
+                      const BoxConstraints(minWidth: 34, minHeight: 30),
                   suffixIcon: _isSubmitting
                       ? Padding(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(8),
                           child: SizedBox(
-                            width: 16,
-                            height: 16,
+                            width: 14,
+                            height: 14,
                             child: AdsyLoadingIndicator(
                               strokeWidth: 2,
                               color: const Color(0xFF3B82F6),
                             ),
                           ),
                         )
-                      : IconButton(
-                          onPressed: _handleSubmit,
-                          icon: Icon(
-                            Icons.send,
-                            // Grows + turns blue the moment there's text.
-                            size: _hasText ? 21 : 18,
-                            color: _hasText
-                                ? const Color(0xFF3B82F6)
-                                : Colors.grey.shade400,
+                      : InkWell(
+                          onTap: _handleSubmit,
+                          borderRadius: BorderRadius.circular(999),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 10),
+                            child: Icon(
+                              Icons.send,
+                              // Grows + turns blue the moment there's text.
+                              size: _hasText ? 19 : 16,
+                              color: _hasText
+                                  ? const Color(0xFF3B82F6)
+                                  : Colors.grey.shade400,
+                            ),
                           ),
-                          padding: const EdgeInsets.all(8),
                         ),
                 ),
-                // 15px matches the main comment field — 14 read small on iOS.
-                style: const TextStyle(fontSize: 15, height: 1.35),
+                style: const TextStyle(fontSize: 14, height: 1.3),
                 onChanged: (value) async {
                   final has = value.trim().isNotEmpty;
                   if (has != _hasText && mounted) {
@@ -665,34 +673,13 @@ class _ReplyInputState extends State<_ReplyInput> {
             ),
           ),
           const SizedBox(width: 4),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: InkWell(
-              onTap: _isSubmitting ? null : _handleSubmit,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                child: _isSubmitting
-                    ? SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: AdsyLoadingIndicator(
-                          strokeWidth: 2,
-                          color: Colors.blue.shade700,
-                        ),
-                      )
-                    : Icon(Icons.send, size: 14, color: Colors.blue.shade700),
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: InkWell(
-              onTap: widget.onCancel,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                child: Icon(Icons.close, size: 14, color: Colors.grey.shade600),
-              ),
+          // Cancel sits beside the pill, vertically centered; send is INSIDE.
+          InkWell(
+            onTap: widget.onCancel,
+            borderRadius: BorderRadius.circular(999),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Icon(Icons.close, size: 22, color: Colors.grey.shade600),
             ),
           ),
         ],

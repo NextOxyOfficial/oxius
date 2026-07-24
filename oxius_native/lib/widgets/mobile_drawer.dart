@@ -4,6 +4,7 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../screens/settings_screen.dart';
 import 'ios_web_redirect_screen.dart';
+import 'ads/advertise_button.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -241,7 +242,19 @@ class _MobileDrawerState extends State<MobileDrawer> {
               ),
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
+
+            // Advertise on AdsyClub — borderless, soft-tinted button. Opens the
+            // web ads panel in an in-app browser tab.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: AdvertiseButton(
+                label: _translationService.t(
+                    'advertise_on_adsyclub', fallback: 'AdsyClub-এ বিজ্ঞাপন দিন'),
+              ),
+            ),
+
+            const SizedBox(height: 8),
 
             // Grouped menu
             Expanded(

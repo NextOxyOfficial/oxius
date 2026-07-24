@@ -450,7 +450,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     if (mounted) {
       setState(() {
         _posts = result['posts'] as List<BusinessNetworkPost>;
-        _hasMore = result['hasMore'] as bool;
+        _hasMore = result['hasMore'] as bool? ?? false;
         _isLoading = false;
 
         // Check for errors
@@ -488,7 +488,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           _posts.addAll(newPosts);
           _lastCreatedAt = newPosts.last.createdAt;
         }
-        _hasMore = result['hasMore'] as bool;
+        _hasMore = result['hasMore'] as bool? ?? false;
         _isLoadingMore = false;
       });
     }
@@ -837,6 +837,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           onPostDeleted: () => _handlePostDeletedByPostId(post.id),
           onUserBlocked: _handleUserBlocked,
           onReshared: _handlePostReshared,
+          // Compact sponsored strip under the media of every 5th post,
+          // offset so it never lands next to the big native-ad slots.
+          showInlineAd: slot.postIndex! % 5 == 2,
         );
 
       case _FeedSlotType.footer:

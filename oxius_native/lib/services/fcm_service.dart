@@ -16,6 +16,7 @@ import 'dart:io' show Platform;
 import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'active_chat_tracker.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'adsyconnect_realtime_service.dart';
@@ -2513,6 +2514,21 @@ class FCMService {
       final isChatMessage =
           (data['type']?.toString() ?? '') == 'message' ||
               (data['type']?.toString() ?? '') == 'group_message';
+
+      // Never ring for the conversation the user is LOOKING at right now.
+      // 1:1 is also suppressed server-side (ActiveChatSession); this covers
+      // groups and doubles as a client-side safety net.
+      if (isChatMessage) {
+        final active = ActiveChatTracker.activeChatId;
+        final chatId = data['chat_id']?.toString() ??
+            data['chatroom_id']?.toString();
+        final groupId = data['group_id']?.toString();
+        if (active != null &&
+            ((chatId != null && chatId == active) ||
+                (groupId != null && groupId == active))) {
+          return;
+        }
+      }
 
       final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(

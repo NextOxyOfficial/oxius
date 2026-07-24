@@ -666,8 +666,9 @@ class PostLike {
       userUuid: (ud['id'] ?? json['user'] ?? '').toString(),
       userName: name,
       userImage: ud['image'] ?? ud['avatar'] ?? ud['profile_picture'],
-      isVerified: ud['is_verified'] ?? ud['kyc'] ?? false,
-      isFollowing: ud['isFollowing'] ?? ud['is_following'] ?? false,
+      // == true guards: null/non-bool from the detail serializer can't cast.
+      isVerified: (ud['is_verified'] ?? ud['kyc']) == true,
+      isFollowing: (ud['isFollowing'] ?? ud['is_following']) == true,
     );
   }
 
@@ -758,13 +759,15 @@ class BusinessNetworkUser {
       name: displayName,
       avatar: avatarValue ?? profilePictureValue,
       image: imageValue,
-      isVerified: json['is_verified'] ?? json['kyc'] ?? false,
-      isPro: json['is_pro'] ?? json['isPro'] ?? json['pro'] ?? false,
+      // == true (not a bare ?? chain) so a null OR any non-bool value from a
+      // differently-shaped serializer can never implicitly cast into a bool.
+      isVerified: (json['is_verified'] ?? json['kyc']) == true,
+      isPro: (json['is_pro'] ?? json['isPro'] ?? json['pro']) == true,
       bio: json['bio'],
       username: json['username'],
       firstName: json['first_name'],
       lastName: json['last_name'],
-      isFollowing: json['is_following'] ?? json['isFollowing'] ?? false,
+      isFollowing: (json['is_following'] ?? json['isFollowing']) == true,
       city: json['city']?.toString(),
       upazila: json['upazila']?.toString(),
     );

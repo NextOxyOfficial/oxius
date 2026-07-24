@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '../config/app_config.dart';
 import '../models/news_models.dart';
 import '../services/news_service.dart';
 import '../services/translation_service.dart';
 import '../utils/network_error_handler.dart';
 import '../utils/url_launcher_utils.dart';
 import '../utils/html_content_utils.dart';
+import 'business_network/profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_share_sheet.dart';
 
@@ -606,7 +608,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Divider(color: _hairline, height: 1, thickness: 1),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
         Row(
           children: [
             Text(
@@ -636,13 +638,14 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: post.comments.length,
+          // Even, compact rhythm between comments (was a 24px band).
           separatorBuilder: (context, index) => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: 5),
             child: Divider(color: _hairline, height: 1, thickness: 1),
           ),
           itemBuilder: (context, index) =>
@@ -652,47 +655,84 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     );
   }
 
+  void _openCommenterProfile(NewsComment comment) {
+    final userId = (comment.userId ?? '').toString().trim();
+    if (userId.isEmpty || userId == 'null') return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(userId: userId),
+      ),
+    );
+  }
+
   Widget _buildCommentTile(NewsComment comment) {
     final name =
         (comment.userName != null && comment.userName!.trim().isNotEmpty)
             ? comment.userName!.trim()
             : _t('news_anonymous', en: 'Anonymous', bn: 'নাম প্রকাশে অনিচ্ছুক');
     final initial = name.characters.first.toUpperCase();
+    // Comment avatars arrive as relative media paths — resolve to absolute.
+    final avatarUrl = AppConfig.getAbsoluteUrl(comment.userImage);
+
+    final initialFallback = Container(
+      alignment: Alignment.center,
+      color: _hairline,
+      child: Text(
+        initial,
+        style: const TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w700,
+          color: _muted,
+        ),
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Container(
-              width: 30,
-              height: 30,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _hairline,
-                border: Border.all(color: _border),
-              ),
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: _muted,
+            GestureDetector(
+              onTap: () => _openCommenterProfile(comment),
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _border),
+                ),
+                child: ClipOval(
+                  child: avatarUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: avatarUrl,
+                          fit: BoxFit.cover,
+                          width: 30,
+                          height: 30,
+                          memCacheWidth: 90,
+                          fadeInDuration: const Duration(milliseconds: 120),
+                          placeholder: (context, url) => initialFallback,
+                          errorWidget: (context, url, error) =>
+                              initialFallback,
+                        )
+                      : initialFallback,
                 ),
               ),
             ),
             const SizedBox(width: 9),
             Expanded(
-              child: Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.1,
-                  color: _ink,
+              child: GestureDetector(
+                onTap: () => _openCommenterProfile(comment),
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.1,
+                    color: _ink,
+                  ),
                 ),
               ),
             ),

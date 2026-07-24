@@ -20,6 +20,12 @@ class HouseAd {
   final String categoryId;
   final String categoryName;
   final String advertiser;
+  // Owner identity — real avatar + tap-to-profile on every ad surface.
+  final String advertiserId;
+  final String advertiserImage;
+  // Trust badges beside the advertiser name (blue check / Pro pill).
+  final bool advertiserVerified;
+  final bool advertiserPro;
   // format='boost': the promoted BN short to play inline in the reel.
   final Map<String, dynamic>? boostedPost;
 
@@ -36,6 +42,10 @@ class HouseAd {
     required this.categoryId,
     required this.categoryName,
     required this.advertiser,
+    this.advertiserId = '',
+    this.advertiserImage = '',
+    this.advertiserVerified = false,
+    this.advertiserPro = false,
     this.boostedPost,
   });
 
@@ -60,23 +70,27 @@ class HouseAd {
       categoryId: (m['category'] ?? '').toString(),
       categoryName: (m['category_name'] ?? '').toString(),
       advertiser: (m['advertiser'] ?? 'AdsyClub').toString(),
+      advertiserId: (m['advertiser_id'] ?? '').toString(),
+      advertiserImage: (m['advertiser_image'] ?? '').toString(),
+      advertiserVerified: m['advertiser_verified'] == true,
+      advertiserPro: m['advertiser_pro'] == true,
       boostedPost: m['boosted_post'] is Map
           ? Map<String, dynamic>.from(m['boosted_post'] as Map)
           : null,
     );
   }
 
-  /// Bangla CTA label matching the ad's button type.
+  /// Short spoken-Bangla CTA label matching the ad's button type.
   String get ctaLabel {
     switch (adType) {
       case 'call_on_whatsapp':
-        return 'WhatsApp-এ মেসেজ করুন';
+        return 'মেসেজ করুন';
       case 'call_on_phone':
         return 'কল করুন';
       case 'email_us':
         return 'ইমেইল করুন';
       default:
-        return 'ওয়েবসাইট দেখুন';
+        return 'ভিজিট করুন';
     }
   }
 }
@@ -121,11 +135,13 @@ class HouseAdsService {
   /// [creatorId] = owner of the content the ad appeared on/after — they get
   /// the creator revenue share for this view.
   static void track({
-    required String eventType, // impression | click | cta_click
+    required String eventType, // impression | click | cta_click | close
     required String placement,
     String source = 'panel',
     String? adId,
     String? creatorId,
+    // BN post the ad rode on — per-content creator earnings breakdown.
+    String? contentId,
   }) {
     _pending.add({
       'event_type': eventType,
@@ -134,7 +150,9 @@ class HouseAdsService {
       'source': source,
       if (adId != null && adId.isNotEmpty) 'ad': adId,
       if (creatorId != null && creatorId.isNotEmpty) 'creator': creatorId,
+      if (contentId != null && contentId.isNotEmpty) 'content': contentId,
     });
+    if (eventType == 'close') flush(); // suppression must apply immediately
     if (_pending.length >= 20) {
       flush();
     } else {

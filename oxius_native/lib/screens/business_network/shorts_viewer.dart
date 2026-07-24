@@ -846,6 +846,10 @@ class _ShortVideoPage extends StatefulWidget {
   final void Function(int views)? onViewsChanged;
   final void Function(VideoPlayerController controller)? onControllerCreated;
   final VoidCallback? onControllerDisposed;
+  // Non-null = this is a BOOSTED short rendered from its REAL post: adds a
+  // small 'Sponsored' label above the author row + the advertiser CTA chip
+  // under the caption. Everything else behaves like a normal short.
+  final HouseAd? sponsoredAd;
 
   const _ShortVideoPage({
     super.key,
@@ -859,6 +863,7 @@ class _ShortVideoPage extends StatefulWidget {
     this.onViewsChanged,
     this.onControllerCreated,
     this.onControllerDisposed,
+    this.sponsoredAd,
   });
 
   @override
@@ -896,9 +901,16 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   String get _creatorId =>
       widget.post.user.uuid ?? widget.post.user.id.toString();
 
+  // Rotates across shorts so only every 4th short carries a banner —
+  // a banner on EVERY short fatigues users fast.
+  static int _bannerSlotCounter = 0;
+
   Future<void> _loadBannerAd() async {
+    // A boosted short is itself an ad — never stack a banner on top of it.
+    if (widget.sponsoredAd != null) return;
     if (_bannerRequested) return;
     _bannerRequested = true;
+    if (_bannerSlotCounter++ % 4 != 0) return;
     final ad = await HouseAdsService.fetch('shorts_banner');
     if (!mounted || ad == null) return;
     setState(() => _bannerAd = ad);
@@ -911,6 +923,30 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         creatorId: _creatorId,
       );
     }
+  }
+
+  // ✕-close on the shorts banner: apology chip for a moment, server mutes
+  // the ad + its category for this user for 48h.
+  bool _bannerApology = false;
+
+  void _closeBannerAd() {
+    final ad = _bannerAd;
+    if (ad == null) return;
+    HouseAdsService.track(
+      eventType: 'close',
+      placement: 'shorts_banner',
+      adId: ad.id,
+      creatorId: _creatorId,
+    );
+    setState(() => _bannerApology = true);
+    Future.delayed(const Duration(milliseconds: 2600), () {
+      if (mounted) {
+        setState(() {
+          _bannerApology = false;
+          _bannerAd = null;
+        });
+      }
+    });
   }
 
   /// Tap on the banner → bottom sheet with the full ad details + CTA.
@@ -948,24 +984,54 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                 ),
               ),
               const SizedBox(height: 12),
+              // Feed-post style header — advertiser avatar + name up left,
+              // Sponsored as the meta line.
               Row(
                 children: [
-                  const Icon(Icons.campaign_outlined,
-                      size: 16, color: Color(0xFF94A3B8)),
-                  const SizedBox(width: 6),
-                  const Text(
-                    'Sponsored',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF94A3B8),
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFF1F5F9),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      ad.advertiser.isNotEmpty
+                          ? ad.advertiser.characters.first.toUpperCase()
+                          : 'A',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF475569),
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    ad.advertiser,
-                    style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF94A3B8)),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        HouseAdCard.advertiserNameRow(ad, fontSize: 14),
+                        const SizedBox(height: 1),
+                        const Row(
+                          children: [
+                            Icon(Icons.campaign_outlined,
+                                size: 12, color: Color(0xFF94A3B8)),
+                            SizedBox(width: 3),
+                            Text(
+                              'Sponsored',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -1003,11 +1069,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
+              const SizedBox(height: 14),
+              // Outline chip, left-aligned — no full-width filled bar.
+              Align(
+                alignment: Alignment.centerLeft,
+                child: InkWell(
+                  onTap: () {
                     Navigator.pop(ctx);
                     HouseAdsService.track(
                       eventType: 'cta_click',
@@ -1017,17 +1084,30 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     );
                     HouseAdCard.launchCta(ad);
                   },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF16A34A),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 9),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      color: const Color(0xFF111827).withValues(alpha: 0.06),
                     ),
-                  ),
-                  child: Text(
-                    ad.ctaLabel,
-                    style: const TextStyle(
-                        fontSize: 14.5, fontWeight: FontWeight.w700),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(HouseAdCard.ctaIcon(ad),
+                            size: 15, color: const Color(0xFF111827)),
+                        const SizedBox(width: 6),
+                        Text(
+                          ad.ctaLabel,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1759,6 +1839,17 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                 ),
               ),
             ),
+          // While the caption is expanded, tapping anywhere outside it
+          // collapses it. Sits BELOW the rail and author/caption overlays in
+          // the stack, so those still win their own taps; it only exists
+          // while expanded, so the normal play/pause tap is untouched.
+          if (_captionExpanded)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => setState(() => _captionExpanded = false),
+              ),
+            ),
           // Action rail — fades out while paused so only the video and the
           // seekbar remain (clean scrub mode). The seekbar sits inside a
           // SafeArea, so on iOS the home-indicator inset lifts it — the rail
@@ -1826,41 +1917,71 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Sponsored banner ABOVE the name section — tap opens a
-                    // bottom sheet with the full ad details + CTA.
-                    if (_bannerAd != null)
+    // ✕-closed banner: brief apology chip, then gone.
+                    if (_bannerApology)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ),
+                    // Sponsored ad card ABOVE the name section — styled like a
+                    // feed/reel ad: creative thumbnail, 2-line headline, an
+                    // "advertiser · Ad" line, ✕ (top) to mute + ⋯ (bottom) for
+                    // options. Tapping the body opens the full details sheet.
+                    if (_bannerAd != null && !_bannerApology)
                       GestureDetector(
                         onTap: _openBannerAdSheet,
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 6),
+                          padding: const EdgeInsets.fromLTRB(8, 8, 4, 8),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.45),
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.black.withValues(alpha: 0.52),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.18)),
+                                color: Colors.white.withValues(alpha: 0.16)),
                           ),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (_bannerAd!.images.isNotEmpty)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: Image.network(
-                                    _bannerAd!.images.first,
-                                    width: 30,
-                                    height: 30,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        const SizedBox.shrink(),
-                                  ),
-                                )
-                              else
-                                const Icon(Icons.campaign_outlined,
-                                    size: 18, color: Colors.white70),
-                              const SizedBox(width: 8),
-                              Flexible(
+                              // Creative thumbnail — larger, like the reference.
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(9),
+                                child: SizedBox(
+                                  width: 54,
+                                  height: 54,
+                                  child: _bannerAd!.images.isNotEmpty
+                                      ? Image.network(
+                                          _bannerAd!.images.first,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              const ColoredBox(
+                                            color: Color(0x33FFFFFF),
+                                            child: Icon(Icons.campaign_outlined,
+                                                size: 22,
+                                                color: Colors.white70),
+                                          ),
+                                        )
+                                      : const ColoredBox(
+                                          color: Color(0x33FFFFFF),
+                                          child: Icon(Icons.campaign_outlined,
+                                              size: 22, color: Colors.white70),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              // Headline + advertiser · Ad.
+                              Expanded(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment:
@@ -1868,32 +1989,95 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                   children: [
                                     Text(
                                       _bannerAd!.title,
-                                      maxLines: 1,
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Sponsored',
-                                      style: TextStyle(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.6),
-                                        fontSize: 10,
+                                        fontSize: 13,
+                                        height: 1.25,
                                         fontWeight: FontWeight.w600,
                                       ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            _bannerAd!.advertiser.isNotEmpty
+                                                ? _bannerAd!.advertiser
+                                                : 'Sponsored',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.72),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        const Text(
+                                          '  ·  ',
+                                          style: TextStyle(
+                                            color: Colors.white54,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Ad',
+                                          style: TextStyle(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.72),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              Icon(Icons.chevron_right_rounded,
-                                  size: 18,
-                                  color:
-                                      Colors.white.withValues(alpha: 0.7)),
+                              // ✕ (top) mutes the ad + category for 48h;
+                              // ⋯ (bottom) opens the details/options sheet.
+                              Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GestureDetector(
+                                    onTap: _closeBannerAd,
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(4),
+                                      child: Icon(Icons.close_rounded,
+                                          size: 16, color: Colors.white70),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: _openBannerAdSheet,
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(4),
+                                      child: Icon(Icons.more_horiz_rounded,
+                                          size: 16, color: Colors.white70),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
+                          ),
+                        ),
+                      ),
+                    // Boosted short: small 'Sponsored' marker just above the
+                    // author row — same typography as the fallback page.
+                    if (widget.sponsoredAd != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          'Sponsored',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.65),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -2061,56 +2245,130 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     // Title removed — show only the description, like the BN feed.
                     if (post.content.trim().isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () => setState(
-                            () => _captionExpanded = !_captionExpanded),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: _captionExpanded
-                                ? MediaQuery.of(context).size.height * 0.3
-                                : double.infinity,
+                      // AnimatedSize = the caption grows/shrinks smoothly
+                      // instead of snapping. Collapsed: ONE line with the
+                      // "আরো পড়ুন" toggle INLINE at the end of that line.
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                        alignment: Alignment.topLeft,
+                        child: GestureDetector(
+                          onTap: () => setState(
+                              () => _captionExpanded = !_captionExpanded),
+                          child: _captionExpanded
+                              ? ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight:
+                                        MediaQuery.of(context).size.height *
+                                            0.3,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          HtmlContentUtils.toPlainText(
+                                              post.content),
+                                          style: TextStyle(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.86),
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'কম দেখুন',
+                                          style: TextStyle(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.65),
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        HtmlContentUtils.toPlainText(
+                                            post.content),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.86),
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ),
+                                    if (post.content.trim().length > 40) ...[
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'আরো পড়ুন',
+                                        style: TextStyle(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.65),
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ],
+                    // Boosted short: advertiser CTA under the caption — the
+                    // same white outline chip the fallback page shows.
+                    if (widget.sponsoredAd != null) ...[
+                      const SizedBox(height: 10),
+                      InkWell(
+                        onTap: () {
+                          HouseAdsService.track(
+                            eventType: 'cta_click',
+                            placement: 'shorts_reel',
+                            adId: widget.sponsoredAd!.id,
+                          );
+                          HouseAdCard.launchCta(widget.sponsoredAd!);
+                        },
+                        borderRadius: BorderRadius.circular(999),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(999),
+                            // App-wide promo chip: icon + text, no border.
+                            color: Colors.white.withValues(alpha: 0.18),
                           ),
-                          child: SingleChildScrollView(
-                            physics: _captionExpanded
-                                ? const BouncingScrollPhysics()
-                                : const NeverScrollableScrollPhysics(),
-                            child: Text(
-                              // Strip HTML — captions written on the web can
-                              // carry <p class="text-wrap"> wrappers.
-                              HtmlContentUtils.toPlainText(post.content),
-                              // Collapsed = a single tidy line; "আরো পড়ুন"
-                              // expands upward to the full caption.
-                              maxLines: _captionExpanded ? null : 1,
-                              overflow: _captionExpanded
-                                  ? TextOverflow.visible
-                                  : TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.86),
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w400,
-                                height: 1.4,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(HouseAdCard.ctaIcon(widget.sponsoredAd!),
+                                  size: 14, color: Colors.white),
+                              const SizedBox(width: 6),
+                              Text(
+                                widget.sponsoredAd!.ctaLabel,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                      // Long captions get an explicit reels-style toggle.
-                      if (post.content.trim().length > 90 ||
-                          post.title.length > 70) ...[
-                        const SizedBox(height: 4),
-                        GestureDetector(
-                          onTap: () => setState(
-                              () => _captionExpanded = !_captionExpanded),
-                          child: Text(
-                            _captionExpanded ? 'কম দেখুন' : 'আরো পড়ুন',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.65),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
                     ],
                   ],
                 ),
@@ -2360,6 +2618,13 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
   bool _billed = false;
   Timer? _billableTimer;
 
+  // The REAL boosted post — fetched on mount so the page can re-render as a
+  // genuine _ShortVideoPage (like/comment/gift/share all live) with just the
+  // 'Sponsored' label + CTA layered on. Until it lands (or if it fails) the
+  // minimal fallback below keeps playing.
+  BusinessNetworkPost? _realPost;
+  PostMedia? _realMedia;
+
   String get _videoUrl =>
       (widget.ad.boostedPost?['video_url'] ?? '').toString();
   String get _authorName =>
@@ -2373,6 +2638,7 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
   void initState() {
     super.initState();
     _init();
+    _fetchRealPost();
   }
 
   Future<void> _init() async {
@@ -2382,7 +2648,9 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
       await c.initialize();
       await c.setLooping(true);
       await c.setVolume(widget.isActive ? 1.0 : 0.0);
-      if (!mounted) {
+      // The real post arrived while we were initializing — the real page
+      // owns playback now, so drop this fallback player.
+      if (!mounted || _realPost != null) {
         c.dispose();
         return;
       }
@@ -2394,6 +2662,29 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
     } catch (e) {
       debugPrint('[boost] video init failed: $e');
     }
+  }
+
+  Future<void> _fetchRealPost() async {
+    final id = (widget.ad.boostedPost?['id'] ?? '').toString();
+    if (id.isEmpty) return;
+    final post = await BusinessNetworkService.getPostByIdentifier(id);
+    if (!mounted || post == null) return;
+    final videos = post.media.where((m) => m.isVideo).toList();
+    if (videos.isEmpty) return;
+    final media = videos.firstWhere(
+      (m) => m.bestUrl == _videoUrl,
+      orElse: () => videos.first,
+    );
+    final old = _controller;
+    final wasReady = _ready;
+    _controller = null;
+    setState(() {
+      _realPost = post;
+      _realMedia = media;
+    });
+    // Only dispose a fully initialized fallback player here — if _init is
+    // still in flight it sees _realPost and disposes its own controller.
+    if (wasReady) old?.dispose();
   }
 
   void _armBillable() {
@@ -2432,6 +2723,16 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
     super.dispose();
   }
 
+  /// Boosted post's author avatar/name → their BN profile.
+  void _openAuthorProfile() {
+    final id = (widget.ad.boostedPost?['author_id'] ?? '').toString();
+    if (id.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProfileScreen(userId: id)),
+    );
+  }
+
   void _onCta() {
     HouseAdsService.track(
       eventType: 'cta_click',
@@ -2443,6 +2744,17 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Real post loaded — render the SAME page normal shorts use, so every
+    // action (like/comment/gift/share/follow/profile) works for real. The
+    // billable-impression timer stays armed in this state either way.
+    if (_realPost != null && _realMedia != null) {
+      return _ShortVideoPage(
+        post: _realPost!,
+        media: _realMedia!,
+        isActive: widget.isActive,
+        sponsoredAd: widget.ad,
+      );
+    }
     final c = _controller;
     return Container(
       color: Colors.black,
@@ -2490,7 +2802,9 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                 children: [
                   Row(
                     children: [
-                      Container(
+                      GestureDetector(
+                        onTap: _openAuthorProfile,
+                        child: Container(
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
@@ -2510,6 +2824,7 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                                     color: Colors.white70))
                             : const Icon(Icons.person_rounded,
                                 size: 20, color: Colors.white70),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Flexible(
@@ -2517,16 +2832,51 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              _authorName.isNotEmpty
-                                  ? _authorName
-                                  : widget.ad.advertiser,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
+                            GestureDetector(
+                              onTap: _openAuthorProfile,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _authorName.isNotEmpty
+                                          ? _authorName
+                                          : widget.ad.advertiser,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  if (widget.ad.advertiserVerified) ...[
+                                    const SizedBox(width: 3),
+                                    const Icon(Icons.verified,
+                                        size: 15, color: Color(0xFF60A5FA)),
+                                  ],
+                                  if (widget.ad.advertiserPro) ...[
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF6366F1),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                      ),
+                                      child: const Text(
+                                        'Pro',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                             Text(
@@ -2555,22 +2905,36 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _onCta,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                  const SizedBox(height: 10),
+                  // Small outline chip, left-aligned — the boost looks like a
+                  // normal short; only this chip + "Sponsored" mark it.
+                  InkWell(
+                    onTap: _onCta,
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        // Soft translucent chip on the dark video — icon +
+                        // text, no border (matches the app-wide promo style).
+                        color: Colors.white.withValues(alpha: 0.18),
                       ),
-                      child: Text(
-                        widget.ad.ctaLabel,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(HouseAdCard.ctaIcon(widget.ad),
+                              size: 14, color: Colors.white),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.ad.ctaLabel,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

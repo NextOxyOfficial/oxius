@@ -502,10 +502,10 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 onTap: bannerUrl.isNotEmpty
                     ? () => _openBannerViewer(bannerUrl, name, avatarUrl)
                     : null,
+                // Plain full-width banner — no corner rounding.
                 child: SizedBox(
-                  // +50% over the old 158 — the header shows a window into
-                  // the banner (cover); tapping opens the FULL image.
-                  height: 237,
+                  // Ends around the avatar's midline (per design review).
+                  height: 170,
                   width: double.infinity,
                   child: bannerUrl.isNotEmpty
                       ? Image.network(

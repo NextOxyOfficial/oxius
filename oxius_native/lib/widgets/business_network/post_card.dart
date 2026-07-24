@@ -15,6 +15,7 @@ import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/mention_navigator.dart';
 import '../../utils/business_network_media_downloader.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import '../../widgets/common/adsy_dialog.dart';
@@ -23,6 +24,7 @@ import '../../widgets/common/adsy_share_sheet.dart';
 import '../../widgets/common/adsy_toast.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
+import '../ads/compact_house_ad_strip.dart';
 import 'reshared_post_card.dart';
 import 'reshared_news_card.dart';
 import '../../screens/news_detail_screen.dart';
@@ -42,6 +44,8 @@ class PostCard extends StatefulWidget {
   final void Function(int postId, bool isSaved)? onSaveChanged;
   // Called with the new reshare post so the feed can prepend it without reload.
   final void Function(BusinessNetworkPost reshared)? onReshared;
+  // Feed-controlled: show the compact sponsored strip under this post's media.
+  final bool showInlineAd;
 
   const PostCard({
     super.key,
@@ -52,6 +56,7 @@ class PostCard extends StatefulWidget {
     this.onUserBlocked,
     this.onSaveChanged,
     this.onReshared,
+    this.showInlineAd = false,
   });
 
   @override
@@ -568,6 +573,18 @@ class _PostCardState extends State<PostCard> {
           ),
         if (isSelf) ...[
           AdsySheetAction(
+            icon: Icons.rocket_launch_outlined,
+            title: 'পোস্ট বুস্ট করুন',
+            subtitle: 'বিজ্ঞাপন দিয়ে বেশি মানুষের কাছে পৌঁছান',
+            onTap: _handleBoostPost,
+          ),
+          AdsySheetAction(
+            icon: Icons.copy_rounded,
+            title: 'Post ID কপি করুন',
+            subtitle: 'পোস্টের আইডি ক্লিপবোর্ডে কপি করুন',
+            onTap: _handleCopyPostId,
+          ),
+          AdsySheetAction(
             icon: Icons.edit_outlined,
             title: 'Edit post',
             subtitle: 'পোস্টটি সম্পাদনা করুন',
@@ -673,6 +690,65 @@ class _PostCardState extends State<PostCard> {
       selectedMedia,
       ownerName: _post.user.name,
     );
+  }
+
+  Future<void> _handleBoostPost() async {
+    // Copy the id up front, then a professional steps sheet. The panel URL
+    // opens in a Chrome Custom Tab (inAppBrowserView) — a plain external
+    // launch bounces straight back into the app via Android App Links and
+    // lands the user on the feed instead of the ads panel.
+    await Clipboard.setData(ClipboardData(text: '${_post.id}'));
+    if (!mounted) return;
+    AdsySheet.show(
+      context,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 4, 20, 10),
+          child: Text(
+            'যেভাবে বুস্ট করবেন:\n'
+            '১. Post ID কপি হয়ে গেছে ✓\n'
+            '২. নিচের বাটনে ট্যাপ করে Ads Panel খুলুন\n'
+            '৩. 🚀 Boost Post ফরম্যাট বেছে Post ID paste করুন\n'
+            '৪. বাজেট দিয়ে Submit করুন — রিভিউয়ের পর লাইভ হবে',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.6,
+              color: Color(0xFF475569),
+            ),
+          ),
+        ),
+        AdsySheetAction(
+          icon: Icons.rocket_launch_outlined,
+          title: 'Ads Panel খুলুন',
+          subtitle: 'Post ID কপি হয়ে গেছে — Boost Post-এ paste করুন',
+          onTap: () {
+            launchUrl(
+              Uri.parse(
+                'https://adsyclub.com/business-network/abn-ads/create'
+                '?post=${_post.id}',
+              ),
+              mode: LaunchMode.inAppBrowserView,
+            );
+          },
+        ),
+        // Re-copy at any time (e.g. after pasting something else).
+        AdsySheetAction(
+          icon: Icons.copy_rounded,
+          title: 'Post ID আবার কপি করুন',
+          subtitle: '${_post.id}',
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: '${_post.id}'));
+            AdsyToast.success(context, 'Post ID কপি হয়েছে');
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleCopyPostId() async {
+    await Clipboard.setData(ClipboardData(text: '${_post.id}'));
+    if (!mounted) return;
+    AdsyToast.success(context, 'Post ID কপি হয়েছে');
   }
 
   Future<void> _handleEditPost() async {
@@ -890,6 +966,14 @@ class _PostCardState extends State<PostCard> {
             PostMediaGallery(
               media: _post.media,
               onMediaTap: _handleMediaTap,
+            ),
+          // Preview-style compact sponsored strip under the media, above the
+          // caption — the feed decides which posts carry it (every Nth) so
+          // it never feels ad-heavy. The post's author earns the share.
+          if (_post.media.isNotEmpty && widget.showInlineAd)
+            CompactHouseAdStrip(
+              creatorId: _post.user.uuid ?? _post.user.id.toString(),
+              contentId: _post.id.toString(),
             ),
           // Post Content with long press copy (title removed from design)
           if (plainPostContent.isNotEmpty)

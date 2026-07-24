@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../models/business_network_models.dart';
+import '../../services/house_ads_service.dart';
+import '../ads/house_ad_card.dart';
 
 const Map<String, String> _kMediaHeaders = {'User-Agent': 'OxiUsFlutter/1.0'};
 
@@ -590,6 +594,18 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
 
   VideoPlayerController? _controller;
   bool _isInitialized = false;
+
+  // ── Mid-roll ad: after ~12s of REAL playback (once per video) the video
+  // pauses and a sponsored interstitial shows. Skip unlocks after 5s; a 15s
+  // countdown auto-closes it; then the video resumes where it left off.
+  HouseAd? _midrollAd;
+  bool _midrollFetched = false; // fetch + show happen at most once
+  bool _midrollActive = false;
+  int _midrollRemaining = 15;
+  Timer? _midrollTimer;
+  Timer? _watchTimer;
+  int _watchedSeconds = 0;
+
   // Aspect ratio measured from the thumbnail so the box is sized correctly even
   // before the video controller finishes initializing.
   double? _thumbAspect;
@@ -699,21 +715,86 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     final c = _controller;
     if (c == null || !_isInitialized) return;
 
-    if (_isVisible) {
+    if (_isVisible && !_midrollActive) {
       if (!c.value.isPlaying) {
         c.play();
+        _startWatchClock();
       }
     } else {
       if (c.value.isPlaying) {
         c.pause();
       }
+      _watchTimer?.cancel();
     }
+  }
+
+  // ── Mid-roll machinery ──────────────────────────────────────────────────
+
+  void _startWatchClock() {
+    if (_midrollFetched) return; // already shown (or decided) for this video
+    _watchTimer?.cancel();
+    _watchTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      final c = _controller;
+      if (!mounted || c == null || !_isInitialized) return t.cancel();
+      if (!c.value.isPlaying) return; // paused — don't count
+      _watchedSeconds++;
+      if (_watchedSeconds >= 12 && !_midrollFetched) {
+        t.cancel();
+        _startMidroll();
+      }
+    });
+  }
+
+  Future<void> _startMidroll() async {
+    _midrollFetched = true;
+    final ad = await HouseAdsService.fetch('bn_feed');
+    if (!mounted || ad == null) return;
+    // The interstitial needs a visual — an image creative or the video ad's
+    // companion banner. Without one, skip the mid-roll entirely.
+    final visual =
+        ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
+    if (visual.isEmpty) return;
+    final c = _controller;
+    if (c == null || !_isInitialized || !_isVisible) return;
+
+    c.pause();
+    setState(() {
+      _midrollAd = ad;
+      _midrollActive = true;
+      _midrollRemaining = 15;
+    });
+    HouseAdsService.track(
+      eventType: 'impression',
+      placement: 'bn_feed',
+      adId: ad.id,
+    );
+    _midrollTimer?.cancel();
+    _midrollTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return t.cancel();
+      if (_midrollRemaining <= 1) {
+        t.cancel();
+        _closeMidroll();
+      } else {
+        setState(() => _midrollRemaining--);
+      }
+    });
+  }
+
+  void _closeMidroll() {
+    _midrollTimer?.cancel();
+    if (!mounted) return;
+    setState(() => _midrollActive = false);
+    // Resume the interrupted video from where it stopped.
+    _updatePlayback();
   }
 
   void _disposeController() {
     final c = _controller;
     _controller = null;
     c?.dispose();
+    _watchTimer?.cancel();
+    _midrollTimer?.cancel();
+    _midrollActive = false;
   }
 
   @override
@@ -721,6 +802,131 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     feedMuted.removeListener(_applyMute);
     _disposeController();
     super.dispose();
+  }
+
+  Widget _buildMidroll(HouseAd ad) {
+    final visual =
+        ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
+    final elapsed = 15 - _midrollRemaining;
+    final canSkip = elapsed >= 5;
+    return Container(
+      color: Colors.black.withValues(alpha: 0.92),
+      child: Stack(
+        fit: StackFit.expand,
+        clipBehavior: Clip.hardEdge,
+        children: [
+          GestureDetector(
+            onTap: () {
+              HouseAdsService.track(
+                eventType: 'cta_click',
+                placement: 'bn_feed',
+                adId: ad.id,
+              );
+              HouseAdCard.launchCta(ad);
+            },
+            child: Image.network(
+              visual,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'Sponsored',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Auto-close countdown.
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$_midrollRemaining s',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                if (canSkip) ...[
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: _closeMidroll,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.7)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Skip',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(width: 3),
+                          Icon(Icons.close_rounded,
+                              size: 13, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (ad.title.trim().isNotEmpty)
+            Positioned(
+              left: 10,
+              right: 10,
+              bottom: 10,
+              child: Text(
+                ad.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   /// Best-known aspect ratio. Locked after first measurement so the card
@@ -850,6 +1056,11 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
               ),
             ),
           ),
+        // ── Mid-roll interstitial: pauses the video, auto-closes on the
+        // 15s countdown, Skip unlocks after 5s. Tap anywhere on the creative
+        // opens the advertiser's destination.
+        if (_midrollActive && _midrollAd != null)
+          Positioned.fill(child: _buildMidroll(_midrollAd!)),
       ],
     );
 
