@@ -2160,6 +2160,15 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
         companion_b64 = request.data.pop("companion_banner_b64", None)
         media_ids = request.data.pop("media_ids", None)  # pre-uploaded videos
         data = request.data
+        # Policy consent is mandatory: gambling, adult content, cigarettes/
+        # tobacco, vape and child-harm ads are banned outright — the client
+        # shows the list and the advertiser must explicitly agree.
+        if not data.pop("policy_agreed", False):
+            return Response(
+                {"error": "policy agreement required",
+                 "detail": "বিজ্ঞাপন জমা দিতে নীতিমালায় সম্মতি দিতে হবে।"},
+                status=400,
+            )
         data["user"] = request.user.id
         # No user-facing category picker — the Interest Brain classifies ad
         # content itself, so an omitted category falls back to General.

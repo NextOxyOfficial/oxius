@@ -783,11 +783,50 @@
               </div>
             </div>
 
+            <!-- Ad policy agreement (required) -->
+            <div class="border border-red-100 bg-red-50/60 rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <UIcon
+                  name="i-heroicons-shield-exclamation"
+                  class="w-4.5 h-4.5 text-red-500"
+                />
+                <span class="text-sm font-semibold text-gray-800"
+                  >বিজ্ঞাপন নীতিমালা</span
+                >
+              </div>
+              <p class="text-xs text-gray-600 mb-2">
+                নিচের বিষয়গুলোর বিজ্ঞাপন AdsyClub-এ সম্পূর্ণ নিষিদ্ধ — এমন
+                বিজ্ঞাপন জমা দিলে তা বাতিল হবে এবং অ্যাকাউন্টে ব্যবস্থা নেওয়া
+                হতে পারে:
+              </p>
+              <ul class="text-xs text-red-600 space-y-1 mb-3 pl-1">
+                <li>• জুয়া / বেটিং / ক্যাসিনো</li>
+                <li>• প্রাপ্তবয়স্ক (Adult) কনটেন্ট</li>
+                <li>• সিগারেট / তামাকজাত পণ্য</li>
+                <li>• ভ্যাপ / ই-সিগারেট</li>
+                <li>• শিশু নির্যাতন বা শিশুদের জন্য ক্ষতিকর যেকোনো কনটেন্ট</li>
+                <li>• আইনবিরুদ্ধ পণ্য বা সেবা</li>
+              </ul>
+              <label
+                class="flex items-start gap-2.5 cursor-pointer select-none"
+              >
+                <input
+                  v-model="policyAgreed"
+                  type="checkbox"
+                  class="mt-0.5 h-4 w-4 rounded border-gray-300 accent-indigo-600"
+                />
+                <span class="text-xs text-gray-700 leading-relaxed">
+                  আমি নিশ্চিত করছি — আমার বিজ্ঞাপনে উপরের কোনো নিষিদ্ধ বিষয়
+                  নেই এবং আমি AdsyClub-এর বিজ্ঞাপন নীতিমালায় সম্মত।
+                </span>
+              </label>
+            </div>
+
             <!-- Submit -->
             <div class="pt-2 flex items-center gap-3">
               <button
                 type="submit"
-                :disabled="isSubmitting"
+                :disabled="isSubmitting || !policyAgreed"
                 class="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl shadow-sm transition-colors"
               >
                 {{ isSubmitting ? "Submitting…" : "Submit Ad" }}
@@ -1172,6 +1211,9 @@ const videoMediaId = ref(null);
 const videoUploading = ref(false);
 const companionBanner = ref(""); // base64 data URL
 
+// Required ad-policy consent (gambling/adult/tobacco/vape/child-harm ban).
+const policyAgreed = ref(false);
+
 // ── Boost post (boost format) ──
 const route = useRoute();
 const boostPostId = ref("");
@@ -1486,6 +1528,10 @@ function onImagePicked(e) {
 
 async function submitAd() {
   errorMsg.value = "";
+  if (!policyAgreed.value) {
+    errorMsg.value = "বিজ্ঞাপন জমা দিতে নীতিমালায় সম্মতি দিন।";
+    return;
+  }
   if (!form.male && !form.female && !form.other) {
     errorMsg.value = "কমপক্ষে একটি audience নির্বাচন করুন।";
     return;
@@ -1519,6 +1565,7 @@ async function submitAd() {
       retarget_sources:
         form.ad_objective === "retargeting" ? [...form.retarget_sources] : [],
       retarget_days: form.retarget_days,
+      policy_agreed: true,
     };
     if (form.format === "video") {
       payload.media_ids = [videoMediaId.value];
