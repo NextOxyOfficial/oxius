@@ -171,6 +171,11 @@ urlpatterns = [
     path("ads/upload-video/", ads_api.upload_ad_video, name="ads-upload-video"),
     path("ads/stats/", ads_api.my_ad_stats, name="ads-stats"),
     path("ads/reward-status/", ads_api.my_reward_status, name="ads-reward-status"),
+    path(
+        "ads/creator-earnings/",
+        ads_api.my_creator_ad_earnings,
+        name="ads-creator-earnings",
+    ),
     path("ads/<str:ad_id>/toggle/", ads_api.toggle_my_ad, name="ads-toggle"),
     path("ads/<str:ad_id>/rerun/", ads_api.rerun_my_ad, name="ads-rerun"),
     path(

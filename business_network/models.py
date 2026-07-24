@@ -1483,8 +1483,9 @@ class AdsSystemConfig(models.Model):
 
     # Advertiser side: ৳ per view (200 → ~500 views at 0.40)
     cpv_rate = models.DecimalField(max_digits=6, decimal_places=2, default=0.40)
-    # Creator share of ad revenue generated ON their content (percent)
-    creator_share_percent = models.PositiveIntegerField(default=40)
+    # Creator share of ad revenue generated ON their content (percent) —
+    # Facebook-style 50/50 split with the platform.
+    creator_share_percent = models.PositiveIntegerField(default=50)
     # Approximate BDT value of ONE AdMob impression for creator attribution
     admob_view_value = models.DecimalField(max_digits=6, decimal_places=3, default=0.05)
     # Viewer daily diamond reward: every `views_per_diamond` tracked ad views
@@ -1581,6 +1582,9 @@ class AdEvent(models.Model):
         AbnAdsPanelCategory, on_delete=models.SET_NULL, null=True, blank=True,
         related_name="ad_events",
     )
+    # The specific CONTENT (BN post id) the ad appeared on — powers the
+    # Facebook-style "এই কনটেন্টে এত earning" breakdown for creators.
+    content_id = models.CharField(max_length=20, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1589,6 +1593,9 @@ class AdEvent(models.Model):
             models.Index(fields=["creator", "-created_at"], name="adevent_creator_idx"),
             models.Index(fields=["ad", "-created_at"], name="adevent_ad_idx"),
             models.Index(fields=["created_at"], name="adevent_created_idx"),
+            models.Index(
+                fields=["creator", "content_id"], name="adevent_content_idx"
+            ),
         ]
 
     def __str__(self):

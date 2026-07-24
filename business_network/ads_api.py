@@ -35,7 +35,11 @@ VALID_PLACEMENTS = {
     "classified_list", "web_feed", "web_banner",
 }
 
-VALID_EVENTS = {"impression", "click", "cta_click", "skip"}
+VALID_EVENTS = {"impression", "click", "cta_click", "skip", "close"}
+
+# A closed (✕) ad: that ad AND its category stay hidden from this user for
+# 48 hours — other categories keep serving.
+CLOSE_SUPPRESS_SECONDS = 60 * 60 * 48
 
 
 def notify_advertiser(ad, title, body):
@@ -183,6 +187,11 @@ def serve_ad(request):
             # Daily frequency cap per user+ad.
             cap_key = f"adcap:{user.id}:{ad.pk}:{now.date().isoformat()}"
             if (cache.get(cap_key) or 0) >= cfg.daily_frequency_cap:
+                continue
+            # ✕-closed: this ad or its whole category is muted for 48h.
+            if cache.get(f"adclose:{user.id}:{ad.pk}"):
+                continue
+            if cache.get(f"adcatclose:{user.id}:{ad.category_id}"):
                 continue
         candidates.append(ad)
 
@@ -380,8 +389,20 @@ def track_ad_events(request):
             user=user,
             creator=creator,
             category=category,
+            # The BN post the ad rode on — per-content creator earnings.
+            content_id=str(ev.get("content") or "")[:20],
         )
         created += 1
+
+        # ✕ close: mute this ad + its category for this user for 48h. No
+        # billing, no reward — just the suppression flags.
+        if ad is not None and event_type == "close" and user is not None:
+            cache.set(f"adclose:{user.id}:{ad.pk}", 1, CLOSE_SUPPRESS_SECONDS)
+            if ad.category_id:
+                cache.set(
+                    f"adcatclose:{user.id}:{ad.category_id}", 1,
+                    CLOSE_SUPPRESS_SECONDS,
+                )
 
         # Panel counters + budget burn (CPV per billable impression). A
         # per-user+ad daily dedupe cap keeps repeat exposure from burning
@@ -600,6 +621,88 @@ def my_ad_stats(request):
         ],
         "segments": segments,
         "tip": tip,
+    })
+
+
+@api_view(["GET"])
+def my_creator_ad_earnings(request):
+    """Facebook-style creator earnings: 50% ad-revenue share, broken down
+    PER CONTENT. No points — just দিন-ভিত্তিক মোট আর প্রতি কনটেন্টে কত ৳.
+
+    Returns: {share_percent, total, daily: [{date, amount}],
+              contents: [{content_id, title, thumb, views, amount}]}
+    """
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+    from django.db.models import Count, Q
+
+    from .models import BusinessNetworkPost, CreatorAdEarning
+
+    cfg = AdsSystemConfig.get()
+    share = Decimal(cfg.creator_share_percent) / Decimal(100)
+    cpv = Decimal(str(cfg.cpv_rate))
+    admob_value = Decimal(str(cfg.admob_view_value))
+    days = min(int(request.query_params.get("days") or 30), 90)
+    since = timezone.localdate() - timedelta(days=days - 1)
+
+    # Credited daily ledger (settled money).
+    ledger = CreatorAdEarning.objects.filter(
+        creator=request.user, date__gte=since
+    ).order_by("date")
+    daily = [{"date": str(r.date), "amount": str(r.amount)} for r in ledger]
+    total = sum((r.amount for r in ledger), Decimal("0"))
+
+    # Per-content breakdown (estimated live from events at current rates —
+    # the ledger stays the source of truth for credited totals).
+    rows = (
+        AdEvent.objects.filter(
+            creator=request.user,
+            created_at__date__gte=since,
+            event_type="impression",
+        )
+        .exclude(content_id="")
+        .values("content_id")
+        .annotate(
+            panel_views=Count("id", filter=Q(source="panel")),
+            admob_views=Count("id", filter=Q(source="admob")),
+        )
+        .order_by("-panel_views")[:30]
+    )
+    ids = [r["content_id"] for r in rows]
+    posts = {
+        p.pk: p
+        for p in BusinessNetworkPost.objects.filter(pk__in=ids)
+        .prefetch_related("media")
+    }
+
+    def _thumb(post):
+        for m in post.media.all():
+            if getattr(m, "thumbnail", None):
+                return request.build_absolute_uri(m.thumbnail.url)
+            if getattr(m, "image", None):
+                return request.build_absolute_uri(m.image.url)
+        return ""
+
+    contents = []
+    for r in rows:
+        post = posts.get(r["content_id"])
+        amount = (
+            Decimal(r["panel_views"]) * cpv
+            + Decimal(r["admob_views"]) * admob_value
+        ) * share
+        contents.append({
+            "content_id": r["content_id"],
+            "title": (post.content or post.title or "")[:80] if post else "",
+            "thumb": _thumb(post) if post else "",
+            "views": r["panel_views"] + r["admob_views"],
+            "amount": str(amount.quantize(Decimal("0.01"))),
+        })
+
+    return Response({
+        "share_percent": cfg.creator_share_percent,
+        "total": str(total),
+        "daily": daily,
+        "contents": contents,
     })
 
 
