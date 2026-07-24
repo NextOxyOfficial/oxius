@@ -283,6 +283,11 @@ def serve_ad(request):
             if chosen.user is not None and getattr(chosen.user, "image", None)
             else ""
         ),
+        # Trust badges — shown beside the advertiser name on every surface.
+        "advertiser_verified": bool(getattr(chosen.user, "kyc", False))
+        if chosen.user else False,
+        "advertiser_pro": bool(getattr(chosen.user, "is_pro", False))
+        if chosen.user else False,
     }
 
     # Boosted post: ship everything the shorts reel needs to play it inline.
