@@ -119,6 +119,19 @@ LOOKBACK_DAYS = 30
 # Per-signal row caps keep one hyperactive user from stalling the nightly job.
 ROW_CAP = 500
 
+# ── Soft mood/tone word lists (NOT a clinical assessment — a light content
+# tone signal so serving/feed can soften experiences for low-tone users). ──
+POSITIVE_WORDS = (
+    "আলহামদুলিল্লাহ", "খুশি", "ভালো লাগ", "সুন্দর", "মজা", "ধন্যবাদ",
+    "শুকরিয়া", "অভিনন্দন", "happy", "great", "love", "awesome", "excited",
+    "blessed", "alhamdulillah",
+)
+NEGATIVE_WORDS = (
+    "কষ্ট", "দুঃখ", "হতাশ", "একা", "মন খারাপ", "ক্লান্ত", "বিষণ্ণ",
+    "কান্না", "যন্ত্রণা", "sad", "depressed", "alone", "tired", "pain",
+    "hurt", "hopeless",
+)
+
 
 def classify_text(text):
     """Return {segment: hit_count} for a blob of content text."""
@@ -278,9 +291,32 @@ def build_profile(user):
             if norm >= 5:
                 interest_scores[seg] = round(norm, 1)
 
+    # ── Soft mood/tone from the user's OWN recent words (posts+comments).
+    # A gentle product signal only — never a diagnosis, never shown to the
+    # user, never sold to advertisers as a targeting option. ──
+    from .models import BusinessNetworkPost
+
+    own_texts = []
+    for p in BusinessNetworkPost.objects.filter(
+        author=user, created_at__gte=since
+    )[:100]:
+        own_texts.append(f"{p.title or ''} {p.content or ''}")
+    for own_cm in BusinessNetworkPostComment.objects.filter(
+        author=user, created_at__gte=since
+    )[:200]:
+        own_texts.append(own_cm.content or "")
+    blob = " ".join(own_texts).lower()
+    pos_hits = sum(blob.count(w) for w in POSITIVE_WORDS)
+    neg_hits = sum(blob.count(w) for w in NEGATIVE_WORDS)
+
     # ── Segments: top interests + activity level + heavy-video flag ──
     ranked = sorted(interest_scores.items(), key=lambda x: -x[1])
     segments = [seg for seg, _ in ranked[:3]]
+    if pos_hits + neg_hits >= 3:
+        if neg_hits > pos_hits * 2:
+            segments.append("mood_low")
+        elif pos_hits > neg_hits:
+            segments.append("mood_positive")
     if total_signal >= 150:
         segments.append("high_activity")
     elif total_signal >= 40:
