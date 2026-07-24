@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
@@ -327,6 +328,19 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                         gradient: const [Color(0xFF10B981), Color(0xFF059669)],
                         onTap: () =>
                             Navigator.pushNamed(context, '/deposit-withdraw'),
+                      ),
+                      // Advertise on AdsyClub — opens the web ads panel in an
+                      // in-app browser tab.
+                      _MenuItem(
+                        icon: Icons.campaign_outlined,
+                        label: 'AdsyClub-এ বিজ্ঞাপন দিন',
+                        subtitle: 'আপনার বিজ্ঞাপন প্রকাশ করুন',
+                        gradient: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                        onTap: () => launchUrl(
+                          Uri.parse(
+                              'https://adsyclub.com/business-network/abn-ads'),
+                          mode: LaunchMode.inAppBrowserView,
+                        ),
                       ),
                       // _MenuItem(
                       //   icon: Icons.history_rounded,
