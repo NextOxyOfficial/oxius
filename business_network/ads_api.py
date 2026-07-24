@@ -37,6 +37,48 @@ VALID_PLACEMENTS = {
 
 VALID_EVENTS = {"impression", "click", "cta_click", "skip"}
 
+
+def notify_advertiser(ad, title, body):
+    """Push to the ad's owner (approve / 50% budget / completed). Best-effort
+    — a notification failure must never break serving or billing."""
+    if ad.user_id is None:
+        return
+    try:
+        from base.fcm_service import send_fcm_notification
+        from base.models import FCMToken
+
+        tokens = FCMToken.objects.filter(
+            user_id=ad.user_id, is_active=True
+        ).values_list("token", flat=True)
+        for token in tokens:
+            if str(token or "").startswith("voip:"):
+                continue
+            send_fcm_notification(
+                fcm_token=token,
+                title=title,
+                body=body,
+                data={"type": "ad_update", "ad_id": str(ad.pk)},
+            )
+    except Exception:
+        pass
+
+
+def _advertiser_milestones(ad):
+    """Fire the one-time '৫০% budget খরচ' push when spend crosses half."""
+    try:
+        if ad.budget and ad.spent >= ad.budget / 2:
+            flag = f"adhalf:{ad.pk}"
+            if not cache.get(flag):
+                cache.set(flag, 1, 60 * 60 * 24 * 90)
+                notify_advertiser(
+                    ad,
+                    "বাজেটের ৫০% খরচ হয়েছে",
+                    f'"{ad.title[:40]}" ভালো চলছে — এ পর্যন্ত {ad.views}টি '
+                    "views। প্যানেল থেকে পারফরম্যান্স দেখুন।",
+                )
+    except Exception:
+        pass
+
 # Anti-fraud ceilings (per user per day, cache-enforced).
 MAX_DAILY_EVENTS_PER_USER = 600
 
@@ -352,21 +394,27 @@ def track_ad_events(request):
                     else:
                         cache.set(dedupe_key, seen + 1, 60 * 60 * 26)
                 if billable:
+                    # CPV tiering: premium surfaces (reel/mid-roll) burn more
+                    # per view than quiet list rows.
+                    rate = cfg.cpv_for(placement)
                     AbnAdsPanel.objects.filter(pk=ad.pk).update(
                         views=F("views") + 1,
-                        spent=F("spent") + Decimal(str(cfg.cpv_rate)),
+                        spent=F("spent") + rate,
                     )
                     # Daily pacing counter (serve stops at daily_budget).
                     spend_key = f"adspend:{ad.pk}:{today.isoformat()}"
                     prev = Decimal(str(cache.get(spend_key) or 0))
-                    cache.set(
-                        spend_key,
-                        str(prev + Decimal(str(cfg.cpv_rate))),
-                        60 * 60 * 26,
-                    )
+                    cache.set(spend_key, str(prev + rate), 60 * 60 * 26)
+                    _advertiser_milestones(ad)
                     if ad.estimated_views and ad.views + 1 >= ad.estimated_views:
                         AbnAdsPanel.objects.filter(pk=ad.pk).update(
                             status="completed"
+                        )
+                        notify_advertiser(
+                            ad,
+                            "বিজ্ঞাপন সম্পন্ন হয়েছে 🎉",
+                            f'"{ad.title[:40]}" তার সব views পূর্ণ করেছে। '
+                            "এক ট্যাপে আবার চালাতে পারেন।",
                         )
             elif event_type in ("click", "cta_click"):
                 AbnAdsPanel.objects.filter(pk=ad.pk).update(
@@ -445,6 +493,77 @@ def my_ad_stats(request):
         )
         .order_by("created_at__date")
     )
+
+    # Placement breakdown — where the caller's ads earn their views/clicks.
+    placements = (
+        AdEvent.objects.filter(
+            ad__in=my_ads, created_at__date__gte=since, source="panel"
+        )
+        .values("placement")
+        .annotate(
+            views=Count("id", filter=Q(event_type="impression")),
+            clicks=Count(
+                "id", filter=Q(event_type__in=["click", "cta_click"])
+            ),
+        )
+        .order_by("-views")
+    )
+
+    # Interest-segment breakdown (Interest Brain feedback loop): which
+    # audience segments actually see/click these ads. Events are fetched as
+    # thin rows (capped), profiles bulk-loaded once, aggregated in Python.
+    ACTIVITY_TAGS = {
+        "high_activity", "medium_activity", "low_activity", "video_lover"
+    }
+    events = list(
+        AdEvent.objects.filter(
+            ad__in=my_ads,
+            created_at__date__gte=since,
+            source="panel",
+            user__isnull=False,
+        ).values("user_id", "event_type")[:5000]
+    )
+    user_ids = {e["user_id"] for e in events}
+    primary_segment = {}
+    if user_ids:
+        for profile in UserAdProfile.objects.filter(user_id__in=user_ids):
+            for seg in (profile.segments or []):
+                if seg not in ACTIVITY_TAGS:
+                    primary_segment[profile.user_id] = seg
+                    break
+    seg_stats = {}
+    for e in events:
+        seg = primary_segment.get(e["user_id"])
+        if not seg:
+            continue
+        row = seg_stats.setdefault(seg, {"views": 0, "clicks": 0})
+        if e["event_type"] == "impression":
+            row["views"] += 1
+        elif e["event_type"] in ("click", "cta_click"):
+            row["clicks"] += 1
+    segments = sorted(
+        (
+            {
+                "segment": seg,
+                "views": v["views"],
+                "clicks": v["clicks"],
+                "ctr": round(v["clicks"] / v["views"] * 100, 2)
+                if v["views"] else 0.0,
+            }
+            for seg, v in seg_stats.items()
+        ),
+        key=lambda r: -r["views"],
+    )[:8]
+
+    tip = ""
+    eligible = [r for r in segments if r["views"] >= 10]
+    if eligible:
+        top = max(eligible, key=lambda r: r["ctr"])
+        tip = (
+            f"আপনার বিজ্ঞাপন '{top['segment']}' আগ্রহীদের মধ্যে সবচেয়ে ভালো "
+            "চলছে — budget বাড়ালে আরও রেজাল্ট পাবেন।"
+        )
+
     return Response({
         "daily": [
             {
@@ -466,6 +585,16 @@ def my_ad_stats(request):
             }
             for ad in my_ads.order_by("-created_at")[:50]
         ],
+        "placements": [
+            {
+                "placement": row["placement"],
+                "views": row["views"],
+                "clicks": row["clicks"],
+            }
+            for row in placements
+        ],
+        "segments": segments,
+        "tip": tip,
     })
 
 
@@ -489,6 +618,50 @@ def my_reward_status(request):
         "views_to_next": 0 if earned >= cfg.max_daily_diamonds
         else per - (views % per),
     })
+
+
+@api_view(["POST"])
+def rerun_my_ad(request, ad_id):
+    """One-tap re-run: clone a completed/stopped ad as a fresh review-state
+    ad with the same creative, budget and targeting. Deducts the budget from
+    the balance exactly like a new ad."""
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+    src = AbnAdsPanel.objects.filter(pk=ad_id, user=request.user).first()
+    if src is None:
+        return Response({"error": "not found"}, status=404)
+    if src.status not in ("completed", "stoped", "rejected"):
+        return Response(
+            {"error": "only finished ads can be re-run",
+             "detail": "শুধু শেষ হওয়া বিজ্ঞাপন আবার চালানো যায়।"},
+            status=400,
+        )
+    cfg = AdsSystemConfig.get()
+    budget = src.budget
+    if request.user.balance < budget:
+        return Response(
+            {"error": "insufficient balance",
+             "detail": "আপনার ব্যালেন্সে পর্যাপ্ত টাকা নেই।"},
+            status=400,
+        )
+    request.user.balance -= budget
+    request.user.save(update_fields=["balance"])
+
+    clone = AbnAdsPanel.objects.create(
+        user=src.user, title=src.title, description=src.description,
+        category=src.category, male=src.male, female=src.female,
+        other=src.other, min_age=src.min_age, max_age=src.max_age,
+        country=src.country, ad_type=src.ad_type,
+        ad_type_details=src.ad_type_details, format=src.format,
+        companion_banner=src.companion_banner, boosted_post=src.boosted_post,
+        budget=budget, daily_budget=src.daily_budget,
+        target_locations=src.target_locations, placements=src.placements,
+        status="review",
+        estimated_views=int(budget / Decimal(str(cfg.cpv_rate)))
+        if cfg.cpv_rate else 0,
+    )
+    clone.media.set(src.media.all())
+    return Response({"id": clone.pk, "status": clone.status}, status=201)
 
 
 @api_view(["POST"])

@@ -247,6 +247,96 @@ def send_weekly_bn_digests():
 
 
 @shared_task
+def send_weekly_ad_reports():
+    """Weekly advertiser performance report — one email per advertiser whose
+    panel ads got AdEvents in the last 7 days: per-ad views/clicks/CTR table,
+    totals, and an upsell CTA back to the ads panel."""
+    import time as _time
+    from datetime import timedelta
+
+    from django.contrib.auth import get_user_model
+    from django.db.models import Count, Q
+    from django.utils import timezone
+
+    from base.email_service import _base_template, _button, _send_email
+
+    from .models import AdEvent
+
+    since = timezone.now() - timedelta(days=7)
+    rows = (
+        AdEvent.objects.filter(
+            source="panel",
+            created_at__gte=since,
+            ad__isnull=False,
+            ad__user__isnull=False,
+        )
+        .values("ad_id", "ad__title", "ad__user_id")
+        .annotate(
+            views=Count("id", filter=Q(event_type="impression")),
+            clicks=Count("id", filter=Q(event_type__in=["click", "cta_click"])),
+        )
+    )
+
+    by_user = {}
+    for r in rows:
+        by_user.setdefault(r["ad__user_id"], []).append(r)
+    if not by_user:
+        return {"sent": 0}
+
+    User = get_user_model()
+    users = {u.id: u for u in User.objects.filter(id__in=by_user.keys())}
+
+    subject = "আপনার বিজ্ঞাপনের সাপ্তাহিক রিপোর্ট — AdsyClub"
+    sent = 0
+    for uid, ads in by_user.items():
+        user = users.get(uid)
+        if user is None or not getattr(user, "email", ""):
+            continue
+        try:
+            name = (getattr(user, "name", "") or user.first_name
+                    or user.username or "")
+            total_views = sum(a["views"] for a in ads)
+            total_clicks = sum(a["clicks"] for a in ads)
+            total_ctr = round(total_clicks / total_views * 100, 2) if total_views else 0.0
+
+            td = 'style="padding:8px 10px;border-bottom:1px solid #E5E7EB;color:#374151;font-size:13px;"'
+            th = 'style="padding:8px 10px;border-bottom:2px solid #E5E7EB;color:#111827;font-size:12px;font-weight:700;text-align:left;"'
+            ad_rows = ""
+            for a in sorted(ads, key=lambda x: -x["views"]):
+                ctr = round(a["clicks"] / a["views"] * 100, 2) if a["views"] else 0.0
+                ad_rows += (
+                    f"<tr><td {td}>{a['ad__title']}</td>"
+                    f"<td {td}>{a['views']}</td>"
+                    f"<td {td}>{a['clicks']}</td>"
+                    f"<td {td}>{ctr}%</td></tr>"
+                )
+
+            body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">হ্যালো <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 14px;">গত ৭ দিনে আপনার বিজ্ঞাপনগুলো কেমন পারফর্ম করেছে — এক নজরে দেখে নিন।</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+<tr><th {th}>বিজ্ঞাপন</th><th {th}>ভিউ</th><th {th}>ক্লিক</th><th {th}>CTR</th></tr>
+{ad_rows}
+</table>
+<p style="color:#111827;font-size:14px;font-weight:700;margin:14px 0 6px;">মোট: {total_views} ভিউ, {total_clicks} ক্লিক (CTR {total_ctr}%)</p>
+<p style="color:#374151;font-size:14px;line-height:1.6;margin:0 0 6px;">বাজেট বাড়িয়ে আরও কাস্টমার আনুন।</p>
+{_button("বিজ্ঞাপন ম্যানেজ করুন", "https://adsyclub.com/business-network/abn-ads")}
+"""
+            text = (
+                f"হ্যালো {name}, গত ৭ দিনে আপনার বিজ্ঞাপনে মোট {total_views} ভিউ "
+                f"এবং {total_clicks} ক্লিক এসেছে (CTR {total_ctr}%)।"
+            )
+            html = _base_template(subject, body)
+            _send_email(subject, user.email, text, html)
+            sent += 1
+        except Exception:
+            logger.exception("weekly ad report failed for user %s", uid)
+            continue
+        _time.sleep(0.4)  # SMTP-friendly pacing
+    return {"sent": sent}
+
+
+@shared_task
 def ads_daily_settlement(target_date=None):
     """Nightly ads settlement (runs for YESTERDAY unless target_date given):
 

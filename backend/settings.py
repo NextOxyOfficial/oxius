@@ -533,6 +533,12 @@ CELERY_BEAT_SCHEDULE = {
         # + interest-profile decay. Runs before the monetization refresh.
         "schedule": crontab(hour=2, minute=30),
     },
+    "weekly-ad-reports": {
+        "task": "business_network.tasks.send_weekly_ad_reports",
+        # Monday 11:00 Dhaka — per-advertiser views/clicks/CTR report for
+        # the last 7 days, with a budget-upsell CTA.
+        "schedule": crontab(day_of_week="mon", hour=11, minute=0),
+    },
     "build-interest-profiles": {
         "task": "business_network.tasks.build_interest_profiles",
         # Interest Brain: rebuild per-user interest segments from the last

@@ -66,7 +66,7 @@
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 Ad Format
               </label>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   @click="form.format = 'image'"
@@ -90,6 +90,18 @@
                   "
                 >
                   🎬 Video Ad (5s skippable)
+                </button>
+                <button
+                  type="button"
+                  @click="form.format = 'boost'"
+                  class="px-3 py-2.5 text-sm border rounded-md"
+                  :class="
+                    form.format === 'boost'
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      : 'border-gray-300 text-gray-700'
+                  "
+                >
+                  🚀 Boost Post
                 </button>
               </div>
             </div>
@@ -159,6 +171,73 @@
                   </label>
                 </div>
               </div>
+            </div>
+
+            <!-- Boost post (boost format) -->
+            <div v-if="form.format === 'boost'" class="space-y-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-800 mb-1">
+                  Post ID <span class="text-red-500">*</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="boostPostId"
+                    type="text"
+                    placeholder="যেমন: 1024"
+                    class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
+                  />
+                  <button
+                    type="button"
+                    @click="loadBoostPost"
+                    :disabled="!boostPostId || boostLoading"
+                    class="shrink-0 px-3 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors"
+                  >
+                    {{ boostLoading ? "লোড হচ্ছে…" : "পোস্ট লোড করুন" }}
+                  </button>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">
+                  অ্যাপে পোস্টের ⋯ মেনু থেকে Post ID কপি করুন
+                </p>
+                <p v-if="boostError" class="mt-1 text-xs text-red-500">
+                  পোস্ট পাওয়া যায়নি — ID টি আবার দেখুন
+                </p>
+              </div>
+
+              <!-- Loaded post preview -->
+              <div
+                v-if="boostedPost"
+                class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl bg-gray-50"
+              >
+                <img
+                  v-if="boostThumb"
+                  :src="boostThumb"
+                  class="w-16 h-16 rounded-md object-cover shrink-0 border border-gray-200"
+                />
+                <div
+                  v-else
+                  class="w-16 h-16 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 shrink-0"
+                >
+                  <UIcon name="i-heroicons-photo" class="w-6 h-6" />
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm font-semibold text-gray-800 truncate">
+                    {{ boostAuthorName }}
+                  </div>
+                  <p class="text-xs text-gray-600 line-clamp-2">
+                    {{ boostExcerpt }}
+                  </p>
+                  <div
+                    class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-green-600"
+                  >
+                    <UIcon name="i-heroicons-check-circle" class="w-4 h-4" />
+                    পোস্ট পাওয়া গেছে
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs text-gray-500">
+                Boost করা পোস্ট Shorts রিলে স্পনসরড হিসেবে দেখানো হবে।
+              </p>
             </div>
 
             <!-- Images -->
@@ -234,8 +313,8 @@
               </div>
             </div>
 
-            <!-- Placements -->
-            <div>
+            <!-- Placements (boosts always run in the shorts reel) -->
+            <div v-if="form.format !== 'boost'">
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 Placements (কোথায় দেখাবে)
                 <span class="text-xs font-normal text-gray-500"
@@ -594,7 +673,7 @@
 
         <!-- ── Info / preview column ────────────────────────────── -->
         <div class="w-full lg:w-2/5 space-y-4">
-          <!-- Live preview -->
+          <!-- Live preview (multi-placement) -->
           <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4">
             <h3 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
               <UIcon
@@ -603,15 +682,38 @@
               />
               Ad Preview
             </h3>
-            <div class="border border-gray-200 rounded-md overflow-hidden">
+
+            <!-- Placement pills -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+              <button
+                v-for="tab in previewTabs"
+                :key="tab.value"
+                type="button"
+                @click="previewTab = tab.value"
+                class="px-2.5 py-1 text-xs font-medium rounded-full border transition-colors"
+                :class="
+                  previewTab === tab.value
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                "
+              >
+                {{ tab.label }}
+              </button>
+            </div>
+
+            <!-- ফিড কার্ড -->
+            <div
+              v-if="previewTab === 'feed'"
+              class="border border-gray-200 rounded-md overflow-hidden"
+            >
               <img
-                v-if="form.images.length"
-                :src="form.images[0]"
-                class="w-full h-40 object-cover"
+                v-if="previewImage"
+                :src="previewImage"
+                class="w-full h-36 object-cover"
               />
               <div
                 v-else
-                class="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400"
+                class="w-full h-36 bg-gray-100 flex items-center justify-center text-gray-400"
               >
                 <UIcon name="i-heroicons-photo" class="w-8 h-8" />
               </div>
@@ -620,17 +722,127 @@
                   Sponsored
                 </div>
                 <div class="text-sm font-semibold text-gray-800 mt-0.5">
-                  {{ form.title || "আপনার বিজ্ঞাপনের টাইটেল" }}
+                  {{ previewTitle }}
                 </div>
                 <p class="text-xs text-gray-600 mt-1 line-clamp-2">
-                  {{ form.description || "বিজ্ঞাপনের বর্ণনা এখানে দেখা যাবে…" }}
+                  {{ previewDesc }}
                 </p>
-                <button
-                  type="button"
-                  class="mt-2 w-full py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-md"
+                <span
+                  class="mt-2 inline-block px-3 py-1 text-xs font-medium bg-gray-900/5 text-gray-900 rounded-md"
                 >
-                  {{ selectedType?.cta || "Learn More" }}
-                </button>
+                  ভিজিট করুন
+                </span>
+              </div>
+            </div>
+
+            <!-- কমপ্যাক্ট -->
+            <div
+              v-else-if="previewTab === 'compact'"
+              class="flex items-center gap-2.5 p-2 bg-slate-50 rounded-xl"
+            >
+              <img
+                v-if="previewImage"
+                :src="previewImage"
+                class="w-10 h-10 rounded-md object-cover shrink-0"
+              />
+              <div
+                v-else
+                class="w-10 h-10 rounded-md bg-gray-200 flex items-center justify-center text-gray-400 shrink-0"
+              >
+                <UIcon name="i-heroicons-photo" class="w-4 h-4" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="text-sm font-medium text-gray-800 truncate">
+                  {{ previewTitle }}
+                </div>
+                <div class="text-[10px] uppercase tracking-wide text-gray-400">
+                  Sponsored
+                </div>
+              </div>
+              <UIcon
+                name="i-heroicons-chevron-right"
+                class="w-4 h-4 text-gray-400 shrink-0"
+              />
+            </div>
+
+            <!-- Shorts ব্যানার -->
+            <div
+              v-else-if="previewTab === 'shorts'"
+              class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto"
+              style="aspect-ratio: 9 / 14; max-height: 260px"
+            >
+              <div
+                class="absolute inset-0 flex items-center justify-center text-gray-600"
+              >
+                <UIcon name="i-heroicons-play-circle" class="w-10 h-10" />
+              </div>
+              <div
+                class="absolute bottom-3 left-2 right-2 flex items-center gap-2 bg-white rounded-lg p-1.5 shadow"
+              >
+                <img
+                  v-if="previewImage"
+                  :src="previewImage"
+                  class="w-8 h-8 rounded-md object-cover shrink-0"
+                />
+                <div
+                  v-else
+                  class="w-8 h-8 rounded-md bg-gray-200 flex items-center justify-center text-gray-400 shrink-0"
+                >
+                  <UIcon name="i-heroicons-photo" class="w-4 h-4" />
+                </div>
+                <div class="min-w-0">
+                  <div class="text-xs font-medium text-gray-800 truncate">
+                    {{ previewTitle }}
+                  </div>
+                  <div class="text-[9px] uppercase tracking-wide text-gray-400">
+                    Sponsored
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- রিল -->
+            <div
+              v-else
+              class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto"
+              style="aspect-ratio: 9 / 16; max-height: 260px"
+            >
+              <img
+                v-if="previewImage"
+                :src="previewImage"
+                class="absolute inset-0 w-full h-full object-cover opacity-70"
+              />
+              <div
+                v-else
+                class="absolute inset-0 flex items-center justify-center text-gray-600"
+              >
+                <UIcon name="i-heroicons-play-circle" class="w-10 h-10" />
+              </div>
+              <div
+                class="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/70 to-transparent"
+              >
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-7 h-7 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
+                  >
+                    {{ (previewAuthor || "A").charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-xs font-medium text-white truncate">
+                      {{ previewAuthor || previewTitle }}
+                    </div>
+                    <div
+                      class="text-[9px] uppercase tracking-wide text-white/60"
+                    >
+                      Sponsored
+                    </div>
+                  </div>
+                </div>
+                <span
+                  class="mt-2 inline-block px-3 py-1 text-xs font-medium bg-white/25 backdrop-blur text-white rounded-md"
+                >
+                  ভিজিট করুন
+                </span>
               </div>
             </div>
           </div>
@@ -722,6 +934,105 @@ const form = reactive({
 const videoMediaId = ref(null);
 const videoUploading = ref(false);
 const companionBanner = ref(""); // base64 data URL
+
+// ── Boost post (boost format) ──
+const route = useRoute();
+const boostPostId = ref("");
+const boostedPost = ref(null);
+const boostLoading = ref(false);
+const boostError = ref(false);
+
+async function loadBoostPost() {
+  if (!boostPostId.value) return;
+  boostLoading.value = true;
+  boostError.value = false;
+  boostedPost.value = null;
+  try {
+    const res = await get(`/bn/posts/${boostPostId.value}/`);
+    if (res.data && !res.error) {
+      boostedPost.value = res.data;
+    } else {
+      boostError.value = true;
+    }
+  } catch (e) {
+    boostError.value = true;
+  } finally {
+    boostLoading.value = false;
+  }
+}
+
+// Defensive field extraction — post payload shape varies slightly.
+const boostThumb = computed(() => {
+  const p = boostedPost.value;
+  if (!p) return "";
+  const media = Array.isArray(p.media)
+    ? p.media
+    : Array.isArray(p.post_media)
+    ? p.post_media
+    : [];
+  const withImage = media.find((m) => m?.image);
+  if (withImage) return withImage.image;
+  const withThumb = media.find((m) => m?.thumbnail);
+  if (withThumb) return withThumb.thumbnail;
+  return p.image || p.thumbnail || "";
+});
+const boostAuthorName = computed(() => {
+  const p = boostedPost.value;
+  if (!p) return "";
+  const a = p.author_details || p.author || p.user_details || p.user || {};
+  return (
+    a.name ||
+    a.full_name ||
+    [a.first_name, a.last_name].filter(Boolean).join(" ") ||
+    a.username ||
+    p.author_name ||
+    "AdsyClub ইউজার"
+  );
+});
+const boostExcerpt = computed(() => {
+  const p = boostedPost.value;
+  if (!p) return "";
+  const text = p.title || p.content || p.post_content || "";
+  return String(text).replace(/<[^>]*>/g, "");
+});
+
+// Prefill from ?post=<id> (e.g. shared from the app's ⋯ menu).
+onMounted(() => {
+  const q = route.query.post;
+  if (q) {
+    form.format = "boost";
+    boostPostId.value = String(q);
+    loadBoostPost();
+  }
+});
+
+// ── Multi-placement preview tabs ──
+const previewTabs = [
+  { value: "feed", label: "ফিড কার্ড" },
+  { value: "compact", label: "কমপ্যাক্ট" },
+  { value: "shorts", label: "Shorts ব্যানার" },
+  { value: "reel", label: "রিল" },
+];
+const previewTab = ref("feed");
+const previewImage = computed(() => {
+  if (form.format === "boost") return boostThumb.value;
+  return form.images.length ? form.images[0] : "";
+});
+const previewTitle = computed(() => {
+  if (form.format === "boost" && boostedPost.value) {
+    return boostExcerpt.value || "Boosted পোস্ট";
+  }
+  return form.title || "আপনার বিজ্ঞাপনের টাইটেল";
+});
+const previewDesc = computed(() => {
+  if (form.format === "boost" && boostedPost.value) {
+    return boostExcerpt.value;
+  }
+  return form.description || "বিজ্ঞাপনের বর্ণনা এখানে দেখা যাবে…";
+});
+const previewAuthor = computed(() =>
+  form.format === "boost" ? boostAuthorName.value : ""
+);
 
 // ── Age range slider ──
 function agePct(v) {
@@ -946,6 +1257,10 @@ async function submitAd() {
     errorMsg.value = "Video ad-এর জন্য আগে ভিডিও আপলোড করুন।";
     return;
   }
+  if (form.format === "boost" && !boostedPost.value) {
+    errorMsg.value = "Boost করার আগে Post ID দিয়ে পোস্টটি লোড করুন।";
+    return;
+  }
   const startDate = schedDate(sched.sd, sched.sm, sched.sy);
   const endDate = schedDate(sched.ed, sched.em, sched.ey);
   if (startDate && endDate && endDate < startDate) {
@@ -968,6 +1283,10 @@ async function submitAd() {
         payload.companion_banner_b64 = companionBanner.value;
       }
       payload.images = []; // video creative — no base64 images
+    }
+    if (form.format === "boost") {
+      payload.boosted_post = boostPostId.value;
+      payload.images = []; // creative comes from the boosted post itself
     }
     const res = await post("/bn/abn-ads-panels/", payload);
     if (res.data) {

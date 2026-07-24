@@ -1496,7 +1496,41 @@ class AdsSystemConfig(models.Model):
     daily_frequency_cap = models.PositiveIntegerField(default=4)
     # Interest profile: how many days a category interest stays boosted
     interest_decay_days = models.PositiveIntegerField(default=7)
+    # CPV tiering: per-placement ৳/view overrides, e.g.
+    # {"shorts_reel": 0.60, "bn_feed": 0.40, "news_list": 0.25}. A placement
+    # missing here falls back to the built-in tier, then to cpv_rate.
+    cpv_overrides = models.JSONField(default=dict, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Built-in tiers: premium full-attention surfaces cost more, list rows
+    # less. Admin can override any of these via cpv_overrides.
+    _CPV_TIERS = {
+        "shorts_reel": "0.60",
+        "shorts_fullscreen": "0.60",
+        "bn_feed": "0.40",
+        "shorts_banner": "0.40",
+        "web_feed": "0.40",
+        "gigs_list": "0.25",
+        "sale_list": "0.25",
+        "news_list": "0.25",
+        "food_list": "0.25",
+        "classified_list": "0.25",
+        "web_banner": "0.25",
+    }
+
+    def cpv_for(self, placement):
+        """৳ per billable view for this placement (Decimal)."""
+        from decimal import Decimal
+        override = (self.cpv_overrides or {}).get(placement)
+        if override is not None:
+            try:
+                return Decimal(str(override))
+            except Exception:
+                pass
+        tier = self._CPV_TIERS.get(placement)
+        if tier is not None:
+            return Decimal(tier)
+        return Decimal(str(self.cpv_rate))
 
     class Meta:
         verbose_name = "Ads System Config"

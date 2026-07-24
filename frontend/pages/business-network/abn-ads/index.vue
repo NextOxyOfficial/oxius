@@ -430,6 +430,12 @@
                           </span>
                         </div>
                       </div>
+                      <div
+                        v-if="ad.status === 'rejected' && ad.reject_reason"
+                        class="text-xs bg-red-50 text-red-600 rounded px-2 py-1 mb-2 inline-block"
+                      >
+                        {{ $t("ads_reject_reason") }}: {{ ad.reject_reason }}
+                      </div>
                     </div>
                   </div>
 
@@ -713,7 +719,20 @@
                       <span v-else class="text-sm text-gray-600">None</span>
                     </div>
 
-                    <div class="flex space-x-1">
+                    <div class="flex items-center space-x-1">
+                      <button
+                        v-if="
+                          ['completed', 'stoped', 'rejected'].includes(
+                            ad.status
+                          )
+                        "
+                        @click="showRerunConfirmation(ad)"
+                        class="flex items-center gap-1 px-2.5 py-1 text-sm text-indigo-600 hover:bg-indigo-50 border border-indigo-300 rounded-full transition-colors"
+                        :title="$t('ads_rerun')"
+                      >
+                        <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5" />
+                        {{ $t("ads_rerun") }}
+                      </button>
                       <button
                         @click="previewAd(ad)"
                         class="p-1 text-indigo-700 hover:bg-indigo-50 border border-gray-200 rounded-md"
@@ -1942,6 +1961,72 @@
           </div>
         </div>
 
+        <!-- Re-run Confirmation Modal -->
+        <div
+          v-if="showRerunModal"
+          class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        >
+          <div class="bg-white rounded-md shadow-sm w-full max-w-md p-6">
+            <div class="text-center mb-4">
+              <UIcon
+                name="i-heroicons-arrow-path"
+                class="h-12 w-12 mx-auto text-indigo-500 mb-4"
+              />
+              <h3 class="text-base font-medium text-gray-800">
+                {{ $t("ads_rerun") }}
+              </h3>
+              <p class="text-sm text-gray-600 mt-1">
+                Run this ad again? The budget (৳{{ rerunTargetAd?.budget }})
+                will be deducted from your balance and the ad will go for
+                review.
+              </p>
+              <p
+                v-if="rerunError"
+                class="text-xs bg-red-50 text-red-600 rounded px-2 py-1 mt-2 inline-block"
+              >
+                {{ rerunError }}
+              </p>
+            </div>
+            <div class="flex justify-center space-x-3">
+              <button
+                @click="confirmRerun"
+                class="px-4 py-1.5 text-sm border border-indigo-600 bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors flex items-center rounded-md"
+                :disabled="isRerunning"
+              >
+                <svg
+                  v-if="isRerunning"
+                  class="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                {{ $t("ads_rerun") }}
+              </button>
+              <button
+                @click="cancelRerun"
+                class="px-4 py-1.5 text-sm border border-gray-300 text-gray-800 font-medium hover:bg-gray-100 transition-colors rounded-md"
+                :disabled="isRerunning"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Ad Preview Modal -->
         <div
           v-if="showPreviewModal"
@@ -2665,6 +2750,45 @@ const confirmDelete = async () => {
 const cancelDelete = () => {
   deleteAdIndex.value = null;
   showDeleteModal.value = false;
+};
+
+// ── Re-run ad (clones a completed/stoped/rejected ad as a fresh
+// review-state ad on the server; deducts the budget from the balance) ──
+const showRerunModal = ref(false);
+const rerunTargetAd = ref(null);
+const isRerunning = ref(false);
+const rerunError = ref("");
+
+const showRerunConfirmation = (ad) => {
+  rerunTargetAd.value = ad;
+  rerunError.value = "";
+  showRerunModal.value = true;
+};
+
+const cancelRerun = () => {
+  rerunTargetAd.value = null;
+  rerunError.value = "";
+  showRerunModal.value = false;
+};
+
+const confirmRerun = async () => {
+  if (!rerunTargetAd.value?.id) return;
+  isRerunning.value = true;
+  rerunError.value = "";
+  try {
+    const res = await post(`/bn/ads/${rerunTargetAd.value.id}/rerun/`, {});
+    if (res.error) {
+      // 400 with detail on insufficient balance, etc.
+      rerunError.value =
+        res.error?.data?.detail || "Something went wrong. Please try again.";
+      return;
+    }
+    cancelRerun();
+    await fetchPostedAds();
+    fetchAdStats();
+  } finally {
+    isRerunning.value = false;
+  }
 };
 
 // Close create ad modal

@@ -467,19 +467,41 @@ class AbnAdsPanelAdmin(admin.ModelAdmin):
     search_fields = ["id", "title", "user__email", "user__username"]
     readonly_fields = ["id", "views", "clicks", "spent", "created_at", "updated_at"]
     ordering = ["-created_at"]
-    actions = ["approve_ads", "reject_ads_with_refund"]
+    actions = [
+        "approve_ads", "reject_ads_with_refund", "reject_low_quality",
+        "reject_misleading", "reject_bad_contact",
+    ]
 
     @admin.action(description="Approve selected ads (start serving)")
     def approve_ads(self, request, queryset):
-        updated = queryset.filter(status__in=["review", "pending", "stoped"]).update(
-            status="active"
-        )
-        self.message_user(request, f"{updated} ad(s) approved and now serving.")
+        from .ads_api import notify_advertiser
 
-    @admin.action(description="Reject selected ads (refund unspent budget)")
-    def reject_ads_with_refund(self, request, queryset):
+        ads = list(queryset.filter(status__in=["review", "pending", "stoped"]))
+        for ad in ads:
+            ad.status = "active"
+            ad.save(update_fields=["status"])
+            notify_advertiser(
+                ad,
+                "বিজ্ঞাপন অনুমোদিত হয়েছে ✅",
+                f'"{ad.title[:40]}" এখন লাইভ — ইউজারদের কাছে দেখানো শুরু হয়েছে।',
+            )
+        self.message_user(request, f"{len(ads)} ad(s) approved and now serving.")
+
+    # Brand-safety reject templates: one consistent, professional reason per
+    # rejection instead of ad-hoc text. All refund unspent budget + notify.
+    REJECT_TEMPLATES = {
+        "policy": "বিজ্ঞাপনটি AdsyClub-এর বিজ্ঞাপন নীতিমালার সাথে সাংঘর্ষিক।",
+        "creative": "ছবি/ভিডিওর মান যথেষ্ট নয় — পরিষ্কার, উচ্চমানের creative দিয়ে আবার জমা দিন।",
+        "misleading": "বিভ্রান্তিকর দাবি বা ভুল তথ্য রয়েছে — সঠিক তথ্য দিয়ে আবার জমা দিন।",
+        "contact": "যোগাযোগের তথ্য (নম্বর/লিংক) ভুল বা কাজ করছে না।",
+    }
+
+    def _reject(self, request, queryset, reason_key):
         from decimal import Decimal
 
+        from .ads_api import notify_advertiser
+
+        reason = self.REJECT_TEMPLATES[reason_key]
         refunded = 0
         for ad in queryset.exclude(status="rejected"):
             unspent = Decimal(ad.budget or 0) - Decimal(ad.spent or 0)
@@ -487,11 +509,34 @@ class AbnAdsPanelAdmin(admin.ModelAdmin):
                 ad.user.balance += unspent
                 ad.user.save(update_fields=["balance"])
             ad.status = "rejected"
-            ad.save(update_fields=["status"])
+            ad.reject_reason = reason
+            ad.save(update_fields=["status", "reject_reason"])
+            notify_advertiser(
+                ad,
+                "বিজ্ঞাপন অনুমোদন হয়নি",
+                f'"{ad.title[:40]}" — {reason} অব্যবহৃত budget ফেরত দেওয়া হয়েছে।',
+            )
             refunded += 1
         self.message_user(
-            request, f"{refunded} ad(s) rejected; unspent budget refunded."
+            request,
+            f"{refunded} ad(s) rejected ({reason_key}); unspent budget refunded.",
         )
+
+    @admin.action(description="Reject: policy violation (refund)")
+    def reject_ads_with_refund(self, request, queryset):
+        self._reject(request, queryset, "policy")
+
+    @admin.action(description="Reject: low-quality creative (refund)")
+    def reject_low_quality(self, request, queryset):
+        self._reject(request, queryset, "creative")
+
+    @admin.action(description="Reject: misleading claims (refund)")
+    def reject_misleading(self, request, queryset):
+        self._reject(request, queryset, "misleading")
+
+    @admin.action(description="Reject: broken contact info (refund)")
+    def reject_bad_contact(self, request, queryset):
+        self._reject(request, queryset, "contact")
 
 
 @admin.register(AdsSystemConfig)
