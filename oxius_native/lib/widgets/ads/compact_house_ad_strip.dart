@@ -138,10 +138,11 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                   children: [
                     Text(
                       ad.title,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
+                        height: 1.25,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF111827),
                       ),

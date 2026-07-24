@@ -20,11 +20,22 @@ class AdvertiseButton extends StatelessWidget {
   static const _ink = Color(0xFF1D4ED8);
   static const _tint = Color(0xFFEFF4FF);
 
-  void _open() {
-    launchUrl(
-      Uri.parse('https://adsyclub.com/business-network/abn-ads'),
-      mode: LaunchMode.inAppBrowserView,
-    );
+  Future<void> _open() async {
+    final uri = Uri.parse('https://adsyclub.com/business-network/abn-ads');
+    // Try an in-app Custom Tab first; fall back to the external browser (and
+    // finally the platform default) so the button always opens something even
+    // when a device has no Custom Tabs provider.
+    for (final mode in const [
+      LaunchMode.inAppBrowserView,
+      LaunchMode.externalApplication,
+      LaunchMode.platformDefault,
+    ]) {
+      try {
+        if (await launchUrl(uri, mode: mode)) return;
+      } catch (_) {
+        // Try the next launch mode.
+      }
+    }
   }
 
   @override

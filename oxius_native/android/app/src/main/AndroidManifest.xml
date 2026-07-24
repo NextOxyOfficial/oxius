@@ -235,5 +235,17 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- So url_launcher can resolve a browser / Custom Tab for http(s)
+             links on Android 11+ (package visibility). Without these the
+             "AdsyClub-এ বিজ্ঞাপন দিন" buttons and other web links silently
+             fail to open. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="http"/>
+        </intent>
     </queries>
 </manifest>

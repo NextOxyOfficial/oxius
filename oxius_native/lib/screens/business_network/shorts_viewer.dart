@@ -104,6 +104,10 @@ class _ShortsCommentsBottomSheetState
     final isLoggedIn = AuthService.currentUser != null;
 
     return DraggableScrollableSheet(
+      // expand:false leaves the area above the sheet as the modal barrier, so
+      // tapping outside dismisses (default expand:true fills the whole modal
+      // with a transparent zone that swallowed those taps).
+      expand: false,
       initialChildSize: 0.72,
       minChildSize: 0.35,
       maxChildSize: 0.92,
