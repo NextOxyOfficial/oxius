@@ -893,6 +893,13 @@ class ClassifiedCategoryPostReportAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
 
 
+@admin.register(HomeGreeting)
+class HomeGreetingAdmin(admin.ModelAdmin):
+    list_display = ('text', 'order', 'is_active', 'created_at')
+    list_editable = ('order', 'is_active')
+    search_fields = ('text',)
+
+
 @admin.register(Logo)
 class LogoAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'id')

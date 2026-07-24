@@ -424,6 +424,25 @@ class NID(models.Model):
                     print(f"Error sending KYC admin notification: {e}")
 
 
+class HomeGreeting(models.Model):
+    """Admin-editable rotating message shown under the user's name on the home
+    header. The app cycles these together with the time-of-day wish and the
+    Bengali date — see base/home_greetings.py. Add/edit from admin, no app
+    release needed."""
+
+    text = models.CharField(max_length=120)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = "Home Greeting"
+
+    def __str__(self):
+        return self.text[:40]
+
+
 class Logo(models.Model):
     image = models.ImageField(upload_to="images/", blank=True, null=True)
 
