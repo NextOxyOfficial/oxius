@@ -18,6 +18,24 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+# Django runs with TIME_ZONE = "UTC", but greetings must reflect Bangladesh
+# local time (UTC+6) — otherwise "রাত্রি" shows as "সন্ধ্যা" etc. Compute in
+# Asia/Dhaka explicitly rather than trusting the server clock.
+try:
+    from zoneinfo import ZoneInfo
+
+    _DHAKA = ZoneInfo("Asia/Dhaka")
+except Exception:  # pragma: no cover - zoneinfo/tzdata missing
+    _DHAKA = None
+
+
+def dhaka_now():
+    if _DHAKA is not None:
+        return timezone.now().astimezone(_DHAKA)
+    # Fixed +6 offset fallback if the tz database is unavailable.
+    return timezone.now() + datetime.timedelta(hours=6)
+
+
 _BN_DIGITS = {ord(str(i)): d for i, d in enumerate("০১২৩৪৫৬৭৮৯")}
 
 # Revised Bangladesh calendar (2019): New Year = 14 April. First five months
@@ -62,15 +80,14 @@ def bengali_date(g_date):
 
 
 def time_greeting(now=None):
-    now = now or timezone.localtime()
+    # Boundaries match the original pre-dynamic app greeting.
+    now = now or dhaka_now()
     h = now.hour
     if 5 <= h < 12:
         return "শুভ সকাল ☀️"
-    if 12 <= h < 16:
+    if 12 <= h < 17:
         return "শুভ দুপুর 🌤️"
-    if 16 <= h < 18:
-        return "শুভ বিকাল 🌇"
-    if 18 <= h < 20:
+    if 17 <= h < 20:
         return "শুভ সন্ধ্যা 🌆"
     return "শুভ রাত্রি 🌙"
 
@@ -80,7 +97,7 @@ def time_greeting(now=None):
 def home_greetings(request):
     from .models import HomeGreeting
 
-    now = timezone.localtime()
+    now = dhaka_now()
     items = [time_greeting(now), bengali_date(now.date())]
     for m in HomeGreeting.objects.filter(is_active=True).order_by("order", "id"):
         text = (m.text or "").strip()
