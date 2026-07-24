@@ -641,6 +641,21 @@ class AbnAdsPanel(models.Model):
         ('boost', 'Boosted Post'),
     )
     format = models.CharField(max_length=10, choices=FORMAT_CHOICES, default='image')
+    # Campaign objective — drives targeting, frequency caps and pricing.
+    OBJECTIVE_CHOICES = (
+        ('engagement', 'Engagement'),
+        ('retargeting', 'Retargeting'),
+        ('announcement', 'Announcement'),
+    )
+    ad_objective = models.CharField(
+        max_length=15, choices=OBJECTIVE_CHOICES, default='engagement'
+    )
+    # Engagement: Interest-Brain segments the advertiser picked (empty = all).
+    target_segments = models.JSONField(default=list, blank=True)
+    # Retargeting: first-party audience sources, e.g.
+    # ["ad_engagers", "followers", "post_engagers", "post_viewers"]
+    retarget_sources = models.JSONField(default=list, blank=True)
+    retarget_days = models.PositiveIntegerField(default=30)
     # Companion banner shown UNDER the video creative (YouTube-style).
     companion_banner = models.ImageField(
         upload_to='business_network/abn/banners/', null=True, blank=True
@@ -1519,9 +1534,25 @@ class AdsSystemConfig(models.Model):
         "web_banner": "0.25",
     }
 
-    def cpv_for(self, placement):
-        """৳ per billable view for this placement (Decimal)."""
+    # Objective pricing: retargeting is premium intent, announcements are a
+    # cheap reach play. Overridable via cpv_overrides["objective:<name>"].
+    _OBJECTIVE_CPV = {"retargeting": "0.50", "announcement": "0.20"}
+
+    def cpv_for(self, placement, objective=None):
+        """৳ per billable view for this placement/objective (Decimal)."""
         from decimal import Decimal
+        if objective:
+            obj_override = (self.cpv_overrides or {}).get(
+                f"objective:{objective}"
+            )
+            if obj_override is not None:
+                try:
+                    return Decimal(str(obj_override))
+                except Exception:
+                    pass
+            tier = self._OBJECTIVE_CPV.get(objective)
+            if tier is not None:
+                return Decimal(tier)
         override = (self.cpv_overrides or {}).get(placement)
         if override is not None:
             try:
@@ -1600,6 +1631,40 @@ class AdEvent(models.Model):
 
     def __str__(self):
         return f"{self.source}:{self.event_type} @{self.placement}"
+
+
+class FraudAlert(models.Model):
+    """Security watchdog log — every anomaly the hourly sweep or the live
+    rate-limiter catches lands here AND is urgently emailed to the admin.
+    Layers it backs: balance-abuse, ad-reward pumping, spam bursts."""
+
+    KINDS = (
+        ("event_burst", "Ad event burst"),
+        ("ctr_anomaly", "Abnormal CTR"),
+        ("reward_pump", "Viewer reward pumping"),
+        ("self_view", "Advertiser self-viewing"),
+        ("balance_anomaly", "Balance anomaly"),
+        ("spam", "Spam behaviour"),
+    )
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="fraud_alerts",
+        null=True, blank=True,
+    )
+    kind = models.CharField(max_length=20, choices=KINDS)
+    details = models.TextField(blank=True, default="")
+    emailed = models.BooleanField(default=False)
+    resolved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["kind", "-created_at"], name="fraud_kind_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.kind} — {self.user_id or 'anon'}"
 
 
 class UserAdProfile(models.Model):

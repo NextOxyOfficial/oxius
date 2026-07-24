@@ -539,6 +539,16 @@ CELERY_BEAT_SCHEDULE = {
         # the last 7 days, with a budget-upsell CTA.
         "schedule": crontab(day_of_week="mon", hour=11, minute=0),
     },
+    "build-ad-audiences": {
+        "task": "business_network.tasks.build_ad_audiences",
+        # Retargeting audiences refresh nightly, before morning traffic.
+        "schedule": crontab(hour=3, minute=45),
+    },
+    "security-sweep": {
+        "task": "business_network.tasks.security_sweep",
+        # Hourly abuse scan → FraudAlert + urgent admin email.
+        "schedule": crontab(minute=20),
+    },
     "build-interest-profiles": {
         "task": "business_network.tasks.build_interest_profiles",
         # Interest Brain: rebuild per-user interest segments from the last

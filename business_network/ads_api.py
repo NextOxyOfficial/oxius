@@ -164,6 +164,14 @@ def serve_ad(request):
                         user_locs.add(v)
             if not (locs & user_locs):
                 continue
+        # Targeted objectives need a known identity — never spend a
+        # retargeting/segment-targeted budget on anonymous traffic.
+        if user is None and (
+            getattr(ad, "ad_objective", "") == "retargeting"
+            or (getattr(ad, "ad_objective", "") == "engagement"
+                and ad.target_segments)
+        ):
+            continue
         if user is not None:
             # Gender targeting (only filters when the ad targets a subset
             # AND we actually know the viewer's gender).
@@ -184,9 +192,27 @@ def serve_ad(request):
                     continue
                 if ad.max_age and age > ad.max_age:
                     continue
-            # Daily frequency cap per user+ad.
+            # Objective targeting.
+            objective = getattr(ad, "ad_objective", "engagement")
+            if objective == "engagement" and ad.target_segments:
+                # Advertiser picked Interest-Brain segments — only matching
+                # users see it (unknown users don't burn targeted budget).
+                prof = _ad_profile(user)
+                segs = set((prof.segments or [])) if prof else set()
+                if not (segs & set(ad.target_segments)):
+                    continue
+            elif objective == "retargeting":
+                # First-party audience membership (built nightly).
+                aud = cache.get(f"adaud:{ad.user_id}")
+                if not aud or str(user.id) not in aud:
+                    continue
+            # Daily frequency cap per user+ad — per objective: announcements
+            # repeat least (2), retargeting most (6).
+            objective_cap = {"announcement": 2, "retargeting": 6}.get(
+                objective, cfg.daily_frequency_cap
+            )
             cap_key = f"adcap:{user.id}:{ad.pk}:{now.date().isoformat()}"
-            if (cache.get(cap_key) or 0) >= cfg.daily_frequency_cap:
+            if (cache.get(cap_key) or 0) >= objective_cap:
                 continue
             # ✕-closed: this ad or its whole category is muted for 48h.
             if cache.get(f"adclose:{user.id}:{ad.pk}"):
@@ -208,8 +234,18 @@ def serve_ad(request):
     iscores = (profile.interest_scores or {}) if profile else {}
     gaff = (profile.gender_affinity or {}) if profile else {}
     scored = []
+    user_segments = set((profile.segments or [])) if profile else set()
     for ad in candidates:
         w = 1.0 + float(weights.get(str(ad.category_id), 0))
+        objective = getattr(ad, "ad_objective", "engagement")
+        if objective == "announcement":
+            # Announcements reach everyone evenly — no interest bias.
+            w = 1.0
+        elif objective == "engagement" and (
+            "high_activity" in user_segments or "video_lover" in user_segments
+        ):
+            # Engagement campaigns lean toward users who actually engage.
+            w *= 1.3
         # Interest Brain: an ad whose content segments match the viewer's
         # interests serves up to 2.5x more often.
         if iscores:
@@ -351,6 +387,25 @@ def track_ad_events(request):
             return Response({"recorded": 0, "capped": True})
         cache.set(daily_key, daily_count + len(events), 60 * 60 * 26)
 
+        # Live burst limiter: >40 events in a minute is not human scrolling.
+        # 3 strikes in a day → FraudAlert + urgent admin email (once).
+        minute_key = f"adevmin:{user.id}:{timezone.now().strftime('%H%M')}"
+        minute_count = (cache.get(minute_key) or 0) + len(events)
+        cache.set(minute_key, minute_count, 120)
+        if minute_count > 40:
+            strikes_key = f"adstrikes:{user.id}:{today.isoformat()}"
+            strikes = (cache.get(strikes_key) or 0) + 1
+            cache.set(strikes_key, strikes, 60 * 60 * 26)
+            if strikes == 3:
+                from .fraud_watch import raise_alert
+                raise_alert(
+                    user,
+                    "event_burst",
+                    f"{minute_count} ad events in one minute; "
+                    f"3rd burst today ({daily_count} total events).",
+                )
+            return Response({"recorded": 0, "throttled": True})
+
     created = 0
     viewer_views = 0
     interest_bumps = {}  # category_id -> weight delta
@@ -420,9 +475,11 @@ def track_ad_events(request):
                     else:
                         cache.set(dedupe_key, seen + 1, 60 * 60 * 26)
                 if billable:
-                    # CPV tiering: premium surfaces (reel/mid-roll) burn more
-                    # per view than quiet list rows.
-                    rate = cfg.cpv_for(placement)
+                    # CPV tiering: objective first (retargeting premium,
+                    # announcement cheap), then placement tier.
+                    rate = cfg.cpv_for(
+                        placement, getattr(ad, "ad_objective", None)
+                    )
                     AbnAdsPanel.objects.filter(pk=ad.pk).update(
                         views=F("views") + 1,
                         spent=F("spent") + rate,
@@ -726,6 +783,60 @@ def my_reward_status(request):
         "views_to_next": 0 if earned >= cfg.max_daily_diamonds
         else per - (views % per),
     })
+
+
+@api_view(["GET"])
+def my_audience_size(request):
+    """Retargeting audience estimate for the CALLER as advertiser —
+    ?sources=ad_engagers,followers&days=30 → {"size": n}. Live count (the
+    nightly cache is for serving; this powers the create-page preview)."""
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+    from .models import (
+        BusinessNetworkFollowerModel,
+        BusinessNetworkPostComment,
+        BusinessNetworkPostLike,
+        PostSeen,
+    )
+
+    sources = set(
+        s for s in (request.query_params.get("sources") or "").split(",") if s
+    ) or {"ad_engagers"}
+    days = min(int(request.query_params.get("days") or 30), 90)
+    since = timezone.now() - timedelta(days=days)
+    uid = request.user.id
+    ids = set()
+    if "ad_engagers" in sources:
+        ids.update(
+            str(u) for u in AdEvent.objects.filter(
+                ad__user_id=uid, user__isnull=False, created_at__gte=since
+            ).values_list("user_id", flat=True).distinct()
+        )
+    if "followers" in sources:
+        ids.update(
+            str(u) for u in BusinessNetworkFollowerModel.objects.filter(
+                following_id=uid
+            ).values_list("follower_id", flat=True)
+        )
+    if "post_engagers" in sources:
+        ids.update(
+            str(u) for u in BusinessNetworkPostLike.objects.filter(
+                post__author_id=uid, created_at__gte=since
+            ).values_list("user_id", flat=True).distinct()
+        )
+        ids.update(
+            str(u) for u in BusinessNetworkPostComment.objects.filter(
+                post__author_id=uid, created_at__gte=since
+            ).values_list("author_id", flat=True).distinct()
+        )
+    if "post_viewers" in sources:
+        ids.update(
+            str(u) for u in PostSeen.objects.filter(
+                post__author_id=uid, last_seen_at__gte=since
+            ).values_list("user_id", flat=True).distinct()[:20000]
+        )
+    ids.discard(str(uid))
+    return Response({"size": len(ids), "days": days})
 
 
 @api_view(["POST"])

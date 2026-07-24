@@ -589,6 +589,25 @@ class CreatorAdEarningAdmin(admin.ModelAdmin):
     ordering = ["-date"]
 
 
+from .models import FraudAlert
+
+
+@admin.register(FraudAlert)
+class FraudAlertAdmin(admin.ModelAdmin):
+    """Security watchdog log — every anomaly the sweep/rate-limiter caught."""
+
+    list_display = ["kind", "user", "details", "emailed", "resolved",
+                    "created_at"]
+    list_filter = ["kind", "resolved", "emailed"]
+    search_fields = ["user__email", "user__username", "details"]
+    actions = ["mark_resolved"]
+
+    @admin.action(description="Mark selected alerts resolved")
+    def mark_resolved(self, request, queryset):
+        n = queryset.update(resolved=True)
+        self.message_user(request, f"{n} alert(s) resolved.")
+
+
 @admin.register(UserAdProfile)
 class UserAdProfileAdmin(admin.ModelAdmin):
     list_display = [

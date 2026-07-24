@@ -474,6 +474,88 @@ def ads_daily_settlement(target_date=None):
 
 
 @shared_task
+def security_sweep():
+    """Hourly multi-layer abuse scan → FraudAlert rows + urgent admin email.
+    See fraud_watch.py for the detection layers."""
+    from .fraud_watch import run_security_sweep
+
+    return run_security_sweep()
+
+
+@shared_task
+def build_ad_audiences():
+    """Nightly retargeting audiences: for every advertiser with an ACTIVE
+    retargeting ad, union their chosen first-party sources into a cached
+    user-id set the serve endpoint checks in O(1)."""
+    from django.core.cache import cache
+
+    from .models import (
+        AbnAdsPanel,
+        AdEvent,
+        BusinessNetworkFollowerModel,
+        BusinessNetworkPostComment,
+        BusinessNetworkPostLike,
+        PostSeen,
+    )
+
+    built = 0
+    ads = AbnAdsPanel.objects.filter(
+        status="active", ad_objective="retargeting"
+    ).select_related("user")
+    by_advertiser = {}
+    for ad in ads:
+        if ad.user_id is None:
+            continue
+        entry = by_advertiser.setdefault(
+            ad.user_id, {"sources": set(), "days": 7}
+        )
+        entry["sources"].update(ad.retarget_sources or ["ad_engagers"])
+        entry["days"] = max(entry["days"], ad.retarget_days or 30)
+
+    for advertiser_id, spec in by_advertiser.items():
+        since = timezone.now() - timedelta(days=spec["days"])
+        ids = set()
+        src = spec["sources"]
+        if "ad_engagers" in src:
+            ids.update(
+                str(u) for u in AdEvent.objects.filter(
+                    ad__user_id=advertiser_id, user__isnull=False,
+                    created_at__gte=since,
+                ).values_list("user_id", flat=True).distinct()
+            )
+        if "followers" in src:
+            ids.update(
+                str(u) for u in BusinessNetworkFollowerModel.objects.filter(
+                    following_id=advertiser_id, created_at__gte=since,
+                ).values_list("follower_id", flat=True)
+            )
+        if "post_engagers" in src:
+            ids.update(
+                str(u) for u in BusinessNetworkPostLike.objects.filter(
+                    post__author_id=advertiser_id, created_at__gte=since,
+                ).values_list("user_id", flat=True).distinct()
+            )
+            ids.update(
+                str(u) for u in BusinessNetworkPostComment.objects.filter(
+                    post__author_id=advertiser_id, created_at__gte=since,
+                ).values_list("author_id", flat=True).distinct()
+            )
+        if "post_viewers" in src:
+            ids.update(
+                str(u) for u in PostSeen.objects.filter(
+                    post__author_id=advertiser_id, last_seen_at__gte=since,
+                ).values_list("user_id", flat=True).distinct()[:20000]
+            )
+        ids.discard(str(advertiser_id))  # never retarget yourself
+        cache.set(f"adaud:{advertiser_id}", ids, 60 * 60 * 26)
+        cache.set(f"adaudcount:{advertiser_id}", len(ids), 60 * 60 * 26)
+        built += 1
+
+    logger.info("build_ad_audiences: %s audiences", built)
+    return {"audiences": built}
+
+
+@shared_task
 def build_interest_profiles():
     """Nightly Interest Brain rebuild: classify every recently-active user
     into interest segments from their last 30 days of activity (views, video

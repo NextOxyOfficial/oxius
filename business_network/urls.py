@@ -179,6 +179,10 @@ urlpatterns = [
     path("ads/<str:ad_id>/toggle/", ads_api.toggle_my_ad, name="ads-toggle"),
     path("ads/<str:ad_id>/rerun/", ads_api.rerun_my_ad, name="ads-rerun"),
     path(
+        "ads/audience-size/", ads_api.my_audience_size,
+        name="ads-audience-size",
+    ),
+    path(
         "abn-ads-panels/",
         AbnAdsPanelListCreateView.as_view(),
         name="abn-ads-panel-list-create",
