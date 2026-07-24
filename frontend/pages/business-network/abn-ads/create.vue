@@ -46,6 +46,138 @@
             @submit.prevent="submitAd"
             class="bg-white border border-gray-100 shadow-sm rounded-xl p-5 space-y-5"
           >
+            <!-- Campaign objective -->
+            <div>
+              <label class="block text-sm font-medium text-gray-800 mb-1">
+                ক্যাম্পেইন অবজেক্টিভ
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  v-for="obj in objectiveOptions"
+                  :key="obj.value"
+                  type="button"
+                  @click="form.ad_objective = obj.value"
+                  class="px-3 py-2.5 text-left border rounded-md transition-colors"
+                  :class="
+                    form.ad_objective === obj.value
+                      ? 'border-indigo-500 bg-indigo-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  "
+                >
+                  <div
+                    class="text-sm font-semibold"
+                    :class="
+                      form.ad_objective === obj.value
+                        ? 'text-indigo-700'
+                        : 'text-gray-800'
+                    "
+                  >
+                    {{ obj.emoji }} {{ obj.title }}
+                  </div>
+                  <p class="text-xs text-gray-600 mt-0.5 leading-snug">
+                    {{ obj.desc }}
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            <!-- Target segments (engagement objective) -->
+            <div v-if="form.ad_objective === 'engagement'">
+              <label class="block text-sm font-medium text-gray-800 mb-1">
+                টার্গেট অডিয়েন্স (ঐচ্ছিক)
+              </label>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="seg in segmentOptions"
+                  :key="seg.value"
+                  type="button"
+                  @click="toggleSegment(seg.value)"
+                  class="px-2.5 py-1 text-xs font-medium rounded-full border transition-colors"
+                  :class="
+                    form.target_segments.includes(seg.value)
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                  "
+                >
+                  {{ seg.label }}
+                </button>
+              </div>
+              <p class="mt-1 text-xs text-gray-500">
+                কিছু না বাছলে সবাই দেখবে
+              </p>
+            </div>
+
+            <!-- Retargeting sources (retargeting objective) -->
+            <div
+              v-if="form.ad_objective === 'retargeting'"
+              class="space-y-3"
+            >
+              <div>
+                <label class="block text-sm font-medium text-gray-800 mb-1">
+                  অডিয়েন্স সোর্স
+                </label>
+                <div class="grid grid-cols-1 gap-y-2 mt-1.5">
+                  <label
+                    v-for="s in retargetSourceOptions"
+                    :key="s.value"
+                    class="inline-flex items-center gap-2.5 cursor-pointer text-sm text-gray-700 hover:text-gray-900"
+                  >
+                    <input
+                      type="checkbox"
+                      class="h-4 w-4 rounded border-gray-300 accent-indigo-600"
+                      :checked="form.retarget_sources.includes(s.value)"
+                      @change="toggleRetargetSource(s.value)"
+                    />
+                    <span>{{ s.label }}</span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-800 mb-1">
+                  কত দিনের অডিয়েন্স
+                </label>
+                <select v-model.number="form.retarget_days" class="date-select">
+                  <option :value="7">গত ৭ দিন</option>
+                  <option :value="30">গত ৩০ দিন</option>
+                  <option :value="90">গত ৯০ দিন</option>
+                </select>
+              </div>
+              <div
+                v-if="audienceLoading"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full"
+              >
+                অডিয়েন্স হিসাব করা হচ্ছে…
+              </div>
+              <div
+                v-else-if="audienceSize !== null && audienceSize > 0"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-full"
+              >
+                <UIcon name="i-heroicons-users" class="w-4 h-4" />
+                আনুমানিক অডিয়েন্স: ~{{ audienceSize.toLocaleString() }} জন
+              </div>
+              <div
+                v-else-if="audienceSize === 0"
+                class="flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-md"
+              >
+                <UIcon
+                  name="i-heroicons-exclamation-triangle"
+                  class="w-4 h-4 shrink-0 mt-0.5"
+                />
+                <span
+                  >এখনো কোনো অডিয়েন্স নেই — আগে কিছু বিজ্ঞাপন/পোস্ট
+                  চালান</span
+                >
+              </div>
+            </div>
+
+            <!-- Announcement note (announcement objective) -->
+            <p
+              v-if="form.ad_objective === 'announcement'"
+              class="text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-3 py-2"
+            >
+              ঘোষণা সবাইকে সমানভাবে দেখানো হয় — দিনে সর্বোচ্চ ২ বার
+            </p>
+
             <!-- Title -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
@@ -928,7 +1060,112 @@ const form = reactive({
   daily_budget: null,
   start_at: "",
   end_at: "",
+  ad_objective: "engagement",
+  target_segments: [],
+  retarget_sources: ["ad_engagers"],
+  retarget_days: 30,
 });
+
+// ── Campaign objective ──
+const objectiveOptions = [
+  {
+    value: "engagement",
+    emoji: "🔥",
+    title: "এনগেজমেন্ট",
+    desc: "লাইক, কমেন্ট, ফলো বাড়ান — আগ্রহী ইউজারদের কাছে পৌঁছান",
+  },
+  {
+    value: "retargeting",
+    emoji: "🔁",
+    title: "রিটার্গেটিং",
+    desc: "যারা আগে আগ্রহ দেখিয়েছে তাদের আবার দেখান (প্রিমিয়াম ৳0.50/ভিউ)",
+  },
+  {
+    value: "announcement",
+    emoji: "📢",
+    title: "ঘোষণা",
+    desc: "সবার কাছে একবার করে পৌঁছান — সবচেয়ে সস্তা ৳0.20/ভিউ",
+  },
+];
+
+// Interest-Brain segments — keys mirror the backend's segment keys.
+const segmentOptions = [
+  { value: "fashion", label: "ফ্যাশন" },
+  { value: "beauty", label: "বিউটি" },
+  { value: "food", label: "খাবার" },
+  { value: "tech", label: "টেক/গ্যাজেট" },
+  { value: "business", label: "ব্যবসা" },
+  { value: "jobs_education", label: "চাকরি/শিক্ষা" },
+  { value: "entertainment", label: "বিনোদন" },
+  { value: "sports", label: "খেলাধুলা" },
+  { value: "health", label: "স্বাস্থ্য" },
+  { value: "travel", label: "ভ্রমণ" },
+  { value: "religion", label: "ধর্মীয়" },
+  { value: "agriculture", label: "কৃষি" },
+  { value: "vehicles_property", label: "গাড়ি/প্রপার্টি" },
+  { value: "finance", label: "ফাইন্যান্স" },
+];
+
+function toggleSegment(value) {
+  const i = form.target_segments.indexOf(value);
+  if (i >= 0) form.target_segments.splice(i, 1);
+  else form.target_segments.push(value);
+}
+
+// ── Retargeting audience ──
+const retargetSourceOptions = [
+  { value: "ad_engagers", label: "আমার আগের বিজ্ঞাপনে ক্লিক/ভিউ করেছেন" },
+  { value: "followers", label: "আমার ফলোয়াররা" },
+  { value: "post_engagers", label: "আমার পোস্টে লাইক/কমেন্ট করেছেন" },
+  { value: "post_viewers", label: "আমার পোস্ট দেখেছেন" },
+];
+
+function toggleRetargetSource(value) {
+  const i = form.retarget_sources.indexOf(value);
+  if (i >= 0) form.retarget_sources.splice(i, 1);
+  else form.retarget_sources.push(value);
+}
+
+// Live audience-size estimate (debounced while sources/days change).
+const audienceSize = ref(null);
+const audienceLoading = ref(false);
+let audienceDebounce = null;
+
+async function fetchAudienceSize() {
+  if (!form.retarget_sources.length) {
+    audienceSize.value = 0;
+    audienceLoading.value = false;
+    return;
+  }
+  audienceLoading.value = true;
+  try {
+    const res = await get(
+      `/bn/ads/audience-size/?sources=${form.retarget_sources.join(",")}&days=${
+        form.retarget_days
+      }`
+    );
+    audienceSize.value =
+      res.data && !res.error ? Number(res.data.size) || 0 : null;
+  } catch (e) {
+    audienceSize.value = null;
+  } finally {
+    audienceLoading.value = false;
+  }
+}
+
+watch(
+  [
+    () => form.ad_objective,
+    () => [...form.retarget_sources],
+    () => form.retarget_days,
+  ],
+  () => {
+    if (form.ad_objective !== "retargeting") return;
+    clearTimeout(audienceDebounce);
+    audienceDebounce = setTimeout(fetchAudienceSize, 400);
+  },
+  { immediate: true }
+);
 
 // Video-format uploads
 const videoMediaId = ref(null);
@@ -1276,6 +1513,12 @@ async function submitAd() {
       end_at: endDate ? `${endDate}T23:59:59+06:00` : null,
       target_locations: [...selectedLocations.value],
       estimated_views: estimatedViews.value,
+      ad_objective: form.ad_objective,
+      target_segments:
+        form.ad_objective === "engagement" ? [...form.target_segments] : [],
+      retarget_sources:
+        form.ad_objective === "retargeting" ? [...form.retarget_sources] : [],
+      retarget_days: form.retarget_days,
     };
     if (form.format === "video") {
       payload.media_ids = [videoMediaId.value];

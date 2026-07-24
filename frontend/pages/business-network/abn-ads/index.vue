@@ -404,6 +404,12 @@
                         >
                           {{ getStatusText(ad.status) }}
                         </span>
+                        <span
+                          class="px-2 py-0.5 rounded-md text-[11px] font-medium"
+                          :class="getObjectiveClass(ad.ad_objective)"
+                        >
+                          {{ getObjectiveText(ad.ad_objective) }}
+                        </span>
                         <div class="flex flex-wrap gap-1">
                           <span
                             v-if="ad.male"
@@ -2882,6 +2888,29 @@ const getStatusText = (status) => {
       return t("ads_status_stopped");
     default:
       return status || "—";
+  }
+};
+
+// Campaign objective badge (mirrors AbnAdsPanel.ad_objective on the backend)
+const getObjectiveClass = (objective) => {
+  switch (objective) {
+    case "retargeting":
+      return "bg-purple-50 text-purple-700";
+    case "announcement":
+      return "bg-amber-50 text-amber-700";
+    default:
+      return "bg-indigo-50 text-indigo-700";
+  }
+};
+
+const getObjectiveText = (objective) => {
+  switch (objective) {
+    case "retargeting":
+      return "রিটার্গেটিং";
+    case "announcement":
+      return "ঘোষণা";
+    default:
+      return "এনগেজমেন্ট";
   }
 };
 
