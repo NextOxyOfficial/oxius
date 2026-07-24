@@ -428,21 +428,25 @@ export function useAuth() {
       };
       if (opts.refer) body.refer = opts.refer;
 
-      const { data, error } = await useFetch<any>(baseURL + "/auth/social/", {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (error.value) {
-        const payload =
-          error.value?.data || error.value?.response?._data || {};
+      // Imperative call (fired from a button click, not during setup) — must
+      // use $fetch. useFetch here returns null data without awaiting the real
+      // request, so the Google login silently did nothing.
+      let data: any;
+      try {
+        data = await $fetch<any>(baseURL + "/auth/social/", {
+          method: "POST",
+          body,
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (err: any) {
+        const payload = err?.data || err?.response?._data || {};
         if (payload?.code === "account_not_found") {
           return {
             loggedIn: false,
             accountNotFound: true,
             email: payload.email,
-            message: payload.detail || "No account found for this Google account.",
+            message:
+              payload.detail || "No account found for this Google account.",
           };
         }
         return {
@@ -452,19 +456,19 @@ export function useAuth() {
         };
       }
 
-      if (data.value) {
-        user.value = data.value;
-        jwt.value = data.value.access;
-        if (data.value.refresh) refreshToken.value = data.value.refresh;
+      if (data) {
+        user.value = data;
+        jwt.value = data.access;
+        if (data.refresh) refreshToken.value = data.refresh;
         const username = useCookie("username");
-        if (data.value.user && data.value.user.username) {
-          username.value = data.value.user.username;
+        if (data.user && data.user.username) {
+          username.value = data.user.username;
         }
-        await persistAuthData(data.value);
+        await persistAuthData(data);
         return {
           loggedIn: true,
-          user: data.value.user,
-          user_type: data.value.user?.user_type,
+          user: data.user,
+          user_type: data.user?.user_type,
         };
       }
       return { loggedIn: false, message: "Google sign-in failed." };
