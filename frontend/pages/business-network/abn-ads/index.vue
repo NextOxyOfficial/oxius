@@ -282,45 +282,29 @@
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <!-- 14-day views/clicks mini bar chart (from AdEvent data) -->
-              <div v-if="dailyStats.length" class="mt-4">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-xs font-medium text-gray-600">
-                    {{ $t("ads_last14") }}
-                  </span>
-                  <span class="text-[11px] text-gray-400">
-                    <span class="inline-block w-2 h-2 rounded-sm bg-indigo-400 mr-1"></span
-                    >{{ $t("ads_views") }}
-                    <span class="inline-block w-2 h-2 rounded-sm bg-amber-400 ml-3 mr-1"></span
-                    >{{ $t("ads_clicks") }}
-                  </span>
-                </div>
-                <div class="flex items-end gap-1 h-20">
+                <!-- CPC — average cost per click -->
+                <div
+                  class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
+                >
                   <div
-                    v-for="d in dailyStats"
-                    :key="d.date"
-                    class="flex-1 flex flex-col justify-end items-center gap-0.5"
-                    :title="`${d.date}: ${d.views} views, ${d.clicks} clicks`"
+                    class="w-9 h-9 rounded-lg bg-rose-50 flex items-center justify-center shrink-0"
                   >
-                    <div
-                      class="w-full rounded-t bg-indigo-400"
-                      :style="{
-                        height:
-                          Math.max(2, (d.views / maxDailyViews) * 64) + 'px',
-                      }"
-                    ></div>
-                    <div
-                      class="w-full rounded-t bg-amber-400"
-                      :style="{
-                        height:
-                          Math.max(1, (d.clicks / maxDailyViews) * 64) + 'px',
-                      }"
-                    ></div>
+                    <UIcon
+                      name="i-heroicons-cursor-arrow-ripple"
+                      class="w-4.5 h-4.5 text-rose-600"
+                    />
+                  </div>
+                  <div>
+                    <div class="text-lg font-bold text-gray-800 leading-none">
+                      ৳{{ avgCpc }}
+                    </div>
+                    <div class="text-[11.5px] text-gray-500 mt-1">
+                      {{ $t("ads_cpc") }}
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
 
             <!-- Empty State -->
@@ -497,6 +481,9 @@
                       <span
                         >{{ $t("ads_spent") }}: ৳{{ ad.spent || 0 }}</span
                       >
+                    </div>
+                    <div class="flex items-center">
+                      <span>CPC: ৳{{ adCpc(ad) }}</span>
                     </div>
                     <!-- <div class="flex items-center">
                       <svg
@@ -2554,6 +2541,19 @@ const totalSpent = computed(() =>
 const activeAdsCount = computed(
   () => filteredAds.value.filter((ad) => ad.status === "active").length
 );
+// CPC — average cost per click across the filtered ads. Shows ৳0.00 until
+// the ads collect their first clicks.
+const avgCpc = computed(() => {
+  const clicks = totalClicks.value;
+  if (!clicks) return "0.00";
+  return (Number(totalSpent.value) / clicks).toFixed(2);
+});
+// Per-ad CPC — used on each ad card.
+function adCpc(ad) {
+  const clicks = Number(ad.clicks) || 0;
+  if (!clicks) return "0.00";
+  return ((Number(ad.spent) || 0) / clicks).toFixed(2);
+}
 
 // Drag handle state
 const dragHandle = ref(null);
