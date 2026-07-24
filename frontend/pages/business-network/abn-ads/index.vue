@@ -1,7 +1,7 @@
-<template>
+﻿<template>
   <UContainer class="mt-3">
     <div class="min-h-screen bg-gray-50">
-      <!-- ── Hero header ─────────────────────────────────────────── -->
+      <!-- â”€â”€ Hero header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div
         class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-800 to-indigo-900 text-white shadow-md"
       >
@@ -33,7 +33,7 @@
                 class="flex items-center px-3.5 py-2 bg-white/15 backdrop-blur rounded-xl text-sm"
               >
                 <UIcon name="i-heroicons-wallet" class="w-4 h-4 mr-1.5" />
-                <span class="font-semibold">৳{{ user?.user?.balance }}</span>
+                <span class="font-semibold">à§³{{ user?.user?.balance }}</span>
                 <span
                   v-if="user?.user?.balance < 200"
                   class="ml-1.5 text-[11px] font-bold bg-red-500 px-1.5 py-0.5 rounded"
@@ -77,7 +77,7 @@
         </div>
       </div>
 
-      <!-- ── How it works steps ──────────────────────────────────── -->
+      <!-- â”€â”€ How it works steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
         <div
           v-for="(step, i) in panelSteps"
@@ -113,7 +113,7 @@
               class="w-5 h-5 mr-2 text-red-500 shrink-0"
             />
             <span class="text-sm">
-              {{ $t("ads_low_balance_msg") }} (৳{{ user?.user?.balance }})
+              {{ $t("ads_low_balance_msg") }} (à§³{{ user?.user?.balance }})
             </span>
           </div>
           <NuxtLink
@@ -255,7 +255,7 @@
                   </div>
                   <div>
                     <div class="text-lg font-bold text-gray-800 leading-none">
-                      ৳{{ totalSpent }}
+                      à§³{{ totalSpent }}
                     </div>
                     <div class="text-[11.5px] text-gray-500 mt-1">
                       {{ $t("ads_total_spent") }}
@@ -282,7 +282,7 @@
                     </div>
                   </div>
                 </div>
-                <!-- CPC — average cost per click -->
+                <!-- CPC â€” average cost per click -->
                 <div
                   class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
                 >
@@ -296,7 +296,7 @@
                   </div>
                   <div>
                     <div class="text-lg font-bold text-gray-800 leading-none">
-                      ৳{{ avgCpc }}
+                      à§³{{ avgCpc }}
                     </div>
                     <div class="text-[11.5px] text-gray-500 mt-1">
                       {{ $t("ads_cpc") }}
@@ -383,10 +383,10 @@
                   </span>
                 </div>
                 <p class="mt-1 truncate text-xs text-slate-500">
-                  ৳{{ ad.spent || 0 }} {{ $t("ads_spent") }} · CPC ৳{{
+                  à§³{{ ad.spent || 0 }} {{ $t("ads_spent") }} Â· CPC à§³{{
                     adCpc(ad)
                   }}
-                  · ৳{{ ad.budget }} {{ $t("ads_budget") }}
+                  Â· à§³{{ ad.budget }} {{ $t("ads_budget") }}
                 </p>
                 <div
                   v-if="ad.status === 'rejected' && ad.reject_reason"
@@ -442,524 +442,6 @@
               </div>
             </div>
             <!-- (legacy card markup removed) -->
-            <div v-if="false">
-                <!-- Ad Image -->
-                <div class="md:w-1/3 h-40 md:h-auto relative">
-                  <!-- Main image -->
-                  <img
-                    v-if="ad.media && ad.media?.length > 0"
-                    :src="ad.media[0].image"
-                    alt="Ad image"
-                    class="h-full w-full object-cover"
-                  />
-                  <div
-                    v-else
-                    class="h-full w-full bg-gray-200 flex items-center justify-center"
-                  >
-                    <p class="text-gray-600 text-sm">No image</p>
-                  </div>
-
-                  <!-- Image count indicator -->
-                  <div
-                    v-if="ad.media && ad.media?.length > 1"
-                    class="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-sm px-2 py-1 rounded-md"
-                  >
-                    {{ ad.media?.length }} images
-                  </div>
-                </div>
-
-                <!-- Ad Content -->
-                <div class="md:w-2/3 p-3">
-                  <div class="flex justify-between items-start">
-                    <div>
-                      <h3 class="font-medium text-base mb-1 line-clamp-2">
-                        {{ ad.title }}
-                      </h3>
-                      <div class="flex flex-wrap items-center gap-2 mb-2">
-                        <span
-                          v-if="ad.category_details && ad.category !== 'none'"
-                          class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md text-sm"
-                        >
-                          {{ ad.category_details?.name }}
-                        </span>
-                        <span class="text-gray-600 text-sm">Bangladesh</span>
-                        <span
-                          class="px-2 py-0.5 rounded-md text-sm"
-                          :class="getStatusClass(ad.status)"
-                        >
-                          {{ getStatusText(ad.status) }}
-                        </span>
-                        <span
-                          class="px-2 py-0.5 rounded-md text-[11px] font-medium"
-                          :class="getObjectiveClass(ad.ad_objective)"
-                        >
-                          {{ getObjectiveText(ad.ad_objective) }}
-                        </span>
-                        <div class="flex flex-wrap gap-1">
-                          <span
-                            v-if="ad.male"
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
-                          >
-                            {{ ad.male ? "Male" : "" }}
-                          </span>
-                          <span
-                            v-if="ad.female"
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
-                          >
-                            {{ ad.female ? "Female" : "" }}
-                          </span>
-                          <span
-                            v-if="ad.other"
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
-                          >
-                            {{ ad.other ? "Other" : "" }}
-                          </span>
-                          <span
-                            class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md text-sm"
-                          >
-                            Age: {{ ad.min_age }}-{{ ad.max_age }}
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        v-if="ad.status === 'rejected' && ad.reject_reason"
-                        class="text-xs bg-red-50 text-red-600 rounded px-2 py-1 mb-2 inline-block"
-                      >
-                        {{ $t("ads_reject_reason") }}: {{ ad.reject_reason }}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p class="text-gray-800 mb-3 text-sm line-clamp-3">
-                    {{ ad.description }}
-                  </p>
-
-                  <!-- Ad Metrics -->
-                  <div
-                    class="flex flex-wrap items-center gap-4 mb-2 text-sm text-gray-600"
-                  >
-                    <div class="flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                      <span>{{ ad.views }} {{ $t("ads_views") }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"
-                        />
-                      </svg>
-                      <span>{{ ad.clicks || 0 }} {{ $t("ads_clicks") }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span
-                        >{{ $t("ads_spent") }}: ৳{{ ad.spent || 0 }}</span
-                      >
-                    </div>
-                    <div class="flex items-center">
-                      <span>CPC: ৳{{ adCpc(ad) }}</span>
-                    </div>
-                    <!-- <div class="flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
-                        />
-                      </svg>
-                      <span>{{ ad.metrics.clicks }} clicks</span>
-                    </div> -->
-                    <div class="flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <span>{{ formatTimeAgo(ad.created_at) }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span>{{ $t("ads_budget") }}: ৳{{ ad.budget }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Delivery progress: views vs estimated -->
-                  <div v-if="ad.estimated_views" class="mb-2">
-                    <div
-                      class="flex justify-between text-[11px] text-gray-500 mb-0.5"
-                    >
-                      <span>
-                        {{ ad.views }}/{{ ad.estimated_views }}
-                        {{ $t("ads_views") }}
-                      </span>
-                      <span>
-                        {{
-                          Math.min(
-                            100,
-                            Math.round((ad.views / ad.estimated_views) * 100)
-                          )
-                        }}%
-                      </span>
-                    </div>
-                    <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        class="h-full bg-indigo-400 rounded-full"
-                        :style="{
-                          width:
-                            Math.min(
-                              100,
-                              (ad.views / ad.estimated_views) * 100
-                            ) + '%',
-                        }"
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div
-                    class="flex justify-between items-center pt-2 border-t border-gray-100"
-                  >
-                    <div class="flex items-center">
-                      <span class="text-sm text-gray-600 mr-2">Contact:</span>
-                      <div
-                        v-if="ad.ad_type && ad.ad_type !== 'none'"
-                        class="flex items-center"
-                      >
-                        <!-- Website -->
-                        <template v-if="ad.ad_type === 'click_to_website'">
-                          <a
-                            :href="ad.ad_type_details"
-                            target="_blank"
-                            class="text-sm text-blue-600 flex items-center hover:underline"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-3 w-3 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                              />
-                            </svg>
-                            {{ ad.ad_type_details }}
-                          </a>
-                          <a
-                            :href="ad.ad_type_details"
-                            target="_blank"
-                            class="ml-2 text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md hover:bg-blue-200 transition-colors"
-                          >
-                            Visit
-                          </a>
-                        </template>
-
-                        <!-- WhatsApp -->
-                        <template v-else-if="ad.ad_type === 'call_on_whatsapp'">
-                          <a
-                            :href="`https://wa.me/${ad.ad_type_details.replace(
-                              /[^0-9]/g,
-                              ''
-                            )}`"
-                            target="_blank"
-                            class="text-sm text-sky-600 flex items-center hover:underline"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-3 w-3 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                              />
-                            </svg>
-                            {{ ad.ad_type_details }}
-                          </a>
-                          <a
-                            :href="`https://wa.me/${ad.ad_type_details?.replace(
-                              /[^0-9]/g,
-                              ''
-                            )}`"
-                            target="_blank"
-                            class="ml-2 text-sm bg-sky-100 text-sky-700 px-2 py-0.5 rounded-md hover:bg-sky-200 transition-colors"
-                          >
-                            WhatsApp
-                          </a>
-                        </template>
-
-                        <!-- Phone -->
-                        <template v-else-if="ad.ad_type === 'call_on_phone'">
-                          <a
-                            :href="`tel:${ad.ad_type_details}`"
-                            class="text-sm text-gray-600 flex items-center hover:underline"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-3 w-3 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                              />
-                            </svg>
-                            {{ ad.ad_type_details }}
-                          </a>
-                          <a
-                            :href="`tel:${ad.ad_type_details}`"
-                            class="ml-2 text-sm bg-gray-100 text-gray-800 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors"
-                          >
-                            Call
-                          </a>
-                        </template>
-
-                        <!-- Email -->
-                        <template v-else-if="ad.ad_type === 'email_us'">
-                          <a
-                            :href="`mailto:${ad.ad_type_details}`"
-                            class="text-sm text-purple-600 flex items-center hover:underline"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-3 w-3 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                              />
-                            </svg>
-                            {{ ad.ad_type_details }}
-                          </a>
-                          <a
-                            :href="`mailto:${ad.ad_type_details}`"
-                            class="ml-2 text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md hover:bg-purple-200 transition-colors"
-                          >
-                            Email
-                          </a>
-                        </template>
-                      </div>
-                      <span v-else class="text-sm text-gray-600">None</span>
-                    </div>
-
-                    <div class="flex items-center space-x-1">
-                      <button
-                        v-if="
-                          ['completed', 'stoped', 'rejected'].includes(
-                            ad.status
-                          )
-                        "
-                        @click="showRerunConfirmation(ad)"
-                        class="flex items-center gap-1 px-2.5 py-1 text-sm text-indigo-600 hover:bg-indigo-50 border border-indigo-300 rounded-full transition-colors"
-                        :title="$t('ads_rerun')"
-                      >
-                        <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5" />
-                        {{ $t("ads_rerun") }}
-                      </button>
-                      <button
-                        @click="previewAd(ad)"
-                        class="p-1 text-indigo-700 hover:bg-indigo-50 border border-gray-200 rounded-md"
-                        title="Preview Ad"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        v-if="ad.status === 'active' || ad.status === 'stoped'"
-                        @click="toggleAdStatus(ad)"
-                        class="p-1 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-md"
-                        :title="
-                          ad.status === 'active'
-                            ? $t('ads_stop')
-                            : $t('ads_resume')
-                        "
-                      >
-                        <svg
-                          v-if="ad.status === 'active'"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <svg
-                          v-else-if="ad.status === 'stoped'"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                          />
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <svg
-                          v-else
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        @click="editAd(ad)"
-                        class="p-1 text-blue-600 hover:bg-blue-50 border border-gray-200 rounded-md"
-                        title="Edit Ad"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        @click="showDeleteConfirmation(ad)"
-                        class="p-1 text-red-600 hover:bg-red-50 border border-gray-200 rounded-md"
-                        title="Delete Ad"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             <!-- Pagination (real, client-side over the filtered list) -->
             <div v-if="totalPages > 1" class="flex justify-center mt-6">
@@ -1645,7 +1127,7 @@
                       for="budget"
                       class="block text-sm font-medium text-gray-800"
                     >
-                      Ad Budget (৳)
+                      Ad Budget (à§³)
                     </label>
                     <div class="mt-1 relative">
                       <input
@@ -1661,11 +1143,11 @@
                         <p class="text-sm text-gray-600">
                           Your account balance:
                           <span class="font-medium"
-                            >৳{{ user?.user?.balance }}</span
+                            >à§³{{ user?.user?.balance }}</span
                           >
                         </p>
                         <p class="text-sm text-amber-600">
-                          Minimum budget: ৳200
+                          Minimum budget: à§³200
                         </p>
                       </div>
                       <div class="mt-2 p-2 bg-blue-50 rounded-md">
@@ -1959,7 +1441,7 @@
                         class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center"
                       >
                         <span class="text-sm text-gray-600"
-                          >Budget: ৳{{ adForm.budget || "0" }}</span
+                          >Budget: à§³{{ adForm.budget || "0" }}</span
                         >
                         <span class="text-sm text-indigo-600">
                           Est. Views: {{ adForm.estimated_views }}
@@ -2070,7 +1552,7 @@
                 {{ $t("ads_rerun") }}
               </h3>
               <p class="text-sm text-gray-600 mt-1">
-                Run this ad again? The budget (৳{{ rerunTargetAd?.budget }})
+                Run this ad again? The budget (à§³{{ rerunTargetAd?.budget }})
                 will be deducted from your balance and the ad will go for
                 review.
               </p>
@@ -2477,7 +1959,7 @@ const abnAdsCategories = ref([]);
 async function fetchAbnAdsCategories() {
   try {
     const response = await get("/bn/abn-ads-categories/");
-    // useApi.get never throws — on error data is null. Assigning null here
+    // useApi.get never throws â€” on error data is null. Assigning null here
     // crashed the whole page at render (.filter on null). Keep it an array.
     const d = response.data;
     abnAdsCategories.value = Array.isArray(d) ? d : d?.results ?? [];
@@ -2577,7 +2059,7 @@ const postedAds = ref([]);
 async function fetchPostedAds() {
   try {
     const response = await get("/bn/abn-ads-panels/");
-    // Same null-guard as categories — never let a failed fetch poison the
+    // Same null-guard as categories â€” never let a failed fetch poison the
     // list with null (that crashed the page for logged-out visitors).
     const d = response.data;
     postedAds.value = Array.isArray(d) ? d : d?.results ?? [];
@@ -2588,7 +2070,7 @@ async function fetchPostedAds() {
 
 await fetchPostedAds();
 
-// ── Dashboard stats (daily views/clicks from AdEvent data) ──
+// â”€â”€ Dashboard stats (daily views/clicks from AdEvent data) â”€â”€
 const dailyStats = ref([]);
 
 async function fetchAdStats() {
@@ -2601,7 +2083,7 @@ const maxDailyViews = computed(() =>
   Math.max(1, ...dailyStats.value.map((d) => d.views))
 );
 
-// ── Date filter + client-side pagination ──
+// â”€â”€ Date filter + client-side pagination â”€â”€
 const dateFilterActive = ref(false);
 const appliedFilter = reactive({ from: "", to: "" });
 const currentAdsPage = ref(1);
@@ -2642,14 +2124,14 @@ const totalSpent = computed(() =>
 const activeAdsCount = computed(
   () => filteredAds.value.filter((ad) => ad.status === "active").length
 );
-// CPC — average cost per click across the filtered ads. Shows ৳0.00 until
+// CPC â€” average cost per click across the filtered ads. Shows à§³0.00 until
 // the ads collect their first clicks.
 const avgCpc = computed(() => {
   const clicks = totalClicks.value;
   if (!clicks) return "0.00";
   return (Number(totalSpent.value) / clicks).toFixed(2);
 });
-// Per-ad CPC — used on each ad card.
+// Per-ad CPC â€” used on each ad card.
 function adCpc(ad) {
   const clicks = Number(ad.clicks) || 0;
   if (!clicks) return "0.00";
@@ -2719,8 +2201,8 @@ const clickTrack = (event) => {
   }
 };
 
-// Toggle ad status — REAL server call (owner-only endpoint); only
-// active↔stoped can toggle.
+// Toggle ad status â€” REAL server call (owner-only endpoint); only
+// activeâ†”stoped can toggle.
 const toggleAdStatus = async (ad) => {
   const res = await post(`/bn/ads/${ad.id}/toggle/`, {});
   if (res.data?.status) {
@@ -2842,7 +2324,7 @@ const showDeleteConfirmation = (ad) => {
   showDeleteModal.value = true;
 };
 
-// Confirm delete — REAL server delete (owner-scoped on the backend).
+// Confirm delete â€” REAL server delete (owner-scoped on the backend).
 const confirmDelete = async () => {
   isDeleting.value = true;
   try {
@@ -2865,8 +2347,8 @@ const cancelDelete = () => {
   showDeleteModal.value = false;
 };
 
-// ── Re-run ad (clones a completed/stoped/rejected ad as a fresh
-// review-state ad on the server; deducts the budget from the balance) ──
+// â”€â”€ Re-run ad (clones a completed/stoped/rejected ad as a fresh
+// review-state ad on the server; deducts the budget from the balance) â”€â”€
 const showRerunModal = ref(false);
 const rerunTargetAd = ref(null);
 const isRerunning = ref(false);
@@ -2994,7 +2476,7 @@ const getStatusText = (status) => {
     case "stopped":
       return t("ads_status_stopped");
     default:
-      return status || "—";
+      return status || "â€”";
   }
 };
 
@@ -3013,11 +2495,11 @@ const getObjectiveClass = (objective) => {
 const getObjectiveText = (objective) => {
   switch (objective) {
     case "retargeting":
-      return "রিটার্গেটিং";
+      return "à¦°à¦¿à¦Ÿà¦¾à¦°à§à¦—à§‡à¦Ÿà¦¿à¦‚";
     case "announcement":
-      return "ঘোষণা";
+      return "à¦˜à§‹à¦·à¦£à¦¾";
     default:
-      return "এনগেজমেন্ট";
+      return "à¦à¦¨à¦—à§‡à¦œà¦®à§‡à¦¨à§à¦Ÿ";
   }
 };
 
@@ -3034,16 +2516,16 @@ const prevImage = () => {
 };
 
 // Sample tutorial videos
-// Thumbnail link-outs — swap videoIds for AdsyClub's own tutorials when
+// Thumbnail link-outs â€” swap videoIds for AdsyClub's own tutorials when
 // they're published (thumbnails come straight from img.youtube.com).
 const tutorialVideos = ref([
   {
-    title: "কীভাবে কার্যকর বিজ্ঞাপন তৈরি করবেন",
+    title: "à¦•à§€à¦­à¦¾à¦¬à§‡ à¦•à¦¾à¦°à§à¦¯à¦•à¦° à¦¬à¦¿à¦œà§à¦žà¦¾à¦ªà¦¨ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à¦¬à§‡à¦¨",
     videoId: "R1Yr5H8HTLU",
     duration: "5:30",
   },
   {
-    title: "সঠিক অডিয়েন্স টার্গেট করার টিপস",
+    title: "à¦¸à¦ à¦¿à¦• à¦…à¦¡à¦¿à¦¯à¦¼à§‡à¦¨à§à¦¸ à¦Ÿà¦¾à¦°à§à¦—à§‡à¦Ÿ à¦•à¦°à¦¾à¦° à¦Ÿà¦¿à¦ªà¦¸",
     videoId: "nU-IIXBWlS4",
     duration: "7:15",
   },
