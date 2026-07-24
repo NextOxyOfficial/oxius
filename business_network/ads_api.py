@@ -233,6 +233,14 @@ def serve_ad(request):
         "advertiser": (
             chosen.user.get_full_name() or chosen.user.username
         ) if chosen.user else "AdsyClub",
+        # Owner identity so the app can render a real avatar and navigate
+        # to the advertiser's BN profile from any ad surface.
+        "advertiser_id": str(chosen.user.id) if chosen.user else "",
+        "advertiser_image": (
+            _abs(chosen.user.image.url)
+            if chosen.user is not None and getattr(chosen.user, "image", None)
+            else ""
+        ),
     }
 
     # Boosted post: ship everything the shorts reel needs to play it inline.
