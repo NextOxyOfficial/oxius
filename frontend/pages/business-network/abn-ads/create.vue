@@ -865,8 +865,17 @@
             <div
               class="border border-gray-200 rounded-md overflow-hidden mb-4"
             >
+              <video
+                v-if="showPreviewVideo"
+                :src="previewVideo"
+                class="w-full h-36 object-cover bg-black"
+                autoplay
+                muted
+                loop
+                playsinline
+              />
               <img
-                v-if="previewImage"
+                v-else-if="previewImage"
                 :src="previewImage"
                 class="w-full h-36 object-cover"
               />
@@ -902,8 +911,17 @@
             <div
               class="flex items-center gap-2.5 p-2 bg-slate-50 rounded-xl mb-4"
             >
+              <video
+                v-if="showPreviewVideo"
+                :src="previewVideo"
+                class="w-10 h-10 rounded-md object-cover shrink-0 bg-black"
+                autoplay
+                muted
+                loop
+                playsinline
+              />
               <img
-                v-if="previewImage"
+                v-else-if="previewImage"
                 :src="previewImage"
                 class="w-10 h-10 rounded-md object-cover shrink-0"
               />
@@ -935,7 +953,22 @@
               class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto mb-4"
               style="aspect-ratio: 9 / 14; max-height: 260px"
             >
+              <video
+                v-if="showPreviewVideo"
+                :src="previewVideo"
+                class="absolute inset-0 w-full h-full object-cover"
+                autoplay
+                muted
+                loop
+                playsinline
+              />
+              <img
+                v-else-if="previewImage"
+                :src="previewImage"
+                class="absolute inset-0 w-full h-full object-cover"
+              />
               <div
+                v-else
                 class="absolute inset-0 flex items-center justify-center text-gray-600"
               >
                 <UIcon name="i-heroicons-play-circle" class="w-10 h-10" />
@@ -973,8 +1006,17 @@
               class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto"
               style="aspect-ratio: 9 / 16; max-height: 260px"
             >
+              <video
+                v-if="showPreviewVideo"
+                :src="previewVideo"
+                class="absolute inset-0 w-full h-full object-cover"
+                autoplay
+                muted
+                loop
+                playsinline
+              />
               <img
-                v-if="previewImage"
+                v-else-if="previewImage"
                 :src="previewImage"
                 class="absolute inset-0 w-full h-full object-cover opacity-70"
               />
@@ -1064,12 +1106,64 @@
         </div>
       </div>
     </div>
+
+    <!-- Login-required popup for guests -->
+    <div
+      v-if="showLoginPrompt"
+      class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+    >
+      <div
+        class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 text-center"
+      >
+        <div
+          class="w-14 h-14 mx-auto rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4"
+        >
+          <UIcon name="i-heroicons-lock-closed" class="w-7 h-7" />
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900">লগইন করুন</h3>
+        <p class="mt-1.5 text-sm text-gray-600">
+          বিজ্ঞাপন তৈরি করতে অনুগ্রহ করে আপনার AdsyClub অ্যাকাউন্টে লগইন করুন।
+        </p>
+        <button
+          type="button"
+          class="mt-5 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors"
+          @click="goToLogin"
+        >
+          লগইন করুন
+        </button>
+        <button
+          type="button"
+          class="mt-2 w-full py-2.5 rounded-xl text-gray-500 hover:text-gray-700 text-sm font-medium"
+          @click="navigateTo('/business-network')"
+        >
+          ফিরে যান
+        </button>
+      </div>
+    </div>
   </UContainer>
 </template>
 
+
 <script setup>
 const { get, post } = useApi();
-const { user } = useAuth();
+const { user, isAuthenticated } = useAuth();
+
+// Creating an ad requires login — gate the page behind a popup for guests.
+const showLoginPrompt = ref(false);
+function goToLogin() {
+  navigateTo(
+    "/auth/login?redirect=/business-network/abn-ads/create"
+  );
+}
+onMounted(() => {
+  // Let auth hydrate from storage first, then gate if still a guest.
+  setTimeout(() => {
+    if (!isAuthenticated.value) showLoginPrompt.value = true;
+  }, 600);
+});
+watch(isAuthenticated, (v) => {
+  if (v) showLoginPrompt.value = false;
+});
 const router = useRouter();
 
 const categories = ref([]);
@@ -1205,6 +1299,9 @@ watch(
 // Video-format uploads
 const videoMediaId = ref(null);
 const videoUploading = ref(false);
+// Local object URL of the picked video → drives the live preview instantly
+// (before/while the upload finishes), so it plays like the real ad.
+const previewVideo = ref("");
 const companionBanner = ref(""); // base64 data URL
 
 // Required ad-policy consent (gambling/adult/tobacco/vape/child-harm ban).
@@ -1299,6 +1396,21 @@ const previewCta = computed(() => {
 const previewImage = computed(() => {
   if (form.format === "boost") return boostThumb.value;
   return form.images.length ? form.images[0] : "";
+});
+// Show the live video in the preview placements when a video ad is being made.
+const showPreviewVideo = computed(
+  () => form.format === "video" && !!previewVideo.value
+);
+
+// Free the object URL when leaving the page.
+onBeforeUnmount(() => {
+  if (previewVideo.value) {
+    try {
+      URL.revokeObjectURL(previewVideo.value);
+    } catch (err) {
+      /* noop */
+    }
+  }
 });
 const previewTitle = computed(() => {
   if (form.format === "boost" && boostedPost.value) {
@@ -1412,6 +1524,15 @@ watch(
 async function onVideoPicked(e) {
   const file = e.target.files?.[0];
   if (!file) return;
+  // Instant local preview — revoke any previous object URL first.
+  if (previewVideo.value) {
+    try {
+      URL.revokeObjectURL(previewVideo.value);
+    } catch (err) {
+      /* noop */
+    }
+  }
+  previewVideo.value = URL.createObjectURL(file);
   videoUploading.value = true;
   videoMediaId.value = null;
   try {
