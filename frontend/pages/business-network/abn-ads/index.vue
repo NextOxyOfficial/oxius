@@ -339,9 +339,110 @@
             <div
               v-for="ad in paginatedAds"
               :key="ad.id"
-              class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              @click="navigateTo(`/business-network/abn-ads/${ad.id}`)"
+              class="group flex items-center gap-3 bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2.5 hover:shadow-md hover:border-indigo-200 transition-all cursor-pointer"
             >
-              <div class="flex flex-col md:flex-row">
+              <!-- Thumbnail -->
+              <div
+                class="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center"
+              >
+                <img
+                  v-if="adThumb(ad)"
+                  :src="adThumb(ad)"
+                  alt=""
+                  class="w-full h-full object-cover"
+                />
+                <UIcon
+                  v-else
+                  :name="
+                    ad.ad_objective === 'boost'
+                      ? 'i-heroicons-rocket-launch'
+                      : 'i-heroicons-photo'
+                  "
+                  class="w-6 h-6 text-slate-400"
+                />
+              </div>
+
+              <!-- Middle column -->
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <h3 class="min-w-0 truncate font-semibold text-sm text-slate-800">
+                    {{ ad.title }}
+                  </h3>
+                  <span
+                    class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium leading-none"
+                    :class="getStatusClass(ad.status)"
+                  >
+                    {{ getStatusText(ad.status) }}
+                  </span>
+                  <span
+                    class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium leading-none hidden sm:inline"
+                    :class="getObjectiveClass(ad.ad_objective)"
+                  >
+                    {{ getObjectiveText(ad.ad_objective) }}
+                  </span>
+                </div>
+                <p class="mt-1 truncate text-xs text-slate-500">
+                  ৳{{ ad.spent || 0 }} {{ $t("ads_spent") }} · CPC ৳{{
+                    adCpc(ad)
+                  }}
+                  · ৳{{ ad.budget }} {{ $t("ads_budget") }}
+                </p>
+                <div
+                  v-if="ad.status === 'rejected' && ad.reject_reason"
+                  class="mt-1 inline-block max-w-full truncate text-[11px] bg-red-50 text-red-600 rounded px-2 py-0.5"
+                >
+                  {{ $t("ads_reject_reason") }}: {{ ad.reject_reason }}
+                </div>
+              </div>
+
+              <!-- Right action row -->
+              <div class="shrink-0 flex items-center gap-1" @click.stop>
+                <button
+                  v-if="
+                    ['completed', 'stoped', 'rejected'].includes(ad.status)
+                  "
+                  @click.stop="showRerunConfirmation(ad)"
+                  class="w-8 h-8 flex items-center justify-center text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                  :title="$t('ads_rerun')"
+                >
+                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+                </button>
+                <button
+                  v-if="ad.status === 'active' || ad.status === 'stoped'"
+                  @click.stop="toggleAdStatus(ad)"
+                  class="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  :title="
+                    ad.status === 'active' ? $t('ads_stop') : $t('ads_resume')
+                  "
+                >
+                  <UIcon
+                    :name="
+                      ad.status === 'active'
+                        ? 'i-heroicons-pause'
+                        : 'i-heroicons-play'
+                    "
+                    class="w-4 h-4"
+                  />
+                </button>
+                <button
+                  @click.stop="editAd(ad)"
+                  class="w-8 h-8 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  :title="$t('ads_edit') || 'Edit'"
+                >
+                  <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
+                </button>
+                <button
+                  @click.stop="showDeleteConfirmation(ad)"
+                  class="w-8 h-8 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  :title="$t('ads_delete') || 'Delete'"
+                >
+                  <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <!-- (legacy card markup removed) -->
+            <div v-if="false">
                 <!-- Ad Image -->
                 <div class="md:w-1/3 h-40 md:h-auto relative">
                   <!-- Main image -->
@@ -2553,6 +2654,12 @@ function adCpc(ad) {
   const clicks = Number(ad.clicks) || 0;
   if (!clicks) return "0.00";
   return ((Number(ad.spent) || 0) / clicks).toFixed(2);
+}
+
+// Compact My-Ads row thumbnail: first media image, else null (caller shows an
+// objective-aware icon placeholder for video/boost ads without imagery).
+function adThumb(ad) {
+  return ad?.media?.[0]?.image || ad?.media?.[0]?.url || null;
 }
 
 // Drag handle state
