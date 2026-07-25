@@ -405,10 +405,14 @@ def send_message_notification(recipient_user, sender_user, sender_name, message_
                 'chat_id': str(chat_id),
                 'click_action': 'FLUTTER_NOTIFICATION_CLICK',
             },
-            # AdsyConnect brand tone (Android channel carries the sound; the
-            # raw resource ships in the app as res/raw/message_tone.mp3).
+            # AdsyConnect brand tone. Android: the channel carries the sound
+            # from res/raw/message_tone.mp3. iOS: APNs needs the bundled file
+            # NAME WITH EXTENSION and cannot play mp3 — message_tone.wav ships
+            # in the iOS app bundle. Without ios_sound it falls back to
+            # 'default' and iOS plays the stock ding instead of our tone.
             channel_id='oxius_chat_messages',
             android_sound='message_tone',
+            ios_sound='message_tone.wav',
         )
         if result:
             success_count += 1

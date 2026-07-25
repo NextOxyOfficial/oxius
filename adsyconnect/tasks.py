@@ -58,9 +58,12 @@ def send_group_push_notification(
                     'sender_id': str(sender_id),
                     'click_action': 'FLUTTER_NOTIFICATION_CLICK',
                 },
-                # Same AdsyConnect message tone as 1:1 chats.
+                # Same AdsyConnect message tone as 1:1 chats. iOS needs the
+                # bundled filename with extension (it can't play the Android
+                # mp3), so the wav copy in the iOS bundle is named here.
                 channel_id='oxius_chat_messages',
                 android_sound='message_tone',
+                ios_sound='message_tone.wav',
             )
             if ok:
                 sent += 1
