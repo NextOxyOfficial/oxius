@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <UContainer class="mt-3">
     <div class="min-h-screen bg-gray-50">
-      <!-- â”€â”€ Hero header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <!-- ── Hero header ─────────────────────────────────────────── -->
       <div
         class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-800 to-indigo-900 text-white shadow-md"
       >
@@ -33,7 +33,7 @@
                 class="flex items-center px-3.5 py-2 bg-white/15 backdrop-blur rounded-xl text-sm"
               >
                 <UIcon name="i-heroicons-wallet" class="w-4 h-4 mr-1.5" />
-                <span class="font-semibold">à§³{{ user?.user?.balance }}</span>
+                <span class="font-semibold">৳{{ user?.user?.balance }}</span>
                 <span
                   v-if="user?.user?.balance < 200"
                   class="ml-1.5 text-[11px] font-bold bg-red-500 px-1.5 py-0.5 rounded"
@@ -77,7 +77,7 @@
         </div>
       </div>
 
-      <!-- â”€â”€ How it works steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <!-- ── How it works steps ──────────────────────────────────── -->
       <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
         <div
           v-for="(step, i) in panelSteps"
@@ -113,7 +113,7 @@
               class="w-5 h-5 mr-2 text-red-500 shrink-0"
             />
             <span class="text-sm">
-              {{ $t("ads_low_balance_msg") }} (à§³{{ user?.user?.balance }})
+              {{ $t("ads_low_balance_msg") }} (৳{{ user?.user?.balance }})
             </span>
           </div>
           <NuxtLink
@@ -255,7 +255,7 @@
                   </div>
                   <div>
                     <div class="text-lg font-bold text-gray-800 leading-none">
-                      à§³{{ totalSpent }}
+                      ৳{{ totalSpent }}
                     </div>
                     <div class="text-[11.5px] text-gray-500 mt-1">
                       {{ $t("ads_total_spent") }}
@@ -282,7 +282,7 @@
                     </div>
                   </div>
                 </div>
-                <!-- CPC â€” average cost per click -->
+                <!-- CPC — average cost per click -->
                 <div
                   class="border border-gray-100 rounded-xl p-3 flex items-center gap-2.5"
                 >
@@ -296,7 +296,7 @@
                   </div>
                   <div>
                     <div class="text-lg font-bold text-gray-800 leading-none">
-                      à§³{{ avgCpc }}
+                      ৳{{ avgCpc }}
                     </div>
                     <div class="text-[11.5px] text-gray-500 mt-1">
                       {{ $t("ads_cpc") }}
@@ -383,10 +383,10 @@
                   </span>
                 </div>
                 <p class="mt-1 truncate text-xs text-slate-500">
-                  à§³{{ ad.spent || 0 }} {{ $t("ads_spent") }} Â· CPC à§³{{
+                  ৳{{ ad.spent || 0 }} {{ $t("ads_spent") }} · CPC ৳{{
                     adCpc(ad)
                   }}
-                  Â· à§³{{ ad.budget }} {{ $t("ads_budget") }}
+                  · ৳{{ ad.budget }} {{ $t("ads_budget") }}
                 </p>
                 <div
                   v-if="ad.status === 'rejected' && ad.reject_reason"
@@ -1127,7 +1127,7 @@
                       for="budget"
                       class="block text-sm font-medium text-gray-800"
                     >
-                      Ad Budget (à§³)
+                      Ad Budget (৳)
                     </label>
                     <div class="mt-1 relative">
                       <input
@@ -1143,11 +1143,11 @@
                         <p class="text-sm text-gray-600">
                           Your account balance:
                           <span class="font-medium"
-                            >à§³{{ user?.user?.balance }}</span
+                            >৳{{ user?.user?.balance }}</span
                           >
                         </p>
                         <p class="text-sm text-amber-600">
-                          Minimum budget: à§³200
+                          Minimum budget: ৳200
                         </p>
                       </div>
                       <div class="mt-2 p-2 bg-blue-50 rounded-md">
@@ -1441,7 +1441,7 @@
                         class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center"
                       >
                         <span class="text-sm text-gray-600"
-                          >Budget: à§³{{ adForm.budget || "0" }}</span
+                          >Budget: ৳{{ adForm.budget || "0" }}</span
                         >
                         <span class="text-sm text-indigo-600">
                           Est. Views: {{ adForm.estimated_views }}
@@ -1552,7 +1552,7 @@
                 {{ $t("ads_rerun") }}
               </h3>
               <p class="text-sm text-gray-600 mt-1">
-                Run this ad again? The budget (à§³{{ rerunTargetAd?.budget }})
+                Run this ad again? The budget (৳{{ rerunTargetAd?.budget }})
                 will be deducted from your balance and the ad will go for
                 review.
               </p>
@@ -1959,7 +1959,7 @@ const abnAdsCategories = ref([]);
 async function fetchAbnAdsCategories() {
   try {
     const response = await get("/bn/abn-ads-categories/");
-    // useApi.get never throws â€” on error data is null. Assigning null here
+    // useApi.get never throws — on error data is null. Assigning null here
     // crashed the whole page at render (.filter on null). Keep it an array.
     const d = response.data;
     abnAdsCategories.value = Array.isArray(d) ? d : d?.results ?? [];
@@ -2059,7 +2059,7 @@ const postedAds = ref([]);
 async function fetchPostedAds() {
   try {
     const response = await get("/bn/abn-ads-panels/");
-    // Same null-guard as categories â€” never let a failed fetch poison the
+    // Same null-guard as categories — never let a failed fetch poison the
     // list with null (that crashed the page for logged-out visitors).
     const d = response.data;
     postedAds.value = Array.isArray(d) ? d : d?.results ?? [];
@@ -2070,7 +2070,7 @@ async function fetchPostedAds() {
 
 await fetchPostedAds();
 
-// â”€â”€ Dashboard stats (daily views/clicks from AdEvent data) â”€â”€
+// ── Dashboard stats (daily views/clicks from AdEvent data) ──
 const dailyStats = ref([]);
 
 async function fetchAdStats() {
@@ -2083,7 +2083,7 @@ const maxDailyViews = computed(() =>
   Math.max(1, ...dailyStats.value.map((d) => d.views))
 );
 
-// â”€â”€ Date filter + client-side pagination â”€â”€
+// ── Date filter + client-side pagination ──
 const dateFilterActive = ref(false);
 const appliedFilter = reactive({ from: "", to: "" });
 const currentAdsPage = ref(1);
@@ -2124,14 +2124,14 @@ const totalSpent = computed(() =>
 const activeAdsCount = computed(
   () => filteredAds.value.filter((ad) => ad.status === "active").length
 );
-// CPC â€” average cost per click across the filtered ads. Shows à§³0.00 until
+// CPC — average cost per click across the filtered ads. Shows ৳0.00 until
 // the ads collect their first clicks.
 const avgCpc = computed(() => {
   const clicks = totalClicks.value;
   if (!clicks) return "0.00";
   return (Number(totalSpent.value) / clicks).toFixed(2);
 });
-// Per-ad CPC â€” used on each ad card.
+// Per-ad CPC — used on each ad card.
 function adCpc(ad) {
   const clicks = Number(ad.clicks) || 0;
   if (!clicks) return "0.00";
@@ -2201,8 +2201,8 @@ const clickTrack = (event) => {
   }
 };
 
-// Toggle ad status â€” REAL server call (owner-only endpoint); only
-// activeâ†”stoped can toggle.
+// Toggle ad status — REAL server call (owner-only endpoint); only
+// active↔stoped can toggle.
 const toggleAdStatus = async (ad) => {
   const res = await post(`/bn/ads/${ad.id}/toggle/`, {});
   if (res.data?.status) {
@@ -2324,7 +2324,7 @@ const showDeleteConfirmation = (ad) => {
   showDeleteModal.value = true;
 };
 
-// Confirm delete â€” REAL server delete (owner-scoped on the backend).
+// Confirm delete — REAL server delete (owner-scoped on the backend).
 const confirmDelete = async () => {
   isDeleting.value = true;
   try {
@@ -2347,8 +2347,8 @@ const cancelDelete = () => {
   showDeleteModal.value = false;
 };
 
-// â”€â”€ Re-run ad (clones a completed/stoped/rejected ad as a fresh
-// review-state ad on the server; deducts the budget from the balance) â”€â”€
+// ── Re-run ad (clones a completed/stoped/rejected ad as a fresh
+// review-state ad on the server; deducts the budget from the balance) ──
 const showRerunModal = ref(false);
 const rerunTargetAd = ref(null);
 const isRerunning = ref(false);
@@ -2476,7 +2476,7 @@ const getStatusText = (status) => {
     case "stopped":
       return t("ads_status_stopped");
     default:
-      return status || "â€”";
+      return status || "—";
   }
 };
 
@@ -2495,11 +2495,11 @@ const getObjectiveClass = (objective) => {
 const getObjectiveText = (objective) => {
   switch (objective) {
     case "retargeting":
-      return "à¦°à¦¿à¦Ÿà¦¾à¦°à§à¦—à§‡à¦Ÿà¦¿à¦‚";
+      return "রিটার্গেটিং";
     case "announcement":
-      return "à¦˜à§‹à¦·à¦£à¦¾";
+      return "ঘোষণা";
     default:
-      return "à¦à¦¨à¦—à§‡à¦œà¦®à§‡à¦¨à§à¦Ÿ";
+      return "এনগেজমেন্ট";
   }
 };
 
@@ -2516,16 +2516,16 @@ const prevImage = () => {
 };
 
 // Sample tutorial videos
-// Thumbnail link-outs â€” swap videoIds for AdsyClub's own tutorials when
+// Thumbnail link-outs — swap videoIds for AdsyClub's own tutorials when
 // they're published (thumbnails come straight from img.youtube.com).
 const tutorialVideos = ref([
   {
-    title: "à¦•à§€à¦­à¦¾à¦¬à§‡ à¦•à¦¾à¦°à§à¦¯à¦•à¦° à¦¬à¦¿à¦œà§à¦žà¦¾à¦ªà¦¨ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à¦¬à§‡à¦¨",
+    title: "কীভাবে কার্যকর বিজ্ঞাপন তৈরি করবেন",
     videoId: "R1Yr5H8HTLU",
     duration: "5:30",
   },
   {
-    title: "à¦¸à¦ à¦¿à¦• à¦…à¦¡à¦¿à¦¯à¦¼à§‡à¦¨à§à¦¸ à¦Ÿà¦¾à¦°à§à¦—à§‡à¦Ÿ à¦•à¦°à¦¾à¦° à¦Ÿà¦¿à¦ªà¦¸",
+    title: "সঠিক অডিয়েন্স টার্গেট করার টিপস",
     videoId: "nU-IIXBWlS4",
     duration: "7:15",
   },

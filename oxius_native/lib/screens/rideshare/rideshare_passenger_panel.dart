@@ -625,7 +625,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     final targetedDriverName = _currentTargetedDriverName(ride);
     if (ride.isSearching && targetedDriverName.isNotEmpty) {
-      return 'à¦°à¦¿à¦•à§‹à§Ÿà§‡à¦¸à§à¦Ÿ à¦ªà¦¾à¦ à¦¾à¦¨à§‹ à¦¹à§Ÿà§‡à¦›à§‡: $targetedDriverName';
+      return 'রিকোয়েস্ট পাঠানো হয়েছে: $targetedDriverName';
     }
     if (ride.isSearching) {
       return _localizeDisplayMessage(
@@ -1533,7 +1533,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               ),
               const SizedBox(height: 6),
               Text(
-                '${t('rideshare_trip_fare', fallback: 'Trip Fare')}: à§³${payableFare.toStringAsFixed(0)}',
+                '${t('rideshare_trip_fare', fallback: 'Trip Fare')}: ৳${payableFare.toStringAsFixed(0)}',
                 style: GoogleFonts.inter(
                     fontSize: 13, color: const Color(0xFF64748B)),
               ),

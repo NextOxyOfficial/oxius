@@ -2170,7 +2170,6 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
                  "detail": "বিজ্ঞাপন জমা দিতে নীতিমালায় সম্মতি দিতে হবে।"},
                 status=400,
             )
-        data["user"] = request.user.id
         # No user-facing category picker — the Interest Brain classifies ad
         # content itself, so an omitted category falls back to General.
         if not data.get("category"):
@@ -2207,8 +2206,12 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
         request.user.save(update_fields=["balance"])
 
         estimated = int(budget / Decimal(str(cfg.cpv_rate))) if cfg.cpv_rate else 0
+        # `user` is read-only on the serializer (so nobody can reassign an ad),
+        # which means it must be passed to save() explicitly. Without this the
+        # ad is stored with user=NULL — the balance is still charged but the ad
+        # never shows up under "My Ads" and can't be edited or deleted.
         abn_ads = serializer.save(
-            status="review", estimated_views=estimated
+            user=request.user, status="review", estimated_views=estimated
         )
 
         # Companion banner (base64) — shown under video creatives.

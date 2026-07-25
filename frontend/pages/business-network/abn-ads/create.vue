@@ -1532,16 +1532,35 @@ async function onVideoPicked(e) {
       /* noop */
     }
   }
+  // Server rejects anything over 60MB — catch it here so the user isn't left
+  // waiting on a long upload that can only fail.
+  const MAX_MB = 60;
+  if (file.size > MAX_MB * 1024 * 1024) {
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    errorMsg.value = `ভিডিওটি ${sizeMb}MB — সর্বোচ্চ ${MAX_MB}MB পর্যন্ত আপলোড করা যাবে। ছোট বা কম রেজোলিউশনের ভিডিও ব্যবহার করুন।`;
+    previewVideo.value = "";
+    e.target.value = "";
+    return;
+  }
   previewVideo.value = URL.createObjectURL(file);
   videoUploading.value = true;
   videoMediaId.value = null;
+  errorMsg.value = "";
   try {
     const fd = new FormData();
     fd.append("video", file);
     const res = await post("/bn/ads/upload-video/", fd);
     videoMediaId.value = res.data?.media_id || null;
     if (!videoMediaId.value) {
-      errorMsg.value = "ভিডিও আপলোড করা যায়নি — আবার চেষ্টা করুন।";
+      // Surface the real reason (size, auth, server error) instead of a
+      // generic retry message — a silent failure here also blocks submit.
+      const serverMsg =
+        res.error?.data?.error || res.error?.data?.detail || res.error?.message;
+      errorMsg.value = serverMsg
+        ? `ভিডিও আপলোড করা যায়নি: ${serverMsg}`
+        : "ভিডিও আপলোড করা যায়নি — আবার চেষ্টা করুন।";
+      // Don't leave a preview implying the video was accepted.
+      previewVideo.value = "";
     }
   } finally {
     videoUploading.value = false;
