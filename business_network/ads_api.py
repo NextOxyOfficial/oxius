@@ -33,6 +33,22 @@ VALID_PLACEMENTS = {
     "bn_feed", "shorts_banner", "shorts_fullscreen", "shorts_reel",
     "app_open", "gigs_list", "sale_list", "news_list", "food_list",
     "classified_list", "web_feed", "web_banner",
+    # The app derives its serve key by stripping "_native" from the AdMob
+    # config key, and two of those don't match the names above:
+    #   gig_list_native      -> "gig_list"      (vs "gigs_list")
+    #   foodzone_list_native -> "foodzone_list" (vs "food_list")
+    # They were silently rejected here, so house ads NEVER served on the micro
+    # gigs or food zone lists — advertisers who bought those placements got
+    # AdMob instead. Accepted as aliases (see _PLACEMENT_ALIASES) rather than
+    # renaming the AdMob config keys, which would need an app release.
+    "gig_list", "foodzone_list",
+}
+
+# Alias -> canonical placement, so an ad that targets "gigs_list" still matches
+# a request for "gig_list" and billing/reporting stay on one name.
+_PLACEMENT_ALIASES = {
+    "gig_list": "gigs_list",
+    "foodzone_list": "food_list",
 }
 
 VALID_EVENTS = {"impression", "click", "cta_click", "skip", "close"}
@@ -116,6 +132,9 @@ def serve_ad(request):
     placement = (request.query_params.get("placement") or "").strip()
     if placement not in VALID_PLACEMENTS:
         return Response({"fallback": "admob"})
+    # Normalise the app's key so an ad targeting "gigs_list"/"food_list" is
+    # matched by a request for "gig_list"/"foodzone_list".
+    placement = _PLACEMENT_ALIASES.get(placement, placement)
 
     cfg = AdsSystemConfig.get()
     now = timezone.now()
@@ -379,20 +398,29 @@ def track_ad_events(request):
     user = request.user if request.user.is_authenticated else None
     today = timezone.localdate()
 
-    # Anti-fraud ceiling: one user can't pump unlimited events in a day.
+    # Anonymous callers used to skip EVERY control below (daily ceiling, burst
+    # limiter and — worst — the per-ad billing dedupe), so an unauthenticated
+    # loop could drain a rival advertiser's whole budget and mint creator
+    # earnings. Identify them by IP so the same limits apply.
     if user is not None:
-        daily_key = f"adevents:{user.id}:{today.isoformat()}"
-        daily_count = cache.get(daily_key) or 0
-        if daily_count >= MAX_DAILY_EVENTS_PER_USER:
-            return Response({"recorded": 0, "capped": True})
-        cache.set(daily_key, daily_count + len(events), 60 * 60 * 26)
+        actor = f"u:{user.id}"
+    else:
+        xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        ip = (xff.split(",")[0].strip() if xff
+              else request.META.get("REMOTE_ADDR", "")) or "unknown"
+        actor = f"ip:{ip}"
 
-        # Live burst limiter: >40 events in a minute is not human scrolling.
-        # 3 strikes in a day → FraudAlert + urgent admin email (once).
-        minute_key = f"adevmin:{user.id}:{timezone.now().strftime('%H%M')}"
-        minute_count = (cache.get(minute_key) or 0) + len(events)
-        cache.set(minute_key, minute_count, 120)
-        if minute_count > 40:
+    daily_key = f"adevents:{actor}:{today.isoformat()}"
+    daily_count = cache.get(daily_key) or 0
+    if daily_count >= MAX_DAILY_EVENTS_PER_USER:
+        return Response({"recorded": 0, "capped": True})
+    cache.set(daily_key, daily_count + len(events), 60 * 60 * 26)
+
+    minute_key = f"adevmin:{actor}:{timezone.now().strftime('%H%M')}"
+    minute_count = (cache.get(minute_key) or 0) + len(events)
+    cache.set(minute_key, minute_count, 120)
+    if minute_count > 40:
+        if user is not None:
             strikes_key = f"adstrikes:{user.id}:{today.isoformat()}"
             strikes = (cache.get(strikes_key) or 0) + 1
             cache.set(strikes_key, strikes, 60 * 60 * 26)
@@ -404,7 +432,7 @@ def track_ad_events(request):
                     f"{minute_count} ad events in one minute; "
                     f"3rd burst today ({daily_count} total events).",
                 )
-            return Response({"recorded": 0, "throttled": True})
+        return Response({"recorded": 0, "throttled": True})
 
     created = 0
     viewer_views = 0
@@ -418,6 +446,7 @@ def track_ad_events(request):
             continue
         source = "admob" if (ev.get("source") == "admob") else "panel"
         placement = (ev.get("placement") or "").strip()[:30]
+        placement = _PLACEMENT_ALIASES.get(placement, placement)
         platform = (ev.get("platform") or "app").strip()[:10]
 
         ad = None
@@ -863,8 +892,17 @@ def rerun_my_ad(request, ad_id):
              "detail": "আপনার ব্যালেন্সে পর্যাপ্ত টাকা নেই।"},
             status=400,
         )
-    request.user.balance -= budget
-    request.user.save(update_fields=["balance"])
+    # Atomic conditional deduction — see the same fix in the create view.
+    deducted = User.objects.filter(
+        pk=request.user.pk, balance__gte=budget
+    ).update(balance=F("balance") - budget)
+    if not deducted:
+        return Response(
+            {"error": "insufficient balance",
+             "detail": "আপনার ব্যালেন্সে পর্যাপ্ত টাকা নেই।"},
+            status=400,
+        )
+    request.user.refresh_from_db(fields=["balance"])
 
     clone = AbnAdsPanel.objects.create(
         user=src.user, title=src.title, description=src.description,

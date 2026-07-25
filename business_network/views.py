@@ -1331,13 +1331,27 @@ def reshare_post(request, post_id):
         )
 
     root = original.shared_from or original
+
+    # Only a PUBLIC post may be reshared (the author can always reshare their
+    # own). Post ids are minute-based timestamps and therefore guessable, and
+    # the reshare used to be created with visibility="public" while the
+    # serializer embeds the original's content and media — so without this a
+    # stranger could republish someone's private post to the whole network.
+    if root.visibility != "public" and root.author_id != request.user.id:
+        return Response(
+            {"error": "This post cannot be reshared.",
+             "detail": "পোস্টটি শেয়ার করা যাবে না।"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     caption = (request.data.get("caption") or "").strip()
 
     reshare = BusinessNetworkPost.objects.create(
         author=request.user,
         content=caption or None,
         shared_from=root,
-        visibility="public",
+        # Never widen the original's audience.
+        visibility="public" if root.visibility == "public" else root.visibility,
     )
 
     try:
@@ -2202,8 +2216,19 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
                  "detail": "আপনার ব্যালেন্সে পর্যাপ্ত টাকা নেই।"},
                 status=400,
             )
-        request.user.balance -= budget
-        request.user.save(update_fields=["balance"])
+        # Conditional update instead of read-modify-write: two concurrent
+        # submits both passed the balance check above and the second save()
+        # overwrote the first, so N ads were created for one deduction.
+        deducted = User.objects.filter(
+            pk=request.user.pk, balance__gte=budget
+        ).update(balance=F("balance") - budget)
+        if not deducted:
+            return Response(
+                {"error": "Insufficient balance",
+                 "detail": "আপনার ব্যালেন্সে পর্যাপ্ত টাকা নেই।"},
+                status=400,
+            )
+        request.user.refresh_from_db(fields=["balance"])
 
         estimated = int(budget / Decimal(str(cfg.cpv_rate))) if cfg.cpv_rate else 0
         # `user` is read-only on the serializer (so nobody can reassign an ad),

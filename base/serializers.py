@@ -314,12 +314,45 @@ class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
         instance.save()
         return instance
 
+    # Never leaves the server under any circumstance. `otp` is the live
+    # password-reset code — emitting it turns any endpoint that nests a user
+    # into an account-takeover primitive.
+    _NEVER_EXPOSE = ("password", "otp", "otp_created_at")
+
+    # Private to the account owner. This serializer is nested inside posts,
+    # comments and like lists, several of which are readable anonymously, so
+    # anything here would otherwise be public for EVERY user in the feed.
+    _OWNER_ONLY = (
+        "balance", "pending_balance", "diamond_balance",
+        "nid_number", "referral_code",
+        "is_staff", "is_superuser", "is_active", "is_suspended",
+        "kyc_pending", "ceo_welcome_sent", "last_login",
+    )
+
     def to_representation(self, instance):
         """Customize the serialized output."""
         representation = super().to_representation(instance)
-        # Remove the password field from the output
-        representation.pop("password", None)
-        
+        for field in self._NEVER_EXPOSE:
+            representation.pop(field, None)
+
+        # `read_only` only blocks WRITES — the fields were still being sent to
+        # every reader. Strip them for anyone who is not the account owner.
+        request = self.context.get("request")
+        viewer = getattr(request, "user", None)
+        is_owner = (
+            viewer is not None
+            and getattr(viewer, "is_authenticated", False)
+            and str(getattr(viewer, "id", "")) == str(getattr(instance, "id", ""))
+        )
+        if not is_owner:
+            for field in self._OWNER_ONLY:
+                representation.pop(field, None)
+            # Contact details follow the user's own privacy switches.
+            if not getattr(instance, "email_public", False):
+                representation.pop("email", None)
+            if not getattr(instance, "phone_public", False):
+                representation.pop("phone", None)
+
         # Convert image field to absolute URL
         if representation.get('image'):
             request = self.context.get('request')
