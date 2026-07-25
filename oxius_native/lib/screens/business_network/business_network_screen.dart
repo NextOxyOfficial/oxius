@@ -48,7 +48,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   int _unreadNotificationCount = 0;
 
   final ScrollController _scrollController = ScrollController();
-  bool _isChromeVisible = true;
+  // Header/bottom-nav visibility. A ValueNotifier (not setState) because this
+  // flips constantly while scrolling — rebuilding the whole screen, including
+  // the entire feed list, made scrolling visibly shake on Android. Only the
+  // two chrome bars listen now.
+  final ValueNotifier<bool> _chromeVisible = ValueNotifier<bool>(true);
+  // Accumulated scroll distance in the current direction; chrome only toggles
+  // after a sustained move so finger jitter can't flip it back and forth.
+  double _scrollAccum = 0;
   bool _disposed = false;
   double _lastScrollPosition = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -393,6 +400,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   @override
   void dispose() {
     _disposed = true;
+    _chromeVisible.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -412,27 +420,20 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       }
     }
 
-    // Only react to significant scroll movements (threshold of 5px)
-    if (scrollDelta.abs() < 5) {
-      _lastScrollPosition = currentScrollPosition;
-      return;
-    }
+    // Reset the accumulator whenever direction flips, then require a sustained
+    // move before toggling. A bare 5px threshold let normal finger jitter
+    // toggle the chrome repeatedly, which read as the screen shaking.
+    if (scrollDelta == 0) return;
+    if (scrollDelta.sign != _scrollAccum.sign) _scrollAccum = 0;
+    _scrollAccum += scrollDelta;
+    const kToggleDistance = 24.0;
 
-    // Check if user is scrolling down or up
-    if (scrollDelta > 0 && currentScrollPosition > 100) {
+    if (_scrollAccum > kToggleDistance && currentScrollPosition > 100) {
       // Scrolling down - hide header/footer
-      if (_isChromeVisible) {
-        setState(() {
-          _isChromeVisible = false;
-        });
-      }
-    } else if (scrollDelta < 0) {
+      _chromeVisible.value = false;
+    } else if (_scrollAccum < -kToggleDistance) {
       // Scrolling up - show header/footer
-      if (!_isChromeVisible) {
-        setState(() {
-          _isChromeVisible = true;
-        });
-      }
+      _chromeVisible.value = true;
     }
 
     _lastScrollPosition = currentScrollPosition;
@@ -623,16 +624,20 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               top: 0,
               left: 0,
               right: 0,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                transform: Matrix4.translationValues(
-                  0,
-                  // +18 covers the corner flares strip below the bar,
-                  // +16 clears the drop shadow.
-                  _isChromeVisible ? 0 : -(headerHeight + 18 + 16),
-                  0,
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _chromeVisible,
+                builder: (context, visible, child) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  transform: Matrix4.translationValues(
+                    0,
+                    // +18 covers the corner flares strip below the bar,
+                    // +16 clears the drop shadow.
+                    visible ? 0 : -(headerHeight + 18 + 16),
+                    0,
+                  ),
+                  curve: Curves.easeInOut,
+                  child: child,
                 ),
-                curve: Curves.easeInOut,
                 child: BusinessNetworkHeader(
                   onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
                   onSearchTap: () {
@@ -661,14 +666,18 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  transform: Matrix4.translationValues(
-                    0,
-                    _isChromeVisible ? 0 : 120,
-                    0,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _chromeVisible,
+                  builder: (context, visible, child) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    transform: Matrix4.translationValues(
+                      0,
+                      visible ? 0 : 120,
+                      0,
+                    ),
+                    curve: Curves.easeInOut,
+                    child: child,
                   ),
-                  curve: Curves.easeInOut,
                   child: BusinessNetworkBottomNavBar(
                     currentIndex: _currentNavIndex,
                     isLoggedIn: AuthService.isAuthenticated,

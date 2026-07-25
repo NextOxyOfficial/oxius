@@ -267,15 +267,41 @@
                   @change="onVideoPicked"
                   class="block w-full text-sm text-gray-600 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-md file:bg-indigo-50 file:text-indigo-700"
                 />
-                <p v-if="videoUploading" class="mt-1 text-xs text-indigo-700">
-                  ভিডিও আপলোড হচ্ছে…
-                </p>
+                <!-- The native input is cleared after picking, so the state
+                     is shown here instead (name + progress + retry). -->
+                <div v-if="videoUploading" class="mt-2">
+                  <div class="flex items-center justify-between text-xs text-indigo-700">
+                    <span class="truncate pr-2">{{ videoFileName }}</span>
+                    <span class="shrink-0">{{ videoUploadPct }}%</span>
+                  </div>
+                  <div class="mt-1 h-1.5 w-full bg-indigo-100 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-indigo-600 transition-all duration-200"
+                      :style="{ width: videoUploadPct + '%' }"
+                    ></div>
+                  </div>
+                </div>
                 <p
                   v-else-if="videoMediaId"
-                  class="mt-1 text-xs text-indigo-700"
+                  class="mt-1 text-xs text-indigo-700 truncate"
                 >
-                  ✓ ভিডিও আপলোড হয়েছে
+                  ✓ ভিডিও আপলোড হয়েছে — {{ videoFileName }}
                 </p>
+                <div
+                  v-else-if="pickedVideo"
+                  class="mt-1 flex items-center gap-2 text-xs"
+                >
+                  <span class="text-red-600 truncate"
+                    >✕ আপলোড হয়নি — {{ videoFileName }}</span
+                  >
+                  <button
+                    type="button"
+                    class="shrink-0 px-2 py-0.5 rounded bg-indigo-600 text-white font-medium"
+                    @click="uploadPickedVideo()"
+                  >
+                    আবার চেষ্টা করুন
+                  </button>
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-800 mb-1">
@@ -1299,6 +1325,13 @@ watch(
 // Video-format uploads
 const videoMediaId = ref(null);
 const videoUploading = ref(false);
+const videoUploadPct = ref(0);
+// The picked File is kept so a failed upload can be retried (the native input
+// is cleared after picking, which previously lost the selection entirely).
+const pickedVideo = ref(null);
+const videoFileName = ref("");
+// Same base useApi() builds, so the XHR upload hits the identical endpoint.
+const apiBase = useRuntimeConfig().public.baseURL + "/api";
 // Local object URL of the picked video → drives the live preview instantly
 // (before/while the upload finishes), so it plays like the real ad.
 const previewVideo = ref("");
@@ -1543,28 +1576,73 @@ async function onVideoPicked(e) {
     return;
   }
   previewVideo.value = URL.createObjectURL(file);
-  videoUploading.value = true;
-  videoMediaId.value = null;
+  // Remember the actual File. The native input gets cleared after a pick (so
+  // the same file can be re-selected), which is why it showed "No file chosen"
+  // and left no way to retry — keeping the File lets us re-upload on submit.
+  pickedVideo.value = file;
+  videoFileName.value = file.name;
   errorMsg.value = "";
+  await uploadPickedVideo();
+  // Allow re-picking the same file after a failure.
+  e.target.value = "";
+}
+
+/// Uploads [pickedVideo] with real progress. Returns the media id or null.
+async function uploadPickedVideo() {
+  const file = pickedVideo.value;
+  if (!file) return null;
+  videoUploading.value = true;
+  videoUploadPct.value = 0;
+  videoMediaId.value = null;
   try {
+    const { getValidToken } = useAuth();
+    const token = await getValidToken();
     const fd = new FormData();
     fd.append("video", file);
-    const res = await post("/bn/ads/upload-video/", fd);
-    videoMediaId.value = res.data?.media_id || null;
-    if (!videoMediaId.value) {
-      // Surface the real reason (size, auth, server error) instead of a
-      // generic retry message — a silent failure here also blocks submit.
-      const serverMsg =
-        res.error?.data?.error || res.error?.data?.detail || res.error?.message;
-      errorMsg.value = serverMsg
-        ? `ভিডিও আপলোড করা যায়নি: ${serverMsg}`
-        : "ভিডিও আপলোড করা যায়নি — আবার চেষ্টা করুন।";
-      // Don't leave a preview implying the video was accepted.
-      previewVideo.value = "";
-    }
+    const id = await new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${apiBase}/bn/ads/upload-video/`);
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.setRequestHeader("Accept", "application/json");
+      // A 60MB upload on a slow line takes minutes; without progress the page
+      // looks frozen and users assume it failed.
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          videoUploadPct.value = Math.round((ev.loaded / ev.total) * 100);
+        }
+      };
+      xhr.onload = () => {
+        try {
+          const body = JSON.parse(xhr.responseText || "{}");
+          if (xhr.status >= 200 && xhr.status < 300 && body.media_id) {
+            resolve(body.media_id);
+          } else {
+            errorMsg.value = body.error
+              ? `ভিডিও আপলোড করা যায়নি: ${body.error}`
+              : `ভিডিও আপলোড করা যায়নি (কোড ${xhr.status})। আবার চেষ্টা করুন।`;
+            resolve(null);
+          }
+        } catch {
+          errorMsg.value = `ভিডিও আপলোড করা যায়নি (কোড ${xhr.status})।`;
+          resolve(null);
+        }
+      };
+      xhr.onerror = () => {
+        errorMsg.value =
+          "ভিডিও আপলোড করা যায়নি — ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।";
+        resolve(null);
+      };
+      xhr.ontimeout = () => {
+        errorMsg.value = "ভিডিও আপলোড সময় শেষ — আবার চেষ্টা করুন।";
+        resolve(null);
+      };
+      xhr.timeout = 15 * 60 * 1000; // big files on slow connections
+      xhr.send(fd);
+    });
+    videoMediaId.value = id;
+    return id;
   } finally {
     videoUploading.value = false;
-    e.target.value = "";
   }
 }
 
@@ -1680,8 +1758,17 @@ async function submitAd() {
     return;
   }
   if (form.format === "video" && !videoMediaId.value) {
-    errorMsg.value = "Video ad-এর জন্য আগে ভিডিও আপলোড করুন।";
-    return;
+    // A video was picked but its upload failed — retry here instead of dead-
+    // ending the user (the input no longer holds the file, so they couldn't
+    // simply press submit again).
+    if (pickedVideo.value && !videoUploading.value) {
+      errorMsg.value = "";
+      const id = await uploadPickedVideo();
+      if (!id) return; // uploadPickedVideo already set errorMsg
+    } else {
+      errorMsg.value = "Video ad-এর জন্য আগে ভিডিও আপলোড করুন।";
+      return;
+    }
   }
   if (form.format === "boost" && !boostedPost.value) {
     errorMsg.value = "Boost করার আগে Post ID দিয়ে পোস্টটি লোড করুন।";
