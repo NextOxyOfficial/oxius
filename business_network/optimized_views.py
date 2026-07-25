@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from base.models import User
 
 from .models import *
+from .feed_visibility import visible_posts_q
 from .pagination import *
 from .serializers import *
 
@@ -51,7 +52,10 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
         # Handle both authenticated and unauthenticated users for testing
         if not self.request.user.is_authenticated:
             return (
-                BusinessNetworkPost.objects.select_related("author")
+                BusinessNetworkPost.objects
+                # Anonymous: public, non-banned posts only.
+                .filter(visibility="public", is_banned=False)
+                .select_related("author")
                 .annotate(
                     # like_count/comment_count are denormalized model fields
                     # (kept in sync by signals) — annotating them here would
@@ -177,9 +181,12 @@ class LightweightBusinessNetworkPostListView(generics.ListAPIView):
     permission_classes = [AllowAny]  # Changed for testing
 
     def get_queryset(self):
-        # Extremely simplified query for low-end devices
+        # Extremely simplified query for low-end devices. Still MUST respect
+        # visibility/bans — this view is reachable anonymously.
+        user = getattr(self.request, "user", None)
         return (
             BusinessNetworkPost.objects
+            .filter(visible_posts_q(user), is_banned=False)
             # like_count/comment_count are denormalized model fields.
             .select_related("author")
             .order_by("-created_at")

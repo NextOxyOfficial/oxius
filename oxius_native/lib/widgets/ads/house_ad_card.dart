@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../screens/business_network/profile_screen.dart';
@@ -173,6 +174,7 @@ class _HouseAdCardState extends State<HouseAdCard>
   VideoPlayerController? _video;
   bool _videoReady = false;
   Timer? _billableTimer;
+  Timer? _visibleTimer;
 
   bool get _isVideo =>
       widget.ad.format == 'video' && widget.ad.videoUrl.isNotEmpty;
@@ -185,8 +187,24 @@ class _HouseAdCardState extends State<HouseAdCard>
     super.initState();
     if (_isVideo) {
       _initVideo();
+    }
+    // Image ads used to bill here. initState runs when the ListView BUILDS the
+    // item — inside cacheExtent, up to ~1200px before it is on screen — and
+    // wantKeepAlive stops it ever rebuilding, so advertisers paid for ads that
+    // were scrolled past unseen. Billing now waits for real visibility below.
+  }
+
+  /// Fires the image impression once the card is genuinely on screen
+  /// (>=50% visible for >=1s) — the counterpart of the video ThruPlay timer.
+  void _onVisibility(VisibilityInfo info) {
+    if (_isVideo || _impressionTracked) return;
+    if (info.visibleFraction >= 0.5) {
+      _visibleTimer ??= Timer(const Duration(seconds: 1), () {
+        if (mounted && !_impressionTracked) _trackImpression();
+      });
     } else {
-      _trackImpression();
+      _visibleTimer?.cancel();
+      _visibleTimer = null;
     }
   }
 
@@ -231,6 +249,7 @@ class _HouseAdCardState extends State<HouseAdCard>
   void dispose() {
     _apologyTimer?.cancel();
     _billableTimer?.cancel();
+    _visibleTimer?.cancel();
     _video?.dispose();
     super.dispose();
   }
@@ -270,7 +289,10 @@ class _HouseAdCardState extends State<HouseAdCard>
     if (_closed) return const SizedBox.shrink();
     if (_apologyShowing) return apologyNote();
     final ad = widget.ad;
-    return Container(
+    return VisibilityDetector(
+      key: Key('housead_${widget.ad.id}_${widget.placement}'),
+      onVisibilityChanged: _onVisibility,
+      child: Container(
       // Full screen width, edge-to-edge like a regular feed post; also pins
       // the video Stack's width so the Skip chip can never fall off-screen.
       width: double.infinity,
@@ -474,6 +496,7 @@ class _HouseAdCardState extends State<HouseAdCard>
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -31,6 +31,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from base.models import User
+from .feed_visibility import visible_posts_q
 from adsyconnect.models import BlockedUser
 
 from .models import *
@@ -1666,7 +1667,12 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
         query = self.request.query_params.get("q", "")
         tag = self.request.query_params.get("tag", "")
 
-        queryset = BusinessNetworkPost.objects.all()
+        # Search used to start from EVERY post, so private/followers-only and
+        # admin-banned posts were searchable (and this view is anonymous).
+        queryset = BusinessNetworkPost.objects.filter(
+            visible_posts_q(getattr(self.request, "user", None)),
+            is_banned=False,
+        )
         # Store original queryset for combining with tag results later
         content_query_results = None
         tag_query_results = None

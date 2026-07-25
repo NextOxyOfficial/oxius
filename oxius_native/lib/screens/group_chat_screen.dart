@@ -710,6 +710,39 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     });
   }
 
+  /// The emoji the current user already picked on [raw], if any.
+  String? _myReactionOf(Map<String, dynamic> raw) {
+    final list = raw['reactions'];
+    if (list is List) {
+      for (final r in list) {
+        if (r is Map && r['reacted_by_me'] == true) {
+          return r['emoji']?.toString();
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Optimistic react — paint immediately, reconcile with the server after.
+  Future<void> _reactToGroupMessage(
+      Map<String, dynamic> raw, String emoji) async {
+    final id = raw['id']?.toString();
+    if (id == null || id.isEmpty) return;
+    final before = raw['reactions'];
+    final mine = _myReactionOf(raw);
+    setState(() {
+      raw['reactions'] = mine == emoji
+          ? []
+          : [
+              {'emoji': emoji, 'count': 1, 'reacted_by_me': true}
+            ];
+    });
+    final updated =
+        await AdsyConnectService.reactToMessage(id, emoji, isGroup: true);
+    if (!mounted) return;
+    setState(() => raw['reactions'] = updated ?? before);
+  }
+
   Future<void> _playVoice(String id, String? url) async {
     if (url == null || url.isEmpty) return;
     try {
@@ -1137,6 +1170,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               ? () => _editGroupMessage(raw)
               : null,
           onDelete: isMe ? () => _deleteGroupMessage(raw) : null,
+          myReaction: _myReactionOf(raw),
+          onReact: (emoji) => _reactToGroupMessage(raw, emoji),
         ),
         onOptions: () => showChatMessageOptions(
           context,
@@ -1146,6 +1181,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               ? () => _editGroupMessage(raw)
               : null,
           onDelete: isMe ? () => _deleteGroupMessage(raw) : null,
+          myReaction: _myReactionOf(raw),
+          onReact: (emoji) => _reactToGroupMessage(raw, emoji),
         ),
         onPlayVoice: _playVoice,
         onSeekVoice: (id, url, to) async {

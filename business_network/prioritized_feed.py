@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Count, Q, Case, When, IntegerField, Value, Subquery
 from base.models import User
+from .feed_visibility import visible_posts_q
 from .models import BusinessNetworkPost, BusinessNetworkFollowerModel, HiddenPost
 
 class PrioritizedFeedView(APIView):
@@ -54,7 +55,10 @@ class PrioritizedFeedView(APIView):
         # Get hidden post IDs for this user
         hidden_post_ids = HiddenPost.objects.filter(user=user).values_list('post_id', flat=True)
         
-        queryset = BusinessNetworkPost.objects.exclude(
+        queryset = BusinessNetworkPost.objects.filter(
+            # Respect visibility/bans — this used to return EVERY post.
+            visible_posts_q(user), is_banned=False,
+        ).exclude(
             id__in=hidden_post_ids  # Exclude hidden posts
         ).annotate(
             priority=Case(

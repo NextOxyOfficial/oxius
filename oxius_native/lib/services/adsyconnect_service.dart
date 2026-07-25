@@ -766,6 +766,33 @@ class AdsyConnectService {
 
   /// Tell the server the user is viewing this GROUP, so group pushes for it
   /// are suppressed (mirrors setActiveChat for 1:1 rooms).
+  /// Long-press emoji reaction. Sending the same emoji again clears it;
+  /// a different one replaces it. Returns the updated reaction list, or null
+  /// on failure so the caller can roll its optimistic update back.
+  static Future<List<dynamic>?> reactToMessage(
+    String messageId,
+    String emoji, {
+    bool isGroup = false,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final path = isGroup ? 'group-messages' : 'messages';
+      final res = await http.post(
+        Uri.parse('$baseUrl/$path/$messageId/react/'),
+        headers: headers,
+        body: jsonEncode({'emoji': emoji}),
+      );
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final body = jsonDecode(res.body);
+        return (body is Map ? body['reactions'] : null) as List<dynamic>?;
+      }
+      debugPrint('react failed ${res.statusCode}: ${res.body}');
+    } catch (e) {
+      debugPrint('Error reacting to message: $e');
+    }
+    return null;
+  }
+
   static Future<void> setActiveGroup(String groupId) async {
     try {
       final headers = await _getHeaders();

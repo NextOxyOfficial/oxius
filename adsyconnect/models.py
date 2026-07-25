@@ -778,3 +778,50 @@ class CallSession(models.Model):
                 update_fields.append('duration_seconds')
 
         self.save(update_fields=update_fields)
+
+
+class MessageReaction(models.Model):
+    """Emoji reaction on a 1:1 message (long-press the bubble).
+
+    One reaction per user per message — reacting again replaces the emoji,
+    tapping the same emoji clears it. Kept as its own table (rather than a
+    JSON blob on Message) so "who reacted" stays queryable.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message = models.ForeignKey(
+        Message, on_delete=models.CASCADE, related_name="reactions"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="message_reactions"
+    )
+    emoji = models.CharField(max_length=16)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "adsyconnect_message_reaction"
+        unique_together = ("message", "user")
+        indexes = [models.Index(fields=["message"])]
+
+    def __str__(self):
+        return f"{self.user_id} {self.emoji} on {self.message_id}"
+
+
+class GroupMessageReaction(models.Model):
+    """Same as MessageReaction, for group messages."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message = models.ForeignKey(
+        GroupMessage, on_delete=models.CASCADE, related_name="reactions"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="group_message_reactions"
+    )
+    emoji = models.CharField(max_length=16)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "adsyconnect_group_message_reaction"
+        unique_together = ("message", "user")
+        indexes = [models.Index(fields=["message"])]
+
+    def __str__(self):
+        return f"{self.user_id} {self.emoji} on {self.message_id}"

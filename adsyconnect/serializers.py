@@ -42,6 +42,21 @@ class UserBasicSerializer(serializers.ModelSerializer):
             return False
 
 
+def _reaction_payload(obj, context):
+    """[{emoji, count, reacted_by_me}] for a message — shared by 1:1 + group."""
+    request = context.get("request")
+    me = getattr(getattr(request, "user", None), "id", None)
+    counts, mine = {}, None
+    for r in obj.reactions.all():
+        counts[r.emoji] = counts.get(r.emoji, 0) + 1
+        if me is not None and str(r.user_id) == str(me):
+            mine = r.emoji
+    return [
+        {"emoji": e, "count": c, "reacted_by_me": e == mine}
+        for e, c in sorted(counts.items(), key=lambda kv: -kv[1])
+    ]
+
+
 class MessageSerializer(serializers.ModelSerializer):
     """Message serializer"""
     sender = UserBasicSerializer(read_only=True)
@@ -50,14 +65,19 @@ class MessageSerializer(serializers.ModelSerializer):
     thumbnail_url = serializers.SerializerMethodField()
     display_content = serializers.SerializerMethodField()
     time_display = serializers.SerializerMethodField()
-    
+    reactions = serializers.SerializerMethodField()
+
+    def get_reactions(self, obj):
+        return _reaction_payload(obj, self.context)
+
     class Meta:
         model = Message
         fields = [
             'id', 'chatroom', 'sender', 'receiver', 'message_type', 
             'content', 'display_content', 'media_url', 'thumbnail_url', 
             'file_name', 'file_size', 'voice_duration', 'is_read', 'read_at', 
-            'is_deleted', 'is_edited', 'edited_at', 'created_at', 'updated_at', 'time_display'
+            'is_deleted', 'is_edited', 'edited_at', 'created_at', 'updated_at', 'time_display',
+            'reactions',
         ]
         read_only_fields = ['id', 'sender', 'receiver', 'created_at', 
                            'updated_at', 'read_at', 'is_edited', 'edited_at']
@@ -349,13 +369,17 @@ class GroupMessageSerializer(serializers.ModelSerializer):
     reply_to = serializers.SerializerMethodField()
     reply_preview = serializers.SerializerMethodField()
     reply_sender_name = serializers.SerializerMethodField()
+    reactions = serializers.SerializerMethodField()
+
+    def get_reactions(self, obj):
+        return _reaction_payload(obj, self.context)
 
     class Meta:
         model = GroupMessage
         fields = [
             'id', 'group', 'sender', 'message_type', 'content', 'media_url',
             'file_name', 'voice_duration', 'created_at', 'is_deleted',
-            'reply_to', 'reply_preview', 'reply_sender_name',
+            'reply_to', 'reply_preview', 'reply_sender_name', 'reactions',
         ]
         read_only_fields = ['id', 'sender', 'created_at', 'is_deleted']
 

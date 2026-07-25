@@ -1754,7 +1754,42 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           ? () => _showEditMessageDialog(message)
           : null,
       onDelete: isMe ? () => _deleteMessage(message) : null,
+      myReaction: _myReactionOf(message),
+      onReact: (emoji) => _reactToMessage(message, emoji),
     );
+  }
+
+  /// The emoji the current user already picked on [message], if any.
+  String? _myReactionOf(Map<String, dynamic> message) {
+    final list = message['reactions'];
+    if (list is List) {
+      for (final r in list) {
+        if (r is Map && r['reacted_by_me'] == true) {
+          return r['emoji']?.toString();
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Optimistic react: paint it immediately, then reconcile with the server
+  /// (and roll back if the call fails).
+  Future<void> _reactToMessage(
+      Map<String, dynamic> message, String emoji) async {
+    final id = message['id']?.toString();
+    if (id == null || id.isEmpty) return;
+    final before = message['reactions'];
+    final mine = _myReactionOf(message);
+    setState(() {
+      message['reactions'] = mine == emoji
+          ? []
+          : [
+              {'emoji': emoji, 'count': 1, 'reacted_by_me': true}
+            ];
+    });
+    final updated = await AdsyConnectService.reactToMessage(id, emoji);
+    if (!mounted) return;
+    setState(() => message['reactions'] = updated ?? before);
   }
 
   void _showEditMessageDialog(Map<String, dynamic> message) {

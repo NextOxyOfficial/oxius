@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'message_reaction_bar.dart';
 import 'package:flutter/services.dart';
 
 import '../common/adsy_toast.dart';
@@ -16,6 +18,11 @@ Future<void> showChatMessageOptions(
   VoidCallback? onReply,
   VoidCallback? onEdit,
   VoidCallback? onDelete,
+  /// Long-press emoji reactions. When provided, a quick-reaction row sits
+  /// above the options (Messenger-style): one tap to react, or fall through
+  /// to reply/copy/delete.
+  ValueChanged<String>? onReact,
+  String? myReaction,
 }) {
   final messageType = message['type']?.toString() ?? 'text';
   final isDeleted = message['isDeleted'] == true;
@@ -26,7 +33,9 @@ Future<void> showChatMessageOptions(
   final canEdit = onEdit != null && isTextLike && !isDeleted;
   final canDelete = onDelete != null && !isDeleted;
 
-  if (!canReply && !canCopy && !canEdit && !canDelete) {
+  final canReact = onReact != null && !isDeleted;
+
+  if (!canReply && !canCopy && !canEdit && !canDelete && !canReact) {
     return Future.value();
   }
 
@@ -34,7 +43,18 @@ Future<void> showChatMessageOptions(
     context: context,
     backgroundColor: Colors.transparent,
     useSafeArea: true,
-    builder: (sheetContext) => Container(
+    builder: (sheetContext) => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (canReact)
+          MessageReactionBar(
+            selected: myReaction,
+            onPick: (emoji) {
+              Navigator.pop(sheetContext);
+              onReact(emoji);
+            },
+          ),
+        Container(
       margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -119,6 +139,8 @@ Future<void> showChatMessageOptions(
           ],
         ),
       ),
+    ),
+      ],
     ),
   );
 }

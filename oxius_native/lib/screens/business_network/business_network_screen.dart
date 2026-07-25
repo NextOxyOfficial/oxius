@@ -489,8 +489,18 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       final newPosts = result['posts'] as List<BusinessNetworkPost>;
       setState(() {
         if (newPosts.isNotEmpty) {
-          _posts.addAll(newPosts);
-          _lastCreatedAt = newPosts.last.createdAt;
+          // The feed is offset-paginated over a score that includes a
+          // recency term recomputed per request, so the ordering drifts
+          // between page 1 and page 2 and the same post can come back twice.
+          // Appending blindly showed duplicates AND produced duplicate
+          // ValueKey('post_<id>') siblings in the sliver.
+          final seen = _posts.map((p) => p.id).toSet();
+          final fresh =
+              newPosts.where((p) => seen.add(p.id)).toList(growable: false);
+          if (fresh.isNotEmpty) {
+            _posts.addAll(fresh);
+            _lastCreatedAt = fresh.last.createdAt;
+          }
         }
         _hasMore = result['hasMore'] as bool? ?? false;
         _isLoadingMore = false;

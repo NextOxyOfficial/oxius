@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+
+import 'message_reaction_bar.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
 import '../../services/business_network_service.dart';
@@ -323,6 +325,15 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                             ),
                           ],
                         ),
+                        // Reactions sit right under the bubble, aligned to
+                        // the same side (Messenger-style).
+                        if (message['reactions'] is List &&
+                            (message['reactions'] as List).isNotEmpty)
+                          MessageReactionChips(
+                            reactions: message['reactions'] as List,
+                            alignRight: isMe,
+                            onTap: widget.onLongPress,
+                          ),
                         const SizedBox(height: 2),
                         if (message['showTimestamp'] == true)
                           _buildTimestamp(message, isMe),
