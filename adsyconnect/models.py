@@ -605,6 +605,16 @@ class ActiveChatSession(models.Model):
         null=True,
         blank=True
     )
+    # Groups live in a separate model, so tracking "which group am I looking
+    # at" needs its own column — without it group pushes were delivered even
+    # while the member had that group open.
+    group = models.ForeignKey(
+        'ChatGroup',
+        on_delete=models.CASCADE,
+        related_name='active_sessions',
+        null=True,
+        blank=True
+    )
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
@@ -617,17 +627,26 @@ class ActiveChatSession(models.Model):
     
     @classmethod
     def set_active_chat(cls, user, chatroom):
-        """Set user's active chat"""
+        """Set user's active 1:1 chat (clears any active group)."""
         session, _ = cls.objects.update_or_create(
             user=user,
-            defaults={'chatroom': chatroom}
+            defaults={'chatroom': chatroom, 'group': None}
         )
         return session
-    
+
+    @classmethod
+    def set_active_group(cls, user, group):
+        """Set user's active group chat (clears any active 1:1 room)."""
+        session, _ = cls.objects.update_or_create(
+            user=user,
+            defaults={'group': group, 'chatroom': None}
+        )
+        return session
+
     @classmethod
     def clear_active_chat(cls, user):
-        """Clear user's active chat"""
-        cls.objects.filter(user=user).update(chatroom=None)
+        """Clear user's active chat (both 1:1 and group)."""
+        cls.objects.filter(user=user).update(chatroom=None, group=None)
     
     @classmethod
     def is_user_in_chat(cls, user, chatroom):
@@ -641,6 +660,21 @@ class ActiveChatSession(models.Model):
         try:
             session = cls.objects.get(user=user)
             if not session.chatroom or session.chatroom_id != chatroom.id:
+                return False
+            return session.updated_at >= timezone.now() - timedelta(minutes=20)
+        except cls.DoesNotExist:
+            return False
+
+    @classmethod
+    def is_user_in_group(cls, user, group):
+        """Whether the user is actively viewing this group chat.
+
+        Same freshness window as is_user_in_chat so a stuck session can't
+        silence group pushes forever.
+        """
+        try:
+            session = cls.objects.get(user=user)
+            if not session.group_id or str(session.group_id) != str(group.id):
                 return False
             return session.updated_at >= timezone.now() - timedelta(minutes=20)
         except cls.DoesNotExist:

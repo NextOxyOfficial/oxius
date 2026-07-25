@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
-from django.db.models import F, Q, Max
+from django.db.models import F, Q, Max, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -821,6 +821,14 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             & Q(last_message_at__lte=F('cleared_at_user2'))
         )
         qs = qs.exclude(cleared_hidden)
+
+        # Tapping "chat" on a contact creates the room up front (so the screen
+        # has an id to post into), but an empty room is not a conversation —
+        # showing it produced ghost "no message yet" rows in the list. Only
+        # surface a room once it actually holds a message.
+        qs = qs.filter(
+            Exists(Message.objects.filter(chatroom=OuterRef('pk')))
+        )
         return qs
 
     @action(detail=False, methods=['post'])
@@ -1454,7 +1462,30 @@ class TypingStatusViewSet(viewsets.ModelViewSet):
 def set_active_chat(request):
     """Set user's active chat session - prevents push notifications when in chat"""
     chatroom_id = request.data.get('chatroom_id')
-    
+    group_id = request.data.get('group_id')
+
+    # Group chats are tracked separately (ChatGroup, not ChatRoom) so members
+    # viewing a group don't get pushed for it.
+    if group_id:
+        group = ChatGroup.objects.filter(id=group_id).first()
+        if not group:
+            return Response(
+                {'error': 'Group not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        if not ChatGroupMembership.objects.filter(
+                group=group, user=request.user).exists():
+            return Response(
+                {'error': 'You are not a member of this group'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        ActiveChatSession.set_active_group(request.user, group)
+        OnlineStatus.objects.update_or_create(
+            user=request.user,
+            defaults={'is_online': True, 'last_seen': timezone.now()}
+        )
+        return Response({'status': 'active group set', 'group_id': str(group_id)})
+
     if not chatroom_id:
         ActiveChatSession.clear_active_chat(request.user)
         OnlineStatus.objects.update_or_create(

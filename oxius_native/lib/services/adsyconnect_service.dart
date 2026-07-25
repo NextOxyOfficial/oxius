@@ -764,6 +764,22 @@ class AdsyConnectService {
     }
   }
 
+  /// Tell the server the user is viewing this GROUP, so group pushes for it
+  /// are suppressed (mirrors setActiveChat for 1:1 rooms).
+  static Future<void> setActiveGroup(String groupId) async {
+    try {
+      final headers = await _getHeaders();
+      await http.post(
+        Uri.parse('$baseUrl/set-active-chat/'),
+        headers: headers,
+        body: jsonEncode({'group_id': groupId}),
+      );
+      debugPrint('📍 Active group set on server: $groupId');
+    } catch (e) {
+      debugPrint('Error setting active group: $e');
+    }
+  }
+
   static Future<void> clearActiveChat() async {
     try {
       final headers = await _getHeaders();

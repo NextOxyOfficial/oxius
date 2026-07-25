@@ -54,6 +54,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   // Active quote-reply target (raw group message) — mirrors the 1:1 chat.
   Map<String, dynamic>? _replyingTo;
   Timer? _pollTimer;
+  Timer? _activeGroupTimer;
   Timer? _typingPollTimer;
   DateTime _lastTypingSent = DateTime.fromMillisecondsSinceEpoch(0);
   final ScrollController _scroll = ScrollController();
@@ -114,6 +115,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     // While this group is OPEN its own message pushes stay silent — the
     // FCM handler compares incoming group_id against this tracker.
     ActiveChatTracker.setActiveChat((widget.group['id'] ?? '').toString());
+    // The tracker alone only guards the foreground re-render; the SERVER also
+    // has to know, otherwise it still delivers the push (and the system tray
+    // renders it while the app is backgrounded). Refreshed periodically so a
+    // stale session can't silence the group forever.
+    AdsyConnectService.setActiveGroup(_groupId);
+    _activeGroupTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => AdsyConnectService.setActiveGroup(_groupId),
+    );
     _messageController.addListener(_onInputChanged);
     _scroll.addListener(_onScrollChanged);
     // Instant open: paint cached history with no spinner; the fetch below
@@ -156,6 +166,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     if (ActiveChatTracker.activeChatId == _groupId) {
       ActiveChatTracker.clearActiveChat();
     }
+    _activeGroupTimer?.cancel();
+    // Let the server resume pushing for this group.
+    AdsyConnectService.clearActiveChat();
     _pollTimer?.cancel();
     _typingPollTimer?.cancel();
     _recordTimer?.cancel();

@@ -21,7 +21,7 @@ def send_group_push_notification(
     """
     from base.fcm_service import send_fcm_notification
     from base.models import FCMToken
-    from .models import ChatGroup
+    from .models import ChatGroup, ActiveChatSession
 
     try:
         group = ChatGroup.objects.filter(id=group_id).first()
@@ -33,6 +33,22 @@ def send_group_push_notification(
             .exclude(user_id=sender_id)
             .values_list('user_id', flat=True)
         )
+        # Don't ping members who are looking at this group right now — same
+        # rule 1:1 chats already follow.
+        if recipient_ids:
+            from datetime import timedelta
+
+            from django.utils import timezone as _tz
+
+            viewing = set(
+                ActiveChatSession.objects.filter(
+                    user_id__in=recipient_ids,
+                    group_id=group.id,
+                    updated_at__gte=_tz.now() - timedelta(minutes=20),
+                ).values_list('user_id', flat=True)
+            )
+            if viewing:
+                recipient_ids = [r for r in recipient_ids if r not in viewing]
         if not recipient_ids:
             return {'skipped': 'no_recipients'}
 

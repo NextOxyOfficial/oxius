@@ -137,7 +137,15 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
   Future<void> _submitGig() async {
     // KYC gate: only verified accounts may earn from micro gig tasks.
-    final user = AuthService.currentUser;
+    // The cached user goes stale the moment KYC is approved server-side, which
+    // used to keep asking for KYC until the whole page was reloaded. Re-fetch
+    // once before blocking so a fresh approval is picked up immediately.
+    var user = AuthService.currentUser;
+    if (user != null && !user.isVerified) {
+      await AuthService.refreshUserData();
+      if (!mounted) return;
+      user = AuthService.currentUser;
+    }
     if (user == null || !user.isVerified) {
       final goVerify = await AdsyDialog.confirm(
         context,
@@ -202,6 +210,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
         // Record globally FIRST so every open surface (feed card, gig list)
         // flips to its completed state even if this screen is gone.
         MicrogigService.markSubmitted(widget.gigSlug);
+        // The submission moves money into pending_balance server-side. That
+        // value is read from the cached user, so without this refresh the new
+        // pending amount only appeared after a full page reload.
+        await AuthService.refreshUserData();
         if (mounted) {
           AdsyToast.success(context, 'Order Submitted Successfully!');
           // Return true to indicate successful submission

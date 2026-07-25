@@ -5,6 +5,7 @@ import '../../services/wallet_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
 import '../../services/adsyconnect_service.dart';
+import '../../services/fcm_service.dart';
 import '../../models/wallet_models.dart';
 import '../../screens/wallet/wallet_screen.dart';
 import '../../screens/microgig/pending_tasks_screen.dart';
@@ -83,8 +84,22 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // RouteAware was declared but never wired to an observer, so returning
+    // from a pushed screen (e.g. after submitting a micro gig task) never
+    // refreshed the balance — the new pending amount only showed after a full
+    // reload. Subscribing here makes didPopNext fire on the way back.
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      FCMService.routeObserver.subscribe(this, route);
+    }
     // Auto-refresh when widget becomes visible again
     _checkAndRefresh();
+  }
+
+  @override
+  void didPopNext() {
+    // Came back from a pushed screen — pull fresh balance/pending values.
+    loadBalance();
   }
 
   void _checkAndRefresh() {
@@ -116,6 +131,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection>
 
   @override
   void dispose() {
+    FCMService.routeObserver.unsubscribe(this);
     _messageCountTimer?.cancel();
     super.dispose();
   }
