@@ -608,6 +608,11 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
 
   // Aspect ratio measured from the thumbnail so the box is sized correctly even
   // before the video controller finishes initializing.
+  /// Real aspect ratios learned this session, keyed by media id. A recycled
+  /// or revisited tile reserves the correct box immediately, so the settle
+  /// happens at most once per video instead of on every scroll pass.
+  static final Map<int, double> aspectCache = {};
+
   double? _thumbAspect;
   // Once known, the box keeps this shape forever — prevents the feed jumping
   // when the video's own aspect arrives after initialization.
@@ -977,14 +982,22 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
   }
 
   /// Best-known aspect ratio. Locked after first measurement so the card
-  /// keeps a stable size; otherwise: video's, then thumbnail's, then 16:9.
+  /// keeps a stable size; otherwise: cached → video's → thumbnail's → default.
   double get _aspect {
     if (_lockedAspect != null && _lockedAspect! > 0) return _lockedAspect!;
+    final cached = aspectCache[widget.media.id];
+    if (cached != null && cached > 0) return cached;
     final c = _controller;
     if (c != null && _isInitialized && c.value.aspectRatio > 0) {
       return c.value.aspectRatio;
     }
-    return (_thumbAspect != null && _thumbAspect! > 0) ? _thumbAspect! : 16 / 9;
+    if (_thumbAspect != null && _thumbAspect! > 0) return _thumbAspect!;
+    // The backend stores no dimensions, so an unseen video with no thumbnail
+    // has to be guessed. 16:9 used to be the guess, but nearly all user clips
+    // are shot portrait — reserving a short wide box and then growing to 9:16
+    // shoved ~490px of feed down. 4:5 sits close to the common case, so the
+    // settle is a small nudge instead of a lurch.
+    return 4 / 5;
   }
 
   @override
