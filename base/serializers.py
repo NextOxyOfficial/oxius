@@ -329,11 +329,28 @@ class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
         "kyc_pending", "ceo_welcome_sent", "last_login",
     )
 
+    @classmethod
+    def scrub_nested(cls, rep):
+        """Strip secrets from `depth`-expanded nested user dicts.
+
+        `depth = 1` expands FKs like `refer` into a full nested User dict that
+        DRF builds without going through to_representation — so the referrer's
+        otp/balance/NID rode along even after the top level was cleaned.
+        """
+        for value in list(rep.values()):
+            if isinstance(value, dict) and "otp" in value:
+                for f in cls._NEVER_EXPOSE + cls._OWNER_ONLY:
+                    value.pop(f, None)
+                value.pop("email", None)
+                value.pop("phone", None)
+        return rep
+
     def to_representation(self, instance):
         """Customize the serialized output."""
         representation = super().to_representation(instance)
         for field in self._NEVER_EXPOSE:
             representation.pop(field, None)
+        self.scrub_nested(representation)
 
         # `read_only` only blocks WRITES — the fields were still being sent to
         # every reader. Strip them for anyone who is not the account owner.
@@ -446,12 +463,32 @@ class UserSerializerGet(ProfileCompletionMixin, serializers.ModelSerializer):
     def to_representation(self, instance):
         """Customize the serialized output."""
         representation = super().to_representation(instance)
-        
+
+        # Same leak as UserSerializer: `exclude` kept every remaining field
+        # (otp, balance, NID …) in the OUTPUT, and depth=1 dragged the whole
+        # referrer object along with it. Reuse one policy for both.
+        for field in UserSerializer._NEVER_EXPOSE:
+            representation.pop(field, None)
+        request = self.context.get("request")
+        viewer = getattr(request, "user", None)
+        is_owner = (
+            viewer is not None
+            and getattr(viewer, "is_authenticated", False)
+            and str(getattr(viewer, "id", "")) == str(getattr(instance, "id", ""))
+        )
+        if not is_owner:
+            for field in UserSerializer._OWNER_ONLY:
+                representation.pop(field, None)
+            if not getattr(instance, "email_public", False):
+                representation.pop("email", None)
+            if not getattr(instance, "phone_public", False):
+                representation.pop("phone", None)
+        UserSerializer.scrub_nested(representation)
+
         # Convert image field to absolute URL
         if representation.get('image'):
-            request = self.context.get('request')
             representation['image'] = _absolute_media_url(request, representation['image'])
-        
+
         return representation
 
 
