@@ -16,6 +16,7 @@ import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import '../../widgets/business_network/feed_composer_card.dart';
+import '../../widgets/business_network/post_upload_strip.dart';
 import '../../widgets/business_network/user_suggestions_card.dart';
 import '../../widgets/business_network/sponsored_products_card.dart';
 import '../../widgets/business_network/feed_discovery_cards.dart';
@@ -36,6 +37,8 @@ class BusinessNetworkScreen extends StatefulWidget {
 class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   // The interleaved feed layout (posts + injected cards), recomputed each build.
   List<_FeedSlot> _feedSlots = const [];
+  // Guards recomposition of _feedSlots (see build()).
+  String? _feedSlotsSignature;
   List<BusinessNetworkPost> _posts = [];
   List<Map<String, dynamic>> _shuffledSponsoredProducts = [];
   bool _isLoading = true;
@@ -553,9 +556,18 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     final visiblePosts = _getVisiblePosts();
-    // Compose the interleaved feed once per build (cheap), then drive both the
-    // item count and each item off it.
-    _feedSlots = _composeSlots(visiblePosts);
+    // Recompose the interleaved feed ONLY when the post set actually changes.
+    // Rebuilding this list (and the _FeedSlot objects the ListView keys off)
+    // on every build churned allocations and defeated element reuse, which
+    // showed up as stutter while scrolling.
+    final signature = '${visiblePosts.length}'
+        '|${visiblePosts.isEmpty ? '' : visiblePosts.first.id}'
+        '|${visiblePosts.isEmpty ? '' : visiblePosts.last.id}'
+        '|${AuthService.isAuthenticated}';
+    if (signature != _feedSlotsSignature) {
+      _feedSlotsSignature = signature;
+      _feedSlots = _composeSlots(visiblePosts);
+    }
     final topPadding = MediaQuery.of(context).padding.top;
     final headerHeight = topPadding + kToolbarHeight;
 
@@ -778,6 +790,13 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         // the feed without a reload.
         FeedComposerCard(
           onPostCreated: (post) {
+            if (mounted) setState(() => _posts.insert(0, post));
+          },
+        ),
+        // Background posting progress — the composer pops immediately and the
+        // upload continues here, so the user can keep browsing.
+        PostUploadStrip(
+          onPosted: (post) {
             if (mounted) setState(() => _posts.insert(0, post));
           },
         ),

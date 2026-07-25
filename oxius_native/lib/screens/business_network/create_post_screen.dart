@@ -2,17 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import 'dart:convert';
-import 'dart:io';
-import 'package:video_player/video_player.dart';
-import '../../services/business_network_service.dart';
+import '../../services/post_upload_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/image_compressor.dart';
-import '../../utils/network_error_handler.dart';
 import '../../utils/video_upload_helper.dart';
-import '../../utils/api_error.dart';
-import '../../widgets/api_error_ui.dart';
 import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../config/app_config.dart';
@@ -36,7 +31,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final List<Map<String, dynamic>> _selectedVideos = []; // {path, name}
   final List<String> _hashtags = [];
   String _visibility = 'public'; // public | followers | private
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _isCompressing = false;
   String _compressionStatus = '';
   // 0..1 while the post (with videos) is uploading, null otherwise.
@@ -197,48 +192,31 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
       if (video == null) return;
 
+      // ONLY a duration check here — no re-encode. Compressing at pick time
+      // took minutes, looked like a stuck upload and could abort; it now runs
+      // in PostUploadService after the user presses Post.
       setState(() {
         _isCompressing = true;
-        _compressionStatus = 'Processing video...';
+        _compressionStatus = 'ভিডিও যাচাই হচ্ছে...';
       });
 
-      // Enforce duration limit (max 3 minutes)
-      try {
-        final controller = VideoPlayerController.file(File(video.path));
-        await controller.initialize();
-        final duration = controller.value.duration;
-        await controller.dispose();
-
-        if (duration > const Duration(seconds: _maxVideoDurationSeconds)) {
-          if (mounted) {
-            AdsyToast.warning(
-                context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ৩ মিনিটের ভিডিও দেওয়া যাবে');
-          }
-          setState(() {
-            _isCompressing = false;
-            _compressionStatus = '';
-          });
-          return;
-        }
-      } catch (_) {
-        // If we fail to read duration, allow selection to proceed
-      }
-
-      // Compress (≤720p re-encode) before upload — shared app-wide rule.
-      final prepared =
-          await VideoUploadHelper.prepareForUpload(context, video.path);
+      final withinLimit =
+          await VideoUploadHelper.isWithinDurationLimit(video.path);
       if (!mounted) return;
-      if (prepared == null) {
+      if (!withinLimit) {
         setState(() {
           _isCompressing = false;
           _compressionStatus = '';
         });
+        AdsyToast.warning(
+            context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ৩ মিনিটের ভিডিও দেওয়া যাবে');
         return;
       }
 
       setState(() {
+        // The ORIGINAL path — compression happens at submit.
         _selectedVideos.add({
-          'path': prepared,
+          'path': video.path,
           'name': video.name,
         });
         _isCompressing = false;
@@ -246,7 +224,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        AdsyToast.success(context, 'Video added');
+        AdsyToast.success(context, 'ভিডিও যোগ হয়েছে');
       }
     } catch (e) {
       setState(() {
@@ -314,59 +292,32 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    try {
-      final videoPathList = hasVideos
-          ? _selectedVideos.map((v) => v['path'] as String).toList()
-          : null;
-
-      final post = await BusinessNetworkService.createPost(
-        title: null,
-        content: hasContent
-            ? (contentText.isNotEmpty
-                ? contentText
-                : rawContent.replaceAll('\u00A0', ' ').trim())
-            : null,
-        images: hasImages ? _selectedImages : null,
-        videoPaths: videoPathList,
-        tags: hasTags ? _hashtags : null,
-        visibility: _visibility,
-        onProgress: (hasVideos || hasImages)
-            ? (p) {
-                if (mounted) setState(() => _uploadProgress = p);
-              }
-            : null,
-      );
-
-      if (mounted) {
-        if (post != null) {
-          Navigator.pop(context, post);
-          AdsyToast.success(context, 'Post created successfully!');
-        } else {
-          AdsyToast.error(context, 'Failed to create post');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        if (e is ApiError) {
-          // Real backend reason — KYC opens a verification sheet, others toast.
-          ApiErrorUI.show(context, message: e.message, code: e.code);
-        } else if (NetworkErrorHandler.isNetworkError(e)) {
-          NetworkErrorHandler.showErrorSnackbar(context, e,
-              onRetry: _createPost);
-        } else {
-          ApiErrorUI.fromError(context, e);
-        }
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _uploadProgress = null;
-        });
-      }
+    if (PostUploadService.instance.isBusy) {
+      AdsyToast.warning(context, 'আগের পোস্টটি এখনো আপলোড হচ্ছে…');
+      return;
     }
+
+    final videoPathList = hasVideos
+        ? _selectedVideos.map((v) => v['path'] as String).toList()
+        : null;
+
+    // Hand the job to the background service and close immediately. Posting
+    // now feels instant, and compression/upload can no longer be cancelled by
+    // leaving this screen — the feed shows the progress strip and inserts the
+    // post when it lands.
+    PostUploadService.instance.start(
+      content: hasContent
+          ? (contentText.isNotEmpty
+              ? contentText
+              : rawContent.replaceAll(' ', ' ').trim())
+          : null,
+      images: hasImages ? _selectedImages : null,
+      videoPaths: videoPathList,
+      tags: hasTags ? _hashtags : null,
+      visibility: _visibility,
+    );
+
+    Navigator.pop(context);
   }
 
   @override

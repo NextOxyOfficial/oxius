@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -2325,15 +2327,18 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       );
 
       if (video != null && mounted) {
-        // 3-minute cap (over-limit → Google Drive sheet) + compression.
-        setState(() => _isSendingMessage = true);
+        // 3-minute cap only (over-limit → Google Drive sheet). The re-encode
+        // is deferred to the send below so picking stays instant instead of
+        // freezing behind a full compression pass.
         final prepared = await VideoUploadHelper.prepareForUpload(
             context, video.path,
-            driveHint: true);
+            driveHint: true, compress: false);
         if (!mounted) return;
-        setState(() => _isSendingMessage = false);
         if (prepared != null) {
-          _sendMediaMessage(prepared, 'video');
+          setState(() => _isSendingMessage = true);
+          final encoded = await VideoUploadHelper.compressOnly(prepared);
+          if (!mounted) return;
+          _sendMediaMessage(encoded, 'video');
         }
       }
     } catch (e) {
@@ -2359,9 +2364,28 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     setState(() => _isSendingMessage = true);
 
     try {
-      // Send all images
+      // Send the COMPRESSED bytes, not the original file. This loop iterated
+      // _compressedImages but uploaded _selectedImages[i].path, so multi-MB
+      // originals went over the wire and timed out on slow uplinks (the group
+      // chat was already fixed for this; 1:1 was not).
       for (int i = 0; i < _compressedImages.length; i++) {
-        await _sendMediaMessage(_selectedImages[i].path, 'image');
+        final b64raw = _compressedImages[i];
+        if (b64raw.isNotEmpty) {
+          // compressToBase64 returns a "data:image/jpeg;base64,…" URI — the
+          // prefix must be stripped before decoding.
+          final b64 = b64raw.contains(',')
+              ? b64raw.substring(b64raw.indexOf(',') + 1)
+              : b64raw;
+          await AdsyConnectService.sendMediaMessage(
+            chatroomId: widget.chatroomId,
+            receiverId: widget.userId,
+            messageType: 'image',
+            mediaBytes: base64Decode(b64),
+            fileName: 'photo_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
+          );
+        } else {
+          await _sendMediaMessage(_selectedImages[i].path, 'image');
+        }
         // Small delay between sends to avoid overwhelming the server
         if (i < _compressedImages.length - 1) {
           await Future.delayed(const Duration(milliseconds: 300));

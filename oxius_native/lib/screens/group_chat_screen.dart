@@ -614,15 +614,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final XFile? video =
           await _imagePicker.pickVideo(source: ImageSource.gallery);
       if (video == null || !mounted) return;
-      // 3-minute cap (over-limit → Google Drive sheet) + compression.
-      setState(() => _isUploadingAttachment = true);
+      // 3-minute cap (over-limit → Google Drive sheet). Compression is NOT
+      // done here — it runs below while the message is being sent, so picking
+      // stays instant instead of freezing behind a full re-encode.
       final prepared = await VideoUploadHelper.prepareForUpload(
           context, video.path,
-          driveHint: true);
+          driveHint: true, compress: false);
       if (!mounted) return;
-      setState(() => _isUploadingAttachment = false);
       if (prepared == null) return;
-      await _sendMedia(prepared, 'video');
+      setState(() => _isUploadingAttachment = true);
+      final encoded = await VideoUploadHelper.compressOnly(prepared);
+      if (!mounted) return;
+      await _sendMedia(encoded, 'video');
     } catch (_) {
       if (mounted) {
         setState(() => _isUploadingAttachment = false);

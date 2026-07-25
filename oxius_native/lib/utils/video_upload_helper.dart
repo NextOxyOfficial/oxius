@@ -33,12 +33,54 @@ class VideoUploadHelper {
     }
   }
 
+  /// Fast, context-free duration gate — the ONLY check that should run when
+  /// the user picks a video. Re-encoding at pick time made selection feel like
+  /// a long "upload" and could abort mid-way; compression now happens at
+  /// submit ([compressOnly]) instead.
+  static Future<bool> isWithinDurationLimit(String path) async {
+    final duration = await getDuration(path);
+    // Unreadable duration → let it through; the server still validates.
+    if (duration == null) return true;
+    return duration.inSeconds <= maxSeconds;
+  }
+
+  /// Best-effort ≤720p re-encode with NO BuildContext, so it can run from a
+  /// background service after the composer screen is gone. Always returns a
+  /// usable path (the original when the encoder fails or doesn't help).
+  static Future<String> compressOnly(String path) async {
+    try {
+      final info = await VideoCompress.compressVideo(
+        path,
+        quality: VideoQuality.Res1280x720Quality,
+        deleteOrigin: false,
+        includeAudio: true,
+      );
+      final out = info?.file?.path;
+      if (out != null && out.isNotEmpty) {
+        final original = File(path);
+        final compressed = File(out);
+        if (await compressed.exists() &&
+            (await compressed.length()) < (await original.length())) {
+          return out;
+        }
+      }
+    } catch (_) {
+      // Encoder unavailable/failed — upload the original.
+    }
+    return path;
+  }
+
   /// Validate + compress [path]. Returns the path to upload, or null when
   /// the video was rejected (too long / unreadable).
+  /// Set [compress] to false to run ONLY the duration gate and get the
+  /// original path back — callers that want the re-encode to happen later
+  /// (while sending/posting, rather than blocking the picker) use this and
+  /// then call [compressOnly] themselves.
   static Future<String?> prepareForUpload(
     BuildContext context,
     String path, {
     bool driveHint = false,
+    bool compress = true,
   }) async {
     final duration = await getDuration(path);
     if (!context.mounted) return null;
@@ -50,6 +92,8 @@ class VideoUploadHelper {
       }
       return null;
     }
+
+    if (!compress) return path;
 
     // Best-effort compression — capped at 720p, original kept on disk.
     try {
