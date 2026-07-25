@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../ios_web_redirect_screen.dart' show buildWebRedirectUrl;
+
 /// "AdsyClub-এ বিজ্ঞাপন দিন" — a borderless, soft-tinted button used in the
 /// app drawers and the home footer. Tapping opens the web ads panel in an
 /// in-app browser tab (a plain external launch bounces back into the app via
@@ -21,22 +23,39 @@ class AdvertiseButton extends StatelessWidget {
   static const _tint = Color(0xFFEFF4FF);
 
   /// Opens the web ads panel. Reused by every "বিজ্ঞাপন দিন" entry point.
-  static Future<void> openAdsPanel() async {
-    final uri = Uri.parse('https://adsyclub.com/business-network/abn-ads');
-    // adsyclub.com is a verified App Link of THIS app, so any external/intent
-    // launch mode bounces straight back into the app (landing on the BN page
-    // or homepage instead of the ads panel). Only in-app modes are safe:
-    // Custom Tab first, then url_launcher's own WebView — neither goes
-    // through Android intent resolution.
-    for (final mode in const [
-      LaunchMode.inAppBrowserView,
-      LaunchMode.inAppWebView,
-    ]) {
+  static Future<void> openAdsPanel() =>
+      openWebPath('business-network/abn-ads');
+
+  /// Opens any adsyclub.com page in url_launcher's in-app WebView, signed in
+  /// via the web-token flow when possible.
+  ///
+  /// The WebView is the ONLY launch mode that never goes through Android's
+  /// URL resolution: /business-network/* is a VERIFIED App Link of this app
+  /// (AndroidManifest pathPrefix), so Custom Tab / external / default modes
+  /// all hand the intent back to the app itself — landing on the BN screen
+  /// instead of the web page. An explicit WebView activity cannot bounce.
+  static Future<void> openWebPath(String webPath) async {
+    Uri uri;
+    try {
+      uri = await buildWebRedirectUrl(webPath); // auto-login token URL
+    } catch (_) {
+      uri = Uri.parse('https://adsyclub.com/$webPath');
+    }
+    try {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.inAppWebView,
+        webViewConfiguration: const WebViewConfiguration(
+          enableJavaScript: true,
+          enableDomStorage: true,
+        ),
+      );
+    } catch (_) {
+      // Last resort: Custom Tab (may bounce on some devices, but better
+      // than a dead tap if the WebView is unavailable).
       try {
-        if (await launchUrl(uri, mode: mode)) return;
-      } catch (_) {
-        // Try the next launch mode.
-      }
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      } catch (_) {}
     }
   }
 

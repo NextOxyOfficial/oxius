@@ -15,7 +15,6 @@ import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/mention_navigator.dart';
 import '../../utils/business_network_media_downloader.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import '../../widgets/common/adsy_dialog.dart';
@@ -24,6 +23,7 @@ import '../../widgets/common/adsy_share_sheet.dart';
 import '../../widgets/common/adsy_toast.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
+import '../ads/advertise_button.dart';
 import '../ads/compact_house_ad_strip.dart';
 import 'reshared_post_card.dart';
 import 'reshared_news_card.dart';
@@ -722,12 +722,10 @@ class _PostCardState extends State<PostCard> {
           title: 'Ads Panel খুলুন',
           subtitle: 'Post ID কপি হয়ে গেছে — Boost Post-এ paste করুন',
           onTap: () {
-            launchUrl(
-              Uri.parse(
-                'https://adsyclub.com/business-network/abn-ads/create'
-                '?post=${_post.id}',
-              ),
-              mode: LaunchMode.inAppBrowserView,
+            // In-app WebView — /business-network/* is a verified App Link of
+            // this app, so any intent-based launch bounces back into the app.
+            AdvertiseButton.openWebPath(
+              'business-network/abn-ads/create?post=${_post.id}',
             );
           },
         ),

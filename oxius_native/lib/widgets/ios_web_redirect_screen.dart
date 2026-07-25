@@ -24,7 +24,9 @@ bool get isIOSPlatform {
 
 /// Generates a web login URL with auto-login token if user is authenticated.
 /// Falls back to direct URL if not logged in or token generation fails.
-Future<Uri> _buildWebRedirectUrl(String webPath) async {
+/// Public: also used by the advertise button / boost flow to open the web
+/// ads panel signed-in inside an in-app WebView.
+Future<Uri> buildWebRedirectUrl(String webPath) async {
   final baseUrl = AppConfig.apiBaseUrl.replaceAll('/api', '');
   final targetPath = webPath.isNotEmpty ? '/$webPath' : '/';
 
@@ -91,7 +93,7 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
   Future<void> _openWebsite() async {
     setState(() => _isLoading = true);
     try {
-      final url = await _buildWebRedirectUrl(widget.webPath);
+      final url = await buildWebRedirectUrl(widget.webPath);
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       }

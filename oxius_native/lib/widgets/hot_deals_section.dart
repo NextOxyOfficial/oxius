@@ -148,7 +148,9 @@ class _HotDealsSectionState extends State<HotDealsSection> {
   Widget _buildDealCard(Map<String, dynamic> deal) {
     final imageUrl = deal['image']?.toString() ?? '';
     final name = deal['name']?.toString() ?? '';
-    final badge = deal['badge']?.toString() ?? 'SALE';
+    // Badge is fully admin-controlled (ProductCategory.badge in Django
+    // admin): empty = no badge, any text = shown. No hardcoded fallback.
+    final badge = (deal['badge']?.toString() ?? '').trim();
     final badgeColor = _getBadgeColor(deal['badge_color']?.toString());
 
     return GestureDetector(
@@ -221,26 +223,27 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                         color: _dealSlate400,
                       ),
                     ),
-                  Positioned(
-                    top: 4,
-                    left: 4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        badge,
-                        style: GoogleFonts.inter(
-                          fontSize: 7.5,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                  if (badge.isNotEmpty)
+                    Positioned(
+                      top: 4,
+                      left: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: badgeColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          badge,
+                          style: GoogleFonts.inter(
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
