@@ -32,11 +32,12 @@ class _GreetingRotatorState extends State<GreetingRotator> {
   }
 
   static String _localGreeting() {
+    // Mirrors the backend boundaries (বিকেল 4-7pm, সন্ধ্যা 7-8pm).
     final h = DateTime.now().hour;
     if (h >= 5 && h < 12) return 'শুভ সকাল ☀️';
     if (h >= 12 && h < 16) return 'শুভ দুপুর 🌤️';
-    if (h >= 16 && h < 18) return 'শুভ বিকাল 🌇';
-    if (h >= 18 && h < 20) return 'শুভ সন্ধ্যা 🌆';
+    if (h >= 16 && h < 19) return 'শুভ বিকেল 🌇';
+    if (h >= 19 && h < 20) return 'শুভ সন্ধ্যা 🌆';
     return 'শুভ রাত্রি 🌙';
   }
 

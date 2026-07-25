@@ -80,14 +80,16 @@ def bengali_date(g_date):
 
 
 def time_greeting(now=None):
-    # Boundaries match the original pre-dynamic app greeting.
+    # Boundaries per the user's spec: বিকেল spans 4pm-7pm, সন্ধ্যা 7pm-8pm.
     now = now or dhaka_now()
     h = now.hour
     if 5 <= h < 12:
         return "শুভ সকাল ☀️"
-    if 12 <= h < 17:
+    if 12 <= h < 16:
         return "শুভ দুপুর 🌤️"
-    if 17 <= h < 20:
+    if 16 <= h < 19:
+        return "শুভ বিকেল 🌇"
+    if 19 <= h < 20:
         return "শুভ সন্ধ্যা 🌆"
     return "শুভ রাত্রি 🌙"
 
