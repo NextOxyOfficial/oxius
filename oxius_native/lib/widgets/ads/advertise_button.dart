@@ -20,15 +20,17 @@ class AdvertiseButton extends StatelessWidget {
   static const _ink = Color(0xFF1D4ED8);
   static const _tint = Color(0xFFEFF4FF);
 
-  Future<void> _open() async {
+  /// Opens the web ads panel. Reused by every "বিজ্ঞাপন দিন" entry point.
+  static Future<void> openAdsPanel() async {
     final uri = Uri.parse('https://adsyclub.com/business-network/abn-ads');
-    // Try an in-app Custom Tab first; fall back to the external browser (and
-    // finally the platform default) so the button always opens something even
-    // when a device has no Custom Tabs provider.
+    // adsyclub.com is a verified App Link of THIS app, so any external/intent
+    // launch mode bounces straight back into the app (landing on the BN page
+    // or homepage instead of the ads panel). Only in-app modes are safe:
+    // Custom Tab first, then url_launcher's own WebView — neither goes
+    // through Android intent resolution.
     for (final mode in const [
       LaunchMode.inAppBrowserView,
-      LaunchMode.externalApplication,
-      LaunchMode.platformDefault,
+      LaunchMode.inAppWebView,
     ]) {
       try {
         if (await launchUrl(uri, mode: mode)) return;
@@ -44,7 +46,7 @@ class AdvertiseButton extends StatelessWidget {
       color: _tint,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        onTap: _open,
+        onTap: openAdsPanel,
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: EdgeInsets.symmetric(

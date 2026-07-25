@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/ads/advertise_button.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -336,11 +336,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                         label: 'AdsyClub-এ বিজ্ঞাপন দিন',
                         subtitle: 'আপনার বিজ্ঞাপন প্রকাশ করুন',
                         gradient: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                        onTap: () => launchUrl(
-                          Uri.parse(
-                              'https://adsyclub.com/business-network/abn-ads'),
-                          mode: LaunchMode.inAppBrowserView,
-                        ),
+                        onTap: AdvertiseButton.openAdsPanel,
                       ),
                       // _MenuItem(
                       //   icon: Icons.history_rounded,
