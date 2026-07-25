@@ -140,6 +140,11 @@ class ChatMessageBubble extends StatefulWidget {
   final VoidCallback? onLongPress;
   final void Function(Map<String, dynamic> message) onReply;
   final void Function(String messageId, String? mediaUrl) onPlayVoice;
+
+  /// Scrub the voice clip. Optional — the waveform is still a progress bar
+  /// without it, just not draggable.
+  final void Function(String messageId, String? mediaUrl, Duration to)?
+      onSeekVoice;
   final void Function(String filePath) onViewImage;
   final void Function(String? filePath, String fileName) onDownloadDoc;
   final void Function(String messageId) onScrollToMessage;
@@ -163,6 +168,7 @@ class ChatMessageBubble extends StatefulWidget {
     this.onLongPress,
     required this.onReply,
     required this.onPlayVoice,
+    this.onSeekVoice,
     required this.onViewImage,
     required this.onDownloadDoc,
     required this.onScrollToMessage,
@@ -750,64 +756,124 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final mediaUrl = message['mediaUrl'] as String?;
     final isPlaying = widget.playingVoiceMessageId == messageId;
 
-    return GestureDetector(
-      onTap: () => widget.onPlayVoice(messageId, mediaUrl),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
+    // Total length: the live value while this clip plays, else what was
+    // recorded/stored.
+    final totalMs = isPlaying && widget.voiceDuration.inMilliseconds > 0
+        ? widget.voiceDuration.inMilliseconds
+        : duration * 1000;
+    final playedMs = isPlaying ? widget.voicePosition.inMilliseconds : 0;
+    final progress =
+        totalMs > 0 ? (playedMs / totalMs).clamp(0.0, 1.0) : 0.0;
+
+    final ink = const Color(0xFF111827);
+    final playedColor = isMe ? ink.withValues(alpha: 0.85) : const Color(0xFF2563EB);
+    final restColor = ink.withValues(alpha: 0.22);
+
+    // Shown time: elapsed while playing, total otherwise — matches how every
+    // other messenger reads.
+    final label = isPlaying && totalMs > 0
+        ? '${widget.voicePosition.inMinutes}:${(widget.voicePosition.inSeconds % 60).toString().padLeft(2, '0')}'
+        : formatVoiceDuration(duration);
+
+    const barCount = 26;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () => widget.onPlayVoice(messageId, mediaUrl),
+            child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isMe
                     ? Colors.black.withValues(alpha: 0.08)
-                    : const Color(0xFF111827).withValues(alpha: 0.1),
+                    : ink.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 size: 28,
-                color: const Color(0xFF111827),
+                color: ink,
               ),
             ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: List.generate(
-                    22,
-                    (i) => Container(
-                      width: 3,
-                      height: (i % 4 + 2) * 4.0,
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      decoration: BoxDecoration(
-                        color: isMe
-                            ? const Color(0xFF111827).withValues(alpha: 0.7)
-                            : const Color(0xFF111827).withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(2),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Waveform doubles as the progress bar: bars left of the play
+              // head are filled, the rest are faded. Drag/tap anywhere on it
+              // to seek. The old version drew a fixed `i % 4` sawtooth that
+              // never moved, so it read as decoration rather than progress.
+              SizedBox(
+                width: 150,
+                height: 26,
+                child: LayoutBuilder(
+                  builder: (context, c) {
+                    void seekTo(double dx) {
+                      if (totalMs <= 0) return;
+                      final ratio = (dx / c.maxWidth).clamp(0.0, 1.0);
+                      widget.onSeekVoice?.call(
+                        messageId,
+                        mediaUrl,
+                        Duration(milliseconds: (totalMs * ratio).round()),
+                      );
+                    }
+
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapDown: (d) => seekTo(d.localPosition.dx),
+                      onHorizontalDragUpdate: (d) =>
+                          seekTo(d.localPosition.dx),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: List.generate(barCount, (i) {
+                          // Stable pseudo-random height per message so each
+                          // clip looks like its own waveform instead of a
+                          // repeating pattern.
+                          final seed = messageId.hashCode ^ (i * 2654435761);
+                          final h = 6 + (seed.abs() % 15);
+                          final filled = (i + 1) / barCount <= progress;
+                          return Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 1),
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: AnimatedContainer(
+                                  duration:
+                                      const Duration(milliseconds: 140),
+                                  height: h.toDouble(),
+                                  decoration: BoxDecoration(
+                                    color: filled ? playedColor : restColor,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  isPlaying && widget.voiceDuration.inSeconds > 0
-                      ? '${widget.voicePosition.inMinutes}:${(widget.voicePosition.inSeconds % 60).toString().padLeft(2, '0')} / ${widget.voiceDuration.inMinutes}:${(widget.voiceDuration.inSeconds % 60).toString().padLeft(2, '0')}'
-                      : formatVoiceDuration(duration),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: isMe
-                        ? const Color(0xFF111827).withValues(alpha: 0.8)
-                        : const Color(0xFF6B7280),
-                  ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: isMe
+                      ? ink.withValues(alpha: 0.8)
+                      : const Color(0xFF6B7280),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

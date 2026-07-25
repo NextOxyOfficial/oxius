@@ -7,7 +7,6 @@ import 'package:video_player/video_player.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
-import '../../services/ads_service.dart';
 import '../../services/house_ads_service.dart';
 import '../../widgets/ads/house_ad_card.dart';
 import '../../services/user_suggestions_service.dart';
@@ -274,9 +273,6 @@ class _ShortsViewerState extends State<ShortsViewer> {
   final Map<int, VideoPlayerController> _preloadedControllers = {};
 
   // Ads: the currently-playing controller (so we can pause it behind a
-  // full-screen ad) + a counter that triggers one every N shorts.
-  VideoPlayerController? _activeController;
-  int _shortsSinceAd = 0;
   // Media ids whose controller has been handed over to (and is owned by) a
   // live page — never re-preload these or we'd stream the same video twice.
   final Set<int> _pageOwnedMediaIds = {};
@@ -302,7 +298,6 @@ class _ShortsViewerState extends State<ShortsViewer> {
     _pageController = PageController(initialPage: _currentIndex);
 
     // Warm up the shorts full-screen ad slot.
-    AdsService.preloadInterstitial('shorts_fullscreen');
 
     // Start warming neighbours immediately — previously preloading only
     // began after the FIRST swipe, so the second video always showed a
@@ -337,32 +332,12 @@ class _ShortsViewerState extends State<ShortsViewer> {
     });
   }
 
-  // Full-screen ad every N shorts (server-tuned, default 5). Pauses the
-  // current video so audio doesn't play behind the ad, resumes after.
-  Future<void> _maybeShowShortsAd(int index) async {
-    if (!AdsService.placementActive('shorts_fullscreen')) return;
-    if (index >= _items.length) return; // on the end/caught-up page
-    _shortsSinceAd++;
-    final every = AdsService.feedFrequency('shorts_fullscreen', fallback: 5);
-    if (_shortsSinceAd < every) return;
-    _shortsSinceAd = 0;
-    final wasPlaying = _activeController?.value.isPlaying ?? false;
-    _activeController?.pause();
-    await AdsService.showInterstitial('shorts_fullscreen');
-    // The creator whose short the viewer just watched gets the revenue
-    // share for this post-swipe ad view.
-    final u = _items[index].post?.user;
-    if (u != null) {
-      HouseAdsService.track(
-        eventType: 'impression',
-        placement: 'shorts_fullscreen',
-        source: 'admob',
-        creatorId: u.uuid ?? u.id.toString(),
-      );
-    }
-    if (!mounted) return;
-    if (wasPlaying) _activeController?.play();
-  }
+  // NOTE: the AdMob FULL-SCREEN interstitial that used to run every N shorts
+  // was removed — interrupting the reel with a takeover ad drove viewers away.
+  // Shorts now monetise through the in-video sponsored banner instead (see
+  // _loadBannerAd / the 'shorts_banner' placement), which sits over the video
+  // without blocking it. Kept as a no-op so the call site stays readable.
+  Future<void> _maybeShowShortsAd(int index) async {}
 
   Future<void> _maybeRequestMore(int index) async {
     final cb = widget.onRequestMore;
@@ -824,7 +799,6 @@ class _ShortsViewerState extends State<ShortsViewer> {
                   // marked so we never spin up a duplicate stream for it.
                   _preloadedControllers.remove(item.media!.id);
                   _pageOwnedMediaIds.add(item.media!.id);
-                  _activeController = controller;
                 },
                 onControllerDisposed: () {
                   _pageOwnedMediaIds.remove(item.media!.id);
@@ -905,8 +879,10 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   String get _creatorId =>
       widget.post.user.uuid ?? widget.post.user.id.toString();
 
-  // Rotates across shorts so only every 4th short carries a banner —
-  // a banner on EVERY short fatigues users fast.
+  // Rotates across shorts so only every 3rd short carries a banner. This is
+  // now the ONLY ad in the reel (the full-screen interstitial was removed), so
+  // it runs slightly denser than before — still far less intrusive than a
+  // takeover, and a banner on EVERY short would fatigue viewers.
   static int _bannerSlotCounter = 0;
 
   Future<void> _loadBannerAd() async {
@@ -914,7 +890,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     if (widget.sponsoredAd != null) return;
     if (_bannerRequested) return;
     _bannerRequested = true;
-    if (_bannerSlotCounter++ % 4 != 0) return;
+    if (_bannerSlotCounter++ % 3 != 0) return;
     final ad = await HouseAdsService.fetch('shorts_banner');
     if (!mounted || ad == null) return;
     setState(() => _bannerAd = ad);

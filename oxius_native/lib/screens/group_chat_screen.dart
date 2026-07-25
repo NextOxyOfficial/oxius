@@ -1148,6 +1148,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           onDelete: isMe ? () => _deleteGroupMessage(raw) : null,
         ),
         onPlayVoice: _playVoice,
+        onSeekVoice: (id, url, to) async {
+          // Scrub only the clip that is actually loaded; tapping another
+          // message's waveform starts that one instead.
+          if (_playingVoiceId == id) {
+            await _player.seek(to);
+          } else {
+            await _playVoice(id, url);
+          }
+        },
         onViewImage: _viewImage,
         onDownloadDoc: (path, name) {
           final url = mapped['mediaUrl']?.toString();

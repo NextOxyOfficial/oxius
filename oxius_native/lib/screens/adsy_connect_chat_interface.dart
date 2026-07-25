@@ -3570,6 +3570,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           : () => _showMessageOptions(message),
       onReply: (msg) => _setReplyingTo(msg),
       onPlayVoice: (id, url) => _playVoiceMessage(id, url),
+      onSeekVoice: (id, url, to) async {
+        // Scrub only the clip that is actually loaded; tapping the waveform
+        // of a different message starts that one instead.
+        if (_playingVoiceMessageId == id) {
+          await _audioPlayer.seek(to);
+        } else {
+          await _playVoiceMessage(id, url);
+        }
+      },
       onViewImage: _viewImage,
       onDownloadDoc: _downloadDocument,
       onScrollToMessage: _scrollToMessageId,
