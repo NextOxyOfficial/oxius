@@ -908,22 +908,69 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
               ],
             ),
           ),
-          if (ad.title.trim().isNotEmpty)
-            Positioned(
-              left: 10,
-              right: 10,
-              bottom: 10,
-              child: Text(
-                ad.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          // Title + an EXPLICIT call-to-action. The creative was tappable but
+          // nothing showed that, so the ad looked like a dead-end — advertisers
+          // got no clicks. The button states the action (Visit / Call /
+          // WhatsApp / Email) from the ad's own type.
+          Positioned(
+            left: 10,
+            right: 10,
+            bottom: 10,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (ad.title.trim().isNotEmpty)
+                  Text(
+                    ad.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                if (ad.adTypeDetails.trim().isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      HouseAdsService.track(
+                        eventType: 'cta_click',
+                        placement: 'bn_feed',
+                        adId: ad.id,
+                      );
+                      HouseAdCard.launchCta(ad);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(HouseAdCard.ctaIcon(ad),
+                              size: 15, color: Colors.white),
+                          const SizedBox(width: 7),
+                          Text(
+                            ad.ctaLabel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
+          ),
         ],
       ),
     );

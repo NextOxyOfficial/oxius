@@ -535,7 +535,9 @@ class _ReplyInputState extends State<_ReplyInput> {
                 key: _mentionKey,
                 suggestionPosition: SuggestionPosition.Top,
                 maxLines: 4,
-                minLines: 1,
+                // Opens two lines tall so a normal reply fits without the box
+                // growing under the caret as you type.
+                minLines: 2,
                 decoration: InputDecoration(
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle:
