@@ -1,3 +1,5 @@
+from django.db.models import F, Window
+from django.db.models.functions import RowNumber
 from rest_framework import serializers
 
 from base.serializers import (
@@ -152,6 +154,44 @@ class BusinessNetworkPostFollowSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
+LIKED_PREVIEW_FETCH = 12
+
+
+def _prime_liked_previews(items):
+    """Load the 'liked by' faces for a whole page in ONE query.
+
+    get_liked_by_preview asked per post (WHERE post_id = X LIMIT 12), so a page
+    cost one query per post. A window function applies the same per-post cap
+    inside a single statement, which keeps the important property: a post with
+    20k likes still contributes only 12 rows, so this can't regress into loading
+    everything.
+
+    Results are stashed on each post; the serializer falls back to its own query
+    when the cache is absent (detail view, or any caller not going through the
+    list serializer).
+    """
+    ids = [p.pk for p in items]
+    if not ids:
+        return
+    ranked = (
+        BusinessNetworkPostLike.objects.filter(post_id__in=ids)
+        .annotate(
+            _rn=Window(
+                expression=RowNumber(),
+                partition_by=[F("post_id")],
+                order_by=F("created_at").desc(),
+            )
+        )
+        .select_related("user")
+        .filter(_rn__lte=LIKED_PREVIEW_FETCH)
+    )
+    grouped = {}
+    for like in ranked:
+        grouped.setdefault(like.post_id, []).append(like)
+    for p in items:
+        p._liked_preview_cache = grouped.get(p.pk, [])
+
+
 class _PostListSerializer(serializers.ListSerializer):
     """Primes author stats for the whole page before any child is serialized.
 
@@ -178,6 +218,7 @@ class _PostListSerializer(serializers.ListSerializer):
                 for c in cached.get("post_comments", None) or []:
                     author_ids.add(getattr(c, "author_id", None))
             prime_user_stats(request, {a for a in author_ids if a})
+            _prime_liked_previews(items)
         return super().to_representation(items)
 
 
@@ -269,7 +310,12 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     def get_liked_by_preview(self, obj):
         """A few liker faces for the feed's 'liked by' row — mutual connections
         (people the viewer follows) first. Bounded query so the feed stays fast."""
-        likes = list(obj.post_likes.select_related("user").all()[:12])
+        cached = getattr(obj, "_liked_preview_cache", None)
+        likes = (
+            list(cached)
+            if cached is not None
+            else list(obj.post_likes.select_related("user").all()[:12])
+        )
         if not likes:
             return []
         likes.sort(
