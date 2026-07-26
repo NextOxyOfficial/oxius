@@ -788,7 +788,7 @@
           >
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-medium text-gray-800">
-                {{ editingAdIndex !== null ? "Edit Ad" : "Create New Ad" }}
+                {{ $t("create_new_ad") || "নতুন বিজ্ঞাপন তৈরি করুন" }}
               </h3>
               <button
                 @click="closeCreateAdModal"
@@ -1228,11 +1228,7 @@
                         ></path>
                       </svg>
                       {{
-                        isSubmitting
-                          ? "Saving..."
-                          : editingAdIndex !== null
-                          ? "Update Ad"
-                          : "Post Ad"
+                        isSubmitting ? "জমা হচ্ছে…" : "বিজ্ঞাপন জমা দিন"
                       }}
                     </button>
                   </div>
@@ -1938,8 +1934,8 @@ const panelSteps = [
     desc: "ads_step4_d",
   },
 ];
+const router = useRouter();
 const showCreateAdModal = ref(false);
-const editingAdIndex = ref(null);
 const isLoading = ref(false);
 const isDeleting = ref(false);
 const isToggling = ref(false);
@@ -2261,11 +2257,12 @@ const handleAdSubmit = async () => {
   }
 };
 
-// Edit ad
+// Edit ad — opens the dedicated edit PAGE. The old flow reused the "create"
+// modal, which meant a cramped scrolling dialog and no room to show what a
+// budget change actually costs before saving.
 const editAd = (ad) => {
-  editingAdIndex.value = postedAds.value.indexOf(ad);
-  Object.assign(adForm, ad);
-  showCreateAdModal.value = true;
+  if (!ad?.id) return;
+  router.push(`/business-network/abn-ads/${ad.id}/edit`);
 };
 
 // Preview ad
@@ -2389,7 +2386,6 @@ const confirmRerun = async () => {
 // Close create ad modal
 const closeCreateAdModal = () => {
   showCreateAdModal.value = false;
-  editingAdIndex.value = null;
   resetAdForm();
 };
 
