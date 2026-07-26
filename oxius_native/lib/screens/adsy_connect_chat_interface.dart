@@ -15,6 +15,7 @@ import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/adsy_ios_scale.dart';
+import '../utils/chat_autoscroll.dart';
 import '../utils/chat_history_cache.dart';
 import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
@@ -1300,17 +1301,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _scrollToBottom() {
-    // After the frame that actually contains the new message — scrolling
-    // synchronously targeted the OLD bottom item and left the fresh message
-    // hidden below the fold until the user scrolled by hand.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_itemScrollController.isAttached) return;
-      _itemScrollController.scrollTo(
-        index: 0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    });
+    // One post-frame scroll wasn't enough: the row's final height isn't known
+    // on that frame (text wrapping, link previews, the keyboard animating), so
+    // the list settled above the new message. It also gave up silently when
+    // the list hadn't attached yet. ChatAutoScroll keeps correcting for a few
+    // frames until the newest row is actually flush with the bottom.
+    if (!mounted) return;
+    ChatAutoScroll.stickToNewest(
+      _itemScrollController,
+      _itemPositionsListener,
+    );
   }
 
   void _scrollToMessageId(String messageId) {

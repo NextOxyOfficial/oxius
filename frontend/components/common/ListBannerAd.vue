@@ -24,21 +24,23 @@
       </div>
     </div>
 
-    <!-- Title + sponsored label -->
+    <!-- Title takes the full width; the CTA sits on the sponsored line so a
+         long title isn't squeezed into a clump on narrow screens. -->
     <div class="flex-1 min-w-0">
       <p class="text-[13px] font-semibold text-gray-900 leading-snug line-clamp-2">
         {{ ad.title }}
       </p>
-      <p class="text-[10.5px] font-semibold text-gray-400 mt-0.5">স্পনসর্ড</p>
+      <div class="flex items-center mt-0.5">
+        <span class="text-[10.5px] font-semibold text-gray-400">স্পনসর্ড</span>
+        <!-- Outlined and compact: a quiet action, labelled from the ad's own
+             type as configured in the ads panel. -->
+        <span
+          class="ml-auto shrink-0 rounded-full border border-blue-600 px-2 py-[2px] text-[10.5px] font-bold text-blue-600"
+        >
+          {{ ctaLabel }}
+        </span>
+      </div>
     </div>
-
-    <!-- CTA carries the action the advertiser configured in the ads panel -->
-    <span
-      class="shrink-0 inline-flex items-center gap-0.5 rounded-full bg-blue-600 px-2.5 py-1.5 text-[11.5px] font-bold text-white group-hover:bg-blue-700 transition-colors"
-    >
-      {{ ctaLabel }}
-      <UIcon name="i-heroicons-chevron-right" class="w-3.5 h-3.5" />
-    </span>
   </a>
 </template>
 

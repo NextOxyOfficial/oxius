@@ -1,3 +1,4 @@
+import '../../widgets/pro_trial_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/eshop_manager_service.dart';
@@ -248,6 +249,10 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
+                    ),
+                    // Free Pro trial offer — a new seller can try Pro
+                    // before paying. Hides itself when not applicable.
+                    const ProTrialCard(
                     ),
                   ],
                 ),

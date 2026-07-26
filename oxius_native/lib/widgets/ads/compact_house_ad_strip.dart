@@ -150,6 +150,9 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title spans the full width of the strip — the CTA used to
+                    // sit beside it and squeezed long Bangla titles into a
+                    // clump on narrow screens.
                     Text(
                       ad.title,
                       maxLines: 2,
@@ -161,51 +164,51 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                         color: Color(0xFF111827),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Sponsored',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF94A3B8),
-                      ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Text(
+                          'Sponsored',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const Spacer(),
+                        // Outlined and compact so it reads as a quiet action
+                        // rather than competing with the post's own buttons.
+                        // Label comes from the ad's type (Visit site /
+                        // WhatsApp / Call / Email) as set in the ads panel.
+                        InkWell(
+                          onTap: _onTap,
+                          borderRadius: BorderRadius.circular(999),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 3),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: const Color(0xFF2563EB),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              ad.ctaLabel,
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2563EB),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              // Real CTA instead of a bare chevron: the label comes from the
-              // ad's own type (Visit site / WhatsApp / Call / Email), so the
-              // strip carries the same action the advertiser configured in the
-              // ads panel. Tapping it runs the same handler as the row.
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: _onTap,
-                borderRadius: BorderRadius.circular(999),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        ad.ctaLabel,
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      const Icon(Icons.chevron_right_rounded,
-                          size: 14, color: Colors.white),
-                    ],
-                  ),
-                ),
-              ),
+              const SizedBox(width: 4),
               // ✕ — hides this ad + mutes its category for 48h.
               InkWell(
                 onTap: _close,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/subscription_service.dart';
+import '../widgets/pro_trial_card.dart';
 import '../widgets/purchase_method_sheet.dart';
 import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
@@ -126,6 +127,13 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     }
   }
 
+  /// The trial grants Pro immediately, so re-read the user before repainting
+  /// the plan cards — otherwise the screen still offers what they now have.
+  Future<void> _onTrialActivated() async {
+    await _userState.refreshUser();
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     // Defense-in-depth: block the entire screen on iOS even if the route-level
@@ -169,6 +177,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               _buildAutoRenewCard(),
             ],
             const SizedBox(height: 10),
+            // Free trial offer — hides itself once claimed or if already Pro.
+            ProTrialCard(onActivated: _onTrialActivated),
             _buildPlanComposer(),
             const SizedBox(height: 10),
             _buildFeaturesSection(),

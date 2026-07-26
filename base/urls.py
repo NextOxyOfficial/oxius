@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import (
 
 from .cities_light_views import CityViewSet, CountryViewSet, RegionViewSet
 from .pay import *
+from .pro_trial import activate_pro_trial, pro_trial_status
 from .views import *
 from .upload_views import upload_file
 from .moderation import moderate
@@ -175,6 +176,9 @@ urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/validate-token/", TokenValidationView.as_view(), name="validate_token"),
+    # Free Pro trial — one per account, KYC-gated.
+    path("pro-trial/status/", pro_trial_status, name="pro-trial-status"),
+    path("pro-trial/activate/", activate_pro_trial, name="pro-trial-activate"),
     path("auth/generate-web-token/", generate_web_login_token, name="generate_web_token"),
     path("auth/exchange-web-token/", exchange_web_login_token, name="exchange_web_token"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

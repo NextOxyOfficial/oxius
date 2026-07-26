@@ -180,6 +180,11 @@ class User(AbstractUser):
     #   subscription
     is_pro = models.BooleanField(default=False)
     pro_validity = models.DateTimeField(null=True, blank=True)
+    # Stamped the moment the one free Pro trial is claimed, and never cleared —
+    # this, not is_pro, is what makes the trial once-per-account. Keeping it
+    # separate from pro_validity means letting a trial lapse (or later buying
+    # Pro) can't hand out a second free run.
+    pro_trial_used_at = models.DateTimeField(null=True, blank=True)
     # Pro auto-renew preference (the app's Pro lives on User.is_pro/pro_validity,
     # so the renew preference is stored here too rather than on a Subscription row).
     auto_renew = models.BooleanField(default=False)
@@ -2124,3 +2129,38 @@ class PopularSearch(models.Model):
 
     def __str__(self):
         return self.keyword
+
+
+class ProTrialConfig(models.Model):
+    """Admin-editable rules for the free Pro trial.
+
+    Kept as a settings row rather than a constant so the offer can be tuned (or
+    switched off entirely) without a deploy.
+    """
+
+    enabled = models.BooleanField(
+        default=True,
+        help_text="Turn the free Pro trial offer on or off everywhere.",
+    )
+    days = models.PositiveIntegerField(
+        default=15,
+        help_text="How many days of Pro a trial grants.",
+    )
+    require_kyc = models.BooleanField(
+        default=True,
+        help_text="Only KYC-verified accounts may claim the trial.",
+    )
+
+    class Meta:
+        verbose_name = "Pro Trial Config"
+        verbose_name_plural = "Pro Trial Config"
+
+    def __str__(self):
+        return "Pro Trial Config"
+
+    @classmethod
+    def get(cls):
+        obj = cls.objects.first()
+        if obj is None:
+            obj = cls.objects.create()
+        return obj

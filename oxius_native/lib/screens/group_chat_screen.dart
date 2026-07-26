@@ -11,6 +11,7 @@ import 'package:record/record.dart';
 import '../services/active_chat_tracker.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
+import '../utils/chat_autoscroll.dart';
 import '../utils/chat_history_cache.dart';
 import '../utils/image_compressor.dart';
 import '../utils/mention_navigator.dart';
@@ -132,11 +133,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     if (cached != null && cached.isNotEmpty) {
       _messages = cached;
       _loading = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _scroll.hasClients) {
-          _scroll.jumpTo(_scroll.position.maxScrollExtent);
-        }
-      });
+      // Cached history paints instantly, but its rows measure over the next
+      // few frames — a single jump landed part-way up the backlog.
+      ChatAutoScroll.stickToBottom(_scroll, animate: false);
     }
     _loadMessages(initial: true);
     _pollTimer =
@@ -320,7 +319,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     }
   }
 
-  Future<void> _loadMessages({bool initial = false}) async {
+  /// [force] pins the view to the newest message regardless of where the user
+  /// was scrolled — used after THEY send, since sending is an explicit request
+  /// to see your own message.
+  Future<void> _loadMessages({bool initial = false, bool force = false}) async {
     final raw = await AdsyConnectService.getGroupMessages(_groupId);
     if (!mounted) return;
     final msgs = raw
@@ -337,12 +339,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     });
     // Keep the instant-open cache fresh for the next visit.
     ChatHistoryCache.put('group:$_groupId', _messages);
-    if (initial || (changed && wasNearBottom)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scroll.hasClients) {
-          _scroll.jumpTo(_scroll.position.maxScrollExtent);
-        }
-      });
+    // `changed` compared list LENGTH, so when the 5s poll had already picked
+    // up the message the send scrolled nowhere. A forced scroll ignores both
+    // that and the near-bottom guard.
+    if (force || initial || (changed && wasNearBottom)) {
+      // Not a bare post-frame jump: with many messages the extent is still
+      // growing on that frame (lazy rows, images), so the jump landed short
+      // and the newest message stayed below the fold.
+      ChatAutoScroll.stickToBottom(_scroll, animate: !initial && !force);
     }
   }
 
@@ -359,7 +363,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
     if (!mounted) return;
     if (res != null) {
-      await _loadMessages();
+      await _loadMessages(force: true);
     } else {
       AdsyToast.error(context, 'মেসেজ পাঠানো যায়নি');
     }
@@ -600,7 +604,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 ? 'ছবি পাঠানো যায়নি — আবার চেষ্টা করুন'
                 : '$failures টি ছবি পাঠানো যায়নি');
       }
-      await _loadMessages();
+      await _loadMessages(force: true);
     } catch (_) {
       if (mounted) {
         setState(() => _isUploadingAttachment = false);
@@ -662,7 +666,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     if (!mounted) return;
     setState(() => _isUploadingAttachment = false);
     if (res != null) {
-      await _loadMessages();
+      await _loadMessages(force: true);
     } else {
       AdsyToast.error(context, 'পাঠানো যায়নি');
     }

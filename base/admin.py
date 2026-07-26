@@ -1829,3 +1829,18 @@ class PopularSearchAdmin(admin.ModelAdmin):
     list_editable = ('is_active', 'order')
     search_fields = ('keyword',)
     list_filter = ('is_active',)
+
+
+@admin.register(ProTrialConfig)
+class ProTrialConfigAdmin(admin.ModelAdmin):
+    """Single settings row — the trial length and gating live here so the
+    offer can be tuned or switched off without a deploy."""
+
+    list_display = ("__str__", "enabled", "days", "require_kyc")
+
+    def has_add_permission(self, request):
+        # Singleton: edit the existing row rather than creating rivals.
+        return not ProTrialConfig.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
