@@ -31,6 +31,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from base.models import User
+from .feed_annotations import feed_count_annotations
 from .feed_visibility import visible_posts_q
 from adsyconnect.models import BlockedUser
 
@@ -815,13 +816,17 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 ),
             )
             .select_related("author")
+            # post_likes is deliberately NOT prefetched: the feed only needs a
+            # count and an is-liked flag, both of which now come from
+            # feed_count_annotations. Prefetching it pulled every like row (and
+            # a User per like) into memory — 20k rows for one integer.
             .prefetch_related(
                 "media__media_likes__user",
                 "tags",
-                "post_likes__user",
                 "post_comments__author",
                 "post_followers__user",
             )
+            .annotate(**feed_count_annotations(user))
             .order_by(
                 "-final_score",
                 "shuffle_score",

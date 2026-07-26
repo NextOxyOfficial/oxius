@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from base.serializers import UserSerializer, viewer_relation_sets
+from base.serializers import (
+    UserSerializer,
+    prime_user_stats,
+    viewer_relation_sets,
+)
 
 from .models import *
 
@@ -148,6 +152,28 @@ class BusinessNetworkPostFollowSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
+class _PostListSerializer(serializers.ListSerializer):
+    """Primes author stats for the whole page before any child is serialized.
+
+    Doing it here rather than in each view means every list endpoint — feed,
+    optimized, prioritized, search, profile — gets the batched path without
+    being touched, and there is no view left behind to regress later.
+    """
+
+    def to_representation(self, data):
+        items = list(data)
+        request = self.context.get("request") if self.context else None
+        if request is not None:
+            author_ids = {
+                getattr(p, "author_id", None) for p in items
+            } | {
+                getattr(getattr(p, "shared_from", None), "author_id", None)
+                for p in items
+            }
+            prime_user_stats(request, {a for a in author_ids if a})
+        return super().to_representation(items)
+
+
 class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     author_details = serializers.SerializerMethodField()
     post_media = BusinessNetworkMediaSerializer(
@@ -171,6 +197,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessNetworkPost
+        list_serializer_class = _PostListSerializer
         fields = [
             "id",
             "slug",
@@ -310,15 +337,32 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
         cache = getattr(obj, "_prefetched_objects_cache", None)
         return cache.get(name) if cache else None
 
+    # Three-tier resolution, cheapest first: a DB annotation (feed querysets
+    # add these via feed_count_annotations), then the prefetch cache, then a
+    # COUNT. The annotation tier is what stops a 20k-like post from loading 20k
+    # rows just to render a number; the other two keep every caller that doesn't
+    # annotate — detail, search, profile — working exactly as before.
+    def _annotated(self, obj, name):
+        return getattr(obj, name, None)
+
     def get_like_count(self, obj):
+        n = self._annotated(obj, "like_count_db")
+        if n is not None:
+            return n
         likes = self._prefetched(obj, "post_likes")
         return len(likes) if likes is not None else obj.post_likes.count()
 
     def get_comment_count(self, obj):
+        n = self._annotated(obj, "comment_count_db")
+        if n is not None:
+            return n
         comments = self._prefetched(obj, "post_comments")
         return len(comments) if comments is not None else obj.post_comments.count()
 
     def get_follower_count(self, obj):
+        n = self._annotated(obj, "follower_count_db")
+        if n is not None:
+            return n
         followers = self._prefetched(obj, "post_followers")
         return (
             len(followers) if followers is not None else obj.post_followers.count()
@@ -326,6 +370,9 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
 
     def get_is_liked(self, obj):
         """Check if the current user has liked this post"""
+        flag = self._annotated(obj, "is_liked_db")
+        if flag is not None:
+            return bool(flag)
         request = self.context.get("request")
         if request and request.user.is_authenticated:
             likes = self._prefetched(obj, "post_likes")

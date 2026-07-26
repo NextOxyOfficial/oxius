@@ -135,6 +135,75 @@ def viewer_relation_sets(request):
     return memo["rel"]
 
 
+def prime_user_stats(request, user_ids):
+    """Load stats for MANY users in 4 grouped queries and fill the per-request
+    memo that _user_stats reads.
+
+    _user_stats is memoised per distinct user, but a feed page still paid 4
+    queries for every distinct author on it — ~60 queries for 15 authors, which
+    dominated the page and grew with page size. Grouping them means 4 queries no
+    matter how many authors appear.
+
+    Safe to call with ids already primed; anything missed just falls back to the
+    original per-user path.
+    """
+    if not request or not user_ids:
+        return
+    memo = getattr(request, "_user_serializer_memo", None)
+    if memo is None:
+        memo = {"stats": {}, "rel": None}
+        request._user_serializer_memo = memo
+
+    pending = [uid for uid in user_ids if uid and uid not in memo["stats"]]
+    if not pending:
+        return
+
+    from django.db.models import Avg, Count
+
+    from reviews.models import Review
+
+    posts = dict(
+        BusinessNetworkPost.objects.filter(author_id__in=pending)
+        .values_list("author_id")
+        .order_by()
+        .annotate(c=Count("id"))
+    )
+    followers = dict(
+        BusinessNetworkFollowerModel.objects.filter(following_id__in=pending)
+        .values_list("following_id")
+        .order_by()
+        .annotate(c=Count("id"))
+    )
+    following = dict(
+        BusinessNetworkFollowerModel.objects.filter(follower_id__in=pending)
+        .values_list("follower_id")
+        .order_by()
+        .annotate(c=Count("id"))
+    )
+    sales = dict(
+        SalePost.objects.filter(user_id__in=pending, status="active")
+        .values_list("user_id")
+        .order_by()
+        .annotate(c=Count("id"))
+    )
+    ratings = dict(
+        Review.objects.filter(product__owner_id__in=pending, is_approved=True)
+        .values_list("product__owner_id")
+        .order_by()
+        .annotate(a=Avg("rating"))
+    )
+
+    for uid in pending:
+        avg = ratings.get(uid)
+        memo["stats"][uid] = {
+            "post_count": posts.get(uid, 0),
+            "follower_count": followers.get(uid, 0),
+            "follow_count": following.get(uid, 0),
+            "sale_post_count": sales.get(uid, 0),
+            "rating": round(avg, 1) if avg else 0.0,
+        }
+
+
 class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()

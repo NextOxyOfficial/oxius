@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from base.models import User
 
 from .models import *
+from .feed_annotations import feed_count_annotations
 from .feed_visibility import visible_posts_q
 from .pagination import *
 from .serializers import *
@@ -19,9 +20,12 @@ from .serializers import *
 class OptimizedBusinessNetworkPostSerializer(BusinessNetworkPostSerializer):
     """Optimized serializer for medium-level devices"""
 
-    def get_post_likes(self, obj):
-        # Return all likes without artificial limitations
-        return BusinessNetworkPostLikeSerializer(obj.post_likes.all(), many=True).data
+    # NOTE: the parent's get_post_likes is deliberately NOT overridden any more.
+    # This override returned the complete like list for every post in a LIST
+    # response, so one 20k-like post serialized 20k rows (and a User each) into
+    # a feed page that only renders like_count, is_liked and a few faces. The
+    # parent already returns [] unless full_detail is set, which is what the
+    # standard feed has always sent, so the client sees no change.
 
     def to_representation(self, instance):
         # Use cached counts if available
@@ -122,12 +126,13 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
             )
             .prefetch_related(
                 # Optimized prefetch with limited data
-                Prefetch("media", queryset=BusinessNetworkMedia.objects.all()[:3]),
-                Prefetch("tags", queryset=BusinessNetworkPostTag.objects.all()[:5]),
-                Prefetch(
-                    "post_likes",
-                    queryset=BusinessNetworkPostLike.objects.select_related("user"),
-                ),
+                # Django cannot prefetch a SLICED queryset — it has to add an
+                # "IN (parent ids)" filter, which raises "Cannot filter a query
+                # once a slice has been taken". These [:3]/[:5] slices made this
+                # endpoint return 500 on every request; the cap has to be applied
+                # per post at render time, not in the prefetch.
+                "media",
+                "tags",
                 Prefetch(
                     "post_comments",
                     queryset=BusinessNetworkPostComment.objects.select_related(
@@ -135,6 +140,7 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
                     ).order_by("-created_at"),
                 ),
             )
+            .annotate(**feed_count_annotations(getattr(self.request, 'user', None)))
             .order_by("priority", "-created_at")
         )
 
