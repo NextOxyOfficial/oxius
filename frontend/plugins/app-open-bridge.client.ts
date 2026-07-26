@@ -54,11 +54,19 @@ export default defineNuxtPlugin(() => {
 
   const router = useRouter()
   const { isMobileBrowser, isStandaloneContext, tryOpenApp } = useSmartAppLinks()
+  const { isInAppWebview } = useInAppWebview()
 
   const maybeOpenApp = async (fullPath: string) => {
     const pathOnly = fullPath.split('?')[0] || '/'
 
     if (!isMobileBrowser() || isStandaloneContext()) {
+      return
+    }
+
+    // Handing off to the app when we ARE the app is what broke the in-app ads
+    // panel on Android (ERR_UNKNOWN_URL_SCHEME). tryOpenApp guards this too;
+    // bailing here also avoids the throttle bookkeeping.
+    if (isInAppWebview()) {
       return
     }
 

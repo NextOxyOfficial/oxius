@@ -13,6 +13,7 @@ interface OpenAppOptions {
 
 export function useSmartAppLinks() {
   const runtimeConfig = useRuntimeConfig()
+  const { isInAppWebview, isEmbeddedWebviewUA } = useInAppWebview()
 
   const deepLinkScheme = runtimeConfig.public.deepLinkScheme || 'adsyclub'
   const androidStoreUrl =
@@ -92,6 +93,13 @@ export function useSmartAppLinks() {
     options: { replace?: boolean; fallbackToDownload?: boolean } = {}
   ) => {
     const { replace = true, fallbackToDownload = true } = options
+
+    // Already inside an app's WebView — bouncing to the store would abandon
+    // whatever the user is doing in the panel.
+    if (isInAppWebview() || isEmbeddedWebviewUA()) {
+      return false
+    }
+
     const storeUrl = getStoreUrl(platform)
 
     if (storeUrl) {
@@ -117,7 +125,15 @@ export function useSmartAppLinks() {
       typeof window === 'undefined' ||
       typeof document === 'undefined' ||
       !isMobileBrowser() ||
-      isStandaloneContext()
+      isStandaloneContext() ||
+      // Single choke point: inside a WebView the deep-link navigation below is
+      // what produces Android's ERR_UNKNOWN_URL_SCHEME error page. Guarding
+      // here covers every caller (bridge plugin, smart banner, /download)
+      // rather than trusting each one to check. The UA arm also covers app
+      // builds released before the `app=1` flag existed, so users who have not
+      // updated get a working panel from this web deploy alone.
+      isInAppWebview() ||
+      isEmbeddedWebviewUA()
     ) {
       return Promise.resolve('ignored')
     }

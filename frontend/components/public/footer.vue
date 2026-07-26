@@ -148,7 +148,9 @@
         <div
           class="flex flex-col sm:flex-row justify-between gap-5 lg:gap-12 sm:items-center px-[7px] max-w-5xl mx-auto dark:text-gray-300"
         >
-          <div class="flex flex-col gap-4">
+          <!-- Store badges: hidden inside the app's own WebView (e.g. the ads
+               panel) — tapping one would throw the user out to the store. -->
+          <div v-if="!hideAppDownload" class="flex flex-col gap-4">
             <h4 class="font-semibold hidden md:block">
               {{ $t("download_app") }}
             </h4>
@@ -470,6 +472,14 @@ watch(
 // Use the app download composable
 import { useAppDownload } from "~/composables/useAppDownload";
 const { downloadApp } = useAppDownload();
+
+// Resolved after mount: the check reads window/sessionStorage, so evaluating it
+// during prerender would render one thing and hydrate another.
+const { isInAppWebview } = useInAppWebview();
+const hideAppDownload = ref(false);
+onMounted(() => {
+  hideAppDownload.value = isInAppWebview();
+});
 
 // Download Android app function
 const downloadAndroidApp = async () => {

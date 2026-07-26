@@ -388,6 +388,7 @@ const router = useRouter();
 const isScrolled = ref(false);
 
 const { downloadApp } = useAppDownload();
+const { isInAppWebview } = useInAppWebview();
 
 const showDownloadBanner = ref(false);
 const _downloadBannerCookie = 'adsy_download_app_banner_dismissed_v1';
@@ -437,7 +438,9 @@ onMounted(async () => {
     startHeaderPolling(); // Start polling for real-time unread count updates
   }
 
-  if (!_getCookie(_downloadBannerCookie)) {
+  // Pointless (and store-bouncing) inside the app's own WebView — the user is
+  // already in the app.
+  if (!_getCookie(_downloadBannerCookie) && !isInAppWebview()) {
     showDownloadBanner.value = true;
   }
 });

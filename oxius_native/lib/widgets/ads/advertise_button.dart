@@ -34,12 +34,26 @@ class AdvertiseButton extends StatelessWidget {
   /// (AndroidManifest pathPrefix), so Custom Tab / external / default modes
   /// all hand the intent back to the app itself — landing on the BN screen
   /// instead of the web page. An explicit WebView activity cannot bounce.
+  /// Marks a web path as "opened from inside the app".
+  ///
+  /// The web app keys its app-promotion behaviour off this: without it the
+  /// Nuxt deep-link bridge sees /business-network and navigates the page to
+  /// `adsyclub://open?url=...`, which an Android WebView cannot resolve — the
+  /// panel is replaced by net::ERR_UNKNOWN_URL_SCHEME (iOS silently ignores
+  /// the unknown scheme, which is why only Android showed the error). It also
+  /// suppresses the store fallback and the "download the app" banners.
+  static String _tagAsInApp(String webPath) =>
+      webPath.contains('?') ? '$webPath&app=1' : '$webPath?app=1';
+
   static Future<void> openWebPath(String webPath) async {
+    final taggedPath = _tagAsInApp(webPath);
     Uri uri;
     try {
-      uri = await buildWebRedirectUrl(webPath); // auto-login token URL
+      // Auto-login token URL. The flag rides along on the redirect target so
+      // it survives the /auth/app-login hop into the real page.
+      uri = await buildWebRedirectUrl(taggedPath);
     } catch (_) {
-      uri = Uri.parse('https://adsyclub.com/$webPath');
+      uri = Uri.parse('https://adsyclub.com/$taggedPath');
     }
     try {
       await launchUrl(

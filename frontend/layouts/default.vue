@@ -299,6 +299,13 @@ const shouldShowMobileAppPopup = () => {
     return false;
   }
 
+  // Never inside the app's own WebView (e.g. the ads panel). Reachable there
+  // if the auto-login hop ever fails, and its CTA would throw the user out to
+  // the store mid-task.
+  if (isInAppWebview()) {
+    return false;
+  }
+
   // Don't show if mobile app is already installed
   if (isMobileAppInstalled()) {
     return false;
@@ -331,6 +338,7 @@ const shouldShowMobileAppPopup = () => {
 
 // Static device-aware app download
 const { getPlatform, getStoreUrl } = useSmartAppLinks()
+const { isInAppWebview } = useInAppWebview()
 const appPlatform = ref('android')
 
 const downloadButtonLabel = computed(() => {

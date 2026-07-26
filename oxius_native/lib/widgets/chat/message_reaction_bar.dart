@@ -77,23 +77,28 @@ class MessageReactionChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (reactions.isEmpty) return const SizedBox.shrink();
-    // Negative top margin tucks the emoji slightly INTO the bubble's bottom
-    // edge (Messenger-style) instead of floating below it.
-    return Container(
-      transform: Matrix4.translationValues(0, -7, 0),
-      // Reclaim the space the shift leaves behind so the next message
-      // doesn't gain a gap.
-      margin: const EdgeInsets.only(bottom: -7),
-      padding: EdgeInsets.only(
-        left: alignRight ? 0 : 10,
-        right: alignRight ? 10 : 0,
-        bottom: 2,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment:
-            alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: [
+    // Tuck the emoji slightly INTO the bubble's bottom edge (Messenger
+    // style) instead of letting it float below.
+    //   • Transform.translate shifts it up without touching layout.
+    //   • Align(heightFactor) then reclaims part of the row's height so the
+    //     shift doesn't leave dead space above the timestamp.
+    // NOTE: a negative Container margin CANNOT be used here — Container
+    // asserts margin.isNonNegative and throws (red error box in chat).
+    return Transform.translate(
+      offset: const Offset(0, -7),
+      child: Align(
+        alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+        heightFactor: 0.7,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: alignRight ? 0 : 10,
+            right: alignRight ? 10 : 0,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
           for (final r in reactions)
             GestureDetector(
               onTap: onTap,
@@ -121,7 +126,9 @@ class MessageReactionChips extends StatelessWidget {
                 ),
               ),
             ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -54,6 +54,7 @@ const DISMISS_KEY = 'smart-banner-dismissed-at'
 const COOLDOWN_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 const { getPlatform, isMobileBrowser, isStandaloneContext, tryOpenApp } = useSmartAppLinks()
+const { isInAppWebview } = useInAppWebview()
 const { isScrollingDown } = useScrollDirection()
 
 const visible = ref(false)
@@ -73,6 +74,9 @@ const bannerTop = computed(() => isScrollingDown.value ? 0 : headerHeight.value)
 function shouldShow(): boolean {
   if (!import.meta.client) return false
   if (!isMobileBrowser() || isStandaloneContext()) return false
+
+  // Never prompt to "open the app" to someone already inside the app WebView.
+  if (isInAppWebview()) return false
 
   // Respect user dismissal for 24 h
   const dismissedAt = Number(localStorage.getItem(DISMISS_KEY) || '0')
