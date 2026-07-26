@@ -3,11 +3,17 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
 import '../services/deep_link_service.dart';
+import 'video_playback_manager.dart';
 
 class UrlLauncherUtils {
   static Future<bool> launchExternalUrl(String? url) async {
     final uri = _normalizeToUri(url);
     if (uri == null) return false;
+
+    // Handing off to a browser doesn't push a Flutter route, so the route
+    // observer never fires and a playing feed video kept its audio running
+    // behind the browser.
+    VideoPlaybackManager.instance.pauseAll();
 
     try {
       if (_isAdsyClubUri(uri)) {
@@ -35,6 +41,7 @@ class UrlLauncherUtils {
   /// UNDER the chat route (it only appeared after backing out). A browser
   /// launch navigates instantly and never stacks a screen behind the chat.
   static Future<bool> launchInBrowser(String? url) async {
+    VideoPlaybackManager.instance.pauseAll();
     final uri = _normalizeToUri(url);
     if (uri == null) return false;
     try {

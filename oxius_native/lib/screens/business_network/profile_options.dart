@@ -333,7 +333,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                       // in-app browser tab.
                       _MenuItem(
                         icon: Icons.campaign_outlined,
-                        label: 'AdsyClub-এ বিজ্ঞাপন দিন',
+                        label: 'AdsyClub - Ads Panel',
                         subtitle: 'আপনার বিজ্ঞাপন প্রকাশ করুন',
                         gradient: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
                         onTap: AdvertiseButton.openAdsPanel,

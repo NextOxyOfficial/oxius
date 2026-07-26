@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../utils/video_playback_manager.dart';
 import '../ios_web_redirect_screen.dart' show buildWebRedirectUrl;
 
 /// "AdsyClub-এ বিজ্ঞাপন দিন" — a borderless, soft-tinted button used in the
@@ -46,6 +47,10 @@ class AdvertiseButton extends StatelessWidget {
       webPath.contains('?') ? '$webPath&app=1' : '$webPath?app=1';
 
   static Future<void> openWebPath(String webPath) async {
+    // The in-app WebView is a separate activity, not a Flutter route, so
+    // nothing else pauses the feed — a video kept playing (audible) behind the
+    // ads panel. Silence it before we hand off.
+    VideoPlaybackManager.instance.pauseAll();
     final taggedPath = _tagAsInApp(webPath);
     Uri uri;
     try {
