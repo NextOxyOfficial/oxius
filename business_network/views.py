@@ -2415,7 +2415,17 @@ class AbnAdsPanelFilterView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        queryset = AbnAdsPanel.objects.all().order_by("-created_at")
+        # Scoped to the caller's OWN ads on purpose. This endpoint is currently
+        # unreachable — "abn-ads-panels/<str:pk>/" is registered first, so
+        # /abn-ads-panels/filter/ resolves to the detail view with pk="filter"
+        # — but it used to return AbnAdsPanel.objects.all(), which would hand
+        # every advertiser's budget, spend and profile to any logged-in user
+        # the moment someone reordered those two routes. Ad *serving* goes
+        # through serve_ad(), which does its own targeting; nothing needs the
+        # cross-tenant list.
+        queryset = AbnAdsPanel.objects.filter(
+            user=self.request.user
+        ).order_by("-created_at")
 
         # Get user demographic data
         user_age = self.request.query_params.get("age", None)
