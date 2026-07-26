@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -39,7 +40,11 @@ def handle_message_deletion(sender, instance, **kwargs):
             pass
 
 
-@receiver(post_save, sender='auth.User')
+# sender was 'auth.User', but this project's AUTH_USER_MODEL is base.User —
+# so this receiver was bound to a model that never saves and had NEVER fired.
+# Accounts only got an OnlineStatus row later, as a side effect of going
+# online, which left every user who had not yet done so without one.
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_online_status(sender, instance, created, **kwargs):
     """
     Create online status for new users
