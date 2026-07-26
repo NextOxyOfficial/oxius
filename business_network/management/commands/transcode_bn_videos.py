@@ -6,6 +6,7 @@ parallel sweep would starve gunicorn while users are on the site.
 """
 
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 
 from business_network.models import BusinessNetworkMedia
 from business_network.tasks import transcode_bn_video
@@ -25,10 +26,13 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **opts):
+        # video_original was added as a nullable field, so rows that predate it
+        # hold NULL rather than "" — filtering on "" alone matched nothing.
         qs = (
             BusinessNetworkMedia.objects.filter(type="video")
             .exclude(video="")
-            .filter(video_original="")
+            .exclude(video__isnull=True)
+            .filter(Q(video_original="") | Q(video_original__isnull=True))
             .order_by("created_at")
         )
         limit = opts["limit"]
