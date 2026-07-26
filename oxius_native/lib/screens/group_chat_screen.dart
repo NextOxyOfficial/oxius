@@ -9,6 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:record/record.dart';
 
 import '../services/active_chat_tracker.dart';
+import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/auth_service.dart';
 import '../utils/chat_autoscroll.dart';
@@ -55,12 +56,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   // Active quote-reply target (raw group message) — mirrors the 1:1 chat.
   Map<String, dynamic>? _replyingTo;
   Timer? _pollTimer;
+  StreamSubscription<Map<String, dynamic>>? _realtimeSub;
   Timer? _activeGroupTimer;
   Timer? _typingPollTimer;
   DateTime _lastTypingSent = DateTime.fromMillisecondsSinceEpoch(0);
   final ScrollController _scroll = ScrollController();
   // Shows the jump-to-bottom circle once the user scrolls up a bit.
   bool _showJumpToBottom = false;
+  // Counts 5s ticks so the poll can run every 6th one while the socket is up.
+  int _pollTick = 0;
 
   // @mention composer state — suggestions come ONLY from this group's
   // members. Non-null query = the panel is visible; [_mentionStart] is the
@@ -138,8 +142,35 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       ChatAutoScroll.stickToBottom(_scroll, animate: false);
     }
     _loadMessages(initial: true);
-    _pollTimer =
-        Timer.periodic(const Duration(seconds: 5), (_) => _loadMessages());
+
+    // The server already broadcasts every group message to each member's
+    // socket — this screen just never listened, so it leaned entirely on a 5s
+    // poll that refetched the last 100 messages whether or not anything had
+    // changed. Listening makes delivery instant AND lets the poll drop to a
+    // slow safety net.
+    _realtimeSub = AdsyConnectRealtimeService.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event['type'] != 'group_message') return;
+      final msg = event['message'];
+      if (msg is! Map) return;
+      final gid = (msg['group'] ?? msg['group_id'] ?? '').toString();
+      // Broadcasts arrive for every group the user belongs to.
+      if (gid.isNotEmpty && gid != _groupId) return;
+      _loadMessages();
+    });
+
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      // With a live socket the poll is only there to catch a missed frame, so
+      // it runs every ~30s instead of every 5s. If the socket is down it falls
+      // back to the original cadence.
+      if (AdsyConnectRealtimeService.instance.isConnected) {
+        _pollTick = (_pollTick + 1) % 6;
+        if (_pollTick != 0) return;
+      } else {
+        _pollTick = 0;
+      }
+      _loadMessages();
+    });
     _typingPollTimer =
         Timer.periodic(const Duration(seconds: 3), (_) => _pollTyping());
     _player.positionStream.listen((p) {
@@ -168,6 +199,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _activeGroupTimer?.cancel();
     // Let the server resume pushing for this group.
     AdsyConnectService.clearActiveChat();
+    _realtimeSub?.cancel();
     _pollTimer?.cancel();
     _typingPollTimer?.cancel();
     _recordTimer?.cancel();

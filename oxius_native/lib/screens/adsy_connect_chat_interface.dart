@@ -279,6 +279,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   bool _isMuted = false;
   bool _isLoadingChatroomStatus = false;
   int _statusPollCounter = 0;
+  // Counts 4s ticks so the message poll can back off to every 6th one while
+  // the socket is connected.
+  int _idlePollTick = 0;
   bool _isUserNearBottom = true;
   bool _isOtherUserOnline = false;
   bool _isOtherUserTyping = false;
@@ -1038,7 +1041,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     // sub-5s rather than the previous 10s.
     _messagePollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (mounted && !_isLoadingMessages) {
-        _checkForNewMessages();
+        // The socket is the primary path, so re-fetching every 4s while it is
+        // healthy is pure waste — one open chat was issuing 15 message
+        // requests a minute for nothing. Poll every ~24s while connected, and
+        // snap back to 4s the moment the socket drops.
+        if (AdsyConnectRealtimeService.instance.isConnected) {
+          _idlePollTick = (_idlePollTick + 1) % 6;
+        } else {
+          _idlePollTick = 0;
+        }
+        if (_idlePollTick == 0) _checkForNewMessages();
         _pollTypingStatus();
         _statusPollCounter++;
         if (_statusPollCounter >= 8) {

@@ -255,7 +255,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           CustomScrollView(
@@ -265,17 +265,14 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 4.0, vertical: 8.0),
+                    padding: EdgeInsets.zero,
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildProductsList(),
-                          const SizedBox(height: 12),
                           _buildCustomerInformation(),
-                          const SizedBox(height: 12),
                           if (widget.cartItems.isNotEmpty &&
                               widget.cartItems.first.product.isFreeDelivery !=
                                   true)
@@ -283,10 +280,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                           if (widget.cartItems.isNotEmpty &&
                               widget.cartItems.first.product.isFreeDelivery !=
                                   true)
-                            const SizedBox(height: 12),
-                          _buildPaymentMethods(),
-                          const SizedBox(height: 12),
+                            _buildPaymentMethods(),
                           _buildOrderSummary(),
+                          _buildOrderSteps(),
                           const SizedBox(height: 80),
                         ],
                       ),
@@ -410,12 +406,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
   Widget _buildProductsList() {
     return Container(
-      decoration: BoxDecoration(
+      // Flat full-width section: the page reads as one continuous surface
+      // instead of a stack of bordered cards.
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+        border: Border(bottom: BorderSide(color: Color(0xFFEEF2F6))),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -623,12 +620,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
   Widget _buildCustomerInformation() {
     return Container(
-      decoration: BoxDecoration(
+      // Flat full-width section: the page reads as one continuous surface
+      // instead of a stack of bordered cards.
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+        border: Border(bottom: BorderSide(color: Color(0xFFEEF2F6))),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -774,12 +772,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     final product = widget.cartItems.first.product;
 
     return Container(
-      decoration: BoxDecoration(
+      // Flat full-width section: the page reads as one continuous surface
+      // instead of a stack of bordered cards.
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+        border: Border(bottom: BorderSide(color: Color(0xFFEEF2F6))),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -928,12 +927,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
   Widget _buildPaymentMethods() {
     return Container(
-      decoration: BoxDecoration(
+      // Flat full-width section: the page reads as one continuous surface
+      // instead of a stack of bordered cards.
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+        border: Border(bottom: BorderSide(color: Color(0xFFEEF2F6))),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1069,93 +1069,161 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   }
 
   Widget _buildOrderSummary() {
+    // Plain totals block. The gradient card made the most important numbers on
+    // the page fight for attention with the pay button below it; on a flat
+    // surface the total simply reads as the largest thing here.
     return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF3B82F6),
-            Color(0xFF2563EB),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(8),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFEEF2F6))),
       ),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.receipt_long_rounded,
-                  color: Colors.white, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'Order Summary',
-                style: AppFonts.roboto(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildSummaryRow('Subtotal ($_totalItems items)',
-              '৳${_subtotal.toStringAsFixed(0)}'),
-          const SizedBox(height: 6),
-          _buildSummaryRow(
-              'Delivery Fee', '৳${_deliveryFee.toStringAsFixed(0)}'),
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0),
-                  Colors.white.withValues(alpha: 0.3),
-                  Colors.white.withValues(alpha: 0),
-                ],
-              ),
+          Text(
+            'মূল্যের হিসাব',
+            style: AppFonts.roboto(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF14213D),
             ),
+          ),
+          const SizedBox(height: 14),
+          _buildSummaryRow('পণ্যের দাম ($_totalItems টি)',
+              '৳${_subtotal.toStringAsFixed(0)}'),
+          const SizedBox(height: 8),
+          _buildSummaryRow(
+              'ডেলিভারি চার্জ', '৳${_deliveryFee.toStringAsFixed(0)}'),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            height: 1,
+            color: const Color(0xFFEEF2F6),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                'Total Amount',
+                'সর্বমোট',
                 style: AppFonts.roboto(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF14213D),
                 ),
               ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '৳',
-                    style: AppFonts.roboto(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    _total.toStringAsFixed(0),
-                    style: AppFonts.roboto(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
+              Text(
+                '৳${_total.toStringAsFixed(0)}',
+                style: AppFonts.roboto(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF14213D),
+                  letterSpacing: 0.2,
+                ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  /// What happens after the order is placed. Buyers ask these three things, and
+  /// answering them on the page removes the main reason to abandon checkout.
+  Widget _buildOrderSteps() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'অর্ডারের পর কী হবে',
+            style: AppFonts.roboto(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF14213D),
+            ),
+          ),
+          const SizedBox(height: 14),
+          _buildOrderStep(
+            1,
+            'অর্ডার নিশ্চিত হবে',
+            'অর্ডার দেওয়ার সাথে সাথেই বিক্রেতা জানতে পারবেন এবং প্রস্তুতি শুরু করবেন।',
+          ),
+          _buildOrderStep(
+            2,
+            'পণ্য পাঠানো হবে',
+            'পণ্য হাতে পাওয়ার আগে ডেলিভারি অবস্থা "আমার অর্ডার" পেজে দেখতে পাবেন।',
+          ),
+          _buildOrderStep(
+            3,
+            'হাতে পেয়ে বুঝে নিন',
+            'পণ্য পেয়ে যাচাই করে নিন। কোনো সমস্যা হলে সাপোর্টে জানাতে পারবেন।',
+            last: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderStep(int index, String title, String body,
+      {bool last = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '$index',
+                  style: AppFonts.roboto(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF2563EB),
+                  ),
+                ),
+              ),
+            ),
+            if (!last) Container(width: 1.5, height: 34, color: const Color(0xFFEEF2F6)),
+          ],
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: last ? 0 : 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppFonts.roboto(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF14213D),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  body,
+                  style: AppFonts.roboto(
+                    fontSize: 12.5,
+                    height: 1.45,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1167,16 +1235,16 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           label,
           style: AppFonts.roboto(
             fontSize: 13,
-            color: Colors.white.withValues(alpha: 0.9),
+            color: const Color(0xFF64748B),
             fontWeight: FontWeight.w400,
           ),
         ),
         Text(
           value,
           style: AppFonts.roboto(
-            fontSize: 14,
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+            fontSize: 13.5,
+            color: const Color(0xFF14213D),
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

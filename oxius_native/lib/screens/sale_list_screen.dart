@@ -1117,6 +1117,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   itemBuilder: (context, index) =>
                       _buildPostCard(_posts[index]),
                 ),
+          // Grid mode can't host a full-width row inside the grid itself, so
+          // the sponsored strip sits directly under it — the list mode gets
+          // one every 6 rows instead.
+          if (!_isListView && _posts.isNotEmpty)
+            const CompactHouseAdStrip(placement: 'sale_list'),
           if (_isLoadingMore)
             _isListView
                 ? const SaleListSkeletonLoader(itemCount: 4)
