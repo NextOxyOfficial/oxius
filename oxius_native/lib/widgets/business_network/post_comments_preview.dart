@@ -561,13 +561,13 @@ class _ReplyInputState extends State<_ReplyInput> {
                     borderSide: const BorderSide(
                         color: Color(0xFF3B82F6), width: 1),
                   ),
+                  // Roomier pill: the 4px vertical padding made it look
+                  // cramped next to the comment input below it.
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   isDense: true,
-                  // Keeps the pill short — the suffix icon no longer forces
-                  // a 48px minimum height.
                   suffixIconConstraints:
-                      const BoxConstraints(minWidth: 34, minHeight: 30),
+                      const BoxConstraints(minWidth: 34, minHeight: 34),
                   suffixIcon: _isSubmitting
                       ? Padding(
                           padding: const EdgeInsets.all(8),
