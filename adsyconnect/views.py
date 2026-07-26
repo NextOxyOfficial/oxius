@@ -1078,7 +1078,11 @@ class MessageViewSet(viewsets.ModelViewSet):
         queryset = Message.objects.filter(
             Q(sender=user) | Q(receiver=user)
         ).select_related(
-            'sender', 'receiver', 'chatroom'
+            # online_status is a reverse OneToOne the serializer touches for
+            # BOTH participants of every message — without it a 57-message
+            # poll fired 114 extra queries, every 4 seconds, per open chat.
+            'sender', 'receiver', 'chatroom',
+            'sender__online_status', 'receiver__online_status',
         ).prefetch_related('reactions')
 
         if chatroom_id:
@@ -1899,7 +1903,9 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             membership = group.memberships.filter(user=request.user).first()
             qs = group.messages.select_related(
-                'sender', 'reply_to__sender'
+                'sender', 'reply_to__sender',
+                # Same per-message online lookup as the 1:1 list.
+                'sender__online_status', 'reply_to__sender__online_status',
             ).prefetch_related('reactions')
             if membership and membership.cleared_at:
                 qs = qs.filter(created_at__gt=membership.cleared_at)

@@ -28,6 +28,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   static const Color _sage = Color(0xFFDFF4EA);
   static const Color _mint = Color(0xFF10B981);
   static const Color _primary = Color(0xFF2563EB);
+  // One hairline separates the page's plain sections, so the screen reads as a
+  // single continuous page instead of a tray of floating cards.
+  static const Color _hair = Color(0xFFEEF2F6);
 
   bool _isSubscribing = false;
   bool _isLoadingBalance = false;
@@ -147,7 +150,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      backgroundColor: _surface,
+      backgroundColor: _panel,
       appBar: AppBar(
         title: const Text(
           'Upgrade to Pro',
@@ -158,8 +161,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
           ),
         ),
         centerTitle: false,
-        backgroundColor: _surface,
-        surfaceTintColor: _surface,
+        backgroundColor: _panel,
+        surfaceTintColor: _panel,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: _ink),
@@ -167,21 +170,18 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(2, 8, 2, bottomInset + 112),
+        padding: EdgeInsets.only(bottom: bottomInset + 112),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildIntro(),
             _buildQuickStatusStrip(),
-            if (_isPro) ...[
-              const SizedBox(height: 10),
-              _buildAutoRenewCard(),
-            ],
-            const SizedBox(height: 10),
+            if (_isPro) _buildAutoRenewCard(),
             // Free trial offer — hides itself once claimed or if already Pro.
             ProTrialCard(onActivated: _onTrialActivated),
             _buildPlanComposer(),
-            const SizedBox(height: 10),
             _buildFeaturesSection(),
+            _buildHowItWorks(),
           ],
         ),
       ),
@@ -189,15 +189,150 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     );
   }
 
+  /// Plain-language opener: what Pro actually is, before any price is shown.
+  Widget _buildIntro() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 18),
+      decoration: const BoxDecoration(
+        color: _panel,
+        border: Border(bottom: BorderSide(color: _hair)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'প্রো মেম্বারশিপ',
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'নিজের অনলাইন স্টোর চালান, সীমাহীন বিজ্ঞাপন দিন আর টাস্ক থেকে আয় '
+            'করুন — একটি সাবস্ক্রিপশনেই সব।',
+            style: TextStyle(fontSize: 13, height: 1.5, color: _muted),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Answers the questions people actually ask before paying: when am I
+  /// charged, what happens at the end, can I stop.
+  Widget _buildHowItWorks() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 22),
+      color: _panel,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'কীভাবে কাজ করে',
+            style: TextStyle(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
+              color: _ink,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _buildStep(
+            1,
+            'প্ল্যান বেছে নিন',
+            'মাসিক বা বাৎসরিক — যেটা আপনার জন্য সুবিধা।',
+          ),
+          _buildStep(
+            2,
+            'ব্যালেন্স থেকে পেমেন্ট',
+            'আপনার Adsy Pay ব্যালেন্স থেকে টাকা কাটা হবে। '
+                'ব্যালেন্স কম থাকলে আগে যোগ করে নিন।',
+          ),
+          _buildStep(
+            3,
+            'সাথে সাথেই চালু',
+            'পেমেন্ট হলেই প্রো-এর সব সুবিধা খুলে যাবে — অপেক্ষা করতে হবে না।',
+          ),
+          _buildStep(
+            4,
+            'মেয়াদ শেষে',
+            'অটো-রিনিউ বন্ধ থাকলে অ্যাকাউন্ট নিজে থেকেই সাধারণ প্ল্যানে ফিরে '
+                'যাবে — না জানিয়ে টাকা কাটা হবে না।',
+            last: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep(int index, String title, String body, {bool last = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: _primary.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '$index',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: _primary,
+                  ),
+                ),
+              ),
+            ),
+            if (!last) Container(width: 1.5, height: 34, color: _hair),
+          ],
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: last ? 0 : 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: _ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  body,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    height: 1.45,
+                    color: _muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildQuickStatusStrip() {
     final isPro = _isPro;
     final balance = _userState.balance;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: const BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border(bottom: BorderSide(color: _hair)),
       ),
       child: Row(
         children: [
@@ -287,11 +422,10 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   Widget _buildAutoRenewCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: const BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border(bottom: BorderSide(color: _hair)),
       ),
       child: Row(
         children: [
@@ -342,38 +476,27 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   Widget _buildPlanComposer() {
     return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+      decoration: const BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: _ink.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        border: Border(bottom: BorderSide(color: _hair)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Choose Pro plan',
+            'প্ল্যান বেছে নিন',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
               color: _ink,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           const Text(
-            'Same features, different billing period.',
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.35,
-              color: _muted,
-            ),
+            'দুটোতেই একই সুবিধা — শুধু বিলিং-এর সময়কাল আলাদা। '
+            'বাৎসরিকে মাসপ্রতি খরচ কম পড়ে।',
+            style: TextStyle(fontSize: 12.5, height: 1.45, color: _muted),
           ),
           const SizedBox(height: 12),
           _buildDurationOption(
@@ -535,24 +658,23 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   Widget _buildFeaturesSection() {
     return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+      decoration: const BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border(bottom: BorderSide(color: _hair)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Included with Pro',
+            'প্রো-তে যা যা পাবেন',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
               color: _ink,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _buildFeature(Icons.storefront_rounded, 'eShop Manager access'),
           _buildFeature(Icons.inventory_2_rounded, 'Add up to 10 products'),
           _buildFeature(Icons.campaign_rounded, 'Unlimited ad posting'),

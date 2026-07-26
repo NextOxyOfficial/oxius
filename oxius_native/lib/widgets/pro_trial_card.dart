@@ -60,92 +60,78 @@ class _ProTrialCardState extends State<ProTrialCard> {
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        onTap: _openSheet,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0EA5E9), Color(0xFF6366F1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    // Plain section, not a floating card — this sits inside pages that read as
+    // one continuous surface, so a gradient tile would fight the layout.
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFEEF2F6))),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4F46E5).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
             ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.25),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            child: const Icon(Icons.card_giftcard_rounded,
+                color: Color(0xFF4F46E5), size: 19),
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.card_giftcard_rounded,
-                    color: Colors.white, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${s.days} দিনের ফ্রি প্রো ট্রায়াল',
-                      style: const TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      s.requiresKyc && !s.kycVerified
-                          ? 'KYC ভেরিফাই করে ফ্রিতে শুরু করুন'
-                          : 'কোনো টাকা লাগবে না — এখনই শুরু করুন',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        height: 1.3,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'শুরু করুন',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF4F46E5),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${s.days} দিন ফ্রি ব্যবহার করে দেখুন',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  s.requiresKyc && !s.kycVerified
+                      ? 'KYC ভেরিফাই থাকলে ফ্রি ট্রায়াল নিতে পারবেন।'
+                      : 'কোনো পেমেন্ট লাগবে না, অটো-চার্জও হবে না।',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    height: 1.4,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: 10),
+          InkWell(
+            onTap: _openSheet,
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: const Color(0xFF4F46E5)),
+              ),
+              child: const Text(
+                'শুরু করুন',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF4F46E5),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Stepped activation sheet: what you get → what's required → activate.
 class _ProTrialSheet extends StatefulWidget {
   final ProTrialStatus status;
 
