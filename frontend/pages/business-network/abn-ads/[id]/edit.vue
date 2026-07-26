@@ -10,14 +10,14 @@
           <NuxtLink
             :to="`/business-network/abn-ads/${adId}`"
             class="p-2 rounded-xl bg-white/15 hover:bg-white/25 transition-colors"
-            aria-label="ফিরে যান"
+            :aria-label='$t("ads_edit_back")'
           >
             <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
           </NuxtLink>
           <div>
-            <h1 class="text-lg font-semibold">বিজ্ঞাপন সম্পাদনা</h1>
+            <h1 class="text-lg font-semibold">{{ $t("ads_edit_title") }}</h1>
             <p class="text-xs text-white/70 mt-0.5">
-              পরিবর্তন সংরক্ষণ করলে বিজ্ঞাপনটি আবার রিভিউতে যেতে পারে
+              {{ $t("ads_edit_sub") }}
             </p>
           </div>
         </div>
@@ -35,13 +35,13 @@
       >
         <UIcon name="i-heroicons-exclamation-triangle" class="w-8 h-8 text-red-500 mx-auto" />
         <p class="mt-2 text-sm font-medium text-red-700">
-          বিজ্ঞাপনটি পাওয়া যায়নি, অথবা এটি সম্পাদনার অনুমতি আপনার নেই।
+          {{ $t("ads_edit_not_found") }}
         </p>
         <NuxtLink
           to="/business-network/abn-ads"
           class="inline-block mt-4 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium"
         >
-          বিজ্ঞাপন প্যানেলে ফিরে যান
+          {{ $t("ads_edit_back_panel") }}
         </NuxtLink>
       </div>
 
@@ -50,19 +50,19 @@
         <div class="rounded-2xl border border-gray-200 bg-white p-4 mb-4">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div>
-              <p class="text-[11px] text-gray-500">অবস্থা</p>
+              <p class="text-[11px] text-gray-500">{{ $t("ads_edit_status") }}</p>
               <p class="text-sm font-semibold" :class="statusClass">{{ statusLabel }}</p>
             </div>
             <div>
-              <p class="text-[11px] text-gray-500">খরচ হয়েছে</p>
+              <p class="text-[11px] text-gray-500">{{ $t("ads_edit_spent") }}</p>
               <p class="text-sm font-semibold text-gray-800">৳{{ fmt(ad.spent) }}</p>
             </div>
             <div>
-              <p class="text-[11px] text-gray-500">ভিউ</p>
+              <p class="text-[11px] text-gray-500">{{ $t("ads_edit_views") }}</p>
               <p class="text-sm font-semibold text-gray-800">{{ ad.views ?? 0 }}</p>
             </div>
             <div>
-              <p class="text-[11px] text-gray-500">ক্লিক</p>
+              <p class="text-[11px] text-gray-500">{{ $t("ads_edit_clicks") }}</p>
               <p class="text-sm font-semibold text-gray-800">{{ ad.clicks ?? 0 }}</p>
             </div>
           </div>
@@ -70,40 +70,40 @@
             v-if="ad.status === 'rejected' && ad.reject_reason"
             class="mt-3 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2"
           >
-            বাতিলের কারণ: {{ ad.reject_reason }}
+            {{ $t("ads_edit_reject_reason") }}: {{ ad.reject_reason }}
           </p>
         </div>
 
         <form class="space-y-4" @submit.prevent="save">
           <!-- ── Content ──────────────────────────────────────── -->
           <section class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
-            <h2 class="text-sm font-semibold text-gray-800 mb-3">বিজ্ঞাপনের বিষয়বস্তু</h2>
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">{{ $t("ads_edit_content") }}</h2>
 
-            <label class="block text-xs font-medium text-gray-600 mb-1">শিরোনাম</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">{{ $t("ads_edit_title_label") }}</label>
             <input
               v-model="form.title"
               type="text"
               maxlength="255"
               required
               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              placeholder="যেমন: ঈদ অফার — ৫০% ছাড়"
+              :placeholder='$t("ads_edit_title_ph")'
             />
 
-            <label class="block text-xs font-medium text-gray-600 mb-1 mt-3">বিবরণ</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1 mt-3">{{ $t("ads_edit_desc") }}</label>
             <textarea
               v-model="form.description"
               rows="3"
               required
               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              placeholder="আপনার অফার সম্পর্কে সংক্ষেপে লিখুন"
+              :placeholder='$t("ads_edit_desc_ph")'
             ></textarea>
           </section>
 
           <!-- ── Call to action ───────────────────────────────── -->
           <section class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
-            <h2 class="text-sm font-semibold text-gray-800 mb-3">অ্যাকশন বাটন</h2>
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">{{ $t("ads_edit_cta") }}</h2>
 
-            <label class="block text-xs font-medium text-gray-600 mb-1">বাটনের ধরন</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">{{ $t("ads_edit_cta_type") }}</label>
             <select
               v-model="form.ad_type"
               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
@@ -127,9 +127,9 @@
 
           <!-- ── Budget ───────────────────────────────────────── -->
           <section class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
-            <h2 class="text-sm font-semibold text-gray-800 mb-3">বাজেট</h2>
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">{{ $t("ads_edit_budget") }}</h2>
 
-            <label class="block text-xs font-medium text-gray-600 mb-1">মোট বাজেট (৳)</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">{{ $t("ads_edit_total_budget") }}</label>
             <input
               v-model="form.budget"
               type="number"
@@ -148,27 +148,24 @@
                 : 'bg-red-50 text-red-700'"
             >
               <template v-if="canAffordDelta">
-                সংরক্ষণ করলে আপনার ব্যালেন্স থেকে আরও
-                <b>৳{{ fmt(budgetDelta) }}</b> কেটে নেওয়া হবে।
-                (বর্তমান ব্যালেন্স ৳{{ fmt(balance) }})
+                {{ $t("ads_edit_charge_more", { amount: fmt(budgetDelta), balance: fmt(balance) }) }}
               </template>
               <template v-else>
-                আরও ৳{{ fmt(budgetDelta) }} প্রয়োজন, কিন্তু আপনার ব্যালেন্সে আছে
-                ৳{{ fmt(balance) }}। আগে ব্যালেন্স যোগ করুন।
+                {{ $t("ads_edit_need_more", { amount: fmt(budgetDelta), balance: fmt(balance) }) }}
               </template>
             </div>
             <div
               v-else-if="budgetDelta < 0"
               class="mt-2 text-xs rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700"
             >
-              না-খরচ <b>৳{{ fmt(-budgetDelta) }}</b> আপনার ব্যালেন্সে ফেরত যাবে।
+              {{ $t("ads_edit_refund", { amount: fmt(-budgetDelta) }) }}
             </div>
             <p class="mt-2 text-[11px] text-gray-500">
-              ইতিমধ্যে খরচ হওয়া ৳{{ fmt(ad.spent) }} এর কম বাজেট দেওয়া যাবে না।
+              {{ $t("ads_edit_spent_note", { spent: fmt(ad.spent) }) }}
             </p>
 
             <label class="block text-xs font-medium text-gray-600 mb-1 mt-3">
-              দৈনিক সীমা (৳) — খালি রাখলে সীমা নেই
+              {{ $t("ads_edit_daily_cap") }}
             </label>
             <input
               v-model="form.daily_budget"
@@ -181,10 +178,10 @@
 
           <!-- ── Schedule ─────────────────────────────────────── -->
           <section class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
-            <h2 class="text-sm font-semibold text-gray-800 mb-3">সময়সূচি</h2>
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">{{ $t("ads_edit_schedule") }}</h2>
             <div class="grid sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">শুরুর সময়</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ $t("ads_edit_start") }}</label>
                 <input
                   v-model="form.start_at"
                   type="datetime-local"
@@ -192,7 +189,7 @@
                 />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">শেষের সময়</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ $t("ads_edit_end") }}</label>
                 <input
                   v-model="form.end_at"
                   type="datetime-local"
@@ -205,9 +202,9 @@
 
           <!-- ── Targeting ────────────────────────────────────── -->
           <section class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
-            <h2 class="text-sm font-semibold text-gray-800 mb-3">কাদের দেখাবেন</h2>
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">{{ $t("ads_edit_audience") }}</h2>
 
-            <p class="text-xs font-medium text-gray-600 mb-1.5">লিঙ্গ</p>
+            <p class="text-xs font-medium text-gray-600 mb-1.5">{{ $t("ads_edit_gender") }}</p>
             <div class="flex flex-wrap gap-3 mb-3">
               <label
                 v-for="g in genders"
@@ -219,12 +216,12 @@
               </label>
             </div>
             <p class="text-[11px] text-gray-500 -mt-2 mb-3">
-              কোনোটি নির্বাচন না করলে সবাইকে দেখানো হবে।
+              {{ $t("ads_edit_gender_note") }}
             </p>
 
             <div class="grid sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">সর্বনিম্ন বয়স</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ $t("ads_edit_min_age") }}</label>
                 <input
                   v-model="form.min_age"
                   type="number"
@@ -234,7 +231,7 @@
                 />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">সর্বোচ্চ বয়স</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ $t("ads_edit_max_age") }}</label>
                 <input
                   v-model="form.max_age"
                   type="number"
@@ -249,9 +246,9 @@
 
           <!-- ── Placements ───────────────────────────────────── -->
           <section class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
-            <h2 class="text-sm font-semibold text-gray-800 mb-1">কোথায় দেখাবেন</h2>
+            <h2 class="text-sm font-semibold text-gray-800 mb-1">{{ $t("ads_edit_placements") }}</h2>
             <p class="text-[11px] text-gray-500 mb-3">
-              কোনোটি নির্বাচন না করলে সব জায়গায় দেখানো হবে।
+              {{ $t("ads_edit_placements_note") }}
             </p>
             <div class="grid sm:grid-cols-2 gap-2">
               <label
@@ -284,13 +281,13 @@
               :disabled="saving || !canSubmit"
               class="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
             >
-              {{ saving ? "সংরক্ষণ হচ্ছে…" : "পরিবর্তন সংরক্ষণ করুন" }}
+              {{ saving ? $t("ads_edit_saving") : $t("ads_edit_save") }}
             </button>
             <NuxtLink
               :to="`/business-network/abn-ads/${adId}`"
               class="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              বাতিল
+              {{ $t("ads_edit_cancel") }}
             </NuxtLink>
           </div>
         </form>
@@ -310,6 +307,7 @@ const { user } = useAuth();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const { t } = useI18n();
 
 const adId = computed(() => route.params.id);
 
@@ -336,44 +334,47 @@ const form = reactive({
   placements: [],
 });
 
-const adTypes = [
-  { value: "click_to_website", label: "ওয়েবসাইটে নিয়ে যান" },
-  { value: "call_on_whatsapp", label: "হোয়াটসঅ্যাপে বার্তা" },
-  { value: "call_on_phone", label: "ফোন কল" },
-  { value: "email_us", label: "ইমেইল করুন" },
-];
+const adTypes = computed(() => [
+  { value: "click_to_website", label: t("ads_edit_cta_website") },
+  { value: "call_on_whatsapp", label: t("ads_edit_cta_whatsapp") },
+  { value: "call_on_phone", label: t("ads_edit_cta_phone") },
+  { value: "email_us", label: t("ads_edit_cta_email") },
+]);
 
-const genders = [
-  { key: "male", label: "পুরুষ" },
-  { key: "female", label: "নারী" },
-  { key: "other", label: "অন্যান্য" },
-];
+const genders = computed(() => [
+  { key: "male", label: t("ads_edit_male") },
+  { key: "female", label: t("ads_edit_female") },
+  { key: "other", label: t("ads_edit_other") },
+]);
 
 // Keys must match VALID_PLACEMENTS in business_network/ads_api.py.
-const placementOptions = [
-  { value: "bn_feed", label: "বিজনেস নেটওয়ার্ক ফিড" },
-  { value: "shorts_banner", label: "শর্টস — ভিডিওর উপরে ব্যানার" },
-  { value: "shorts_reel", label: "শর্টস — রিলের ভেতরে" },
-  { value: "gigs_list", label: "মাইক্রো গিগস তালিকা" },
-  { value: "sale_list", label: "সেল তালিকা" },
-  { value: "news_list", label: "নিউজ তালিকা" },
-  { value: "food_list", label: "ফুড জোন তালিকা" },
-  { value: "classified_list", label: "ক্লাসিফায়েড তালিকা" },
-  { value: "web_feed", label: "ওয়েব ফিড" },
-  { value: "app_open", label: "অ্যাপ ওপেন" },
-];
+const placementOptions = computed(() => [
+  { value: "bn_feed", label: t("ads_pl_bn_feed") },
+  { value: "shorts_banner", label: t("ads_pl_shorts_banner") },
+  { value: "shorts_reel", label: t("ads_pl_shorts_reel") },
+  { value: "gigs_list", label: t("ads_pl_gigs_list") },
+  { value: "sale_list", label: t("ads_pl_sale_list") },
+  { value: "news_list", label: t("ads_pl_news_list") },
+  { value: "food_list", label: t("ads_pl_food_list") },
+  { value: "classified_list", label: t("ads_pl_classified_list") },
+  { value: "web_feed", label: t("ads_pl_web_feed") },
+  { value: "app_open", label: t("ads_pl_app_open") },
+]);
 
-const statusLabels = {
-  review: "রিভিউতে আছে",
-  active: "চলছে",
-  pending: "অপেক্ষমাণ",
-  rejected: "বাতিল",
-  stoped: "বন্ধ",
-  completed: "সম্পন্ন",
+// Reuses the panel-wide ads_status_* keys instead of its own copy — this page
+// previously said "চলছে" where every other page said "চালু" for the same status.
+const statusKeys = {
+  review: "ads_status_review",
+  active: "ads_status_active",
+  pending: "ads_status_review",
+  rejected: "ads_status_rejected",
+  stoped: "ads_status_stopped",
+  completed: "ads_status_completed",
 };
-const statusLabel = computed(
-  () => statusLabels[ad.value?.status] || ad.value?.status || "—"
-);
+const statusLabel = computed(() => {
+  const key = statusKeys[ad.value?.status];
+  return key ? t(key) : ad.value?.status || "—";
+});
 const statusClass = computed(() => {
   switch (ad.value?.status) {
     case "active":
@@ -396,11 +397,11 @@ const canAffordDelta = computed(() => budgetDelta.value <= balance.value);
 const adTypeDetailLabel = computed(
   () =>
     ({
-      click_to_website: "ওয়েবসাইট লিংক",
-      call_on_whatsapp: "হোয়াটসঅ্যাপ নম্বর",
-      call_on_phone: "ফোন নম্বর",
-      email_us: "ইমেইল ঠিকানা",
-    }[form.ad_type] || "বিস্তারিত")
+      click_to_website: t("ads_edit_link"),
+      call_on_whatsapp: t("ads_edit_whatsapp_no"),
+      call_on_phone: t("ads_edit_phone_no"),
+      email_us: t("ads_edit_email_addr"),
+    }[form.ad_type] || t("ads_edit_detail"))
 );
 const adTypeDetailPlaceholder = computed(
   () =>
@@ -417,16 +418,16 @@ const detailError = computed(() => {
   const v = (form.ad_type_details || "").trim();
   if (!v) return "";
   if (form.ad_type === "click_to_website" && !/^https?:\/\/.+/i.test(v)) {
-    return "লিংকটি http:// বা https:// দিয়ে শুরু হতে হবে।";
+    return t("ads_edit_err_link");
   }
   if (form.ad_type === "email_us" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
-    return "সঠিক ইমেইল ঠিকানা দিন।";
+    return t("ads_edit_err_email");
   }
   if (
     (form.ad_type === "call_on_phone" || form.ad_type === "call_on_whatsapp") &&
     !/^[0-9+\-\s]{6,20}$/.test(v)
   ) {
-    return "সঠিক ফোন নম্বর দিন।";
+    return t("ads_edit_err_phone");
   }
   return "";
 });
@@ -435,14 +436,14 @@ const ageError = computed(() => {
   const lo = form.min_age === null || form.min_age === "" ? null : Number(form.min_age);
   const hi = form.max_age === null || form.max_age === "" ? null : Number(form.max_age);
   if (lo !== null && hi !== null && lo > hi) {
-    return "সর্বনিম্ন বয়স সর্বোচ্চ বয়সের চেয়ে বেশি হতে পারে না।";
+    return t("ads_edit_err_age");
   }
   return "";
 });
 
 const scheduleError = computed(() => {
   if (form.start_at && form.end_at && new Date(form.start_at) >= new Date(form.end_at)) {
-    return "শেষের সময় শুরুর সময়ের পরে হতে হবে।";
+    return t("ads_edit_err_schedule");
   }
   return "";
 });
@@ -539,16 +540,14 @@ async function save() {
       return;
     }
     toast.add({
-      title: "পরিবর্তন সংরক্ষিত হয়েছে",
+      title: t("ads_edit_saved"),
       description:
-        budgetDelta.value !== 0
-          ? "বাজেটের পার্থক্য আপনার ব্যালেন্সে সমন্বয় করা হয়েছে।"
-          : undefined,
+        budgetDelta.value !== 0 ? t("ads_edit_saved_budget") : undefined,
       color: "green",
     });
     router.push(`/business-network/abn-ads/${adId.value}`);
   } catch (e) {
-    saveError.value = "সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।";
+    saveError.value = t("ads_edit_save_failed");
   } finally {
     saving.value = false;
   }
@@ -568,7 +567,7 @@ function extractError(res) {
     if (Array.isArray(first) && first.length) return String(first[0]);
     if (typeof first === "string") return first;
   }
-  return "সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।";
+  return t("ads_edit_save_failed");
 }
 
 onMounted(fetchAd);
