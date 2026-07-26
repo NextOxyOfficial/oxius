@@ -9,6 +9,79 @@ import '../../services/house_ads_service.dart';
 import '../../utils/video_playback_manager.dart';
 import '../ads/house_ad_card.dart';
 
+
+/// Budget for warm feed video controllers.
+///
+/// Two problems this solves, both of which made scrolling feel slow:
+///
+/// 1. NO LOOKAHEAD. The controller used to be created at `frac > 0` — the exact
+///    moment the tile touched the viewport — so the network round-trip, the moov
+///    parse and the decoder handshake all happened while the user was already
+///    staring at the video. Tiles are BUILT well before they are visible
+///    (ListView cacheExtent), so initialising then gives that work a head start
+///    and the first frame is usually ready by the time the tile arrives.
+///
+/// 2. INSTANT DISPOSAL. `frac == 0` tore the controller down, so scrolling back
+///    a single post re-downloaded a video that had just finished loading.
+///
+/// Both fixes need a ceiling or a long feed would hold dozens of decoders, so
+/// preloading is capped and off-screen controllers are evicted least-recently-
+/// used once the budget is full. Visible tiles are never evicted.
+class _FeedVideoBudget {
+  _FeedVideoBudget._();
+
+  static final _FeedVideoBudget instance = _FeedVideoBudget._();
+
+  /// Concurrent warm controllers. Android hardware decoders are limited (often
+  /// a handful), so this stays small: the visible one plus a little lookahead.
+  static const int maxWarm = 4;
+
+  /// Registered tiles, oldest touch first (insertion-ordered map).
+  final Map<Object, _WarmEntry> _warm = {};
+
+  /// True if [owner] may hold a controller right now. Evicts if needed.
+  bool requestSlot(Object owner, {required bool visible}) {
+    _warm.remove(owner);
+    _warm[owner] = _WarmEntry(visible: visible);
+    _evictIfNeeded();
+    return _warm.containsKey(owner);
+  }
+
+  void markVisible(Object owner, bool visible) {
+    final e = _warm[owner];
+    if (e == null) return;
+    e.visible = visible;
+    // Re-insert so a visible tile counts as most recently touched.
+    if (visible) {
+      _warm.remove(owner);
+      _warm[owner] = e;
+    }
+  }
+
+  void release(Object owner) => _warm.remove(owner);
+
+  void _evictIfNeeded() {
+    while (_warm.length > maxWarm) {
+      // Oldest off-screen entry first; never evict something on screen.
+      final victim = _warm.entries
+          .firstWhere((e) => !e.value.visible, orElse: () => _warm.entries.first);
+      _warm.remove(victim.key);
+      victim.value.onEvict?.call();
+    }
+  }
+
+  void bindEvictor(Object owner, void Function() onEvict) {
+    _warm[owner]?.onEvict = onEvict;
+  }
+}
+
+class _WarmEntry {
+  _WarmEntry({required this.visible});
+
+  bool visible;
+  void Function()? onEvict;
+}
+
 const Map<String, String> _kMediaHeaders = {'User-Agent': 'OxiUsFlutter/1.0'};
 
 class PostMediaGallery extends StatelessWidget {
@@ -631,6 +704,24 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     // Lets the manager pause this tile when another video starts, the app is
     // backgrounded, or a new route covers the feed.
     VideoPlaybackManager.instance.register(this, _pauseForManager);
+    // Preload. This runs while the tile is still off-screen (ListView builds
+    // ahead of the viewport), which is the whole point — the fetch and decoder
+    // setup finish before the user scrolls here. Deferred a frame so it never
+    // competes with the build that is painting the visible rows.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _controller != null || _hasError) return;
+      if (_FeedVideoBudget.instance.requestSlot(this, visible: false)) {
+        _FeedVideoBudget.instance.bindEvictor(this, _evictController);
+        _init();
+      }
+    });
+  }
+
+  /// Called by the budget when this off-screen tile's slot is needed elsewhere.
+  void _evictController() {
+    if (!mounted || _isVisible) return;
+    _disposeController();
+    if (mounted) setState(() => _isInitialized = false);
   }
 
   void _applyMute() {
@@ -828,6 +919,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     // Unregister BEFORE disposing so the manager can never call back into a
     // torn-down controller.
     VideoPlaybackManager.instance.unregister(this);
+    _FeedVideoBudget.instance.release(this);
     _disposeController();
     super.dispose();
   }
@@ -1154,6 +1246,10 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
         final frac = info.visibleFraction;
         // Create the controller lazily the moment the tile enters the viewport.
         if (frac > 0 && _controller == null && !_hasError) {
+          // Preload was evicted (or never ran) — a visible tile always wins a
+          // slot, so ask again marking it visible.
+          _FeedVideoBudget.instance.requestSlot(this, visible: true);
+          _FeedVideoBudget.instance.bindEvictor(this, _evictController);
           _init();
         }
         final nextVisible = frac >= 0.6;
@@ -1161,11 +1257,10 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
           setState(() => _isVisible = nextVisible);
           _updatePlayback();
         }
-        // Free the decoder once the tile is fully off-screen (memory + battery).
-        if (frac == 0 && _controller != null) {
-          _disposeController();
-          setState(() => _isInitialized = false);
-        }
+        // Off-screen no longer means "destroy". Scrolling back one post used to
+        // re-download a video that had just loaded; the controller now stays
+        // warm and is only dropped when the budget needs its slot.
+        _FeedVideoBudget.instance.markVisible(this, frac > 0);
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
