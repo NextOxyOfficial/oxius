@@ -289,7 +289,12 @@ def serve_ad(request):
         if ad.views >= 20:
             ctr = ad.clicks / ad.views
             quality = max(0.5, min(1.0 + ctr * 20.0, 2.5))
-        scored.append((ad, w * remaining * quality))
+        # Served to this user moments ago — push it far down so adjacent slots
+        # get variety, but keep it eligible so a thin pool still fills.
+        recency = 1.0
+        if user is not None and cache.get(f"adrecent:{user.id}:{ad.pk}"):
+            recency = 0.15
+        scored.append((ad, w * remaining * quality * recency))
 
     total = sum(s for _, s in scored)
     pick = random.uniform(0, total)
@@ -302,9 +307,16 @@ def serve_ad(request):
             break
 
     if user is not None:
-        cap_key = f"adcap:{user.id}:{chosen.pk}:{now.date().isoformat()}"
+        # NOT the daily cap — that is incremented in track_ad_events when an
+        # impression actually fires. Counting it here burned a user's daily
+        # allowance for ads they never saw (slots built off-screen, prefetched
+        # rows, scrolled past): measured 79 serves against 63 real impressions
+        # for one user in a day, so the feed ran dry ~20% early.
+        # This is only a short "just served" marker so the same creative does
+        # not fill several adjacent slots before any impression registers. It
+        # deprioritises rather than excludes, so a small ad pool can't starve.
         try:
-            cache.set(cap_key, (cache.get(cap_key) or 0) + 1, 60 * 60 * 26)
+            cache.set(f"adrecent:{user.id}:{chosen.pk}", 1, 60)
         except Exception:
             pass
 
@@ -495,6 +507,18 @@ def track_ad_events(request):
             if event_type == "impression":
                 billable = True
                 if user is not None:
+                    # Daily frequency cap: counted HERE, on a real impression,
+                    # not when serve_ad hands the creative out. serve_ad only
+                    # sets a short "just served" marker.
+                    cap_key = (
+                        f"adcap:{user.id}:{ad.pk}:{today.isoformat()}"
+                    )
+                    try:
+                        cache.set(
+                            cap_key, (cache.get(cap_key) or 0) + 1, 60 * 60 * 26
+                        )
+                    except Exception:
+                        pass
                     dedupe_key = (
                         f"adbill:{user.id}:{ad.pk}:{today.isoformat()}"
                     )
