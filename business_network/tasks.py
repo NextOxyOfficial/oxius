@@ -638,14 +638,29 @@ def transcode_bn_video(self, media_id):
         logger.warning("transcode_bn_video: ffmpeg not found; leaving %s as-is", media_id)
         return "skipped: no ffmpeg"
 
+    # Read through the storage API rather than media.video.path — this project's
+    # DEFAULT_FILE_STORAGE raises NotImplementedError ("This backend doesn't
+    # support absolute paths"), so assuming a local path skipped every file.
+    src_tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
     try:
-        src = media.video.path
-    except Exception:
-        return "skipped: video not on local storage"
-    if not os.path.exists(src):
-        return "skipped: source missing"
+        with media.video.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                src_tmp.write(chunk)
+    except Exception as exc:
+        src_tmp.close()
+        try:
+            os.unlink(src_tmp.name)
+        except OSError:
+            pass
+        logger.warning("transcode_bn_video %s: cannot read source: %s", media_id, exc)
+        return "skipped: source unreadable"
+    src_tmp.close()
+    src = src_tmp.name
 
     before = os.path.getsize(src)
+    if before <= 0:
+        os.unlink(src)
+        return "skipped: empty source"
     out = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
     out.close()
 
@@ -686,10 +701,11 @@ def transcode_bn_video(self, media_id):
             return f"skipped: no gain ({before} -> {after})"
 
         original_name = os.path.basename(media.video.name)
+        # Park the original first, so a crash between the two saves can never
+        # leave the row without a playable file.
+        with open(src, "rb") as orig:
+            media.video_original.save(original_name, File(orig), save=True)
         with open(out.name, "rb") as fh:
-            # Park the original first, so a crash between the two saves can
-            # never leave the row with no playable file.
-            media.video_original.save(original_name, File(open(src, "rb")), save=True)
             media.video.save(original_name, File(fh), save=True)
 
         logger.info(
@@ -701,7 +717,8 @@ def transcode_bn_video(self, media_id):
         logger.warning("transcode_bn_video %s timed out", media_id)
         return "failed: timeout"
     finally:
-        try:
-            os.unlink(out.name)
-        except OSError:
-            pass
+        for tmp in (out.name, src):
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
