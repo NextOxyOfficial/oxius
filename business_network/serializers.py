@@ -115,15 +115,12 @@ class BusinessNetworkMediaSerializer(serializers.ModelSerializer):
     media_likes = BusinessNetworkMediaLikeSerializer(many=True, read_only=True)
     media_comments = BusinessNetworkMediaCommentSerializer(many=True, read_only=True)
 
-    def to_representation(self, instance):
-        try:
-            if getattr(instance, "type", None) == "video" and not getattr(instance, "thumbnail", None):
-                ensure = getattr(instance, "ensure_thumbnail", None)
-                if callable(ensure):
-                    ensure()
-        except Exception:
-            pass
-        return super().to_representation(instance)
+    # A missing poster frame used to be generated HERE, inline, while the feed
+    # response was being built — an ffmpeg run per video per render. It never
+    # actually produced anything (it went through video.path, which the storage
+    # backend refuses), so nothing is lost by dropping it: uploads queue the
+    # thumbnail task on commit, and `backfill_bn_video_thumbnails` covers rows
+    # created before that existed.
 
     class Meta:
         model = BusinessNetworkMedia

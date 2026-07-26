@@ -55,6 +55,13 @@ class BusinessNetworkMedia(models.Model):
     views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        # Ids are timestamp-derived with a random suffix on collision, so the
+        # default (unordered) query returned a post's photos and videos in an
+        # arbitrary — and between requests, unstable — order. Upload order is
+        # what the composer showed, so that is what the gallery should show.
+        ordering = ["created_at", "id"]
+
     def __str__(self):
         filename = ""
         if self.type == "video" and self.video:
@@ -80,144 +87,18 @@ class BusinessNetworkMedia(models.Model):
             self.id = self.generate_id()
         super().save(*args, **kwargs)
 
-    def ensure_thumbnail(self):
-        if self.type != "video":
-            return
-        if not self.video:
-            return
-        if self.thumbnail:
-            return
+    def ensure_thumbnail(self, force=False):
+        """Poster frame for this video, generated through the storage API.
 
-        try:
-            video_path = getattr(self.video, "path", None)
-            if not video_path:
-                return
+        The previous implementation reached for `self.video.path` (via moviepy,
+        opencv and ffmpeg in turn); this project's storage backend raises for
+        absolute paths, so every branch bailed and no video ever ended up with
+        a thumbnail. The real work now lives in one place so the create path,
+        the edit path and the backfill command all share it.
+        """
+        from .tasks import make_video_thumbnail
 
-            import os
-            import tempfile
-            from django.core.files.base import ContentFile
-
-            try:
-                import imageio.v3 as iio
-                from PIL import Image
-
-                frame = iio.imread(video_path, index=0)
-                if frame is not None:
-                    img = Image.fromarray(frame)
-                    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-                        tmp_path = tmp.name
-                    img.save(tmp_path, format="JPEG", quality=85)
-
-                    with open(tmp_path, "rb") as f:
-                        thumb_data = f.read()
-                    os.unlink(tmp_path)
-
-                    thumb_file = ContentFile(thumb_data)
-                    thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
-                    self.thumbnail.save(thumb_file.name, thumb_file, save=True)
-                    return
-            except Exception as e:
-                print(f"ensure_thumbnail imageio failed: {e}")
-
-            try:
-                from moviepy.editor import VideoFileClip
-
-                clip = VideoFileClip(video_path)
-                frame_time = 0
-                try:
-                    if getattr(clip, "duration", 0):
-                        frame_time = min(0.5, clip.duration / 2)
-                except Exception:
-                    frame_time = 0
-
-                with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-                    tmp_path = tmp.name
-
-                clip.save_frame(tmp_path, t=frame_time)
-                clip.close()
-
-                with open(tmp_path, "rb") as f:
-                    thumb_data = f.read()
-                os.unlink(tmp_path)
-
-                thumb_file = ContentFile(thumb_data)
-                thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
-                self.thumbnail.save(thumb_file.name, thumb_file, save=True)
-                return
-            except Exception as e:
-                print(f"ensure_thumbnail moviepy failed: {e}")
-                
-
-            try:
-                import cv2
-
-                cap = cv2.VideoCapture(video_path)
-                ret, frame = cap.read()
-                cap.release()
-                if not ret:
-                    raise Exception("cv2 could not read frame")
-
-                ok, buffer = cv2.imencode(".jpg", frame)
-                if not ok:
-                    raise Exception("cv2 could not encode frame")
-
-                thumb_file = ContentFile(buffer.tobytes())
-                thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
-                self.thumbnail.save(thumb_file.name, thumb_file, save=True)
-                return
-            except Exception as e:
-                print(f"ensure_thumbnail opencv failed: {e}")
-
-            try:
-                import subprocess
-                import shutil
-
-                ffmpeg_bin = shutil.which("ffmpeg")
-                if not ffmpeg_bin:
-                    for p in ["/snap/bin/ffmpeg", "/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg"]:
-                        if os.path.isfile(p):
-                            ffmpeg_bin = p
-                            break
-                if not ffmpeg_bin:
-                    raise Exception("ffmpeg not found on PATH or known locations")
-
-                with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-                    tmp_path = tmp.name
-
-                result = subprocess.run(
-                    [
-                        ffmpeg_bin,
-                        "-i", video_path,
-                        "-vf", "select=eq(n\\,0)",
-                        "-vframes", "1",
-                        "-f", "image2",
-                        "-y",
-                        tmp_path,
-                    ],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    timeout=30,
-                )
-
-                if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
-                    with open(tmp_path, "rb") as f:
-                        thumb_data = f.read()
-                    os.unlink(tmp_path)
-
-                    thumb_file = ContentFile(thumb_data)
-                    thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
-                    self.thumbnail.save(thumb_file.name, thumb_file, save=True)
-                    return
-
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
-                stderr_out = result.stderr.decode("utf-8", errors="replace")[-500:] if result.stderr else "no stderr"
-                raise Exception(f"ffmpeg produced empty output. stderr: {stderr_out}")
-            except Exception as e:
-                print(f"ensure_thumbnail ffmpeg failed: {e}")
-                return
-        except Exception:
-            return
+        return make_video_thumbnail(self, force=force)
 
 
 class BusinessNetworkMediaView(models.Model):

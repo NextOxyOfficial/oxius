@@ -32,7 +32,7 @@ from rest_framework.views import APIView
 
 from base.models import User
 from .feed_annotations import feed_count_annotations
-from .tasks import transcode_bn_video
+from .tasks import generate_bn_video_thumbnail, transcode_bn_video
 from .feed_visibility import visible_posts_q
 from adsyconnect.models import BlockedUser
 
@@ -924,14 +924,15 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                         )
                         post.media.add(post_media)
 
-                        try:
-                            if post_media.video and post_media.video.path:
-                                thumb_file = generate_video_thumbnail(post_media.video.path)
-                                if thumb_file:
-                                    post_media.thumbnail = thumb_file
-                                    post_media.save()
-                        except Exception as thumb_err:
-                            print(f"Could not generate video thumbnail: {thumb_err}")
+                        # Poster frame off the request path. The old inline
+                        # call went through video.path, which this storage
+                        # backend refuses — so no video ever got a thumbnail
+                        # and every video tile in a multi-media post rendered
+                        # as a blank box.
+                        transaction.on_commit(
+                            lambda mid=post_media.pk:
+                                generate_bn_video_thumbnail.delay(mid)
+                        )
                     except Exception as e:
                         raise ValidationError({"videos": f"Error processing video file: {str(e)}"})
 
@@ -959,14 +960,15 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                         )
                         post.media.add(post_media)
 
-                        try:
-                            if post_media.video and post_media.video.path:
-                                thumb_file = generate_video_thumbnail(post_media.video.path)
-                                if thumb_file:
-                                    post_media.thumbnail = thumb_file
-                                    post_media.save()
-                        except Exception as thumb_err:
-                            print(f"Could not generate video thumbnail: {thumb_err}")
+                        # Poster frame off the request path. The old inline
+                        # call went through video.path, which this storage
+                        # backend refuses — so no video ever got a thumbnail
+                        # and every video tile in a multi-media post rendered
+                        # as a blank box.
+                        transaction.on_commit(
+                            lambda mid=post_media.pk:
+                                generate_bn_video_thumbnail.delay(mid)
+                        )
                     except Exception as e:
                         raise ValidationError({"videos": f"Error processing video: {str(e)}"})
 
@@ -1294,15 +1296,10 @@ def add_post_video(request, post_id):
     post_media = BusinessNetworkMedia.objects.create(
         type="video", video=video_file
     )
-    try:
-        if post_media.video and post_media.video.path:
-            thumb_file = generate_video_thumbnail(post_media.video.path)
-            if thumb_file:
-                post_media.thumbnail = thumb_file
-                post_media.save(update_fields=["thumbnail"])
-    except Exception as thumb_err:
-        print(f"Could not generate video thumbnail: {thumb_err}")
     post.media.add(post_media)
+    # Same storage-safe poster frame the create path queues.
+    generate_bn_video_thumbnail.delay(post_media.pk)
+    transcode_bn_video.delay(post_media.pk)
 
     return Response(
         BusinessNetworkPostSerializer(

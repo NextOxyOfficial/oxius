@@ -612,6 +612,105 @@ def _find_ffmpeg():
     return None
 
 
+def make_video_thumbnail(media, force=False):
+    """Store a poster frame on `media.thumbnail`. Returns True if it saved one.
+
+    Every earlier attempt at this went through `media.video.path`, which this
+    project's storage backend refuses ("This backend doesn't support absolute
+    paths") — so NO video in the database had a thumbnail, and any video shown
+    in a multi-media grid (where the tile is a thumbnail, not a player) came out
+    as a blank box. Reading through the storage API is what actually works.
+    """
+    import subprocess
+    import tempfile
+
+    from django.core.files.base import ContentFile
+
+    if getattr(media, "type", None) != "video" or not media.video:
+        return False
+    if media.thumbnail and not force:
+        return False
+
+    ffmpeg = _find_ffmpeg()
+    if ffmpeg is None:
+        logger.warning("make_video_thumbnail: ffmpeg not found (media %s)", media.pk)
+        return False
+
+    src = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    try:
+        with media.video.open("rb") as fh:
+            # A poster frame lives in the first seconds; pulling the whole file
+            # for it would be wasteful on long clips.
+            copied = 0
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                src.write(chunk)
+                copied += len(chunk)
+                if copied >= 24 * 1024 * 1024:
+                    break
+    except Exception as exc:
+        logger.warning("make_video_thumbnail %s: cannot read source: %s", media.pk, exc)
+        src.close()
+        _unlink(src.name)
+        return False
+    src.close()
+
+    out = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+    out.close()
+    try:
+        for seek in ("1", "0"):
+            result = subprocess.run(
+                [
+                    ffmpeg, "-y", "-ss", seek, "-i", src.name,
+                    "-frames:v", "1",
+                    # Cap the poster's width; a 4K frame is pointless for a tile.
+                    "-vf", "scale='min(720,iw)':-2",
+                    "-q:v", "4", out.name,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=120,
+            )
+            if result.returncode == 0 and os.path.getsize(out.name) > 0:
+                break
+        else:
+            logger.warning("make_video_thumbnail %s: ffmpeg produced no frame", media.pk)
+            return False
+
+        with open(out.name, "rb") as fh:
+            data = fh.read()
+        base = os.path.splitext(os.path.basename(media.video.name))[0]
+        media.thumbnail.save(f"{base}.jpg", ContentFile(data), save=True)
+        return True
+    except subprocess.TimeoutExpired:
+        logger.warning("make_video_thumbnail %s timed out", media.pk)
+        return False
+    finally:
+        _unlink(out.name)
+        _unlink(src.name)
+
+
+def _unlink(path):
+    try:
+        os.unlink(path)
+    except OSError:
+        pass
+
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=120)
+def generate_bn_video_thumbnail(self, media_id, force=False):
+    """Poster frame for one uploaded video, off the request path.
+
+    Doing this inline during create meant every post upload paid an ffmpeg run
+    (and, on this storage backend, failed anyway).
+    """
+    from .models import BusinessNetworkMedia
+
+    media = BusinessNetworkMedia.objects.filter(pk=media_id).first()
+    if media is None:
+        return "skipped: gone"
+    return "ok" if make_video_thumbnail(media, force=force) else "skipped"
+
+
 @shared_task(bind=True, max_retries=2, default_retry_delay=300)
 def transcode_bn_video(self, media_id):
     """Re-encode one BusinessNetworkMedia video to 720p and swap it in.
