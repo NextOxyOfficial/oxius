@@ -1171,6 +1171,7 @@
 
 
 <script setup>
+const { t } = useI18n();
 const { get, post } = useApi();
 const { user, isAuthenticated } = useAuth();
 
@@ -1739,12 +1740,14 @@ const estimatedViews = computed(() =>
   Math.max(0, Math.round((Number(form.budget) || 0) * 2.5))
 );
 
-const placements = [
-  "বিজনেস নেটওয়ার্ক ফিড (পোস্টের মাঝে স্পনসরড কার্ড)",
-  "BN Shorts (ভিডিওর মাঝে)",
-  "মাইক্রো গিগস, সেল, নিউজ, ক্লাসিফাইড ও ফুড জোন লিস্ট",
-  "AdsyClub ওয়েবসাইট",
-];
+// Wording lives in i18n; "ক্লাসিফাইড" here was the last place still using the
+// internal word instead of the "আমার সেবা" branding shown in the nav.
+const placements = computed(() => [
+  t("adc_where_feed"),
+  t("adc_where_shorts"),
+  t("adc_where_lists"),
+  t("adc_where_web"),
+]);
 
 const steps = [
   "ফর্ম পূরণ করে Submit করুন — বিজ্ঞাপন রিভিউতে যাবে।",
