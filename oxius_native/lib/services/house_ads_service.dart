@@ -5,6 +5,7 @@ import 'dart:convert';
 // material (not just foundation) for the CTA's IconData, which lives next to
 // ctaLabel so the label and its icon can't drift apart.
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'api_service.dart';
 
@@ -120,7 +121,9 @@ class HouseAd {
   IconData get ctaIcon {
     switch (adType) {
       case 'call_on_whatsapp':
-        return Icons.chat_bubble_outline_rounded;
+        // The generic outlined bubble read as a placeholder next to
+        // "মেসেজ করুন" — the brand mark says where the tap actually goes.
+        return FontAwesomeIcons.whatsapp.data;
       case 'call_on_phone':
         return Icons.phone_outlined;
       case 'email_us':

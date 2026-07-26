@@ -77,18 +77,9 @@ class HouseAdCard extends StatefulWidget {
 
   /// Icon matching the ad's CTA type — shown beside the label on every
   /// promo chip (feed card, shorts sheet, boost chip, mid-roll).
-  static IconData ctaIcon(HouseAd ad) {
-    switch (ad.adType) {
-      case 'call_on_whatsapp':
-        return Icons.chat_bubble_outline_rounded;
-      case 'call_on_phone':
-        return Icons.call_outlined;
-      case 'email_us':
-        return Icons.mail_outline_rounded;
-      default:
-        return Icons.open_in_new_rounded;
-    }
-  }
+  /// One mapping, on the model — this used to be a second copy that drifted
+  /// from HouseAd.ctaIcon (the WhatsApp mark landed in only one of them).
+  static IconData ctaIcon(HouseAd ad) => ad.ctaIcon;
 
   /// Launch the ad's CTA action (website / WhatsApp / call / email).
   static void launchCta(HouseAd ad) {

@@ -46,6 +46,9 @@ VALID_PLACEMENTS = {
 
 # Alias -> canonical placement, so an ad that targets "gigs_list" still matches
 # a request for "gig_list" and billing/reporting stay on one name.
+# Where a boosted post may run: the surfaces that render a full post card.
+BOOST_PLACEMENTS = {"shorts_reel", "bn_feed", "web_feed"}
+
 _PLACEMENT_ALIASES = {
     "gig_list": "gigs_list",
     "foodzone_list": "food_list",
@@ -164,12 +167,27 @@ def serve_ad(request):
     )
     candidates = []
     for ad in qs[:200]:
-        if want_boost != (ad.format == "boost"):
+        is_boost = ad.format == "boost"
+        if is_boost:
+            if ad.boosted_post_id is None:
+                continue
+            # A boost is a REAL post — it can only be served where the client
+            # renders a post card. Everywhere else (compact list strips, app
+            # open, banners) expects a creative with a title and image, which a
+            # boost does not have. Boosts used to be limited to the reel alone,
+            # so a boosted post could never reach the feed at all.
+            if placement not in BOOST_PLACEMENTS:
+                continue
+        elif want_boost:
+            # The shorts reel plays boosted posts only.
             continue
-        if want_boost and ad.boosted_post_id is None:
-            continue
-        # Placement: empty list = everywhere.
-        if not want_boost and ad.placements and placement not in ad.placements:
+        # Placement targeting: empty list = everywhere. The reel is exempt so
+        # existing boost campaigns keep reaching it exactly as before.
+        if (
+            placement != "shorts_reel"
+            and ad.placements
+            and placement not in ad.placements
+        ):
             continue
         # Budget / view cap exhausted → auto-complete lazily.
         if ad.estimated_views and ad.views >= ad.estimated_views:
