@@ -77,11 +77,16 @@ class MessageReactionChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (reactions.isEmpty) return const SizedBox.shrink();
-    return Padding(
+    // Negative top margin tucks the emoji slightly INTO the bubble's bottom
+    // edge (Messenger-style) instead of floating below it.
+    return Container(
+      transform: Matrix4.translationValues(0, -7, 0),
+      // Reclaim the space the shift leaves behind so the next message
+      // doesn't gain a gap.
+      margin: const EdgeInsets.only(bottom: -7),
       padding: EdgeInsets.only(
-        top: 2,
-        left: alignRight ? 0 : 6,
-        right: alignRight ? 6 : 0,
+        left: alignRight ? 0 : 10,
+        right: alignRight ? 10 : 0,
         bottom: 2,
       ),
       child: Row(

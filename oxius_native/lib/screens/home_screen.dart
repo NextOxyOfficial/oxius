@@ -1933,6 +1933,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ? user!.displayName
             : 'বন্ধু');
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1945,6 +1946,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 text: 'হাই, ',
                 style: TextStyle(
                   fontSize: 15,
+                  height: 1.25,
                   fontWeight: FontWeight.w600,
                   color: _greetInk,
                 ),
@@ -1953,6 +1955,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 text: name,
                 style: const TextStyle(
                   fontSize: 15.5,
+                  height: 1.25,
                   fontWeight: FontWeight.w800,
                   color: _greetTeal,
                   letterSpacing: -0.2,
@@ -1961,10 +1964,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 1),
         const GreetingRotator(
           style: TextStyle(
             fontSize: 11.5,
+            height: 1.25,
             fontWeight: FontWeight.w600,
             color: Color(0xFF6B7280),
             letterSpacing: 0.1,
