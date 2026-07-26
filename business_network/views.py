@@ -32,6 +32,7 @@ from rest_framework.views import APIView
 
 from base.models import User
 from .feed_annotations import feed_count_annotations
+from .tasks import transcode_bn_video
 from .feed_visibility import visible_posts_q
 from adsyconnect.models import BlockedUser
 
@@ -914,6 +915,13 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 for video_file in video_files:
                     try:
                         post_media = BusinessNetworkMedia.objects.create(type="video", video=video_file)
+                        # Shrink to 720p in the background. Queued after
+                        # commit so the worker can never read a row the
+                        # request has not written yet.
+                        transaction.on_commit(
+                            lambda mid=post_media.pk:
+                                transcode_bn_video.delay(mid)
+                        )
                         post.media.add(post_media)
 
                         try:
@@ -942,6 +950,13 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                             video_file = base64ToVideoFile(f"data:video/mp4;base64,{video_data}")
 
                         post_media = BusinessNetworkMedia.objects.create(type="video", video=video_file)
+                        # Shrink to 720p in the background. Queued after
+                        # commit so the worker can never read a row the
+                        # request has not written yet.
+                        transaction.on_commit(
+                            lambda mid=post_media.pk:
+                                transcode_bn_video.delay(mid)
+                        )
                         post.media.add(post_media)
 
                         try:

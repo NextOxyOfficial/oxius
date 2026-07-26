@@ -44,6 +44,13 @@ class BusinessNetworkMedia(models.Model):
     type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='image')
     image = models.ImageField(upload_to='business_network/images/', blank=True, null=True)
     video = models.FileField(upload_to='business_network/videos/', blank=True, null=True)
+    # The untouched upload, kept only as a safety net. `video` is what every
+    # client reads, so the transcoder REPLACES it with the 720p rendition and
+    # parks the original here — that way existing app installs get the smaller
+    # file immediately, with no API change and no app release.
+    video_original = models.FileField(
+        upload_to='business_network/videos/originals/', blank=True, null=True
+    )
     thumbnail = models.ImageField(upload_to='business_network/thumbnails/', blank=True, null=True)
     views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

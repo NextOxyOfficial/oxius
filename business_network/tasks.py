@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import timedelta
 
 from celery import shared_task
@@ -576,3 +577,131 @@ def build_interest_profiles():
 
     logger.info("build_interest_profiles: %s built, %s errors", built, errors)
     return {"built": built, "errors": errors}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 720p transcode
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Phone uploads arrive at whatever the camera produced — 1080p/4K at a very high
+# bitrate. A sampled feed video was 14 MB for a short clip, and the player has to
+# pull all those bytes before it can show much, which is what made scrolling feel
+# slow. Re-encoding to 720p at a sane CRF typically lands 3–4x smaller with no
+# visible difference on a phone screen.
+#
+# The result REPLACES `video` and the untouched upload moves to `video_original`,
+# so every client (including already-installed apps) gets the smaller file with
+# no API change and no app release.
+
+_FFMPEG_CANDIDATES = (
+    "/usr/local/bin/ffmpeg",
+    "/snap/bin/ffmpeg",
+    "/usr/bin/ffmpeg",
+)
+
+
+def _find_ffmpeg():
+    import shutil
+
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    for path in _FFMPEG_CANDIDATES:
+        if os.path.exists(path):
+            return path
+    return None
+
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=300)
+def transcode_bn_video(self, media_id):
+    """Re-encode one BusinessNetworkMedia video to 720p and swap it in.
+
+    Idempotent: a media row that already has `video_original` has been done, so
+    a repeated call (retry, duplicate signal, re-run of the backfill) is a no-op
+    rather than a second lossy pass over an already-compressed file.
+    """
+    import subprocess
+    import tempfile
+
+    from django.core.files import File
+
+    from .models import BusinessNetworkMedia
+
+    media = BusinessNetworkMedia.objects.filter(pk=media_id).first()
+    if media is None or not media.video:
+        return "skipped: no media/video"
+    if media.video_original:
+        return "skipped: already transcoded"
+
+    ffmpeg = _find_ffmpeg()
+    if ffmpeg is None:
+        logger.warning("transcode_bn_video: ffmpeg not found; leaving %s as-is", media_id)
+        return "skipped: no ffmpeg"
+
+    try:
+        src = media.video.path
+    except Exception:
+        return "skipped: video not on local storage"
+    if not os.path.exists(src):
+        return "skipped: source missing"
+
+    before = os.path.getsize(src)
+    out = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    out.close()
+
+    try:
+        result = subprocess.run(
+            [
+                ffmpeg, "-y", "-i", src,
+                # Only ever scale DOWN — a 480p upload must not be blown up to
+                # 720p, which would add bytes for nothing.
+                "-vf", "scale='min(1280,iw)':'min(720,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "26",
+                "-profile:v", "high", "-level", "4.0", "-pix_fmt", "yuv420p",
+                "-c:a", "aac", "-b:a", "96k", "-ac", "2",
+                # moov atom up front so the player can start on the first bytes.
+                "-movflags", "+faststart",
+                # The box has 4 cores and ~2 GB free; leave room for gunicorn.
+                "-threads", "2",
+                out.name,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=60 * 20,
+        )
+        if result.returncode != 0:
+            logger.warning(
+                "transcode_bn_video %s failed: %s",
+                media_id, result.stderr.decode("utf-8", "replace")[-400:],
+            )
+            return "failed: ffmpeg error"
+
+        after = os.path.getsize(out.name)
+        if after <= 0:
+            return "failed: empty output"
+        # If the re-encode isn't meaningfully smaller the upload was already
+        # lean; keep the original rather than pay a generation of quality loss
+        # for nothing.
+        if after >= before * 0.9:
+            return f"skipped: no gain ({before} -> {after})"
+
+        original_name = os.path.basename(media.video.name)
+        with open(out.name, "rb") as fh:
+            # Park the original first, so a crash between the two saves can
+            # never leave the row with no playable file.
+            media.video_original.save(original_name, File(open(src, "rb")), save=True)
+            media.video.save(original_name, File(fh), save=True)
+
+        logger.info(
+            "transcode_bn_video %s: %.1fMB -> %.1fMB",
+            media_id, before / 1048576, after / 1048576,
+        )
+        return f"ok: {before} -> {after}"
+    except subprocess.TimeoutExpired:
+        logger.warning("transcode_bn_video %s timed out", media_id)
+        return "failed: timeout"
+    finally:
+        try:
+            os.unlink(out.name)
+        except OSError:
+            pass
