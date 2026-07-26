@@ -170,6 +170,13 @@ class _PostListSerializer(serializers.ListSerializer):
                 getattr(getattr(p, "shared_from", None), "author_id", None)
                 for p in items
             }
+            # Comment authors go through the same UserSerializer, so each one
+            # costs the same per-user stat queries. They are already in the
+            # prefetch cache, so gathering them here adds no query of its own.
+            for p in items:
+                cached = getattr(p, "_prefetched_objects_cache", None) or {}
+                for c in cached.get("post_comments", None) or []:
+                    author_ids.add(getattr(c, "author_id", None))
             prime_user_stats(request, {a for a in author_ids if a})
         return super().to_representation(items)
 
