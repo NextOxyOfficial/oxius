@@ -122,11 +122,23 @@ const ctaTarget = computed(() =>
 
 function track(eventType) {
   // Fire-and-forget: a failed beacon must never break the page.
+  //
+  // track_ad_events reads request.data["events"] and, per event, the ad id
+  // under the key "ad". The old flat {event_type, placement, ad_id} body
+  // produced an empty events list, so every web list-ad impression and click
+  // was dropped: advertisers were never billed and creators never earned for
+  // them. platform is tagged "web" so reporting can tell the surfaces apart.
   try {
     post("/bn/ads/track/", {
-      event_type: eventType,
-      placement: props.placement,
-      ad_id: ad.value?.id,
+      events: [
+        {
+          ad: ad.value?.id,
+          source: "panel",
+          event_type: eventType,
+          placement: props.placement,
+          platform: "web",
+        },
+      ],
     });
   } catch (_) {
     /* ignore */
@@ -178,9 +190,13 @@ function cleanup() {
 onMounted(async () => {
   try {
     const res = await get(`/bn/ads/serve/?placement=${encodeURIComponent(props.placement)}`);
-    const d = res?.data;
+    const body = res?.data;
+    // serve_ad answers { source: 'panel', ad: {...} } — the creative is NESTED.
+    // Reading body.id instead of body.ad.id meant the guard never passed and
+    // this component silently rendered nothing on every page that used it.
+    const d = body?.ad;
     // { fallback: 'admob' } means no house ad matched — render nothing.
-    if (d && !d.fallback && d.id) {
+    if (body && !body.fallback && d && d.id) {
       ad.value = d;
       await nextTick();
       watchVisibility();
