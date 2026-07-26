@@ -1595,14 +1595,30 @@ async function uploadPickedVideo() {
   videoUploadPct.value = 0;
   videoMediaId.value = null;
   try {
-    const { getValidToken } = useAuth();
-    const token = await getValidToken();
+    const { getValidToken, refreshTokens } = useAuth();
+    let token = await getValidToken();
+    // Composing an ad takes minutes, so the access token often expires while
+    // the form is open. The upload used to be sent with NO Authorization header
+    // in that case, so the server answered 401 and the page just said "upload
+    // failed" with no way to understand why. Refresh once before giving up.
+    if (!token && typeof refreshTokens === "function") {
+      try {
+        if (await refreshTokens()) token = await getValidToken();
+      } catch (err) {
+        /* fall through to the sign-in message below */
+      }
+    }
+    if (!token) {
+      errorMsg.value =
+        "আপনার লগইন সেশনের সময় শেষ হয়েছে — আবার লগইন করে ভিডিওটি আপলোড করুন।";
+      return null;
+    }
     const fd = new FormData();
     fd.append("video", file);
     const id = await new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `${apiBase}/bn/ads/upload-video/`);
-      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
       xhr.setRequestHeader("Accept", "application/json");
       // A 60MB upload on a slow line takes minutes; without progress the page
       // looks frozen and users assume it failed.
@@ -1617,9 +1633,14 @@ async function uploadPickedVideo() {
           if (xhr.status >= 200 && xhr.status < 300 && body.media_id) {
             resolve(body.media_id);
           } else {
-            errorMsg.value = body.error
-              ? `ভিডিও আপলোড করা যায়নি: ${body.error}`
-              : `ভিডিও আপলোড করা যায়নি (কোড ${xhr.status})। আবার চেষ্টা করুন।`;
+            errorMsg.value =
+              xhr.status === 401
+                ? "লগইন সেশনের সময় শেষ হয়েছে — আবার লগইন করে চেষ্টা করুন।"
+                : xhr.status === 413
+                ? "ভিডিওটি সার্ভারের সীমার চেয়ে বড় — ছোট ভিডিও ব্যবহার করুন।"
+                : body.error
+                ? `ভিডিও আপলোড করা যায়নি: ${body.error}`
+                : `ভিডিও আপলোড করা যায়নি (কোড ${xhr.status})। আবার চেষ্টা করুন।`;
             resolve(null);
           }
         } catch {
