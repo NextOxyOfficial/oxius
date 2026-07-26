@@ -92,34 +92,23 @@ class MessageReactionChips extends StatelessWidget {
           for (final r in reactions)
             GestureDetector(
               onTap: onTap,
-              child: Container(
-                margin: const EdgeInsets.only(right: 4),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: (r is Map && r['reacted_by_me'] == true)
-                      ? const Color(0xFFDBEAFE)
-                      : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: (r is Map && r['reacted_by_me'] == true)
-                        ? const Color(0xFF93C5FD)
-                        : const Color(0xFFE2E8F0),
-                  ),
-                ),
+              // Bare emoji — no pill background/border. The chip's tinted
+              // bubble competed with the message bubble right above it.
+              child: Padding(
+                padding: const EdgeInsets.only(right: 5),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('${(r as Map)['emoji'] ?? ''}',
-                        style: const TextStyle(fontSize: 12.5)),
+                        style: const TextStyle(fontSize: 15)),
                     if (((r['count'] ?? 1) as num) > 1) ...[
-                      const SizedBox(width: 3),
+                      const SizedBox(width: 2),
                       Text(
                         '${r['count']}',
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF475569),
+                          color: Color(0xFF64748B),
                         ),
                       ),
                     ],
