@@ -534,13 +534,12 @@ class _ReplyInputState extends State<_ReplyInput> {
               child: FlutterMentions(
                 key: _mentionKey,
                 suggestionPosition: SuggestionPosition.Top,
-                // Center the placeholder in the empty box; once the user types,
-                // fall back to left-align so a multi-line reply reads normally.
-                textAlign: _hasText ? TextAlign.start : TextAlign.center,
                 maxLines: 4,
-                // Opens two lines tall so a normal reply fits without the box
-                // growing under the caret as you type.
-                minLines: 2,
+                // One line tall like the main comment input, so the
+                // left-aligned hint sits vertically centred in the pill
+                // (a 2-line box parked it on the top line); grows to 4 as
+                // the reply gets longer.
+                minLines: 1,
                 decoration: InputDecoration(
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle:
@@ -563,7 +562,7 @@ class _ReplyInputState extends State<_ReplyInput> {
                         color: Color(0xFF3B82F6), width: 1),
                   ),
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                   isDense: true,
                   // Keeps the pill short — the suffix icon no longer forces
                   // a 48px minimum height.
