@@ -16,6 +16,8 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
+import '../../widgets/business_network/post_upload_strip.dart';
+import '../../widgets/common/video_frame_thumbnail.dart';
 import '../../widgets/business_network/feed_composer_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
 import '../../widgets/ios_web_redirect_screen.dart';
@@ -2260,10 +2262,23 @@ class _ProfileScreenState extends State<ProfileScreen>
     final composer = _isOwnProfile()
         ? Padding(
             padding: const EdgeInsets.fromLTRB(1, 4, 1, 0),
-            child: FeedComposerCard(
-              onPostCreated: (post) {
-                if (mounted) setState(() => _userPosts.insert(0, post));
-              },
+            child: Column(
+              children: [
+                FeedComposerCard(
+                  onPostCreated: (post) {
+                    if (mounted) setState(() => _userPosts.insert(0, post));
+                  },
+                ),
+                // Posting from HERE used to show no progress at all: the
+                // composer pops instantly and the only progress strip lived on
+                // the feed, so a user who stayed on their profile saw nothing
+                // happen until the post silently appeared.
+                PostUploadStrip(
+                  onPosted: (post) {
+                    if (mounted) setState(() => _userPosts.insert(0, post));
+                  },
+                ),
+              ],
             ),
           )
         : const SizedBox.shrink();
@@ -2391,7 +2406,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (displayUrl.isNotEmpty)
+                    if (media.isVideo)
+                      // Pull a frame from the clip when the server poster is
+                      // missing, instead of a grey slab with a glyph.
+                      VideoFrameThumbnail(
+                        posterUrl: displayUrl.isNotEmpty ? displayUrl : null,
+                        videoUrl: displayUrl.isEmpty ? media.bestUrl : null,
+                      )
+                    else if (displayUrl.isNotEmpty)
                       Image.network(
                         displayUrl,
                         fit: BoxFit.cover,

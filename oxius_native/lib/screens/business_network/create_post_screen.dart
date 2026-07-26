@@ -9,6 +9,7 @@ import '../../utils/mention_parser.dart';
 import '../../utils/image_compressor.dart';
 import '../../utils/video_upload_helper.dart';
 import '../../widgets/link_preview_card.dart';
+import '../../widgets/common/video_frame_thumbnail.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -190,42 +191,29 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         maxDuration: const Duration(seconds: _maxVideoDurationSeconds),
       );
 
-      if (video == null) return;
+      if (video == null || !mounted) return;
 
-      // ONLY a duration check here — no re-encode. Compressing at pick time
-      // took minutes, looked like a stuck upload and could abort; it now runs
-      // in PostUploadService after the user presses Post.
-      setState(() {
-        _isCompressing = true;
-        _compressionStatus = 'ভিডিও যাচাই হচ্ছে...';
-      });
-
-      final withinLimit =
-          await VideoUploadHelper.isWithinDurationLimit(video.path);
-      if (!mounted) return;
-      if (!withinLimit) {
-        setState(() {
-          _isCompressing = false;
-          _compressionStatus = '';
-        });
-        AdsyToast.warning(
-            context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ৩ মিনিটের ভিডিও দেওয়া যাবে');
-        return;
-      }
-
+      // The clip appears in the composer IMMEDIATELY. Everything that takes
+      // time — the duration read, and later the re-encode and upload — runs
+      // behind it. Blocking the whole screen on a duration probe (which opens
+      // the file and decodes its header) is what made picking a video feel
+      // like an upload had already started.
+      final path = video.path;
       setState(() {
         // The ORIGINAL path — compression happens at submit.
-        _selectedVideos.add({
-          'path': video.path,
-          'name': video.name,
-        });
-        _isCompressing = false;
-        _compressionStatus = '';
+        _selectedVideos.add({'path': path, 'name': video.name});
       });
+      AdsyToast.success(context, 'ভিডিও যোগ হয়েছে');
 
-      if (mounted) {
-        AdsyToast.success(context, 'ভিডিও যোগ হয়েছে');
-      }
+      // Over-limit clips are pulled back out; the tile is on screen in the
+      // meantime, which is what the user actually wants to see.
+      final withinLimit = await VideoUploadHelper.isWithinDurationLimit(path);
+      if (!mounted || withinLimit) return;
+      setState(() {
+        _selectedVideos.removeWhere((v) => v['path'] == path);
+      });
+      AdsyToast.warning(
+          context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ৩ মিনিটের ভিডিও দেওয়া যাবে');
     } catch (e) {
       setState(() {
         _isCompressing = false;
@@ -993,15 +981,31 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(6),
-                                child: Container(
+                                // A frame from the clip you just picked,
+                                // pulled locally — the tile used to be a flat
+                                // grey box with a glyph, which gave no sense
+                                // that the right video had been selected.
+                                child: SizedBox(
                                   width: double.infinity,
                                   height: double.infinity,
-                                  color: Colors.grey.shade800,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.play_circle_fill,
-                                      color: Colors.white,
-                                      size: 40,
+                                  child: VideoFrameThumbnail(
+                                    filePath: _selectedVideos[videoIndex]
+                                        ['path'] as String,
+                                    overlay: Center(
+                                      child: Container(
+                                        width: 38,
+                                        height: 38,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.40),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.play_arrow_rounded,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),

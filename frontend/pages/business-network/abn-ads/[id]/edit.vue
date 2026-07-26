@@ -9,7 +9,7 @@
         <div class="relative px-5 py-5 sm:px-7 flex items-center gap-3">
           <NuxtLink
             :to="`/business-network/abn-ads/${adId}`"
-            class="p-2 rounded-xl bg-white/15 hover:bg-white/25 transition-colors"
+            class="p-2 rounded-xl flex bg-white/15 hover:bg-white/25 transition-colors"
             :aria-label='$t("ads_edit_back")'
           >
             <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />

@@ -7,6 +7,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../../models/business_network_models.dart';
 import '../../services/house_ads_service.dart';
 import '../../utils/video_playback_manager.dart';
+import '../common/video_frame_thumbnail.dart';
 import '../ads/house_ad_card.dart';
 
 
@@ -125,6 +126,16 @@ class PostMediaGallery extends StatelessWidget {
     }
   }
 
+  /// Index of the post's first video, or -1. That one plays inline even inside
+  /// a grid — a post of nothing but still tiles reads as broken, and the lead
+  /// clip is the one people expect to start on its own.
+  int get _leadVideoIndex {
+    for (var i = 0; i < media.length; i++) {
+      if (media[i].isVideo) return i;
+    }
+    return -1;
+  }
+
   Widget _buildMediaContent(
     BuildContext context,
     int index, {
@@ -133,6 +144,58 @@ class PostMediaGallery extends StatelessWidget {
   }) {
     final item = media[index];
     final imageUrl = item.bestThumbnailUrl;
+
+    if (item.isVideo) {
+      // Lead clip: a real, auto-playing player filling its cell.
+      if (index == _leadVideoIndex) {
+        return AutoPlaySingleVideoPreview(
+          media: item,
+          fillParent: true,
+          onTap: () => onMediaTap(index),
+        );
+      }
+      // The rest: a FRAME from the clip, so it sits beside the playing one as
+      // a photo would. Falls back to pulling the frame from the video itself
+      // when the server poster has not landed yet — that gap is what used to
+      // paint a flat black tile.
+      return VideoFrameThumbnail(
+        posterUrl: imageUrl.isNotEmpty ? imageUrl : null,
+        videoUrl: imageUrl.isEmpty ? item.bestUrl : null,
+        fit: fit,
+        overlay: Stack(
+          children: [
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(999),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                ),
+                child: const Icon(Icons.videocam_rounded,
+                    color: Colors.white, size: 12),
+              ),
+            ),
+            Center(
+              child: Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.40),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.play_arrow_rounded,
+                    color: Colors.white, size: 32),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     if (imageUrl.isEmpty) {
       return Stack(
@@ -649,12 +712,18 @@ class AutoPlaySingleVideoPreview extends StatefulWidget {
   final double maxHeight;
   final VoidCallback? onTap;
 
+  /// Fill the box the parent gives instead of sizing to the video's aspect.
+  /// Used for the lead video tile inside a multi-media grid, where the cell's
+  /// size is already decided by the layout.
+  final bool fillParent;
+
   const AutoPlaySingleVideoPreview({
     super.key,
     required this.media,
     this.minHeight = 200,
     this.maxHeight = 520,
     this.onTap,
+    this.fillParent = false,
   });
 
   @override
@@ -1262,7 +1331,9 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
         // warm and is only dropped when the budget needs its slot.
         _FeedVideoBudget.instance.markVisible(this, frac > 0);
       },
-      child: LayoutBuilder(
+      child: widget.fillParent
+          ? stack
+          : LayoutBuilder(
         builder: (context, constraints) {
           final maxW = constraints.maxWidth;
           var ratio = _aspect;

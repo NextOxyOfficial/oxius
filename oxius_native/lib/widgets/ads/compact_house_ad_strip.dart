@@ -178,7 +178,10 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                             color: Color(0xFF94A3B8),
                           ),
                         ),
-                        const Spacer(),
+                        // Sits just after "Sponsored" with a small gap. A
+                        // Spacer pushed it to the far edge, leaving a dead gap
+                        // in the middle of the row.
+                        const SizedBox(width: 10),
                         // Outlined and compact so it reads as a quiet action
                         // rather than competing with the post's own buttons.
                         // Label comes from the ad's type (Visit site /

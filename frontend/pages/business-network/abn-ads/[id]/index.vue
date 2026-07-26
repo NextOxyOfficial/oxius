@@ -17,7 +17,7 @@
           <div class="flex items-center gap-3">
             <NuxtLink
               to="/business-network/abn-ads"
-              class="p-2 rounded-xl bg-white/15 hover:bg-white/25 transition-colors"
+              class="p-2 rounded-xl flex bg-white/15 hover:bg-white/25 transition-colors"
             >
               <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
             </NuxtLink>

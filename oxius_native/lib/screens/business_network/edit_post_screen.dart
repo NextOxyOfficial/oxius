@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../widgets/common/video_frame_thumbnail.dart';
 import '../../utils/image_compressor.dart';
 import '../../utils/video_upload_helper.dart';
 import '../../widgets/link_preview_card.dart';
@@ -201,8 +202,11 @@ class _EditPostScreenState extends State<EditPostScreen> {
       // New videos upload separately (multipart, same pipeline as create);
       // each call returns the freshly-updated post.
       for (final path in _newVideoPaths) {
-        final withVideo =
-            await BusinessNetworkService.addPostVideo(widget.post.id, path);
+        // Re-encode moved here from pick time, so choosing a video stays
+        // instant and the wait happens once, while saving.
+        final prepared = await VideoUploadHelper.compressOnly(path);
+        final withVideo = await BusinessNetworkService.addPostVideo(
+            widget.post.id, prepared);
         if (!mounted) return;
         if (withVideo != null) {
           updated = withVideo;
@@ -798,14 +802,16 @@ class _EditPostScreenState extends State<EditPostScreen> {
         maxDuration: const Duration(seconds: _maxVideoDurationSeconds),
       );
       if (video == null || !mounted) return;
-      // Hard 3-min verify (gallery picks can ignore maxDuration) + compress.
-      setState(() => _isCompressing = true);
-      final prepared =
-          await VideoUploadHelper.prepareForUpload(context, video.path);
-      if (!mounted) return;
-      setState(() => _isCompressing = false);
-      if (prepared == null) return;
-      setState(() => _newVideoPaths.add(prepared));
+      // Show the clip at once; verify its length behind it. Compressing here
+      // (which prepareForUpload did) froze the screen for as long as the
+      // re-encode took — that now happens on save, like the create screen.
+      final path = video.path;
+      setState(() => _newVideoPaths.add(path));
+      final withinLimit = await VideoUploadHelper.isWithinDurationLimit(path);
+      if (!mounted || withinLimit) return;
+      setState(() => _newVideoPaths.remove(path));
+      AdsyToast.warning(
+          context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ৩ মিনিটের ভিডিও দেওয়া যাবে');
     } catch (_) {
       if (mounted) {
         setState(() => _isCompressing = false);
@@ -915,35 +921,46 @@ class _EditPostScreenState extends State<EditPostScreen> {
                   ),
                   const SizedBox(width: 8),
                 ],
-                // Freshly-picked videos (uploaded on save) — same dark tile
-                // with a VIDEO badge as the create screen.
+                // Freshly-picked videos (uploaded on save) — a real frame
+                // from the clip, same as the create screen.
                 for (var i = 0; i < _newVideoPaths.length; i++) ...[
                   _removableThumb(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
-                      child: Container(
+                      child: SizedBox(
                         width: 82,
                         height: 82,
-                        color: Colors.grey.shade800,
-                        child: const Stack(
-                          children: [
-                            Center(
-                              child: Icon(Icons.play_circle_fill,
-                                  color: Colors.white, size: 32),
-                            ),
-                            Positioned(
-                              bottom: 4,
-                              left: 4,
-                              child: Text(
-                                'VIDEO',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w700,
+                        child: VideoFrameThumbnail(
+                          filePath: _newVideoPaths[i],
+                          overlay: Stack(
+                            children: [
+                              Center(
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        Colors.black.withValues(alpha: 0.40),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.play_arrow_rounded,
+                                      color: Colors.white, size: 20),
                                 ),
                               ),
-                            ),
-                          ],
+                              const Positioned(
+                                bottom: 4,
+                                left: 4,
+                                child: Text(
+                                  'VIDEO',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
