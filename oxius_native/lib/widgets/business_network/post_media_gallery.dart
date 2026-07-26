@@ -146,8 +146,10 @@ class PostMediaGallery extends StatelessWidget {
     final imageUrl = item.bestThumbnailUrl;
 
     if (item.isVideo) {
-      // Lead clip: a real, auto-playing player filling its cell.
-      if (index == _leadVideoIndex) {
+      // Lead clip: a real, auto-playing player filling its cell. Not when it
+      // is the tile carrying the "+N more" scrim — playing a video under a
+      // count overlay reads as a mistake.
+      if (index == _leadVideoIndex && !(media.length > 4 && index == 3)) {
         return AutoPlaySingleVideoPreview(
           media: item,
           fillParent: true,
