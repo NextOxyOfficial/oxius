@@ -702,14 +702,35 @@ class _PostCardState extends State<PostCard> {
     AdsySheet.show(
       context,
       children: [
+        // The copy already happened before this sheet opened, so lead with a
+        // clear green confirmation instead of burying it as step one in grey.
         const Padding(
-          padding: EdgeInsets.fromLTRB(20, 4, 20, 10),
+          padding: EdgeInsets.fromLTRB(20, 2, 20, 10),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle_rounded,
+                  size: 18, color: Color(0xFF16A34A)),
+              SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  'Post ID কপি হয়ে গেছে',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF16A34A),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
           child: Text(
-            'যেভাবে বুস্ট করবেন:\n'
-            '১. Post ID কপি হয়ে গেছে ✓\n'
-            '২. নিচের বাটনে ট্যাপ করে Ads Panel খুলুন\n'
-            '৩. 🚀 Boost Post ফরম্যাট বেছে Post ID paste করুন\n'
-            '৪. বাজেট দিয়ে Submit করুন — রিভিউয়ের পর লাইভ হবে',
+            'এরপর যা করবেন:\n'
+            '১. নিচের "Ads Panel খুলুন" বাটনে ট্যাপ করুন\n'
+            '২. 🚀 Boost Post ফরম্যাট বেছে Post ID paste করুন\n'
+            '৩. বাজেট দিয়ে Submit করুন — রিভিউয়ের পর লাইভ হবে',
             style: TextStyle(
               fontSize: 13,
               height: 1.6,
@@ -717,17 +738,37 @@ class _PostCardState extends State<PostCard> {
             ),
           ),
         ),
-        AdsySheetAction(
-          icon: Icons.rocket_launch_outlined,
-          title: 'Ads Panel খুলুন',
-          subtitle: 'Post ID কপি হয়ে গেছে — Boost Post-এ paste করুন',
-          onTap: () {
-            // In-app WebView — /business-network/* is a verified App Link of
-            // this app, so any intent-based launch bounces back into the app.
-            AdvertiseButton.openWebPath(
-              'business-network/abn-ads/create?post=${_post.id}',
-            );
-          },
+        // Primary action — a filled button rather than another list row, so
+        // the next step is unmistakable.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).maybePop();
+                // In-app WebView — /business-network/* is a verified App Link
+                // of this app, so any intent-based launch bounces back in.
+                AdvertiseButton.openWebPath(
+                  'business-network/abn-ads/create?post=${_post.id}',
+                );
+              },
+              icon: const Icon(Icons.rocket_launch_rounded, size: 18),
+              label: const Text(
+                'Ads Panel খুলুন',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
         ),
         // Re-copy at any time (e.g. after pasting something else).
         AdsySheetAction(
