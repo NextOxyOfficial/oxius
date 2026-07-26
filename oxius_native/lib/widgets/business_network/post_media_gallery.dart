@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../models/business_network_models.dart';
 import '../../services/house_ads_service.dart';
+import '../../utils/video_playback_manager.dart';
 import '../ads/house_ad_card.dart';
 
 const Map<String, String> _kMediaHeaders = {'User-Agent': 'OxiUsFlutter/1.0'};
@@ -627,6 +628,9 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     // is created lazily the first time the tile scrolls near the viewport.
     _resolveThumbAspect();
     feedMuted.addListener(_applyMute);
+    // Lets the manager pause this tile when another video starts, the app is
+    // backgrounded, or a new route covers the feed.
+    VideoPlaybackManager.instance.register(this, _pauseForManager);
   }
 
   void _applyMute() {
@@ -722,14 +726,30 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
 
     if (_isVisible && !_midrollActive) {
       if (!c.value.isPlaying) {
+        // Take the audio floor first: this pauses any other video (another
+        // feed clip, a short, a video ad) so two soundtracks can never run
+        // together.
+        VideoPlaybackManager.instance.claim(this);
         c.play();
         _startWatchClock();
       }
     } else {
       if (c.value.isPlaying) {
         c.pause();
+        VideoPlaybackManager.instance.release(this);
       }
       _watchTimer?.cancel();
+    }
+  }
+
+  /// Invoked by [VideoPlaybackManager] when another player takes over, when the
+  /// app leaves the foreground, or when a new route covers this one.
+  void _pauseForManager() {
+    _watchTimer?.cancel();
+    final c = _controller;
+    if (c != null && _isInitialized && c.value.isPlaying) {
+      c.pause();
+      if (mounted) setState(() {});
     }
   }
 
@@ -805,6 +825,9 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
   @override
   void dispose() {
     feedMuted.removeListener(_applyMute);
+    // Unregister BEFORE disposing so the manager can never call back into a
+    // torn-down controller.
+    VideoPlaybackManager.instance.unregister(this);
     _disposeController();
     super.dispose();
   }

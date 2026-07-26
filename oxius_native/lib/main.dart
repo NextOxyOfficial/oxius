@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'utils/video_playback_manager.dart';
 import 'utils/app_fonts.dart';
 import 'utils/adsy_ios_scale.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -314,6 +315,10 @@ class MyApp extends StatelessWidget {
             navigatorObservers: [
               FCMService.routeObserver,
               TelemetryNavigatorObserver(),
+              // Pauses every video when a new screen covers the current one,
+              // so audio can't keep playing from a page you navigated away
+              // from.
+              VideoRouteObserver.instance,
             ],
             debugShowCheckedModeBanner: false,
             builder: (context, child) {

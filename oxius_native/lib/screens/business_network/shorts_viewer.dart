@@ -10,6 +10,7 @@ import '../../services/auth_service.dart';
 import '../../services/house_ads_service.dart';
 import '../../widgets/ads/house_ad_card.dart';
 import '../../services/user_suggestions_service.dart';
+import '../../utils/video_playback_manager.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/network_error_handler.dart';
 import '../../widgets/business_network/post_comment_input.dart';
@@ -1102,6 +1103,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Shorts share the audio floor with the feed player and video ads, so a
+    // short can never start while a feed clip is still audible.
+    VideoPlaybackManager.instance.register(this, _pauseForManager);
     _post = widget.post;
     _commentsCount = widget.post.commentsCount;
     _viewsCount = widget.media.views;
@@ -1165,7 +1169,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     } else if (state == AppLifecycleState.resumed) {
       // App came back to foreground - resume if was playing and still active
       if (_wasPlayingBeforePause && widget.isActive && mounted) {
-        _controller?.play();
+        _playWithFloor();
       }
     }
   }
@@ -1190,7 +1194,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     if (oldWidget.isActive != widget.isActive) {
       if (widget.isActive) {
         _controller?.setVolume(1.0);
-        _controller?.play();
+        _playWithFloor();
         _maybeScheduleViewCount();
         _loadBannerAd();
         if (_bannerAd != null && !_bannerTracked) {
@@ -1245,7 +1249,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         });
 
         if (widget.isActive) {
-          _controller!.play();
+          _playWithFloor();
           _maybeScheduleViewCount();
         }
         return;
@@ -1273,6 +1277,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
       });
 
       if (widget.isActive) {
+        VideoPlaybackManager.instance.claim(this);
         controller.play();
         _maybeScheduleViewCount();
       }
@@ -1301,9 +1306,26 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     }
   }
 
+  /// Plays this short after taking the audio floor, so whatever was playing
+  /// elsewhere (feed video, another short, a video ad) is paused first.
+  void _playWithFloor() {
+    final c = _controller;
+    if (c == null) return;
+    VideoPlaybackManager.instance.claim(this);
+    c.play();
+  }
+
+  /// Called by the manager when another player takes over, the app leaves the
+  /// foreground, or a route covers this screen.
+  void _pauseForManager() {
+    final c = _controller;
+    if (c != null && c.value.isPlaying) c.pause();
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    VideoPlaybackManager.instance.unregister(this);
     _viewTimer?.cancel();
     _heartBurstTimer?.cancel();
     _disposeController();
@@ -1515,7 +1537,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
     // No need to resume since we didn't pause
     // if (!mounted) return;
     // if (widget.isActive) {
-    //   _controller?.play();
+    //   _playWithFloor();
     //   setState(() {
     //     _showPlayHint = false;
     //   });
@@ -1555,7 +1577,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
 
     if (!mounted) return;
     if (widget.isActive) {
-      _controller?.play();
+      _playWithFloor();
       setState(() {
         _showPlayHint = false;
       });
@@ -2075,7 +2097,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                         ).then((_) {
                           // Resume video when returning if still active
                           if (mounted && widget.isActive) {
-                            _controller?.play();
+                            _playWithFloor();
                           }
                         });
                       },
@@ -2617,6 +2639,7 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
   @override
   void initState() {
     super.initState();
+    VideoPlaybackManager.instance.register(this, _pauseForManager);
     _init();
     _fetchRealPost();
   }
@@ -2687,7 +2710,7 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
     if (oldWidget.isActive != widget.isActive) {
       if (widget.isActive) {
         _controller?.setVolume(1.0);
-        _controller?.play();
+        _playWithFloor();
         _armBillable();
       } else {
         _controller?.pause();
@@ -2698,9 +2721,26 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
 
   @override
   void dispose() {
+    VideoPlaybackManager.instance.unregister(this);
     _billableTimer?.cancel();
     _controller?.dispose();
     super.dispose();
+  }
+
+  /// Plays this sponsored short after taking the audio floor, so the feed
+  /// clip (or the previous short) is silenced first.
+  void _playWithFloor() {
+    final c = _controller;
+    if (c == null) return;
+    VideoPlaybackManager.instance.claim(this);
+    c.play();
+  }
+
+  /// Called by the manager when another player takes over or the app leaves
+  /// the foreground.
+  void _pauseForManager() {
+    final c = _controller;
+    if (c != null && c.value.isPlaying) c.pause();
   }
 
   /// Boosted post's author avatar/name → their BN profile.

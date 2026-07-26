@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../utils/video_playback_manager.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../services/house_ads_service.dart';
 import '../../utils/url_launcher_utils.dart';
@@ -185,6 +186,7 @@ class _HouseAdCardState extends State<HouseAdCard>
   @override
   void initState() {
     super.initState();
+    VideoPlaybackManager.instance.register(this, _pauseForManager);
     if (_isVideo) {
       _initVideo();
     }
@@ -234,6 +236,7 @@ class _HouseAdCardState extends State<HouseAdCard>
         return;
       }
       setState(() => _videoReady = true);
+      VideoPlaybackManager.instance.claim(this);
       c.play();
       // Billable after 3 seconds of playback (ThruPlay-style).
       _billableTimer = Timer(const Duration(seconds: 3), () {
@@ -245,8 +248,16 @@ class _HouseAdCardState extends State<HouseAdCard>
     }
   }
 
+  /// Pauses this video ad when another player takes the floor or the app
+  /// leaves the foreground.
+  void _pauseForManager() {
+    final c = _video;
+    if (c != null && c.value.isPlaying) c.pause();
+  }
+
   @override
   void dispose() {
+    VideoPlaybackManager.instance.unregister(this);
     _apologyTimer?.cancel();
     _billableTimer?.cancel();
     _visibleTimer?.cancel();

@@ -2341,7 +2341,68 @@ class AbnAdsPanelRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView
 
     def perform_update(self, serializer):
         self._assert_owner(serializer.instance)
-        serializer.save()
+
+        from decimal import Decimal
+
+        # Imported locally and aliased: a bare `ValidationError` here resolved
+        # to Django's, which DRF does not map to 400 — a rejected budget change
+        # came back as a 500 instead of a readable field error.
+        from rest_framework.exceptions import ValidationError as ApiError
+
+        from .models import AdsSystemConfig
+
+        instance = serializer.instance
+        extra = {}
+
+        # Budget is real money. Creation charges it up front, so an edit that
+        # changes it MUST settle the difference — otherwise an advertiser could
+        # buy a ৳10 ad and PATCH the budget to ৳100000 for free, serving (and
+        # paying creators revenue share for) impressions nobody bought.
+        if "budget" in serializer.validated_data:
+            old = Decimal(str(instance.budget or 0))
+            new = Decimal(str(serializer.validated_data["budget"] or 0))
+            if new <= 0:
+                raise ApiError({"budget": "বাজেট শূন্যের বেশি হতে হবে।"})
+
+            if new != old:
+                spent = Decimal(str(instance.spent or 0))
+                with transaction.atomic():
+                    if new > old:
+                        delta = new - old
+                        charged = User.objects.filter(
+                            pk=self.request.user.pk, balance__gte=delta
+                        ).update(balance=F("balance") - delta)
+                        if not charged:
+                            raise ApiError(
+                                {"budget": "ব্যালেন্সে পর্যাপ্ত টাকা নেই।"}
+                            )
+                    else:
+                        # Can't shrink below what the ad already consumed; the
+                        # unspent remainder goes back to the wallet.
+                        if new < spent:
+                            raise ApiError({
+                                "budget": (
+                                    f"এই বিজ্ঞাপনে ইতিমধ্যে ৳{spent} খরচ হয়েছে — "
+                                    "বাজেট তার চেয়ে কম করা যাবে না।"
+                                )
+                            })
+                        User.objects.filter(pk=self.request.user.pk).update(
+                            balance=F("balance") + (old - new)
+                        )
+                    self.request.user.refresh_from_db(fields=["balance"])
+
+                # Estimate is derived from the paid budget, never the client.
+                cfg = AdsSystemConfig.get()
+                if cfg.cpv_rate:
+                    extra["estimated_views"] = int(new / Decimal(str(cfg.cpv_rate)))
+
+        # A rejected ad that gets edited is a resubmission — send it back
+        # through review instead of leaving it permanently rejected.
+        if instance.status == "rejected":
+            extra["status"] = "review"
+            extra["reject_reason"] = None
+
+        serializer.save(**extra)
 
     def perform_destroy(self, instance):
         self._assert_owner(instance)

@@ -163,8 +163,39 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
-                  size: 18, color: Color(0xFF94A3B8)),
+              // Real CTA instead of a bare chevron: the label comes from the
+              // ad's own type (Visit site / WhatsApp / Call / Email), so the
+              // strip carries the same action the advertiser configured in the
+              // ads panel. Tapping it runs the same handler as the row.
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: _onTap,
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        ad.ctaLabel,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.chevron_right_rounded,
+                          size: 14, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ),
               // ✕ — hides this ad + mutes its category for 48h.
               InkWell(
                 onTap: _close,
