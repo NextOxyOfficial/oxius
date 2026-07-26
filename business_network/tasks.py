@@ -679,7 +679,15 @@ def make_video_thumbnail(media, force=False):
         with open(out.name, "rb") as fh:
             data = fh.read()
         base = os.path.splitext(os.path.basename(media.video.name))[0]
-        media.thumbnail.save(f"{base}.jpg", ContentFile(data), save=True)
+        # Upload the file, then write ONLY the thumbnail column.
+        # `save=True` would write every field from this (by now stale) row, and
+        # the transcoder runs on the same media at the same time — whichever
+        # finished second wiped the other's work. That is how one of two videos
+        # in a post ended up with no poster while the other kept one.
+        media.thumbnail.save(f"{base}.jpg", ContentFile(data), save=False)
+        type(media).objects.filter(pk=media.pk).update(
+            thumbnail=media.thumbnail.name
+        )
         return True
     except subprocess.TimeoutExpired:
         logger.warning("make_video_thumbnail %s timed out", media.pk)
@@ -801,11 +809,18 @@ def transcode_bn_video(self, media_id):
 
         original_name = os.path.basename(media.video.name)
         # Park the original first, so a crash between the two saves can never
-        # leave the row without a playable file.
+        # leave the row without a playable file. Column-scoped updates for the
+        # same reason as in make_video_thumbnail: a full save() here would
+        # write back a stale `thumbnail` and undo the poster task running
+        # alongside this one.
         with open(src, "rb") as orig:
-            media.video_original.save(original_name, File(orig), save=True)
+            media.video_original.save(original_name, File(orig), save=False)
+        type(media).objects.filter(pk=media.pk).update(
+            video_original=media.video_original.name
+        )
         with open(out.name, "rb") as fh:
-            media.video.save(original_name, File(fh), save=True)
+            media.video.save(original_name, File(fh), save=False)
+        type(media).objects.filter(pk=media.pk).update(video=media.video.name)
 
         logger.info(
             "transcode_bn_video %s: %.1fMB -> %.1fMB",

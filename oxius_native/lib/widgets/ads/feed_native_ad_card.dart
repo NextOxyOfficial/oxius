@@ -33,6 +33,7 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
   bool _failed = false;
   HouseAd? _houseAd;
   bool _admobTracked = false;
+  bool _boostTracked = false;
 
   // Serve-API placement key: 'bn_feed_native' → 'bn_feed' etc.
   String get _housePlacement =>
@@ -56,6 +57,19 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
     if (house != null) {
       setState(() => _houseAd = house);
       updateKeepAlive();
+      // A boost renders as a plain PostCard, which knows nothing about ads —
+      // so nothing reported the exposure and the campaign never accrued views,
+      // spend, creator share or viewer diamonds. HouseAdCard tracks its own,
+      // hence the boost-only condition.
+      if (house.boostedPostModel != null && !_boostTracked) {
+        _boostTracked = true;
+        HouseAdsService.track(
+          eventType: 'impression',
+          placement: _housePlacement,
+          adId: house.id,
+          creatorId: widget.creatorId,
+        );
+      }
       return;
     }
     // 2) AdMob fallback.
