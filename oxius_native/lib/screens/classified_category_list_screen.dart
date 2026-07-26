@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/ads_service.dart';
-import '../widgets/ads/feed_native_ad_card.dart';
+import '../widgets/ads/compact_house_ad_strip.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
@@ -952,7 +952,10 @@ class _ClassifiedCategoryListScreenState
           const Divider(height: 1, thickness: 1),
       itemBuilder: (context, i) {
         if (every != 0 && (i + 1) % block == 0) {
-          return const FeedNativeAdCard(placementKey: 'classified_list_native');
+          // Compact sponsored row (same shape as the strip under post
+          // media) instead of the tall AdMob native block, so the ad reads
+          // as part of the list rather than interrupting it.
+          return const CompactHouseAdStrip(placement: 'classified_list');
         }
         final idx = every == 0 ? i : i - (i ~/ block);
         if (idx >= posts.length) return const SizedBox.shrink();

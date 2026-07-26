@@ -326,8 +326,9 @@
             </div>
           </div>
 
-          <!-- Ad slot #2 (billboard) -->
-          <SaleAdSlot variant="billboard" class="mb-4" />
+          <!-- Sponsored row — compact list banner, same shape as the app's
+               strip under post media. Hides itself when no ad is served. -->
+          <CommonListBannerAd placement="sale_list" class="mb-4" />
 
           <!-- Newest listings -->
           <SaleTrendingRail
@@ -401,8 +402,8 @@
             </div>
           </div>
 
-          <!-- Ad slot #1 (leaderboard) — above Trending -->
-          <SaleAdSlot variant="leaderboard" class="mt-4" />
+          <!-- Sponsored row — above Trending -->
+          <CommonListBannerAd placement="sale_list" class="mt-4" />
 
           <!-- Trending (most viewed) — below the safety guide -->
           <SaleTrendingRail
@@ -426,7 +427,6 @@ import SaleSearchBar from "~/components/sale/SaleSearchBar.vue";
 import SaleCategoryGrid from "~/components/sale/SaleCategoryGrid.vue";
 import SaleTrendingRail from "~/components/sale/SaleTrendingRail.vue";
 import SaleProductCard from "~/components/sale/SaleProductCard.vue";
-import SaleAdSlot from "~/components/sale/SaleAdSlot.vue";
 
 const { user, isAuthenticated } = useAuth();
 const { query } = useRoute();

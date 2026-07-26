@@ -6,10 +6,14 @@ import '../models/geo_location.dart';
 import '../services/food_zone_service.dart';
 import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
+import '../widgets/ads/compact_house_ad_strip.dart';
 import '../widgets/geo_selector_dialog.dart';
 import '../widgets/geo_location_breadcrumb.dart';
 import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+
+/// One sponsored strip after every N food listings.
+const int _kFoodAdEvery = 6;
 
 class FoodZoneScreen extends StatefulWidget {
   const FoodZoneScreen({super.key});
@@ -292,8 +296,17 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                         child: ListView.builder(
                           controller: _scrollController,
                           padding: EdgeInsets.zero,
-                          itemCount: _posts.length + (_hasMore ? 1 : 0),
+                          itemCount: _posts.length +
+                              _posts.length ~/ _kFoodAdEvery +
+                              (_hasMore ? 1 : 0),
                           itemBuilder: (context, index) {
+                            // Compact sponsored strip every Nth row, matching
+                            // the row style used under post media.
+                            if ((index + 1) % (_kFoodAdEvery + 1) == 0) {
+                              return const CompactHouseAdStrip(
+                                  placement: 'food_list');
+                            }
+                            index -= index ~/ (_kFoodAdEvery + 1);
                             if (index >= _posts.length) {
                               return _isLoadingMore
                                   ? const Padding(

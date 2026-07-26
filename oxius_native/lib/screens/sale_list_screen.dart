@@ -8,12 +8,16 @@ import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import '../widgets/ads/compact_house_ad_strip.dart';
 import '../widgets/sale_skeleton_loader.dart';
 import '../widgets/sale_list_skeleton_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Sale Listing Screen - Browse sale posts with filters and search
+/// One sponsored strip after every N listings.
+const int _kAdEvery = 6;
+
 class SaleListScreen extends StatefulWidget {
   final String? categoryId;
   final String? categoryName;
@@ -1083,11 +1087,20 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
-                  itemCount: _posts.length,
+                  // Every 6th row is a compact sponsored strip — the same
+                  // row style used under post media, so it sits in the list
+                  // instead of interrupting it.
+                  itemCount: _posts.length + _posts.length ~/ _kAdEvery,
                   separatorBuilder: (context, index) =>
                       const Divider(height: 1, thickness: 1),
-                  itemBuilder: (context, index) =>
-                      _buildListItem(_posts[index]),
+                  itemBuilder: (context, index) {
+                    if ((index + 1) % (_kAdEvery + 1) == 0) {
+                      return const CompactHouseAdStrip(placement: 'sale_list');
+                    }
+                    final i = index - (index ~/ (_kAdEvery + 1));
+                    if (i >= _posts.length) return const SizedBox.shrink();
+                    return _buildListItem(_posts[i]);
+                  },
                 )
               : GridView.builder(
                   shrinkWrap: true,

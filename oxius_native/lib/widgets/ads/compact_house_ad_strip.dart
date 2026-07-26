@@ -12,7 +12,17 @@ class CompactHouseAdStrip extends StatefulWidget {
   // Host post id — per-content creator earnings attribution.
   final String? contentId;
 
-  const CompactHouseAdStrip({super.key, this.creatorId, this.contentId});
+  /// Which ad slot to serve. Defaults to the BN feed (the strip's original
+  /// home); the sale, classified and food-zone lists pass their own so one
+  /// compact row style is shared across every list.
+  final String placement;
+
+  const CompactHouseAdStrip({
+    super.key,
+    this.creatorId,
+    this.contentId,
+    this.placement = 'bn_feed',
+  });
 
   @override
   State<CompactHouseAdStrip> createState() => _CompactHouseAdStripState();
@@ -33,7 +43,7 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
   }
 
   Future<void> _load() async {
-    final ad = await HouseAdsService.fetch('bn_feed');
+    final ad = await HouseAdsService.fetch(widget.placement);
     if (!mounted || ad == null) return;
     setState(() => _ad = ad);
     updateKeepAlive();
@@ -41,7 +51,7 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
       _tracked = true;
       HouseAdsService.track(
         eventType: 'impression',
-        placement: 'bn_feed',
+        placement: widget.placement,
         adId: ad.id,
         creatorId: widget.creatorId,
         contentId: widget.contentId,
@@ -54,7 +64,7 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
     if (ad == null) return;
     HouseAdsService.track(
       eventType: 'cta_click',
-      placement: 'bn_feed',
+      placement: widget.placement,
       adId: ad.id,
       creatorId: widget.creatorId,
       contentId: widget.contentId,
@@ -71,7 +81,7 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
     if (ad != null) {
       HouseAdsService.track(
         eventType: 'close',
-        placement: 'bn_feed',
+        placement: widget.placement,
         adId: ad.id,
         creatorId: widget.creatorId,
       );
