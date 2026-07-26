@@ -137,9 +137,9 @@
                   কত দিনের অডিয়েন্স
                 </label>
                 <select v-model.number="form.retarget_days" class="date-select">
-                  <option :value="7">গত ৭ দিন</option>
-                  <option :value="30">গত ৩০ দিন</option>
-                  <option :value="90">গত ৯০ দিন</option>
+                  <option :value="7">{{ $t("adc_last_7") }}</option>
+                  <option :value="30">{{ $t("adc_last_30") }}</option>
+                  <option :value="90">{{ $t("adc_last_90") }}</option>
                 </select>
               </div>
               <div
@@ -181,14 +181,14 @@
             <!-- Title -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                বিজ্ঞাপনের টাইটেল <span class="text-red-500">*</span>
+                {{ $t("adc_ad_title") }} <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="form.title"
                 type="text"
                 required
                 maxlength="255"
-                placeholder="যেমন: ঈদ অফারে ৩০% ছাড় — আজই অর্ডার করুন"
+                :placeholder='$t("adc_ad_title_ph")'
                 class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               />
             </div>
@@ -209,7 +209,7 @@
                       : 'border-gray-300 text-gray-700'
                   "
                 >
-                  🖼️ ছবি বিজ্ঞাপন
+                  🖼️ {{ $t("adc_type_image") }}
                 </button>
                 <button
                   type="button"
@@ -221,7 +221,7 @@
                       : 'border-gray-300 text-gray-700'
                   "
                 >
-                  🎬 ভিডিও বিজ্ঞাপন (৫ সেকেন্ড স্কিপেবল)
+                  🎬 {{ $t("adc_type_video") }}
                 </button>
                 <button
                   type="button"
@@ -233,7 +233,7 @@
                       : 'border-gray-300 text-gray-700'
                   "
                 >
-                  🚀 পোস্ট বুস্ট
+                  🚀 {{ $t("adc_type_boost") }}
                 </button>
               </div>
             </div>
@@ -241,13 +241,13 @@
             <!-- Description -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                বিবরণ <span class="text-red-500">*</span>
+                {{ $t("adc_desc") }} <span class="text-red-500">*</span>
               </label>
               <textarea
                 v-model="form.description"
                 required
                 rows="4"
-                placeholder="আপনার পণ্য বা সেবা সম্পর্কে সংক্ষেপে লিখুন…"
+                :placeholder='$t("adc_desc_ph")'
                 class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               ></textarea>
             </div>
@@ -258,7 +258,7 @@
                 <label class="block text-sm font-medium text-gray-800 mb-1">
                   Ad Video <span class="text-red-500">*</span>
                   <span class="text-xs font-normal text-gray-500"
-                    >(সর্বোচ্চ 60MB)</span
+                    >{{ $t("adc_max_60mb") }}</span
                   >
                 </label>
                 <input
@@ -307,7 +307,7 @@
                 <label class="block text-sm font-medium text-gray-800 mb-1">
                   সহায়ক ব্যানার
                   <span class="text-xs font-normal text-gray-500"
-                    >(ভিডিওর নিচে দেখাবে)</span
+                    >{{ $t("adc_companion_note") }}</span
                   >
                 </label>
                 <div class="flex items-center gap-3">
@@ -319,7 +319,7 @@
                   <label
                     class="px-3 py-2 text-sm border border-dashed border-gray-300 rounded-md cursor-pointer text-gray-600 hover:border-indigo-400"
                   >
-                    {{ companionBanner ? "পরিবর্তন করুন" : "ব্যানার আপলোড করুন" }}
+                    {{ companionBanner ? $t("adc_change") : $t("adc_upload_banner") }}
                     <input
                       type="file"
                       accept="image/*"
@@ -335,13 +335,13 @@
             <div v-if="form.format === 'boost'" class="space-y-3">
               <div>
                 <label class="block text-sm font-medium text-gray-800 mb-1">
-                  পোস্ট আইডি <span class="text-red-500">*</span>
+                  {{ $t("adc_post_id") }} <span class="text-red-500">*</span>
                 </label>
                 <div class="flex items-center gap-2">
                   <input
                     v-model="boostPostId"
                     type="text"
-                    placeholder="যেমন: 1024"
+                    :placeholder='$t("adc_post_id_ph")'
                     class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                   />
                   <button
@@ -350,7 +350,7 @@
                     :disabled="!boostPostId || boostLoading"
                     class="shrink-0 px-3 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors"
                   >
-                    {{ boostLoading ? "লোড হচ্ছে…" : "পোস্ট লোড করুন" }}
+                    {{ boostLoading ? $t("adc_loading") : $t("adc_load_post") }}
                   </button>
                 </div>
                 <p class="mt-1 text-xs text-gray-500">
@@ -403,7 +403,7 @@
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 বিজ্ঞাপনের ছবি
                 <span class="text-xs font-normal text-gray-500"
-                  >(সর্বোচ্চ ৪টি)</span
+                  >{{ $t("adc_images_max") }}</span
                 >
               </label>
               <div class="flex flex-wrap gap-2">
@@ -426,7 +426,7 @@
                   class="w-24 h-24 rounded-md border-2 border-dashed border-gray-300 hover:border-indigo-400 flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:text-indigo-600"
                 >
                   <UIcon name="i-heroicons-photo" class="w-6 h-6" />
-                  <span class="text-[11px] mt-1">ছবি যোগ করুন</span>
+                  <span class="text-[11px] mt-1">{{ $t("adc_add_image") }}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -476,7 +476,7 @@
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 Placements (কোথায় দেখাবে)
                 <span class="text-xs font-normal text-gray-500"
-                  >— কিছু না বাছলে সব জায়গায়</span
+                  >{{ $t("adc_placements_none") }}</span
                 >
               </label>
               <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-1.5">
@@ -516,7 +516,7 @@
                     v-model="form.female"
                     class="h-4 w-4 text-indigo-600 rounded"
                   />
-                  <span class="text-sm text-gray-800">নারী</span>
+                  <span class="text-sm text-gray-800">{{ $t("ads_edit_female") }}</span>
                 </label>
                 <label class="inline-flex items-center gap-2">
                   <input
@@ -524,7 +524,7 @@
                     v-model="form.other"
                     class="h-4 w-4 text-indigo-600 rounded"
                   />
-                  <span class="text-sm text-gray-800">অন্যান্য</span>
+                  <span class="text-sm text-gray-800">{{ $t("ads_edit_other") }}</span>
                 </label>
               </div>
             </div>
@@ -538,7 +538,7 @@
                 <span
                   class="text-sm font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md"
                 >
-                  {{ form.min_age }} – {{ form.max_age }} বছর
+                  {{ form.min_age }} – {{ form.max_age }} {{ $t("adc_years") }}
                 </span>
               </div>
               <div class="relative h-6 mx-1">
@@ -585,7 +585,7 @@
                 disabled
                 class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-500"
               >
-                <option value="bangladesh">বাংলাদেশ</option>
+                <option value="bangladesh">{{ $t("adc_bangladesh") }}</option>
               </select>
               <p class="mt-1 text-xs text-gray-500">
                 Currently only available in Bangladesh
@@ -595,7 +595,7 @@
             <!-- Budget -->
             <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
-                বাজেট (৳) <span class="text-red-500">*</span>
+                {{ $t("adc_budget") }} <span class="text-red-500">*</span>
               </label>
               <input
                 v-model.number="form.budget"
@@ -608,7 +608,7 @@
               <div
                 class="mt-2 flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-md px-3 py-2"
               >
-                <span class="text-sm text-indigo-700">আনুমানিক ভিউ</span>
+                <span class="text-sm text-indigo-700">{{ $t("adc_est_views") }}</span>
                 <span
                   v-if="estimating"
                   class="flex items-center gap-1.5 text-sm text-indigo-500"
@@ -650,7 +650,7 @@
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 দৈনিক বাজেট (৳)
                 <span class="text-xs font-normal text-gray-500"
-                  >— optional, খালি রাখলে একটানা চলবে</span
+                  >{{ $t("adc_daily_note") }}</span
                 >
               </label>
               <input
@@ -658,7 +658,7 @@
                 type="number"
                 min="0"
                 step="10"
-                placeholder="যেমন 50"
+                :placeholder='$t("adc_daily_ph")'
                 class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
               />
             </div>
@@ -668,21 +668,21 @@
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 সময়সূচি
                 <span class="text-xs font-normal text-gray-500"
-                  >— optional, খালি রাখলে আজ থেকেই চলবে</span
+                  >{{ $t("adc_schedule_note") }}</span
                 >
               </label>
               <div class="space-y-2.5">
                 <div>
-                  <div class="text-xs text-gray-500 mb-1">শুরুর তারিখ</div>
+                  <div class="text-xs text-gray-500 mb-1">{{ $t("adc_start_date") }}</div>
                   <div class="grid grid-cols-3 gap-2">
                     <select v-model="sched.sd" class="date-select">
-                      <option value="">দিন</option>
+                      <option value="">{{ $t("adc_day") }}</option>
                       <option v-for="d in 31" :key="d" :value="d">
                         {{ d }}
                       </option>
                     </select>
                     <select v-model="sched.sm" class="date-select">
-                      <option value="">মাস</option>
+                      <option value="">{{ $t("adc_month") }}</option>
                       <option
                         v-for="(m, i) in monthNames"
                         :key="i"
@@ -692,7 +692,7 @@
                       </option>
                     </select>
                     <select v-model="sched.sy" class="date-select">
-                      <option value="">বছর</option>
+                      <option value="">{{ $t("adc_year") }}</option>
                       <option v-for="y in yearOptions" :key="y" :value="y">
                         {{ y }}
                       </option>
@@ -700,16 +700,16 @@
                   </div>
                 </div>
                 <div>
-                  <div class="text-xs text-gray-500 mb-1">শেষের তারিখ</div>
+                  <div class="text-xs text-gray-500 mb-1">{{ $t("adc_end_date") }}</div>
                   <div class="grid grid-cols-3 gap-2">
                     <select v-model="sched.ed" class="date-select">
-                      <option value="">দিন</option>
+                      <option value="">{{ $t("adc_day") }}</option>
                       <option v-for="d in 31" :key="d" :value="d">
                         {{ d }}
                       </option>
                     </select>
                     <select v-model="sched.em" class="date-select">
-                      <option value="">মাস</option>
+                      <option value="">{{ $t("adc_month") }}</option>
                       <option
                         v-for="(m, i) in monthNames"
                         :key="i"
@@ -719,7 +719,7 @@
                       </option>
                     </select>
                     <select v-model="sched.ey" class="date-select">
-                      <option value="">বছর</option>
+                      <option value="">{{ $t("adc_year") }}</option>
                       <option v-for="y in yearOptions" :key="y" :value="y">
                         {{ y }}
                       </option>
@@ -734,12 +734,12 @@
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 Target Locations
                 <span class="text-xs font-normal text-gray-500"
-                  >— কিছু না বাছলে সারা বাংলাদেশ</span
+                  >{{ $t("adc_loc_none") }}</span
                 >
               </label>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <select v-model="selDivision" class="date-select">
-                  <option value="">বিভাগ</option>
+                  <option value="">{{ $t("adc_division") }}</option>
                   <option
                     v-for="r in geoRegions"
                     :key="r.name_eng"
@@ -753,7 +753,7 @@
                   class="date-select"
                   :disabled="!selDivision"
                 >
-                  <option value="">জেলা / সিটি</option>
+                  <option value="">{{ $t("adc_district") }}</option>
                   <option
                     v-for="c in geoCities"
                     :key="c.name_eng"
@@ -767,7 +767,7 @@
                   class="date-select"
                   :disabled="!selCity"
                 >
-                  <option value="">এরিয়া / উপজেলা</option>
+                  <option value="">{{ $t("adc_area") }}</option>
                   <option
                     v-for="u in geoUpazilas"
                     :key="u.name_eng"
@@ -817,7 +817,7 @@
                   class="w-4.5 h-4.5 text-red-500"
                 />
                 <span class="text-sm font-semibold text-gray-800"
-                  >বিজ্ঞাপন নীতিমালা</span
+                  >{{ $t("adc_policy") }}</span
                 >
               </div>
               <p class="text-xs text-gray-600 mb-2">
