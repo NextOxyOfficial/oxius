@@ -534,6 +534,9 @@ class _ReplyInputState extends State<_ReplyInput> {
               child: FlutterMentions(
                 key: _mentionKey,
                 suggestionPosition: SuggestionPosition.Top,
+                // Center the placeholder in the empty box; once the user types,
+                // fall back to left-align so a multi-line reply reads normally.
+                textAlign: _hasText ? TextAlign.start : TextAlign.center,
                 maxLines: 4,
                 // Opens two lines tall so a normal reply fits without the box
                 // growing under the caret as you type.

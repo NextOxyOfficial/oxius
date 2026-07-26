@@ -1229,6 +1229,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             msg['is_edited'] == 1 ||
             msg['is_edited'] == '1' ||
             msg['is_edited'] == 'true',
+        // Carry the server's reaction list through the parser. Without this the
+        // 5s poll (and any reload) rebuilds the map with no reactions, so a
+        // reaction would flash and then vanish. The server is the source of
+        // truth; the optimistic update in _reactToMessage only bridges the gap
+        // until the next poll refreshes from here.
+        'reactions': msg['reactions'] is List ? msg['reactions'] : const [],
       };
     }).toList();
 

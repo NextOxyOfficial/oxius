@@ -833,6 +833,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       'timeDisplay': _formatTime(
           DateTime.tryParse((m['created_at'] ?? '').toString())),
       'isSeen': false,
+      // The bubble renders THIS mapped copy, not the raw message, so the
+      // reaction list has to be carried across or group chips never show.
+      // _reactToGroupMessage mutates raw['reactions'] and _bubbleMessage is
+      // rebuilt from raw on each frame, so the optimistic update flows through.
+      'reactions': m['reactions'] is List ? m['reactions'] : const [],
     };
   }
 

@@ -1077,7 +1077,9 @@ class MessageViewSet(viewsets.ModelViewSet):
         # Frontend will show "Message removed" for deleted messages
         queryset = Message.objects.filter(
             Q(sender=user) | Q(receiver=user)
-        ).select_related('sender', 'receiver', 'chatroom')
+        ).select_related(
+            'sender', 'receiver', 'chatroom'
+        ).prefetch_related('reactions')
 
         if chatroom_id:
             queryset = queryset.filter(chatroom_id=chatroom_id)
@@ -1896,7 +1898,9 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
 
         if request.method == 'GET':
             membership = group.memberships.filter(user=request.user).first()
-            qs = group.messages.select_related('sender', 'reply_to__sender')
+            qs = group.messages.select_related(
+                'sender', 'reply_to__sender'
+            ).prefetch_related('reactions')
             if membership and membership.cleared_at:
                 qs = qs.filter(created_at__gt=membership.cleared_at)
             msgs = list(qs.order_by('-created_at')[:100])[::-1]
