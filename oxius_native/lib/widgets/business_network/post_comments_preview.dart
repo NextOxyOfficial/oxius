@@ -561,10 +561,10 @@ class _ReplyInputState extends State<_ReplyInput> {
                     borderSide: const BorderSide(
                         color: Color(0xFF3B82F6), width: 1),
                   ),
-                  // Roomier pill: the 4px vertical padding made it look
-                  // cramped next to the comment input below it.
+                  // Matches the comment input's pill height so the two stack
+                  // without the reply box looking oversized.
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   isDense: true,
                   suffixIconConstraints:
                       const BoxConstraints(minWidth: 34, minHeight: 34),

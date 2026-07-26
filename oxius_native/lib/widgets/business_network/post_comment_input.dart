@@ -261,12 +261,9 @@ class _PostCommentInputState extends State<PostCommentInput> {
                     width: 1,
                   ),
                 ),
-                // Roomier typing area: 4px hugged the text to the pill's
-                // edges; 15 gives a comfortable ~48px touch target with the
-                // text vertically centred.
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
-                  vertical: 15,
+                  vertical: 4,
                 ),
                 isDense: true,
                 suffixIcon: _isSubmitting

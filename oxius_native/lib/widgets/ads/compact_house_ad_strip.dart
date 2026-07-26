@@ -88,7 +88,9 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
     if (ad == null || _closed) return const SizedBox.shrink();
     if (_apology) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(10, 4, 10, 0),
+        // Same insets as the live strip so dismissing an ad doesn't shift the
+        // post's layout.
+        padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -105,7 +107,9 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
     final thumb = ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
     return Padding(
       // Sits tight under the media — border-less soft surface, no big gap.
-      padding: const EdgeInsets.fromLTRB(10, 4, 10, 0),
+      // The bottom inset keeps it off the actions-row divider; without it the
+      // strip reads as part of the border.
+      padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
       child: InkWell(
         onTap: _onTap,
         borderRadius: BorderRadius.circular(12),
