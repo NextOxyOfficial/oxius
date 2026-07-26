@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+// material (not just foundation) for the CTA's IconData, which lives next to
+// ctaLabel so the label and its icon can't drift apart.
+import 'package:flutter/material.dart';
 
 import 'api_service.dart';
 
@@ -91,6 +93,21 @@ class HouseAd {
         return 'ইমেইল করুন';
       default:
         return 'ভিজিট করুন';
+    }
+  }
+
+  /// Icon paired with [ctaLabel]. Mirrors the web's ListBannerAd map and the
+  /// ads-panel preview, so one ad type looks the same everywhere it runs.
+  IconData get ctaIcon {
+    switch (adType) {
+      case 'call_on_whatsapp':
+        return Icons.chat_bubble_outline_rounded;
+      case 'call_on_phone':
+        return Icons.phone_outlined;
+      case 'email_us':
+        return Icons.mail_outline_rounded;
+      default:
+        return Icons.open_in_new_rounded;
     }
   }
 }

@@ -180,26 +180,32 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                         // rather than competing with the post's own buttons.
                         // Label comes from the ad's type (Visit site /
                         // WhatsApp / Call / Email) as set in the ads panel.
+                        // Borderless icon + label. The outline read as a second
+                        // button competing with the row's own tap target; the
+                        // icon comes from the ad type so it matches the web
+                        // strip and the ads-panel preview.
                         InkWell(
                           onTap: _onTap,
-                          borderRadius: BorderRadius.circular(999),
-                          child: Container(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 9, vertical: 3),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color: const Color(0xFF2563EB),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              ad.ctaLabel,
-                              style: const TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF2563EB),
-                              ),
+                                horizontal: 4, vertical: 3),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(ad.ctaIcon,
+                                    size: 13,
+                                    color: const Color(0xFF2563EB)),
+                                const SizedBox(width: 3),
+                                Text(
+                                  ad.ctaLabel,
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF2563EB),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
