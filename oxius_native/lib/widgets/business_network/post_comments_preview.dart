@@ -564,7 +564,7 @@ class _ReplyInputState extends State<_ReplyInput> {
                   // Roomier pill: the 4px vertical padding made it look
                   // cramped next to the comment input below it.
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
                   isDense: true,
                   suffixIconConstraints:
                       const BoxConstraints(minWidth: 34, minHeight: 34),
