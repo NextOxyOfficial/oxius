@@ -587,7 +587,7 @@ class _PostCardState extends State<PostCard> {
           AdsySheetAction(
             icon: Icons.edit_outlined,
             title: 'Edit post',
-            subtitle: 'পোস্টটি সম্পাদনা করুন',
+            subtitle: 'পোস্টটি এডিট করুন',
             onTap: _handleEditPost,
           ),
           AdsySheetAction(

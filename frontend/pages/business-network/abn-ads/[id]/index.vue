@@ -414,7 +414,7 @@
             class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-xl transition-colors"
           >
             <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
-            সম্পাদনা করুন
+            এডিট করুন
           </button>
 
           <button

@@ -1105,9 +1105,9 @@ export default defineI18nConfig(() => ({
       ads_prev: "আগের",
       ads_next: "পরের",
       // ── Ads edit page ──
-      ads_edit_title: "বিজ্ঞাপন সম্পাদনা",
+      ads_edit_title: "বিজ্ঞাপন এডিট",
       ads_edit_sub: "পরিবর্তন সংরক্ষণ করলে বিজ্ঞাপনটি আবার রিভিউতে যেতে পারে",
-      ads_edit_not_found: "বিজ্ঞাপনটি পাওয়া যায়নি, অথবা এটি সম্পাদনার অনুমতি আপনার নেই।",
+      ads_edit_not_found: "বিজ্ঞাপনটি পাওয়া যায়নি, অথবা এটি এডিটর অনুমতি আপনার নেই।",
       ads_edit_back_panel: "বিজ্ঞাপন প্যানেলে ফিরে যান",
       ads_edit_status: "অবস্থা",
       ads_edit_spent: "খরচ হয়েছে",
