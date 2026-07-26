@@ -516,7 +516,7 @@
                     v-model="form.female"
                     class="h-4 w-4 text-indigo-600 rounded"
                   />
-                  <span class="text-sm text-gray-800">Female</span>
+                  <span class="text-sm text-gray-800">নারী</span>
                 </label>
                 <label class="inline-flex items-center gap-2">
                   <input
@@ -524,7 +524,7 @@
                     v-model="form.other"
                     class="h-4 w-4 text-indigo-600 rounded"
                   />
-                  <span class="text-sm text-gray-800">Other</span>
+                  <span class="text-sm text-gray-800">অন্যান্য</span>
                 </label>
               </div>
             </div>
@@ -585,7 +585,7 @@
                 disabled
                 class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-500"
               >
-                <option value="bangladesh">Bangladesh</option>
+                <option value="bangladesh">বাংলাদেশ</option>
               </select>
               <p class="mt-1 text-xs text-gray-500">
                 Currently only available in Bangladesh

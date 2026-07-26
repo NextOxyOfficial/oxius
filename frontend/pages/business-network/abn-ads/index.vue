@@ -846,7 +846,7 @@
                       v-model="adForm.category"
                       class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                     >
-                      <option value="">Select Category</option>
+                      <option value="">ক্যাটাগরি বাছাই করুন</option>
                       <option
                         v-for="category in abnAdsCategories"
                         :value="category.id"
@@ -859,7 +859,7 @@
                   <!-- Gender -->
                   <div>
                     <label class="block text-sm font-medium text-gray-800"
-                      >Targeted Audience</label
+                      >যাদের দেখাতে চান</label
                     >
                     <div class="mt-1 flex space-x-4">
                       <label class="inline-flex items-center space-x-2">
@@ -876,7 +876,7 @@
                           v-model="adForm.female"
                           class="form-checkbox h-5 w-5 text-indigo-600 focus:ring-indigo-400 rounded"
                         />
-                        <span class="text-sm text-gray-800">Female</span>
+                        <span class="text-sm text-gray-800">নারী</span>
                       </label>
                       <label class="inline-flex items-center space-x-2">
                         <input
@@ -885,7 +885,7 @@
                           value="other"
                           class="form-checkbox h-5 w-5 text-indigo-600 focus:ring-indigo-400 rounded"
                         />
-                        <span class="text-sm text-gray-800">Other</span>
+                        <span class="text-sm text-gray-800">অন্যান্য</span>
                       </label>
                     </div>
                   </div>
@@ -965,7 +965,7 @@
                       class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                       disabled
                     >
-                      <option value="bangladesh">Bangladesh</option>
+                      <option value="bangladesh">বাংলাদেশ</option>
                     </select>
                     <p class="mt-1 text-sm text-gray-600">
                       Currently only available in Bangladesh
@@ -985,11 +985,11 @@
                       v-model="adForm.ad_type"
                       class="mt-1 block w-full px-3 py-0.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
                     >
-                      <option value="">Select Ad Type</option>
-                      <option value="click_to_website">Click to Website</option>
-                      <option value="call_on_whatsapp">Call on WhatsApp</option>
-                      <option value="call_on_phone">Call on Phone</option>
-                      <option value="email_us">Email Us</option>
+                      <option value="">বিজ্ঞাপনের ধরন বাছাই করুন</option>
+                      <option value="click_to_website">ওয়েবসাইটে নিয়ে যান</option>
+                      <option value="call_on_whatsapp">হোয়াটসঅ্যাপে কল</option>
+                      <option value="call_on_phone">ফোনে কল</option>
+                      <option value="email_us">ইমেইল করুন</option>
                     </select>
                   </div>
 
@@ -1255,7 +1255,7 @@
                         v-else
                         class="h-full w-full flex items-center justify-center"
                       >
-                        <p class="text-sm text-gray-600">No image uploaded</p>
+                        <p class="text-sm text-gray-600">কোনো ছবি দেওয়া হয়নি</p>
                       </div>
 
                       <!-- Image count indicator -->
@@ -1283,7 +1283,7 @@
                             ).name
                           }}
                         </span>
-                        <span class="text-gray-600 text-sm">Bangladesh</span>
+                        <span class="text-gray-600 text-sm">বাংলাদেশ</span>
                         <div class="flex flex-wrap gap-2">
                           <span
                             v-if="adForm.gender"
@@ -1456,8 +1456,8 @@
                         product/service
                       </li>
                       <li>Keep your title concise and include keywords</li>
-                      <li>Highlight key benefits in your description</li>
-                      <li>Include a clear call to action</li>
+                      <li>বিবরণে মূল সুবিধাগুলো তুলে ধরুন</li>
+                      <li>স্পষ্ট একটি কল-টু-অ্যাকশন রাখুন</li>
                     </ul>
                   </div>
                 </div>
@@ -1487,7 +1487,7 @@
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 />
               </svg>
-              <h3 class="text-base font-medium text-gray-800">Delete Ad</h3>
+              <h3 class="text-base font-medium text-gray-800">বিজ্ঞাপন মুছে ফেলুন</h3>
               <p class="text-sm text-gray-600 mt-1">
                 Are you sure you want to delete this ad? This action cannot be
                 undone.
@@ -1608,7 +1608,7 @@
             class="bg-white rounded-md shadow-sm w-full max-w-md p-5 max-h-[80vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-sm font-medium text-gray-800">Ad Preview</h3>
+              <h3 class="text-sm font-medium text-gray-800">বিজ্ঞাপনের প্রিভিউ</h3>
               <button
                 @click="showPreviewModal = false"
                 class="text-gray-600 hover:text-gray-600 rounded-md"
@@ -1700,7 +1700,7 @@
                   v-else
                   class="h-full w-full flex items-center justify-center"
                 >
-                  <p class="text-gray-600 text-sm">No image uploaded</p>
+                  <p class="text-gray-600 text-sm">কোনো ছবি দেওয়া হয়নি</p>
                 </div>
               </div>
 
@@ -1722,7 +1722,7 @@
                         .name
                     }}
                   </span>
-                  <span class="text-gray-600 text-sm">Bangladesh</span>
+                  <span class="text-gray-600 text-sm">বাংলাদেশ</span>
                   <span
                     class="px-2 py-0.5 rounded-md text-sm"
                     :class="getStatusClass(previewAdData.status)"
