@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'message_reaction_bar.dart';
+import 'message_reactors_sheet.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
 import '../../services/business_network_service.dart';
@@ -156,6 +157,10 @@ class ChatMessageBubble extends StatefulWidget {
   // of the default global name search.
   final void Function(String mentionName)? onMentionTap;
 
+  /// Group threads hit a different reactors endpoint, so the "who reacted"
+  /// sheet needs to know which thread this bubble belongs to.
+  final bool isGroupMessage;
+
   const ChatMessageBubble({
     super.key,
     required this.message,
@@ -176,6 +181,7 @@ class ChatMessageBubble extends StatefulWidget {
     required this.onScrollToMessage,
     this.onOptions,
     this.onMentionTap,
+    this.isGroupMessage = false,
   });
 
   @override
@@ -332,7 +338,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                           MessageReactionChips(
                             reactions: message['reactions'] as List,
                             alignRight: isMe,
-                            onTap: widget.onLongPress,
+                            // Tapping a reaction shows WHO reacted — the
+                            // options sheet is still a long-press away.
+                            onTap: () => MessageReactorsSheet.show(
+                              context,
+                              messageId: message['id']?.toString() ?? '',
+                              isGroup: widget.isGroupMessage,
+                            ),
                           ),
                         const SizedBox(height: 2),
                         if (message['showTimestamp'] == true)

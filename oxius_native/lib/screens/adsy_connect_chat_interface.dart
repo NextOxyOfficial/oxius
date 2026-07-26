@@ -656,9 +656,40 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
+  /// Apply a reaction pushed over the socket.
+  ///
+  /// The poll syncs reactions too, but only every few seconds; this makes the
+  /// other person's reaction land immediately. `user_ids` per emoji lets each
+  /// client derive its own "reacted_by_me" from one shared payload.
+  void _applyReactionEvent(Map<String, dynamic> event) {
+    if (event['scope'] != 'direct') return;
+    final id = event['message_id']?.toString() ?? '';
+    if (id.isEmpty) return;
+    final idx = _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
+    if (idx == -1) return;
+    final raw = event['reactions'];
+    if (raw is! List) return;
+    final me = AuthService.currentUser?.id ?? '';
+    final mapped = raw.map((r) {
+      final map = r as Map;
+      final ids = (map['user_ids'] as List?) ?? const [];
+      return {
+        'emoji': map['emoji'],
+        'count': map['count'],
+        'reacted_by_me': ids.map((e) => e.toString()).contains(me),
+      };
+    }).toList();
+    setState(() => _messages[idx]['reactions'] = mapped);
+  }
+
   void _handleRealtimeEvent(Map<String, dynamic> event) {
     final type = event['type']?.toString();
     if (type == null || !mounted) {
+      return;
+    }
+
+    if (type == 'message_reaction') {
+      _applyReactionEvent(event);
       return;
     }
 
@@ -1085,16 +1116,28 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
       bool hasUpdates = false;
 
-      // Update seen status for existing messages
+      // Sync mutable fields on messages we already hold. Only isSeen was
+      // synced here, so a reaction added by the OTHER person never appeared
+      // until the whole list was rebuilt — it looked like reactions needed a
+      // reload. Reactions and the edited flag change after send too, so they
+      // are refreshed the same way.
       for (var serverMsg in parsedMessages) {
         final serverId = serverMsg['id']?.toString() ?? '';
         final existingIndex = _messages.indexWhere(
           (m) => (m['id']?.toString() ?? '') == serverId,
         );
         if (existingIndex != -1) {
-          // Check if seen status changed
-          if (_messages[existingIndex]['isSeen'] != serverMsg['isSeen']) {
-            _messages[existingIndex]['isSeen'] = serverMsg['isSeen'];
+          final existing = _messages[existingIndex];
+          if (existing['isSeen'] != serverMsg['isSeen']) {
+            existing['isSeen'] = serverMsg['isSeen'];
+            hasUpdates = true;
+          }
+          if (existing['isEdited'] != serverMsg['isEdited']) {
+            existing['isEdited'] = serverMsg['isEdited'];
+            hasUpdates = true;
+          }
+          if (!_sameReactions(existing['reactions'], serverMsg['reactions'])) {
+            existing['reactions'] = serverMsg['reactions'];
             hasUpdates = true;
           }
         }
@@ -1192,6 +1235,24 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         );
       }
     }
+  }
+
+  /// Cheap value-compare of two reaction lists, so an unchanged poll doesn't
+  /// trigger a rebuild (this runs every 5s for every message on screen).
+  bool _sameReactions(dynamic a, dynamic b) {
+    final la = a is List ? a : const [];
+    final lb = b is List ? b : const [];
+    if (la.length != lb.length) return false;
+    for (var i = 0; i < la.length; i++) {
+      final x = la[i], y = lb[i];
+      if (x is! Map || y is! Map) return false;
+      if (x['emoji'] != y['emoji'] ||
+          x['count'] != y['count'] ||
+          x['reacted_by_me'] != y['reacted_by_me']) {
+        return false;
+      }
+    }
+    return true;
   }
 
   List<Map<String, dynamic>> _parseMessages(List<dynamic> messages) {

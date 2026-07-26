@@ -1,6 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .reactions import react_to_message, react_to_group_message
+from .reactions import (
+    group_message_reactors,
+    message_reactors,
+    react_to_group_message,
+    react_to_message,
+)
 from .views import (
     ChatRoomViewSet, MessageViewSet, MessageReportViewSet,
     BlockedUserViewSet, OnlineStatusViewSet, TypingStatusViewSet,
@@ -28,6 +33,10 @@ urlpatterns = [
     path('clear-active-chat/', clear_active_chat, name='clear_active_chat'),
     path('heartbeat/', heartbeat, name='heartbeat'),
     # Emoji reactions (long-press a bubble)
+    path('messages/<uuid:message_id>/reactors/', message_reactors,
+         name='message-reactors'),
+    path('group-messages/<uuid:message_id>/reactors/', group_message_reactors,
+         name='group-message-reactors'),
     path('messages/<uuid:message_id>/react/', react_to_message,
          name='react_to_message'),
     path('group-messages/<uuid:message_id>/react/', react_to_group_message,

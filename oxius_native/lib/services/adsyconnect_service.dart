@@ -793,6 +793,31 @@ class AdsyConnectService {
     return null;
   }
 
+  /// Who reacted to a message — [{emoji, user_id, name, image, is_verified,
+  /// is_pro}] — for the sheet opened by tapping a reaction. Fetched on demand
+  /// rather than carried in the thread payload, which only needs counts.
+  static Future<List<dynamic>?> fetchMessageReactors(
+    String messageId, {
+    bool isGroup = false,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final path = isGroup ? 'group-messages' : 'messages';
+      final res = await http.get(
+        Uri.parse('$baseUrl/$path/$messageId/reactors/'),
+        headers: headers,
+      );
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final body = jsonDecode(res.body);
+        return (body is Map ? body['reactors'] : null) as List<dynamic>?;
+      }
+      debugPrint('reactors failed ${res.statusCode}: ${res.body}');
+    } catch (e) {
+      debugPrint('Error loading reactors: $e');
+    }
+    return null;
+  }
+
   static Future<void> setActiveGroup(String groupId) async {
     try {
       final headers = await _getHeaders();

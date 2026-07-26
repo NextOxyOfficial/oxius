@@ -95,6 +95,33 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   String get _groupId => (_group['id'] ?? '').toString();
   String get _myId => AuthService.currentUser?.id ?? '';
 
+  /// Apply a reaction pushed over the socket.
+  ///
+  /// Without this a reaction from someone else only appeared on the next poll
+  /// — and while the socket is up that poll runs every ~30s, so it looked like
+  /// reactions needed a reload. The event carries the user ids per emoji so
+  /// each client works out its own "reacted_by_me" locally.
+  void _applyReactionEvent(Map<dynamic, dynamic> event) {
+    if (event['scope'] != 'group') return;
+    final id = event['message_id']?.toString() ?? '';
+    if (id.isEmpty) return;
+    final idx = _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
+    if (idx == -1) return;
+    final raw = event['reactions'];
+    if (raw is! List) return;
+    final me = _myId;
+    final mapped = raw.map((r) {
+      final map = r as Map;
+      final ids = (map['user_ids'] as List?) ?? const [];
+      return {
+        'emoji': map['emoji'],
+        'count': map['count'],
+        'reacted_by_me': ids.map((e) => e.toString()).contains(me),
+      };
+    }).toList();
+    setState(() => _messages[idx]['reactions'] = mapped);
+  }
+
   void _onScrollChanged() {
     if (!_scroll.hasClients) return;
     final away =
@@ -150,6 +177,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     // slow safety net.
     _realtimeSub = AdsyConnectRealtimeService.instance.events.listen((event) {
       if (!mounted) return;
+      if (event['type'] == 'message_reaction') {
+        _applyReactionEvent(event);
+        return;
+      }
       if (event['type'] != 'group_message') return;
       final msg = event['message'];
       if (msg is! Map) return;
@@ -1189,6 +1220,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       child: ChatMessageBubble(
         key: ValueKey(msgId),
         message: mapped,
+        // Reactor sheet must hit the group endpoint.
+        isGroupMessage: true,
         // Avatar lives in the run header (Messenger-style), not per bubble.
         showAvatar: false,
         userName: _senderName(raw),

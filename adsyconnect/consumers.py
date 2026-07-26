@@ -209,6 +209,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': event['message']
         }))
 
+    async def message_reaction(self, event):
+        """A reaction was added/changed/cleared on a message this user can see.
+
+        Sent to every participant so a reaction shows up immediately instead of
+        waiting for the next poll — the group thread only polls every 30s while
+        the socket is up, so without this reactions looked like they needed a
+        reload. `user_ids` per emoji lets each client work out its own
+        "reacted_by_me" without a per-recipient payload.
+        """
+        await self.send(text_data=json.dumps({
+            'type': 'message_reaction',
+            'scope': event.get('scope'),
+            'message_id': event.get('message_id'),
+            'reactions': event.get('reactions'),
+        }))
+
     async def group_updated(self, event):
         """A group this user belongs to was created/changed."""
         await self.send(text_data=json.dumps({
