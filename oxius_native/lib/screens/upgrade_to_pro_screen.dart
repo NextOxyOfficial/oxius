@@ -21,7 +21,6 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   static const Color _ink = Color(0xFF14213D);
   static const Color _muted = Color(0xFF64748B);
-  static const Color _surface = Color(0xFFF8FAFC);
   static const Color _panel = Color(0xFFFFFFFF);
   static const Color _gold = Color(0xFFF59E0B);
   static const Color _peach = Color(0xFFFFE7C7);
