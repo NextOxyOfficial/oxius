@@ -12,11 +12,17 @@ class PostHeader extends StatelessWidget {
   final VoidCallback? onFollowToggle;
   final VoidCallback? onMorePressed;
 
+  /// Promoted post: the timestamp slot reads "Sponsored" instead. A boosted
+  /// post is shown as the post it actually is, so everything else — avatar,
+  /// name, badges, follow — stays exactly as a normal feed post.
+  final bool isSponsored;
+
   const PostHeader({
     super.key,
     required this.post,
     this.onFollowToggle,
     this.onMorePressed,
+      this.isSponsored = false,
   });
 
   void _navigateToProfile(BuildContext context) {
@@ -180,7 +186,9 @@ class PostHeader extends StatelessWidget {
                       const SizedBox(width: 6),
                     ],
                     Text(
-                      _formatTimeAgo(post.createdAt),
+                      isSponsored
+                          ? 'Sponsored'
+                          : _formatTimeAgo(post.createdAt),
                       style: TextStyle(
                         fontSize: 12.5,
                         color: Colors.grey.shade600,

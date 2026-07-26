@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../models/business_network_models.dart';
 import 'dart:convert';
 
 // material (not just foundation) for the CTA's IconData, which lives next to
@@ -33,6 +34,19 @@ class HouseAd {
   final bool advertiserIsFollowing;
   // format='boost': the promoted BN short to play inline in the reel.
   final Map<String, dynamic>? boostedPost;
+
+  /// The boosted post, fully parsed. serve_ad ships the same serialization the
+  /// feed endpoint uses, so the feed can render it through the ordinary
+  /// PostCard instead of a lookalike built from a handful of flat fields.
+  BusinessNetworkPost? get boostedPostModel {
+    final raw = boostedPost?['post'];
+    if (raw is! Map) return null;
+    try {
+      return BusinessNetworkPost.fromJson(Map<String, dynamic>.from(raw));
+    } catch (_) {
+      return null;
+    }
+  }
 
   const HouseAd({
     required this.id,

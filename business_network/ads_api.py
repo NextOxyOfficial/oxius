@@ -409,8 +409,27 @@ def serve_ad(request):
             if author is not None and getattr(author, "image", None)
             else "",
         }
-        if not boost_video:
-            # A boost without a playable video can't run in the reel.
+        # The FEED renders a boost as the real post — same card, same like /
+        # comment / share — so it needs the full serialization, not just the
+        # handful of fields the reel plays with. Sent alongside the flat keys
+        # above so the reel keeps working untouched.
+        try:
+            from .serializers import BusinessNetworkPostSerializer
+
+            payload["boosted_post"]["post"] = BusinessNetworkPostSerializer(
+                post, context={"request": request}
+            ).data
+        except Exception:
+            # A serialization problem must not take the whole ad response down;
+            # the reel can still play from the flat fields.
+            pass
+
+        # Only the reel actually needs a video. A boosted photo post is a
+        # perfectly good feed ad, and rejecting it here used to drop those
+        # advertisers to admob for every placement.
+        if not boost_video and placement in (
+            "shorts_reel", "shorts_fullscreen", "shorts_banner",
+        ):
             return Response({"fallback": "admob"})
 
     return Response({"source": "panel", "ad": payload})

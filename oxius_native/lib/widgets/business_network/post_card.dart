@@ -30,6 +30,7 @@ import 'reshared_news_card.dart';
 import '../../screens/news_detail_screen.dart';
 import 'post_actions.dart';
 import 'post_comments_preview.dart';
+import 'post_comments_sheet.dart';
 import 'post_comment_input.dart';
 import '../../screens/business_network/post_media_viewer_screen.dart';
 import '../../screens/business_network/shorts_player_screen.dart';
@@ -47,6 +48,13 @@ class PostCard extends StatefulWidget {
   // Feed-controlled: show the compact sponsored strip under this post's media.
   final bool showInlineAd;
 
+  /// Promoted (boosted) post rendered inside the feed. It behaves as the real
+  /// post it is — like, comment and share all work — with two differences:
+  /// the timestamp reads "Sponsored", and comments are NOT expanded inline.
+  /// Instead the count opens a sheet, the same treatment AdsyNews gets, so a
+  /// promoted post doesn't dominate the feed with an open comment section.
+  final bool isSponsored;
+
   const PostCard({
     super.key,
     required this.post,
@@ -57,6 +65,7 @@ class PostCard extends StatefulWidget {
     this.onSaveChanged,
     this.onReshared,
     this.showInlineAd = false,
+      this.isSponsored = false,
   });
 
   @override
@@ -216,6 +225,22 @@ class _PostCardState extends State<PostCard> {
     // Check authentication
     if (AuthService.currentUser == null) {
       _showLoginPrompt('view comments');
+      return;
+    }
+
+    // A promoted post keeps the reader in the feed: comments open in a sheet
+    // (AdsyNews behaviour) instead of pushing the details page. The count
+    // updates from the sheet, so a new comment shows without any reload.
+    if (widget.isSponsored) {
+      await PostCommentsSheet.show(
+        context,
+        post: _post,
+        onCountChanged: (n) {
+          if (!mounted) return;
+          setState(() => _post = _post.copyWith(commentsCount: n));
+          widget.onPostUpdated?.call(_post);
+        },
+      );
       return;
     }
 
@@ -996,6 +1021,7 @@ class _PostCardState extends State<PostCard> {
         children: [
           // Post Header
           PostHeader(
+            isSponsored: widget.isSponsored,
             post: _post,
             onFollowToggle: null, // Don't show follow button in posts
             onMorePressed: _showPostOptions,
@@ -1138,8 +1164,10 @@ class _PostCardState extends State<PostCard> {
           ),
           // Liked-by faces (mutual connections first)
           _buildLikedByRow(),
-          // Comments Preview
-          PostCommentsPreview(
+          // Comments Preview — a promoted post shows the count only; tapping
+          // it opens the sheet above.
+          if (!widget.isSponsored)
+            PostCommentsPreview(
             post: _post,
             onViewAll: _handleViewAllComments,
             onCommentCountChanged: () {
@@ -1203,8 +1231,9 @@ class _PostCardState extends State<PostCard> {
               }
             },
           ),
-          // Add Comment Input
-          PostCommentInput(
+          // Add Comment Input — promoted posts comment through the sheet.
+          if (!widget.isSponsored)
+            PostCommentInput(
             onSubmit: _addComment,
             userAvatar: AuthService.currentUser?.profilePicture,
             postId: _post.id.toString(),

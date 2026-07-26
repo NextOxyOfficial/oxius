@@ -128,6 +128,9 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
+            // A soft grey edge so the strip reads as its own block rather than
+            // blending into the post it sits under.
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Row(
             children: [
@@ -189,18 +192,18 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                           borderRadius: BorderRadius.circular(6),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 3),
+                                horizontal: 8, vertical: 5),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(ad.ctaIcon,
-                                    size: 13,
+                                    size: 15,
                                     color: const Color(0xFF2563EB)),
                                 const SizedBox(width: 3),
                                 Text(
                                   ad.ctaLabel,
                                   style: const TextStyle(
-                                    fontSize: 10.5,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF2563EB),
                                   ),

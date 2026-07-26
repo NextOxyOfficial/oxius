@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../business_network/post_card.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../services/ads_service.dart';
@@ -130,6 +131,14 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
     super.build(context);
     final house = _houseAd;
     if (house != null) {
+      // A boosted post IS a post — render the real PostCard so it reads and
+      // behaves exactly like the rest of the feed (like / comment / share all
+      // work because it is the genuine post), with "Sponsored" in the
+      // timestamp slot. Only non-boost creatives use the ad-card chrome.
+      final boosted = house.boostedPostModel;
+      if (boosted != null) {
+        return PostCard(post: boosted, isSponsored: true);
+      }
       return HouseAdCard(
         ad: house,
         placement: _housePlacement,
