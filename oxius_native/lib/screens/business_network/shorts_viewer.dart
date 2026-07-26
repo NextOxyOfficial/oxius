@@ -8,6 +8,7 @@ import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/house_ads_service.dart';
+import '../../widgets/ads/ad_follow_button.dart';
 import '../../widgets/ads/house_ad_card.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../utils/video_playback_manager.dart';
@@ -2899,13 +2900,27 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                                 ],
                               ),
                             ),
-                            Text(
-                              'Sponsored',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.65),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Sponsored',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.65),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                // Same follow control as the feed ad, in its
+                                // light-on-dark form for video.
+                                const SizedBox(width: 8),
+                                AdFollowButton(
+                                  advertiserId: widget.ad.advertiserId,
+                                  initiallyFollowing:
+                                      widget.ad.advertiserIsFollowing,
+                                  onDark: true,
+                                ),
+                              ],
                             ),
                           ],
                         ),

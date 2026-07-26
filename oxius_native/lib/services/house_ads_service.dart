@@ -28,6 +28,9 @@ class HouseAd {
   // Trust badges beside the advertiser name (blue check / Pro pill).
   final bool advertiserVerified;
   final bool advertiserPro;
+  /// Whether the viewer already follows this advertiser — drives the Follow /
+  /// Following state on every ad surface that shows their name.
+  final bool advertiserIsFollowing;
   // format='boost': the promoted BN short to play inline in the reel.
   final Map<String, dynamic>? boostedPost;
 
@@ -48,6 +51,7 @@ class HouseAd {
     this.advertiserImage = '',
     this.advertiserVerified = false,
     this.advertiserPro = false,
+    this.advertiserIsFollowing = false,
     this.boostedPost,
   });
 
@@ -76,6 +80,7 @@ class HouseAd {
       advertiserImage: (m['advertiser_image'] ?? '').toString(),
       advertiserVerified: m['advertiser_verified'] == true,
       advertiserPro: m['advertiser_pro'] == true,
+      advertiserIsFollowing: m['advertiser_is_following'] == true,
       boostedPost: m['boosted_post'] is Map
           ? Map<String, dynamic>.from(m['boosted_post'] as Map)
           : null,

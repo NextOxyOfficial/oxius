@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 import '../../utils/video_playback_manager.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../services/house_ads_service.dart';
+import 'ad_follow_button.dart';
 import '../../utils/url_launcher_utils.dart';
 
 /// Native-style card for an ABN Ads Panel (house) ad — same chrome as the
@@ -360,18 +361,25 @@ class _HouseAdCardState extends State<HouseAdCard>
                         child: HouseAdCard.advertiserNameRow(ad),
                       ),
                       const SizedBox(height: 1),
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.campaign_outlined,
+                          const Icon(Icons.campaign_outlined,
                               size: 12, color: Color(0xFF94A3B8)),
-                          SizedBox(width: 3),
-                          Text(
+                          const SizedBox(width: 3),
+                          const Text(
                             'Sponsored',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF94A3B8),
                             ),
+                          ),
+                          // An ad carries a real BN profile, so let the viewer
+                          // follow the advertiser without leaving the feed.
+                          const SizedBox(width: 8),
+                          AdFollowButton(
+                            advertiserId: ad.advertiserId,
+                            initiallyFollowing: ad.advertiserIsFollowing,
                           ),
                         ],
                       ),

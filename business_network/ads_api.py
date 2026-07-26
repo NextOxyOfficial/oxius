@@ -126,6 +126,20 @@ def _ad_profile(user):
     return UserAdProfile.objects.filter(user=user).first()
 
 
+def _viewer_follows(request, author_id):
+    """Whether the signed-in viewer already follows [author_id]."""
+    user = getattr(request, "user", None)
+    if not author_id or user is None or not user.is_authenticated:
+        return False
+    if str(user.id) == str(author_id):
+        return False  # never offer "follow yourself"
+    from .models import BusinessNetworkFollowerModel
+
+    return BusinessNetworkFollowerModel.objects.filter(
+        follower=user, following_id=author_id
+    ).exists()
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def serve_ad(request):
@@ -364,6 +378,10 @@ def serve_ad(request):
         if chosen.user else False,
         "advertiser_pro": bool(getattr(chosen.user, "is_pro", False))
         if chosen.user else False,
+        # Follow state for the advertiser, so every ad surface that shows their
+        # name can render a correct Follow / Following button without a second
+        # round-trip per ad.
+        "advertiser_is_following": _viewer_follows(request, chosen.user_id),
     }
 
     # Boosted post: ship everything the shorts reel needs to play it inline.
