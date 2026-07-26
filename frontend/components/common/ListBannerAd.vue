@@ -32,11 +32,12 @@
       </p>
       <div class="flex items-center mt-0.5">
         <span class="text-[10.5px] font-semibold text-gray-400">স্পনসর্ড</span>
-        <!-- Outlined and compact: a quiet action, labelled from the ad's own
-             type as configured in the ads panel. -->
+        <!-- Borderless icon + label: a quiet action, labelled and iconed from
+             the ad's own type as configured in the ads panel. -->
         <span
-          class="ml-auto shrink-0 rounded-full border border-blue-600 px-2 py-[2px] text-[10.5px] font-bold text-blue-600"
+          class="ml-auto shrink-0 inline-flex items-center gap-1 text-[10.5px] font-bold text-blue-600"
         >
+          <UIcon :name="ctaIcon" class="w-3.5 h-3.5" />
           {{ ctaLabel }}
         </span>
       </div>
@@ -84,6 +85,18 @@ const ctaLabel = computed(
       call_on_phone: "কল করুন",
       email_us: "ইমেইল",
     }[ad.value?.ad_type] || "দেখুন")
+);
+
+// Same icon per ad type as the ads-panel preview, so what the advertiser
+// sees while creating the ad is what runs in the feed.
+const ctaIcon = computed(
+  () =>
+    ({
+      click_to_website: "i-heroicons-arrow-top-right-on-square",
+      call_on_whatsapp: "i-heroicons-chat-bubble-left-right",
+      call_on_phone: "i-heroicons-phone",
+      email_us: "i-heroicons-envelope",
+    }[ad.value?.ad_type] || "i-heroicons-arrow-top-right-on-square")
 );
 
 const ctaHref = computed(() => {
