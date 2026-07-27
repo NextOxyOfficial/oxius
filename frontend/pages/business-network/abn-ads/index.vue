@@ -367,7 +367,7 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
                   <h3 class="min-w-0 truncate font-semibold text-sm text-slate-800">
-                    {{ ad.title }}
+                    {{ plainText(ad.title) }}
                   </h3>
                   <span
                     class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium leading-none"
@@ -1895,6 +1895,23 @@
 </template>
 
 <script setup>
+/// A boost's title comes from the post, and post bodies are stored as HTML —
+/// printed straight, the list showed the markup.
+function plainText(html) {
+  return String(html || "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/(p|div|li|h[1-6])>/gi, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const { get, post, del } = useApi();
 const { user } = useAuth();
 const { t } = useI18n();

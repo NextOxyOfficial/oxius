@@ -350,88 +350,26 @@
                 <label class="block text-sm font-medium text-gray-800 mb-1">
                   কোন পোস্টটি বুস্ট করবেন? <span class="text-red-500">*</span>
                 </label>
-
-                <!-- Your own posts, as tiles. Typing an id was the only way
-                     before, which meant leaving the panel to go find one. -->
-                <div v-if="myPostsLoading" class="py-6 text-center text-sm text-gray-500">
-                  আপনার পোস্ট লোড হচ্ছে…
-                </div>
-                <div
-                  v-else-if="!myPosts.length"
-                  class="p-4 rounded-xl border border-dashed border-gray-300 text-sm text-gray-600 text-center"
-                >
-                  বুস্ট করার মতো পাবলিক পোস্ট নেই। আগে একটি পোস্ট করুন, তারপর
-                  এখান থেকে বুস্ট করতে পারবেন।
-                </div>
-                <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <p class="text-xs text-gray-500 mb-2">
+                  অ্যাপে পোস্টের ⋯ মেনু থেকে <b>"বুস্ট করুন"</b> চাপলে পোস্টটি
+                  এখানে নিজে থেকেই চলে আসবে। অথবা Post ID দিয়ে খুঁজুন।
+                </p>
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="boostPostId"
+                    type="text"
+                    :placeholder='$t("adc_post_id_ph")'
+                    class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
+                  />
                   <button
-                    v-for="p in myPosts"
-                    :key="p.id"
                     type="button"
-                    @click="selectBoostPost(p)"
-                    class="text-left border rounded-xl overflow-hidden transition-colors"
-                    :class="
-                      boostPostId === String(p.id)
-                        ? 'border-indigo-500 ring-2 ring-indigo-200'
-                        : 'border-gray-200 hover:border-indigo-300'
-                    "
+                    @click="loadBoostPost"
+                    :disabled="!boostPostId || boostLoading"
+                    class="shrink-0 px-3 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors"
                   >
-                    <div class="aspect-video bg-gray-100 relative">
-                      <img
-                        v-if="postThumb(p)"
-                        :src="postThumb(p)"
-                        class="w-full h-full object-cover"
-                      />
-                      <div
-                        v-else
-                        class="w-full h-full flex items-center justify-center text-gray-400"
-                      >
-                        <UIcon name="i-heroicons-document-text" class="w-6 h-6" />
-                      </div>
-                      <span
-                        v-if="boostPostId === String(p.id)"
-                        class="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full"
-                      >
-                        নির্বাচিত
-                      </span>
-                    </div>
-                    <div class="p-2">
-                      <p class="text-[12px] text-gray-700 line-clamp-2 leading-snug">
-                        {{ postExcerpt(p) || "(ছবি/ভিডিও পোস্ট)" }}
-                      </p>
-                      <p class="mt-1 text-[11px] text-gray-400">
-                        {{ postDate(p) }}
-                      </p>
-                    </div>
+                    {{ boostLoading ? $t("adc_loading") : $t("adc_load_post") }}
                   </button>
                 </div>
-
-                <!-- Fallback for a post that is not in the recent list. -->
-                <details class="mt-3">
-                  <summary class="text-xs text-gray-500 cursor-pointer select-none">
-                    উপরে পোস্টটি নেই? Post ID দিয়ে খুঁজুন
-                  </summary>
-                  <div class="flex items-center gap-2 mt-2">
-                    <input
-                      v-model="boostPostId"
-                      type="text"
-                      :placeholder='$t("adc_post_id_ph")'
-                      class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
-                    />
-                    <button
-                      type="button"
-                      @click="loadBoostPost"
-                      :disabled="!boostPostId || boostLoading"
-                      class="shrink-0 px-3 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors"
-                    >
-                      {{ boostLoading ? $t("adc_loading") : $t("adc_load_post") }}
-                    </button>
-                  </div>
-                  <p class="mt-1 text-xs text-gray-500">
-                    অ্যাপে পোস্টের ⋯ মেনু থেকে Post ID কপি করুন
-                  </p>
-                </details>
-
                 <p v-if="boostError" class="mt-1 text-xs text-red-500">
                   পোস্ট পাওয়া যায়নি — ID টি আবার দেখুন
                 </p>
@@ -1503,47 +1441,6 @@ const policyAgreed = ref(false);
 const route = useRoute();
 const boostPostId = ref("");
 
-// Your own posts, for the boost picker. Typing a post id was the only way in
-// before, which meant leaving the panel to hunt one down in the app.
-const myPosts = ref([]);
-const myPostsLoading = ref(false);
-
-async function loadMyPosts() {
-  const me = user.value?.user?.id || user.value?.id;
-  if (!me) return;
-  myPostsLoading.value = true;
-  try {
-    const res = await get(`/bn/user/${me}/posts/`);
-    const rows = res?.data?.results || res?.data || [];
-    // Only public posts can be boosted — the server enforces this too, but
-    // offering one that will be refused is a pointless dead end.
-    myPosts.value = (Array.isArray(rows) ? rows : [])
-      .filter((p) => (p.visibility || "public") === "public")
-      .slice(0, 18);
-  } catch (e) {
-    myPosts.value = [];
-  } finally {
-    myPostsLoading.value = false;
-  }
-}
-
-function postThumb(p) {
-  const m = (p?.post_media || [])[0];
-  if (!m) return "";
-  return m.thumbnail || m.image || "";
-}
-function postExcerpt(p) {
-  return (p?.content || "").replace(/\s+/g, " ").trim().slice(0, 90);
-}
-function postDate(p) {
-  const d = p?.created_at ? new Date(p.created_at) : null;
-  return d ? d.toLocaleDateString("bn-BD") : "";
-}
-function selectBoostPost(p) {
-  boostPostId.value = String(p.id);
-  boostedPost.value = p;
-  boostError.value = false;
-}
 
 const boostedPost = ref(null);
 const boostLoading = ref(false);
@@ -1569,14 +1466,6 @@ async function loadBoostPost() {
 }
 
 // Defensive field extraction — post payload shape varies slightly.
-watch(
-  () => form.format,
-  (f) => {
-    if (f === "boost" && !myPosts.value.length) loadMyPosts();
-  },
-  { immediate: true }
-);
-
 const boostThumb = computed(() => {
   const p = boostedPost.value;
   if (!p) return "";
@@ -1610,11 +1499,28 @@ const boostAuthorName = computed(() => {
     "AdsyClub ইউজার"
   );
 });
+/// Post bodies are stored as HTML ("<p class=\"text-wrap\">…</p>"), so any
+/// panel surface that prints one as text has to undo that first — tags AND
+/// the entities that survive them, or the reader sees "&nbsp;" and "&amp;".
+function plainText(html) {
+  return String(html || "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/(p|div|li|h[1-6])>/gi, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const boostExcerpt = computed(() => {
   const p = boostedPost.value;
   if (!p) return "";
-  const text = p.title || p.content || p.post_content || "";
-  return String(text).replace(/<[^>]*>/g, "");
+  return plainText(p.title || p.content || p.post_content || "");
 });
 
 // Prefill from ?post=<id> (e.g. shared from the app's ⋯ menu).

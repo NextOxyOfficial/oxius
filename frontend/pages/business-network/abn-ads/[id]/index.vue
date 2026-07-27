@@ -114,10 +114,10 @@
               Sponsored
             </div>
             <h2 class="text-base font-semibold text-gray-800 mt-0.5">
-              {{ ad.title }}
+              {{ plainText(ad.title) }}
             </h2>
             <p class="text-sm text-gray-600 mt-1.5 whitespace-pre-line">
-              {{ ad.description }}
+              {{ plainText(ad.description) }}
             </p>
 
             <!-- Objective + status chips -->
@@ -457,6 +457,23 @@
 </template>
 
 <script setup>
+/// A boost's title and description are derived from the post, and post bodies
+/// are stored as HTML — printed straight they showed the markup.
+function plainText(html) {
+  return String(html || "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/(p|div|li|h[1-6])>/gi, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const { get, post, del } = useApi();
 const { user } = useAuth();
 const route = useRoute();

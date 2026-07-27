@@ -23,6 +23,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast, Extract, Mod, Now, Power
 from django.shortcuts import get_object_or_404
+from django.utils.html import strip_tags
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -2205,7 +2206,10 @@ def _prepare_boost(data, user):
     data["ad_type_details"] = ""
     # Title/description exist only so the panel's own lists have something to
     # print; they are never shown to a viewer.
-    text = " ".join((post.content or "").split())
+    # Post bodies are stored as HTML ('<p class="text-wrap">…</p>'). Derive
+    # from the PLAIN text, otherwise the markup ends up in the panel's own
+    # lists, in the admin and anywhere else these two fields are printed.
+    text = " ".join(strip_tags(post.content or "").split())
     data["title"] = (text[:60] or f"Boosted post {post.pk}")
     data["description"] = text or f"Boosted post {post.pk}"
     # Boosts can only run where a full post card is rendered.
