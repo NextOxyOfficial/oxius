@@ -489,7 +489,13 @@
                       : 'border-gray-300 text-gray-700 hover:border-gray-400'
                   "
                 >
-                  <UIcon :name="t.icon" class="w-4 h-4 shrink-0" />
+                  <img
+                    v-if="t.value === 'message_on_adsyconnect'"
+                    src="/images/chat_icon.png"
+                    alt=""
+                    class="w-4 h-4 shrink-0 object-contain"
+                  />
+                  <UIcon v-else :name="t.icon" class="w-4 h-4 shrink-0" />
                   <span>{{ t.label }}</span>
                 </button>
               </div>
@@ -1032,7 +1038,13 @@
                 <span
                   class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-gray-900/5 text-gray-900 rounded-full"
                 >
-                  <UIcon :name="previewCta.icon" class="w-3.5 h-3.5" />
+                  <img
+                    v-if="previewCta.brand"
+                    src="/images/chat_icon.png"
+                    alt=""
+                    class="w-3.5 h-3.5 object-contain"
+                  />
+                  <UIcon v-else :name="previewCta.icon" class="w-3.5 h-3.5" />
                   {{ previewCta.label }}
                 </span>
               </div>
@@ -1191,7 +1203,13 @@
                 <span
                   class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-white/25 backdrop-blur text-white rounded-full"
                 >
-                  <UIcon :name="previewCta.icon" class="w-3.5 h-3.5" />
+                  <img
+                    v-if="previewCta.brand"
+                    src="/images/chat_icon.png"
+                    alt=""
+                    class="w-3.5 h-3.5 object-contain"
+                  />
+                  <UIcon v-else :name="previewCta.icon" class="w-3.5 h-3.5" />
                   {{ previewCta.label }}
                 </span>
               </div>
@@ -1559,8 +1577,12 @@ onMounted(() => {
 // label) — the same button the live ad will show. ──
 const previewCta = computed(() => {
   switch (form.ad_type) {
+    // `brand` renders the AdsyConnect mark instead of a generic glyph — the
+    // same PNG the app and the live list ad use.
+    case "message_on_adsyconnect":
+      return { label: "মেসেজ করুন", icon: "", brand: true };
     case "call_on_whatsapp":
-      return { label: "মেসেজ করুন", icon: "i-heroicons-chat-bubble-left-right" };
+      return { label: "হোয়াটসঅ্যাপ", icon: "i-heroicons-chat-bubble-left-right" };
     case "call_on_phone":
       return { label: "কল করুন", icon: "i-heroicons-phone" };
     case "email_us":

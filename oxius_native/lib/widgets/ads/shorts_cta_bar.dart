@@ -73,7 +73,7 @@ class ShortsCtaBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Row(
             children: [
-              Icon(ad.ctaIcon, size: 17, color: const Color(0xFF111827)),
+              ad.ctaIconWidget(size: 17, color: const Color(0xFF111827)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

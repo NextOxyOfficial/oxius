@@ -81,12 +81,6 @@ class HouseAdCard extends StatefulWidget {
     );
   }
 
-  /// Icon matching the ad's CTA type — shown beside the label on every
-  /// promo chip (feed card, shorts sheet, boost chip, mid-roll).
-  /// One mapping, on the model — this used to be a second copy that drifted
-  /// from HouseAd.ctaIcon (the WhatsApp mark landed in only one of them).
-  static IconData ctaIcon(HouseAd ad) => ad.ctaIcon;
-
   /// Launch the ad's CTA action (chat / website / WhatsApp / call / email).
   static void launchCta(HouseAd ad) {
     // AdsyConnect message: the advertiser IS the destination, so there is no
@@ -151,6 +145,9 @@ class HouseAdCard extends StatefulWidget {
             userAvatar: ad.advertiserImage,
             isVerified: ad.advertiserVerified,
             isPro: ad.advertiserPro,
+            // The advertiser opens a message that already says WHICH ad it is
+            // about — the sender's words arrive quoted on top of it.
+            pendingAttachment: ad.chatAttachment,
           ),
         ),
       );
@@ -544,7 +541,7 @@ class _HouseAdCardState extends State<HouseAdCard>
                   height: 40,
                   child: FilledButton.icon(
                     onPressed: _onCtaTap,
-                    icon: Icon(HouseAdCard.ctaIcon(ad), size: 17),
+                    icon: ad.ctaIconWidget(size: 17),
                     label: Text(
                       ad.ctaLabel,
                       style: const TextStyle(

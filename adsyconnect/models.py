@@ -1,3 +1,5 @@
+import base64
+import json
 from datetime import timedelta
 
 from django.db import models
@@ -6,6 +8,31 @@ from django.utils import timezone
 import uuid
 
 User = get_user_model()
+
+
+def shared_post_preview(raw):
+    """Preview line for an `ADSYPOST::<base64 json>` message, else None.
+
+    The envelope's `m` field is the sender's own text — present since a chat
+    can be opened from an ad's "মেসেজ করুন" button, where the card is a quote
+    and the typed words are the message. Showing only "একটি পোস্ট" for those
+    hides the entire message from the chat list and the push notification.
+    """
+    text = (raw or '').strip()
+    if not text.startswith('ADSYPOST'):
+        return None
+    marker = 'ADSYPOST::'
+    if text.startswith(marker):
+        try:
+            payload = json.loads(
+                base64.b64decode(text[len(marker):].strip()).decode('utf-8')
+            )
+            own = (payload.get('m') or '').strip()
+            if own:
+                return f'\U0001f4ce {own}'
+        except Exception:
+            pass
+    return '\U0001f4ce একটি পোস্ট শেয়ার করা হয়েছে'
 
 
 class ChatRoom(models.Model):
@@ -238,8 +265,9 @@ class GroupMessage(models.Model):
             return f'📄 {self.file_name or "Document"}'
         text = self.content or ''
         # A shared post's structured payload must never leak into previews.
-        if text.startswith('ADSYPOST'):
-            return '📎 পোস্ট'
+        shared = shared_post_preview(text)
+        if shared:
+            return shared
         return text[:50] + '...' if len(text) > 50 else text
 
 
@@ -372,11 +400,13 @@ class Message(models.Model):
             raw = self.content or ''
             # A shared post's structured payload (base64 envelope) must never
             # leak into chat-list previews or push-notification bodies.
-            if raw.startswith('ADSYPOST'):
-                return '📎 একটি পোস্ট শেয়ার করা হয়েছে'
+            shared = shared_post_preview(raw)
+            if shared:
+                return shared
             text = self._clean_reply_text(raw)
-            if text.startswith('ADSYPOST'):
-                return '📎 একটি পোস্ট শেয়ার করা হয়েছে'
+            shared = shared_post_preview(text)
+            if shared:
+                return shared
             return text[:50] + '...' if len(text) > 50 else text
         elif self.message_type == 'image':
             return "📷 Photo"

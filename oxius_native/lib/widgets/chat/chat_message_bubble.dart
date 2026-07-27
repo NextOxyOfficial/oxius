@@ -6,6 +6,7 @@ import 'message_reactors_sheet.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
 import '../../services/business_network_service.dart';
+import '../../utils/media_headers.dart';
 import '../../utils/mention_navigator.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/shared_post_message.dart';
@@ -418,9 +419,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // coloured bubble so the white preview card stands on its own — the
     // Messenger/WhatsApp look the user asked for.
     final text = (message['message'] ?? '').toString();
+    // …but only when it really is preview-ONLY. A shared card that carries the
+    // sender's own words is an ordinary message with an attachment, so it keeps
+    // the bubble — otherwise the text would sit bare on the background.
+    final sharedHere = SharedPostMessage.tryDecode(text);
     final previewOnly = msgType == 'text' &&
         !isDeleted &&
-        (SharedPostMessage.tryDecode(text) != null ||
+        ((sharedHere != null && sharedHere.text.trim().isEmpty) ||
             RegExp(r'^(https?:\/\/|www\.)\S+$', caseSensitive: false)
                 .hasMatch(text.trim()) ||
             // Emoji-only messages: the big glyphs stand on their own —
@@ -556,6 +561,47 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // name only, no link-preview chrome, no background box.
     final shared = SharedPostMessage.tryDecode(text);
     if (shared != null) {
+      final own = shared.text.trim();
+      // Card + the sender's words: the card reads as a quote pinned above an
+      // otherwise ordinary message. Same widget, so an ad quoted from its
+      // "মেসেজ করুন" button looks identical to a post shared into the chat.
+      if (own.isNotEmpty) {
+        return wrapWithQuote(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSharedPostContent(shared, isMe),
+              const SizedBox(height: 7),
+              LinkifyText(
+                own,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF1F2937),
+                  height: 1.38,
+                ),
+                linkStyle: const TextStyle(
+                  color: Color(0xFF111827),
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              if (isEdited) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Edited',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: isMe
+                        ? const Color(0xFF111827).withValues(alpha: 0.6)
+                        : const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      }
       return wrapWithQuote(_buildSharedPostContent(shared, isMe));
     }
     // Emoji-only messages render BIG (WhatsApp/Messenger style) — at normal
@@ -719,6 +765,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                         child: Image.network(
                           thumb,
                           fit: BoxFit.cover,
+                          // The CDN serves media only to a recognised client.
+                          headers: kMediaHeaders,
                           errorBuilder: (_, __, ___) =>
                               _sharedThumbFallback(),
                         ),

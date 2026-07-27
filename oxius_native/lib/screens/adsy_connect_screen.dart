@@ -192,8 +192,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final senderName = _getFullName(sender);
 
     var preview = (message['content'] ?? '').toString();
-    if (SharedPostMessage.tryDecode(preview) != null) {
-      preview = '📎 একটি পোস্ট';
+    final sharedPreview = SharedPostMessage.listPreview(preview);
+    if (sharedPreview != null) {
+      preview = sharedPreview;
     } else {
       preview = _formatReplyPreview(preview) ?? preview;
     }
@@ -235,8 +236,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     // Same sanitization as _parseChatRooms — the socket payload carries the
     // RAW content, so reply markers / shared-post JSON leaked into the list.
     String preview = rawPreview;
-    if (SharedPostMessage.tryDecode(rawPreview) != null) {
-      preview = '📎 একটি পোস্ট শেয়ার করা হয়েছে';
+    final sharedPreview = SharedPostMessage.listPreview(rawPreview);
+    if (sharedPreview != null) {
+      preview = sharedPreview;
     } else {
       preview = _formatReplyPreview(rawPreview) ?? rawPreview;
     }
@@ -767,9 +769,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         displayMessage = 'Message removed';
       } else if (messageContent.isEmpty) {
         displayMessage = 'No messages yet';
-      } else if (SharedPostMessage.tryDecode(messageContent) != null) {
+      } else if (SharedPostMessage.listPreview(messageContent) != null) {
         // Never leak the raw shared-post payload into the list preview.
-        displayMessage = '📎 একটি পোস্ট শেয়ার করা হয়েছে';
+        displayMessage = SharedPostMessage.listPreview(messageContent)!;
       } else {
         displayMessage = _formatReplyPreview(messageContent) ?? messageContent;
       }

@@ -33,16 +33,36 @@ class SharedPostMessage {
   /// Short post caption/content shown under the name.
   final String caption;
 
+  /// The sender's own words, written alongside the card.
+  ///
+  /// When this is empty the card IS the message (the plain "shared a post"
+  /// case). When it isn't, the card becomes a quote at the top of an ordinary
+  /// message bubble and this text is the message — which is how a tap on an
+  /// ad's "মেসেজ করুন" arrives: the ad is quoted, what the user types is the
+  /// message.
+  final String text;
+
   const SharedPostMessage({
     required this.ownerName,
     required this.thumbUrl,
     required this.postUrl,
     this.authorName = '',
     this.caption = '',
+    this.text = '',
   });
 
   /// The name to show bold on the card.
   String get displayName => authorName.isNotEmpty ? authorName : ownerName;
+
+  /// The same card carrying the sender's message.
+  SharedPostMessage withText(String value) => SharedPostMessage(
+        ownerName: ownerName,
+        thumbUrl: thumbUrl,
+        postUrl: postUrl,
+        authorName: authorName,
+        caption: caption,
+        text: value,
+      );
 
   String encode() {
     final json = jsonEncode({
@@ -51,11 +71,24 @@ class SharedPostMessage {
       'u': postUrl,
       'a': authorName,
       'c': _clean(caption),
+      // Omitted when empty so plain shares encode exactly as they always have.
+      if (text.trim().isNotEmpty) 'm': text.trim(),
     });
     return '$_jsonMarker${base64.encode(utf8.encode(json))}';
   }
 
   static bool isShared(String content) => content.startsWith(_prefix);
+
+  /// One-line chat-list preview, or null when [content] isn't a share.
+  ///
+  /// The sender's own words lead when there are any — a list row saying only
+  /// "একটি পোস্ট" hides the part the reader actually needs to see.
+  static String? listPreview(String content) {
+    final shared = tryDecode(content);
+    if (shared == null) return null;
+    final own = shared.text.trim();
+    return own.isEmpty ? '📎 একটি পোস্ট' : '📎 $own';
+  }
 
   /// Returns null when [content] isn't a shared-post message.
   static SharedPostMessage? tryDecode(String content) {
@@ -71,6 +104,7 @@ class SharedPostMessage {
           postUrl: (map['u'] ?? '').toString(),
           authorName: (map['a'] ?? '').toString(),
           caption: (map['c'] ?? '').toString(),
+          text: (map['m'] ?? '').toString(),
         );
       } catch (_) {
         // Fall through to salvage below.

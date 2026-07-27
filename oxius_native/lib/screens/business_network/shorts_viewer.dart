@@ -1078,7 +1078,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(HouseAdCard.ctaIcon(ad),
+                        ad.ctaIconWidget(
                             size: 15, color: const Color(0xFF111827)),
                         const SizedBox(width: 6),
                         Text(

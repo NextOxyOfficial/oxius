@@ -1154,8 +1154,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(HouseAdCard.ctaIcon(ad),
-                              size: 15, color: Colors.white),
+                          ad.ctaIconWidget(size: 15, color: Colors.white),
                           const SizedBox(width: 7),
                           Text(
                             ad.ctaLabel,

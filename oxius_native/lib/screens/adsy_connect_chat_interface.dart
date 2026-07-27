@@ -21,6 +21,8 @@ import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
+import '../utils/media_headers.dart';
+import '../utils/shared_post_message.dart';
 import '../services/agora_call_service.dart';
 import '../services/fcm_service.dart';
 import '../widgets/chat/chat_app_bar.dart';
@@ -48,6 +50,13 @@ class AdsyConnectChatInterface extends StatefulWidget {
   final bool isPro;
   final VoidCallback? onClose;
 
+  /// Something the chat was opened ABOUT — today, the ad whose "মেসেজ করুন"
+  /// button brought the user here. It shows as a removable card above the
+  /// composer and rides along on the first message as its quote, so the
+  /// advertiser sees which ad the person is writing about instead of a
+  /// context-free "hi".
+  final SharedPostMessage? pendingAttachment;
+
   const AdsyConnectChatInterface({
     super.key,
     required this.chatroomId,
@@ -59,6 +68,7 @@ class AdsyConnectChatInterface extends StatefulWidget {
     this.isVerified = false,
     this.isPro = false,
     this.onClose,
+    this.pendingAttachment,
   });
 
   /// Stable route name used to identify a chat in the Navigator stack so the
@@ -291,6 +301,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   // its full date+time; tapping again hides it.
   String? _tappedTimeMessageId;
   String? _lastSeenTime;
+  /// Attachment waiting to ride along with the next message (see
+  /// [AdsyConnectChatInterface.pendingAttachment]).
+  SharedPostMessage? _pendingAttachment;
   Timer? _onlineStatusTimer;
   Timer? _remoteTypingResetTimer;
   Timer? _activeChatHeartbeat;
@@ -319,6 +332,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     AdsyConnectService.setActiveChat(widget.chatroomId);
     _startActiveChatHeartbeat();
     _isOtherUserOnline = widget.isOnline;
+    // The ad/post this chat was opened about — pending until the user sends
+    // (or dismisses) it.
+    _pendingAttachment = widget.pendingAttachment;
     _loadChatroomStatus();
     // Instant open: seed from the in-memory history cache so a previously
     // visited chat paints its messages with NO spinner; the fetch below then
@@ -1494,7 +1510,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     final messageText = _messageController.text.trim();
     final replyTo = _replyingToMessage;
+    final attachment = _pendingAttachment;
     _messageController.clear();
+
+    // With an attachment pending, the message body IS the encoded card + the
+    // typed words: the bubble then draws the card as a quote above ordinary
+    // message text. Without one, nothing changes.
+    final body = attachment != null
+        ? attachment.withText(messageText).encode()
+        : messageText;
 
     // Optimistic UI: show the message immediately with a pending marker so
     // the user gets instant feedback. The server response will replace this
@@ -1505,7 +1529,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       'id': tempId,
       'isMe': true,
       'type': 'text',
-      'message': messageText,
+      'message': body,
       'timestamp': now,
       'timeDisplay': _formatMessageTime(now),
       'showTimestamp': true,
@@ -1517,20 +1541,22 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       _upsertMessage(optimistic);
       _isSendingMessage = true;
       _replyingToMessage = null;
+      // One message carries it — the second message is plain text again.
+      _pendingAttachment = null;
     });
     _scrollToBottom();
 
     try {
       debugPrint('ðŸ”µ Sending message: $messageText');
 
-      String contentToSend = messageText;
+      String contentToSend = body;
       if (replyTo != null) {
         final replyToId = replyTo['id']?.toString() ?? '';
         final replyToText = _getReplyPreviewText(replyTo);
         final replyToSender = replyTo['isMe'] == true ? 'You' : widget.userName;
         final idPart = replyToId.isNotEmpty ? '($replyToId) ' : '';
         contentToSend =
-            'â†©ï¸ $idPart$replyToSender: $replyToText\n\n$messageText';
+            'â†©ï¸ $idPart$replyToSender: $replyToText\n\n$body';
       }
 
       final sentMessage = await AdsyConnectService.sendTextMessage(
@@ -1557,6 +1583,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           // Roll back the optimistic message on failure.
           _messages.removeWhere((m) => (m['id']?.toString() ?? '') == tempId);
           _isSendingMessage = false;
+          // The send failed, so the attachment was never delivered — put it
+          // back with the text, or the retry would drop the ad silently.
+          _pendingAttachment ??= attachment;
         });
 
         final errorStr = e.toString().toLowerCase();
@@ -3239,6 +3268,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 ),
                 // Animated "other user is typing" bubble, just above the input
                 _buildTypingIndicator(),
+                // The ad/post this chat was opened about, awaiting the first
+                // message it will be quoted on.
+                _buildPendingAttachment(),
                 // Message Input
                 _buildMessageInput(),
               ],
@@ -3752,6 +3784,94 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           : const SizedBox.shrink(key: ValueKey('typing_indicator_hidden')),
     );
   }
+
+  /// The pending attachment card sitting on top of the composer.
+  ///
+  /// Deliberately the same shape as the reply preview right below it — the
+  /// user already knows that strip means "this is attached to what I type
+  /// next", and ✕ removes it the same way.
+  Widget _buildPendingAttachment() {
+    final attachment = _pendingAttachment;
+    if (attachment == null) return const SizedBox.shrink();
+
+    final thumb = AppConfig.getAbsoluteUrl(attachment.thumbUrl);
+    final caption = attachment.caption.trim();
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC),
+        border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+      ),
+      child: Row(
+        children: [
+          if (thumb.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                thumb,
+                width: 42,
+                height: 42,
+                fit: BoxFit.cover,
+                // The CDN serves media only to a recognised client.
+                headers: kMediaHeaders,
+                errorBuilder: (_, __, ___) => _attachmentThumbFallback(),
+              ),
+            )
+          else
+            _attachmentThumbFallback(),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  attachment.displayName.isEmpty
+                      ? 'বিজ্ঞাপন'
+                      : attachment.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  caption.isEmpty ? 'এই বিজ্ঞাপন নিয়ে লিখছেন' : caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'সরিয়ে ফেলুন',
+            icon: const Icon(Icons.close_rounded,
+                size: 18, color: Color(0xFF6B7280)),
+            onPressed: () => setState(() => _pendingAttachment = null),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _attachmentThumbFallback() => Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.campaign_outlined,
+            size: 20, color: Color(0xFF94A3B8)),
+      );
 
   Widget _buildMessageInput() {
     return ChatMessageInput(

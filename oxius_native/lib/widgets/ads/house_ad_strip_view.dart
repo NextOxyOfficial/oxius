@@ -166,7 +166,7 @@ class HouseAdStripView extends StatelessWidget {
                   height: 38,
                   child: FilledButton.icon(
                     onPressed: _open,
-                    icon: Icon(ad.ctaIcon, size: 16),
+                    icon: ad.ctaIconWidget(size: 16),
                     label: Text(
                       ad.ctaLabel,
                       style: const TextStyle(

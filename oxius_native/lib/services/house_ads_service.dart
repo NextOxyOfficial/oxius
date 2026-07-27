@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../utils/shared_post_message.dart';
+import '../widgets/common/adsy_chat_icon.dart';
 import 'api_service.dart';
 
 /// One advertiser ad from the ABN Ads Panel, served by
@@ -102,6 +104,34 @@ class HouseAd {
     );
   }
 
+  /// This ad as a chat attachment — what the advertiser sees quoted above the
+  /// message when someone taps "মেসেজ করুন".
+  ///
+  /// Reuses the shared-post card the app already renders in chat, so an ad
+  /// quoted from the feed and a post shared into a chat look the same. For a
+  /// boost the card points at the real post; a plain creative has nowhere to
+  /// link, so it stays a non-tappable reference.
+  SharedPostMessage get chatAttachment {
+    final post = boostedPostModel;
+    final thumb = post?.shareThumbUrl.trim().isNotEmpty == true
+        ? post!.shareThumbUrl.trim()
+        : (images.isNotEmpty ? images.first : companionBanner);
+    final headline = title.trim().isNotEmpty ? title.trim() : advertiser;
+    final sub = description.trim().isNotEmpty ? description.trim() : categoryName;
+    var url = '';
+    if (post != null) {
+      final ref = post.slug.trim().isNotEmpty ? post.slug.trim() : '${post.id}';
+      url = 'https://adsyclub.com/business-network/posts/$ref';
+    }
+    return SharedPostMessage(
+      ownerName: headline,
+      authorName: headline,
+      thumbUrl: thumb,
+      postUrl: url,
+      caption: sub,
+    );
+  }
+
   /// Short spoken-Bangla CTA label matching the ad's button type.
   String get ctaLabel {
     switch (adType) {
@@ -118,6 +148,25 @@ class HouseAd {
     }
   }
 
+  /// The CTA's icon as a WIDGET — use this over [ctaIcon] wherever possible.
+  ///
+  /// The AdsyConnect action gets the brand mark, not a generic bubble: the
+  /// button opens a chat inside this app, and a Material glyph gave no hint
+  /// of that. Everything else stays a plain icon.
+  ///
+  /// [color] is the row's text color. A glyph takes it as-is, but flattening
+  /// the brand PNG to a dark tint would throw away the very thing that makes
+  /// it recognizable — so the mark keeps its own colors on light surfaces and
+  /// is tinted only when the caller asks for a light color, i.e. the button
+  /// behind it is solid and an untinted mark would disappear into it.
+  Widget ctaIconWidget({double size = 17, Color? color}) {
+    if (adType == 'message_on_adsyconnect') {
+      final onSolid = color != null && color.computeLuminance() > 0.6;
+      return AdsyChatIcon(size: size, color: onSolid ? color : null);
+    }
+    return Icon(ctaIcon, size: size, color: color);
+  }
+
   /// Icon paired with [ctaLabel]. Mirrors the web's ListBannerAd map and the
   /// ads-panel preview, so one ad type looks the same everywhere it runs.
   IconData get ctaIcon {
@@ -125,8 +174,7 @@ class HouseAd {
       case 'message_on_adsyconnect':
         return Icons.chat_bubble_rounded;
       case 'call_on_whatsapp':
-        // The generic outlined bubble read as a placeholder next to
-        // "মেসেজ করুন" — the brand mark says where the tap actually goes.
+        // The brand mark, not a generic bubble — it says which app opens.
         return FontAwesomeIcons.whatsapp.data;
       case 'call_on_phone':
         return Icons.phone_outlined;

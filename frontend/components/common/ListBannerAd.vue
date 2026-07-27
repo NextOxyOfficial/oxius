@@ -37,7 +37,13 @@
         <span
           class="ml-auto shrink-0 inline-flex items-center gap-1 text-[10.5px] font-bold text-blue-600"
         >
-          <UIcon :name="ctaIcon" class="w-3.5 h-3.5" />
+          <img
+            v-if="ad.ad_type === 'message_on_adsyconnect'"
+            src="/images/chat_icon.png"
+            alt=""
+            class="w-3.5 h-3.5 object-contain"
+          />
+          <UIcon v-else :name="ctaIcon" class="w-3.5 h-3.5" />
           {{ ctaLabel }}
         </span>
       </div>

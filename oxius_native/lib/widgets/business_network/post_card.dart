@@ -1316,7 +1316,7 @@ class _SponsoredCtaBar extends StatelessWidget {
             );
             HouseAdCard.launchCta(ad);
           },
-          icon: Icon(ad.ctaIcon, size: 17),
+          icon: ad.ctaIconWidget(size: 17),
           label: Text(
             ad.ctaLabel,
             style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
