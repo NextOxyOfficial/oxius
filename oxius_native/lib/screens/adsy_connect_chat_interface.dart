@@ -3792,7 +3792,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   /// next", and ✕ removes it the same way.
   Widget _buildPendingAttachment() {
     final attachment = _pendingAttachment;
-    if (attachment == null) return const SizedBox.shrink();
+    // Nothing can be sent while the chat is blocked, so the card would only be
+    // a promise the composer can't keep.
+    if (attachment == null || _isChatBlocked) return const SizedBox.shrink();
 
     final thumb = AppConfig.getAbsoluteUrl(attachment.thumbUrl);
     final caption = attachment.caption.trim();
