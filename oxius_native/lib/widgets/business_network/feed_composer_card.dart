@@ -76,7 +76,9 @@ class FeedComposerCard extends StatelessWidget {
                       'কিছু ভাবছেন? কোনো আইডিয়া থাকলে পোস্ট করে ফেলুন ',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF64748B),
+                        // Was #64748B — on the light #F1F5F9 pill it read as
+                        // disabled rather than as a prompt.
+                        color: Color(0xFF334155),
                         fontWeight: FontWeight.w500,
                       ),
                     ),

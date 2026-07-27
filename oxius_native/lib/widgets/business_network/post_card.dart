@@ -1060,12 +1060,22 @@ class _PostCardState extends State<PostCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onLongPress: () {
-                      Clipboard.setData(ClipboardData(text: plainPostContent));
-                      AdsyToast.success(context, 'Content copied to clipboard');
-                    },
-                    child: Text.rich(
+                  // Expanding swapped the clipped text for the full text in
+                  // one frame, so the card jumped. AnimatedSize grows the box
+                  // instead — same 260ms easeOutCubic the shorts caption uses,
+                  // so "আরো পড়ুন" feels identical wherever it appears.
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topLeft,
+                    child: GestureDetector(
+                      onLongPress: () {
+                        Clipboard.setData(
+                            ClipboardData(text: plainPostContent));
+                        AdsyToast.success(
+                            context, 'Content copied to clipboard');
+                      },
+                      child: Text.rich(
                       TextSpan(
                         children: [
                           ...MentionParser.parseTextWithMentions(
@@ -1101,7 +1111,8 @@ class _PostCardState extends State<PostCard> {
                                 ),
                               ),
                             ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

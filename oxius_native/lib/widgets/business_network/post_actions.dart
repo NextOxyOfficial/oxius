@@ -40,9 +40,11 @@ class PostActions extends StatelessWidget {
               iconPath: post.isLiked
                   ? 'assets/icons/like.png'
                   : 'assets/icons/unlike.png',
+              // The word always shows beside the icon — a bare number said
+              // nothing about what the button does.
               label: post.likesCount > 0
-                  ? _formatCount(post.likesCount)
-                  : 'পছন্দ',
+                  ? '${_formatCount(post.likesCount)} লাইক'
+                  : 'লাইক',
               active: post.isLiked,
               onTap: onLike,
             ),
@@ -51,16 +53,17 @@ class PostActions extends StatelessWidget {
             child: _ActionButton(
               iconPath: 'assets/icons/comments.png',
               label: post.commentsCount > 0
-                  ? _formatCount(post.commentsCount)
-                  : 'মন্তব্য',
+                  ? '${_formatCount(post.commentsCount)} কমেন্ট'
+                  : 'কমেন্ট',
               onTap: onComment,
             ),
           ),
           Expanded(
             child: _ActionButton(
               iconPath: 'assets/icons/share.png',
-              label:
-                  post.shareCount > 0 ? _formatCount(post.shareCount) : 'শেয়ার',
+              label: post.shareCount > 0
+                  ? '${_formatCount(post.shareCount)} শেয়ার'
+                  : 'শেয়ার',
               onTap: onShare,
             ),
           ),
