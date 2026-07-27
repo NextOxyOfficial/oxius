@@ -25,6 +25,11 @@ class VideoFrameThumbnail extends StatefulWidget {
   /// Server-side poster. When present nothing is extracted — this is just a
   /// cached image, and the widget is as cheap as any other feed photo.
   final String? posterUrl;
+
+  /// Poster frame already on disk — the platform picker hands one back before
+  /// the clip itself has finished copying, so the composer tile can be right
+  /// the first time it paints instead of extracting its own frame later.
+  final String? posterFile;
   final String? filePath;
   final String? videoUrl;
   final BoxFit fit;
@@ -35,6 +40,7 @@ class VideoFrameThumbnail extends StatefulWidget {
   const VideoFrameThumbnail({
     super.key,
     this.posterUrl,
+    this.posterFile,
     this.filePath,
     this.videoUrl,
     this.fit = BoxFit.cover,
@@ -75,6 +81,7 @@ class _VideoFrameThumbnailState extends State<VideoFrameThumbnail> {
   void didUpdateWidget(covariant VideoFrameThumbnail old) {
     super.didUpdateWidget(old);
     if (old.posterUrl != widget.posterUrl ||
+        old.posterFile != widget.posterFile ||
         old.filePath != widget.filePath ||
         old.videoUrl != widget.videoUrl) {
       if (_controller != null) {
@@ -88,8 +95,17 @@ class _VideoFrameThumbnailState extends State<VideoFrameThumbnail> {
   }
 
   Future<void> _resolve() async {
-    // A server poster wins — nothing to extract.
+    // A ready-made poster wins — nothing to extract.
     if ((widget.posterUrl ?? '').isNotEmpty) return;
+    final poster = widget.posterFile;
+    if (poster != null && poster.isNotEmpty) {
+      final f = File(poster);
+      if (await f.exists()) {
+        if (mounted) setState(() => _frame = f);
+        return;
+      }
+    }
+    if (widget.filePath == null && widget.videoUrl == null) return;
     final key = _key;
     if (key == null || key.isEmpty || _working) return;
 

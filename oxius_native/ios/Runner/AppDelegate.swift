@@ -23,6 +23,14 @@ import flutter_callkit_incoming
 
     GeneratedPluginRegistrant.register(with: self)
 
+    // Composer video picking that shows a poster frame at once and copies the
+    // original bytes behind it (see AdsyVideoPicker). Dart falls back to
+    // image_picker if this channel is not answered.
+    if #available(iOS 14, *),
+       let controller = window?.rootViewController as? FlutterViewController {
+      AdsyVideoPicker.register(with: controller)
+    }
+
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self
     }

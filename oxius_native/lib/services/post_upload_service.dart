@@ -63,10 +63,28 @@ class PostUploadService {
     String? content,
     List<String>? images,
     List<String>? videoPaths,
+    /// Clips whose file is still being copied off the photo library when Post
+    /// is pressed. The composer shows the poster frame the instant a clip is
+    /// picked and hands the copy over here, so the only place anyone waits for
+    /// it is behind the progress strip.
+    List<Future<String?>>? pendingVideos,
     List<String>? tags,
     String visibility = 'public',
   }) async {
     if (isBusy) return null;
+
+    final hasPending = pendingVideos != null && pendingVideos.isNotEmpty;
+    if (hasPending) {
+      state.value = const PostUploadState(
+        stage: PostUploadStage.preparing,
+        message: 'ভিডিও প্রস্তুত হচ্ছে…',
+      );
+      final resolved = await Future.wait(pendingVideos);
+      videoPaths = [
+        ...?videoPaths,
+        ...resolved.whereType<String>(),
+      ];
+    }
 
     final hasVideos = videoPaths != null && videoPaths.isNotEmpty;
     state.value = PostUploadState(

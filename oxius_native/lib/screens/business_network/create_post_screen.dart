@@ -8,6 +8,7 @@ import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/image_compressor.dart';
 import '../../utils/video_upload_helper.dart';
+import '../../services/instant_video_picker.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/common/video_frame_thumbnail.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
@@ -186,32 +187,44 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
 
     try {
-      final XFile? video = await _picker.pickVideo(
-        source: ImageSource.gallery,
+      final picked = await InstantVideoPicker.pick(
         maxDuration: const Duration(seconds: _maxVideoDurationSeconds),
       );
 
-      if (video == null || !mounted) return;
+      if (picked == null || !mounted) return;
 
-      // The clip appears in the composer IMMEDIATELY. Everything that takes
-      // time — the duration read, and later the re-encode and upload — runs
-      // behind it. Blocking the whole screen on a duration probe (which opens
-      // the file and decodes its header) is what made picking a video feel
-      // like an upload had already started.
-      final path = video.path;
-      setState(() {
-        // The ORIGINAL path — compression happens at submit.
-        _selectedVideos.add({'path': path, 'name': video.name});
-      });
+      // The clip appears in the composer IMMEDIATELY: the picker hands back a
+      // poster frame while the file itself is still being copied, and the
+      // duration read and the re-encode both run behind it. Waiting for any of
+      // that is what made picking a video feel like an upload had already
+      // started.
+      final entry = <String, dynamic>{
+        'path': picked.immediatePath,      // null until the copy lands
+        'name': 'video',
+        'thumbPath': picked.thumbPath,
+        'file': picked.file,
+      };
+      setState(() => _selectedVideos.add(entry));
       AdsyToast.success(context, 'ভিডিও যোগ হয়েছে');
+
+      // Fill the real path in as soon as the copy finishes, so Post can go
+      // straight out if the user takes their time writing.
+      final path = picked.immediatePath ?? await picked.file;
+      if (!mounted) return;
+      if (path == null) {
+        setState(() => _selectedVideos.remove(entry));
+        AdsyToast.error(context, 'ভিডিওটি পড়া যায়নি');
+        return;
+      }
+      setState(() => entry['path'] = path);
 
       // Over-limit clips are pulled back out; the tile is on screen in the
       // meantime, which is what the user actually wants to see.
-      final withinLimit = await VideoUploadHelper.isWithinDurationLimit(path);
+      final withinLimit = picked.durationMs > 0
+          ? picked.durationMs <= _maxVideoDurationSeconds * 1000
+          : await VideoUploadHelper.isWithinDurationLimit(path);
       if (!mounted || withinLimit) return;
-      setState(() {
-        _selectedVideos.removeWhere((v) => v['path'] == path);
-      });
+      setState(() => _selectedVideos.remove(entry));
       AdsyToast.warning(
           context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ১০ মিনিটের ভিডিও দেওয়া যাবে');
     } catch (e) {
@@ -285,9 +298,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       return;
     }
 
-    final videoPathList = hasVideos
-        ? _selectedVideos.map((v) => v['path'] as String).toList()
-        : null;
+    // Clips whose copy already finished go straight through; the rest travel
+    // as futures the upload service waits on behind its progress strip.
+    final videoPathList = <String>[];
+    final pendingVideos = <Future<String?>>[];
+    for (final v in _selectedVideos) {
+      final p = v['path'] as String?;
+      if (p != null && p.isNotEmpty) {
+        videoPathList.add(p);
+      } else if (v['file'] is Future<String?>) {
+        pendingVideos.add(v['file'] as Future<String?>);
+      }
+    }
 
     // Hand the job to the background service and close immediately. Posting
     // now feels instant, and compression/upload can no longer be cancelled by
@@ -300,7 +322,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               : rawContent.replaceAll(' ', ' ').trim())
           : null,
       images: hasImages ? _selectedImages : null,
-      videoPaths: videoPathList,
+      videoPaths: videoPathList.isEmpty ? null : videoPathList,
+      pendingVideos: pendingVideos.isEmpty ? null : pendingVideos,
       tags: hasTags ? _hashtags : null,
       visibility: _visibility,
     );
@@ -989,8 +1012,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   width: double.infinity,
                                   height: double.infinity,
                                   child: VideoFrameThumbnail(
+                                    // Platform poster frame when we have one
+                                    // (there before the file itself), else
+                                    // extracted from the copied file.
+                                    posterFile: _selectedVideos[videoIndex]
+                                        ['thumbPath'] as String?,
                                     filePath: _selectedVideos[videoIndex]
-                                        ['path'] as String,
+                                        ['path'] as String?,
                                     overlay: Center(
                                       child: Container(
                                         width: 38,
