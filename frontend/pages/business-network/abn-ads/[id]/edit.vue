@@ -113,16 +113,25 @@
               </option>
             </select>
 
-            <label class="block text-xs font-medium text-gray-600 mb-1 mt-3">
-              {{ adTypeDetailLabel }}
-            </label>
-            <input
-              v-model="form.ad_type_details"
-              type="text"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              :placeholder="adTypeDetailPlaceholder"
-            />
-            <p v-if="detailError" class="mt-1 text-xs text-red-600">{{ detailError }}</p>
+            <template v-if="form.ad_type === 'message_on_adsyconnect'">
+              <p
+                class="mt-3 p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-[13px] text-emerald-900 leading-relaxed"
+              >
+                {{ $t("ads_edit_cta_message_note") }}
+              </p>
+            </template>
+            <template v-else>
+              <label class="block text-xs font-medium text-gray-600 mb-1 mt-3">
+                {{ adTypeDetailLabel }}
+              </label>
+              <input
+                v-model="form.ad_type_details"
+                type="text"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                :placeholder="adTypeDetailPlaceholder"
+              />
+              <p v-if="detailError" class="mt-1 text-xs text-red-600">{{ detailError }}</p>
+            </template>
           </section>
 
           <!-- ── Budget ───────────────────────────────────────── -->
@@ -335,6 +344,8 @@ const form = reactive({
 });
 
 const adTypes = computed(() => [
+  // Needs no detail: the tap opens an AdsyConnect chat with the advertiser.
+  { value: "message_on_adsyconnect", label: t("ads_edit_cta_message") },
   { value: "click_to_website", label: t("ads_edit_cta_website") },
   { value: "call_on_whatsapp", label: t("ads_edit_cta_whatsapp") },
   { value: "call_on_phone", label: t("ads_edit_cta_phone") },
@@ -517,7 +528,11 @@ async function save() {
     title: form.title.trim(),
     description: form.description.trim(),
     ad_type: form.ad_type,
-    ad_type_details: (form.ad_type_details || "").trim(),
+    // This CTA routes to the advertiser themselves — no detail to store.
+    ad_type_details:
+      form.ad_type === "message_on_adsyconnect"
+        ? ""
+        : (form.ad_type_details || "").trim(),
     budget: Number(form.budget),
     daily_budget:
       form.daily_budget === "" || form.daily_budget === null

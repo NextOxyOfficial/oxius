@@ -105,8 +105,10 @@ class HouseAd {
   /// Short spoken-Bangla CTA label matching the ad's button type.
   String get ctaLabel {
     switch (adType) {
-      case 'call_on_whatsapp':
+      case 'message_on_adsyconnect':
         return 'মেসেজ করুন';
+      case 'call_on_whatsapp':
+        return 'হোয়াটসঅ্যাপ';
       case 'call_on_phone':
         return 'কল করুন';
       case 'email_us':
@@ -120,6 +122,8 @@ class HouseAd {
   /// ads-panel preview, so one ad type looks the same everywhere it runs.
   IconData get ctaIcon {
     switch (adType) {
+      case 'message_on_adsyconnect':
+        return Icons.chat_bubble_rounded;
       case 'call_on_whatsapp':
         // The generic outlined bubble read as a placeholder next to
         // "মেসেজ করুন" — the brand mark says where the tap actually goes.

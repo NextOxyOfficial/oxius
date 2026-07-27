@@ -8,6 +8,12 @@ import '../../utils/video_playback_manager.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../services/house_ads_service.dart';
 import '../../utils/url_launcher_utils.dart';
+import '../../screens/adsy_connect_chat_interface.dart';
+import '../../services/adsyconnect_service.dart';
+import '../../services/auth_service.dart';
+import '../../services/fcm_service.dart';
+import '../common/adsy_toast.dart';
+import '../login_prompt_dialog.dart';
 
 /// Native-style card for an ABN Ads Panel (house) ad — same chrome as the
 /// AdMob feed card ("Sponsored" strip + white card) so both blend into the
@@ -81,8 +87,16 @@ class HouseAdCard extends StatefulWidget {
   /// from HouseAd.ctaIcon (the WhatsApp mark landed in only one of them).
   static IconData ctaIcon(HouseAd ad) => ad.ctaIcon;
 
-  /// Launch the ad's CTA action (website / WhatsApp / call / email).
+  /// Launch the ad's CTA action (chat / website / WhatsApp / call / email).
   static void launchCta(HouseAd ad) {
+    // AdsyConnect message: the advertiser IS the destination, so there is no
+    // detail string to parse — open a chat with them. Done through the root
+    // navigator because every ad surface calls this statically, from cards
+    // that do not all have a usable context of their own.
+    if (ad.adType == 'message_on_adsyconnect') {
+      _openAdvertiserChat(ad);
+      return;
+    }
     final details = ad.adTypeDetails.trim();
     if (details.isEmpty) return;
     switch (ad.adType) {
@@ -99,6 +113,53 @@ class HouseAdCard extends StatefulWidget {
       default:
         final url = details.startsWith('http') ? details : 'https://$details';
         UrlLauncherUtils.launchExternalUrl(url);
+    }
+  }
+
+  /// Open (or create) the 1:1 room with this ad's owner and push the chat.
+  static Future<void> _openAdvertiserChat(HouseAd ad) async {
+    final advertiserId = ad.advertiserId.trim();
+    final ctx = FCMService.navigatorKey.currentContext;
+    if (advertiserId.isEmpty || ctx == null) return;
+
+    if (AuthService.currentUser == null) {
+      LoginPromptDialog.show(ctx, action: 'message this advertiser');
+      return;
+    }
+    // Messaging yourself is not a thing; land on the profile instead.
+    if (AuthService.currentUser?.id == advertiserId) {
+      Navigator.push(
+        ctx,
+        MaterialPageRoute(builder: (_) => ProfileScreen(userId: advertiserId)),
+      );
+      return;
+    }
+    try {
+      final room = await AdsyConnectService.getOrCreateChatRoom(advertiserId);
+      final roomId = room['id']?.toString() ?? '';
+      // Re-read the navigator AFTER the await rather than holding a context
+      // across it — the user may have navigated away while the room was
+      // being created.
+      final nav = FCMService.navigatorKey.currentState;
+      if (roomId.isEmpty || nav == null) return;
+      nav.push(
+        MaterialPageRoute(
+          builder: (_) => AdsyConnectChatInterface(
+            chatroomId: roomId,
+            userId: advertiserId,
+            userName: ad.advertiser,
+            userAvatar: ad.advertiserImage,
+            isVerified: ad.advertiserVerified,
+            isPro: ad.advertiserPro,
+          ),
+        ),
+      );
+    } catch (e) {
+      final target = FCMService.navigatorKey.currentContext;
+      if (target != null && target.mounted) {
+        AdsyToast.error(
+            target, 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।');
+      }
     }
   }
 

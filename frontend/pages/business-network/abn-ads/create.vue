@@ -538,7 +538,15 @@
                   <span>{{ t.label }}</span>
                 </button>
               </div>
-              <div v-if="selectedType" class="mt-2">
+              <div
+                v-if="form.ad_type === 'message_on_adsyconnect'"
+                class="mt-2 p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-[13px] text-emerald-900 leading-relaxed"
+              >
+                কোনো নম্বর বা লিংক দিতে হবে না — বাটনে ট্যাপ করলেই আপনার সাথে
+                <b>AdsyConnect চ্যাট</b> খুলে যাবে, আর মেসেজটি আপনি অ্যাপেই
+                পাবেন।
+              </div>
+              <div v-else-if="selectedType" class="mt-2">
                 <input
                   v-model="form.ad_type_details"
                   :type="selectedType.inputType"
@@ -1905,6 +1913,16 @@ function togglePlacement(value) {
 // CTA button types — mirrors AbnAdsPanel.AD_TyPES on the backend.
 const adTypes = [
   {
+    // No detail to type: the advertiser IS the destination. The viewer taps
+    // and lands in an AdsyConnect chat with them.
+    value: "message_on_adsyconnect",
+    label: "AdsyConnect মেসেজ",
+    cta: "মেসেজ করুন",
+    icon: "i-heroicons-chat-bubble-oval-left-ellipsis",
+    inputType: null,
+    placeholder: "",
+  },
+  {
     value: "click_to_website",
     label: "Visit Website",
     cta: "Visit Website",
@@ -2034,6 +2052,10 @@ async function submitAd() {
         payload.companion_banner_b64 = companionBanner.value;
       }
       payload.images = []; // video creative — no base64 images
+    }
+    if (form.ad_type === "message_on_adsyconnect") {
+      // Nothing to send: the server routes the tap to this advertiser.
+      payload.ad_type_details = "";
     }
     if (form.format === "boost") {
       payload.boosted_post = boostPostId.value;

@@ -518,8 +518,13 @@ class AbnAdsPanel(models.Model):
         ('call_on_whatsapp', 'Call On WhatsApp'),
         ('call_on_phone', 'Call On Phone'),
         ('email_us', 'Email Us'),
+        # The advertiser IS the destination: the viewer taps and lands in an
+        # AdsyConnect chat with them. No phone number, address or link to
+        # supply — `ad_type_details` stays empty and the client uses
+        # `advertiser_id`, which every ad payload already carries.
+        ('message_on_adsyconnect', 'Message on AdsyConnect'),
     )
-    ad_type = models.CharField(max_length=20, choices=AD_TyPES, default='image')
+    ad_type = models.CharField(max_length=30, choices=AD_TyPES, default='image')
     ad_type_details= models.TextField(null=True, blank=True)
     # Creative format: image card / 5s-skippable video (with companion
     # banner) / boosted BN post (plays inline in the shorts reel).

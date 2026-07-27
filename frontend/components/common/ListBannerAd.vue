@@ -80,6 +80,7 @@ const thumb = computed(() => {
 const ctaLabel = computed(
   () =>
     ({
+      message_on_adsyconnect: "মেসেজ করুন",
       click_to_website: "ভিজিট করুন",
       call_on_whatsapp: "হোয়াটসঅ্যাপ",
       call_on_phone: "কল করুন",
@@ -92,6 +93,7 @@ const ctaLabel = computed(
 const ctaIcon = computed(
   () =>
     ({
+      message_on_adsyconnect: "i-heroicons-chat-bubble-oval-left-ellipsis",
       click_to_website: "i-heroicons-arrow-top-right-on-square",
       call_on_whatsapp: "i-heroicons-chat-bubble-left-right",
       call_on_phone: "i-heroicons-phone",
@@ -102,6 +104,11 @@ const ctaIcon = computed(
 const ctaHref = computed(() => {
   const a = ad.value;
   if (!a) return "#";
+  // AdsyConnect message: the advertiser is the destination, so there is no
+  // detail to read — open the inbox on a thread with them.
+  if (a.ad_type === "message_on_adsyconnect") {
+    return a.advertiser_id ? `/inbox?chat_with=${a.advertiser_id}` : "#";
+  }
   const v = (a.ad_type_details || "").trim();
   if (!v) return "#";
   switch (a.ad_type) {

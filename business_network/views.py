@@ -2270,6 +2270,12 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
             if default_cat is None:
                 default_cat = AbnAdsPanelCategory.objects.create(name="General")
             data["category"] = default_cat.pk
+        # AdsyConnect message CTA: the advertiser is the destination, so the
+        # details field carries nothing. Clear whatever arrived so a stale
+        # phone number from a previous choice can't ride along.
+        if str(data.get("ad_type") or "") == "message_on_adsyconnect":
+            data["ad_type_details"] = ""
+
         if str(data.get("format") or "") == "boost":
             problem = _prepare_boost(data, request.user)
             if problem:
@@ -2422,6 +2428,11 @@ class AbnAdsPanelRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView
             raise PermissionDenied("You do not have permission to modify this ad.")
 
     def update(self, request, *args, **kwargs):
+        if str(request.data.get("ad_type") or "") == "message_on_adsyconnect":
+            data = request.data
+            if hasattr(data, "_mutable"):
+                data._mutable = True
+            data["ad_type_details"] = ""
         # Same rule as create: a boost may only ever point at the caller's own
         # public post. Without this an existing ad could be PATCHed to promote
         # somebody else's content.

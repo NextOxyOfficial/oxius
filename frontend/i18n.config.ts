@@ -40,6 +40,9 @@ export default defineI18nConfig(() => ({
       ads_edit_desc_ph: "Briefly describe your offer",
       ads_edit_cta: "Action button",
       ads_edit_cta_type: "Button type",
+      ads_edit_cta_message: "Message on AdsyConnect",
+      ads_edit_cta_message_note:
+        "No number or link needed — tapping the button opens an AdsyConnect chat with you, and the message arrives right in the app.",
       ads_edit_cta_website: "Go to website",
       ads_edit_cta_whatsapp: "Message on WhatsApp",
       ads_edit_cta_phone: "Phone call",
@@ -1121,6 +1124,9 @@ export default defineI18nConfig(() => ({
       ads_edit_desc_ph: "আপনার অফার সম্পর্কে সংক্ষেপে লিখুন",
       ads_edit_cta: "অ্যাকশন বাটন",
       ads_edit_cta_type: "বাটনের ধরন",
+      ads_edit_cta_message: "AdsyConnect মেসেজ",
+      ads_edit_cta_message_note:
+        "কোনো নম্বর বা লিংক দিতে হবে না — বাটনে ট্যাপ করলেই আপনার সাথে AdsyConnect চ্যাট খুলে যাবে, আর মেসেজটি আপনি অ্যাপেই পাবেন।",
       ads_edit_cta_website: "ওয়েবসাইটে নিয়ে যান",
       ads_edit_cta_whatsapp: "হোয়াটসঅ্যাপে বার্তা",
       ads_edit_cta_phone: "ফোন কল",
