@@ -41,6 +41,16 @@ from .models import *
 from .pagination import *
 from .serializers import *
 
+# `from .models import *` drags in Django's ValidationError (models star-imports
+# base.models, which imports it), and that quietly shadowed the DRF exception
+# imported at the top of this file. Django's version means nothing to DRF's
+# handler, so EVERY `raise ValidationError(...)` in this module — a rejected
+# image, an unreadable video, a post that lost media — came back as a 500 with
+# "কিছু একটা সমস্যা হয়েছে" instead of a 400 saying what was actually wrong.
+# Rebinding after the star imports puts the real message back in front of the
+# user. Keep this line last.
+from rest_framework.exceptions import ValidationError  # noqa: E402
+
 
 # Media rules: LENGTH is the only thing a user is held to (10 minutes per
 # clip, enforced in the app). Byte size is not — whatever the app's own 720p
