@@ -225,7 +225,7 @@
                 </button>
                 <button
                   type="button"
-                  @click="form.format = 'boost'"
+                  @click="form.format = 'boost'; form.ad_type = 'none'"
                   class="px-3 py-2.5 text-sm border rounded-md"
                   :class="
                     form.format === 'boost'
@@ -452,14 +452,31 @@
               </div>
             </div>
 
-            <!-- Ad type / CTA button. A boost has no external CTA — tapping
-                 it opens the post, exactly like any other post in the feed. -->
-            <div v-if="form.format !== 'boost'">
+            <!-- Ad type / CTA button. A boost may carry one too — it shows
+                 under the post's media — but it is optional there. -->
+            <div>
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 বিজ্ঞাপনের বাটন (কী করলে কী হবে)
-                <span class="text-red-500">*</span>
+                <span v-if="form.format !== 'boost'" class="text-red-500">*</span>
+                <span v-else class="text-xs font-normal text-gray-500">
+                  — ঐচ্ছিক, পোস্টের মিডিয়ার নিচে দেখাবে
+                </span>
               </label>
               <div class="grid grid-cols-2 gap-2">
+                <button
+                  v-if="form.format === 'boost'"
+                  type="button"
+                  @click="form.ad_type = 'none'"
+                  class="flex items-center gap-2 px-3 py-2.5 text-sm border rounded-md transition-colors text-left"
+                  :class="
+                    form.ad_type === 'none'
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                  "
+                >
+                  <UIcon name="i-heroicons-no-symbol" class="w-4 h-4 shrink-0" />
+                  <span>কোনো বাটন নয়</span>
+                </button>
                 <button
                   v-for="t in adTypes"
                   :key="t.value"
@@ -476,8 +493,11 @@
                   <span>{{ t.label }}</span>
                 </button>
               </div>
+              <div v-if="form.ad_type === 'none'" class="mt-2 text-xs text-gray-500">
+                পোস্টটি কোনো বাটন ছাড়াই দেখাবে — একদম সাধারণ পোস্টের মতো।
+              </div>
               <div
-                v-if="form.ad_type === 'message_on_adsyconnect'"
+                v-else-if="form.ad_type === 'message_on_adsyconnect'"
                 class="mt-2 p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-[13px] text-emerald-900 leading-relaxed"
               >
                 কোনো নম্বর বা লিংক দিতে হবে না — বাটনে ট্যাপ করলেই আপনার সাথে
@@ -1528,6 +1548,8 @@ onMounted(() => {
   const q = route.query.post;
   if (q) {
     form.format = "boost";
+    // A boost starts with no button; the advertiser opts in.
+    form.ad_type = "none";
     boostPostId.value = String(q);
     loadBoostPost();
   }
@@ -1971,8 +1993,8 @@ async function submitAd() {
       // them anyway, so don't pretend the advertiser chose them.
       delete payload.title;
       delete payload.description;
-      delete payload.ad_type;
-      delete payload.ad_type_details;
+      // ad_type IS kept: a boost may carry an optional action button under
+      // the post's media. "none" means no button, which is the default.
     }
     const res = await post("/bn/abn-ads-panels/", payload);
     if (res.data) {

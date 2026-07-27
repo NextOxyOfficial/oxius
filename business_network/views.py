@@ -2200,10 +2200,17 @@ def _prepare_boost(data, user):
         return {"error": "post not public",
                 "detail": "শুধু পাবলিক পোস্ট বুস্ট করা যাবে। পোস্টটি পাবলিক করে আবার চেষ্টা করুন।"}
 
-    # The post IS the creative — drop anything else the client sent.
+    # The post IS the creative — drop anything else the client sent. The CTA
+    # is the one exception: a boost may carry an optional action button under
+    # the media (message / visit / call / email), so whatever the advertiser
+    # picked is kept. "none" means no button at all, which stays the default.
     data["format"] = "boost"
-    data["ad_type"] = "click_to_website"
-    data["ad_type_details"] = ""
+    cta = str(data.get("ad_type") or "").strip()
+    if cta not in dict(AbnAdsPanel.AD_TyPES):
+        data["ad_type"] = "none"
+        data["ad_type_details"] = ""
+    elif cta == "message_on_adsyconnect":
+        data["ad_type_details"] = ""
     # Title/description exist only so the panel's own lists have something to
     # print; they are never shown to a viewer.
     # Post bodies are stored as HTML ('<p class="text-wrap">…</p>'). Derive

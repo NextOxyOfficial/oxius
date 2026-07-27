@@ -523,6 +523,8 @@ class AbnAdsPanel(models.Model):
         # supply — `ad_type_details` stays empty and the client uses
         # `advertiser_id`, which every ad payload already carries.
         ('message_on_adsyconnect', 'Message on AdsyConnect'),
+        # Boosts may run with no action button at all — the post alone.
+        ('none', 'No button'),
     )
     ad_type = models.CharField(max_length=30, choices=AD_TyPES, default='image')
     ad_type_details= models.TextField(null=True, blank=True)

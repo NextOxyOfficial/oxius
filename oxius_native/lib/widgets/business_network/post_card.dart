@@ -25,6 +25,8 @@ import 'post_header.dart';
 import 'post_media_gallery.dart';
 import '../ads/advertise_button.dart';
 import '../ads/compact_house_ad_strip.dart';
+import '../ads/house_ad_card.dart';
+import '../../services/house_ads_service.dart';
 import 'reshared_post_card.dart';
 import 'reshared_news_card.dart';
 import '../../screens/news_detail_screen.dart';
@@ -55,6 +57,10 @@ class PostCard extends StatefulWidget {
   /// promoted post doesn't dominate the feed with an open comment section.
   final bool isSponsored;
 
+  /// The campaign behind a sponsored post, so its CTA button (and the click
+  /// tracking that pays for it) can render under the media.
+  final HouseAd? sponsoredAd;
+
   const PostCard({
     super.key,
     required this.post,
@@ -66,6 +72,7 @@ class PostCard extends StatefulWidget {
     this.onReshared,
     this.showInlineAd = false,
       this.isSponsored = false,
+      this.sponsoredAd,
   });
 
   @override
@@ -1032,6 +1039,12 @@ class _PostCardState extends State<PostCard> {
               media: _post.media,
               onMediaTap: _handleMediaTap,
             ),
+          // Boost's own action button, directly under the media. A boost is
+          // still the post — but an advertiser who paid for it can offer one
+          // way to act on it (message / visit / call / email). Nothing shows
+          // when they chose no button.
+          if (widget.isSponsored && widget.sponsoredAd != null)
+            _SponsoredCtaBar(ad: widget.sponsoredAd!, placement: 'bn_feed'),
           // Preview-style compact sponsored strip under the media, above the
           // caption — the feed decides which posts carry it (every Nth) so
           // it never feels ad-heavy. The post's author earns the share.
@@ -1254,6 +1267,56 @@ class _PostCardState extends State<PostCard> {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+/// The action button under a boosted post's media.
+///
+/// Deliberately quiet: a full-width outlined row, not the loud pill a creative
+/// ad card uses — a boost has to keep reading as a post.
+class _SponsoredCtaBar extends StatelessWidget {
+  final HouseAd ad;
+  final String placement;
+
+  const _SponsoredCtaBar({required this.ad, required this.placement});
+
+  @override
+  Widget build(BuildContext context) {
+    // "none" (or an advertiser who never picked one) means no button.
+    if (ad.adType.isEmpty || ad.adType == 'none') {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () {
+            HouseAdsService.track(
+              eventType: 'cta_click',
+              placement: placement,
+              adId: ad.id,
+            );
+            HouseAdCard.launchCta(ad);
+          },
+          icon: Icon(ad.ctaIcon, size: 17),
+          label: Text(
+            ad.ctaLabel,
+            style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF2563EB),
+            side: const BorderSide(color: Color(0xFFDBEAFE)),
+            backgroundColor: const Color(0xFFF8FBFF),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
       ),
     );
   }

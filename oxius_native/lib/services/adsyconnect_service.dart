@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'active_chat_tracker.dart';
@@ -410,9 +410,14 @@ class AdsyConnectService {
         request.fields['voice_duration'] = voiceDuration.toString();
       }
 
-      // Add file - handle both web (bytes) and mobile (path)
-      if (kIsWeb && mediaBytes != null) {
-        // Web: Use bytes
+      // Bytes win wherever they are supplied. This used to be
+      // `if (kIsWeb && mediaBytes != null)`, so on a PHONE the bytes branch
+      // was skipped and — with no mediaFilePath, which is exactly how the 1:1
+      // chat sends its compressed photos — NO FILE WAS ATTACHED AT ALL. The
+      // request left with fields only and the server rejected it for a
+      // missing media_file, which is why sending a photo in a 1:1 chat always
+      // failed on mobile.
+      if (mediaBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'media_file',
@@ -421,7 +426,6 @@ class AdsyConnectService {
           ),
         );
       } else if (mediaFilePath != null) {
-        // Mobile: Use file path
         request.files.add(
           await http.MultipartFile.fromPath(
             'media_file',
@@ -429,10 +433,17 @@ class AdsyConnectService {
             filename: fileName,
           ),
         );
+      } else {
+        throw Exception('No media to attach');
       }
 
-      final streamedResponse =
-          await request.send().timeout(const Duration(seconds: 30));
+      // Photos are compressed to ~200 KB and finish in a second, but a video
+      // or a document is sent as the original file — 30s was not enough for
+      // those on a phone uplink and they died as "Upload timeout".
+      final isHeavy = messageType == 'video' || messageType == 'document';
+      final streamedResponse = await request.send().timeout(
+            Duration(seconds: isHeavy ? 180 : 60),
+          );
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201) {

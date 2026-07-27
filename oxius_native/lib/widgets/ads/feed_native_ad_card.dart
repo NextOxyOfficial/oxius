@@ -151,7 +151,8 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
       // timestamp slot. Only non-boost creatives use the ad-card chrome.
       final boosted = house.boostedPostModel;
       if (boosted != null) {
-        return PostCard(post: boosted, isSponsored: true);
+        // Pass the campaign so the card can offer its action button.
+        return PostCard(post: boosted, isSponsored: true, sponsoredAd: house);
       }
       return HouseAdCard(
         ad: house,

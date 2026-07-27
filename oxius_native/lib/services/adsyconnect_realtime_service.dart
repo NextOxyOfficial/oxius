@@ -216,12 +216,30 @@ class AdsyConnectRealtimeService {
   }
 
   String _eventFingerprint(Map<String, dynamic> event) {
+    final type = event['type']?.toString() ?? '';
+
+    // Reactions repeat on the SAME message id — add one, swap it, take it
+    // away. The generic branch below keys purely on that id, so only the
+    // first reaction on a message survived and every later change was
+    // dropped as a duplicate. That is what kept reactions from the other
+    // side invisible until the thread was rebuilt. Hash the state instead.
+    if (type == 'message_reaction') {
+      final reactions = event['reactions'];
+      final state = reactions is List
+          ? reactions
+              .map((r) => r is Map
+                  ? '${r['emoji']}:${(r['user_ids'] as List?)?.join(',') ?? r['count']}'
+                  : '$r')
+              .join('|')
+          : '$reactions';
+      return 'reaction:${event['message_id']}|$state';
+    }
+
     final eventId = event['event_id'] ?? event['id'] ?? event['message_id'];
     if (eventId != null && eventId.toString().isNotEmpty) {
       return 'id:$eventId';
     }
 
-    final type = event['type']?.toString() ?? '';
     if (type == 'incoming_call' || type == 'call_status') {
       return [
         type,
