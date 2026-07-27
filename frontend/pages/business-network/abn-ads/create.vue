@@ -178,8 +178,8 @@
               ঘোষণা সবাইকে সমানভাবে দেখানো হয় — দিনে সর্বোচ্চ ২ বার
             </p>
 
-            <!-- Title -->
-            <div>
+            <!-- Title — a boost has none: the post is the ad -->
+            <div v-if="form.format !== 'boost'">
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 {{ $t("adc_ad_title") }} <span class="text-red-500">*</span>
               </label>
@@ -238,8 +238,8 @@
               </div>
             </div>
 
-            <!-- Description -->
-            <div>
+            <!-- Description — likewise: no new copy on a boost -->
+            <div v-if="form.format !== 'boost'">
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 {{ $t("adc_desc") }} <span class="text-red-500">*</span>
               </label>
@@ -333,35 +333,111 @@
 
             <!-- Boost post (boost format) -->
             <div v-if="form.format === 'boost'" class="space-y-3">
+              <!-- What a boost actually is. Advertisers kept looking for the
+                   headline / image fields that a boost deliberately does not
+                   have, so the rule is stated before the picker. -->
+              <div
+                class="p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-[13px] text-indigo-900 leading-relaxed"
+              >
+                <div class="font-semibold mb-1">বুস্ট কীভাবে কাজ করে</div>
+                আপনার পোস্টটি <b>যেমন আছে ঠিক তেমনই</b> ফিডে দেখানো হবে — নতুন
+                কোনো লেখা, ছবি বা ভিডিও যোগ করতে হবে না। শুধু তারিখের জায়গায়
+                <b>Sponsored</b> লেখা থাকবে। লাইক, কমেন্ট, শেয়ার, সেভ — সবকিছু
+                সাধারণ পোস্টের মতোই কাজ করবে।
+              </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-800 mb-1">
-                  {{ $t("adc_post_id") }} <span class="text-red-500">*</span>
+                  কোন পোস্টটি বুস্ট করবেন? <span class="text-red-500">*</span>
                 </label>
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="boostPostId"
-                    type="text"
-                    :placeholder='$t("adc_post_id_ph")'
-                    class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
-                  />
+
+                <!-- Your own posts, as tiles. Typing an id was the only way
+                     before, which meant leaving the panel to go find one. -->
+                <div v-if="myPostsLoading" class="py-6 text-center text-sm text-gray-500">
+                  আপনার পোস্ট লোড হচ্ছে…
+                </div>
+                <div
+                  v-else-if="!myPosts.length"
+                  class="p-4 rounded-xl border border-dashed border-gray-300 text-sm text-gray-600 text-center"
+                >
+                  বুস্ট করার মতো পাবলিক পোস্ট নেই। আগে একটি পোস্ট করুন, তারপর
+                  এখান থেকে বুস্ট করতে পারবেন।
+                </div>
+                <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <button
+                    v-for="p in myPosts"
+                    :key="p.id"
                     type="button"
-                    @click="loadBoostPost"
-                    :disabled="!boostPostId || boostLoading"
-                    class="shrink-0 px-3 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors"
+                    @click="selectBoostPost(p)"
+                    class="text-left border rounded-xl overflow-hidden transition-colors"
+                    :class="
+                      boostPostId === String(p.id)
+                        ? 'border-indigo-500 ring-2 ring-indigo-200'
+                        : 'border-gray-200 hover:border-indigo-300'
+                    "
                   >
-                    {{ boostLoading ? $t("adc_loading") : $t("adc_load_post") }}
+                    <div class="aspect-video bg-gray-100 relative">
+                      <img
+                        v-if="postThumb(p)"
+                        :src="postThumb(p)"
+                        class="w-full h-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full flex items-center justify-center text-gray-400"
+                      >
+                        <UIcon name="i-heroicons-document-text" class="w-6 h-6" />
+                      </div>
+                      <span
+                        v-if="boostPostId === String(p.id)"
+                        class="absolute top-1 right-1 bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full"
+                      >
+                        নির্বাচিত
+                      </span>
+                    </div>
+                    <div class="p-2">
+                      <p class="text-[12px] text-gray-700 line-clamp-2 leading-snug">
+                        {{ postExcerpt(p) || "(ছবি/ভিডিও পোস্ট)" }}
+                      </p>
+                      <p class="mt-1 text-[11px] text-gray-400">
+                        {{ postDate(p) }}
+                      </p>
+                    </div>
                   </button>
                 </div>
-                <p class="mt-1 text-xs text-gray-500">
-                  অ্যাপে পোস্টের ⋯ মেনু থেকে Post ID কপি করুন
-                </p>
+
+                <!-- Fallback for a post that is not in the recent list. -->
+                <details class="mt-3">
+                  <summary class="text-xs text-gray-500 cursor-pointer select-none">
+                    উপরে পোস্টটি নেই? Post ID দিয়ে খুঁজুন
+                  </summary>
+                  <div class="flex items-center gap-2 mt-2">
+                    <input
+                      v-model="boostPostId"
+                      type="text"
+                      :placeholder='$t("adc_post_id_ph")'
+                      class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                    <button
+                      type="button"
+                      @click="loadBoostPost"
+                      :disabled="!boostPostId || boostLoading"
+                      class="shrink-0 px-3 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 rounded-md transition-colors"
+                    >
+                      {{ boostLoading ? $t("adc_loading") : $t("adc_load_post") }}
+                    </button>
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500">
+                    অ্যাপে পোস্টের ⋯ মেনু থেকে Post ID কপি করুন
+                  </p>
+                </details>
+
                 <p v-if="boostError" class="mt-1 text-xs text-red-500">
                   পোস্ট পাওয়া যায়নি — ID টি আবার দেখুন
                 </p>
               </div>
 
-              <!-- Loaded post preview -->
+              <!-- Selected post -->
               <div
                 v-if="boostedPost"
                 class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl bg-gray-50"
@@ -388,13 +464,14 @@
                     class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-green-600"
                   >
                     <UIcon name="i-heroicons-check-circle" class="w-4 h-4" />
-                    পোস্ট পাওয়া গেছে
+                    এই পোস্টটি বুস্ট হবে
                   </div>
                 </div>
               </div>
 
               <p class="text-xs text-gray-500">
-                Boost করা পোস্ট Shorts রিলে স্পনসরড হিসেবে দেখানো হবে।
+                বুস্ট করা পোস্ট Business Network ফিড ও Shorts রিলে স্পনসরড
+                হিসেবে দেখানো হবে।
               </p>
             </div>
 
@@ -437,8 +514,9 @@
               </div>
             </div>
 
-            <!-- Ad type / CTA button -->
-            <div>
+            <!-- Ad type / CTA button. A boost has no external CTA — tapping
+                 it opens the post, exactly like any other post in the feed. -->
+            <div v-if="form.format !== 'boost'">
               <label class="block text-sm font-medium text-gray-800 mb-1">
                 বিজ্ঞাপনের বাটন (কী করলে কী হবে)
                 <span class="text-red-500">*</span>
@@ -884,11 +962,75 @@
               সব জায়গায় আপনার বিজ্ঞাপন যেভাবে দেখাবে — একবারে দেখে নিন।
             </p>
 
+            <!-- Boost preview: the post itself. Not the creative-ad card —
+                 that is the whole point of a boost, and showing the generic
+                 card here is what made people expect a headline field. -->
+            <template v-if="form.format === 'boost'">
+              <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+                ফিডে যেভাবে দেখাবে
+              </div>
+              <div class="border border-gray-200 rounded-xl overflow-hidden mb-4">
+                <div class="flex items-center gap-2 p-3">
+                  <div
+                    class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden shrink-0"
+                  >
+                    <img
+                      v-if="boostAuthorAvatar"
+                      :src="boostAuthorAvatar"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-sm font-semibold text-gray-800 truncate">
+                      {{ boostAuthorName || "আপনার নাম" }}
+                    </div>
+                    <!-- Where the date normally sits -->
+                    <div class="text-[11px] text-gray-500">Sponsored</div>
+                  </div>
+                </div>
+                <p
+                  v-if="boostExcerpt"
+                  class="px-3 pb-2 text-[13px] text-gray-700 whitespace-pre-line"
+                >
+                  {{ boostExcerpt }}
+                </p>
+                <img
+                  v-if="boostThumb"
+                  :src="boostThumb"
+                  class="w-full max-h-52 object-cover"
+                />
+                <div
+                  class="flex items-center justify-around border-t border-gray-100 py-2 text-[12px] text-gray-600"
+                >
+                  <span class="inline-flex items-center gap-1">
+                    <UIcon name="i-heroicons-hand-thumb-up" class="w-4 h-4" />
+                    লাইক
+                  </span>
+                  <span class="inline-flex items-center gap-1">
+                    <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4" />
+                    কমেন্ট
+                  </span>
+                  <span class="inline-flex items-center gap-1">
+                    <UIcon name="i-heroicons-share" class="w-4 h-4" />
+                    শেয়ার
+                  </span>
+                </div>
+              </div>
+              <p class="text-[11px] text-gray-500 mb-4 leading-relaxed">
+                লাইক, কমেন্ট ও শেয়ার আসল পোস্টেই যুক্ত হবে — বুস্ট শেষ হলেও
+                সেগুলো থেকে যাবে।
+              </p>
+            </template>
+
             <!-- ফিড কার্ড -->
-            <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+            <div
+              v-if="form.format !== 'boost'"
+              class="text-[11px] font-medium text-gray-500 mb-1.5"
+            >
               ফিড কার্ড
             </div>
             <div
+              v-if="form.format !== 'boost'"
               class="border border-gray-200 rounded-md overflow-hidden mb-4"
             >
               <video
@@ -930,11 +1072,15 @@
               </div>
             </div>
 
-            <!-- কমপ্যাক্ট -->
-            <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+            <!-- কমপ্যাক্ট — creative ads only; a boost has no title strip -->
+            <div
+              v-if="form.format !== 'boost'"
+              class="text-[11px] font-medium text-gray-500 mb-1.5"
+            >
               কমপ্যাক্ট
             </div>
             <div
+              v-if="form.format !== 'boost'"
               class="flex items-center gap-2.5 p-2 bg-slate-50 rounded-xl mb-4"
             >
               <video
@@ -971,11 +1117,15 @@
               />
             </div>
 
-            <!-- Shorts ব্যানার -->
-            <div class="text-[11px] font-medium text-gray-500 mb-1.5">
+            <!-- Shorts ব্যানার — creative ads only -->
+            <div
+              v-if="form.format !== 'boost'"
+              class="text-[11px] font-medium text-gray-500 mb-1.5"
+            >
               Shorts ব্যানার
             </div>
             <div
+              v-if="form.format !== 'boost'"
               class="relative bg-gray-900 rounded-xl overflow-hidden mx-auto mb-4"
               style="aspect-ratio: 9 / 14; max-height: 260px"
             >
@@ -1344,6 +1494,49 @@ const policyAgreed = ref(false);
 // ── Boost post (boost format) ──
 const route = useRoute();
 const boostPostId = ref("");
+
+// Your own posts, for the boost picker. Typing a post id was the only way in
+// before, which meant leaving the panel to hunt one down in the app.
+const myPosts = ref([]);
+const myPostsLoading = ref(false);
+
+async function loadMyPosts() {
+  const me = user.value?.user?.id || user.value?.id;
+  if (!me) return;
+  myPostsLoading.value = true;
+  try {
+    const res = await get(`/bn/user/${me}/posts/`);
+    const rows = res?.data?.results || res?.data || [];
+    // Only public posts can be boosted — the server enforces this too, but
+    // offering one that will be refused is a pointless dead end.
+    myPosts.value = (Array.isArray(rows) ? rows : [])
+      .filter((p) => (p.visibility || "public") === "public")
+      .slice(0, 18);
+  } catch (e) {
+    myPosts.value = [];
+  } finally {
+    myPostsLoading.value = false;
+  }
+}
+
+function postThumb(p) {
+  const m = (p?.post_media || [])[0];
+  if (!m) return "";
+  return m.thumbnail || m.image || "";
+}
+function postExcerpt(p) {
+  return (p?.content || "").replace(/\s+/g, " ").trim().slice(0, 90);
+}
+function postDate(p) {
+  const d = p?.created_at ? new Date(p.created_at) : null;
+  return d ? d.toLocaleDateString("bn-BD") : "";
+}
+function selectBoostPost(p) {
+  boostPostId.value = String(p.id);
+  boostedPost.value = p;
+  boostError.value = false;
+}
+
 const boostedPost = ref(null);
 const boostLoading = ref(false);
 const boostError = ref(false);
@@ -1368,6 +1561,14 @@ async function loadBoostPost() {
 }
 
 // Defensive field extraction — post payload shape varies slightly.
+watch(
+  () => form.format,
+  (f) => {
+    if (f === "boost" && !myPosts.value.length) loadMyPosts();
+  },
+  { immediate: true }
+);
+
 const boostThumb = computed(() => {
   const p = boostedPost.value;
   if (!p) return "";
@@ -1382,6 +1583,12 @@ const boostThumb = computed(() => {
   if (withThumb) return withThumb.thumbnail;
   return p.image || p.thumbnail || "";
 });
+const boostAuthorAvatar = computed(() => {
+  const p = boostedPost.value;
+  const a = p?.author_details || p?.user || {};
+  return a.image || a.avatar || "";
+});
+
 const boostAuthorName = computed(() => {
   const p = boostedPost.value;
   if (!p) return "";
@@ -1795,7 +2002,7 @@ async function submitAd() {
     }
   }
   if (form.format === "boost" && !boostedPost.value) {
-    errorMsg.value = "Boost করার আগে Post ID দিয়ে পোস্টটি লোড করুন।";
+    errorMsg.value = "কোন পোস্টটি বুস্ট করবেন সেটি বেছে নিন।";
     return;
   }
   const startDate = schedDate(sched.sd, sched.sm, sched.sy);
@@ -1831,6 +2038,13 @@ async function submitAd() {
     if (form.format === "boost") {
       payload.boosted_post = boostPostId.value;
       payload.images = []; // creative comes from the boosted post itself
+      // The post supplies everything a viewer sees. Sending a headline, body
+      // or CTA here would be dead data — the server derives and overwrites
+      // them anyway, so don't pretend the advertiser chose them.
+      delete payload.title;
+      delete payload.description;
+      delete payload.ad_type;
+      delete payload.ad_type_details;
     }
     const res = await post("/bn/abn-ads-panels/", payload);
     if (res.data) {

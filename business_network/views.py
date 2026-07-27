@@ -2165,6 +2165,56 @@ class AbnAdsPanelCategoryListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
+def _prepare_boost(data, user):
+    """Validate and normalise a boost campaign.
+
+    A boost promotes an EXISTING post as-is: no new headline, no new copy, no
+    new creative, no external CTA. Everything the viewer sees comes from the
+    post itself, which is why the panel does not ask for any of it and why the
+    server strips whatever a client might still send.
+
+    Returns an error dict on refusal, otherwise None.
+    """
+    post_id = str(data.get("boosted_post") or "").strip()
+    if not post_id:
+        return {"error": "post required",
+                "detail": "কোন পোস্টটি বুস্ট করবেন সেটি বেছে নিন।"}
+
+    post = BusinessNetworkPost.objects.filter(pk=post_id).first()
+    if post is None:
+        return {"error": "post not found",
+                "detail": "পোস্টটি খুঁজে পাওয়া যায়নি।"}
+    # You may only boost your OWN post. Without this anyone could pay to turn
+    # a stranger's post into an ad — and the earnings/attribution would follow
+    # that stranger, not the buyer.
+    if str(post.author_id) != str(getattr(user, "id", "")):
+        return {"error": "not your post",
+                "detail": "শুধু নিজের পোস্ট বুস্ট করা যাবে।"}
+    if post.is_banned:
+        return {"error": "post banned",
+                "detail": "এই পোস্টটি বুস্ট করা যাবে না।"}
+    # A followers-only or private post would be invisible to the very people
+    # the budget is buying.
+    if getattr(post, "visibility", "public") != "public":
+        return {"error": "post not public",
+                "detail": "শুধু পাবলিক পোস্ট বুস্ট করা যাবে। পোস্টটি পাবলিক করে আবার চেষ্টা করুন।"}
+
+    # The post IS the creative — drop anything else the client sent.
+    data["format"] = "boost"
+    data["ad_type"] = "click_to_website"
+    data["ad_type_details"] = ""
+    # Title/description exist only so the panel's own lists have something to
+    # print; they are never shown to a viewer.
+    text = " ".join((post.content or "").split())
+    data["title"] = (text[:60] or f"Boosted post {post.pk}")
+    data["description"] = text or f"Boosted post {post.pk}"
+    # Boosts can only run where a full post card is rendered.
+    allowed = ["bn_feed", "shorts_reel", "web_feed"]
+    chosen = [p for p in (data.get("placements") or []) if p in allowed]
+    data["placements"] = chosen or allowed
+    return None
+
+
 class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
     queryset = AbnAdsPanel.objects.all()
     serializer_class = AbnAdsPanelSerializer
@@ -2220,6 +2270,15 @@ class AbnAdsPanelListCreateView(generics.ListCreateAPIView):
             if default_cat is None:
                 default_cat = AbnAdsPanelCategory.objects.create(name="General")
             data["category"] = default_cat.pk
+        if str(data.get("format") or "") == "boost":
+            problem = _prepare_boost(data, request.user)
+            if problem:
+                return Response(problem, status=400)
+            # A boost carries no uploaded creative of its own.
+            images_data = None
+            media_ids = None
+            companion_b64 = None
+
         serializer = self.get_serializer(data=data)
 
         try:
@@ -2361,6 +2420,24 @@ class AbnAdsPanelRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView
         if not (self.request.user.is_staff
                 or instance.user_id == self.request.user.id):
             raise PermissionDenied("You do not have permission to modify this ad.")
+
+    def update(self, request, *args, **kwargs):
+        # Same rule as create: a boost may only ever point at the caller's own
+        # public post. Without this an existing ad could be PATCHed to promote
+        # somebody else's content.
+        instance = self.get_object()
+        wants_boost = str(request.data.get("format") or instance.format) == "boost"
+        touches_post = "boosted_post" in request.data
+        if wants_boost and (touches_post or instance.format != "boost"):
+            data = request.data
+            if hasattr(data, "_mutable"):
+                data._mutable = True
+            if not data.get("boosted_post"):
+                data["boosted_post"] = instance.boosted_post_id
+            problem = _prepare_boost(data, request.user)
+            if problem:
+                return Response(problem, status=400)
+        return super().update(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         self._assert_owner(serializer.instance)
