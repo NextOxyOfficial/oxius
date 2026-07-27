@@ -391,6 +391,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildPageDots(),
                       GestureDetector(
                         onTap: _openAuthorProfile,
                         behavior: HitTestBehavior.opaque,
@@ -488,6 +489,42 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// How many photos this post holds and which one is on screen.
+  ///
+  /// The count lived only as a "2/5" pill in the top chrome, which says the
+  /// number but not that there is anything to swipe to. Dots read as "there
+  /// is more this way" at a glance. Past ten they stop being countable, so
+  /// the pill carries it alone from there.
+  Widget _buildPageDots() {
+    final total = _post.media.length;
+    if (total < 2 || total > 10) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(total, (i) {
+          final active = i == _currentIndex;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            // The current page is a stretched pill, the rest are dots — so
+            // the position is readable without counting.
+            width: active ? 18 : 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: active
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.38),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          );
+        }),
       ),
     );
   }
