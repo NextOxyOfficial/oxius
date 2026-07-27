@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/media_headers.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// The bottom input bar for the AdsyConnect chat screen.
@@ -26,6 +27,11 @@ class ChatMessageInput extends StatelessWidget {
   // Reply preview (null = no active reply)
   final String? replyFromName;
   final String? replyPreviewText;
+
+  /// Thumbnail of the quoted message when it carries one (a shared post, an
+  /// ad). Replying to something visual should LOOK like that thing — a line of
+  /// italic text alone gives no clue which post is being answered.
+  final String? replyThumbUrl;
 
   // Image preview
   final List<String> compressedImages;
@@ -57,6 +63,7 @@ class ChatMessageInput extends StatelessWidget {
     this.isCompressingImages = false,
     this.replyFromName,
     this.replyPreviewText,
+    this.replyThumbUrl,
     required this.compressedImages,
     required this.recordDuration,
     required this.onSend,
@@ -595,6 +602,20 @@ class ChatMessageInput extends StatelessWidget {
         ),
         child: Row(
           children: [
+            if ((replyThumbUrl ?? '').isNotEmpty) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  replyThumbUrl!,
+                  width: 38,
+                  height: 38,
+                  fit: BoxFit.cover,
+                  headers: kMediaHeaders,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+              const SizedBox(width: 9),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

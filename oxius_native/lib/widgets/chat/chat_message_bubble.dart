@@ -48,8 +48,13 @@ class ChatReplyQuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preview = message['replyPreview']?.toString() ?? '';
+    var preview = message['replyPreview']?.toString() ?? '';
     if (preview.isEmpty) return const SizedBox.shrink();
+    // Older replies were sent with the raw share envelope inside the quote
+    // header; decode it here too so no one is ever shown "ADSYPOST::…".
+    final quotedShare = SharedPostMessage.tryDecode(preview);
+    if (quotedShare != null) preview = quotedShare.quoteLine;
+    final quotedThumb = AppConfig.getAbsoluteUrl(quotedShare?.thumbUrl ?? '');
 
     final sender = message['replyToSender']?.toString() ?? '';
     final replyToId = message['replyToId']?.toString() ?? '';
@@ -77,10 +82,31 @@ class ChatReplyQuoteCard extends StatelessWidget {
           border: Border.all(color: border),
         ),
         // Quote look: a small quote glyph beside the sender, no side bar.
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        // A quoted POST also shows its picture, so the reply reads as being
+        // about that post rather than about a line of italic text.
+        child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (quotedThumb.isNotEmpty) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.network(
+                  quotedThumb,
+                  width: 34,
+                  height: 34,
+                  fit: BoxFit.cover,
+                  headers: kMediaHeaders,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -112,6 +138,9 @@ class ChatReplyQuoteCard extends StatelessWidget {
                 fontStyle: FontStyle.italic,
                 color: previewColor,
                 height: 1.25,
+              ),
+            ),
+                ],
               ),
             ),
           ],
@@ -732,8 +761,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         : 'Business Network পোস্ট';
     // The card HUGS its content: short titles/captions get a narrow card,
     // and the old full width (~320) is now the MAXIMUM, not the default.
+    //
+    // Always aligned left, including on your own messages. The card is a
+    // PREVIEW of something — thumbnail first, then its name and caption — and
+    // reading it right-aligned puts the picture on the wrong side of the text
+    // it belongs to. The bubble still sits on your side of the thread; only
+    // the card's contents stay in reading order.
     return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: Alignment.centerLeft,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 320),
         child: InkWell(

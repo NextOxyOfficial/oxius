@@ -79,6 +79,21 @@ class SharedPostMessage {
 
   static bool isShared(String content) => content.startsWith(_prefix);
 
+  /// One line describing this share, for anywhere a quote is summarised —
+  /// the composer's reply strip, the quote card on a bubble.
+  ///
+  /// Never the raw envelope: `ADSYPOST::eyJuIjoi…` in a reply header is how a
+  /// quoted post used to look, which reads as a bug to everyone who sees it.
+  String get quoteLine {
+    final own = text.trim();
+    if (own.isNotEmpty) return own;
+    final who = displayName.trim();
+    final cap = caption.trim();
+    if (who.isNotEmpty && cap.isNotEmpty) return '$who — $cap';
+    if (cap.isNotEmpty) return cap;
+    return who.isNotEmpty ? who : 'পোস্ট';
+  }
+
   /// One-line chat-list preview, or null when [content] isn't a share.
   ///
   /// The sender's own words lead when there are any — a list row saying only

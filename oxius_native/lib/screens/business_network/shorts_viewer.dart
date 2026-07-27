@@ -1587,17 +1587,33 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   }
 
   /// TikTok/Reels-style video surface:
-  /// - portrait videos fill the whole screen (cover crop),
-  /// - landscape videos sit centered over a blurred, darkened backdrop so
+  /// - a clip shaped like the screen fills it edge to edge,
+  /// - anything else sits centered over a blurred, darkened backdrop so
   ///   there are never hard black bars.
   /// A small spinner overlays while the network stream re-buffers.
+  ///
+  /// The rule used to be "portrait → cover", which quietly zoomed most clips:
+  /// a phone is about 0.46 wide-over-tall, so covering a 9:16 (0.56) video
+  /// throws away a sixth of it and a 3:4 (0.75) video loses nearly a third —
+  /// top, bottom and sides cut off, exactly the blown-up look people report.
+  /// Now the decision is measured: cover only while the crop stays small.
   Widget _buildVideoSurface(String thumbUrl) {
     final controller = _controller!;
     final ar = controller.value.aspectRatio;
-    final isPortrait = ar <= 0.85;
+    final screenSize = MediaQuery.sizeOf(context);
+    final screenAr = screenSize.height > 0
+        ? screenSize.width / screenSize.height
+        : 0.5;
+    // Fraction of the frame a cover-crop would discard.
+    final cropLoss = ar <= 0 || screenAr <= 0
+        ? 1.0
+        : (ar > screenAr ? 1 - (screenAr / ar) : 1 - (ar / screenAr));
+    // Up to ~10% off an edge still reads as "full screen"; past that the
+    // viewer is watching a crop of someone else's video.
+    final fillsScreen = cropLoss <= 0.10;
 
     Widget video;
-    if (isPortrait) {
+    if (fillsScreen) {
       video = SizedBox.expand(
         child: FittedBox(
           fit: BoxFit.cover,
@@ -2748,15 +2764,36 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
         fit: StackFit.expand,
         children: [
           if (_ready && c != null)
-            FittedBox(
-              fit: BoxFit.cover,
-              clipBehavior: Clip.hardEdge,
-              child: SizedBox(
-                width: c.value.size.width,
-                height: c.value.size.height,
-                child: VideoPlayer(c),
-              ),
-            )
+            // Same measured rule as an organic short: an advertiser's video
+            // gets shown, not cropped to fit.
+            Builder(builder: (ctx) {
+              final ar = c.value.aspectRatio;
+              final size = MediaQuery.sizeOf(ctx);
+              final screenAr =
+                  size.height > 0 ? size.width / size.height : 0.5;
+              final loss = ar <= 0 || screenAr <= 0
+                  ? 1.0
+                  : (ar > screenAr
+                      ? 1 - (screenAr / ar)
+                      : 1 - (ar / screenAr));
+              if (loss > 0.10) {
+                return Center(
+                  child: AspectRatio(
+                    aspectRatio: ar,
+                    child: VideoPlayer(c),
+                  ),
+                );
+              }
+              return FittedBox(
+                fit: BoxFit.cover,
+                clipBehavior: Clip.hardEdge,
+                child: SizedBox(
+                  width: c.value.size.width,
+                  height: c.value.size.height,
+                  child: VideoPlayer(c),
+                ),
+              );
+            })
           else
             const Center(
               child: AdsyLoadingIndicator(

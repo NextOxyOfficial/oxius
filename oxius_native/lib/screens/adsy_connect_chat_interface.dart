@@ -3431,6 +3431,22 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     });
   }
 
+  /// Picture for the quoted message, when it has one — a shared post's
+  /// thumbnail, or the photo/video being replied to.
+  String? _replyThumbUrl(Map<String, dynamic> message) {
+    final type = message['type']?.toString() ?? 'text';
+    if (type == 'image' || type == 'video') {
+      final url = (message['thumbnailUrl'] ?? message['mediaUrl'] ?? '')
+          .toString();
+      return url.isEmpty ? null : AppConfig.getAbsoluteUrl(url);
+    }
+    final shared = SharedPostMessage.tryDecode(
+      (message['message'] ?? message['content'] ?? '').toString(),
+    );
+    final thumb = shared?.thumbUrl.trim() ?? '';
+    return thumb.isEmpty ? null : AppConfig.getAbsoluteUrl(thumb);
+  }
+
   String _getReplyPreviewText(Map<String, dynamic> message) {
     final type = message['type']?.toString() ?? 'text';
     switch (type) {
@@ -3443,9 +3459,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       case 'document':
         return 'ðŸ“„ ${message['file_name'] ?? message['fileName'] ?? 'Document'}';
       default:
-        final text =
-            (message['message'] ?? message['content'] ?? '').toString();
+        var text = (message['message'] ?? message['content'] ?? '').toString();
         if (text.startsWith('ðŸ“ž')) return text;
+        // A shared post travels as an encoded envelope. Quoting one used to
+        // copy that envelope into the reply header, so the other person read
+        // "ADSYPOST::eyJuIjoi…" — describe the post instead.
+        final shared = SharedPostMessage.tryDecode(text);
+        if (shared != null) text = shared.quoteLine;
         return text.length > 50 ? '${text.substring(0, 50)}...' : text;
     }
   }
@@ -3914,6 +3934,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           : null,
       replyPreviewText: _replyingToMessage != null
           ? _getReplyPreviewText(_replyingToMessage!)
+          : null,
+      replyThumbUrl: _replyingToMessage != null
+          ? _replyThumbUrl(_replyingToMessage!)
           : null,
       compressedImages: _compressedImages,
       recordDuration: Duration(seconds: _recordDuration),
