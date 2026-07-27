@@ -1483,6 +1483,9 @@ class AdEvent(models.Model):
         ("impression", "Impression"),
         ("click", "Click"),
         ("cta_click", "CTA Click"),
+        # Someone actually messaged the advertiser from the ad — the only
+        # event type that represents a person, not a tap.
+        ("lead", "Lead"),
     )
 
     ad = models.ForeignKey(
@@ -1526,6 +1529,59 @@ class AdEvent(models.Model):
 
     def __str__(self):
         return f"{self.source}:{self.event_type} @{self.placement}"
+
+
+class AbnAdLead(models.Model):
+    """A person who messaged an advertiser FROM one of their ads.
+
+    Clicks say an ad was interesting; a lead says someone started a
+    conversation about it. That is what an advertiser running an AdsyConnect
+    message ad actually bought, so it gets its own row rather than living as
+    another AdEvent count: it carries WHO wrote, WHAT they first said, and the
+    room to continue in.
+
+    One row per (ad, sender) — a person who writes five times is one lead with
+    a message count, not five leads. `chatroom` is the AdsyConnect room id as
+    plain text, deliberately not a ForeignKey: business_network must not grow
+    a migration dependency on adsyconnect for a value it only ever hands back
+    to the client.
+    """
+
+    ad = models.ForeignKey(
+        AbnAdsPanel, on_delete=models.CASCADE, related_name="leads",
+    )
+    advertiser = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="ad_leads_received",
+    )
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="ad_leads_sent",
+    )
+    chatroom = models.CharField(max_length=64, blank=True, default="")
+    first_message = models.TextField(blank=True, default="")
+    last_message = models.TextField(blank=True, default="")
+    message_count = models.PositiveIntegerField(default=0)
+    # Cleared when the advertiser opens their leads list.
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_message_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-last_message_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["ad", "sender"], name="uniq_ad_lead_per_sender",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["advertiser", "-last_message_at"],
+                name="adlead_advertiser_idx",
+            ),
+            models.Index(fields=["ad", "-last_message_at"], name="adlead_ad_idx"),
+        ]
+
+    def __str__(self):
+        return f"lead {self.sender_id} → ad {self.ad_id}"
 
 
 class FraudAlert(models.Model):

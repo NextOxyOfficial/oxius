@@ -1024,7 +1024,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
                 placement: 'bn_feed',
                 adId: ad.id,
               );
-              HouseAdCard.launchCta(ad);
+              HouseAdCard.launchCta(ad, placement: 'bn_feed');
             },
             child: Image.network(
               visual,
@@ -1142,7 +1142,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
                         placement: 'bn_feed',
                         adId: ad.id,
                       );
-                      HouseAdCard.launchCta(ad);
+                      HouseAdCard.launchCta(ad, placement: 'bn_feed');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(

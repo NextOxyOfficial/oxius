@@ -1065,7 +1065,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                       adId: ad.id,
                       creatorId: _creatorId,
                     );
-                    HouseAdCard.launchCta(ad);
+                    HouseAdCard.launchCta(ad, placement: 'shorts_reel');
                   },
                   borderRadius: BorderRadius.circular(999),
                   child: Container(

@@ -186,6 +186,74 @@ class HouseAd {
   }
 }
 
+/// Someone who messaged the advertiser from one of their ads.
+///
+/// A click says the ad was interesting; a lead is a person with a name, a
+/// first message and a room to reply in — which is what a "মেসেজ করুন" ad is
+/// bought for.
+class AdLead {
+  final int id;
+  final String adId;
+  final String adTitle;
+  final String chatroomId;
+  final String userId;
+  final String userName;
+  final String userImage;
+  final String profession;
+  final bool isVerified;
+  final bool isPro;
+  final String firstMessage;
+  final String lastMessage;
+  final int messageCount;
+  final bool isRead;
+  final DateTime? lastMessageAt;
+
+  const AdLead({
+    required this.id,
+    required this.adId,
+    required this.adTitle,
+    required this.chatroomId,
+    required this.userId,
+    required this.userName,
+    required this.userImage,
+    required this.profession,
+    required this.isVerified,
+    required this.isPro,
+    required this.firstMessage,
+    required this.lastMessage,
+    required this.messageCount,
+    required this.isRead,
+    required this.lastMessageAt,
+  });
+
+  static AdLead? tryParse(dynamic json) {
+    if (json is! Map) return null;
+    final m = Map<String, dynamic>.from(json);
+    final user = m['user'] is Map
+        ? Map<String, dynamic>.from(m['user'] as Map)
+        : <String, dynamic>{};
+    final userId = (user['id'] ?? '').toString();
+    if (userId.isEmpty) return null;
+    return AdLead(
+      id: (m['id'] as num?)?.toInt() ?? 0,
+      adId: (m['ad'] ?? '').toString(),
+      adTitle: (m['ad_title'] ?? '').toString(),
+      chatroomId: (m['chatroom'] ?? '').toString(),
+      userId: userId,
+      userName: (user['name'] ?? '').toString(),
+      userImage: (user['image'] ?? '').toString(),
+      profession: (user['profession'] ?? '').toString(),
+      isVerified: user['is_verified'] == true,
+      isPro: user['is_pro'] == true,
+      firstMessage: (m['first_message'] ?? '').toString(),
+      lastMessage: (m['last_message'] ?? '').toString(),
+      messageCount: (m['message_count'] as num?)?.toInt() ?? 0,
+      isRead: m['is_read'] == true,
+      lastMessageAt: DateTime.tryParse((m['last_message_at'] ?? '').toString()),
+    );
+  }
+}
+
 /// House-ads layer of the hybrid ads system: serve a panel ad when one
 /// matches, otherwise the caller falls back to AdMob. Every impression /
 /// click (panel AND AdMob) is batched to `/api/bn/ads/track/` — that feed of
@@ -219,6 +287,64 @@ class HouseAdsService {
     } catch (e) {
       debugPrint('[house-ads] serve failed: $e');
       return null;
+    }
+  }
+
+  /// Record that someone messaged an advertiser FROM their ad.
+  ///
+  /// Called AFTER the message itself is stored, and deliberately swallowing
+  /// its own failures: a lead is the advertiser's bookkeeping, and no user
+  /// should ever see their message fail because of it. Not batched with
+  /// [track] — the advertiser gets a push from this, so it goes now.
+  static Future<void> recordLead({
+    required String adId,
+    required String chatroomId,
+    required String message,
+    String placement = '',
+  }) async {
+    if (adId.isEmpty) return;
+    try {
+      final headers = await ApiService.getHeaders();
+      await ApiService.client
+          .post(
+            Uri.parse('${ApiService.baseUrl}/bn/ads/lead/'),
+            headers: headers,
+            body: json.encode({
+              'ad': adId,
+              'chatroom': chatroomId,
+              'message': message,
+              'placement': placement,
+              'platform': 'app',
+            }),
+          )
+          .timeout(const Duration(seconds: 8));
+    } catch (e) {
+      debugPrint('[house-ads] lead failed: $e');
+    }
+  }
+
+  /// The advertiser's leads — everyone, or just one ad's.
+  static Future<List<AdLead>> fetchLeads({String? adId}) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final query = adId != null && adId.isNotEmpty ? '?ad=$adId' : '';
+      final res = await ApiService.client
+          .get(
+            Uri.parse('${ApiService.baseUrl}/bn/ads/leads/$query'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+      if (res.statusCode != 200) return const [];
+      final data = json.decode(res.body);
+      final rows = data is Map ? data['leads'] : null;
+      if (rows is! List) return const [];
+      return [
+        for (final row in rows)
+          if (AdLead.tryParse(row) != null) AdLead.tryParse(row)!
+      ];
+    } catch (e) {
+      debugPrint('[house-ads] leads failed: $e');
+      return const [];
     }
   }
 

@@ -21,6 +21,7 @@ import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
+import '../services/house_ads_service.dart';
 import '../utils/media_headers.dart';
 import '../utils/shared_post_message.dart';
 import '../services/agora_call_service.dart';
@@ -57,6 +58,15 @@ class AdsyConnectChatInterface extends StatefulWidget {
   /// context-free "hi".
   final SharedPostMessage? pendingAttachment;
 
+  /// The ad that opened this chat. When the message goes through, it is
+  /// reported as a LEAD for that ad — the advertiser paid to be written to,
+  /// so the conversation has to be traceable back to the campaign.
+  final String? pendingAdId;
+
+  /// Where the ad was shown (bn_feed, shorts_reel …) — recorded with the lead
+  /// so the advertiser can see which surface actually produces conversations.
+  final String? pendingAdPlacement;
+
   const AdsyConnectChatInterface({
     super.key,
     required this.chatroomId,
@@ -69,6 +79,8 @@ class AdsyConnectChatInterface extends StatefulWidget {
     this.isPro = false,
     this.onClose,
     this.pendingAttachment,
+    this.pendingAdId,
+    this.pendingAdPlacement,
   });
 
   /// Stable route name used to identify a chat in the Navigator stack so the
@@ -1566,6 +1578,18 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       );
 
       debugPrint('ðŸŸ¢ Message sent: ${sentMessage['id']}');
+
+      // The message is stored — now, and only now, it counts as a lead for
+      // the ad that opened this chat. Fire-and-forget: the advertiser's
+      // bookkeeping must never be able to fail the user's message.
+      if (attachment != null && (widget.pendingAdId ?? '').isNotEmpty) {
+        unawaited(HouseAdsService.recordLead(
+          adId: widget.pendingAdId!,
+          chatroomId: widget.chatroomId,
+          message: messageText,
+          placement: widget.pendingAdPlacement ?? '',
+        ));
+      }
 
       if (mounted) {
         setState(() {

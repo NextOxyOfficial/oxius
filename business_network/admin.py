@@ -571,6 +571,24 @@ class AdEventAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(AbnAdLead)
+class AbnAdLeadAdmin(admin.ModelAdmin):
+    list_display = [
+        "ad", "advertiser", "sender", "message_count", "is_read",
+        "created_at", "last_message_at",
+    ]
+    list_filter = ["is_read", "created_at"]
+    search_fields = [
+        "ad__id", "ad__title", "advertiser__email", "sender__email",
+        "first_message", "last_message",
+    ]
+    readonly_fields = ["created_at", "last_message_at"]
+    ordering = ["-last_message_at"]
+
+    def has_add_permission(self, request):
+        return False
+
+
 @admin.register(AdViewerDaily)
 class AdViewerDailyAdmin(admin.ModelAdmin):
     list_display = ["user", "date", "views", "diamonds_awarded", "rewarded"]

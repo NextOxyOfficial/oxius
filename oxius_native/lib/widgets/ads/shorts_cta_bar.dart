@@ -51,7 +51,7 @@ class ShortsCtaBar extends StatelessWidget {
       placement: placement,
       adId: ad.id,
     );
-    HouseAdCard.launchCta(ad);
+    HouseAdCard.launchCta(ad, placement: placement);
   }
 
   @override

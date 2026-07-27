@@ -170,6 +170,8 @@ urlpatterns = [
     path("ads/track/", ads_api.track_ad_events, name="ads-track"),
     path("ads/upload-video/", ads_api.upload_ad_video, name="ads-upload-video"),
     path("ads/stats/", ads_api.my_ad_stats, name="ads-stats"),
+    path("ads/lead/", ads_api.record_ad_lead, name="ads-lead"),
+    path("ads/leads/", ads_api.my_ad_leads, name="ads-leads"),
     path("ads/reward-status/", ads_api.my_reward_status, name="ads-reward-status"),
     path(
         "ads/creator-earnings/",

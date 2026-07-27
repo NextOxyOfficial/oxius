@@ -21,6 +21,7 @@ from rest_framework.response import Response
 from base.models import User
 
 from .models import (
+    AbnAdLead,
     AbnAdsPanel,
     AbnAdsPanelCategory,
     AdEvent,
@@ -732,6 +733,17 @@ def my_ad_stats(request):
     since = timezone.localdate() - timedelta(days=days - 1)
 
     my_ads = AbnAdsPanel.objects.filter(user=request.user)
+    # Leads per ad — for a message ad this is the number that matters, so it
+    # rides along with views/clicks instead of needing its own request.
+    lead_counts = dict(
+        AbnAdLead.objects.filter(ad__in=my_ads)
+        .values_list("ad_id")
+        .annotate(n=Count("id"))
+        .values_list("ad_id", "n")
+    )
+    unread_leads = AbnAdLead.objects.filter(
+        advertiser=request.user, is_read=False
+    ).count()
     daily = (
         AdEvent.objects.filter(
             ad__in=my_ads, created_at__date__gte=since, source="panel"
@@ -832,6 +844,7 @@ def my_ad_stats(request):
                 "status": ad.status,
                 "views": ad.views,
                 "clicks": ad.clicks,
+                "leads": lead_counts.get(ad.pk, 0),
                 "spent": str(ad.spent),
                 "budget": str(ad.budget),
             }
@@ -846,8 +859,138 @@ def my_ad_stats(request):
             for row in placements
         ],
         "segments": segments,
+        "leads_total": sum(lead_counts.values()),
+        "leads_unread": unread_leads,
         "tip": tip,
     })
+
+
+def _lead_user_row(user):
+    """The bit of a person an advertiser needs to decide whether to reply."""
+    if not user:
+        return {}
+    name = user.get_full_name() or getattr(user, "username", "") or ""
+    image = getattr(user, "image", None)
+    return {
+        "id": str(user.id),
+        "name": name,
+        # R2 storage hands back absolute URLs already.
+        "image": image.url if image else "",
+        "profession": getattr(user, "profession", "") or "",
+        "is_verified": bool(getattr(user, "kyc", False)),
+        "is_pro": bool(getattr(user, "is_pro", False)),
+    }
+
+
+@api_view(["POST"])
+def record_ad_lead(request):
+    """Someone messaged an advertiser from their ad — record the lead.
+
+    Called by the app right after the message itself is stored, so a failure
+    here can never cost the user their message. Idempotent per (ad, sender):
+    writing again bumps the count and the last message instead of creating a
+    second lead.
+    """
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+
+    ad_id = str(request.data.get("ad") or "").strip()
+    chatroom = str(request.data.get("chatroom") or "").strip()[:64]
+    message = str(request.data.get("message") or "").strip()[:2000]
+    if not ad_id:
+        return Response({"error": "ad required"}, status=400)
+
+    ad = AbnAdsPanel.objects.filter(pk=ad_id).select_related("user").first()
+    if not ad or not ad.user_id:
+        return Response({"error": "ad not found"}, status=404)
+    # An advertiser messaging themselves is not a lead.
+    if str(ad.user_id) == str(request.user.id):
+        return Response({"ok": True, "self": True})
+
+    lead, created = AbnAdLead.objects.get_or_create(
+        ad=ad,
+        sender=request.user,
+        defaults={
+            "advertiser_id": ad.user_id,
+            "chatroom": chatroom,
+            "first_message": message,
+            "last_message": message,
+            "message_count": 1,
+        },
+    )
+    if not created:
+        AbnAdLead.objects.filter(pk=lead.pk).update(
+            chatroom=chatroom or lead.chatroom,
+            last_message=message or lead.last_message,
+            message_count=F("message_count") + 1,
+            last_message_at=timezone.now(),
+            is_read=False,
+        )
+
+    AdEvent.objects.create(
+        ad=ad,
+        source="panel",
+        event_type="lead",
+        placement=str(request.data.get("placement") or "")[:30],
+        platform=str(request.data.get("platform") or "app")[:10],
+        user=request.user,
+        category=ad.category,
+    )
+
+    if created:
+        who = _lead_user_row(request.user).get("name") or "একজন"
+        notify_advertiser(
+            ad,
+            "নতুন লিড এসেছে",
+            f'{who} আপনার বিজ্ঞাপন "{ad.title[:30]}" থেকে মেসেজ করেছেন।',
+        )
+
+    return Response({"ok": True, "created": created, "lead": lead.pk})
+
+
+@api_view(["GET"])
+def my_ad_leads(request):
+    """The caller's leads across their ads (or one ad via ?ad=).
+
+    Opening the list is what marks it read — an advertiser who has seen the
+    names has seen the leads.
+    """
+    if not request.user.is_authenticated:
+        return Response({"error": "auth required"}, status=401)
+
+    qs = (
+        AbnAdLead.objects.filter(advertiser=request.user)
+        .select_related("sender", "ad")
+    )
+    ad_id = str(request.query_params.get("ad") or "").strip()
+    if ad_id:
+        qs = qs.filter(ad_id=ad_id)
+    limit = min(int(request.query_params.get("limit") or 50), 200)
+    leads = list(qs[:limit])
+    unread = sum(1 for lead in leads if not lead.is_read)
+
+    payload = [
+        {
+            "id": lead.pk,
+            "ad": lead.ad_id,
+            "ad_title": lead.ad.title if lead.ad else "",
+            "chatroom": lead.chatroom,
+            "user": _lead_user_row(lead.sender),
+            "first_message": lead.first_message,
+            "last_message": lead.last_message,
+            "message_count": lead.message_count,
+            "is_read": lead.is_read,
+            "created_at": lead.created_at.isoformat(),
+            "last_message_at": lead.last_message_at.isoformat(),
+        }
+        for lead in leads
+    ]
+    if unread:
+        AbnAdLead.objects.filter(
+            pk__in=[lead.pk for lead in leads], is_read=False
+        ).update(is_read=True)
+
+    return Response({"count": len(payload), "unread": unread, "leads": payload})
 
 
 @api_view(["GET"])

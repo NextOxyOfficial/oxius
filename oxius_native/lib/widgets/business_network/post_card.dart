@@ -1314,7 +1314,7 @@ class _SponsoredCtaBar extends StatelessWidget {
               placement: placement,
               adId: ad.id,
             );
-            HouseAdCard.launchCta(ad);
+            HouseAdCard.launchCta(ad, placement: placement);
           },
           icon: ad.ctaIconWidget(size: 17),
           label: Text(

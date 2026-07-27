@@ -285,6 +285,78 @@
           </div>
         </div>
 
+        <!-- Leads card: who actually wrote to you because of this ad -->
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+          <h3
+            class="text-sm font-medium text-gray-800 mb-3 flex items-center"
+          >
+            <UIcon
+              name="i-heroicons-user-group"
+              class="w-4 h-4 mr-2 text-indigo-600"
+            />
+            লিড
+            <span
+              v-if="leads.length"
+              class="ml-2 px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-bold"
+            >
+              {{ leads.length }}
+            </span>
+          </h3>
+
+          <div v-if="leadsLoading" class="text-xs text-gray-400 py-3">
+            লোড হচ্ছে…
+          </div>
+          <p v-else-if="!leads.length" class="text-xs text-gray-500 leading-relaxed">
+            কেউ এই বিজ্ঞাপনের "মেসেজ করুন" বাটন থেকে লিখলে তাকে এখানে পাবেন —
+            নাম, প্রথম মেসেজ আর সরাসরি উত্তর দেওয়ার লিংকসহ।
+          </p>
+          <ul v-else class="divide-y divide-gray-50">
+            <li
+              v-for="lead in leads"
+              :key="lead.id"
+              class="py-2.5 flex items-start gap-3"
+            >
+              <img
+                v-if="lead.user?.image"
+                :src="lead.user.image"
+                alt=""
+                class="w-9 h-9 rounded-full object-cover shrink-0"
+              />
+              <div
+                v-else
+                class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0"
+              >
+                <UIcon name="i-heroicons-user" class="w-4 h-4 text-gray-400" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span
+                    class="text-[13px] font-semibold text-gray-800 truncate"
+                    >{{ lead.user?.name || "ব্যবহারকারী" }}</span
+                  >
+                  <UIcon
+                    v-if="lead.user?.is_verified"
+                    name="i-heroicons-check-badge-solid"
+                    class="w-3.5 h-3.5 text-blue-500 shrink-0"
+                  />
+                  <span class="ml-auto text-[11px] text-gray-400 shrink-0">
+                    {{ leadTime(lead.last_message_at) }}
+                  </span>
+                </div>
+                <p class="text-[12px] text-gray-600 mt-0.5 line-clamp-2">
+                  {{ lead.last_message || lead.first_message || "মেসেজ করেছেন" }}
+                </p>
+              </div>
+              <NuxtLink
+                :to="`/inbox?chat_with=${lead.user?.id}`"
+                class="text-[11.5px] font-semibold text-indigo-600 hover:text-indigo-700 shrink-0 mt-1"
+              >
+                উত্তর দিন
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+
         <!-- Targeting card -->
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
           <h3 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
@@ -502,6 +574,37 @@ async function fetchAd() {
   }
 }
 await fetchAd();
+
+// ── Leads: the people who messaged this ad's owner FROM the ad ──
+// Clicks say the ad was interesting; a lead is a conversation that started
+// because of it, which is the whole point of a "মেসেজ করুন" ad.
+const leads = ref([]);
+const leadsLoading = ref(false);
+
+async function fetchLeads() {
+  leadsLoading.value = true;
+  try {
+    const res = await get(`/bn/ads/leads/?ad=${route.params.id}`);
+    leads.value = Array.isArray(res.data?.leads) ? res.data.leads : [];
+  } catch (e) {
+    leads.value = [];
+  } finally {
+    leadsLoading.value = false;
+  }
+}
+await fetchLeads();
+
+function leadTime(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("bn-BD", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 // ── Creative media (first image / first video) ──
 const creativeImage = computed(() => {

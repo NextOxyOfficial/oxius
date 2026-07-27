@@ -43,7 +43,7 @@ class HouseAdStripView extends StatelessWidget {
       creatorId: creatorId,
       contentId: contentId,
     );
-    HouseAdCard.launchCta(ad);
+    HouseAdCard.launchCta(ad, placement: placement);
   }
 
   @override

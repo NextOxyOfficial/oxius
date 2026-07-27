@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 import '../../utils/video_playback_manager.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../services/house_ads_service.dart';
+import 'ad_leads_sheet.dart';
 import '../../utils/url_launcher_utils.dart';
 import '../../screens/adsy_connect_chat_interface.dart';
 import '../../services/adsyconnect_service.dart';
@@ -82,13 +83,16 @@ class HouseAdCard extends StatefulWidget {
   }
 
   /// Launch the ad's CTA action (chat / website / WhatsApp / call / email).
-  static void launchCta(HouseAd ad) {
+  ///
+  /// [placement] only matters for the chat action, where it is recorded with
+  /// the lead so the advertiser can see which surface produced it.
+  static void launchCta(HouseAd ad, {String placement = ''}) {
     // AdsyConnect message: the advertiser IS the destination, so there is no
     // detail string to parse — open a chat with them. Done through the root
     // navigator because every ad surface calls this statically, from cards
     // that do not all have a usable context of their own.
     if (ad.adType == 'message_on_adsyconnect') {
-      _openAdvertiserChat(ad);
+      _openAdvertiserChat(ad, placement: placement);
       return;
     }
     final details = ad.adTypeDetails.trim();
@@ -111,21 +115,27 @@ class HouseAdCard extends StatefulWidget {
   }
 
   /// Open (or create) the 1:1 room with this ad's owner and push the chat.
-  static Future<void> _openAdvertiserChat(HouseAd ad) async {
+  ///
+  /// Every branch here has to END somewhere the tapper understands. Silence
+  /// reads as a broken button, which is exactly how this looked to an
+  /// advertiser testing their own ad: it pushed their own profile.
+  static Future<void> _openAdvertiserChat(HouseAd ad, {String placement = ''}) async {
     final advertiserId = ad.advertiserId.trim();
     final ctx = FCMService.navigatorKey.currentContext;
-    if (advertiserId.isEmpty || ctx == null) return;
+    if (ctx == null) return;
+    if (advertiserId.isEmpty) {
+      AdsyToast.error(ctx, 'এই বিজ্ঞাপনে মেসেজ করার সুযোগ নেই।');
+      return;
+    }
 
     if (AuthService.currentUser == null) {
       LoginPromptDialog.show(ctx, action: 'message this advertiser');
       return;
     }
-    // Messaging yourself is not a thing; land on the profile instead.
+    // Your own ad: you can't message yourself, but the point of the ad IS
+    // these conversations — so show the ones it has produced.
     if (AuthService.currentUser?.id == advertiserId) {
-      Navigator.push(
-        ctx,
-        MaterialPageRoute(builder: (_) => ProfileScreen(userId: advertiserId)),
-      );
+      AdLeadsSheet.show(ctx, adId: ad.id, adTitle: ad.title);
       return;
     }
     try {
@@ -146,8 +156,11 @@ class HouseAdCard extends StatefulWidget {
             isVerified: ad.advertiserVerified,
             isPro: ad.advertiserPro,
             // The advertiser opens a message that already says WHICH ad it is
-            // about — the sender's words arrive quoted on top of it.
+            // about — the sender's words arrive quoted on top of it, and the
+            // ad id turns that first message into a tracked lead.
             pendingAttachment: ad.chatAttachment,
+            pendingAdId: ad.id,
+            pendingAdPlacement: placement,
           ),
         ),
       );
@@ -340,7 +353,7 @@ class _HouseAdCardState extends State<HouseAdCard>
       adId: widget.ad.id,
       creatorId: widget.creatorId,
     );
-    HouseAdCard.launchCta(widget.ad);
+    HouseAdCard.launchCta(widget.ad, placement: widget.placement);
   }
 
   @override
