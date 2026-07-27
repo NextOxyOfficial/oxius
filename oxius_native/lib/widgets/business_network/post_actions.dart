@@ -22,100 +22,71 @@ class PostActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Three equal segments. The old row packed a 19px heart with 4px of
+    // padding on its right against the "N likes" label's OWN tap target, with
+    // no gap between them — a thumb aimed at the heart landed on the label
+    // and opened the likers sheet instead of liking. Every target here is a
+    // full-height third of the row, so there is nothing to miss.
+    //
+    // The likers sheet is not lost: the "X ও আরও N জন পছন্দ করেছেন" row
+    // directly below opens it, and that is a far bigger target than a
+    // two-word label wedged against a button.
     return Padding(
-      // Items carry their own 12px vertical hit-padding now.
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(
         children: [
-          // Like: the heart toggles the like; the "N likes" label opens a
-          // bottom sheet listing everyone who liked this post.
-          InkWell(
-            onTap: onLike,
-            borderRadius: BorderRadius.circular(999),
-            child: Padding(
-              // Tighter on the right so the count reads with the icon.
-              padding: const EdgeInsets.fromLTRB(10, 11, 4, 11),
-              child: Image.asset(
-                post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
-                width: 19,
-                height: 19,
-                fit: BoxFit.contain,
-              ),
+          Expanded(
+            child: _ActionButton(
+              iconPath: post.isLiked
+                  ? 'assets/icons/like.png'
+                  : 'assets/icons/unlike.png',
+              label: post.likesCount > 0
+                  ? _formatCount(post.likesCount)
+                  : 'পছন্দ',
+              active: post.isLiked,
+              onTap: onLike,
             ),
           ),
-          InkWell(
-            onTap: () => _showLikers(context),
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 11),
-              // Reserve the PLURAL width up front (invisible sizing text) so
-              // "1 like" → "2 likes" never nudges the row sideways.
-              child: Stack(
-                children: [
-                  Opacity(
-                    opacity: 0,
-                    child: Text(
-                      '${_formatCount(post.likesCount)} likes',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${_formatCount(post.likesCount)} ${post.likesCount == 1 ? 'like' : 'likes'}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+          Expanded(
+            child: _ActionButton(
+              iconPath: 'assets/icons/comments.png',
+              label: post.commentsCount > 0
+                  ? _formatCount(post.commentsCount)
+                  : 'মন্তব্য',
+              onTap: onComment,
             ),
           ),
-          const SizedBox(width: 6),
-          // Comment: opens post details where all comments are shown.
-          _ActionButton(
-            iconPath: 'assets/icons/comments.png',
-            label:
-                '${_formatCount(post.commentsCount)} ${post.commentsCount == 1 ? 'Comment' : 'Comments'}',
-            onTap: onComment,
+          Expanded(
+            child: _ActionButton(
+              iconPath: 'assets/icons/share.png',
+              label:
+                  post.shareCount > 0 ? _formatCount(post.shareCount) : 'শেয়ার',
+              onTap: onShare,
+            ),
           ),
-          const SizedBox(width: 6),
-          // Share: label is the reshare count ("how many shared").
-          _ActionButton(
-            iconPath: 'assets/icons/share.png',
-            label: _formatCount(post.shareCount),
-            onTap: onShare,
-          ),
-          const Spacer(),
-          // Save (hidden on reshares — moved to the ⋯ menu there).
+          // Save is a fixed trailing target, deliberately narrower than the
+          // three actions so it never competes with Share for a thumb.
           if (onSave != null)
-            InkWell(
-              onTap: onSave,
-              borderRadius: BorderRadius.circular(999),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
-                child: Image.asset(
-                  post.isSaved ? 'assets/icons/saved.png' : 'assets/icons/save.png',
-                  width: 18,
-                  height: 18,
-                  fit: BoxFit.contain,
+            SizedBox(
+              width: 46,
+              height: 46,
+              child: InkWell(
+                onTap: onSave,
+                borderRadius: BorderRadius.circular(999),
+                child: Center(
+                  child: Image.asset(
+                    post.isSaved
+                        ? 'assets/icons/saved.png'
+                        : 'assets/icons/save.png',
+                    width: 18,
+                    height: 18,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
         ],
       ),
-    );
-  }
-
-  void _showLikers(BuildContext context) {
-    showPostLikers(
-      context,
-      likes: post.postLikes,
-      postId: post.id,
-      likesCount: post.likesCount,
     );
   }
 
@@ -151,42 +122,55 @@ void showPostLikers(
   );
 }
 
+/// One action in the post's action row: a full-height, full-width third of
+/// the row, so the tap target is the whole segment rather than the glyph.
 class _ActionButton extends StatelessWidget {
   final String iconPath;
   final String label;
   final VoidCallback onTap;
 
+  /// Liked state — the icon asset already changes; this tints the label so
+  /// the state reads at a glance instead of needing a second look.
+  final bool active;
+
   const _ActionButton({
     required this.iconPath,
     required this.label,
     required this.onTap,
+    this.active = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 11),
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        // 46 clears the 48dp guidance once the row's own 2px insets are
+        // counted, and gives every action the same comfortable strike area.
+        height: 46,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 3),
-              child: Image.asset(
-                iconPath,
-                width: 18,
-                height: 18,
-                fit: BoxFit.contain,
-              ),
+            Image.asset(
+              iconPath,
+              width: 19,
+              height: 19,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w500,
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: active
+                      ? const Color(0xFF2563EB)
+                      : Colors.grey.shade700,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                ),
               ),
             ),
           ],
