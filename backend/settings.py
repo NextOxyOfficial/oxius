@@ -456,9 +456,14 @@ CACHES = {
     }
 }
 
-# Increase max upload size to 1024MB (default is around 2.5MB)
+# Non-file POST data (the app sends photos as base64 FORM FIELDS, so this has
+# to stay large).
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
-FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
+# Uploaded FILES above this size spool to a temp file instead of being held in
+# RAM. This was also set to 1GB, which meant a multi-video post was buffered
+# entirely in the worker's memory — on a 3.8GB box, two five-minute clips in
+# one request is how a worker gets itself killed mid-upload.
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

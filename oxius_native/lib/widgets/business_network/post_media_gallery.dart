@@ -1374,10 +1374,11 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
       mainAxisSize: MainAxisSize.min,
       children: [
         video,
+        // Rendered exactly like any other sponsored strip — no "you skipped
+        // this" label. It should read as an ad, not as a leftover.
         HouseAdStripView(
           ad: ad,
           placement: 'bn_feed',
-          note: 'বিজ্ঞাপনটি এড়িয়ে গেছেন — দেখতে চাইলে এখানে ট্যাপ করুন',
           onClose: () => setState(() => _skippedAd = null),
         ),
       ],

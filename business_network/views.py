@@ -42,16 +42,15 @@ from .pagination import *
 from .serializers import *
 
 
-# Upload caps — reject oversized payloads BEFORE and AFTER decode so a
-# malicious client can't OOM the worker with a ~1GB base64 body.
-_MAX_IMAGE_BYTES = 12 * 1024 * 1024   # 12 MB
-# Clips are capped at 10 MINUTES in the app and re-encoded to 720p before
-# upload, which normally lands well under this. The ceiling exists for the
-# case where that re-encode fails and the ORIGINAL is sent — at 200 MB a
-# ten-minute recording was rejected after the user had already waited out
-# the whole upload. The server transcodes whatever arrives, so a larger
-# ceiling costs bandwidth on the rare fallback, not stored bytes.
-_MAX_VIDEO_BYTES = 500 * 1024 * 1024  # 500 MB
+# Media rules: LENGTH is the only thing a user is held to (10 minutes per
+# clip, enforced in the app). Byte size is not — whatever the app's own 720p
+# pass produces is accepted, so a long recording is never rejected for being
+# heavy after the user already sat through the upload.
+#
+# These constants remain only as sanity ceilings against a hostile client, set
+# far above anything the app itself can send.
+_MAX_IMAGE_BYTES = 64 * 1024 * 1024          # 64 MB
+_MAX_VIDEO_BYTES = 4 * 1024 * 1024 * 1024    # 4 GB
 
 
 def base64ToFile(base64_data):
@@ -61,12 +60,12 @@ def base64ToFile(base64_data):
 
     # base64 inflates ~33%; bound the encoded length before decoding.
     if len(base64_data) > _MAX_IMAGE_BYTES * 4 // 3 + 1024:
-        raise ValidationError({"images": "Image is too large (max 12 MB)."})
+        raise ValidationError({"images": "ছবিটি পড়া যায়নি — আবার চেষ্টা করুন।"})
 
     # Decode the Base64 string into bytes
     file_data = base64.b64decode(base64_data)
     if len(file_data) > _MAX_IMAGE_BYTES:
-        raise ValidationError({"images": "Image is too large (max 12 MB)."})
+        raise ValidationError({"images": "ছবিটি পড়া যায়নি — আবার চেষ্টা করুন।"})
 
     # Create a Django ContentFile object from the bytes
     file = ContentFile(file_data)
@@ -105,7 +104,7 @@ def base64ToVideoFile(base64_data):
         ext = "mp4"
 
     if len(raw) > _MAX_VIDEO_BYTES * 4 // 3 + 1024:
-        raise ValidationError({"videos": "Video is too large (max 500 MB)."})
+        raise ValidationError({"videos": "ভিডিওটি পড়া যায়নি — আবার চেষ্টা করুন।"})
 
     try:
         file_data = base64.b64decode(raw)
@@ -113,7 +112,7 @@ def base64ToVideoFile(base64_data):
         file_data = base64.b64decode(raw + "===")
 
     if len(file_data) > _MAX_VIDEO_BYTES:
-        raise ValidationError({"videos": "Video is too large (max 500 MB)."})
+        raise ValidationError({"videos": "ভিডিওটি পড়া যায়নি — আবার চেষ্টা করুন।"})
 
     file = ContentFile(file_data)
 
@@ -1292,7 +1291,7 @@ def add_post_video(request, post_id):
         return Response({"error": "video file required"}, status=400)
     if video_file.size > _MAX_VIDEO_BYTES:
         return Response(
-            {"videos": "Video is too large (max 500 MB)."}, status=400
+            {"videos": "ভিডিওটি পড়া যায়নি — আবার চেষ্টা করুন।"}, status=400
         )
     existing_videos = post.media.filter(type="video").count()
     if existing_videos >= 2:
