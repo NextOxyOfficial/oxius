@@ -44,11 +44,11 @@ VALID_PLACEMENTS = {
     "gig_list", "foodzone_list",
 }
 
-# Alias -> canonical placement, so an ad that targets "gigs_list" still matches
-# a request for "gig_list" and billing/reporting stay on one name.
 # Where a boosted post may run: the surfaces that render a full post card.
 BOOST_PLACEMENTS = {"shorts_reel", "bn_feed", "web_feed"}
 
+# Alias -> canonical placement, so an ad that targets "gigs_list" still matches
+# a request for "gig_list" and billing/reporting stay on one name.
 _PLACEMENT_ALIASES = {
     "gig_list": "gigs_list",
     "foodzone_list": "food_list",
@@ -56,9 +56,27 @@ _PLACEMENT_ALIASES = {
 
 VALID_EVENTS = {"impression", "click", "cta_click", "skip", "close"}
 
-# A closed (✕) ad: that ad AND its category stay hidden from this user for
-# 48 hours — other categories keep serving.
-CLOSE_SUPPRESS_SECONDS = 60 * 60 * 48
+# ── What a ✕ means ────────────────────────────────────────────────────────
+# One tap used to hide the ad AND its whole category for 48h. Every campaign
+# on the panel currently sits in one category, so a single ✕ silenced house
+# ads entirely for that user — and the advertiser who paid for the placement
+# simply stopped being seen. The signal is now graded:
+#
+#   1. the ad itself is hidden for a long window (a precise, honest "not this
+#      one"), so the same creative cannot come back tomorrow;
+#   2. its category is DEMOTED, not muted — those ads still serve, just much
+#      less often, which is what "I'm not interested" should mean;
+#   3. only after several DISTINCT ads from one category are closed inside a
+#      week is that category muted outright — by then the user has said it
+#      clearly enough.
+CLOSE_SUPPRESS_SECONDS = 60 * 60 * 24 * 30   # this exact ad: 30 days
+CLOSE_CATEGORY_SOFT_SECONDS = 60 * 60 * 48   # category demotion window
+CLOSE_CATEGORY_MUTE_SECONDS = 60 * 60 * 48   # hard mute, once escalated
+CLOSE_CATEGORY_WINDOW_SECONDS = 60 * 60 * 24 * 7
+# Distinct ads closed in one category, inside the window, before it is muted.
+CLOSE_CATEGORY_MUTE_THRESHOLD = 4
+# How hard a demoted category is pushed down in the weighted pick.
+CLOSE_CATEGORY_SOFT_WEIGHT = 0.2
 
 
 def notify_advertiser(ad, title, body):
@@ -326,7 +344,16 @@ def serve_ad(request):
         recency = 1.0
         if user is not None and cache.get(f"adrecent:{user.id}:{ad.pk}"):
             recency = 0.15
-        scored.append((ad, w * remaining * quality * recency))
+        # "Not interested" on a sibling ad: this category drops far down the
+        # pick order but keeps serving, so closing one ad can't empty the feed.
+        disliked = 1.0
+        if (
+            user is not None
+            and ad.category_id
+            and cache.get(f"adcatsoft:{user.id}:{ad.category_id}")
+        ):
+            disliked = CLOSE_CATEGORY_SOFT_WEIGHT
+        scored.append((ad, w * remaining * quality * recency * disliked))
 
     total = sum(s for _, s in scored)
     pick = random.uniform(0, total)
@@ -545,15 +572,30 @@ def track_ad_events(request):
         )
         created += 1
 
-        # ✕ close: mute this ad + its category for this user for 48h. No
-        # billing, no reward — just the suppression flags.
+        # ✕ close: graded suppression (see CLOSE_* above). No billing, no
+        # reward — just the signal.
         if ad is not None and event_type == "close" and user is not None:
             cache.set(f"adclose:{user.id}:{ad.pk}", 1, CLOSE_SUPPRESS_SECONDS)
             if ad.category_id:
+                cat = ad.category_id
+                # Demote the category straight away — still eligible, far less
+                # likely to win a slot.
                 cache.set(
-                    f"adcatclose:{user.id}:{ad.category_id}", 1,
-                    CLOSE_SUPPRESS_SECONDS,
+                    f"adcatsoft:{user.id}:{cat}", 1,
+                    CLOSE_CATEGORY_SOFT_SECONDS,
                 )
+                # Count DISTINCT closed ads, so hammering ✕ on one creative
+                # cannot mute a whole category on its own.
+                seen_key = f"adcatcloses:{user.id}:{cat}"
+                seen = cache.get(seen_key) or []
+                if str(ad.pk) not in seen:
+                    seen = list(seen) + [str(ad.pk)]
+                    cache.set(seen_key, seen, CLOSE_CATEGORY_WINDOW_SECONDS)
+                if len(seen) >= CLOSE_CATEGORY_MUTE_THRESHOLD:
+                    cache.set(
+                        f"adcatclose:{user.id}:{cat}", 1,
+                        CLOSE_CATEGORY_MUTE_SECONDS,
+                    )
 
         # Panel counters + budget burn (CPV per billable impression). A
         # per-user+ad daily dedupe cap keeps repeat exposure from burning
