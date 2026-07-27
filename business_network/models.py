@@ -34,6 +34,36 @@ def generate_unique_slug(model_class, field_value, instance=None):
     return unique_slug
 
 
+
+def make_timestamp_id(model_cls):
+    """A short, sortable, UNIQUE primary key for [model_cls].
+
+    Ids stay timestamp-derived (`yymmddHHMM`) because they are read by humans
+    in the admin and in support threads, and because everything already
+    created follows that shape. What changed is the collision path: the old
+    one retried once into 1000 slots shared across a ten-hour window and then
+    let the duplicate insert blow up the request. This keeps trying, widens
+    the space with each attempt, and ends on a value that cannot collide.
+    """
+    import random
+    import uuid
+    from datetime import datetime
+
+    def taken(value):
+        return model_cls.objects.filter(id=value).exists()
+
+    base = datetime.now().strftime("%y%m%d%H%M")
+    if not taken(base):
+        return base
+    # Same minute, 10k slots — a post's media, a burst of likes.
+    for _ in range(30):
+        candidate = f"{base}{random.randint(0, 9999):04d}"
+        if not taken(candidate):
+            return candidate
+    # Give up on prettiness before giving up on correctness.
+    return f"{base[:6]}{uuid.uuid4().hex[:12]}"
+
+
 class BusinessNetworkMedia(models.Model):
     MEDIA_TYPE_CHOICES = [
         ('image', 'Image'),
@@ -73,14 +103,7 @@ class BusinessNetworkMedia(models.Model):
         return f"{self.type}:{self.id}{(' - ' + filename) if filename else ''}"
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMedia.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMedia)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -128,14 +151,7 @@ class BusinessNetworkMediaLike(models.Model):
         unique_together = ['media', 'user']
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMediaLike.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMediaLike)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -154,14 +170,7 @@ class BusinessNetworkMediaComment(models.Model):
         ordering = ['-created_at']
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMediaComment.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMediaComment)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -179,14 +188,7 @@ class BusinessNetworkPostTag(models.Model):
         ]
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkPostTag.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkPostTag)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -254,14 +256,7 @@ class BusinessNetworkPost(models.Model):
         ]
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkPost.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkPost)
     
     def _generate_hash_slug(self):
         """A short random hash so every post has a unique, unguessable
@@ -300,14 +295,7 @@ class BusinessNetworkPostLike(models.Model):
         ]
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkPostLike.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkPostLike)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -324,14 +312,7 @@ class BusinessNetworkPostFollow(models.Model):
         unique_together = ['post', 'user']
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkPostFollow.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkPostFollow)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -356,14 +337,7 @@ class BusinessNetworkPostComment(models.Model):
             models.Index(fields=["post", "author", "-created_at"], name="bn_comment_post_author_idx"),
         ]
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkPostComment.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkPostComment)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -381,14 +355,7 @@ class UserSavedPosts(models.Model):
         unique_together = ['user', 'post']
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if UserSavedPosts.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(UserSavedPosts)
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -404,14 +371,7 @@ class BusinessNetworkWorkspace(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkWorkspace.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkWorkspace)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -435,14 +395,7 @@ class BusinessNetworkFollowerModel(models.Model):
         ]
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkFollowerModel.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkFollowerModel)
         
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -457,14 +410,7 @@ class AbnAdsPanelCategory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if AbnAdsPanelCategory.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(AbnAdsPanelCategory)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -481,14 +427,7 @@ class AbnAdsPanelMedia(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if AbnAdsPanelMedia.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(AbnAdsPanelMedia)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -592,14 +531,7 @@ class AbnAdsPanel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if AbnAdsPanel.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(AbnAdsPanel)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -620,14 +552,7 @@ class BusinessNetworkMindforceCategory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMindforceCategory.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMindforceCategory)
         
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -643,14 +568,7 @@ class BusinessNetworkMindforceMedia(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMindforceMedia.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMindforceMedia)
         
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -673,14 +591,7 @@ class BusinessNetworkMindforce(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMindforce.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMindforce)
         
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -696,14 +607,7 @@ class BusinessNetworkMindforceCommentMedia(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMindforceCommentMedia.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMindforceCommentMedia)
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -724,14 +628,7 @@ class BusinessNetworkMindforceComment(models.Model):
     class Meta:
         ordering = ['-created_at']
     def generate_id(self):
-        from datetime import datetime
-        import random
-        now = datetime.now()
-        base_number = now.strftime("%y%m%d%H%M")
-        if BusinessNetworkMindforceComment.objects.filter(id=base_number).exists():
-            random_suffix = f"{random.randint(0, 999):03d}"
-            return base_number[:7] + random_suffix
-        return base_number
+        return make_timestamp_id(BusinessNetworkMindforceComment)
         
     def save(self, *args, **kwargs):
         if not self.pk:

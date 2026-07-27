@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/business_network_models.dart';
+import '../utils/api_error.dart';
 import '../utils/video_upload_helper.dart';
 import 'business_network_service.dart';
 
@@ -86,7 +89,22 @@ class PostUploadService {
                 ? 'ভিডিও প্রস্তুত হচ্ছে… (${i + 1}/${videoPaths.length})'
                 : 'ভিডিও প্রস্তুত হচ্ছে…',
           );
-          prepared.add(await VideoUploadHelper.compressOnly(videoPaths[i]));
+          final original = videoPaths[i];
+          final out = await VideoUploadHelper.compressOnly(original);
+          // The encoder can hand back a path whose file was cleaned up (the
+          // cache directory it writes to is the system's to empty). Uploading
+          // the original is always better than dropping the clip.
+          final usable = await File(out).exists() &&
+              await File(out).length() > 0;
+          prepared.add(usable ? out : original);
+        }
+        // A video the user put in the composer must reach the request. If this
+        // ever fails, it is a bug in the loop above — say so instead of
+        // publishing a post that is quietly missing a clip.
+        if (prepared.length != videoPaths.length) {
+          throw StateError(
+            'prepared ${prepared.length} of ${videoPaths.length} videos',
+          );
         }
       }
 
@@ -130,9 +148,14 @@ class PostUploadService {
       }
       return post;
     } catch (e) {
+      // The server's own words when it has any — "৩টির মধ্যে ২টি মিডিয়া
+      // পৌঁছেছে" tells the user far more than a generic failure, and it is the
+      // difference between retrying and never knowing a video went missing.
       state.value = PostUploadState(
         stage: PostUploadStage.failed,
-        message: 'পোস্ট করা যায়নি — আবার চেষ্টা করুন',
+        message: e is ApiError && e.message.trim().isNotEmpty
+            ? e.message
+            : 'পোস্ট করা যায়নি — আবার চেষ্টা করুন',
         error: e.toString(),
       );
       return null;

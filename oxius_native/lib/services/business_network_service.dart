@@ -427,11 +427,23 @@ class BusinessNetworkService {
           }
         }
 
+        // What the composer holds is what must arrive. The server compares
+        // this against the media rows it actually stored and rejects the whole
+        // post if any went missing — better a retry than a post that silently
+        // lost a video.
+        final expectedMedia =
+            (images?.where((i) => i.trim().isNotEmpty).length ?? 0) +
+                videoPaths.where((p) => p.trim().isNotEmpty).length;
+        formData.fields.add(MapEntry('media_expected', '$expectedMedia'));
+
         for (final path in videoPaths) {
           if (path.trim().isEmpty) continue;
           final file = File(path);
           if (!file.existsSync()) {
             throw Exception('Selected video file not found at path: $path');
+          }
+          if (file.lengthSync() == 0) {
+            throw Exception('Selected video file is empty: $path');
           }
 
           final p = path.replaceAll('\\', '/');
@@ -489,6 +501,10 @@ class BusinessNetworkService {
         if (videos != null && videos.isNotEmpty) 'videos': videos,
         if (category != null) 'category': category,
         if (tags != null && tags.isNotEmpty) 'tags': tags,
+        // Same contract as the multipart path: the server publishes all of the
+        // media or none of it.
+        'media_expected': (images?.where((i) => i.trim().isNotEmpty).length ?? 0) +
+            (videos?.where((v) => v.trim().isNotEmpty).length ?? 0),
       };
 
       // Dio so photo posts (base64 payloads are large) can report real upload

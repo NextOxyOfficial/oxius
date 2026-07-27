@@ -988,6 +988,28 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     tag, _ = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
                     post.tags.add(tag)
 
+            # The composer tells us how many pieces of media it is sending. If
+            # fewer arrived, something dropped one in transit — and publishing
+            # the post anyway is how a two-video post quietly became a
+            # one-video post. Fail the whole request instead: the transaction
+            # rolls back, nothing half-made survives, and the app can retry
+            # with everything still in hand.
+            try:
+                expected = int(request.data.get("media_expected") or 0)
+            except (TypeError, ValueError):
+                expected = 0
+            if expected:
+                stored = post.media.count()
+                if stored < expected:
+                    raise ValidationError({
+                        "media": (
+                            f"{expected}টির মধ্যে {stored}টি মিডিয়া পৌঁছেছে — "
+                            "পোস্টটি অসম্পূর্ণ রেখে প্রকাশ করা হয়নি।"
+                        ),
+                        "media_expected": expected,
+                        "media_received": stored,
+                    })
+
         _clear_business_network_social_cache(request.user)
         response_serializer = self.get_serializer(post)
         headers = self.get_success_headers(response_serializer.data)
