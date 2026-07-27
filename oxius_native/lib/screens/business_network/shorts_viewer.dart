@@ -2298,8 +2298,16 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                   children: [
                                     Flexible(
                                       child: Text(
+                                        // Newlines flattened to spaces. A
+                                        // multi-line caption laid out to the
+                                        // FULL width even though maxLines: 1
+                                        // showed only the first line, so
+                                        // "আরো পড়ুন" was pushed to the far
+                                        // edge with dead space in between.
                                         HtmlContentUtils.toPlainText(
-                                            post.content),
+                                                post.content)
+                                            .replaceAll(RegExp(r'\s+'), ' ')
+                                            .trim(),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
@@ -2312,7 +2320,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                       ),
                                     ),
                                     if (post.content.trim().length > 40) ...[
-                                      const SizedBox(width: 6),
+                                      // Sits right after the text/ellipsis.
+                                      const SizedBox(width: 4),
                                       Text(
                                         'আরো পড়ুন',
                                         style: TextStyle(
