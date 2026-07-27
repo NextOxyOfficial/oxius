@@ -498,59 +498,67 @@ class _HouseAdCardState extends State<HouseAdCard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  ad.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                // Headline + body are part of the tap target. Reading the copy
+                // and then having to hunt for a button is old-school ad
+                // behaviour — the text does what the button does.
+                InkWell(
+                  onTap: _onCtaTap,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ad.title,
+                        // Three lines: one or two cut most offers off before
+                        // they said anything useful.
+                        maxLines: ad.description.trim().isEmpty ? 3 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          height: 1.3,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      if (ad.description.trim().isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          ad.description,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF64748B),
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                if (ad.description.trim().isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    ad.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      color: Color(0xFF64748B),
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 10),
-                // AdsyConnect-ink soft chip: icon + text, no border, no fill
-                // bar — the one promo-button style used across all ads.
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: InkWell(
-                    onTap: _onCtaTap,
-                    borderRadius: BorderRadius.circular(999),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        color: const Color(0xFF111827).withValues(alpha: 0.06),
+                const SizedBox(height: 12),
+                // Full-width tonal action — same shape and colour as the strip
+                // under a post's media, so every ad surface presses the same.
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: FilledButton.icon(
+                    onPressed: _onCtaTap,
+                    icon: Icon(HouseAdCard.ctaIcon(ad), size: 17),
+                    label: Text(
+                      ad.ctaLabel,
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(HouseAdCard.ctaIcon(ad),
-                              size: 15, color: const Color(0xFF111827)),
-                          const SizedBox(width: 6),
-                          Text(
-                            ad.ctaLabel,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF111827),
-                            ),
-                          ),
-                        ],
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFEFF6FF),
+                      foregroundColor: const Color(0xFF1D4ED8),
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),

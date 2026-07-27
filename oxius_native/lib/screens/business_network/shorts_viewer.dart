@@ -1992,7 +1992,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                   children: [
                                     Text(
                                       _bannerAd!.title,
-                                      maxLines: 2,
+                                      // Three lines — two cut most offers off
+                                      // before they said anything useful.
+                                      maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         color: Colors.white,

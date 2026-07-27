@@ -1293,7 +1293,10 @@ class _SponsoredCtaBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
       child: SizedBox(
         width: double.infinity,
-        child: OutlinedButton.icon(
+        height: 40,
+        // Same tonal action as the sponsored strip and the full ad card, so
+        // every ad surface in the app presses identically.
+        child: FilledButton.icon(
           onPressed: () {
             HouseAdsService.track(
               eventType: 'cta_click',
@@ -1307,11 +1310,11 @@ class _SponsoredCtaBar extends StatelessWidget {
             ad.ctaLabel,
             style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
           ),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF2563EB),
-            side: const BorderSide(color: Color(0xFFDBEAFE)),
-            backgroundColor: const Color(0xFFF8FBFF),
-            padding: const EdgeInsets.symmetric(vertical: 10),
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFFEFF6FF),
+            foregroundColor: const Color(0xFF1D4ED8),
+            elevation: 0,
+            padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),

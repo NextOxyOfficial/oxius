@@ -9,6 +9,7 @@ import '../../services/house_ads_service.dart';
 import '../../utils/video_playback_manager.dart';
 import '../common/video_frame_thumbnail.dart';
 import '../ads/house_ad_card.dart';
+import '../ads/house_ad_strip_view.dart';
 
 
 /// Budget for warm feed video controllers.
@@ -744,6 +745,8 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
   // pauses and a sponsored interstitial shows. Skip unlocks after 5s; a 15s
   // countdown auto-closes it; then the video resumes where it left off.
   HouseAd? _midrollAd;
+  /// The mid-roll after it was skipped/auto-closed — rendered under the video.
+  HouseAd? _skippedAd;
   bool _midrollFetched = false; // fetch + show happen at most once
   bool _midrollActive = false;
   int _midrollRemaining = 15;
@@ -970,7 +973,13 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
   void _closeMidroll() {
     _midrollTimer?.cancel();
     if (!mounted) return;
-    setState(() => _midrollActive = false);
+    setState(() {
+      _midrollActive = false;
+      // The interstitial used to simply vanish, taking the advertiser with
+      // it — a viewer who was interested had no way back. Keep the ad as a
+      // strip under the media so it stays one tap away.
+      _skippedAd = _midrollAd;
+    });
     // Resume the interrupted video from where it stopped.
     _updatePlayback();
   }
@@ -1335,7 +1344,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
       },
       child: widget.fillParent
           ? stack
-          : LayoutBuilder(
+          : _withSkippedAd(LayoutBuilder(
         builder: (context, constraints) {
           final maxW = constraints.maxWidth;
           var ratio = _aspect;
@@ -1353,7 +1362,25 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
             child: AspectRatio(aspectRatio: ratio, child: stack),
           );
         },
-      ),
+      )),
+    );
+  }
+
+  /// Video box, plus the skipped mid-roll underneath it when there is one.
+  Widget _withSkippedAd(Widget video) {
+    final ad = _skippedAd;
+    if (ad == null) return video;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        video,
+        HouseAdStripView(
+          ad: ad,
+          placement: 'bn_feed',
+          note: 'বিজ্ঞাপনটি এড়িয়ে গেছেন — দেখতে চাইলে এখানে ট্যাপ করুন',
+          onClose: () => setState(() => _skippedAd = null),
+        ),
+      ],
     );
   }
 }

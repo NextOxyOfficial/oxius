@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../services/house_ads_service.dart';
-import 'house_ad_card.dart';
+import 'house_ad_strip_view.dart';
 
-/// Link-preview style one-line sponsored strip shown under a post's media
-/// (above the caption) on a subset of feed posts. Thumbnail left, title +
-/// "Sponsored" right, chevron — no button; tapping anywhere opens the
-/// advertiser's destination. The post's creator earns the revenue share.
+/// The sponsored strip slot shown under a post's media (above the caption) on
+/// a subset of feed posts, and in the sale / classified / food-zone lists.
+///
+/// This part only fetches, tracks and dismisses — how the row LOOKS lives in
+/// [HouseAdStripView], which the skipped-mid-roll slot renders too, so the two
+/// can never drift apart. The post's creator earns the revenue share.
 class CompactHouseAdStrip extends StatefulWidget {
   final String? creatorId;
   // Host post id — per-content creator earnings attribution.
@@ -32,6 +34,8 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
     with AutomaticKeepAliveClientMixin {
   HouseAd? _ad;
   bool _tracked = false;
+  bool _closed = false;
+  bool _apology = false;
 
   @override
   bool get wantKeepAlive => _ad != null;
@@ -59,22 +63,6 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
     }
   }
 
-  void _onTap() {
-    final ad = _ad;
-    if (ad == null) return;
-    HouseAdsService.track(
-      eventType: 'cta_click',
-      placement: widget.placement,
-      adId: ad.id,
-      creatorId: widget.creatorId,
-      contentId: widget.contentId,
-    );
-    HouseAdCard.launchCta(ad);
-  }
-
-  bool _closed = false;
-  bool _apology = false;
-
   void _close() {
     final ad = _ad;
     setState(() => _apology = true);
@@ -96,16 +84,18 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
     super.build(context);
     final ad = _ad;
     if (ad == null || _closed) return const SizedBox.shrink();
+
     if (_apology) {
       return Padding(
         // Same insets as the live strip so dismissing an ad doesn't shift the
         // post's layout.
         padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
         child: Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFF9FAFB),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
           child: const Text(
             'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
@@ -114,133 +104,13 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
         ),
       );
     }
-    final thumb = ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
-    return Padding(
-      // Sits tight under the media — border-less soft surface, no big gap.
-      // The bottom inset keeps it off the actions-row divider; without it the
-      // strip reads as part of the border.
-      padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
-      child: InkWell(
-        onTap: _onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-            // A soft grey edge so the strip reads as its own block rather than
-            // blending into the post it sits under.
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: thumb.isNotEmpty
-                      ? Image.network(
-                          thumb,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _thumbFallback(),
-                        )
-                      : _thumbFallback(),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title spans the full width of the strip — the CTA used to
-                    // sit beside it and squeezed long Bangla titles into a
-                    // clump on narrow screens.
-                    Text(
-                      ad.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        height: 1.25,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        const Text(
-                          'Sponsored',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF94A3B8),
-                          ),
-                        ),
-                        // Sits just after "Sponsored" with a small gap. A
-                        // Spacer pushed it to the far edge, leaving a dead gap
-                        // in the middle of the row.
-                        const SizedBox(width: 10),
-                        // Outlined and compact so it reads as a quiet action
-                        // rather than competing with the post's own buttons.
-                        // Label comes from the ad's type (Visit site /
-                        // WhatsApp / Call / Email) as set in the ads panel.
-                        // Borderless icon + label. The outline read as a second
-                        // button competing with the row's own tap target; the
-                        // icon comes from the ad type so it matches the web
-                        // strip and the ads-panel preview.
-                        InkWell(
-                          onTap: _onTap,
-                          borderRadius: BorderRadius.circular(6),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 5),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(ad.ctaIcon,
-                                    size: 15,
-                                    color: const Color(0xFF2563EB)),
-                                const SizedBox(width: 3),
-                                Text(
-                                  ad.ctaLabel,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF2563EB),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 4),
-              // ✕ — hides this ad + mutes its category for 48h.
-              InkWell(
-                onTap: _close,
-                borderRadius: BorderRadius.circular(999),
-                child: const Padding(
-                  padding: EdgeInsets.all(4),
-                  child: Icon(Icons.close_rounded,
-                      size: 15, color: Color(0xFF94A3B8)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+
+    return HouseAdStripView(
+      ad: ad,
+      placement: widget.placement,
+      creatorId: widget.creatorId,
+      contentId: widget.contentId,
+      onClose: _close,
     );
   }
-
-  Widget _thumbFallback() => Container(
-        color: const Color(0xFFF1F5F9),
-        child: const Icon(Icons.campaign_outlined,
-            size: 20, color: Color(0xFF94A3B8)),
-      );
 }
