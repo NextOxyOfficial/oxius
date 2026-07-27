@@ -44,7 +44,13 @@ from .serializers import *
 # Upload caps — reject oversized payloads BEFORE and AFTER decode so a
 # malicious client can't OOM the worker with a ~1GB base64 body.
 _MAX_IMAGE_BYTES = 12 * 1024 * 1024   # 12 MB
-_MAX_VIDEO_BYTES = 200 * 1024 * 1024  # 200 MB
+# Clips are capped at 10 MINUTES in the app and re-encoded to 720p before
+# upload, which normally lands well under this. The ceiling exists for the
+# case where that re-encode fails and the ORIGINAL is sent — at 200 MB a
+# ten-minute recording was rejected after the user had already waited out
+# the whole upload. The server transcodes whatever arrives, so a larger
+# ceiling costs bandwidth on the rare fallback, not stored bytes.
+_MAX_VIDEO_BYTES = 500 * 1024 * 1024  # 500 MB
 
 
 def base64ToFile(base64_data):
@@ -98,7 +104,7 @@ def base64ToVideoFile(base64_data):
         ext = "mp4"
 
     if len(raw) > _MAX_VIDEO_BYTES * 4 // 3 + 1024:
-        raise ValidationError({"videos": "Video is too large (max 200 MB)."})
+        raise ValidationError({"videos": "Video is too large (max 500 MB)."})
 
     try:
         file_data = base64.b64decode(raw)
@@ -106,7 +112,7 @@ def base64ToVideoFile(base64_data):
         file_data = base64.b64decode(raw + "===")
 
     if len(file_data) > _MAX_VIDEO_BYTES:
-        raise ValidationError({"videos": "Video is too large (max 200 MB)."})
+        raise ValidationError({"videos": "Video is too large (max 500 MB)."})
 
     file = ContentFile(file_data)
 
@@ -1283,9 +1289,9 @@ def add_post_video(request, post_id):
     video_file = request.FILES.get("video")
     if video_file is None:
         return Response({"error": "video file required"}, status=400)
-    if video_file.size > 200 * 1024 * 1024:
+    if video_file.size > _MAX_VIDEO_BYTES:
         return Response(
-            {"videos": "Video is too large (max 200 MB)."}, status=400
+            {"videos": "Video is too large (max 500 MB)."}, status=400
         )
     existing_videos = post.media.filter(type="video").count()
     if existing_videos >= 2:

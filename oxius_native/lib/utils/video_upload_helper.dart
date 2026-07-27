@@ -9,7 +9,7 @@ import 'url_launcher_utils.dart';
 
 /// One place for the app's video-upload rules:
 ///
-///  • hard cap: 3 minutes, enforced at EVERY upload site;
+///  • hard cap: 10 minutes, enforced at EVERY upload site;
 ///  • compression: best-effort re-encode (≤720p) before upload — falls back
 ///    to the original file if the encoder fails, never blocks the send;
 ///  • AdsyConnect chats ([driveHint] = true): an over-limit video shows a
@@ -18,7 +18,7 @@ import 'url_launcher_utils.dart';
 class VideoUploadHelper {
   VideoUploadHelper._();
 
-  static const int maxSeconds = 180; // 3 minutes
+  static const int maxSeconds = 600; // 10 minutes
 
   static Future<Duration?> getDuration(String path) async {
     VideoPlayerController? c;
@@ -88,7 +88,7 @@ class VideoUploadHelper {
       if (driveHint) {
         await _showDriveSheet(context, duration);
       } else {
-        AdsyToast.error(context, 'ভিডিও সর্বোচ্চ ৩ মিনিটের হতে হবে');
+        AdsyToast.error(context, 'ভিডিও সর্বোচ্চ ১০ মিনিটের হতে হবে');
       }
       return null;
     }
@@ -170,7 +170,10 @@ class VideoUploadHelper {
                                 color: Color(0xFF0F172A))),
                         const SizedBox(height: 2),
                         Text(
-                            'দৈর্ঘ্য ${mmss(duration)} — চ্যাটে সর্বোচ্চ ৩:০০ মিনিট পাঠানো যায়',
+                            // Derived from the one cap, so raising it can never
+                            // leave this sheet quoting an old number.
+                            'দৈর্ঘ্য ${mmss(duration)} — চ্যাটে সর্বোচ্চ '
+                            '${mmss(const Duration(seconds: maxSeconds))} মিনিট পাঠানো যায়',
                             style: const TextStyle(
                                 fontSize: 12.5, color: Color(0xFF64748B))),
                       ],

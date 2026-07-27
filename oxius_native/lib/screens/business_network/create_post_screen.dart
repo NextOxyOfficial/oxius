@@ -40,7 +40,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   static const int _maxPhotos = 12;
   static const int _maxVideos = 2;
-  static const int _maxVideoDurationSeconds = 180; // 3 minutes
+  static const int _maxVideoDurationSeconds = 600; // 10 minutes
 
   @override
   void initState() {
@@ -213,7 +213,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         _selectedVideos.removeWhere((v) => v['path'] == path);
       });
       AdsyToast.warning(
-          context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ৩ মিনিটের ভিডিও দেওয়া যাবে');
+          context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ১০ মিনিটের ভিডিও দেওয়া যাবে');
     } catch (e) {
       setState(() {
         _isCompressing = false;
@@ -1091,7 +1091,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   const SizedBox(height: 8),
                   // Limits, stated plainly so nobody discovers them by error.
                   Text(
-                    'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ৩ মিনিটের মধ্যে হতে হবে',
+                    'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ১০ মিনিটের মধ্যে হতে হবে',
                     style: TextStyle(
                       fontSize: 11.5,
                       color: Colors.grey.shade500,
