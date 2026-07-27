@@ -9,11 +9,20 @@ class ShortsPlayerScreen extends StatefulWidget {
   final BusinessNetworkPost initialPost;
   final PostMedia initialMedia;
 
+  /// A closed set of posts to scroll instead of the global reel — used by a
+  /// profile's Videos tab, where the viewer asked for THIS person's videos
+  /// and pulling in strangers' shorts would be the wrong answer. No paging
+  /// and no discover/following switcher in this mode.
+  final List<BusinessNetworkPost>? fixedPosts;
+
   const ShortsPlayerScreen({
     super.key,
     required this.initialPost,
     required this.initialMedia,
+    this.fixedPosts,
   });
+
+  bool get isFixed => fixedPosts != null && fixedPosts!.isNotEmpty;
 
   @override
   State<ShortsPlayerScreen> createState() => _ShortsPlayerScreenState();
@@ -54,6 +63,19 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.isFixed) {
+      // Start on the tapped video so the first frame is the one just chosen.
+      final list = List<BusinessNetworkPost>.from(widget.fixedPosts!);
+      final i = list.indexWhere((p) => p.id == widget.initialPost.id);
+      if (i > 0) {
+        final chosen = list.removeAt(i);
+        list.insert(0, chosen);
+      }
+      _postsByScope['discover']!.addAll(list);
+      _hasMoreByScope['discover'] = false;
+      _loadedOnceByScope['discover'] = true;
+      return;
+    }
     _postsByScope['discover']!.add(widget.initialPost);
     _loadInitial('discover');
   }
@@ -195,12 +217,13 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
                 initialVideoUrl: _scope == 'discover'
                     ? widget.initialMedia.bestUrl
                     : null,
-                onRequestMore: _loadMore,
+                onRequestMore: widget.isFixed ? null : _loadMore,
                 onLike: _recordPostUpdate,
                 onComment: _recordPostUpdate,
                 allLoaded: !_hasMoreByScope[_scope]!,
                 feedScope: _scope,
-                onFeedScopeChanged: _switchScope,
+                // No discover/following tabs when the set is closed.
+                onFeedScopeChanged: widget.isFixed ? null : _switchScope,
                 onClose: _close,
               ),
       ),

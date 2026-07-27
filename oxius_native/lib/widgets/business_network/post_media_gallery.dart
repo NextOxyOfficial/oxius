@@ -7,6 +7,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../../models/business_network_models.dart';
 import '../../services/house_ads_service.dart';
 import '../../utils/video_playback_manager.dart';
+import '../../utils/media_headers.dart';
 import '../common/video_frame_thumbnail.dart';
 import '../ads/house_ad_card.dart';
 import '../ads/house_ad_strip_view.dart';
@@ -84,7 +85,8 @@ class _WarmEntry {
   void Function()? onEvict;
 }
 
-const Map<String, String> _kMediaHeaders = {'User-Agent': 'OxiUsFlutter/1.0'};
+// Moved to utils/media_headers.dart so every media surface sends it.
+const Map<String, String> _kMediaHeaders = kMediaHeaders;
 
 class PostMediaGallery extends StatelessWidget {
   final List<PostMedia> media;

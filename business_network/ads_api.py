@@ -54,7 +54,8 @@ _PLACEMENT_ALIASES = {
     "foodzone_list": "food_list",
 }
 
-VALID_EVENTS = {"impression", "click", "cta_click", "skip", "close"}
+VALID_EVENTS = {"impression", "click", "cta_click", "skip", "close",
+                "undo_close"}
 
 # ── What a ✕ means ────────────────────────────────────────────────────────
 # One tap used to hide the ad AND its whole category for 48h. Every campaign
@@ -571,6 +572,24 @@ def track_ad_events(request):
             content_id=str(ev.get("content") or "")[:20],
         )
         created += 1
+
+        # Undo: the viewer took the ✕ back, so every trace of it goes. ✕ is a
+        # small target right next to the ad, and without this a mis-tap cost
+        # them that advertiser for 30 days.
+        if ad is not None and event_type == "undo_close" and user is not None:
+            cache.delete(f"adclose:{user.id}:{ad.pk}")
+            if ad.category_id:
+                cat = ad.category_id
+                cache.delete(f"adcatsoft:{user.id}:{cat}")
+                cache.delete(f"adcatclose:{user.id}:{cat}")
+                seen = list(cache.get(f"adcatcloses:{user.id}:{cat}") or [])
+                if str(ad.pk) in seen:
+                    seen.remove(str(ad.pk))
+                    cache.set(
+                        f"adcatcloses:{user.id}:{cat}",
+                        seen,
+                        CLOSE_CATEGORY_WINDOW_SECONDS,
+                    )
 
         # ✕ close: graded suppression (see CLOSE_* above). No billing, no
         # reward — just the signal.

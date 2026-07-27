@@ -10,6 +10,7 @@ import '../../services/auth_service.dart';
 import '../../services/house_ads_service.dart';
 import '../../widgets/ads/ad_follow_button.dart';
 import '../../widgets/ads/house_ad_card.dart';
+import '../../widgets/ads/shorts_cta_bar.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../utils/video_playback_manager.dart';
 import '../../utils/html_content_utils.dart';
@@ -2075,16 +2076,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                     // Boosted short: small 'Sponsored' marker just above the
                     // author row — same typography as the fallback page.
                     if (widget.sponsoredAd != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text(
-                          'Sponsored',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.65),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 6),
+                        child: ShortsSponsoredPill(),
                       ),
                     GestureDetector(
                       onTap: () {
@@ -2334,45 +2328,14 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                         ),
                       ),
                     ],
-                    // Boosted short: advertiser CTA under the caption — the
-                    // same white outline chip the fallback page shows.
+                    // Boosted short: the advertiser's action, as one
+                    // full-width bar — the same shape the feed uses, restyled
+                    // for a dark video.
                     if (widget.sponsoredAd != null) ...[
-                      const SizedBox(height: 10),
-                      InkWell(
-                        onTap: () {
-                          HouseAdsService.track(
-                            eventType: 'cta_click',
-                            placement: 'shorts_reel',
-                            adId: widget.sponsoredAd!.id,
-                          );
-                          HouseAdCard.launchCta(widget.sponsoredAd!);
-                        },
-                        borderRadius: BorderRadius.circular(999),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            // App-wide promo chip: icon + text, no border.
-                            color: Colors.white.withValues(alpha: 0.18),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(HouseAdCard.ctaIcon(widget.sponsoredAd!),
-                                  size: 14, color: Colors.white),
-                              const SizedBox(width: 6),
-                              Text(
-                                widget.sponsoredAd!.ctaLabel,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      const SizedBox(height: 12),
+                      ShortsCtaBar(
+                        ad: widget.sponsoredAd!,
+                        placement: 'shorts_reel',
                       ),
                     ],
                   ],
@@ -2756,15 +2719,6 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
     );
   }
 
-  void _onCta() {
-    HouseAdsService.track(
-      eventType: 'cta_click',
-      placement: 'shorts_reel',
-      adId: widget.ad.id,
-    );
-    HouseAdCard.launchCta(widget.ad);
-  }
-
   @override
   Widget build(BuildContext context) {
     // Real post loaded — render the SAME page normal shorts use, so every
@@ -2942,39 +2896,8 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 10),
-                  // Small outline chip, left-aligned — the boost looks like a
-                  // normal short; only this chip + "Sponsored" mark it.
-                  InkWell(
-                    onTap: _onCta,
-                    borderRadius: BorderRadius.circular(999),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        // Soft translucent chip on the dark video — icon +
-                        // text, no border (matches the app-wide promo style).
-                        color: Colors.white.withValues(alpha: 0.18),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(HouseAdCard.ctaIcon(widget.ad),
-                              size: 14, color: Colors.white),
-                          const SizedBox(width: 6),
-                          Text(
-                            widget.ad.ctaLabel,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 12),
+                  ShortsCtaBar(ad: widget.ad, placement: 'shorts_reel'),
                 ],
               ),
             ),

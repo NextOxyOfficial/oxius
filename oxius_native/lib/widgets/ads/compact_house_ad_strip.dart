@@ -74,9 +74,29 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
         creatorId: widget.creatorId,
       );
     }
-    Future.delayed(const Duration(milliseconds: 2600), () {
-      if (mounted) setState(() => _closed = true);
+    // The apology window doubles as the undo window: ✕ is one small target
+    // next to the ad itself, so a mis-tap was permanent for 48 hours.
+    Future.delayed(const Duration(milliseconds: 4000), () {
+      if (mounted && _apology) setState(() => _closed = true);
     });
+  }
+
+  void _undoClose() {
+    final ad = _ad;
+    setState(() {
+      _apology = false;
+      _closed = false;
+    });
+    if (ad != null) {
+      // Tell the server too, or the ad stays suppressed for 48h despite the
+      // viewer taking it back.
+      HouseAdsService.track(
+        eventType: 'undo_close',
+        placement: widget.placement,
+        adId: ad.id,
+        creatorId: widget.creatorId,
+      );
+    }
   }
 
   @override
@@ -97,9 +117,30 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          child: const Text(
-            'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
-            style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
+          child: Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
+                ),
+              ),
+              TextButton(
+                onPressed: _undoClose,
+                style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: const Color(0xFF1D4ED8),
+                ),
+                child: const Text(
+                  'আনডু',
+                  style: TextStyle(
+                      fontSize: 12.5, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
           ),
         ),
       );

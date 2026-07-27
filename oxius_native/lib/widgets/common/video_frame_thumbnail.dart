@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../utils/media_headers.dart';
+
 /// A real frame from a video, used anywhere a video needs to look like a photo.
 ///
 /// Before this, every place that could not show a server-side poster fell back
@@ -158,6 +160,9 @@ class _VideoFrameThumbnailState extends State<VideoFrameThumbnail> {
     if (poster.isNotEmpty) {
       base = CachedNetworkImage(
         imageUrl: poster,
+        // Without this the CDN turns the request away and the tile falls back
+        // to a blank surface — the exact symptom of "thumbnails don't show".
+        httpHeaders: kMediaHeaders,
         fit: widget.fit,
         width: double.infinity,
         height: double.infinity,

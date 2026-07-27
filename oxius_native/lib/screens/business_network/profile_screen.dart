@@ -17,6 +17,7 @@ import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/post_upload_strip.dart';
+import '../../utils/media_headers.dart';
 import '../../widgets/common/video_frame_thumbnail.dart';
 import '../../widgets/business_network/feed_composer_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
@@ -2339,17 +2340,102 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  /// Media tab filter: photos first (what most profiles are), videos second.
+  bool _mediaShowVideos = false;
+
   Widget _buildMediaTab() {
     // Collect all media from user posts
-    final allMedia = <PostMedia>[];
+    final allMediaUnfiltered = <PostMedia>[];
     for (var post in _userPosts) {
-      allMedia.addAll(post.media);
+      allMediaUnfiltered.addAll(post.media);
     }
+    final photoCount = allMediaUnfiltered.where((m) => !m.isVideo).length;
+    final videoCount = allMediaUnfiltered.length - photoCount;
+    final allMedia = allMediaUnfiltered
+        .where((m) => m.isVideo == _mediaShowVideos)
+        .toList();
 
-    if (allMedia.isEmpty) {
+    if (allMediaUnfiltered.isEmpty) {
       return _buildEmptyState('No media yet', Icons.photo_library);
     }
 
+    return Column(
+      children: [
+        _buildMediaFilter(photoCount, videoCount),
+        if (allMedia.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 36),
+            child: Text(
+              _mediaShowVideos ? 'কোনো ভিডিও নেই' : 'কোনো ছবি নেই',
+              style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+            ),
+          )
+        else
+          _buildMediaGrid(allMedia),
+      ],
+    );
+  }
+
+  /// The photos/videos switch. A dropdown rather than a second tab row: the
+  /// profile already has tabs, and stacking another set reads as clutter.
+  Widget _buildMediaFilter(int photoCount, int videoCount) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<bool>(
+              value: _mediaShowVideos,
+              isDense: true,
+              borderRadius: BorderRadius.circular(12),
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: false,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.photo_outlined,
+                          size: 16, color: Color(0xFF475569)),
+                      const SizedBox(width: 6),
+                      Text('ছবি ($photoCount)'),
+                    ],
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: true,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.videocam_outlined,
+                          size: 16, color: Color(0xFF475569)),
+                      const SizedBox(width: 6),
+                      Text('ভিডিও ($videoCount)'),
+                    ],
+                  ),
+                ),
+              ],
+              onChanged: (v) =>
+                  setState(() => _mediaShowVideos = v ?? false),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMediaGrid(List<PostMedia> allMedia) {
     return Padding(
       padding: const EdgeInsets.all(4),
       child: GridView.builder(
@@ -2370,13 +2456,19 @@ class _ProfileScreenState extends State<ProfileScreen>
             onTap: () {
               final parentPost = _findParentPostForMedia(media);
               if (media.isVideo) {
-                // Open video in Shorts player
+                // Only THIS profile's videos — the viewer asked for this
+                // person's clips, so the reel must not wander into the
+                // global feed.
+                final ownVideoPosts = _userPosts
+                    .where((p) => p.media.any((m) => m.isVideo))
+                    .toList();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ShortsPlayerScreen(
                       initialPost: parentPost,
                       initialMedia: media,
+                      fixedPosts: ownVideoPosts,
                     ),
                     fullscreenDialog: true,
                   ),
@@ -2414,8 +2506,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                         videoUrl: displayUrl.isEmpty ? media.bestUrl : null,
                       )
                     else if (displayUrl.isNotEmpty)
+                      // Cached + the CDN's expected User-Agent. A bare
+                      // Image.network was refused by the CDN, which is why
+                      // this grid showed placeholders for media the feed
+                      // rendered without trouble.
                       Image.network(
                         displayUrl,
+                        headers: kMediaHeaders,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           // Grey placeholder for failed thumbnails
