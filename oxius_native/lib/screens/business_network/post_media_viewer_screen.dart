@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/business_network_models.dart';
-import '../../services/auth_service.dart';
-import '../../services/fcm_service.dart';
+import '../../config/app_config.dart';
 import '../../utils/business_network_media_downloader.dart';
-import '../../widgets/business_network/bottom_nav_bar.dart';
-import 'create_post_screen.dart';
-import 'notifications_screen.dart';
-import 'profile_options.dart';
+import '../../utils/html_content_utils.dart';
+import '../../utils/media_headers.dart';
+import 'profile_screen.dart';
 import 'shorts_player_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -29,6 +27,7 @@ class PostMediaViewerScreen extends StatefulWidget {
 class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
   late final PageController _pageController;
   late int _currentIndex;
+  bool _captionExpanded = false;
   late BusinessNetworkPost _post;
 
   /// Top bar + bottom bar visibility (Instagram-style tap-to-toggle chrome).
@@ -146,56 +145,6 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
     }
   }
 
-  void _handleNavTap(int index) {
-    final isLoggedIn = AuthService.isAuthenticated;
-    final rootNavigator =
-        FCMService.navigatorKey.currentState ?? Navigator.of(context);
-
-    switch (index) {
-      case 0:
-        rootNavigator.pushNamedAndRemoveUntil(
-          '/business-network',
-          (route) => route.isFirst,
-        );
-        break;
-      case 1:
-        if (isLoggedIn) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const NotificationsScreen()),
-          );
-        } else {
-          Navigator.pushNamed(context, '/login');
-        }
-        break;
-      case 2:
-        if (isLoggedIn) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreatePostScreen()),
-          );
-        } else {
-          Navigator.pushNamed(context, '/login');
-        }
-        break;
-      case 3:
-        if (isLoggedIn) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const ProfileOptionsScreen()),
-          );
-        } else {
-          Navigator.pushNamed(context, '/login');
-        }
-        break;
-      case 4:
-        rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
-        break;
-    }
-  }
-
   void _showMediaOptions() {
     if (_post.media.isEmpty) return;
     final media = _post.media[_currentIndex];
@@ -270,6 +219,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
           if (thumbUrl.isNotEmpty)
             Image.network(
               thumbUrl,
+              headers: kMediaHeaders,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 return _buildVideoThumbFallback();
@@ -399,6 +349,10 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
 
   Widget _buildBottomBar() {
     final chromeShown = _chromeVisible && !_isDragging;
+    final user = _post.user;
+    final caption = HtmlContentUtils.toPlainText(_post.content)
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
 
     return Positioned(
       left: 0,
@@ -414,15 +368,136 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
             opacity: chromeShown ? 1.0 : 0.0,
             duration: _chromeAnimDuration,
             curve: Curves.easeOut,
-            child: BusinessNetworkBottomNavBar(
-              currentIndex: 0,
-              isLoggedIn: AuthService.isAuthenticated,
-              unreadCount: 0,
-              onTap: _handleNavTap,
+            // Whose photo this is — the shorts treatment. The app's bottom
+            // navigation used to sit here, which made a full-screen photo look
+            // like a tab of the app rather than the photo itself, and said
+            // nothing about the post being viewed.
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.72),
+                    Colors.black.withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 24, 14, 14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: _openAuthorProfile,
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.18),
+                              backgroundImage: (user.image ?? '').isNotEmpty
+                                  ? NetworkImage(
+                                      AppConfig.getAbsoluteUrl(user.image!))
+                                  : null,
+                              child: (user.image ?? '').isEmpty
+                                  ? const Icon(Icons.person,
+                                      size: 18, color: Colors.white70)
+                                  : null,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          user.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      if (user.isVerified) ...[
+                                        const SizedBox(width: 4),
+                                        const Icon(Icons.verified,
+                                            size: 15, color: Color(0xFF3B82F6)),
+                                      ],
+                                    ],
+                                  ),
+                                  if (user.locationLabel.isNotEmpty)
+                                    Row(
+                                      children: [
+                                        Icon(Icons.location_on_rounded,
+                                            size: 12,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.7)),
+                                        const SizedBox(width: 2),
+                                        Flexible(
+                                          child: Text(
+                                            user.locationLabel,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.7),
+                                              fontSize: 11.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (caption.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () => setState(
+                              () => _captionExpanded = !_captionExpanded),
+                          child: Text(
+                            caption,
+                            maxLines: _captionExpanded ? 6 : 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.88),
+                              fontSize: 13.5,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _openAuthorProfile() {
+    final uuid = _post.user.uuid ?? '';
+    if (uuid.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProfileScreen(userId: uuid)),
     );
   }
 
@@ -626,6 +701,9 @@ class _ZoomablePhotoState extends State<_ZoomablePhoto>
         child: SizedBox.expand(
           child: Image.network(
             widget.media.bestUrl,
+            // The CDN refuses requests without this, which is exactly what
+            // "Failed to load media" was: a rejected request, not a bad URL.
+            headers: kMediaHeaders,
             fit: BoxFit.contain,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
