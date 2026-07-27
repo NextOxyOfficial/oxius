@@ -51,11 +51,38 @@ _MONEY_HINT_RE = re.compile(
 )
 
 
+def human_text(text):
+    """The part of a message body a PERSON wrote.
+
+    A share (`ADSYPOST::<base64 json>`) is machine content: the sender's own
+    words live in the envelope's `m` field, and the rest — our own post URL,
+    the ad's title — is ours, not theirs. Scanning the raw body therefore
+    inspects base64 gibberish, which reads as clean no matter what was typed
+    into it, so wrapping a blast in a shared card slipped past this filter
+    entirely. Decode first, then judge.
+    """
+    raw = (text or "").strip()
+    marker = "ADSYPOST::"
+    if not raw.startswith(marker):
+        return raw
+    import base64 as _b64
+    import json as _json
+
+    try:
+        payload = _json.loads(
+            _b64.b64decode(raw[len(marker):].strip()).decode("utf-8")
+        )
+    except Exception:
+        return ""
+    return str(payload.get("m") or "").strip()
+
+
 def classify_message(text):
     """Return (is_spam: bool, category: str) for a message body.
 
     category is one of vulgar/gambling/marketing/link, or '' when clean.
     """
+    text = human_text(text)
     if not text:
         return False, ""
     low = text.lower()
