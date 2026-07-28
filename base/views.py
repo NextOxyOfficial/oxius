@@ -15,6 +15,7 @@ from django.contrib.auth.hashers import check_password
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from django.db.models import F, Q
+from django.db.models.functions import Coalesce
 from django.http import Http404, JsonResponse, HttpResponse
 
 # What an advertiser pays per unit of gig funding: the worker payout plus a
@@ -5295,19 +5296,33 @@ class SendDiamondGiftView(APIView):
                 f"Sender diamond balance: {sender.diamond_balance}, Trying to send: {amount}"
             )
 
-            if sender.diamond_balance is None or sender.diamond_balance < amount:
-                return Response({"error": "Insufficient diamond balance"}, status=400)
+            # Gifting yourself MINTED diamonds: `sender` and `recipient` are
+            # two objects over the same row, so recipient still held the
+            # pre-deduction value and its save() wrote balance + amount back.
+            # Verified before the fix: 100 -> 150 on a 50-diamond self-gift,
+            # repeatable without limit.
+            if str(recipient.id) == str(sender.id):
+                return Response(
+                    {"error": "নিজেকে ডায়মন্ড উপহার দেওয়া যায় না।"},
+                    status=400,
+                )
 
-            # Transfer diamonds from sender to recipient
-            sender.diamond_balance -= amount
-            sender.save()
-
-            # Initialize recipient diamond_balance if it's NULL
-            if recipient.diamond_balance is None:
-                recipient.diamond_balance = 0
-
-            recipient.diamond_balance += amount
-            recipient.save()
+            # Conditional update rather than read-modify-write: two concurrent
+            # gifts both passed the check above and the second save() wrote a
+            # stale total, so one balance funded both transfers.
+            with transaction.atomic():
+                deducted = User.objects.filter(
+                    pk=sender.pk, diamond_balance__gte=amount
+                ).update(diamond_balance=F("diamond_balance") - amount)
+                if not deducted:
+                    return Response(
+                        {"error": "Insufficient diamond balance"}, status=400
+                    )
+                User.objects.filter(pk=recipient.pk).update(
+                    diamond_balance=Coalesce(F("diamond_balance"), 0) + amount
+                )
+            sender.refresh_from_db(fields=["diamond_balance"])
+            recipient.refresh_from_db(fields=["diamond_balance"])
 
             # Create diamond transaction record
             diamond_transaction = DiamondTransaction.objects.create(
