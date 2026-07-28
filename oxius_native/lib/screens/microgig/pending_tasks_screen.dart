@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/microgig_models.dart';
 import '../../services/microgig_service.dart';
 import '../../services/translation_service.dart';
+import '../../widgets/chat/chat_media_viewer.dart';
 import '../../widgets/linkify_text.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -646,6 +647,36 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     );
   }
 
+  /// Opens attached proof in the SAME full-screen viewer AdsyConnect uses,
+  /// so pinch-zoom, swipe-between and long-press-to-save behave identically
+  /// wherever media appears in the app.
+  void _openProofViewer(MicroGigTask task, int initialIndex) {
+    if (task.mediaUrls.isEmpty) return;
+    ChatMediaViewer.open(
+      context,
+      items: [
+        for (final url in task.mediaUrls)
+          ChatMediaItem(
+            url: url,
+            // Submissions only ever carry images today; if that changes the
+            // viewer already handles video via this flag.
+            isVideo: _looksLikeVideo(url),
+            senderName: task.gigTitle,
+            timeLabel: _formatDate(task.createdAt),
+          ),
+      ],
+      initialIndex: initialIndex,
+    );
+  }
+
+  bool _looksLikeVideo(String url) {
+    final u = url.toLowerCase().split('?').first;
+    return u.endsWith('.mp4') ||
+        u.endsWith('.mov') ||
+        u.endsWith('.webm') ||
+        u.endsWith('.mkv');
+  }
+
   /// Task details as a bottom sheet.
   ///
   /// Was a centre-screen dialog drawn as an overlay inside the page's Stack,
@@ -770,26 +801,57 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: task.mediaUrls
-                          .map((url) => ClipRRect(
-                                borderRadius: BorderRadius.circular(9),
-                                child: Image.network(
-                                  url,
-                                  height: 110,
-                                  width: 110,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stack) {
-                                    return Container(
-                                      height: 110,
-                                      width: 110,
-                                      color: const Color(0xFFF1F5F9),
-                                      child: const Icon(Icons.image_outlined,
-                                          color: Color(0xFF94A3B8)),
-                                    );
-                                  },
-                                ),
-                              ))
-                          .toList(),
+                      children: [
+                        for (var i = 0; i < task.mediaUrls.length; i++)
+                          GestureDetector(
+                            // Opens the same full-screen viewer AdsyConnect
+                            // uses, with every proof on this task loaded so
+                            // they can be swiped rather than opened one by one.
+                            onTap: () => _openProofViewer(task, i),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(9),
+                              child: Stack(
+                                children: [
+                                  Image.network(
+                                    task.mediaUrls[i],
+                                    height: 110,
+                                    width: 110,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stack) {
+                                      return Container(
+                                        height: 110,
+                                        width: 110,
+                                        color: const Color(0xFFF1F5F9),
+                                        child: const Icon(Icons.image_outlined,
+                                            color: Color(0xFF94A3B8)),
+                                      );
+                                    },
+                                  ),
+                                  // Affordance: without it the thumbnails read
+                                  // as static decoration, not something to tap.
+                                  Positioned(
+                                    right: 5,
+                                    bottom: 5,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                            alpha: 0.45),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                      ),
+                                      child: const Icon(
+                                        Icons.zoom_out_map_rounded,
+                                        size: 12,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                   if (task.rejected &&
