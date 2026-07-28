@@ -11,6 +11,8 @@ from decimal import Decimal
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db import transaction as db_transaction
+from django.db.models import F
 from django.utils import timezone
 from django.utils.text import slugify
 from tinymce import models as tinymce_models
@@ -1049,6 +1051,8 @@ class Balance(models.Model):
         return f"{self.user}'s Service: {self.payable_amount}"
 
     def save(self, *args, **kwargs):
+        # Money below must move exactly once, on the first write.
+        is_new = self._state.adding
         # Generate transaction number if not exists
         if not self.transaction_number:
             import random
@@ -1070,10 +1074,33 @@ class Balance(models.Model):
         self.transaction_type = (self.transaction_type or "").lower()
         # Handle transfer
         if self.transaction_type == "transfer" and self.to_user and not self.completed:
-            self.user.balance -= Decimal(self.payable_amount)
-            self.to_user.balance += Decimal(self.payable_amount)
-            self.user.save()
-            self.to_user.save()
+            # postBalance() validates the amount, the sender's balance and
+            # self-transfer, but this model is the last line: any other path
+            # that creates a transfer (admin action, script, a future endpoint)
+            # reached these two unguarded lines.
+            #
+            # Sending to yourself would MINT money — self.user and self.to_user
+            # are separate objects over the same row, so to_user still held the
+            # pre-deduction balance and its save() wrote it back plus the
+            # amount. The read-modify-write pair also let two concurrent
+            # transfers both pass a balance check and settle from one balance.
+            amount = Decimal(self.payable_amount)
+            if amount <= 0:
+                raise ValidationError("ট্রান্সফারের পরিমাণ শূন্যের বেশি হতে হবে।")
+            if self.to_user_id == self.user_id:
+                raise ValidationError("নিজের কাছে টাকা পাঠানো যায় না।")
+
+            with db_transaction.atomic():
+                moved = User.objects.filter(
+                    pk=self.user_id, balance__gte=amount
+                ).update(balance=F("balance") - amount)
+                if not moved:
+                    raise ValidationError("পর্যাপ্ত ব্যালেন্স নেই।")
+                User.objects.filter(pk=self.to_user_id).update(
+                    balance=F("balance") + amount
+                )
+            self.user.refresh_from_db(fields=["balance"])
+            self.to_user.refresh_from_db(fields=["balance"])
             self.completed = True
             self.approved = True
             self.bank_status = "completed"  # Mark as completed for instant transfer
@@ -1117,11 +1144,21 @@ class Balance(models.Model):
 
         if (
             self.transaction_type == "withdraw"
+            and is_new
             and not self.completed
             and not self.approved
         ):
-            self.user.balance -= self.payable_amount
-            self.user.save()
+            # Held once, when the request is first created. Without the is_new
+            # guard any re-save before an admin approved it deducted again, and
+            # without the conditional update the balance could go negative.
+            amount = Decimal(self.payable_amount)
+            if amount <= 0:
+                raise ValidationError("উত্তোলনের পরিমাণ শূন্যের বেশি হতে হবে।")
+            if not User.objects.filter(
+                pk=self.user_id, balance__gte=amount
+            ).update(balance=F("balance") - amount):
+                raise ValidationError("পর্যাপ্ত ব্যালেন্স নেই।")
+            self.user.refresh_from_db(fields=["balance"])
 
             # Send withdrawal request email to user + admin
             try:
