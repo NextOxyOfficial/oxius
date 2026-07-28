@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import 'dart:convert';
+import '../../services/composer_draft.dart';
 import '../../services/post_upload_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
@@ -28,10 +31,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final ImagePicker _picker = ImagePicker();
   List<Map<String, dynamic>> _mentionUserData = [];
 
-  final List<String> _selectedImages = [];
-  final List<Map<String, dynamic>> _selectedVideos = []; // {path, name}
-  final List<String> _hashtags = [];
-  String _visibility = 'public'; // public | followers | private
+  // Pointing AT the draft's lists (not copies): the composer can be rebuilt
+  // from scratch — which is what Android does to it while the gallery is in
+  // front — and still find everything the user picked.
+  final List<String> _selectedImages = ComposerDraft.images;
+  final List<Map<String, dynamic>> _selectedVideos = ComposerDraft.videos;
+  final List<String> _hashtags = ComposerDraft.hashtags;
+  String _visibility = ComposerDraft.visibility; // public | followers | private
   final bool _isLoading = false;
   bool _isCompressing = false;
   String _compressionStatus = '';
@@ -46,6 +52,33 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   void initState() {
     super.initState();
     _loadInitialUsers();
+    _restoreDraft();
+  }
+
+  /// Bring back picks that outlived this screen.
+  ///
+  /// Two separate recoveries: the video draft written to disk (for a process
+  /// that was killed outright), and image_picker's own lost-data channel — on
+  /// Android a pick can COMPLETE after our app has died, and its result is
+  /// then held for exactly one retrieval.
+  Future<void> _restoreDraft() async {
+    await ComposerDraft.restoreVideos();
+    try {
+      final lost = await _picker.retrieveLostData();
+      final file = lost.file;
+      if (!lost.isEmpty && file != null) {
+        final known = _selectedVideos.any((v) => v['path'] == file.path) ||
+            _selectedImages.contains(file.path);
+        final looksVideo = lost.type == RetrieveType.video;
+        if (!known && looksVideo && _selectedVideos.length < _maxVideos) {
+          _selectedVideos.add({'path': file.path, 'name': file.name});
+          await ComposerDraft.saveVideos();
+        }
+      }
+    } catch (_) {
+      // Nothing to recover, or the platform has no such concept.
+    }
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadInitialUsers() async {
@@ -204,6 +237,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         _selectedVideos.add({'path': path, 'name': video.name});
       });
       AdsyToast.success(context, 'ভিডিও যোগ হয়েছে');
+      unawaited(ComposerDraft.saveVideos());
 
       // Over-limit clips are pulled back out; the tile is on screen in the
       // meantime, which is what the user actually wants to see.
@@ -214,6 +248,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
       AdsyToast.warning(
           context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ১০ মিনিটের ভিডিও দেওয়া যাবে');
+      unawaited(ComposerDraft.saveVideos());
     } catch (e) {
       setState(() {
         _isCompressing = false;
@@ -230,6 +265,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() {
       _selectedVideos.removeAt(index);
     });
+    ComposerDraft.saveVideos();
   }
 
   void _addHashtag() {
@@ -305,6 +341,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       visibility: _visibility,
     );
 
+    // Handed over — the draft has done its job.
+    ComposerDraft.clear();
+    Navigator.pop(context);
+  }
+
+  /// Closing the composer on purpose throws the draft away; being destroyed
+  /// by the system does not.
+  void _closeComposer() {
+    ComposerDraft.clear();
     Navigator.pop(context);
   }
 
@@ -321,7 +366,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           surfaceTintColor: Colors.transparent,
           leading: IconButton(
             icon: const Icon(Icons.close, color: Colors.black87, size: 24),
-            onPressed: () => Navigator.pop(context),
+            onPressed: _closeComposer,
           ),
           title: const Text(
             'Create Post',
@@ -509,6 +554,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               if (value != null) {
                                 setState(() {
                                   _visibility = value;
+                                  ComposerDraft.visibility = value;
                                 });
                               }
                             },
