@@ -273,14 +273,32 @@ def _send_call_data_message(*, target_user, payload):
                                 'apns-push-type': 'alert',
                                 'apns-priority': '10',
                                 'apns-collapse-id': collapse_key or '',
+                                # A ring is worth interrupting for. Without
+                                # this an incoming call is silenced by Focus
+                                # or a Scheduled Summary like any other
+                                # notification, which on a phone with no VoIP
+                                # token means the call is simply never seen.
+                                'apns-expiration': '0',
                             },
                             payload=messaging.APNSPayload(
                                 aps=messaging.Aps(
-                                    sound='default',
+                                    sound=messaging.CriticalSound(
+                                        name='adsy_call_tone.wav',
+                                        critical=False,
+                                        volume=1.0,
+                                    ),
                                     content_available=True,
                                     mutable_content=True,
                                     category='INCOMING_CALL',
+                                    thread_id='adsyclub_call',
                                 ),
+                                custom_data={
+                                    # time-sensitive escapes Focus modes and
+                                    # keeps the banner up; the closest an
+                                    # alert push gets to ringing.
+                                    'interruption-level': 'time-sensitive',
+                                    'relevance-score': 1.0,
+                                },
                             ),
                         ),
                         token=fcm_token.token,
@@ -662,11 +680,25 @@ def send_call_notification(request):
         )
         delivery_result = _send_call_data_message(target_user=callee, payload=payload)
 
+        # Could this ring at all? A device is reachable if it holds a VoIP
+        # token (PushKit rings CallKit even from a killed app) or at least an
+        # ordinary push token. Nothing at all means the callee will never see
+        # this call, and the caller deserves to hear that rather than a
+        # ringback that can only time out.
+        reachable = bool(
+            delivery_result.get('voip_sent_to')
+            or delivery_result.get('sent_to')
+        )
         return Response({
             'success': True,
             'call_id': str(call_session.id),
             'status': call_session.status,
             'sent_to_ws': True,
+            'reachable': reachable,
+            'ring_channel': (
+                'voip' if delivery_result.get('voip_sent_to') else
+                ('push' if delivery_result.get('sent_to') else 'none')
+            ),
             **delivery_result,
         })
     except Exception as e:

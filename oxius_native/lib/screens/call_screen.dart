@@ -1390,6 +1390,12 @@ class _CallScreenState extends State<CallScreen>
       if (_callAccepted) {
         return 'Connecting the call...';
       }
+      if (!widget.isIncoming && !AgoraCallService.lastCallReachable) {
+        // The server had nowhere to deliver the ring. Saying "ringing" here
+        // is simply untrue, and it costs the caller thirty seconds to learn
+        // it themselves.
+        return 'ব্যবহারকারীর ডিভাইসে কল পৌঁছানো যাচ্ছে না';
+      }
       return widget.isIncoming
           ? 'Joining the call...'
           : 'Ringing on the other side.';

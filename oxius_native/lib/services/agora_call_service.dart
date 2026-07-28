@@ -622,6 +622,12 @@ class AgoraCallService {
           _schedulePersistedCallStateSync();
           _emitCallState();
         }
+        // The server says whether the ring had anywhere to go. A callee with
+        // no delivery route (no push token registered on any device) can
+        // never see this call, and playing a ringback at the caller for
+        // thirty seconds only teaches them the app is broken.
+        lastCallReachable = decoded['reachable'] != false;
+        lastRingChannel = decoded['ring_channel']?.toString() ?? '';
       }
       return ok;
     } on TimeoutException {
@@ -632,6 +638,14 @@ class AgoraCallService {
       return false;
     }
   }
+
+  /// False when the last outgoing call could not be delivered to any of the
+  /// callee's devices — the call screen shows this instead of ringing on.
+  static bool lastCallReachable = true;
+
+  /// How the last call was rung: 'voip' (CallKit), 'push' (alert only) or
+  /// 'none'. Useful when a call is reported as never arriving.
+  static String lastRingChannel = '';
 
   static Future<bool> sendCallStatus({
     required String receiverId,
