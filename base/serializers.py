@@ -619,7 +619,16 @@ class MicroGigPostSerializer(serializers.ModelSerializer):
         model = MicroGigPost
         fields = "__all__"
         depth = 1
-        read_only_fields = ["slug"]
+        # Money and progress are SERVER-computed. With only "slug" locked, a
+        # client could PUT balance/total_cost directly: gig.balance is what
+        # pays workers (MicroGigPostTask.save moves gig.balance -> the worker's
+        # pending_balance -> balance), so a crafted request funded a gig for
+        # free and minted withdrawable money. The views now derive these from
+        # price x quantity and charge the wallet before saving.
+        read_only_fields = [
+            "slug", "balance", "total_cost", "filled_quantity",
+            "required_quantity", "user",
+        ]
 
 
 class MicroGigPostDetailsSerializer(serializers.ModelSerializer):

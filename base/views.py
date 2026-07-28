@@ -16,6 +16,11 @@ from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from django.db.models import F, Q
 from django.http import Http404, JsonResponse, HttpResponse
+
+# What an advertiser pays per unit of gig funding: the worker payout plus a
+# 10% platform fee. Both gig create and gig top-up price from this, so the
+# charge can never drift from what the clients used to compute themselves.
+GIG_FEE_MULTIPLIER = Decimal("1.10")
 from django.shortcuts import get_object_or_404, render
 from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
@@ -914,15 +919,44 @@ def post_micro_gigs(request):
     data["user"] = user.id  # Associate the authenticated user
     serializer = MicroGigPostSerializer(data=data)
     if serializer.is_valid():
-        if user.balance < data["total_cost"]:
-            # raise ValueError("Insufficient balance")
+        # Never trust client money. total_cost/balance used to come straight
+        # from the request, so {"total_cost": 0, "balance": 50000} created a
+        # fully funded gig for free — and gig.balance pays workers in real,
+        # withdrawable money. Derive both from price x quantity instead.
+        try:
+            price = Decimal(str(data.get("price") or 0))
+            quantity = int(data.get("required_quantity") or 0)
+        except (TypeError, ValueError, InvalidOperation):
+            return Response(
+                {"message": "Invalid price or quantity"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if price <= 0 or quantity <= 0:
+            return Response(
+                {"message": "Price and quantity must be greater than zero",
+                 "errors": "দাম ও সংখ্যা শূন্যের বেশি হতে হবে।"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        funding = (price * quantity).quantize(Decimal("0.01"))
+        charge = (funding * GIG_FEE_MULTIPLIER).quantize(Decimal("0.01"))
+
+        # Conditional update, not read-modify-write: two concurrent posts both
+        # passed a plain balance check and the second save() overwrote the
+        # first, so one deduction funded two gigs.
+        if not User.objects.filter(
+            pk=user.pk, balance__gte=charge
+        ).update(balance=F("balance") - charge):
             return Response(
                 {"message": "Insufficient balance", "errors": "Insufficient balance"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user.balance -= Decimal(data["total_cost"])
-        user.save()
-        new_micro_gig_post = serializer.save(user=user)
+        user.refresh_from_db(fields=["balance"])
+        new_micro_gig_post = serializer.save(
+            user=user,
+            balance=funding,
+            total_cost=charge,
+            required_quantity=quantity,
+        )
         for file in data["medias"]:
             nm = MicroGigPostMedia.objects.create(image=base64ToFile(file))
             new_micro_gig_post.medias.add(nm)
@@ -960,10 +994,34 @@ def update_micro_gig_post(request, pk):
 
         # Check if the user is the owner or a superuser
         if request.user == micro_gig_post.user or request.user.is_superuser:
-            additional_cost = Decimal(request.data.get("additional_cost", 0))
+            # Top-up is priced SERVER-side from the gig's own price. The old
+            # code charged request.data["additional_cost"] but funded the gig
+            # from a separate request.data["balance"], so
+            # {"additional_cost": 0, "balance": 999999} bought a million taka
+            # of worker payouts for nothing. Quantity is the only input.
+            try:
+                extra_quantity = int(request.data.get("required_quantity") or 0)
+            except (TypeError, ValueError):
+                return Response(
+                    {"message": "Invalid quantity"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if extra_quantity < 0:
+                return Response(
+                    {"message": "Quantity cannot be negative"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            # Ensure the user has enough balance for the additional cost
-            if request.user.balance < additional_cost:
+            funding = (micro_gig_post.price * extra_quantity).quantize(
+                Decimal("0.01")
+            )
+            additional_cost = (funding * GIG_FEE_MULTIPLIER).quantize(
+                Decimal("0.01")
+            )
+
+            if additional_cost > 0 and not User.objects.filter(
+                pk=request.user.pk, balance__gte=additional_cost
+            ).update(balance=F("balance") - additional_cost):
                 return Response(
                     {
                         "message": "Insufficient balance",
@@ -971,17 +1029,11 @@ def update_micro_gig_post(request, pk):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            request.user.refresh_from_db(fields=["balance"])
 
-            # Deduct additional cost from user balance
-            request.user.balance -= additional_cost
-            request.user.save()
-            print(micro_gig_post.total_cost + additional_cost)
-            # Adjust balance and quantity in micro_gig_post
             micro_gig_post.total_cost = micro_gig_post.total_cost + additional_cost
-            micro_gig_post.balance += Decimal(request.data.get("balance", 0))
-            micro_gig_post.required_quantity += int(
-                request.data.get("required_quantity", 0)
-            )
+            micro_gig_post.balance += funding
+            micro_gig_post.required_quantity += extra_quantity
 
             # Check if this is an appeal (rejected -> pending)
             if micro_gig_post.gig_status == 'rejected' and request.data.get('gig_status') == 'pending':

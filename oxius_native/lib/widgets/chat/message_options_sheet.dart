@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../config/app_config.dart';
+import '../../utils/media_headers.dart';
+import '../../utils/shared_post_message.dart';
+
 import 'message_reaction_bar.dart';
 import 'package:flutter/services.dart';
 
@@ -27,7 +31,12 @@ Future<void> showChatMessageOptions(
   final messageType = message['type']?.toString() ?? 'text';
   final isDeleted = message['isDeleted'] == true;
   final isTextLike = messageType == 'text';
-  final text = (message['message'] ?? '').toString();
+  final rawText = (message['message'] ?? '').toString();
+  // A shared post is an encoded envelope; showing it raw put "ADSYPOST::…"
+  // in the pressed-message preview where the post itself belongs.
+  final sharedPost = SharedPostMessage.tryDecode(rawText);
+  final text = sharedPost?.quoteLine ?? rawText;
+  final sharedThumb = AppConfig.getAbsoluteUrl(sharedPost?.thumbUrl ?? '');
   final canCopy = isTextLike && !isDeleted && text.trim().isNotEmpty;
   final canReply = onReply != null && !isDeleted;
   final canEdit = onEdit != null && isTextLike && !isDeleted;
@@ -91,15 +100,35 @@ Future<void> showChatMessageOptions(
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Text(
-                  text,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13.5,
-                    height: 1.35,
-                    color: Color(0xFF334155),
-                  ),
+                child: Row(
+                  children: [
+                    if (sharedThumb.isNotEmpty) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          sharedThumb,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          headers: kMediaHeaders,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                    Expanded(
+                      child: Text(
+                        text,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          height: 1.35,
+                          color: Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             if (canCopy)

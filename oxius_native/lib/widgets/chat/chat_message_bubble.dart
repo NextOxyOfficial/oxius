@@ -770,7 +770,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
+        constraints: const BoxConstraints(maxWidth: 340),
         child: InkWell(
           onTap: () {
             if (shared.postUrl.isNotEmpty) {
@@ -796,7 +796,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     // nothing when the fetched post has no media).
                     if (thumb.isNotEmpty)
                       SizedBox(
-                        width: 78,
+                        // A quarter wider than before: at 78 the picture was
+                        // a stripe beside the text rather than the thing the
+                        // card is about.
+                        width: 98,
                         child: Image.network(
                           thumb,
                           fit: BoxFit.cover,

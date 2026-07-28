@@ -12,7 +12,6 @@ import 'inbox_screen.dart' show NewChatModal;
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
-import '../services/deep_link_service.dart';
 import '../widgets/chat_list_skeleton.dart';
 import '../config/app_config.dart';
 import '../utils/network_error_handler.dart';
@@ -51,21 +50,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   Timer? _pollingTimer;
   Timer? _onlineStatusTimer;
   StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
-  OverlayEntry? _activeChatOverlay;
+  /// The chatroom currently open as a route above this list, if any. Only
+  /// used to keep a second tap on the same row from pushing it twice.
   String? _activeOverlayChatroomId;
 
-  static const Set<String> _rootRoutesAllowedFromChatOverlay = {
-    '/',
-    '/business-network',
-    '/business-network/profile',
-    '/login',
-    '/inbox',
-    '/settings',
-    '/deposit-withdraw',
-    '/mobile-recharge',
-    '/micro-gigs',
-    '/mindforce',
-  };
 
   final TextEditingController _chatSearchController = TextEditingController();
   final ScrollController _listScrollController = ScrollController();
@@ -120,7 +108,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   void _dismissChatOverlayForIncomingCall() {
-    if (!mounted || _activeChatOverlay == null) return;
+    if (!mounted || _activeOverlayChatroomId == null) return;
     _removeActiveChatOverlay(refreshAfterClose: false);
   }
 
@@ -871,122 +859,52 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     );
   }
 
+  /// Open a chat as a REAL route on the navigator that owns this screen.
+  ///
+  /// It used to go into the root overlay with a private Navigator, which is
+  /// why "back" behaved differently here than anywhere else in the app and
+  /// why anything the chat pushed could end up hidden beneath it.
   void _showChatOverlay(Map<String, dynamic> chat) {
     final chatroomId = chat['id']?.toString() ?? '';
     if (chatroomId.isEmpty) return;
-    if (_activeChatOverlay != null && _activeOverlayChatroomId == chatroomId) {
-      return;
-    }
-
-    _removeActiveChatOverlay(refreshAfterClose: false);
-
-    final overlay = Overlay.of(context, rootOverlay: true);
-    final entry = OverlayEntry(
-      builder: (_) => Positioned.fill(
-        child: Material(
-          color: const Color(0xFFF8FAFC),
-          child: ScaffoldMessenger(
-            child: Navigator(
-              onGenerateRoute: (settings) {
-                final chatRouteName =
-                    AdsyConnectChatInterface.routeNameFor(chatroomId);
-                if (settings.name == Navigator.defaultRouteName ||
-                    settings.name == chatRouteName) {
-                  return MaterialPageRoute<void>(
-                    settings: RouteSettings(name: chatRouteName),
-                    builder: (_) => AdsyConnectChatInterface(
-                      key: ValueKey('adsy_chat_overlay_$chatroomId'),
-                      chatroomId: chatroomId,
-                      userId: chat['userId']?.toString() ?? '',
-                      userName: chat['userName']?.toString() ?? 'Unknown',
-                      userAvatar: chat['userAvatar']?.toString(),
-                      profession: chat['profession']?.toString(),
-                      isOnline: _parseBool(chat['isOnline']),
-                      isVerified: _parseBool(chat['isVerified']),
-                      isPro: _parseBool(chat['isPro']),
-                      onClose: _closeActiveChatOverlay,
-                    ),
-                  );
-                }
-
-                if (_rootRoutesAllowedFromChatOverlay.contains(settings.name)) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!mounted) return;
-                    _removeActiveChatOverlay(refreshAfterClose: false);
-                    final rootNavigator = FCMService.navigatorKey.currentState;
-                    final routeName = settings.name ?? '/';
-                    if (rootNavigator == null) return;
-
-                    if (routeName == '/' || routeName == '/business-network') {
-                      rootNavigator.pushNamedAndRemoveUntil(
-                        routeName,
-                        (route) => route.isFirst,
-                        arguments: settings.arguments,
-                      );
-                    } else {
-                      rootNavigator.pushNamed(
-                        routeName,
-                        arguments: settings.arguments,
-                      );
-                    }
-                  });
-
-                  return MaterialPageRoute<void>(
-                    builder: (_) => const SizedBox.shrink(),
-                  );
-                }
-
-                return MaterialPageRoute<void>(
-                  builder: (_) => Scaffold(
-                    appBar: AppBar(title: const Text('Page not found')),
-                    body: Center(
-                      child: Text(
-                        'Unknown chat route: ${settings.name ?? ''}',
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ),
-    );
+    if (_activeOverlayChatroomId == chatroomId) return;
 
     _activeOverlayChatroomId = chatroomId;
-    _activeChatOverlay = entry;
-    overlay.insert(entry);
-    // Rebuild so the list route's PopScope starts blocking back (it must
-    // close this overlay, not pop the list) — see build().
     if (mounted) setState(() {});
 
-    // While this chat overlay is up, internal link taps inside it must close
-    // it first (it sits above the root navigator) so the destination shows on
-    // top instead of hiding behind the chat.
-    DeepLinkService.dismissTransientOverlay = () {
-      _removeActiveChatOverlay(refreshAfterClose: false);
-    };
+    unawaited(
+      AdsyConnectChatInterface.open<void>(
+        context,
+        chatroomId: chatroomId,
+        userId: chat['userId']?.toString() ?? '',
+        userName: chat['userName']?.toString() ?? 'Unknown',
+        userAvatar: chat['userAvatar']?.toString(),
+        profession: chat['profession']?.toString(),
+        isOnline: _parseBool(chat['isOnline']),
+        isVerified: _parseBool(chat['isVerified']),
+        isPro: _parseBool(chat['isPro']),
+      ).then((_) {
+        // Back from the chat: the list catches up with what happened in it.
+        if (!mounted) return;
+        _activeOverlayChatroomId = null;
+        setState(() {});
+        unawaited(_refreshChats());
+      }),
+    );
   }
 
-  void _closeActiveChatOverlay() {
-    _removeActiveChatOverlay(refreshAfterClose: true);
-  }
-
+  /// Kept as the one entry point the rest of the screen already calls (an
+  /// incoming call, dispose, a tab switch). With the chat living on the
+  /// navigator, "remove it" means "pop it if it is still on top".
   void _removeActiveChatOverlay({required bool refreshAfterClose}) {
-    final entry = _activeChatOverlay;
-    _activeChatOverlay = null;
+    final wasOpen = _activeOverlayChatroomId != null;
     _activeOverlayChatroomId = null;
-    // Stop intercepting internal links once no chat overlay is up.
-    DeepLinkService.dismissTransientOverlay = null;
-
-    if (entry != null && entry.mounted) {
-      entry.remove();
+    if (wasOpen) {
+      final navigator = Navigator.maybeOf(context);
+      if (navigator != null && navigator.canPop()) navigator.pop();
     }
-
-    // Rebuild so the list route's PopScope releases back again.
     if (mounted) setState(() {});
-
-    if (refreshAfterClose && mounted) {
+    if (refreshAfterClose && wasOpen && mounted) {
       unawaited(_refreshChats());
     }
   }
@@ -1078,18 +996,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final chatsToShow = _filteredChats;
     final isFiltering = _chatSearchQuery.trim().isNotEmpty;
 
-    // Hardware/gesture back with a 1:1 chat overlay open must close the
-    // OVERLAY (revealing this list) — not pop the list route underneath.
-    // The overlay's own didPopRoute observer can lose the race against
-    // WidgetsApp's (registration order), so guard the route itself too.
-    return PopScope(
-      canPop: _activeChatOverlay == null,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _activeChatOverlay != null) {
-          _closeActiveChatOverlay();
-        }
-      },
-      child: Stack(
+    // No PopScope here any more: the chat is a route of its own, so the
+    // platform pops it exactly like every other screen in the app.
+    return Stack(
       children: [
         AdsyRefreshIndicator(
           onRefresh: _activeChatTab == _ChatTab.groups
@@ -1272,7 +1181,6 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           ),
         ),
       ],
-      ),
     );
   }
 

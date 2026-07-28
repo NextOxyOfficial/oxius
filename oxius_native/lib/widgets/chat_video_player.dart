@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+
+import 'chat/chat_media_viewer.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Video message in a chat bubble: a CLEAN first-frame thumbnail — no play /
@@ -67,10 +68,13 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
   }
 
   void _openFullScreen() {
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
-        builder: (_) => _FullScreenChatVideo(videoUrl: widget.videoUrl),
-      ),
+    // The navigator that owns THIS widget — never `rootNavigator: true`.
+    // Forcing the root pushed the player beneath whatever was presenting the
+    // chat, so a tap looked like nothing happened and the video only appeared
+    // after a back press. ChatMediaViewer plays photos and videos alike.
+    ChatMediaViewer.open(
+      context,
+      items: [ChatMediaItem(url: widget.videoUrl, isVideo: true)],
     );
   }
 
@@ -152,88 +156,6 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Full-screen playback with normal controls — pushed when the bubble
-/// thumbnail is tapped.
-class _FullScreenChatVideo extends StatefulWidget {
-  final String videoUrl;
-
-  const _FullScreenChatVideo({required this.videoUrl});
-
-  @override
-  State<_FullScreenChatVideo> createState() => _FullScreenChatVideoState();
-}
-
-class _FullScreenChatVideoState extends State<_FullScreenChatVideo> {
-  late final VideoPlayerController _videoController;
-  ChewieController? _chewieController;
-  bool _hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    try {
-      _videoController = widget.videoUrl.startsWith('http://') ||
-              widget.videoUrl.startsWith('https://')
-          ? VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
-          : VideoPlayerController.file(File(widget.videoUrl));
-      await _videoController.initialize();
-      if (!mounted) return;
-      setState(() {
-        _chewieController = ChewieController(
-          videoPlayerController: _videoController,
-          autoPlay: true,
-          looping: false,
-          aspectRatio: _videoController.value.aspectRatio,
-        );
-      });
-    } catch (e) {
-      debugPrint('Error initializing full-screen video: $e');
-      if (mounted) setState(() => _hasError = true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _chewieController?.dispose();
-    _videoController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-      ),
-      body: Center(
-        child: _hasError
-            ? const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline_rounded,
-                      color: Colors.white54, size: 48),
-                  SizedBox(height: 8),
-                  Text('Failed to load video',
-                      style: TextStyle(color: Colors.white54, fontSize: 13)),
-                ],
-              )
-            : _chewieController == null
-                ? const AdsyLoadingIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  )
-                : Chewie(controller: _chewieController!),
       ),
     );
   }

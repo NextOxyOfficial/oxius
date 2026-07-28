@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart' show CupertinoPageRoute;
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,7 +10,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'dart:async';
-import 'dart:io';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
@@ -23,6 +23,7 @@ import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
 import '../services/house_ads_service.dart';
 import '../utils/media_headers.dart';
+import '../widgets/chat/chat_media_viewer.dart';
 import '../utils/shared_post_message.dart';
 import '../services/agora_call_service.dart';
 import '../services/fcm_service.dart';
@@ -102,7 +103,14 @@ class AdsyConnectChatInterface extends StatefulWidget {
   static const Duration _navigatorSettleDelay = Duration(milliseconds: 380);
   static bool _chatPushInFlight = false;
 
-  static MaterialPageRoute<T> _chatRoute<T>({
+  /// A Cupertino route, deliberately, on every platform.
+  ///
+  /// It is what carries the left-to-right back-swipe: the app dropped the
+  /// global CupertinoPageTransitionsTheme (it broke the iOS archive on CI),
+  /// so a MaterialPageRoute here meant the chat was the one screen you could
+  /// not swipe out of. This gives the gesture back for this route alone,
+  /// without touching the theme everything else builds against.
+  static CupertinoPageRoute<T> _chatRoute<T>({
     required String chatroomId,
     required String userId,
     required String userName,
@@ -112,7 +120,7 @@ class AdsyConnectChatInterface extends StatefulWidget {
     bool isVerified = false,
     bool isPro = false,
   }) {
-    return MaterialPageRoute<T>(
+    return CupertinoPageRoute<T>(
       settings: RouteSettings(name: routeNameFor(chatroomId)),
       builder: (_) => AdsyConnectChatInterface(
         chatroomId: chatroomId,
@@ -2302,7 +2310,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 // Attachment options grid
                 GridView.count(
                   shrinkWrap: true,
-                  crossAxisCount: 4,
+                  crossAxisCount: 5,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
                   childAspectRatio: 0.85,
@@ -2333,6 +2341,18 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                       onTap: () {
                         Navigator.pop(context);
                         _pickVideo();
+                      },
+                    ),
+                    // Record now and send — the camera tile above takes a
+                    // photo; this one shoots video, so a moment can go into
+                    // the chat without a trip through the gallery.
+                    _buildAttachmentOption(
+                      icon: Icons.video_camera_back_rounded,
+                      label: 'Record',
+                      color: const Color(0xFFF59E0B),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _recordVideo();
                       },
                     ),
                     _buildAttachmentOption(
@@ -2487,10 +2507,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
-  Future<void> _pickVideo() async {
+  Future<void> _pickVideo() => _addVideo(ImageSource.gallery);
+
+  /// Shoot a clip with the camera and send it, no gallery detour.
+  Future<void> _recordVideo() => _addVideo(
+        ImageSource.camera,
+        maxDuration: const Duration(seconds: VideoUploadHelper.maxSeconds),
+      );
+
+  Future<void> _addVideo(ImageSource source, {Duration? maxDuration}) async {
     try {
       final XFile? video = await _imagePicker.pickVideo(
-        source: ImageSource.gallery,
+        source: source,
+        maxDuration: maxDuration,
       );
 
       if (video != null && mounted) {
@@ -3505,102 +3534,32 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _viewImage(String filePath) {
-    final isUrl =
-        filePath.startsWith('http://') || filePath.startsWith('https://');
+    // Every photo and video in this chat, in order, so the viewer can be
+    // swiped like a gallery instead of opening one file in isolation.
+    final media = <ChatMediaItem>[];
+    var initial = 0;
+    for (final m in _messages) {
+      final type = m['type']?.toString() ?? 'text';
+      if (type != 'image' && type != 'video') continue;
+      final url = (m['mediaUrl'] ?? '').toString();
+      if (url.isEmpty) continue;
+      if (url == filePath) initial = media.length;
+      media.add(ChatMediaItem(
+        url: url,
+        isVideo: type == 'video',
+        senderName: m['isMe'] == true ? 'আপনি' : widget.userName,
+        timeLabel: m['timeDisplay']?.toString(),
+      ));
+    }
+    if (media.isEmpty) {
+      media.add(ChatMediaItem(url: filePath, isVideo: false));
+    }
 
-    showDialog(
-      context: context,
-      barrierColor: Colors.black87,
-      // Local navigator — see _startRecording: the chat screen sits above the
-      // root Navigator in an overlay, so root-navigator dialogs are hidden.
-      useRootNavigator: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: EdgeInsets.zero,
-        child: Stack(
-          children: [
-            Center(
-              child: GestureDetector(
-                onLongPress: () => _showImageOptions(filePath),
-                child: InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: isUrl
-                      ? Image.network(
-                          filePath,
-                          fit: BoxFit.contain,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: AdsyLoadingIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                                color: Colors.white,
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.error_outline,
-                                      size: 64, color: Colors.grey.shade400),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Failed to load image',
-                                    style:
-                                        TextStyle(color: Colors.grey.shade400),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        )
-                      : Image.file(
-                          File(filePath),
-                          fit: BoxFit.contain,
-                        ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 40,
-              right: 16,
-              child: IconButton(
-                icon: const Icon(Icons.close_rounded,
-                    color: Colors.white, size: 28),
-                onPressed: () => Navigator.pop(context),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black45,
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Long press for options',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    ChatMediaViewer.open(
+      context,
+      items: media,
+      initialIndex: initial,
+      onLongPress: (item) => _showImageOptions(item.url),
     );
   }
 
