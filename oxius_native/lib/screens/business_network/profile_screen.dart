@@ -73,10 +73,13 @@ class _ProfileScreenState extends State<ProfileScreen>
   late TabController _tabController;
   int _currentTabIndex = 0;
 
+  // Photos and Shorts sit next to Posts — the three things people come to a
+  // profile to look at — and the rest follows.
   final List<String> _tabLabels = const [
     'Posts',
+    'Photos',
+    'Shorts',
     'My Workspace',
-    'Media',
     'Saved',
   ];
 
@@ -1907,10 +1910,12 @@ class _ProfileScreenState extends State<ProfileScreen>
       case 0:
         return _buildPostsTab();
       case 1:
-        return _buildWorkspaceTab();
+        return _buildMediaTab(showVideos: false);
       case 2:
-        return _buildMediaTab();
+        return _buildMediaTab(showVideos: true);
       case 3:
+        return _buildWorkspaceTab();
+      case 4:
         return _buildSavedTab();
       default:
         return _buildPostsTab();
@@ -2340,99 +2345,23 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  /// Media tab filter: photos first (what most profiles are), videos second.
-  bool _mediaShowVideos = false;
-
-  Widget _buildMediaTab() {
-    // Collect all media from user posts
-    final allMediaUnfiltered = <PostMedia>[];
-    for (var post in _userPosts) {
-      allMediaUnfiltered.addAll(post.media);
-    }
-    final photoCount = allMediaUnfiltered.where((m) => !m.isVideo).length;
-    final videoCount = allMediaUnfiltered.length - photoCount;
-    final allMedia = allMediaUnfiltered
-        .where((m) => m.isVideo == _mediaShowVideos)
-        .toList();
-
-    if (allMediaUnfiltered.isEmpty) {
-      return _buildEmptyState('No media yet', Icons.photo_library);
+  /// One grid, told by its tab whether it is showing photos or shorts.
+  Widget _buildMediaTab({required bool showVideos}) {
+    final media = <PostMedia>[];
+    for (final post in _userPosts) {
+      for (final m in post.media) {
+        if (m.isVideo == showVideos) media.add(m);
+      }
     }
 
-    return Column(
-      children: [
-        _buildMediaFilter(photoCount, videoCount),
-        if (allMedia.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 36),
-            child: Text(
-              _mediaShowVideos ? 'কোনো ভিডিও নেই' : 'কোনো ছবি নেই',
-              style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-            ),
-          )
-        else
-          _buildMediaGrid(allMedia),
-      ],
-    );
-  }
+    if (media.isEmpty) {
+      return _buildEmptyState(
+        showVideos ? 'কোনো ভিডিও নেই' : 'কোনো ছবি নেই',
+        showVideos ? Icons.videocam_outlined : Icons.photo_library_outlined,
+      );
+    }
 
-  /// The photos/videos switch. A dropdown rather than a second tab row: the
-  /// profile already has tabs, and stacking another set reads as clutter.
-  Widget _buildMediaFilter(int photoCount, int videoCount) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<bool>(
-              value: _mediaShowVideos,
-              isDense: true,
-              borderRadius: BorderRadius.circular(12),
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF0F172A),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: false,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.photo_outlined,
-                          size: 16, color: Color(0xFF475569)),
-                      const SizedBox(width: 6),
-                      Text('ছবি ($photoCount)'),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: true,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.videocam_outlined,
-                          size: 16, color: Color(0xFF475569)),
-                      const SizedBox(width: 6),
-                      Text('ভিডিও ($videoCount)'),
-                    ],
-                  ),
-                ),
-              ],
-              onChanged: (v) =>
-                  setState(() => _mediaShowVideos = v ?? false),
-            ),
-          ),
-        ),
-      ),
-    );
+    return Column(children: [_buildMediaGrid(media)]);
   }
 
   Widget _buildMediaGrid(List<PostMedia> allMedia) {

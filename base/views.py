@@ -4394,9 +4394,26 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                     )
             # Process payment if using balance
             if payment_method == "balance":
-                # 1. Deduct total amount from buyer's balance
-                buyer.balance -= total_amount
-                buyer.save()
+                # Charge what the ITEMS actually cost, not order["total"].
+                # Sellers are credited from seller_payment_amounts, which is
+                # built above from each product's own price plus its delivery
+                # fee — but the buyer used to be charged the client-supplied
+                # total, so an order posted with "total": 0 paid the sellers
+                # real money while taking nothing from the buyer. The platform
+                # covered the difference.
+                charged_total = sum(
+                    seller_payment_amounts.values(), Decimal("0.00")
+                )
+                if not User.objects.filter(
+                    pk=buyer.pk, balance__gte=charged_total
+                ).update(balance=F("balance") - charged_total):
+                    order.delete()
+                    return Response(
+                        {"detail": "Insufficient balance to complete this order."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                buyer.refresh_from_db(fields=["balance"])
+                total_amount = charged_total
                 # 2. Create a transaction record for the buyer's payment
                 Balance.objects.create(
                     user=buyer,  # The buyer who is making the payment
@@ -4413,9 +4430,14 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         # Get the seller account
                         product_owner = User.objects.get(id=seller_id)
 
-                        # Add payment to seller's balance
-                        product_owner.balance += payment_amount
-                        product_owner.save()
+                        # Add payment to seller's balance (atomic: two orders
+                        # settling for the same seller at once each read the
+                        # same stale total and the second save() erased the
+                        # first credit).
+                        User.objects.filter(pk=product_owner.pk).update(
+                            balance=F("balance") + payment_amount
+                        )
+                        product_owner.refresh_from_db(fields=["balance"])
                         # Create transaction record for the seller's receipt
                         # Balance.objects.create(
                         #     user=product_owner,  # The seller receiving the payment
