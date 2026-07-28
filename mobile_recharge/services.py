@@ -12,9 +12,14 @@ configured third-party provider OR leaves it pending for manual processing.
 import logging
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
+from django.db.models import F
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .models import RechargeProviderConfig
+
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +29,17 @@ def charge_balance(user, amount):
     if user is None:
         return False, 'ব্যবহারকারী পাওয়া যায়নি।'
     amount = Decimal(str(amount))
-    balance = user.balance or Decimal('0')
-    if balance < amount:
+    if amount <= 0:
+        return False, 'রিচার্জের পরিমাণ শূন্যের বেশি হতে হবে।'
+    # Conditional update rather than read-modify-write: two recharges fired at
+    # once both read the same balance, both passed the check, and the second
+    # save() wrote a total that only accounted for its own deduction — one
+    # balance paying for two recharges.
+    if not User.objects.filter(
+        pk=user.pk, balance__gte=amount
+    ).update(balance=F('balance') - amount):
         return False, 'পর্যাপ্ত Adsy Pay ব্যালেন্স নেই। অনুগ্রহ করে রিচার্জ করুন।'
-    user.balance = balance - amount
-    user.save(update_fields=['balance'])
+    user.refresh_from_db(fields=['balance'])
     return True, None
 
 
@@ -39,8 +50,12 @@ def refund_balance(recharge):
     user = recharge.user
     if user is None:
         return False
-    user.balance = (user.balance or Decimal('0')) + recharge.amount
-    user.save(update_fields=['balance'])
+    # F() so a refund landing at the same time as any other balance write
+    # can't overwrite it with a stale total.
+    User.objects.filter(pk=user.pk).update(
+        balance=Coalesce(F('balance'), Decimal('0')) + recharge.amount
+    )
+    user.refresh_from_db(fields=['balance'])
     recharge.balance_charged = False
     recharge.save(update_fields=['balance_charged'])
     return True

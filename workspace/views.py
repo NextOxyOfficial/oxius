@@ -3,7 +3,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from django.db.models import Q
+from django.contrib.auth import get_user_model
+from django.db.models import F, Q
+
+User = get_user_model()
 from django.utils import timezone
 
 
@@ -381,9 +384,18 @@ def create_order(request, gig_id):
     
     try:
         with db_transaction.atomic():
-            # Deduct from buyer's balance
-            buyer.balance -= price
-            buyer.save(update_fields=['balance'])
+            # Conditional update, not read-modify-write. atomic() alone does not
+            # stop two concurrent orders from both reading the same balance,
+            # both passing the check above and the second write erasing the
+            # first deduction — one balance buying two gigs.
+            if not User.objects.filter(
+                pk=buyer.pk, balance__gte=price
+            ).update(balance=F('balance') - price):
+                return Response({
+                    'error': 'Insufficient balance',
+                    'message': 'ব্যালেন্সে পর্যাপ্ত টাকা নেই।',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            buyer.refresh_from_db(fields=['balance'])
             
             # Create the order
             order = GigOrder.objects.create(
@@ -494,8 +506,11 @@ def complete_order_payment(request, order_id):
             
             # Release payment to seller
             seller = order.seller
-            seller.balance += order.price
-            seller.save(update_fields=['balance'])
+            # F() so a concurrent balance write can't overwrite this payout.
+            User.objects.filter(pk=seller.pk).update(
+                balance=F('balance') + order.price
+            )
+            seller.refresh_from_db(fields=['balance'])
             
             # Update hold transaction to completed
             GigOrderTransaction.objects.filter(
@@ -577,8 +592,10 @@ def cancel_order(request, order_id):
         with db_transaction.atomic():
             # Refund buyer
             buyer = order.buyer
-            buyer.balance += order.price
-            buyer.save(update_fields=['balance'])
+            User.objects.filter(pk=buyer.pk).update(
+                balance=F('balance') + order.price
+            )
+            buyer.refresh_from_db(fields=['balance'])
             
             # Update order status
             order.status = 'cancelled'
