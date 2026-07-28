@@ -26,7 +26,12 @@ from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (
+    SAFE_METHODS,
+    AllowAny,
+    IsAdminUser,
+    IsAuthenticated,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
@@ -818,8 +823,14 @@ class ClassifiedCategoryPagination(PageNumberPagination):
 class GetClassifiedCategories(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by("-is_featured", "-updated_at")
     serializer_class = ClassifiedServicesSerializer
-    permission_classes = [AllowAny]
     pagination_class = ClassifiedCategoryPagination
+
+    # Listing is public; creating a category is a staff action. AllowAny here
+    # let anyone add categories to the public taxonomy.
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser()]
 
     def get_queryset(self):
         """
@@ -863,9 +874,16 @@ class ClassifiedCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = ClassifiedCategory.objects.all()
     serializer_class = ClassifiedServicesSerializer
-    # For reading; you might want IsAdminUser for writing
-    permission_classes = [AllowAny]
     lookup_field = "slug"
+
+    # Reads are public; writes are staff-only. With AllowAny on the whole view
+    # an unauthenticated DELETE removed a category outright (verified: the
+    # table went 37 -> 36), which would take the classifieds taxonomy — and
+    # every listing filed under it — down site-wide.
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser()]
 
 
 class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
