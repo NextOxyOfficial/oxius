@@ -28,6 +28,9 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   int _currentPage = 1;
   bool _hasMore = true;
   String _selectedFilter = 'all'; // all, pending, approved, rejected
+  // Server-side total for the ACTIVE filter. Shown in the summary bar because
+  // it is the only count that stays true — _tasks holds just the loaded pages.
+  int _totalCount = 0;
 
   String t(String key) => _translationService.translate(key);
 
@@ -81,6 +84,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
       setState(() {
         _tasks = response['tasks'] as List<MicroGigTask>;
         _hasMore = response['hasMore'] as bool;
+        _totalCount = (response['count'] as int?) ?? 0;
         _isLoading = false;
       });
     }
@@ -100,6 +104,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
       setState(() {
         _tasks.addAll(response['tasks'] as List<MicroGigTask>);
         _hasMore = response['hasMore'] as bool;
+        _totalCount = (response['count'] as int?) ?? _totalCount;
         _currentPage++;
         _isLoadingMore = false;
       });
@@ -326,22 +331,46 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                         children: [
                           AdsyRefreshIndicator(
                             onRefresh: () => _loadPendingTasks(isRefresh: true),
+                            // index 0 = summary bar, 1 = the list surface,
+                            // 2 = loader. Rows live INSIDE one card so they
+                            // read as a continuous list, not stacked boxes.
                             child: ListView.builder(
                               controller: _scrollController,
-                              padding: const EdgeInsets.fromLTRB(4, 8, 4, 80),
-                              itemCount: _tasks.length + (_hasMore ? 1 : 0),
+                              padding: const EdgeInsets.fromLTRB(0, 4, 0, 80),
+                              itemCount: 2 + (_hasMore ? 1 : 0),
                               itemBuilder: (context, index) {
-                                if (index == _tasks.length) {
-                                  // Loading indicator at the bottom
-                                  return const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(16),
-                                      child: AdsyLoadingIndicator(),
+                                if (index == 0) return _buildSummaryBar();
+                                if (index == 1) {
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: const Color(0xFFE2E8F0),
+                                      ),
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Column(
+                                      children: [
+                                        for (var i = 0;
+                                            i < _tasks.length;
+                                            i++)
+                                          _buildTaskRow(
+                                            _tasks[i],
+                                            isLast: i == _tasks.length - 1,
+                                          ),
+                                      ],
                                     ),
                                   );
                                 }
-                                final task = _tasks[index];
-                                return _buildTaskCard(task);
+                                return const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: AdsyLoadingIndicator(),
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -355,155 +384,261 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     );
   }
 
-  Widget _buildTaskCard(MicroGigTask task) {
-    Color statusColor;
-    if (task.approved) {
-      statusColor = const Color(0xFF10B981);
-    } else if (task.rejected) {
-      statusColor = const Color(0xFFEF4444);
-    } else {
-      statusColor = const Color(0xFFF59E0B);
-    }
+  /// Summary bar — the ONE number that is genuinely known for the active
+  /// filter. _tasks only holds the pages loaded so far, so anything summed
+  /// from it (earnings, per-status counts) would understate as you scroll;
+  /// the server's count for this filter does not.
+  Widget _buildSummaryBar() {
+    final label = {
+          'all': 'সর্বমোট টাস্ক',
+          'pending': 'অপেক্ষমাণ',
+          'approved': 'অনুমোদিত',
+          'rejected': 'বাতিল',
+        }[_selectedFilter] ??
+        'সর্বমোট টাস্ক';
+    final tone = {
+          'pending': const Color(0xFFF59E0B),
+          'approved': const Color(0xFF10B981),
+          'rejected': const Color(0xFFEF4444),
+        }[_selectedFilter] ??
+        const Color(0xFF2563EB);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
-      ),
-      child: InkWell(
-        onTap: () => _showTaskDetails(task),
+        color: tone.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.assignment_turned_in_outlined, size: 17, color: tone),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: tone.withValues(alpha: 0.95),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            '$_totalCount',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: tone,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Relative submit time — when a submission was made was missing entirely,
+  /// which is the thing you actually want when scanning the list.
+  String _relativeTime(DateTime d) {
+    final diff = DateTime.now().difference(d);
+    if (diff.inMinutes < 1) return 'এইমাত্র';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} মিনিট আগে';
+    if (diff.inHours < 24) return '${diff.inHours} ঘণ্টা আগে';
+    if (diff.inDays < 30) return '${diff.inDays} দিন আগে';
+    final months = diff.inDays ~/ 30;
+    if (months < 12) return '$months মাস আগে';
+    return '${diff.inDays ~/ 365} বছর আগে';
+  }
+
+  /// One row of the submissions list.
+  ///
+  /// Deliberately NOT a detached card: rows sit on a single surface separated
+  /// by hairlines, with a coloured status rail down the left edge. That reads
+  /// as one continuous list rather than a stack of boxes, and leaves room for
+  /// the detail that was missing before — when it was submitted, why it was
+  /// rejected, and whether proof was attached.
+  Widget _buildTaskRow(MicroGigTask task, {required bool isLast}) {
+    late final Color statusColor;
+    late final String statusLabel;
+    late final IconData statusIcon;
+    if (task.approved) {
+      statusColor = const Color(0xFF10B981);
+      statusLabel = 'অনুমোদিত';
+      statusIcon = Icons.check_circle_rounded;
+    } else if (task.rejected) {
+      statusColor = const Color(0xFFEF4444);
+      statusLabel = 'বাতিল';
+      statusIcon = Icons.cancel_rounded;
+    } else {
+      statusColor = const Color(0xFFF59E0B);
+      statusLabel = 'অপেক্ষমাণ';
+      statusIcon = Icons.schedule_rounded;
+    }
+
+    final hasProof = (task.taskCompletionLink ?? '').trim().isNotEmpty ||
+        task.mediaUrls.isNotEmpty;
+
+    return InkWell(
+      onTap: () => _showTaskDetails(task),
+      child: Container(
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : const Border(
+                  bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+                ),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Title and Status Row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      task.gigTitle ?? 'Untitled Gig',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF1E293B),
-                        height: 1.4,
+              // Status rail — colour tells you the outcome before you read.
+              Container(width: 3, color: statusColor.withValues(alpha: 0.85)),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              task.gigTitle ?? 'Untitled Gig',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF0F172A),
+                                height: 1.35,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            '৳${task.gigPrice.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w800,
+                              color: task.approved
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF334155),
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: statusColor.withValues(alpha: 0.3),
-                        width: 1,
+                      const SizedBox(height: 7),
+                      Row(
+                        children: [
+                          Icon(statusIcon, size: 13, color: statusColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            statusLabel,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: statusColor,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 3,
+                            height: 3,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFCBD5E1),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              _relativeTime(task.createdAt),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ),
+                          if (hasProof) ...[
+                            const SizedBox(width: 8),
+                            const Icon(Icons.attachment_rounded,
+                                size: 13, color: Color(0xFF94A3B8)),
+                          ],
+                          const Spacer(),
+                          const Icon(Icons.chevron_right_rounded,
+                              size: 17, color: Color(0xFFCBD5E1)),
+                        ],
                       ),
-                    ),
-                    child: Text(
-                      task.status,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Price and Auto-approval countdown row
-              Row(
-                children: [
-                  // Price
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.payments_outlined,
-                          size: 16,
-                          color: Color(0xFF10B981),
+                      // Pending: the auto-approval clock is the single most
+                      // useful thing to know, so it stays on the row.
+                      if (!task.approved && !task.rejected) ...[
+                        const SizedBox(height: 7),
+                        Row(
+                          children: [
+                            Icon(
+                              task.is48HoursPassed
+                                  ? Icons.check_circle_outline_rounded
+                                  : Icons.timer_outlined,
+                              size: 13,
+                              color: task.is48HoursPassed
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFF59E0B),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              task.is48HoursPassed
+                                  ? 'স্বয়ংক্রিয় অনুমোদন সম্পন্ন'
+                                  : 'স্বয়ংক্রিয় অনুমোদন ${_formatCountdown(task)}',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: task.is48HoursPassed
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFF59E0B),
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures()
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '৳${task.gigPrice.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF10B981),
+                      ],
+                      // Rejected: show WHY inline instead of making the user
+                      // open the row to find out.
+                      if (task.rejected &&
+                          (task.reason ?? '').trim().isNotEmpty) ...[
+                        const SizedBox(height: 7),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 6),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(7),
+                          ),
+                          child: Text(
+                            task.reason!.trim(),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              height: 1.35,
+                              color: Color(0xFFB91C1C),
+                            ),
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-
-                  // Auto-approval countdown for pending tasks
-                  if (!task.approved && !task.rejected) ...[
-                    const Spacer(),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          task.is48HoursPassed
-                              ? Icons.check_circle
-                              : Icons.timer,
-                          size: 14,
-                          color: task.is48HoursPassed
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFFF59E0B),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Auto-Approval: ',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          task.is48HoursPassed
-                              ? 'Done'
-                              : _formatCountdown(task),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: task.is48HoursPassed
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFF59E0B),
-                            fontFeatures: const [
-                              FontFeature.tabularFigures(),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
+                ),
               ),
             ],
           ),
