@@ -167,7 +167,12 @@ urlpatterns = [
     path("get-user-nid/", get_nid),
     path("add-user-nid/", add_nid),
     path("update-user-nid/", update_nid),
-    path("admin-notice/", AdminMessage.as_view()),
+    # NOTE: "admin-notice/" is already routed above to getAdminNotice, which
+    # scopes results to global notices + the caller's own. A second pattern for
+    # the same path was unreachable (Django takes the first match) but would
+    # have served AdminNotice.objects.all() — every user's withdraw, deposit,
+    # transfer and KYC notices — to any logged-in caller the moment the order
+    # changed. Removed rather than left armed.
     path(
         "admin-notice/<int:notice_id>/mark-read/",
         markAdminNoticeAsRead,
