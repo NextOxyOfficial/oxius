@@ -875,7 +875,12 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     pagination_class = None  # Disable pagination for Vue compatibility
 
 
-class GetMicroGigs(generics.ListCreateAPIView):
+class GetMicroGigs(generics.ListAPIView):
+    # Read-only. This was a ListCreateAPIView with AllowAny, so ANY caller —
+    # signed out included — could POST a gig here, bypassing the balance
+    # charge, the KYC gate and the owner assignment that post_micro_gigs()
+    # applies. No client ever used it to create (web and app both POST to
+    # /post-micro-gigs/); it only ever served the listing.
     serializer_class = MicroGigPostSerializer
     permission_classes = [AllowAny]
     # Backward-compatible: app paginates via page/page_size, homepage via
