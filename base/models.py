@@ -951,6 +951,13 @@ class MicroGigPostTask(models.Model):
             self.save()
 
     def save(self, *args, **kwargs):
+        # Whether this is the first write. The funds-reservation block below
+        # used to run on EVERY save of a still-pending task, so re-saving one
+        # (update_micro_gig_post_tasks saves a task even when the payload sets
+        # neither approved nor rejected) deducted the gig again and credited
+        # the worker's pending_balance again — repeatable at will.
+        is_new = self._state.adding
+
         if (
             self.is_48_hours_passed
             and not self.completed
@@ -958,8 +965,19 @@ class MicroGigPostTask(models.Model):
             and not self.rejected
         ):
             self.approved = True
-        # Check if task is neither completed, approved, nor rejected
-        if not self.completed and not self.approved and not self.rejected:
+        # Reserve the payout once, when the submission is first created.
+        if is_new and not self.completed and not self.approved and not self.rejected:
+            # The gig must actually be able to pay. Without these guards
+            # gig.balance went negative while workers still accrued
+            # pending_balance — real money against an unfunded gig.
+            if self.gig.filled_quantity >= self.gig.required_quantity:
+                raise ValidationError(
+                    "এই কাজের সব স্লট ইতিমধ্যে পূর্ণ হয়ে গেছে।"
+                )
+            if self.gig.balance < self.gig.price:
+                raise ValidationError(
+                    "এই কাজে পর্যাপ্ত ব্যালেন্স নেই — বিজ্ঞাপনদাতাকে টপ-আপ করতে হবে।"
+                )
             self.gig.filled_quantity += 1
             self.gig.balance -= self.gig.price
             self.gig.save()
