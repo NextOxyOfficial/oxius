@@ -1007,7 +1007,7 @@ class _PostCardState extends State<PostCard> {
     final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
     final previewPostContent = _showFullContent
         ? plainPostContent
-        : HtmlContentUtils.previewText(plainPostContent, 160);
+        : HtmlContentUtils.previewText(plainPostContent, 320);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1083,13 +1083,13 @@ class _PostCardState extends State<PostCard> {
                             context,
                             onMentionTap: _handleMentionTap,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w400,
                               color: Color(0xFF111827),
                               height: 1.55,
                             ),
                           ),
-                          if (plainPostContent.length > 160)
+                          if (plainPostContent.length > 320)
                             WidgetSpan(
                               alignment: PlaceholderAlignment.baseline,
                               baseline: TextBaseline.alphabetic,
@@ -1103,9 +1103,9 @@ class _PostCardState extends State<PostCard> {
                                       ? '  কম পড়ুন'
                                       : '  আরো পড়ুন',
                                   style: const TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF6366F1),
+                                    color: Color(0xFF6B7280),
                                     height: 1.55,
                                   ),
                                 ),

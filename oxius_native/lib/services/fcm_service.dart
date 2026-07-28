@@ -281,6 +281,9 @@ class _CallkitLifecycleObserver extends WidgetsBindingObserver {
       // When user taps the CallKit notification, Android may resume the app without
       // triggering FCM onMessageOpenedApp. Check active calls and navigate.
       FCMService._tryNavigateToActiveCallkitCall();
+      // A device that failed to register for VoIP pushes cannot be called at
+      // all, so every return to the foreground is another chance to fix it.
+      unawaited(FCMService._ensureVoipTokenRegistered());
     }
   }
 }
@@ -1163,7 +1166,7 @@ class FCMService {
           await _getPersistedFcmToken() ??
           await _resolveUsableFcmToken();
       if (token == null || token.isEmpty) {
-        await _syncVoipTokenWithBackend();
+        unawaited(_ensureVoipTokenRegistered());
         _log('❌ Cannot sync token: FCM token is null/empty');
         return;
       }
@@ -1171,7 +1174,7 @@ class FCMService {
       _fcmToken = token;
       await _persistFcmToken(token);
       await _sendTokenToBackend(token);
-      await _syncVoipTokenWithBackend();
+      unawaited(_ensureVoipTokenRegistered());
     } catch (e) {
       _log('❌ Error syncing FCM token: $e');
     }
@@ -1255,9 +1258,9 @@ class FCMService {
       if (_fcmToken != null) {
         _log('📤 Sending FCM token to backend...');
         await _sendTokenToBackend(_fcmToken!);
-        await _syncVoipTokenWithBackend();
+        unawaited(_ensureVoipTokenRegistered());
       } else {
-        await _syncVoipTokenWithBackend();
+        unawaited(_ensureVoipTokenRegistered());
         _log('❌ Failed to get FCM token');
       }
 
@@ -3081,6 +3084,40 @@ class FCMService {
   }
 
   /// Send iOS VoIP token to backend for PushKit/CallKit wakeups.
+  /// Poll for the PushKit token until it exists, then upload it.
+  ///
+  /// PKPushRegistry hands over credentials on its own schedule — sometimes
+  /// before Dart has a listener attached. One attempt at startup therefore
+  /// misses it on most warm starts, which is how 40 of 68 iOS devices ended
+  /// up unable to receive a call. These retries cost nothing (a plugin
+  /// getter) and stop at the first success.
+  static Future<void> _ensureVoipTokenRegistered() async {
+    if (!Platform.isIOS) return;
+    const waits = [
+      Duration.zero,
+      Duration(seconds: 2),
+      Duration(seconds: 5),
+      Duration(seconds: 12),
+      Duration(seconds: 30),
+      Duration(seconds: 60),
+    ];
+    for (final wait in waits) {
+      if (wait > Duration.zero) await Future<void>.delayed(wait);
+      try {
+        final raw = (await FlutterCallkitIncoming.getDevicePushTokenVoIP())
+            ?.toString()
+            .trim();
+        if (raw != null && raw.isNotEmpty) {
+          await _syncVoipTokenWithBackend(raw);
+          return;
+        }
+      } catch (_) {
+        // Plugin not ready — the next pass will try again.
+      }
+    }
+    _log('   VoIP token never became available on this launch');
+  }
+
   static Future<void> _syncVoipTokenWithBackend([String? providedToken]) async {
     if (!Platform.isIOS) {
       return;
@@ -3106,7 +3143,17 @@ class FCMService {
       final uploadKey = '$currentUserId:$voipToken:${fcmToken ?? ''}';
 
       final prefs = await SharedPreferences.getInstance();
-      if (prefs.getString(_lastVoipUploadedKey) == uploadKey) {
+      // Re-send at least weekly even when nothing changed: a token row can be
+      // cleared or deactivated server-side, and a permanent local "already
+      // uploaded" flag would leave this device unreachable for calls with no
+      // way to notice.
+      const freshFor = Duration(days: 7);
+      final lastKey = prefs.getString(_lastVoipUploadedKey);
+      final lastAt = prefs.getInt('${_lastVoipUploadedKey}_at') ?? 0;
+      final stillFresh = DateTime.now()
+              .difference(DateTime.fromMillisecondsSinceEpoch(lastAt)) <
+          freshFor;
+      if (lastKey == uploadKey && stillFresh) {
         return;
       }
 
@@ -3129,6 +3176,8 @@ class FCMService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await prefs.setString(_lastVoipUploadedKey, uploadKey);
+        await prefs.setInt(
+            '${_lastVoipUploadedKey}_at', DateTime.now().millisecondsSinceEpoch);
         _log('   VoIP token sent to backend successfully');
       } else {
         _log('   Failed to send VoIP token: ${response.statusCode}');

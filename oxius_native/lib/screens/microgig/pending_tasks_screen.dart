@@ -18,8 +18,6 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   List<MicroGigTask> _tasks = [];
   bool _isLoading = true;
   bool _isLoadingMore = false;
-  MicroGigTask? _selectedTask;
-  bool _showDetails = false;
   final TranslationService _translationService = TranslationService();
   Timer? _timer;
   final ScrollController _scrollController = ScrollController();
@@ -147,10 +145,26 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   }
 
   void _showTaskDetails(MicroGigTask task) {
-    setState(() {
-      _selectedTask = task;
-      _showDetails = true;
-    });
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      builder: (_) => _buildTaskDetailsSheet(task),
+    );
+  }
+
+  /// English throughout — the filter tabs above the list are already
+  /// All/Pending/Approved/Rejected, so Bangla row labels read inconsistently.
+  String _statusLabel(MicroGigTask task) {
+    if (task.approved) return 'Approved';
+    if (task.rejected) return 'Rejected';
+    return 'Pending';
   }
 
   Widget _buildFilterTabs() {
@@ -374,8 +388,6 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                               },
                             ),
                           ),
-                          if (_showDetails && _selectedTask != null)
-                            _buildTaskDetailsOverlay(),
                         ],
                       ),
           ),
@@ -389,13 +401,14 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   /// from it (earnings, per-status counts) would understate as you scroll;
   /// the server's count for this filter does not.
   Widget _buildSummaryBar() {
+    // English to match the filter tabs and the row labels.
     final label = {
-          'all': 'সর্বমোট টাস্ক',
-          'pending': 'অপেক্ষমাণ',
-          'approved': 'অনুমোদিত',
-          'rejected': 'বাতিল',
+          'all': 'Total Tasks',
+          'pending': 'Pending',
+          'approved': 'Approved',
+          'rejected': 'Rejected',
         }[_selectedFilter] ??
-        'সর্বমোট টাস্ক';
+        'Total Tasks';
     final tone = {
           'pending': const Color(0xFFF59E0B),
           'approved': const Color(0xFF10B981),
@@ -459,21 +472,18 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   /// rejected, and whether proof was attached.
   Widget _buildTaskRow(MicroGigTask task, {required bool isLast}) {
     late final Color statusColor;
-    late final String statusLabel;
     late final IconData statusIcon;
     if (task.approved) {
       statusColor = const Color(0xFF10B981);
-      statusLabel = 'অনুমোদিত';
       statusIcon = Icons.check_circle_rounded;
     } else if (task.rejected) {
       statusColor = const Color(0xFFEF4444);
-      statusLabel = 'বাতিল';
       statusIcon = Icons.cancel_rounded;
     } else {
       statusColor = const Color(0xFFF59E0B);
-      statusLabel = 'অপেক্ষমাণ';
       statusIcon = Icons.schedule_rounded;
     }
+    final statusLabel = _statusLabel(task);
 
     final hasProof = (task.taskCompletionLink ?? '').trim().isNotEmpty ||
         task.mediaUrls.isNotEmpty;
@@ -488,15 +498,8 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                   bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1),
                 ),
         ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Status rail — colour tells you the outcome before you read.
-              Container(width: 3, color: statusColor.withValues(alpha: 0.85)),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 13, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -637,179 +640,197 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                         ),
                       ],
                     ],
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTaskDetailsOverlay() {
-    return GestureDetector(
-      onTap: () => setState(() => _showDetails = false),
-      child: Container(
-        color: Colors.black54,
-        child: Center(
-          child: GestureDetector(
-            onTap: () {}, // Prevent closing when tapping on card
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              constraints: const BoxConstraints(maxWidth: 600),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _selectedTask!.gigTitle ?? 'Task Details',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => setState(() => _showDetails = false),
-                        ),
-                      ],
+  /// Task details as a bottom sheet.
+  ///
+  /// Was a centre-screen dialog drawn as an overlay inside the page's Stack,
+  /// which meant it didn't participate in navigation: the system back gesture
+  /// dismissed the whole screen instead of the dialog. A real modal sheet pops
+  /// like anything else and matches the rest of the app.
+  Widget _buildTaskDetailsSheet(MicroGigTask task) {
+    late final Color statusColor;
+    if (task.approved) {
+      statusColor = const Color(0xFF10B981);
+    } else if (task.rejected) {
+      statusColor = const Color(0xFFEF4444);
+    } else {
+      statusColor = const Color(0xFFF59E0B);
+    }
+
+    return SafeArea(
+      top: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Grab handle
+          Container(
+            margin: const EdgeInsets.only(top: 10, bottom: 6),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 6, 10, 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    task.gigTitle ?? 'Task Details',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                      height: 1.3,
                     ),
                   ),
-                  // Content
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  color: const Color(0xFF64748B),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDetailRow(
+                          'Status',
+                          _statusLabel(task),
+                          statusColor,
+                        ),
+                      ),
+                      Text(
+                        '৳${task.gigPrice.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: task.approved
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF334155),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  _buildDetailRow('Submitted', _formatDate(task.createdAt)),
+                  if ((task.submitDetails ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Submission Details',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(11),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: LinkifyText(
+                        _stripHtmlTags(task.submitDetails!),
+                        style: const TextStyle(fontSize: 13.5, height: 1.45),
+                      ),
+                    ),
+                  ],
+                  if (task.mediaUrls.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Attached Proof',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: task.mediaUrls
+                          .map((url) => ClipRRect(
+                                borderRadius: BorderRadius.circular(9),
+                                child: Image.network(
+                                  url,
+                                  height: 110,
+                                  width: 110,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stack) {
+                                    return Container(
+                                      height: 110,
+                                      width: 110,
+                                      color: const Color(0xFFF1F5F9),
+                                      child: const Icon(Icons.image_outlined,
+                                          color: Color(0xFF94A3B8)),
+                                    );
+                                  },
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ],
+                  if (task.rejected &&
+                      (task.reason ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(11),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(9),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildDetailRow(
-                            'Status',
-                            _selectedTask!.status,
-                            _selectedTask!.approved
-                                ? Colors.green
-                                : _selectedTask!.rejected
-                                    ? Colors.red
-                                    : Colors.orange,
+                          const Text(
+                            'Rejection Reason',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFB91C1C),
+                            ),
                           ),
-                          const SizedBox(height: 12),
-                          _buildDetailRow(
-                            'Created',
-                            _formatDate(_selectedTask!.createdAt),
+                          const SizedBox(height: 6),
+                          Text(
+                            task.reason!.trim(),
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              height: 1.45,
+                              color: Color(0xFF7F1D1D),
+                            ),
                           ),
-                          if (_selectedTask!.submitDetails != null) ...[
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Submission Details:',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[50],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey[300]!),
-                              ),
-                              child: LinkifyText(
-                                _stripHtmlTags(_selectedTask!.submitDetails!),
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ),
-                          ],
-                          if (_selectedTask!.mediaUrls.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Media:',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: _selectedTask!.mediaUrls
-                                  .map((url) => ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(
-                                          url,
-                                          height: 120,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stack) {
-                                            return Container(
-                                              height: 120,
-                                              width: 120,
-                                              color: Colors.grey[200],
-                                              child: const Icon(Icons.image),
-                                            );
-                                          },
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
-                          ],
-                          if (_selectedTask!.rejected &&
-                              _selectedTask!.reason != null) ...[
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: Colors.red.withValues(alpha: 0.3)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Rejected Reason:',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _selectedTask!.reason!,
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
