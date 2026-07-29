@@ -73,8 +73,16 @@ def human_text(text):
             _b64.b64decode(raw[len(marker):].strip()).decode("utf-8")
         )
     except Exception:
-        return ""
-    return str(payload.get("m") or "").strip()
+        # Undecodable envelope: scan the raw body rather than exempting it —
+        # a blanket pass here made "ADSYPOST::<garbage><spam>" unfilterable.
+        return raw
+    # Every field a sender can influence, not just their typed words: the
+    # caption/name/url describe a post the SENDER may have authored, which
+    # made the envelope a spam container the filter never opened.
+    parts = [
+        str(payload.get(key) or "").strip() for key in ("m", "c", "n", "u")
+    ]
+    return " ".join(p for p in parts if p)
 
 
 def classify_message(text):

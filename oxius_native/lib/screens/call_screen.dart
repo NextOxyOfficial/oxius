@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'dart:io' show Platform;
+
 import '../services/agora_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
@@ -583,7 +585,13 @@ class _CallScreenState extends State<CallScreen>
 
     // 2. Stop ringtone/vibration (fire-and-forget for instant UX).
     unawaited(_stopIncomingAlert());
-    unawaited(FCMService.dismissVisibleCallUi(channelName: widget.channelName));
+    // iOS: the CallKit call must OUTLIVE the accept — CallKit owns the audio
+    // session, and ending it here tears that session down under Agora. This
+    // is the same defect _handleCallAccepted had; this path had it too.
+    unawaited(FCMService.dismissVisibleCallUi(
+      channelName: widget.channelName,
+      endCallKit: !Platform.isIOS,
+    ));
 
     // 3. Update UI immediately — show "Connecting…" state.
     if (!mounted) return;

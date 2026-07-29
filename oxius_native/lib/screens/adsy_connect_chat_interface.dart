@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io' show File, Platform;
 
 import 'package:flutter/cupertino.dart' show CupertinoPageRoute;
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,6 +24,8 @@ import '../utils/network_error_handler.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
 import '../services/house_ads_service.dart';
+import '../utils/download_open_utils.dart';
+import '../utils/gallery_saver.dart';
 import '../utils/media_headers.dart';
 import '../widgets/chat/chat_media_viewer.dart';
 import '../utils/shared_post_message.dart';
@@ -110,6 +114,10 @@ class AdsyConnectChatInterface extends StatefulWidget {
   /// so a MaterialPageRoute here meant the chat was the one screen you could
   /// not swipe out of. This gives the gesture back for this route alone,
   /// without touching the theme everything else builds against.
+  /// Whether [chatroomId]'s route is currently on a navigator stack.
+  static bool isRouteOpen(String chatroomId) =>
+      _openRouteNames.contains(routeNameFor(chatroomId));
+
   static CupertinoPageRoute<T> _chatRoute<T>({
     required String chatroomId,
     required String userId,
@@ -204,6 +212,12 @@ class AdsyConnectChatInterface extends StatefulWidget {
     try {
       await _waitForCurrentRouteToSettle(context);
       if (!context.mounted) return null;
+
+      // The registry initState/dispose maintain is finally consulted: the
+      // same chat must never sit on the stack twice.
+      if (_openRouteNames.contains(routeNameFor(chatroomId))) {
+        return null;
+      }
 
       final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
 
@@ -1933,8 +1947,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _showEditMessageDialog(Map<String, dynamic> message) {
-    final currentText =
+    final rawContent =
         (message['message'] ?? message['content'] ?? '').toString();
+    // Editing a shared post edits the WORDS on it, not the envelope — the
+    // field used to open full of "ADSYPOST::eyJ…" and saving destroyed the
+    // card.
+    final sharedShell = SharedPostMessage.tryDecode(rawContent);
+    final currentText = sharedShell != null ? sharedShell.text : rawContent;
     final editController = TextEditingController(text: currentText);
 
     showDialog(
@@ -2044,6 +2063,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
                         Navigator.pop(context);
 
+                        // A share keeps its card; only the words change.
+                        final contentToStore = sharedShell != null
+                            ? sharedShell.withText(newText).encode()
+                            : newText;
+
                         // Update UI immediately
                         if (mounted) {
                           setState(() {
@@ -2052,8 +2076,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                             if (index != -1) {
                               _messages[index] = {
                                 ..._messages[index],
-                                'message': newText,
-                                'content': newText,
+                                'message': contentToStore,
+                                'content': contentToStore,
                                 'isEdited': true,
                               };
                               _messages =
@@ -2066,7 +2090,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         try {
                           await AdsyConnectService.editMessage(
                             message['id'].toString(),
-                            newText,
+                            contentToStore,
                           );
 
                           if (context.mounted) {
@@ -2588,7 +2612,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
 
-      // Clear selected images after sending
+      // Remember the count BEFORE clearing — the toast used to read the
+      // just-cleared list and always announced "0 photos".
+      final sentCount = _compressedImages.length;
       setState(() {
         _selectedImages.clear();
         _compressedImages.clear();
@@ -2596,8 +2622,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       });
 
       if (mounted) {
-        AdsyToast.success(
-            context, '${_compressedImages.length} photos sent successfully');
+        AdsyToast.success(context, '$sentCount photos sent successfully');
       }
     } catch (e) {
       setState(() => _isSendingMessage = false);
@@ -3559,11 +3584,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       context,
       items: media,
       initialIndex: initial,
-      onLongPress: (item) => _showImageOptions(item.url),
+      onLongPress: (item) =>
+          _showImageOptions(item.url, isVideo: item.isVideo),
     );
   }
 
-  void _showImageOptions(String filePath) {
+  void _showImageOptions(String filePath, {bool isVideo = false}) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -3577,10 +3603,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             ListTile(
               leading:
                   const Icon(Icons.download_rounded, color: Color(0xFF111827)),
-              title: const Text('Download Image'),
+              title: Text(isVideo ? 'Save Video' : 'Save Image'),
               onTap: () async {
                 Navigator.pop(context);
-                await _downloadImage(filePath);
+                await _downloadImage(filePath, isVideo: isVideo);
               },
             ),
             const Divider(height: 1),
@@ -3621,16 +3647,56 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     );
   }
 
-  Future<void> _downloadImage(String imageUrl) async {
+  /// Really save the media. This used to be a stub that waited one second and
+  /// announced success — the file never left the server.
+  Future<void> _downloadImage(String imageUrl, {bool isVideo = false}) async {
+    final url = imageUrl.startsWith('http')
+        ? imageUrl
+        : AppConfig.getAbsoluteUrl(imageUrl);
+    if (url.isEmpty) {
+      AdsyToast.error(context, 'মিডিয়াটি পাওয়া যায়নি');
+      return;
+    }
     try {
-      AdsyToast.info(context, 'Downloading image...');
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        AdsyToast.success(context, 'Image downloaded successfully!');
+      AdsyToast.info(
+          context, isVideo ? 'ভিডিও সেভ হচ্ছে…' : 'ছবি সেভ হচ্ছে…');
+
+      // App-private cache first (no storage permission needed), then hand the
+      // file to the platform — same pattern as the BN media downloader.
+      final ext = isVideo ? 'mp4' : 'jpg';
+      final fileName =
+          'adsyconnect_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final cacheDir = await getTemporaryDirectory();
+      final cachePath = '${cacheDir.path}/$fileName';
+
+      final res = await http
+          .get(Uri.parse(url), headers: kMediaHeaders)
+          .timeout(const Duration(minutes: 2));
+      if (res.statusCode != 200 || res.bodyBytes.isEmpty) {
+        throw Exception('HTTP ${res.statusCode}');
+      }
+      await File(cachePath).writeAsBytes(res.bodyBytes);
+      if (!mounted) return;
+
+      if (Platform.isAndroid) {
+        // Into the gallery via MediaStore so it shows in Photos.
+        await GallerySaver.saveToGallery(
+          sourcePath: cachePath,
+          fileName: fileName,
+          isVideo: isVideo,
+        );
+        if (!mounted) return;
+        AdsyToast.success(
+            context, isVideo ? 'ভিডিও গ্যালারিতে সেভ হয়েছে' : 'ছবি গ্যালারিতে সেভ হয়েছে');
+      } else {
+        // iOS/others: open with the system handler, which offers Save.
+        await DownloadOpenUtils.openFile(context, cachePath);
       }
     } catch (e) {
+      debugPrint('chat media save failed: $e');
       if (mounted) {
-        AdsyToast.error(context, 'ছবি ডাউনলোড করা যায়নি');
+        AdsyToast.error(
+            context, isVideo ? 'ভিডিও সেভ করা যায়নি' : 'ছবি সেভ করা যায়নি');
       }
     }
   }

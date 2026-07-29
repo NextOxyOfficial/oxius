@@ -335,9 +335,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ? contentText
               : rawContent.replaceAll(' ', ' ').trim())
           : null,
-      images: hasImages ? _selectedImages : null,
+      // COPIES, not the draft's own lists: ComposerDraft.clear() below
+      // empties those exact objects while the background upload is still
+      // reading them — every post silently lost its images and tags.
+      images: hasImages ? List<String>.of(_selectedImages) : null,
       videoPaths: videoPathList,
-      tags: hasTags ? _hashtags : null,
+      tags: hasTags ? List<String>.of(_hashtags) : null,
       visibility: _visibility,
     );
 

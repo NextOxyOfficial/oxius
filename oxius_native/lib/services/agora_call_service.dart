@@ -584,6 +584,10 @@ class AgoraCallService {
       }
 
       final headers = await ApiService.getHeaders();
+      // A fresh call starts optimistic — the previous call's verdict must
+      // not paint this one's UI.
+      lastCallReachable = true;
+      lastRingChannel = '';
       final callerName = [currentUser.firstName, currentUser.lastName]
           .where((value) => value != null && value.isNotEmpty)
           .join(' ');

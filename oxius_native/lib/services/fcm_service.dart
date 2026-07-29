@@ -2185,7 +2185,13 @@ class FCMService {
   /// Dismiss visible native call surfaces without touching call-state tracking.
   /// Used when the app opens its own CallScreen so the native ringtone cannot
   /// keep ringing behind the in-app accept/decline controls.
-  static Future<void> dismissVisibleCallUi({String? channelName}) async {
+  /// [endCallKit] false keeps the native CallKit call alive — required on
+  /// iOS after an accept, where ending it destroys the audio session the
+  /// call is about to use.
+  static Future<void> dismissVisibleCallUi({
+    String? channelName,
+    bool endCallKit = true,
+  }) async {
     try {
       if (channelName != null && channelName.isNotEmpty) {
         await _localNotifications.cancel(
@@ -2205,6 +2211,8 @@ class FCMService {
     try {
       Vibration.cancel();
     } catch (_) {}
+
+    if (!endCallKit) return;
 
     try {
       final calls = await FlutterCallkitIncoming.activeCalls();

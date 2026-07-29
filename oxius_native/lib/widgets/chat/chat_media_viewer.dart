@@ -81,6 +81,13 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
   late int _index = widget.initialIndex;
   double _dragOffset = 0;
 
+  /// True while the current photo is pinch-zoomed. The dismiss drag's
+  /// vertical recognizer wins the gesture arena against InteractiveViewer's
+  /// pan (its slop is half the size), so with the handlers attached a zoomed
+  /// photo could never be panned — one-finger drags moved the whole viewer.
+  /// While zoomed, the dismiss handlers are simply not registered.
+  bool _zoomed = false;
+
   @override
   void dispose() {
     _pages.dispose();
@@ -100,15 +107,18 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
       body: Stack(
         children: [
           GestureDetector(
-            onVerticalDragUpdate: (d) =>
-                setState(() => _dragOffset += d.delta.dy),
-            onVerticalDragEnd: (_) {
-              if (_dragOffset.abs() > 120) {
-                Navigator.of(context).maybePop();
-              } else {
-                setState(() => _dragOffset = 0);
-              }
-            },
+            onVerticalDragUpdate: _zoomed
+                ? null
+                : (d) => setState(() => _dragOffset += d.delta.dy),
+            onVerticalDragEnd: _zoomed
+                ? null
+                : (_) {
+                    if (_dragOffset.abs() > 120) {
+                      Navigator.of(context).maybePop();
+                    } else {
+                      setState(() => _dragOffset = 0);
+                    }
+                  },
             onLongPress: widget.onLongPress == null
                 ? null
                 : () => widget.onLongPress!(_current),
@@ -117,12 +127,20 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
               child: PageView.builder(
                 controller: _pages,
                 itemCount: widget.items.length,
-                onPageChanged: (i) => setState(() => _index = i),
+                onPageChanged: (i) => setState(() {
+                  _index = i;
+                  _zoomed = false;
+                }),
                 itemBuilder: (_, i) {
                   final item = widget.items[i];
                   return item.isVideo
-                      ? _VideoStage(url: item.url)
-                      : _PhotoStage(url: item.url);
+                      ? _VideoStage(url: item.url, active: i == _index)
+                      : _PhotoStage(
+                          url: item.url,
+                          onZoomChanged: (z) {
+                            if (z != _zoomed) setState(() => _zoomed = z);
+                          },
+                        );
                 },
               ),
             ),
@@ -205,15 +223,40 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
   }
 }
 
-class _PhotoStage extends StatelessWidget {
+class _PhotoStage extends StatefulWidget {
   final String url;
-  const _PhotoStage({required this.url});
+  final ValueChanged<bool>? onZoomChanged;
+  const _PhotoStage({required this.url, this.onZoomChanged});
+
+  @override
+  State<_PhotoStage> createState() => _PhotoStageState();
+}
+
+class _PhotoStageState extends State<_PhotoStage> {
+  final TransformationController _transform = TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    _transform.addListener(() {
+      widget.onZoomChanged
+          ?.call(_transform.value.getMaxScaleOnAxis() > 1.02);
+    });
+  }
+
+  @override
+  void dispose() {
+    _transform.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final url = widget.url;
     final isRemote = url.startsWith('http');
     return Center(
       child: InteractiveViewer(
+        transformationController: _transform,
         minScale: 1,
         maxScale: 4,
         child: isRemote
@@ -242,7 +285,12 @@ class _PhotoStage extends StatelessWidget {
 
 class _VideoStage extends StatefulWidget {
   final String url;
-  const _VideoStage({required this.url});
+
+  /// Whether this page is the one on screen. A page being swiped away is
+  /// still mounted, and with autoplay that meant two soundtracks at once.
+  final bool active;
+
+  const _VideoStage({required this.url, this.active = true});
 
   @override
   State<_VideoStage> createState() => _VideoStageState();
@@ -274,10 +322,22 @@ class _VideoStageState extends State<_VideoStage> {
         controller.dispose();
         return;
       }
-      await controller.play();
+      if (widget.active) await controller.play();
       setState(() => _ready = true);
     } catch (_) {
       if (mounted) setState(() => _failed = true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _VideoStage old) {
+    super.didUpdateWidget(old);
+    final c = _controller;
+    if (c == null || !_ready) return;
+    if (!widget.active && c.value.isPlaying) {
+      c.pause();
+    } else if (widget.active && old.active != widget.active) {
+      c.play();
     }
   }
 

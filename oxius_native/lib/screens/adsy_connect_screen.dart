@@ -518,7 +518,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _pollingTimer?.cancel();
     _onlineStatusTimer?.cancel();
     _realtimeSubscription?.cancel();
-    _removeActiveChatOverlay(refreshAfterClose: false);
+    // No navigator work from dispose — the element is deactivated and the
+    // ancestor lookup throws. The route cleans itself up.
+    _activeOverlayChatroomId = null;
     _peopleDebounce?.cancel();
     _chatSearchController.dispose();
     _listScrollController.dispose();
@@ -897,14 +899,18 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   /// incoming call, dispose, a tab switch). With the chat living on the
   /// navigator, "remove it" means "pop it if it is still on top".
   void _removeActiveChatOverlay({required bool refreshAfterClose}) {
-    final wasOpen = _activeOverlayChatroomId != null;
+    final openChatroomId = _activeOverlayChatroomId;
     _activeOverlayChatroomId = null;
-    if (wasOpen) {
+    // Pop ONLY when that chat's route is genuinely open — popping blindly
+    // closed whatever happened to be on top (a dialog, another screen) when
+    // this fired late or twice.
+    if (openChatroomId != null &&
+        AdsyConnectChatInterface.isRouteOpen(openChatroomId)) {
       final navigator = Navigator.maybeOf(context);
       if (navigator != null && navigator.canPop()) navigator.pop();
     }
     if (mounted) setState(() {});
-    if (refreshAfterClose && wasOpen && mounted) {
+    if (refreshAfterClose && openChatroomId != null && mounted) {
       unawaited(_refreshChats());
     }
   }

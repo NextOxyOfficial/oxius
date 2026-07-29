@@ -194,12 +194,12 @@ class _ProfileScreenState extends State<ProfileScreen>
       setState(() {
         _currentTabIndex = _tabController.index;
       });
-      // Load gigs when My Workspace tab is selected (index 1)
-      if (_currentTabIndex == 1 && _userGigs.isEmpty && !_isLoadingGigs) {
+      // Tab order is Posts | Photos | Shorts | My Workspace | Saved —
+      // these indices MUST follow _tabLabels/_buildCurrentTab.
+      if (_currentTabIndex == 3 && _userGigs.isEmpty && !_isLoadingGigs) {
         _loadUserGigs();
       }
-      // Load saved posts when Saved tab is selected (index 3)
-      if (_currentTabIndex == 3 && !_isLoadingSaved) {
+      if (_currentTabIndex == 4 && !_isLoadingSaved) {
         _loadSavedPosts();
       }
     }

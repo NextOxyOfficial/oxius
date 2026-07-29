@@ -64,6 +64,30 @@ def make_timestamp_id(model_cls):
     return f"{base[:6]}{uuid.uuid4().hex[:12]}"
 
 
+
+def save_with_pk_retry(instance, super_save, args, kwargs):
+    """First insert for a timestamp-keyed row.
+
+    make_timestamp_id checks-then-picks, which is not atomic: two requests in
+    the same minute can both choose the free base id, and the loser used to
+    surface IntegrityError as a 500. Retry with a fresh id — but ONLY when
+    the collision is on the primary key, so genuine constraint violations
+    (a duplicate like, a unique_together pair) still raise immediately.
+    """
+    from django.db import IntegrityError, transaction
+
+    for _ in range(3):
+        try:
+            with transaction.atomic():
+                return super_save(*args, **kwargs)
+        except IntegrityError as exc:
+            msg = str(exc).lower()
+            if not ('pkey' in msg or 'primary' in msg or '.id' in msg):
+                raise
+            instance.id = instance.generate_id()
+    return super_save(*args, **kwargs)
+
+
 class BusinessNetworkMedia(models.Model):
     MEDIA_TYPE_CHOICES = [
         ('image', 'Image'),
@@ -108,6 +132,8 @@ class BusinessNetworkMedia(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
     def ensure_thumbnail(self, force=False):
@@ -156,6 +182,8 @@ class BusinessNetworkMediaLike(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 class BusinessNetworkMediaComment(models.Model):
@@ -175,6 +203,8 @@ class BusinessNetworkMediaComment(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 class BusinessNetworkPostTag(models.Model):
@@ -193,6 +223,8 @@ class BusinessNetworkPostTag(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 class BusinessNetworkPost(models.Model):
@@ -300,6 +332,8 @@ class BusinessNetworkPostLike(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 class BusinessNetworkPostFollow(models.Model):
@@ -317,6 +351,8 @@ class BusinessNetworkPostFollow(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 class BusinessNetworkPostComment(models.Model):
@@ -342,6 +378,8 @@ class BusinessNetworkPostComment(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 
@@ -360,6 +398,8 @@ class UserSavedPosts(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 
@@ -376,6 +416,8 @@ class BusinessNetworkWorkspace(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -400,6 +442,8 @@ class BusinessNetworkFollowerModel(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 
@@ -415,6 +459,8 @@ class AbnAdsPanelCategory(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -432,6 +478,8 @@ class AbnAdsPanelMedia(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
     def __str__(self):
         return f"AbnAdsPanelMedia {self.id}"
@@ -557,6 +605,8 @@ class BusinessNetworkMindforceCategory(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
         
     def __str__(self):
@@ -573,6 +623,8 @@ class BusinessNetworkMindforceMedia(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
         
     
@@ -596,6 +648,8 @@ class BusinessNetworkMindforce(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
         
     def __str__(self):
@@ -612,6 +666,8 @@ class BusinessNetworkMindforceCommentMedia(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
     
 
@@ -633,6 +689,8 @@ class BusinessNetworkMindforceComment(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.id = self.generate_id()
+            save_with_pk_retry(self, super().save, args, kwargs)
+            return
         super().save(*args, **kwargs)
 
 
