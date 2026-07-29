@@ -32,6 +32,14 @@ class RideshareMapWidget extends StatefulWidget {
   final String? passengerName;
   final String? passengerAvatar;
 
+  /// How far down the floating overlays (status panel, action buttons) start.
+  ///
+  /// A carded map keeps the default. A full-bleed map runs behind the status
+  /// bar and behind the shell's drawer/avatar circles, so those callers push
+  /// the overlays below both — otherwise the top button sits underneath the
+  /// avatar and cannot be tapped at all.
+  final double topInset;
+
   const RideshareMapWidget({
     super.key,
     this.pickupPoint,
@@ -54,17 +62,83 @@ class RideshareMapWidget extends StatefulWidget {
     this.passengerLocation,
     this.passengerName,
     this.passengerAvatar,
+    this.topInset = 12,
   });
 
   @override
   State<RideshareMapWidget> createState() => _RideshareMapWidgetState();
 }
 
-class _RideshareMapWidgetState extends State<RideshareMapWidget> {
+class _RideshareMapWidgetState extends State<RideshareMapWidget>
+    with SingleTickerProviderStateMixin {
   final MapController _mapController = MapController();
   bool _initialFitDone = false;
   double _lastKnownZoom = 13;
   DateTime? _lastManualMapGestureAt;
+
+  /// Which basemap is showing. Satellite is genuinely useful here — riders in
+  /// Bangladesh navigate by buildings and landmarks far more than by street
+  /// names, and a pickup pin dropped on a recognisable rooftop beats one
+  /// dropped on an unlabelled road.
+  _MapStyle _style = _MapStyle.standard;
+
+  /// The status panel folds away on tap. It explains the map once; after that
+  /// it is just a lid over the part of the map the rider is trying to aim at,
+  /// so it retracts into a small chevron pill and comes back the same way.
+  ///
+  /// One controller drives the whole fold — width, height, opacity and the
+  /// chevron all read the same curve, so nothing arrives ahead of the rest.
+  late final AnimationController _statusPanelController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 280),
+    reverseDuration: const Duration(milliseconds: 220),
+    value: 1,
+  );
+  late final Animation<double> _statusPanelCurve = CurvedAnimation(
+    parent: _statusPanelController,
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeInCubic,
+  );
+
+  bool get _statusPanelExpanded => _statusPanelController.value > 0.5;
+
+  void _cycleMapStyle() {
+    final next = _MapStyle
+        .values[(_style.index + 1) % _MapStyle.values.length];
+    setState(() => _style = next);
+  }
+
+  void _toggleStatusPanel() {
+    if (_statusPanelExpanded) {
+      _statusPanelController.reverse();
+    } else {
+      _statusPanelController.forward();
+    }
+  }
+
+  /// Folds [child] away toward the badge, clipping and fading as it goes.
+  ///
+  /// SizeTransition would be the obvious tool, but it only scales the axis it
+  /// folds on and lets the other one keep the full available width — which
+  /// would leave a closed panel still stretched across the map. Driving both
+  /// factors keeps the glass box hugging whatever is left of its contents.
+  Widget _foldAway(Widget child) {
+    return AnimatedBuilder(
+      animation: _statusPanelCurve,
+      builder: (context, inner) {
+        final factor = math.max(_statusPanelCurve.value, 0.0);
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topLeft,
+            widthFactor: factor,
+            heightFactor: factor,
+            child: inner,
+          ),
+        );
+      },
+      child: FadeTransition(opacity: _statusPanelCurve, child: child),
+    );
+  }
 
   // Default center (Dhaka, Bangladesh)
   static const LatLng _defaultCenter = LatLng(23.8103, 90.4125);
@@ -85,6 +159,12 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
         _fitBounds();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _statusPanelController.dispose();
+    super.dispose();
   }
 
   @override
@@ -253,13 +333,26 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                  subdomains: const ['a', 'b', 'c', 'd'],
+                  key: ValueKey(_style),
+                  urlTemplate: _style.tileUrl,
+                  subdomains: _style.subdomains,
                   userAgentPackageName: 'com.adsyclub.oxius',
-                  retinaMode: RetinaMode.isHighDensity(context),
+                  // Esri imagery has no @2x variant; asking for one returns
+                  // 400s and a blank map on every high-density phone.
+                  retinaMode: _style.supportsRetina &&
+                      RetinaMode.isHighDensity(context),
                   maxZoom: 20,
                 ),
+                // Satellite alone hides every road and place name, which is
+                // useless for choosing a pickup. The reference layer paints
+                // just the labels and streets back on top.
+                if (_style.labelOverlayUrl != null)
+                  TileLayer(
+                    key: ValueKey('${_style.name}-labels'),
+                    urlTemplate: _style.labelOverlayUrl!,
+                    userAgentPackageName: 'com.adsyclub.oxius',
+                    maxZoom: 20,
+                  ),
                 if (routeCoordinates.isNotEmpty)
                   _buildRouteLayer(routeCoordinates),
                 MarkerLayer(
@@ -286,19 +379,19 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
               ),
             ),
             Positioned(
-              top: 12,
+              top: widget.topInset,
               left: 12,
               right: 76,
               child: _buildStatusPanel(routeCoordinates),
             ),
             Positioned(
-              top: 12,
+              top: widget.topInset,
               right: 12,
               child: Column(
                 children: [
                   _buildMapActionButton(
                     icon: Icons.fit_screen_rounded,
-                    tooltip: 'Fit route',
+                    tooltip: 'রুট দেখুন',
                     onPressed: _fitBounds,
                   ),
                   const SizedBox(height: 8),
@@ -308,11 +401,18 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
                         : Icons.center_focus_strong_rounded,
                     tooltip:
                         widget.followDriver && widget.driverLocation != null
-                            ? 'Follow driver'
-                            : 'Focus map',
+                            ? 'ড্রাইভার ফলো'
+                            : 'ম্যাপ ফোকাস',
                     onPressed: _focusPrimaryLocation,
                     isHighlighted:
                         widget.followDriver && widget.driverLocation != null,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMapActionButton(
+                    icon: _style.icon,
+                    tooltip: _style.nextLabel,
+                    onPressed: _cycleMapStyle,
+                    isHighlighted: _style != _MapStyle.standard,
                   ),
                 ],
               ),
@@ -389,122 +489,161 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     final hasRoute = routeCoordinates.isNotEmpty;
     final nearbyCount = _visibleNearbyDrivers.length;
     final title = widget.followDriver && widget.driverLocation != null
-        ? 'Live trip tracking'
+        ? 'লাইভ ট্রিপ ট্র্যাকিং'
         : widget.onMapTap != null
-            ? 'Smart route planner'
+            ? 'রুট প্ল্যানার'
             : hasRoute
-                ? 'Route preview'
-                : 'Service area view';
+                ? 'রুট প্রিভিউ'
+                : 'সার্ভিস এরিয়া';
     final subtitle = widget.onMapTap != null
-        ? 'Tap to place your ${widget.activeSelection == 'drop' ? 'drop-off' : 'pickup'} point.'
+        ? 'ম্যাপে ট্যাপ করে ${widget.activeSelection == 'drop' ? 'গন্তব্য' : 'পিকআপ'} পয়েন্ট বসান।'
         : widget.followDriver && widget.driverLocation != null
-            ? 'Driver movement stays centered while the trip updates live.'
+            ? 'ড্রাইভারের অবস্থান লাইভ আপডেট হচ্ছে।'
             : hasRoute
-                ? 'Pickup, drop-off and trip path are framed together.'
+                ? 'পিকআপ, গন্তব্য ও রুট একসাথে দেখানো হচ্ছে।'
                 : nearbyCount > 0
-                    ? '$nearbyCount online drivers available around your selected area.'
-                    : 'Zoom and inspect the current service area.';
+                    ? 'আশেপাশে $nearbyCount জন ড্রাইভার অনলাইনে আছেন।'
+                    : 'জুম করে সার্ভিস এরিয়া দেখুন।';
 
-    return _buildGlassPanel(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
+    final chips = <Widget>[
+      if (hasRoute)
+        _buildInfoChip(
+          icon: Icons.alt_route_rounded,
+          label: 'রুট প্রস্তুত',
+          tint: const Color(0xFF4F46E5),
+        ),
+      if (nearbyCount > 0)
+        _buildInfoChip(
+          icon: Icons.local_taxi_rounded,
+          label: 'আশেপাশে $nearbyCount জন',
+          tint: const Color(0xFF0F766E),
+        ),
+      if (widget.followDriver && widget.driverLocation != null)
+        _buildInfoChip(
+          icon: Icons.radar_rounded,
+          label: 'ফলো মোড',
+          tint: const Color(0xFF059669),
+        ),
+      if (widget.onMapTap != null)
+        _buildInfoChip(
+          icon: Icons.edit_location_alt_rounded,
+          label: widget.activeSelection == 'drop'
+              ? 'গন্তব্য বাছাই'
+              : 'পিকআপ বাছাই',
+          tint: const Color(0xFFD97706),
+        ),
+    ];
+
+    // Align + loose constraints let the panel hug its content, so folding it
+    // away shrinks the box in BOTH axes down to the badge instead of leaving
+    // a full-width bar sitting over the map.
+    return Align(
+      alignment: Alignment.topLeft,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _toggleStatusPanel,
+        child: _buildGlassPanel(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4F46E5), Color(0xFF0EA5E9)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4F46E5), Color(0xFF0EA5E9)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(11),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              const Color(0xFF4F46E5).withValues(alpha: 0.28),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      widget.followDriver && widget.driverLocation != null
+                          ? Icons.radar_rounded
+                          : widget.onMapTap != null
+                              ? Icons.touch_app_rounded
+                              : Icons.map_rounded,
+                      color: Colors.white,
+                      size: 17,
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF4F46E5).withValues(alpha: 0.28),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  widget.followDriver && widget.driverLocation != null
-                      ? Icons.radar_rounded
-                      : widget.onMapTap != null
-                          ? Icons.touch_app_rounded
-                          : Icons.map_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0F172A),
+                  // The wording is what makes the panel wide, so it is the
+                  // part that slides away — clipped and faded together, which
+                  // is why both transitions ride the same curve.
+                  Flexible(
+                    child: _foldAway(
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                height: 1.35,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF475569),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        height: 1.35,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF475569),
-                      ),
+                  ),
+                  // Points up while open (tap sends it up), down once folded.
+                  RotationTransition(
+                    turns: Tween<double>(begin: 0, end: 0.5)
+                        .animate(_statusPanelCurve),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 20,
+                      color: Color(0xFF64748B),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (hasRoute)
-                _buildInfoChip(
-                  icon: Icons.alt_route_rounded,
-                  label: '${routeCoordinates.length} route points',
-                  tint: const Color(0xFF4F46E5),
-                ),
-              if (nearbyCount > 0)
-                _buildInfoChip(
-                  icon: Icons.local_taxi_rounded,
-                  label: '$nearbyCount online nearby',
-                  tint: const Color(0xFF0F766E),
-                ),
-              if (widget.followDriver && widget.driverLocation != null)
-                _buildInfoChip(
-                  icon: Icons.radar_rounded,
-                  label: 'Follow mode',
-                  tint: const Color(0xFF059669),
-                ),
-              if (widget.onMapTap != null)
-                _buildInfoChip(
-                  icon: Icons.edit_location_alt_rounded,
-                  label: widget.activeSelection == 'drop'
-                      ? 'Drop-off selection'
-                      : 'Pickup selection',
-                  tint: const Color(0xFFD97706),
+              if (chips.isNotEmpty)
+                _foldAway(
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: chips,
+                    ),
+                  ),
                 ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -516,7 +655,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       items.add(
         _buildLegendChip(
           icon: Icons.trip_origin_rounded,
-          label: _compactPointLabel(widget.pickupPoint!, 'Pickup'),
+          label: _compactPointLabel(widget.pickupPoint!, 'পিকআপ'),
           tint: const Color(0xFF4F46E5),
         ),
       );
@@ -525,7 +664,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       items.add(
         _buildLegendChip(
           icon: Icons.flag_rounded,
-          label: _compactPointLabel(widget.dropPoint!, 'Drop-off'),
+          label: _compactPointLabel(widget.dropPoint!, 'গন্তব্য'),
           tint: const Color(0xFF059669),
         ),
       );
@@ -536,7 +675,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
           icon: Icons.directions_car_rounded,
           label: widget.driverName?.trim().isNotEmpty == true
               ? widget.driverName!.trim()
-              : 'Driver live',
+              : 'ড্রাইভার লাইভ',
           tint: const Color(0xFF0EA5E9),
         ),
       );
@@ -547,7 +686,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
           icon: Icons.person_pin_circle_rounded,
           label: widget.passengerName?.trim().isNotEmpty == true
               ? widget.passengerName!.trim()
-              : 'Passenger live',
+              : 'যাত্রী লাইভ',
           tint: const Color(0xFFF59E0B),
         ),
       );
@@ -558,7 +697,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       items.add(
         _buildLegendChip(
           icon: Icons.groups_rounded,
-          label: '${_visibleNearbyDrivers.length} online drivers nearby',
+          label: 'আশেপাশে ${_visibleNearbyDrivers.length} জন ড্রাইভার',
           tint: const Color(0xFF334155),
         ),
       );
@@ -795,7 +934,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
               ? _buildProfileMarker(
                   name: widget.riderName!,
                   avatarUrl: widget.riderAvatar,
-                  subtitle: 'Passenger',
+                  subtitle: 'যাত্রী',
                   gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                   icon: Icons.person_rounded,
                 )
@@ -854,7 +993,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
               ? _buildProfileMarker(
                   name: widget.passengerName!,
                   avatarUrl: widget.passengerAvatar,
-                  subtitle: 'Passenger (Live)',
+                  subtitle: 'যাত্রী (লাইভ)',
                   gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
                   icon: Icons.person_pin_circle_rounded,
                 )
@@ -1234,5 +1373,63 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       default:
         return Icons.directions_car_rounded;
     }
+  }
+}
+
+/// The two basemaps behind the layers button.
+///
+/// Both are free raster services that need no API key, which is why this map
+/// has never had one. Street stays the default because the route line reads
+/// most clearly on it; satellite is there because riders here navigate by
+/// buildings and landmarks, not by street names.
+///
+/// A third OpenStreetMap style was considered and dropped: it would duplicate
+/// what Voyager already shows, and OSM's tile policy asks apps not to send it
+/// production traffic.
+enum _MapStyle {
+  standard(
+    label: 'স্ট্রিট',
+    icon: Icons.layers_rounded,
+    tileUrl:
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    subdomains: ['a', 'b', 'c', 'd'],
+    supportsRetina: true,
+  ),
+  satellite(
+    label: 'স্যাটেলাইট',
+    icon: Icons.satellite_alt_rounded,
+    // Note the {y}/{x} order — Esri serves row before column, the reverse of
+    // every {z}/{x}/{y} slippy-map service.
+    tileUrl:
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    subdomains: [],
+    supportsRetina: false,
+    // Roads, place names and boundaries painted back over the imagery — raw
+    // satellite with no labels is beautiful and useless for picking a pickup.
+    labelOverlayUrl:
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+  );
+
+  const _MapStyle({
+    required this.label,
+    required this.icon,
+    required this.tileUrl,
+    required this.subdomains,
+    required this.supportsRetina,
+    this.labelOverlayUrl,
+  });
+
+  final String label;
+  final IconData icon;
+  final String tileUrl;
+  final List<String> subdomains;
+  final bool supportsRetina;
+  final String? labelOverlayUrl;
+
+  /// The tooltip names where the button GOES, not where it is — a button
+  /// labelled with the current state reads like it is already selected.
+  String get nextLabel {
+    final next = _MapStyle.values[(index + 1) % _MapStyle.values.length];
+    return next.label;
   }
 }

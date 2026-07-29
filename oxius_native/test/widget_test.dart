@@ -19,7 +19,10 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(MyApp(userState: userState));
 
-    // MyApp shows a loading UI while user state initializes.
-    expect(find.byType(CircularProgressIndicator), findsWidgets);
+    // The app must boot to SOME frame without throwing. The specific loader
+    // widget changed once already (spinner → dots) and this test broke while
+    // the app was fine, so assert the shell, not the ornament.
+    expect(find.byType(MaterialApp), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

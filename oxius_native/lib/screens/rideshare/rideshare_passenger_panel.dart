@@ -68,6 +68,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   List<RidePoint> _pickupSuggestions = [];
   List<RidePoint> _dropSuggestions = [];
   List<RidePoint> _recentPlaces = [];
+  List<CustomRideLocation> _savedPlaces = [];
   List<NearbyDriver> _nearbyDrivers = [];
 
   // Loading states
@@ -133,6 +134,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     WidgetsBinding.instance.addObserver(this);
     _startStatusRefreshTimer();
     _loadRecentPlaces();
+    _loadSavedPlaces();
     _rideshareNotificationSubscription =
         FCMService.rideshareNotificationEvents.listen(
       _handleRideshareNotificationEvent,
@@ -627,7 +629,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     if (ride == null) {
       return _localizeDisplayMessage(
         t('rideshare_finding_driver_status',
-            fallback: 'Looking for nearby drivers...'),
+            fallback: 'আশেপাশে ড্রাইভার খোঁজা হচ্ছে...'),
       );
     }
 
@@ -650,7 +652,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     if (ride.isSearching) {
       return _localizeDisplayMessage(
         t('rideshare_finding_driver_status',
-            fallback: 'Looking for nearby drivers...'),
+            fallback: 'আশেপাশে ড্রাইভার খোঁজা হচ্ছে...'),
       );
     }
     if (ride.isCancelled && (ride.cancellationReason?.isNotEmpty ?? false)) {
@@ -1014,6 +1016,44 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     }
 
     setState(() => _recentPlaces = loadedPlaces);
+
+    // A rider with fifty past trips and a fresh install should not see an
+    // empty suggestion list, so fall back to where they have actually been.
+    if (loadedPlaces.isEmpty) {
+      await _seedRecentPlacesFromHistory();
+    }
+  }
+
+  /// Backfills the recent list from completed rides, newest first.
+  Future<void> _seedRecentPlacesFromHistory() async {
+    final result = await RideshareService.listRides(pageSize: 20);
+    if (!mounted || !result.success) return;
+
+    final seeded = <RidePoint>[];
+    for (final ride in result.data ?? const <Ride>[]) {
+      final drop = ride.dropPoint;
+      final duplicate = seeded.any((p) =>
+          p.latitude == drop.latitude && p.longitude == drop.longitude);
+      if (!duplicate) seeded.add(drop);
+      if (seeded.length >= 8) break;
+    }
+    if (seeded.isEmpty || !mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _recentPlacesKey,
+      seeded.map((place) => jsonEncode(place.toJson())).toList(),
+    );
+    if (!mounted) return;
+    setState(() => _recentPlaces = seeded);
+  }
+
+  Future<void> _loadSavedPlaces() async {
+    final result = await RideshareService.getMyLocations();
+    if (!mounted || !result.success) return;
+    setState(() => _savedPlaces = (result.data ?? const <CustomRideLocation>[])
+        .where((l) => l.isActive)
+        .toList());
   }
 
   Future<void> _rememberRecentPlace(RidePoint point) async {
@@ -1112,7 +1152,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   Future<void> _createRide() async {
     if (!_locationGranted) {
       _showError(t('rideshare_location_required',
-          fallback: 'Location access required before booking a ride.'));
+          fallback: 'রাইড বুক করার আগে লোকেশন অনুমতি লাগবে।'));
       return;
     }
     if (_pickupPoint == null || _dropPoint == null) return;
@@ -1136,7 +1176,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       if (result.success && result.data != null) {
         _applyRideState(result.data, isLoading: false);
         _showSuccess(t('rideshare_ride_requested',
-            fallback: 'Ride requested! Looking for a driver...'));
+            fallback: 'রাইড রিকোয়েস্ট হয়েছে! ড্রাইভার খোঁজা হচ্ছে...'));
       } else {
         final msg = result.message.toLowerCase();
         if (msg.contains('active ride') || msg.contains('already have')) {
@@ -1164,7 +1204,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Text(t('rideshare_cancel_ride_title', fallback: 'Cancel Ride?'),
+        title: Text(t('rideshare_cancel_ride_title', fallback: 'রাইড বাতিল করবেন?'),
             style:
                 GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
@@ -1177,7 +1217,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t('rideshare_keep_ride', fallback: 'Keep Ride'),
+            child: Text(t('rideshare_keep_ride', fallback: 'রাইড রাখুন'),
                 style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF6366F1))),
@@ -1189,7 +1229,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text(t('rideshare_yes_cancel', fallback: 'Yes, Cancel'),
+            child: Text(t('rideshare_yes_cancel', fallback: 'হ্যাঁ, বাতিল'),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
@@ -1235,14 +1275,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           _dropSuggestions = [];
           _activeInput = 'pickup';
           _searchStatusMessage = t('rideshare_finding_driver_status',
-              fallback: 'Looking for nearby drivers...');
+              fallback: 'আশেপাশে ড্রাইভার খোঁজা হচ্ছে...');
           _noDriversInRange = false;
           _targetedAtFromEvent = null;
           _dispatchAttempt = 0;
         });
         _pickupController.clear();
         _dropController.clear();
-        _showSuccess(t('rideshare_ride_cancelled', fallback: 'Ride cancelled'));
+        _showSuccess(t('rideshare_ride_cancelled', fallback: 'রাইড বাতিল হয়েছে'));
       } else {
         // Reconnect realtime so the user can keep receiving ride updates
         _syncRideRealtimeConnection();
@@ -1325,7 +1365,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
           t('rideshare_report_driver_cancellation',
-              fallback: 'Report Driver Cancellation'),
+              fallback: 'ড্রাইভার ক্যানসেলের রিপোর্ট'),
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         content: TextField(
@@ -1333,19 +1373,19 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           maxLines: 4,
           decoration: InputDecoration(
             hintText: t('rideshare_add_details_hint',
-                fallback: 'Add details for support...'),
+                fallback: 'সাপোর্টের জন্য বিস্তারিত লিখুন...'),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t('rideshare_close', fallback: 'Close'),
+            child: Text(t('rideshare_close', fallback: 'বন্ধ করুন'),
                 style: GoogleFonts.inter()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t('rideshare_submit', fallback: 'Submit'),
+            child: Text(t('rideshare_submit', fallback: 'জমা দিন'),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
@@ -1518,9 +1558,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         confirm
             ? (paymentMethod == 'cash'
                 ? t('rideshare_cash_completion_note',
-                    fallback: 'Ride complete. Please pay the driver in cash.')
+                    fallback: 'রাইড শেষ। ড্রাইভারকে ক্যাশে ভাড়া দিন।')
                 : t('rideshare_wallet_completion_note',
-                    fallback: 'Ride complete and wallet payment confirmed.'))
+                    fallback: 'রাইড শেষ, ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।'))
             : 'Ride will continue until you confirm completion.',
       );
       return;
@@ -1547,13 +1587,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             children: [
               Text(
                 t('rideshare_choose_payment_method',
-                    fallback: 'Choose Payment Method'),
+                    fallback: 'পেমেন্ট মেথড বাছুন'),
                 style: GoogleFonts.inter(
                     fontSize: 16, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 6),
               Text(
-                '${t('rideshare_trip_fare', fallback: 'Trip Fare')}: ৳${payableFare.toStringAsFixed(0)}',
+                '${t('rideshare_trip_fare', fallback: 'ট্রিপ ভাড়া')}: ৳${payableFare.toStringAsFixed(0)}',
                 style: GoogleFonts.inter(
                     fontSize: 13, color: const Color(0xFF64748B)),
               ),
@@ -1562,7 +1602,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 ctx,
                 value: 'wallet',
                 title: t('rideshare_wallet_payment_title',
-                    fallback: 'Pay with Adsy Balance'),
+                    fallback: 'Adsy ব্যালেন্স দিয়ে দিন'),
                 subtitle: t('rideshare_wallet_subtitle',
                     fallback:
                         'Fare will be deducted from your in-app balance instantly.'),
@@ -1574,7 +1614,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 ctx,
                 value: 'cash',
                 title: t('rideshare_cash_payment_title',
-                    fallback: 'Pay Driver in Cash'),
+                    fallback: 'ড্রাইভারকে ক্যাশে দিন'),
                 subtitle: t('rideshare_cash_subtitle',
                     fallback:
                         'You will pay the driver directly in cash at the end of the ride.'),

@@ -33,6 +33,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             vehicleType: _selectedVehicleType,
             onMapTap: _onMapTap,
             onCenterChanged: _onPlannerMapCenterChanged,
+            // Clear the status bar AND the shell's floating avatar, which
+            // sits at padding.top + 10 and is 44 tall.
+            topInset: MediaQuery.of(context).padding.top + 64,
           ),
         ),
 
@@ -110,7 +113,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         children: [
           // Title
           Text(
-            t('rideshare_where_to', fallback: 'Where To?'),
+            t('rideshare_where_to', fallback: 'কোথায় যাবেন?'),
             style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -149,27 +152,11 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             _buildQuickDestinationRow(
               icon: Icons.star_rounded,
               label: t('rideshare_saved_place',
-                  fallback: 'Choose a Saved Place'),
+                  fallback: 'সেভ করা জায়গা বেছে নিন'),
               onTap: _showCustomLocationSheet,
             ),
             const Divider(height: 1, color: Color(0xFFF1F5F9)),
-            _buildQuickDestinationRow(
-              icon: Icons.map_outlined,
-              label: t('rideshare_set_on_map',
-                  fallback: 'Set Destination On Map'),
-              // The map itself is the picker: tapping it in this step sets
-              // the drop pin, so this row just puts the rider's attention
-              // there instead of opening a second screen.
-              onTap: () {
-                _rebuild(() {
-                  _activeInput = 'drop';
-                  _hideDropSuggestionsUntilEdit = true;
-                });
-                FocusScope.of(context).unfocus();
-                AdsyToast.info(
-                    context, 'ম্যাপে ট্যাপ করে গন্তব্য বেছে নিন');
-              },
-            ),
+            ..._buildDestinationSuggestions(),
           ],
 
           // Next button — shown when drop is already selected (e.g. after going back)
@@ -542,6 +529,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             vehicleType: 'bike',
             onMapTap: (a, b) {},
             onCenterChanged: (_, __) {},
+            topInset: MediaQuery.of(context).padding.top + 64,
           ),
         ),
         Positioned(
@@ -565,7 +553,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 const SizedBox(height: 14),
                 Text(
                   t('rideshare_location_required_title',
-                      fallback: 'Location Access Required'),
+                      fallback: 'লোকেশন অনুমতি লাগবে'),
                   style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -596,9 +584,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                         : const Icon(Icons.my_location_rounded, size: 18),
                     label: Text(
                       _isLoadingLocation
-                          ? t('rideshare_enabling', fallback: 'Enabling...')
+                          ? t('rideshare_enabling', fallback: 'চালু হচ্ছে...')
                           : t('rideshare_enable_location',
-                              fallback: 'Enable Location'),
+                              fallback: 'লোকেশন চালু করুন'),
                       style: GoogleFonts.inter(
                           fontSize: 14, fontWeight: FontWeight.w700),
                     ),
@@ -632,7 +620,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 size: 15, color: Color(0xFF6366F1)),
             const SizedBox(width: 6),
             Text(
-              t('rideshare_payment_method', fallback: 'Payment Method'),
+              t('rideshare_payment_method', fallback: 'পেমেন্ট মেথড'),
               style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -676,7 +664,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            t('rideshare_wallet', fallback: 'Wallet'),
+                            t('rideshare_wallet', fallback: 'ওয়ালেট'),
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -751,7 +739,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            t('rideshare_cash', fallback: 'Cash'),
+                            t('rideshare_cash', fallback: 'ক্যাশ'),
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -771,14 +759,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                       const SizedBox(height: 4),
                       Text(
                         t('rideshare_pay_driver_directly',
-                            fallback: 'Pay driver directly'),
+                            fallback: 'ড্রাইভারকে সরাসরি দিন'),
                         style: GoogleFonts.inter(
                             fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         t('rideshare_no_wallet_needed',
-                            fallback: 'No wallet needed'),
+                            fallback: 'ওয়ালেট লাগবে না'),
                         style: GoogleFonts.inter(
                             fontSize: 10, color: const Color(0xFFCBD5E1)),
                       ),
@@ -860,9 +848,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   _buildLocationInput(
                     controller: _pickupController,
                     label: t('rideshare_pickup_location',
-                        fallback: 'Pickup Location'),
+                        fallback: 'পিকআপ লোকেশন'),
                     hint: t('rideshare_search_pickup',
-                            fallback: 'Search pickup...')
+                            fallback: 'পিকআপ খুঁজুন...')
                         .toString(),
                     isActive: _activeInput == 'pickup',
                     onTap: () => _rebuild(() => _activeInput = 'pickup'),
@@ -873,8 +861,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   _buildLocationInput(
                     controller: _dropController,
                     label:
-                        t('rideshare_drop_location', fallback: 'Drop Location'),
-                    hint: t('rideshare_search_drop', fallback: 'Search drop...')
+                        t('rideshare_drop_location', fallback: 'গন্তব্য লোকেশন'),
+                    hint: t('rideshare_search_drop', fallback: 'গন্তব্য খুঁজুন...')
                         .toString(),
                     isActive: _activeInput == 'drop',
                     onTap: () => _rebuild(() {
@@ -1155,7 +1143,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    t('rideshare_current_location_btn', fallback: 'Current'),
+                    t('rideshare_current_location_btn', fallback: 'বর্তমান'),
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -1196,7 +1184,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          t('rideshare_select_for_trip', fallback: 'Select One For Trip'),
+          t('rideshare_select_for_trip', fallback: 'ট্রিপের জন্য একটি বেছে নিন'),
           style: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: FontWeight.w800,
@@ -1299,6 +1287,122 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
     );
   }
 
+  /// The rider's own places, under the search field, before they type.
+  ///
+  /// "Set Destination On Map" used to sit here, which was a row that told the
+  /// rider to go tap the map they were already looking at. These rows do
+  /// something: each one is somewhere this rider has actually saved or been,
+  /// and tapping it books straight to that point.
+  List<Widget> _buildDestinationSuggestions() {
+    final rows = <_SuggestionEntry>[];
+
+    // Saved places first — a rider who bothered to save a place means it.
+    for (final saved in _savedPlaces.take(3)) {
+      rows.add(_SuggestionEntry(
+        icon: Icons.bookmark_rounded,
+        tint: const Color(0xFF6366F1),
+        title: saved.name,
+        subtitle: saved.subtitle,
+        point: RidePoint(
+          name: saved.name,
+          title: saved.name,
+          subtitle: saved.subtitle,
+          latitude: saved.latitude,
+          longitude: saved.longitude,
+          isCustomLocation: true,
+        ),
+      ));
+    }
+
+    // Then where they have been, skipping anything already listed above.
+    for (final recent in _recentPlaces) {
+      if (rows.length >= 5) break;
+      final duplicate = rows.any((row) =>
+          row.point.latitude == recent.latitude &&
+          row.point.longitude == recent.longitude);
+      if (duplicate) continue;
+      rows.add(_SuggestionEntry(
+        icon: Icons.history_rounded,
+        tint: const Color(0xFF64748B),
+        title: recent.title?.trim().isNotEmpty == true
+            ? recent.title!
+            : recent.name,
+        subtitle: recent.subtitle ?? '',
+        point: recent,
+      ));
+    }
+
+    if (rows.isEmpty) return const <Widget>[];
+
+    return [
+      const SizedBox(height: 14),
+      Text(
+        t('rideshare_suggestions', fallback: 'সাজেশন'),
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.7,
+          color: const Color(0xFF94A3B8),
+        ),
+      ),
+      const SizedBox(height: 2),
+      for (final row in rows) _buildSuggestionRow(row),
+    ];
+  }
+
+  Widget _buildSuggestionRow(_SuggestionEntry entry) {
+    return InkWell(
+      onTap: () => _selectDropSuggestion(entry.point),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: entry.tint.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(entry.icon, size: 16, color: entry.tint),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  if (entry.subtitle.trim().isNotEmpty)
+                    Text(
+                      entry.subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Icon(Icons.north_east_rounded,
+                size: 15, color: Color(0xFFCBD5E1)),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// One of the quiet helper rows under the destination field — the
   /// screenshot's "Choose a Saved Place" pattern.
   Widget _buildQuickDestinationRow({
@@ -1365,7 +1469,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             ),
             const SizedBox(width: 10),
             Text(
-              t('rideshare_calculating_fare', fallback: 'Calculating fare...'),
+              t('rideshare_calculating_fare', fallback: 'ভাড়া হিসাব হচ্ছে...'),
               style: GoogleFonts.inter(
                 fontSize: 13,
                 color: const Color(0xFF64748B),
@@ -1394,7 +1498,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  t('rideshare_estimated_fare', fallback: 'Estimated Fare')
+                  t('rideshare_estimated_fare', fallback: 'আনুমানিক ভাড়া')
                       .toUpperCase(),
                   style: GoogleFonts.inter(
                     fontSize: 10,
@@ -1536,4 +1640,22 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       ),
     );
   }
+}
+
+/// One row of the "Suggestions" list: where it came from, and the point that
+/// tapping it books.
+class _SuggestionEntry {
+  final IconData icon;
+  final Color tint;
+  final String title;
+  final String subtitle;
+  final RidePoint point;
+
+  const _SuggestionEntry({
+    required this.icon,
+    required this.tint,
+    required this.title,
+    required this.subtitle,
+    required this.point,
+  });
 }

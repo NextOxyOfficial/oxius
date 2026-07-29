@@ -648,17 +648,17 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                   color: const Color(0xFF9A3412))),
           const SizedBox(height: 10),
           _textField(
-              controller: _editNameCtl, label: 'Name', hint: 'Location name'),
+              controller: _editNameCtl, label: 'নাম', hint: 'লোকেশনের নাম'),
           const SizedBox(height: 8),
           _textField(
               controller: _editSubtitleCtl,
-              label: 'Area / details',
-              hint: 'Area'),
+              label: 'এলাকা / বিবরণ',
+              hint: 'এলাকা'),
           const SizedBox(height: 8),
           _textField(
               controller: _editKeywordsCtl,
-              label: 'Keywords',
-              hint: 'Comma-separated'),
+              label: 'কীওয়ার্ড',
+              hint: 'কমা দিয়ে আলাদা করুন'),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(
@@ -840,7 +840,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             Expanded(
                 child: _textField(
                     controller: _latCtl,
-                    label: 'Latitude',
+                    label: 'অক্ষাংশ (Latitude)',
                     hint: '23.905722',
                     keyboardType: const TextInputType.numberWithOptions(
                         decimal: true, signed: true))),
@@ -848,7 +848,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             Expanded(
                 child: _textField(
                     controller: _lonCtl,
-                    label: 'Longitude',
+                    label: 'দ্রাঘিমাংশ (Longitude)',
                     hint: '89.136444',
                     keyboardType: const TextInputType.numberWithOptions(
                         decimal: true, signed: true))),
@@ -871,17 +871,17 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
           // ── Fields ───
           _textField(
               controller: _nameCtl,
-              label: 'Location name',
+              label: 'লোকেশনের নাম',
               hint: 'যেমন: আমার বাড়ির নাম, গ্রামের মোড়'),
           const SizedBox(height: 12),
           _textField(
               controller: _subtitleCtl,
-              label: 'Area / details',
+              label: 'এলাকা / বিবরণ',
               hint: 'যেমন: মিরপুর, ঢাকা'),
           const SizedBox(height: 12),
           _textField(
               controller: _keywordsCtl,
-              label: 'Search keywords',
+              label: 'সার্চ কীওয়ার্ড',
               hint: 'কমা দিয়ে alias লিখুন, যেমন: bari, village home'),
           const SizedBox(height: 18),
 
@@ -909,7 +909,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: Text('Cancel',
+                child: Text('বাতিল',
                     style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -934,7 +934,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                         height: 18,
                         child: AdsyLoadingIndicator(
                             strokeWidth: 2, color: Colors.white))
-                    : Text('Pay ৳199 & Save',
+                    : Text('৳199 দিয়ে সেভ করুন',
                         style: GoogleFonts.inter(
                             fontSize: 14, fontWeight: FontWeight.w800)),
               ),

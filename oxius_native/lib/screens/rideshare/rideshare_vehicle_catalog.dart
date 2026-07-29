@@ -59,7 +59,7 @@ class RideVehicle {
   static const bike = RideVehicle(
     key: 'bike',
     label: 'Bike',
-    capacity: '1 Person',
+    capacity: '১ জন',
     emoji: '🏍',
     image: 'assets/images/vehicles/bike.png',
   );
@@ -67,7 +67,7 @@ class RideVehicle {
   static const car = RideVehicle(
     key: 'car',
     label: 'Car',
-    capacity: '4 Person',
+    capacity: '৪ জন',
     emoji: '🚗',
     image: 'assets/images/vehicles/car.png',
   );
@@ -77,7 +77,7 @@ class RideVehicle {
   static const auto = RideVehicle(
     key: 'cng',
     label: 'Auto',
-    capacity: '3 Person',
+    capacity: '৩ জন',
     emoji: '🛺',
   );
 

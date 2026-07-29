@@ -131,7 +131,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
         !ride.isCancelled;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(4),
+      // Clears the status bar and the shell's floating avatar.
+      padding: EdgeInsets.fromLTRB(4, MediaQuery.of(context).padding.top + 62, 4, 4),
       child: Column(
         children: [
           // Status Card
@@ -240,14 +241,14 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         child: Row(
                           children: [
                             _buildStatItem(
-                                t('rideshare_fare', fallback: 'Fare'),
+                                t('rideshare_fare', fallback: 'ভাড়া'),
                                 '৳${ride.payableFare.toStringAsFixed(0)}'),
                             _buildStatDivider(),
                             _buildStatItem(
-                                t('rideshare_distance', fallback: 'Distance'),
+                                t('rideshare_distance', fallback: 'দূরত্ব'),
                                 '${_currentPassengerDistanceKm(ride).toStringAsFixed(1)} km'),
                             _buildStatDivider(),
-                            _buildStatItem(t('rideshare_eta', fallback: 'ETA'),
+                            _buildStatItem(t('rideshare_eta', fallback: 'সময়'),
                                 _currentPassengerEta(ride)),
                           ],
                         ),
@@ -277,7 +278,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             const SizedBox(width: 8),
                             Text(
                               t('rideshare_payment_method',
-                                  fallback: 'Payment Method'),
+                                  fallback: 'পেমেন্ট মেথড'),
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -287,8 +288,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             const Spacer(),
                             Text(
                               ride.paymentMethod == 'cash'
-                                  ? t('rideshare_cash', fallback: 'Cash')
-                                  : t('rideshare_wallet', fallback: 'Wallet'),
+                                  ? t('rideshare_cash', fallback: 'ক্যাশ')
+                                  : t('rideshare_wallet', fallback: 'ওয়ালেট'),
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -309,7 +310,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         // "<Driver> is on their way" — the reference's line,
                         // and the one thing a waiting rider wants confirmed.
                         Text(
-                          '${ride.assignedDriver!.userName} is on their way',
+                          '${ride.assignedDriver!.userName} আসছেন',
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -342,7 +343,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 ),
                                 child: Text(
                                   t('rideshare_continue_ride',
-                                      fallback: 'Continue Ride'),
+                                      fallback: 'রাইড চালিয়ে যান'),
                                   style: GoogleFonts.inter(
                                       fontWeight: FontWeight.w600),
                                 ),
@@ -362,7 +363,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 ),
                                 child: Text(
                                   t('rideshare_confirm_payment',
-                                      fallback: 'Confirm Payment'),
+                                      fallback: 'পেমেন্ট নিশ্চিত করুন'),
                                   style: GoogleFonts.inter(
                                       fontWeight: FontWeight.w700),
                                 ),
@@ -391,9 +392,9 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                   ? 'Cancelling...'
                                   : (ride.isSearching
                                       ? t('rideshare_cancel_request',
-                                          fallback: 'Cancel Request')
+                                          fallback: 'রিকোয়েস্ট বাতিল')
                                       : t('rideshare_cancel_ride',
-                                          fallback: 'Cancel Ride')),
+                                          fallback: 'রাইড বাতিল')),
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -430,9 +431,9 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             label: Text(
                               _isReportingCancellation
                                   ? t('rideshare_submitting',
-                                      fallback: 'Submitting...')
+                                      fallback: 'পাঠানো হচ্ছে...')
                                   : t('rideshare_report_driver_cancellation',
-                                      fallback: 'Report Driver Cancellation'),
+                                      fallback: 'ড্রাইভার ক্যানসেলের রিপোর্ট'),
                               style: GoogleFonts.inter(
                                   fontWeight: FontWeight.w700),
                             ),
@@ -459,7 +460,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
             icon: ride.isInProgress
                 ? Icons.navigation_rounded
                 : Icons.radar_rounded,
-            title: t('rideshare_live_trip_map', fallback: 'Live Trip Map'),
+            title: t('rideshare_live_trip_map', fallback: 'লাইভ ট্রিপ ম্যাপ'),
             subtitle: ride.isInProgress
                 ? t('rideshare_live_trip_map_subtitle',
                     fallback:
@@ -468,8 +469,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                     fallback:
                         'Watch your driver approach in real time with the active route preview.'),
             badge: ride.isInProgress
-                ? t('rideshare_live_badge', fallback: 'Live')
-                : t('rideshare_tracking_badge', fallback: 'Tracking'),
+                ? t('rideshare_live_badge', fallback: 'লাইভ')
+                : t('rideshare_tracking_badge', fallback: 'ট্র্যাকিং'),
             accentColor: ride.isInProgress
                 ? const Color(0xFF0F766E)
                 : const Color(0xFF6366F1),
@@ -495,10 +496,10 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
   String _passengerStatusLabel(Ride ride) {
     if (ride.isSearching) {
       return t('rideshare_finding_driver_status',
-          fallback: 'Looking for a driver');
+          fallback: 'ড্রাইভার খোঁজা হচ্ছে');
     }
     if (ride.isAccepted) {
-      return t('rideshare_driver_assigned', fallback: 'Driver confirmed');
+      return t('rideshare_driver_assigned', fallback: 'ড্রাইভার নিশ্চিত');
     }
     return ride.statusDisplay;
   }
@@ -531,7 +532,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      t('rideshare_pickup', fallback: 'Pickup').toUpperCase(),
+                      t('rideshare_pickup', fallback: 'পিকআপ').toUpperCase(),
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -582,7 +583,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      t('rideshare_drop', fallback: 'Drop').toUpperCase(),
+                      t('rideshare_drop', fallback: 'গন্তব্য').toUpperCase(),
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -895,7 +896,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
     final fare = ride.finalFare ?? ride.fareEstimate;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 62, 16, 24),
       child: Column(
         children: [
           Container(
