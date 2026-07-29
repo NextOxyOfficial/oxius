@@ -417,6 +417,55 @@ class RideshareService {
     }
   }
 
+  /// Rate a completed ride (1-5 stars, optional words). Re-rating the same
+  /// ride edits the earlier verdict server-side.
+  static Future<RideshareApiResult<Map<String, dynamic>>> rateRide({
+    required String rideId,
+    required int stars,
+    String comment = '',
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await _post(
+        Uri.parse('$_baseUrl/$rideId/rate/'),
+        headers: headers,
+        body: json.encode({'stars': stars, 'comment': comment}),
+      );
+      return _parseResponseAsync<Map<String, dynamic>>(
+        response,
+        (data) => Map<String, dynamic>.from(data as Map),
+      );
+    } catch (e) {
+      return RideshareApiResult<Map<String, dynamic>>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  /// A driver's reviews page + the aggregate for their card.
+  static Future<RideshareApiResult<Map<String, dynamic>>> fetchDriverReviews(
+    String driverUserId, {
+    int page = 1,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await _get(
+        Uri.parse('$_baseUrl/drivers/$driverUserId/reviews/?page=$page'),
+        headers: headers,
+      );
+      return _parseResponseAsync<Map<String, dynamic>>(
+        response,
+        (data) => Map<String, dynamic>.from(data as Map),
+      );
+    } catch (e) {
+      return RideshareApiResult<Map<String, dynamic>>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
   // ==================== Ride Actions ====================
 
   static Future<RideshareApiResult<Ride>> acceptRide(String rideId) async {

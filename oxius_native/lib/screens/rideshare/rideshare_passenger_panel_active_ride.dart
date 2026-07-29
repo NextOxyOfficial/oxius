@@ -154,50 +154,44 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: ride.isSearching
-                          ? [const Color(0xFFF59E0B), const Color(0xFFD97706)]
-                          : ride.isInProgress
-                              ? [
-                                  const Color(0xFF10B981),
-                                  const Color(0xFF059669)
-                                ]
-                              : [
-                                  const Color(0xFF6366F1),
-                                  const Color(0xFF8B5CF6)
-                                ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
                     borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(15)),
+                        BorderRadius.vertical(top: Radius.circular(15)),
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                    ),
                   ),
                   child: Row(
                     children: [
                       if (ride.isSearching)
                         const SizedBox(
-                          width: 18,
-                          height: 18,
+                          width: 16,
+                          height: 16,
                           child: AdsyLoadingIndicator(
                             strokeWidth: 2.5,
-                            color: Colors.white,
+                            color: Color(0xFF0F172A),
                           ),
                         )
                       else
-                        const Icon(
-                          Icons.check_circle_rounded,
-                          size: 18,
-                          color: Colors.white,
+                        Container(
+                          width: 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            color: ride.isInProgress
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF0F172A),
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           _passengerStatusLabel(ride),
                           style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0F172A),
                           ),
                         ),
                       ),
@@ -715,6 +709,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   isPro: driver.userIsPro,
                   completedTrips: driver.totalTrips,
                 ),
+                const SizedBox(height: 3),
+                _buildDriverRatingPill(driver),
                 if (driver.defaultVehicle != null)
                   Text(
                     '${driver.defaultVehicle!.vehicleIcon} ${driver.defaultVehicle!.registrationNumber}',
@@ -732,13 +728,13 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
             onTap: () => _openDriverChat(_activeRide!),
             child: Container(
               margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.25)),
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
               ),
+              alignment: Alignment.center,
               child: Image.asset(
                 'assets/images/chat_icon.png',
                 width: 18,
@@ -763,22 +759,606 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
               }
             },
             child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                ),
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFF0F172A),
+                shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.phone_rounded,
-                size: 20,
-                color: Color(0xFF10B981),
+                size: 18,
+                color: Colors.white,
               ),
             ),
           ),
       ],
+    );
+  }
+
+  // ── Driver rating + reviews ───────────────────────────────────────────────
+
+  /// The ★ pill on the driver card. Tapping it opens the reviews behind the
+  /// number — a rating you cannot inspect is just a decoration.
+  Widget _buildDriverRatingPill(DriverProfile driver) {
+    final hasRatings = driver.ratingCount > 0;
+    return GestureDetector(
+      onTap: () => _showDriverReviewsSheet(driver),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7E6),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.star_rounded,
+                size: 14, color: Color(0xFFF59E0B)),
+            const SizedBox(width: 3),
+            Text(
+              hasRatings
+                  ? '${driver.ratingAverage.toStringAsFixed(2)} '
+                      '(${driver.ratingCount})'
+                  : 'নতুন ড্রাইভার',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF92400E),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDriverReviewsSheet(DriverProfile driver) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _DriverReviewsSheet(driver: driver),
+    );
+  }
+
+  // ── Completed ride: receipt + rating ──────────────────────────────────────
+
+  Widget _buildRideSuccessView() {
+    final ride = _completedRide!;
+    final driver = ride.assignedDriver;
+    final fare = ride.finalFare ?? ride.fareEstimate;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFF1F5F9)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // The badge-check moment.
+                Container(
+                  width: 74,
+                  height: 74,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF0F172A),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check_rounded,
+                      color: Colors.white, size: 40),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'রাইড সম্পন্ন হয়েছে!',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'আশা করি যাত্রাটি ভালো লেগেছে',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                // Receipt
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildReceiptRow('কোথা থেকে', ride.pickupAddress),
+                      const SizedBox(height: 10),
+                      _buildReceiptRow('গন্তব্য', ride.dropAddress),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Divider(height: 1, color: Color(0xFFE2E8F0)),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildReceiptRow(
+                              'মোট ভাড়া',
+                              '৳${fare.toStringAsFixed(0)}',
+                              emphasize: true,
+                            ),
+                          ),
+                          if (driver != null)
+                            Expanded(
+                              child: _buildReceiptRow(
+                                'ড্রাইভার',
+                                driver.userName,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 22),
+                // Rate the driver — the receipt is where the verdict happens.
+                if (driver != null && !_rideRatingSubmitted) ...[
+                  Text(
+                    'ড্রাইভারকে রেটিং দিন',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (i) {
+                      final filled = i < _ratingStars;
+                      return GestureDetector(
+                        onTap: () => _rebuild(() => _ratingStars = i + 1),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(
+                            filled
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            size: 36,
+                            color: filled
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFFCBD5E1),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _ratingCommentController,
+                    maxLines: 2,
+                    style: GoogleFonts.inter(
+                        fontSize: 13.5, color: const Color(0xFF0F172A)),
+                    decoration: InputDecoration(
+                      hintText: 'অভিজ্ঞতা লিখুন (ঐচ্ছিক)',
+                      hintStyle: GoogleFonts.inter(
+                          fontSize: 13, color: const Color(0xFF94A3B8)),
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _ratingStars > 0 && !_isSubmittingRating
+                          ? _submitDriverRating
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F172A),
+                        disabledBackgroundColor: const Color(0xFFE2E8F0),
+                        foregroundColor: Colors.white,
+                        disabledForegroundColor: const Color(0xFF94A3B8),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: _isSubmittingRating
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: AdsyLoadingIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'রেটিং জমা দিন',
+                              style: GoogleFonts.inter(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                    ),
+                  ),
+                ] else if (_rideRatingSubmitted) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_circle_rounded,
+                          size: 18, color: Color(0xFF10B981)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'রেটিংয়ের জন্য ধন্যবাদ!',
+                        style: GoogleFonts.inter(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _resetAfterCompletedRide,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F172A),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                'নতুন রাইড খুঁজুন',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value,
+      {bool emphasize = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF94A3B8),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.inter(
+            fontSize: emphasize ? 17 : 13,
+            fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submitDriverRating() async {
+    final ride = _completedRide;
+    if (ride == null || _ratingStars < 1) return;
+    _rebuild(() => _isSubmittingRating = true);
+    final result = await RideshareService.rateRide(
+      rideId: ride.id,
+      stars: _ratingStars,
+      comment: _ratingCommentController.text.trim(),
+    );
+    if (!mounted) return;
+    _rebuild(() {
+      _isSubmittingRating = false;
+      if (result.success) _rideRatingSubmitted = true;
+    });
+    if (!result.success) {
+      AdsyToast.error(context, 'রেটিং জমা দেওয়া যায়নি — আবার চেষ্টা করুন');
+    }
+  }
+
+  void _resetAfterCompletedRide() {
+    _rebuild(() {
+      _dismissedCompletedRideId = _completedRide?.id;
+      _completedRide = null;
+      _ratingStars = 0;
+      _rideRatingSubmitted = false;
+      _ratingCommentController.clear();
+      _bookingStep = 0;
+      _dropController.clear();
+      _dropPoint = null;
+      _estimate = null;
+    });
+  }
+}
+
+/// The reviews behind a driver's rating pill: aggregate on top, then the
+/// individual verdicts, newest first, with a load-more tail.
+class _DriverReviewsSheet extends StatefulWidget {
+  final DriverProfile driver;
+  const _DriverReviewsSheet({required this.driver});
+
+  @override
+  State<_DriverReviewsSheet> createState() => _DriverReviewsSheetState();
+}
+
+class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
+  bool _loading = true;
+  bool _loadingMore = false;
+  bool _hasNext = false;
+  int _page = 1;
+  double _average = 0;
+  int _count = 0;
+  final List<Map<String, dynamic>> _reviews = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load({bool more = false}) async {
+    if (more) {
+      setState(() => _loadingMore = true);
+    }
+    final result = await RideshareService.fetchDriverReviews(
+      widget.driver.userId,
+      page: more ? _page + 1 : 1,
+    );
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      _loadingMore = false;
+      final data = result.data;
+      if (result.success && data != null) {
+        _average =
+            double.tryParse(data['average']?.toString() ?? '') ?? _average;
+        _count = int.tryParse(data['count']?.toString() ?? '') ?? _count;
+        _page = int.tryParse(data['page']?.toString() ?? '') ?? _page;
+        _hasNext = data['has_next'] == true;
+        final rows = data['results'];
+        if (rows is List) {
+          if (!more) _reviews.clear();
+          _reviews.addAll(
+              rows.whereType<Map>().map((r) => Map<String, dynamic>.from(r)));
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+    return Container(
+      constraints: BoxConstraints(maxHeight: height * 0.75),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 38,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: const Color(0xFFF1F5F9),
+                backgroundImage: widget.driver.userAvatar != null
+                    ? NetworkImage(widget.driver.userAvatar!)
+                    : null,
+                child: widget.driver.userAvatar == null
+                    ? const Icon(Icons.person_rounded,
+                        color: Color(0xFF64748B))
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.driver.userName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    Text(
+                      '${widget.driver.totalTrips}টি সম্পন্ন রাইড',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded,
+                          size: 18, color: Color(0xFFF59E0B)),
+                      const SizedBox(width: 3),
+                      Text(
+                        _count > 0 ? _average.toStringAsFixed(2) : '—',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '$_countটি রিভিউ',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Flexible(
+            child: _loading
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: AdsyLoadingIndicator(color: Color(0xFF0F172A)),
+                  )
+                : _reviews.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        child: Text(
+                          'এখনো কোনো রিভিউ নেই',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.only(top: 6),
+                        itemCount: _reviews.length + (_hasNext ? 1 : 0),
+                        separatorBuilder: (_, __) => const Divider(
+                            height: 1, color: Color(0xFFF8FAFC)),
+                        itemBuilder: (_, i) {
+                          if (i >= _reviews.length) {
+                            return Center(
+                              child: TextButton(
+                                onPressed: _loadingMore
+                                    ? null
+                                    : () => _load(more: true),
+                                child: Text(
+                                  _loadingMore ? 'লোড হচ্ছে…' : 'আরো দেখুন',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          final r = _reviews[i];
+                          final stars =
+                              int.tryParse(r['stars']?.toString() ?? '') ?? 0;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        r['rater_name']?.toString() ?? 'যাত্রী',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      children: List.generate(
+                                        5,
+                                        (s) => Icon(
+                                          s < stars
+                                              ? Icons.star_rounded
+                                              : Icons.star_outline_rounded,
+                                          size: 13,
+                                          color: s < stars
+                                              ? const Color(0xFFF59E0B)
+                                              : const Color(0xFFCBD5E1),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if ((r['comment']?.toString() ?? '')
+                                    .isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    r['comment'].toString(),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      height: 1.4,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -72,6 +72,10 @@ class VehicleSerializer(serializers.ModelSerializer):
 class DriverProfileSerializer(serializers.ModelSerializer):
     user = RideUserSerializer(read_only=True)
     default_vehicle = serializers.SerializerMethodField()
+    # Passenger-facing trust: computed from RideRating rows so the number on
+    # the card can never disagree with the reviews behind it.
+    rating_average = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
     outstanding_cash_due_count = serializers.SerializerMethodField()
     outstanding_cash_due_amount = serializers.SerializerMethodField()
     cash_due_limit_reached = serializers.SerializerMethodField()
@@ -94,6 +98,8 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             "last_location_at",
             "total_trips",
             "total_earnings",
+            "rating_average",
+            "rating_count",
             "default_vehicle",
             "outstanding_cash_due_count",
             "outstanding_cash_due_amount",
@@ -113,6 +119,21 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def _rating_agg(self, obj):
+        cached = getattr(obj, "_rating_agg_cache", None)
+        if cached is None:
+            from django.db.models import Avg, Count
+
+            cached = obj.ratings.aggregate(avg=Avg("stars"), n=Count("id"))
+            obj._rating_agg_cache = cached
+        return cached
+
+    def get_rating_average(self, obj):
+        return round(self._rating_agg(obj)["avg"] or 0.0, 2)
+
+    def get_rating_count(self, obj):
+        return self._rating_agg(obj)["n"] or 0
 
     def get_default_vehicle(self, obj):
         # Prefer prefetch cache (set via Prefetch in the queryset) to avoid

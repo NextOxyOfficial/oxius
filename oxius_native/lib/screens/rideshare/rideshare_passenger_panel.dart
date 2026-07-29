@@ -115,6 +115,16 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   // Booking step: 0=drop input, 1=pickup input, 2=vehicle+payment+confirm
   int _bookingStep = 0;
 
+  // Completed-ride receipt: the ride that just finished stays on screen as a
+  // receipt until "নতুন রাইড খুঁজুন", and this is where the driver gets rated.
+  Ride? _completedRide;
+  String? _dismissedCompletedRideId;
+  int _ratingStars = 0;
+  bool _isSubmittingRating = false;
+  bool _rideRatingSubmitted = false;
+  final TextEditingController _ratingCommentController =
+      TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -144,6 +154,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _ts.removeListener(_onTranslationsChanged);
     WidgetsBinding.instance.removeObserver(this);
     _pickupController.dispose();
+    _ratingCommentController.dispose();
     _dropController.dispose();
     _searchDebounce?.cancel();
     _statusRefreshTimer?.cancel();
@@ -522,6 +533,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   void _applyRideState(Ride? ride, {required bool isLoading}) {
+    // A ride that arrives already completed becomes the receipt, not the
+    // active ride — unless the passenger already dismissed that receipt.
+    if (ride != null &&
+        ride.isCompleted &&
+        ride.id != _dismissedCompletedRideId) {
+      _completedRide = ride;
+      ride = null;
+    }
     setState(() {
       _activeRide = ride;
       _searchStatusMessage = _deriveSearchStatusMessage(ride);
@@ -1754,6 +1773,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     }
 
     // Active ride takes full priority Ã¢â‚¬â€ booking form is completely hidden
+    // A just-finished ride shows its receipt until dismissed.
+    if (_completedRide != null) {
+      return _buildRideSuccessView();
+    }
+
     if (_activeRide != null) {
       return AdsyRefreshIndicator(
         color: const Color(0xFF6366F1),

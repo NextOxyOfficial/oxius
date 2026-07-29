@@ -1257,3 +1257,105 @@ class NearbyDriversView(RideshareApiMixin, APIView):
         ]
 
         return api_success(drivers_data)
+
+
+class RideRateView(RideshareApiMixin, APIView):
+    """The rider rates a completed ride: stars 1-5 plus optional words.
+
+    Re-posting edits the existing verdict — the trip is the unit, so one trip
+    can never carry two ratings from the same person.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        from .models import RideRating
+
+        ride = (
+            Ride.objects.select_related("assigned_driver__user")
+            .filter(id=id, rider=request.user)
+            .first()
+        )
+        if ride is None:
+            raise Http404
+        if ride.status != Ride.STATUS_COMPLETED:
+            raise ValidationError({"detail": "শুধু সম্পন্ন রাইড রেট করা যায়।"})
+        if ride.assigned_driver_id is None:
+            raise ValidationError({"detail": "এই রাইডে কোনো ড্রাইভার ছিল না।"})
+
+        try:
+            stars = int(request.data.get("stars"))
+        except (TypeError, ValueError):
+            stars = 0
+        if not 1 <= stars <= 5:
+            raise ValidationError({"stars": "১ থেকে ৫ এর মধ্যে দিন।"})
+        comment = str(request.data.get("comment") or "").strip()[:1000]
+
+        rating, _created = RideRating.objects.update_or_create(
+            ride=ride,
+            defaults={
+                "rater": request.user,
+                "driver_id": ride.assigned_driver_id,
+                "stars": stars,
+                "comment": comment,
+            },
+        )
+        return Response(
+            {
+                "success": True,
+                "stars": rating.stars,
+                "comment": rating.comment,
+            }
+        )
+
+
+class DriverReviewsView(RideshareApiMixin, APIView):
+    """Public list of a driver's reviews + the aggregate shown on their card."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        from django.core.paginator import Paginator
+        from django.db.models import Avg, Count
+
+        from .models import RideRating
+
+        driver = DriverProfile.objects.filter(user_id=user_id).first()
+        if driver is None:
+            raise Http404
+
+        qs = RideRating.objects.filter(driver=driver).select_related("rater")
+        agg = qs.aggregate(avg=Avg("stars"), n=Count("id"))
+
+        try:
+            page_number = max(1, int(request.query_params.get("page") or 1))
+        except (TypeError, ValueError):
+            page_number = 1
+        page = Paginator(qs, 20).get_page(page_number)
+
+        def rater_name(user):
+            full = (user.get_full_name() or "").strip()
+            return full or getattr(user, "username", "") or "যাত্রী"
+
+        return Response(
+            {
+                "average": round(agg["avg"] or 0.0, 2),
+                "count": agg["n"] or 0,
+                "page": page.number,
+                "has_next": page.has_next(),
+                "results": [
+                    {
+                        "stars": r.stars,
+                        "comment": r.comment,
+                        "rater_name": rater_name(r.rater),
+                        "rater_avatar": (
+                            r.rater.image.url
+                            if getattr(r.rater, "image", None)
+                            else ""
+                        ),
+                        "created_at": r.created_at.isoformat(),
+                    }
+                    for r in page.object_list
+                ],
+            }
+        )

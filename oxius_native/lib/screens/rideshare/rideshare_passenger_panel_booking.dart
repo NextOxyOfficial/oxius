@@ -65,16 +65,31 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
   }
 
   Widget _buildCurrentStepPanel() {
-    switch (_bookingStep) {
-      case 0:
-        return _buildDropStepPanel();
-      case 1:
-        return _buildPickupStepPanel();
-      case 2:
-        return _buildConfirmStepPanel();
-      default:
-        return _buildDropStepPanel();
-    }
+    final Widget panel = switch (_bookingStep) {
+      1 => _buildPickupStepPanel(),
+      2 => _buildConfirmStepPanel(),
+      _ => _buildDropStepPanel(),
+    };
+    // The stage slides in like a sheet advancing, not a hard swap.
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 260),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.06),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        ),
+      ),
+      child: KeyedSubtree(
+        key: ValueKey(_bookingStep),
+        child: panel,
+      ),
+    );
   }
 
   // ── Step 0: Drop-off ─────────────────────────────────────────────────────────
@@ -95,19 +110,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         children: [
           // Title
           Text(
-            'কোথায় যেতে চান?',
+            'কোথায় যাবেন?',
             style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFF1E293B),
+              color: const Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'আপনার গন্তব্য লিখুন',
-            style: GoogleFonts.inter(fontSize: 13, color: _kSlate),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Drop input
           _buildSearchInput(
@@ -135,21 +145,17 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               onSuggestionTap: _selectDropSuggestion,
             ),
           ] else if (_dropController.text.isEmpty) ...[
-            const SizedBox(height: 14),
-            InkWell(
+            const SizedBox(height: 6),
+            _buildQuickDestinationRow(
+              icon: Icons.star_rounded,
+              label: 'সেভ করা জায়গা বেছে নিন',
               onTap: _showCustomLocationSheet,
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  '+ আপনার নিজের বাড়ি বা ব্যবসার লোকেশন অ্যাড করুন',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF9A3412),
-                  ),
-                ),
-              ),
+            ),
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            _buildQuickDestinationRow(
+              icon: Icons.add_location_alt_outlined,
+              label: 'নিজের বাড়ি বা ব্যবসার লোকেশন যোগ করুন',
+              onTap: _showCustomLocationSheet,
             ),
           ],
 
@@ -165,21 +171,10 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 }),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -472,11 +467,10 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
     bool isSearching = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kPurple.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Row(
         children: [
@@ -1215,6 +1209,10 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
 
   Widget _buildVehicleOption(String type, String icon, String label) {
     final isSelected = _selectedVehicleType == type;
+    const seats = {'bike': '১ জন', 'car': '৪ জন', 'cng': '৩ জন'};
+    final fare = isSelected && _estimate != null
+        ? '৳${_estimate!.fare.toStringAsFixed(0)}'
+        : '';
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -1224,33 +1222,103 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
           decoration: BoxDecoration(
-            gradient: isSelected
-                ? const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  )
-                : null,
-            color: isSelected ? null : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0),
+              color: isSelected
+                  ? const Color(0xFF0F172A)
+                  : const Color(0xFFE2E8F0),
+              width: isSelected ? 1.6 : 1,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             children: [
-              Text(icon, style: const TextStyle(fontSize: 24)),
+              Text(
+                seats[type] ?? '',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF94A3B8),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(icon, style: const TextStyle(fontSize: 26)),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: GoogleFonts.inter(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : const Color(0xFF64748B),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0F172A),
                 ),
               ),
+              if (fare.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  fare,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// One of the quiet helper rows under the destination field — the
+  /// screenshot's "Choose a Saved Place" pattern.
+  Widget _buildQuickDestinationRow({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 17, color: const Color(0xFF0F172A)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded,
+                size: 20, color: Color(0xFF94A3B8)),
+          ],
         ),
       ),
     );
@@ -1401,29 +1469,11 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
 
     return SizedBox(
       width: double.infinity,
-      child: Container(
-        decoration: canBook
-            ? BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              )
-            : null,
-        child: ElevatedButton(
+      child: ElevatedButton(
           onPressed: canBook && !_isCreatingRide ? _createRide : null,
           style: ElevatedButton.styleFrom(
             backgroundColor:
-                canBook ? Colors.transparent : const Color(0xFFE2E8F0),
+                canBook ? const Color(0xFF0F172A) : const Color(0xFFE2E8F0),
             foregroundColor: canBook ? Colors.white : const Color(0xFF94A3B8),
             disabledForegroundColor: const Color(0xFF94A3B8),
             disabledBackgroundColor: const Color(0xFFE2E8F0),
@@ -1456,9 +1506,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     Text(
                       canBook
                           ? t('rideshare_book_ride_now',
-                              fallback: 'Book Ride Now')
+                              fallback: 'রাইড কনফার্ম করুন')
                           : t('rideshare_enter_locations',
-                              fallback: 'Enter Locations'),
+                              fallback: 'লোকেশন দিন'),
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -1466,7 +1516,6 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     ),
                   ],
                 ),
-        ),
       ),
     );
   }

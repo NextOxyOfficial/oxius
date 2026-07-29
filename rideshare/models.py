@@ -628,3 +628,36 @@ class DriverLocation(models.Model):
 
     def __str__(self):
         return f"DriverLocation({self.driver_id}, {self.recorded_at})"
+
+
+class RideRating(models.Model):
+    """The passenger's verdict on a completed ride.
+
+    One row per ride (not per driver-passenger pair): the thing being rated
+    is the trip that actually happened, and re-rating the same trip edits
+    that verdict instead of stacking a second one. Driver aggregates are
+    computed from these rows so they can never drift from the reviews shown.
+    """
+
+    ride = models.OneToOneField(
+        Ride, on_delete=models.CASCADE, related_name="rating"
+    )
+    rater = models.ForeignKey(
+        "base.User", on_delete=models.CASCADE, related_name="ride_ratings_given"
+    )
+    driver = models.ForeignKey(
+        DriverProfile, on_delete=models.CASCADE, related_name="ratings"
+    )
+    stars = models.PositiveSmallIntegerField()
+    comment = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["driver", "-created_at"], name="rs_rating_driver_idx"),
+        ]
+
+    def __str__(self):
+        return f"RideRating({self.ride_id}, {self.stars})"

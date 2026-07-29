@@ -30,6 +30,8 @@ from .views import (
     SearchableLocationCreateView,
     VehicleDetailView,
     VehicleListCreateView,
+    DriverReviewsView,
+    RideRateView,
 )
 
 urlpatterns = [
@@ -65,6 +67,11 @@ urlpatterns = [
         name="rides-nearby-drivers",
     ),
     path("drivers/profile/", DriverProfileView.as_view(), name="rides-driver-profile"),
+    path(
+        "drivers/<uuid:user_id>/reviews/",
+        DriverReviewsView.as_view(),
+        name="rides-driver-reviews",
+    ),
     path("drivers/apply/", DriverApplyView.as_view(), name="rides-driver-apply"),
     path(
         "drivers/toggle-online/",
@@ -108,6 +115,7 @@ urlpatterns = [
     ),
     path("<uuid:id>/", RideDetailView.as_view(), name="rides-detail"),
     path("<uuid:id>/accept/", RideAcceptView.as_view(), name="rides-accept"),
+    path("<uuid:id>/rate/", RideRateView.as_view(), name="rides-rate"),
     path("<uuid:id>/skip/", RideSkipView.as_view(), name="rides-skip"),
     path("<uuid:id>/cancel/", RideCancelView.as_view(), name="rides-cancel"),
     path(

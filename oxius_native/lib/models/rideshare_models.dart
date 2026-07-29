@@ -287,6 +287,11 @@ class DriverProfile {
   final DateTime? lastLocationAt;
   final int totalTrips;
   final double totalEarnings;
+
+  /// Passenger-facing trust, computed server-side from RideRating rows so
+  /// the number on the card always matches the reviews behind it.
+  final double ratingAverage;
+  final int ratingCount;
   final int outstandingCashDueCount;
   final double outstandingCashDueAmount;
   final bool cashDueLimitReached;
@@ -315,6 +320,8 @@ class DriverProfile {
     this.lastLocationAt,
     required this.totalTrips,
     required this.totalEarnings,
+    this.ratingAverage = 0,
+    this.ratingCount = 0,
     required this.outstandingCashDueCount,
     required this.outstandingCashDueAmount,
     required this.cashDueLimitReached,
@@ -351,6 +358,10 @@ class DriverProfile {
           : null,
       totalTrips: json['total_trips'] ?? 0,
       totalEarnings: double.tryParse(json['total_earnings']?.toString() ?? '') ?? 0.0,
+      ratingAverage:
+          double.tryParse(json['rating_average']?.toString() ?? '') ?? 0.0,
+      ratingCount:
+          int.tryParse(json['rating_count']?.toString() ?? '') ?? 0,
       outstandingCashDueCount: json['outstanding_cash_due_count'] ?? 0,
       outstandingCashDueAmount:
           double.tryParse(json['outstanding_cash_due_amount']?.toString() ?? '') ?? 0.0,
