@@ -1831,10 +1831,33 @@ class FCMService {
     );
     AgoraCallService.markCallAccepted();
 
-    // Use setCallConnected to mark call as connected (stops ringtone, updates call history on iOS)
-    // Then end the CallKit UI - this is the correct flow for accepted calls
+    // Tell the caller NOW, not when the call screen finishes building. On iOS
+    // this event arrives while the app is cold-starting from a VoIP push, and
+    // the caller was left ringing at a phone that had already answered.
+    // CallScreen sends the same status when it mounts; the server takes the
+    // repeat as a no-op.
+    if (callId != null || channelName.isNotEmpty) {
+      unawaited(AgoraCallService.sendCallStatus(
+        receiverId: callerId,
+        channelName: channelName,
+        status: 'accepted',
+        callType: callType,
+        callId: callId,
+      ));
+    }
+
+    // Mark the CallKit call connected — this stops the ringtone and starts
+    // the call in iOS call history.
     FlutterCallkitIncoming.setCallConnected(callkitUuid);
-    FlutterCallkitIncoming.endCall(callkitUuid);
+    if (Platform.isAndroid) {
+      // Android's CallKit surface is a notification; dismissing it here keeps
+      // the shade clean while our own call screen takes over.
+      FlutterCallkitIncoming.endCall(callkitUuid);
+    }
+    // iOS deliberately keeps the CallKit call alive: CallKit owns the audio
+    // session, and ending the call here deactivates it underneath Agora — the
+    // accepted call then connects to silence and dies. It is ended together
+    // with the real call (hangup, remote end, or dismissVisibleCallUi).
 
     // Navigate to call screen - use pending navigation if navigator not ready (app cold start)
     // Use special type 'accepted_call' so _navigateBasedOnDataNow navigates directly to CallScreen
