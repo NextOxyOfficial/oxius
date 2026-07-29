@@ -689,6 +689,22 @@ def send_call_notification(request):
             delivery_result.get('voip_sent_to')
             or delivery_result.get('sent_to')
         )
+        # One line per ring, so a call that never arrives can be traced
+        # without reproducing it: which channels carried it, how many
+        # devices, and any error APNs or FCM returned.
+        logger.warning(
+            'CALLTRACE ring call=%s %s -> %s type=%s voip=%s/%s fcm=%s/%s '
+            'reachable=%s voip_err=%s fcm_err=%s',
+            str(call_session.id)[:8], caller.email, callee.email,
+            call_session.call_type,
+            delivery_result.get('voip_sent_to'),
+            delivery_result.get('voip_total_tokens'),
+            delivery_result.get('sent_to'),
+            delivery_result.get('total_tokens'),
+            reachable,
+            delivery_result.get('voip_error'),
+            delivery_result.get('fcm_error'),
+        )
         return Response({
             'success': True,
             'call_id': str(call_session.id),
@@ -766,6 +782,11 @@ def send_call_status(request):
             },
         )
         delivery_result = _send_call_data_message(target_user=receiver, payload=payload)
+        logger.warning(
+            'CALLTRACE status call=%s %s -> %s status=%s',
+            str(call_session.id)[:8] if call_session else '?',
+            sender.email, receiver.email, status_value,
+        )
 
         return Response({
             'success': True,
