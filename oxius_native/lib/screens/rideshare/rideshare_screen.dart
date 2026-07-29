@@ -2,13 +2,23 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../../services/auth_service.dart';
 import '../../services/fcm_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/rideshare_drawer.dart';
+import 'rideshare_account_screen.dart';
 import 'rideshare_passenger_panel.dart';
 import 'rideshare_driver_panel.dart';
 
+/// The rideshare shell: a full-bleed map with the controls floating on top.
+///
+/// There is deliberately no AppBar. A ride-hailing screen is a map you act
+/// on, and a solid header steals the top eighth of it while telling the rider
+/// something they already know. What used to live in that bar now floats over
+/// the map exactly where the design puts it: the drawer button top-left, the
+/// rider's own avatar top-right, and nothing else competing with the sheet
+/// that rises from the bottom.
 class RideshareScreen extends StatefulWidget {
   const RideshareScreen({super.key});
 
@@ -26,7 +36,8 @@ class _RideshareScreenState extends State<RideshareScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _passengerPanelKey = const RidesharePassengerPanelKey();
 
-  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+  String t(String key, {required String fallback}) =>
+      _ts.t(key, fallback: fallback);
 
   @override
   void initState() {
@@ -93,7 +104,8 @@ class _RideshareScreenState extends State<RideshareScreen> {
 
   void _handleRideshareEvent(Map<String, dynamic> payload) {
     final requestedMode = payload['mode']?.toString();
-    if (!mounted || (requestedMode != 'driver' && requestedMode != 'passenger')) {
+    if (!mounted ||
+        (requestedMode != 'driver' && requestedMode != 'passenger')) {
       return;
     }
 
@@ -105,120 +117,138 @@ class _RideshareScreenState extends State<RideshareScreen> {
     _ensureModePanel(requestedMode!);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: _buildAppBar(),
-      drawer: RideshareDrawer(
-        activeTab: _mode,
-        onModeSelected: (m) => _setMode(m),
-        onOpenCustomLocation: () => _passengerPanelKey.openCustomLocationSheet(),
-      ),
-      body: IndexedStack(
-        index: _mode == 'passenger' ? 0 : 1,
-        children: [
-          _passengerPanel ?? const SizedBox.shrink(),
-          _driverPanel ?? const SizedBox.shrink(),
-        ],
+  void _openAccount() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RideshareAccountScreen(
+          onOpenSavedPlaces: () =>
+              _passengerPanelKey.openCustomLocationSheet(),
+        ),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
-      leading: IconButton(
-        onPressed: () => Navigator.pop(context),
-        icon: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: const Icon(
-            Icons.arrow_back_rounded,
-            size: 18,
-            color: Color(0xFF1E293B),
-          ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF1F3F6),
+      // No AppBar: the map runs edge to edge behind the status bar and the
+      // controls float over it.
+      drawer: RideshareDrawer(
+        activeTab: _mode,
+        onModeSelected: (m) => _setMode(m),
+        onOpenCustomLocation: () =>
+            _passengerPanelKey.openCustomLocationSheet(),
+      ),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark.copyWith(
+          statusBarColor: Colors.transparent,
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IndexedStack(
+                index: _mode == 'passenger' ? 0 : 1,
+                children: [
+                  _passengerPanel ?? const SizedBox.shrink(),
+                  _driverPanel ?? const SizedBox.shrink(),
+                ],
+              ),
+            ),
+            _buildFloatingControls(),
+          ],
         ),
       ),
-      title: Row(
+    );
+  }
+
+  /// The two circular controls over the map: menu on the left, the rider's
+  /// own face on the right.
+  Widget _buildFloatingControls() {
+    final user = AuthService.currentUser;
+    final avatar = user?.profilePicture ?? '';
+
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 10,
+      left: 16,
+      right: 16,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: const Icon(
-              Icons.directions_car_filled_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
+          _FloatingCircle(
+            onTap: () => _scaffoldKey.currentState?.openDrawer(),
+            child: const Icon(Icons.menu_rounded,
+                size: 20, color: Color(0xFF0F172A)),
           ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                t('rideshare_title', fallback: 'Ride Share'),
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1E293B),
-                ),
-              ),
-              Text(
-                t('rideshare_subtitle', fallback: 'Book a ride or drive'),
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-            ],
+          _FloatingCircle(
+            onTap: _openAccount,
+            padding: EdgeInsets.zero,
+            child: ClipOval(
+              child: avatar.isNotEmpty
+                  ? Image.network(
+                      avatar,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const _AvatarFallback(),
+                    )
+                  : const _AvatarFallback(),
+            ),
           ),
         ],
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10),
-          child: GestureDetector(
-            onTap: () => _scaffoldKey.currentState?.openDrawer(),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.menu_rounded,
-                size: 20,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-          ),
-        ),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          color: const Color(0xFFE2E8F0),
-        ),
       ),
     );
   }
 }
 
+/// White circle with the soft lift the design gives its map controls.
+class _FloatingCircle extends StatelessWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  final EdgeInsets padding;
 
+  const _FloatingCircle({
+    required this.child,
+    required this.onTap,
+    this.padding = const EdgeInsets.all(12),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        padding: padding,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _AvatarFallback extends StatelessWidget {
+  const _AvatarFallback();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 44,
+        height: 44,
+        color: const Color(0xFFF1F5F9),
+        child: const Icon(Icons.person_rounded,
+            size: 22, color: Color(0xFF64748B)),
+      );
+}

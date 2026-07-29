@@ -305,8 +305,21 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                       if (ride.assignedDriver != null) ...[
                         const SizedBox(height: 16),
                         const Divider(height: 1),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
+                        // "<Driver> is on their way" — the reference's line,
+                        // and the one thing a waiting rider wants confirmed.
+                        Text(
+                          '${ride.assignedDriver!.userName} is on their way',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         _buildDriverInfo(ride.assignedDriver!),
+                        const SizedBox(height: 12),
+                        _buildAssignedVehicleStrip(ride),
                       ],
 
                       const SizedBox(height: 16),
@@ -711,14 +724,6 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 ),
                 const SizedBox(height: 3),
                 _buildDriverRatingPill(driver),
-                if (driver.defaultVehicle != null)
-                  Text(
-                    '${driver.defaultVehicle!.vehicleIcon} ${driver.defaultVehicle!.registrationNumber}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -773,6 +778,63 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
             ),
           ),
       ],
+    );
+  }
+
+  /// The reference's grey vehicle row: artwork, model + plate, rider count
+  /// and the fare for this trip.
+  Widget _buildAssignedVehicleStrip(Ride ride) {
+    final vehicle = RideVehicle.byKey(
+      ride.vehicle?.vehicleType ?? ride.requestedVehicleType,
+    );
+    final plate = ride.vehicle?.registrationNumber ?? '';
+    final model = ride.vehicle?.modelName ?? vehicle.label;
+    final fare = ride.finalFare ?? ride.fareEstimate;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          vehicle.artwork(size: 34),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  model,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                Text(
+                  plate.isNotEmpty ? plate : vehicle.capacity,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '৳${fare.toStringAsFixed(0)}',
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

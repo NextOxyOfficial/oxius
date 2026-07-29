@@ -451,7 +451,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                                   DropdownMenuItem(
                                       value: 'cng',
                                       child: Text(t('rideshare_vehicle_cng',
-                                          fallback: 'CNG'))),
+                                          fallback: 'Auto'))),
                                 ],
                                 onChanged: (value) {
                                   if (value == null) return;
@@ -717,7 +717,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       case 'car':
         return 'Car';
       case 'cng':
-        return 'CNG';
+        // Rider-facing name only; the API key stays 'cng'.
+        return 'Auto';
       default:
         return type;
     }
@@ -1515,7 +1516,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     Text(
                       t('rideshare_no_vehicles_desc',
                           fallback:
-                              'Add your bike, car, or CNG to start receiving rides with the right vehicle type.'),
+                              'Add your Bike, Car, or Auto to start receiving rides with the right vehicle type.'),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         color: _textSecondary,

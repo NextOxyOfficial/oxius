@@ -17,6 +17,7 @@ import '../../utils/network_error_handler.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
+import 'rideshare_vehicle_catalog.dart';
 import 'custom_location_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';

@@ -169,6 +169,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/icons/
+    - assets/images/vehicles/
     - assets/icons/
     - assets/audio/
 

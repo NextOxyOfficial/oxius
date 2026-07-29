@@ -292,7 +292,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         content: Text(
           t('rideshare_need_vehicle_msg',
               fallback:
-                  'You need an active vehicle. Add bike/car/CNG from the Vehicles section.'),
+                  'You need an active vehicle. Add a Bike, Car or Auto from the Vehicles section.'),
           style:
               GoogleFonts.inter(fontSize: 13, color: _slate500, height: 1.45),
         ),

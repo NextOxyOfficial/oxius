@@ -110,7 +110,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         children: [
           // Title
           Text(
-            'কোথায় যাবেন?',
+            t('rideshare_where_to', fallback: 'Where To?'),
             style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -148,14 +148,27 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             const SizedBox(height: 6),
             _buildQuickDestinationRow(
               icon: Icons.star_rounded,
-              label: 'সেভ করা জায়গা বেছে নিন',
+              label: t('rideshare_saved_place',
+                  fallback: 'Choose a Saved Place'),
               onTap: _showCustomLocationSheet,
             ),
             const Divider(height: 1, color: Color(0xFFF1F5F9)),
             _buildQuickDestinationRow(
-              icon: Icons.add_location_alt_outlined,
-              label: 'নিজের বাড়ি বা ব্যবসার লোকেশন যোগ করুন',
-              onTap: _showCustomLocationSheet,
+              icon: Icons.map_outlined,
+              label: t('rideshare_set_on_map',
+                  fallback: 'Set Destination On Map'),
+              // The map itself is the picker: tapping it in this step sets
+              // the drop pin, so this row just puts the rider's attention
+              // there instead of opening a second screen.
+              onTap: () {
+                _rebuild(() {
+                  _activeInput = 'drop';
+                  _hideDropSuggestionsUntilEdit = true;
+                });
+                FocusScope.of(context).unfocus();
+                AdsyToast.info(
+                    context, 'ম্যাপে ট্যাপ করে গন্তব্য বেছে নিন');
+              },
             ),
           ],
 
@@ -1180,101 +1193,105 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
 
   Widget _buildVehicleSelector() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          t('rideshare_vehicle_type', fallback: 'Vehicle Type'),
+          t('rideshare_select_for_trip', fallback: 'Select One For Trip'),
           style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF64748B),
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
+        // One card per class, artwork-led, exactly the reference's row.
         Row(
           children: [
-            _buildVehicleOption(
-                'bike', '🏍', t('rideshare_vehicle_bike', fallback: 'Bike')),
-            const SizedBox(width: 8),
-            _buildVehicleOption(
-                'car', '🚗', t('rideshare_vehicle_car', fallback: 'Car')),
-            const SizedBox(width: 8),
-            _buildVehicleOption(
-                'cng', '🛺', t('rideshare_vehicle_cng', fallback: 'CNG')),
+            for (var i = 0; i < RideVehicle.all.length; i++) ...[
+              if (i > 0) const SizedBox(width: 10),
+              _buildVehicleOption(RideVehicle.all[i]),
+            ],
           ],
         ),
       ],
     );
   }
 
-  Widget _buildVehicleOption(String type, String icon, String label) {
-    final isSelected = _selectedVehicleType == type;
-    const seats = {'bike': '১ জন', 'car': '৪ জন', 'cng': '৩ জন'};
+  Widget _buildVehicleOption(RideVehicle vehicle) {
+    final isSelected = _selectedVehicleType == vehicle.key;
+    // The fare belongs to the class it was quoted for — showing the current
+    // estimate under every card would price all three the same.
     final fare = isSelected && _estimate != null
         ? '৳${_estimate!.fare.toStringAsFixed(0)}'
         : '';
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          _rebuild(() => _selectedVehicleType = type);
+          if (_selectedVehicleType == vehicle.key) return;
+          _rebuild(() => _selectedVehicleType = vehicle.key);
           _loadNearbyDrivers();
           _requestEstimate();
         },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
                   ? const Color(0xFF0F172A)
-                  : const Color(0xFFE2E8F0),
-              width: isSelected ? 1.6 : 1,
+                  : const Color(0xFFE9EDF3),
+              width: isSelected ? 1.8 : 1,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 14,
+                      offset: const Offset(0, 5),
                     ),
                   ]
                 : null,
           ),
           child: Column(
             children: [
-              Text(
-                seats[type] ?? '',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF94A3B8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  vehicle.capacity,
+                  style: GoogleFonts.inter(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF94A3B8),
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(icon, style: const TextStyle(fontSize: 26)),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
+              vehicle.artwork(size: 44),
+              const SizedBox(height: 6),
               Text(
-                label,
+                vehicle.label,
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF0F172A),
                 ),
               ),
-              if (fare.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  fare,
-                  style: GoogleFonts.inter(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-              ],
+              SizedBox(
+                height: 16,
+                child: fare.isEmpty
+                    ? null
+                    : Text(
+                        fare,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+              ),
             ],
           ),
         ),
