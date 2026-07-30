@@ -64,6 +64,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Ride? _activeRide;
   List<Ride> _availableRequests = [];
   DriverEarningsSummary? _earnings;
+  List<DriverDailyEarning> _dailyEarnings = const [];
+  bool _earningsExpanded = false;
 
   bool _isLoading = true;
   bool _isTogglingOnline = false;
@@ -912,6 +914,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             msg.contains('credentials') ||
             msg.contains('authentication') ||
             msg.contains('not provided'));
+    if (profileResult.data?.isApproved == true) {
+      // Not part of the Future.wait: the dashboard should not wait on a
+      // reporting query, and non-approved drivers would just get a 403.
+      unawaited(RideshareService.getDriverDailyEarnings().then((result) {
+        if (mounted && result.success) {
+          setState(() => _dailyEarnings = result.data ?? const []);
+        }
+      }));
+    }
     if (mounted) {
       setState(() {
         _isAuthError = authFailed;
@@ -1241,7 +1252,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         });
         _showSuccess(isNewApplication
             ? t('rideshare_application_submitted',
-                fallback: 'আবেদন জমা হয়েছে! অ্যাডমিনের অনুমোদনের অপেক্ষা করুন।')
+                fallback: 'আবেদন জমা হয়েছে! অ্যাডমিনের এপ্রুভের অপেক্ষা করুন।')
             : t('rideshare_profile_saved', fallback: 'প্রোফাইল সেভ হয়েছে'));
       } else {
         _showError(result.message);
@@ -2002,7 +2013,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       'ride completed!': 'রাইড কমপ্লিট হয়েছে!',
       'ride cancelled': 'রাইড বাতিল হয়েছে।',
       'application submitted! wait for admin approval.':
-          'আবেদন জমা হয়েছে। এখন অ্যাডমিন অনুমোদনের জন্য অপেক্ষা করুন।',
+          'আবেদন জমা হয়েছে। এখন অ্যাডমিন এপ্রুভের জন্য অপেক্ষা করুন।',
       'profile saved': 'প্রোফাইল সেভ করা হয়েছে।',
       'you are now online': 'আপনি এখন অনলাইনে আছেন।',
       'you are now offline': 'আপনি এখন অফলাইনে আছেন।',
@@ -2138,6 +2149,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(height: 12),
                 _buildOnlineToggleCard(),
                 const SizedBox(height: 12),
+                if (_driverProfile?.isApproved == true &&
+                    _dailyEarnings.isNotEmpty) ...[
+                  _buildDailyEarningsSection(),
+                  const SizedBox(height: 12),
+                ],
                 if ((_driverProfile?.outstandingCashDueAmount ?? 0) > 0) ...[
                   _buildCashDueCard(),
                   const SizedBox(height: 12),

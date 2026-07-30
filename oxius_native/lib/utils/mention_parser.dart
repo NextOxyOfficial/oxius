@@ -88,6 +88,21 @@ class MentionParser {
     return replaced;
   }
 
+  /// {display name: user id} for every @mention in the markup — what the
+  /// composer sends along with the text so taps never have to guess.
+  static Map<String, String> extractMentionMapFromMarkup(String markupText) {
+    final map = <String, String>{};
+    if (markupText.isEmpty) return map;
+    for (final m in _flutterMentionsMarkupRegex.allMatches(markupText)) {
+      if (m.group(1) != '@') continue;
+      final id = (m.group(2) ?? '').trim();
+      final display =
+          (m.group(3) ?? '').replaceAll('\u00A0', ' ').trim();
+      if (id.isNotEmpty && display.isNotEmpty) map[display] = id;
+    }
+    return map;
+  }
+
   static List<String> extractMentionIdsFromMarkup(String markupText) {
     final ids = <String>[];
     if (markupText.isEmpty) return ids;

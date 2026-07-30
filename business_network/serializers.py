@@ -44,6 +44,10 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
             "updated_at",
             "is_gift_comment",
             "diamond_amount",
+            # Writable on create; validate_mentioned_users caps and cleans it.
+            # Without this entry DRF silently drops the incoming map and the
+            # whole mention-tap feature no-ops.
+            "mentioned_users",
         ]
         # SECURITY: post/author are set server-side (save() kwargs); gift fields
         # are set ONLY by the diamond-charging gift flow. If any were writable
@@ -58,6 +62,20 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
             "is_gift_comment",
             "diamond_amount",
         ]
+
+    def validate_mentioned_users(self, value):
+        """A small {display_name: user_id} map — nothing else."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("mentioned_users must be a map")
+        if len(value) > 20:
+            raise serializers.ValidationError("Too many mentions")
+        cleaned = {}
+        for name, user_id in value.items():
+            name = str(name).strip()[:150]
+            user_id = str(user_id).strip()[:64]
+            if name and user_id:
+                cleaned[name] = user_id
+        return cleaned
 
     def get_author_details(self, obj):
         """Get author details with follow status"""

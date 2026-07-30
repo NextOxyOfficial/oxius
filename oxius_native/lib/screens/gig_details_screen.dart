@@ -151,7 +151,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
         context,
         title: 'KYC ভেরিফিকেশন প্রয়োজন',
         message:
-            'মাইক্রো গিগ টাস্ক জমা দিতে হলে আগে আপনার KYC অনুমোদিত হতে হবে। ভেরিফিকেশন সম্পন্ন করে আবার চেষ্টা করুন।',
+            'মাইক্রো গিগ টাস্ক জমা দিতে হলে আগে আপনার KYC এপ্রুভড হতে হবে। ভেরিফিকেশন সম্পন্ন করে আবার চেষ্টা করুন।',
         confirmLabel: 'ভেরিফাই করুন',
         cancelLabel: 'পরে করব',
         icon: Icons.verified_user_outlined,

@@ -1624,6 +1624,13 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
             if parent_comment_id:
                 data["parent_comment"] = parent_comment_id
 
+            # The @mention name->id map travels with the comment; this view
+            # rebuilds `data` by hand, so anything not copied here is lost
+            # before the serializer ever sees it.
+            mentioned_users = request.data.get("mentioned_users")
+            if isinstance(mentioned_users, dict) and mentioned_users:
+                data["mentioned_users"] = mentioned_users
+
             # Create the serializer with our prepared data
             serializer = self.get_serializer(data=data)
 

@@ -21,7 +21,8 @@ import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
   final VoidCallback onViewAll;
-  final Function(BusinessNetworkComment, String)? onReplySubmit;
+  final Function(BusinessNetworkComment, String, Map<String, String>)?
+      onReplySubmit;
   final VoidCallback? onCommentCountChanged;
   final bool showAll;
   final bool showHeader;
@@ -270,9 +271,10 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                     _replyingTo = null;
                   });
                 },
-                onSubmit: (content) async {
+                onSubmit: (content, mentions) async {
                   if (widget.onReplySubmit != null) {
-                    await widget.onReplySubmit!(highestGiftComment!, content);
+                    await widget.onReplySubmit!(
+                        highestGiftComment!, content, mentions);
                     setState(() {
                       _replyingTo = null;
                     });
@@ -326,8 +328,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
               if (isReplyingToThis)
                 _ReplyInput(
                   replyingTo: comment,
-                  onSubmit: (content) {
-                    widget.onReplySubmit?.call(comment, content);
+                  onSubmit: (content, mentions) {
+                    widget.onReplySubmit?.call(comment, content, mentions);
                     setState(() {
                       _replyingTo = null;
                     });
@@ -443,7 +445,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
 
 class _ReplyInput extends StatefulWidget {
   final BusinessNetworkComment replyingTo;
-  final Function(String) onSubmit;
+  final Function(String, Map<String, String>) onSubmit;
   final VoidCallback onCancel;
 
   const _ReplyInput({
@@ -508,7 +510,8 @@ class _ReplyInputState extends State<_ReplyInput> {
     final markup = controller?.markupText ?? '';
     final formattedText = MentionParser.markupToDelimitedText(markup).trim();
 
-    widget.onSubmit(formattedText);
+    widget.onSubmit(
+        formattedText, MentionParser.extractMentionMapFromMarkup(markup));
     _mentionKey.currentState?.controller?.clear();
 
     if (mounted) {
@@ -1281,8 +1284,16 @@ class _CommentItemState extends State<_CommentItem> {
                                 height: 1.45,
                               ),
                               onMentionTap: (username) async {
-                                // Exact-match + chooser — never a blind
-                                // first-result navigation.
+                                // The comment itself knows who was meant —
+                                // resolve from its own map and go straight
+                                // there. Search is only for old comments
+                                // created before the map existed.
+                                final id = MentionNavigator.resolveFromMap(
+                                    widget.comment.mentionedUsers, username);
+                                if (id != null) {
+                                  MentionNavigator.openProfile(context, id);
+                                  return;
+                                }
                                 await MentionNavigator.open(
                                     context, username);
                               },

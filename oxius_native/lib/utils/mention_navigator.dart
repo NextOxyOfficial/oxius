@@ -146,6 +146,22 @@ class MentionNavigator {
     }
   }
 
+  /// Looks the tapped name up in a comment's own {name: id} map.
+  /// Name matching is whitespace/case tolerant — the stored map key and the
+  /// rendered text went through the same flattening, but never trust that.
+  static String? resolveFromMap(
+      Map<String, String> mentionedUsers, String mentionName) {
+    if (mentionedUsers.isEmpty) return null;
+    final target = _norm(mentionName);
+    for (final entry in mentionedUsers.entries) {
+      if (_norm(entry.key) == target) return entry.value;
+    }
+    return null;
+  }
+
+  static void openProfile(BuildContext context, String userId) =>
+      _push(context, userId);
+
   static void _push(BuildContext context, String userId) {
     Navigator.push(
       context,

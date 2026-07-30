@@ -799,6 +799,10 @@ class BusinessNetworkComment {
   final bool isGiftComment;
   final int? diamondAmount;
 
+  /// {display name: user id} for the @mentions in [content]. Filled by the
+  /// composer at create time; empty for comments written before it existed.
+  final Map<String, String> mentionedUsers;
+
   BusinessNetworkComment({
     required this.id,
     required this.user,
@@ -807,6 +811,7 @@ class BusinessNetworkComment {
     this.parentComment,
     this.isGiftComment = false,
     this.diamondAmount,
+    this.mentionedUsers = const {},
   });
 
   factory BusinessNetworkComment.fromJson(Map<String, dynamic> json) {
@@ -824,6 +829,10 @@ class BusinessNetworkComment {
       diamondAmount: json['diamond_amount'] != null
           ? int.tryParse(json['diamond_amount'].toString())
           : null,
+      mentionedUsers: json['mentioned_users'] is Map
+          ? (json['mentioned_users'] as Map).map(
+              (k, v) => MapEntry(k.toString(), v.toString()))
+          : const {},
     );
   }
 

@@ -625,10 +625,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   ),
                 ),
                 child: PostCommentInput(
-                  onSubmit: (content) async {
+                  onSubmit: (content, mentions) async {
                     final comment = await BusinessNetworkService.addComment(
                       postId: _post.id,
                       content: content,
+                      mentionedUsers: mentions,
                     );
                     if (comment != null) {
                       _handleCommentAdded(comment);
@@ -701,11 +702,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         onViewAll: () {},
         showAll: true,
         showHeader: true,
-        onReplySubmit: (comment, content) async {
+        onReplySubmit: (comment, content, mentions) async {
           final newComment = await BusinessNetworkService.addComment(
             postId: _post.id,
             content: content,
             parentCommentId: comment.id,
+            mentionedUsers: mentions,
           );
           if (newComment != null) {
             await _handleCommentAdded(newComment);

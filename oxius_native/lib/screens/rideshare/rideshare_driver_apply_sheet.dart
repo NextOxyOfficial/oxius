@@ -117,7 +117,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'আবেদন জমা দিলে আমাদের টিম যাচাই করবে। অনুমোদন হলে আপনার '
+                  'আবেদন জমা দিলে আমাদের টিম যাচাই করবে। এপ্রুভ হলে আপনার '
                   'অ্যাকাউন্টে ড্রাইভার মোড চালু হয়ে যাবে।',
                   style: GoogleFonts.inter(
                     fontSize: 12.5,
@@ -179,7 +179,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'অনুমোদনের পর গাড়ি যোগ করলে তবেই রাইড রিকোয়েস্ট পাবেন।',
+                          'এপ্রুভ হওয়ার পর গাড়ি যোগ করলে তবেই রাইড রিকোয়েস্ট পাবেন।',
                           style: GoogleFonts.inter(
                             fontSize: 11.5,
                             height: 1.45,

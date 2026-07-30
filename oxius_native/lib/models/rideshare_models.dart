@@ -953,6 +953,27 @@ class NearbyDriver {
   }
 }
 
+/// One calendar day of a driver's completed-ride earnings.
+class DriverDailyEarning {
+  final DateTime date;
+  final int trips;
+  final double earnings;
+
+  DriverDailyEarning({
+    required this.date,
+    required this.trips,
+    required this.earnings,
+  });
+
+  factory DriverDailyEarning.fromJson(Map<String, dynamic> json) {
+    return DriverDailyEarning(
+      date: DateTime.tryParse(json['date']?.toString() ?? '') ?? DateTime(2000),
+      trips: int.tryParse(json['trips']?.toString() ?? '') ?? 0,
+      earnings: double.tryParse(json['earnings']?.toString() ?? '') ?? 0,
+    );
+  }
+}
+
 class DriverEarningsSummary {
   final int totalTrips;
   final double totalEarnings;

@@ -182,12 +182,14 @@ class _ShortsCommentsBottomSheetState
                                 onViewAll: () {},
                                 showAll: true,
                                 showHeader: false,
-                                onReplySubmit: (comment, content) async {
+                                onReplySubmit:
+                                    (comment, content, mentions) async {
                                   final newComment =
                                       await BusinessNetworkService.addComment(
                                     postId: _post.id,
                                     content: content,
                                     parentCommentId: comment.id,
+                                    mentionedUsers: mentions,
                                   );
 
                                   if (newComment != null && mounted) {
@@ -223,10 +225,11 @@ class _ShortsCommentsBottomSheetState
                         top: BorderSide(color: Colors.grey.shade200, width: 1)),
                   ),
                   child: PostCommentInput(
-                    onSubmit: (content) async {
+                    onSubmit: (content, mentions) async {
                       final comment = await BusinessNetworkService.addComment(
                         postId: widget.post.id,
                         content: content,
+                        mentionedUsers: mentions,
                       );
                       if (comment != null) {
                         if (!mounted) return;

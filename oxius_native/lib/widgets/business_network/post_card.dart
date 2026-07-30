@@ -138,7 +138,8 @@ class _PostCardState extends State<PostCard> {
     await MentionNavigator.open(context, mentionName);
   }
 
-  Future<void> _addComment(String content) async {
+  Future<void> _addComment(String content,
+      [Map<String, String> mentions = const {}]) async {
     if (_isAddingComment) return;
 
     setState(() => _isAddingComment = true);
@@ -146,6 +147,7 @@ class _PostCardState extends State<PostCard> {
     final comment = await BusinessNetworkService.addComment(
       postId: _post.id,
       content: content,
+      mentionedUsers: mentions,
     );
 
     if (comment != null && mounted) {
@@ -1202,7 +1204,7 @@ class _PostCardState extends State<PostCard> {
                 );
               });
             },
-            onReplySubmit: (comment, content) async {
+            onReplySubmit: (comment, content, mentions) async {
               if (_isAddingComment) return;
 
               setState(() => _isAddingComment = true);
@@ -1212,6 +1214,7 @@ class _PostCardState extends State<PostCard> {
                 postId: _post.id,
                 content: content,
                 parentCommentId: comment.id,
+                mentionedUsers: mentions,
               );
 
               if (newComment != null && mounted) {

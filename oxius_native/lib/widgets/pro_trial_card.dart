@@ -220,7 +220,7 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
             subtitle: kycOk
                 ? 'আপনার অ্যাকাউন্ট ভেরিফাইড ✓'
                 : (s.kycPending
-                    ? 'আপনার KYC রিভিউতে আছে — অনুমোদনের পর ট্রায়াল নিতে পারবেন।'
+                    ? 'আপনার KYC রিভিউতে আছে — এপ্রুভ হওয়ার পর ট্রায়াল নিতে পারবেন।'
                     : 'ট্রায়াল নিতে আগে KYC সম্পন্ন করতে হবে।'),
             done: kycOk,
           ),

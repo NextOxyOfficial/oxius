@@ -4,7 +4,8 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import DatabaseError, IntegrityError, transaction
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
+from django.db.models.functions import TruncDate
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.utils import timezone
@@ -1077,6 +1078,52 @@ class DriverEarningsSummaryView(RideshareApiMixin, APIView):
             "is_available": driver_profile.is_available,
         }
         return api_success(summary)
+
+
+class DriverEarningsDailyView(RideshareApiMixin, APIView):
+    """Day-by-day earnings for the driver dashboard.
+
+    Groups the driver's completed rides by the LOCAL calendar day they were
+    completed (server TZ is Asia/Dhaka), newest day first. `days` caps the
+    window; 30 covers the dashboard's month view and stays one indexed query.
+    """
+
+    permission_classes = [IsAuthenticated, IsApprovedDriver]
+
+    def get(self, request):
+        try:
+            days = min(max(int(request.query_params.get("days", 30)), 1), 90)
+        except (TypeError, ValueError):
+            days = 30
+
+        since = timezone.localdate() - timedelta(days=days - 1)
+        rows = (
+            Ride.objects.filter(
+                assigned_driver=request.user.driver_profile,
+                status=Ride.STATUS_COMPLETED,
+                completed_at__date__gte=since,
+            )
+            .annotate(day=TruncDate("completed_at"))
+            .values("day")
+            .annotate(
+                trips=Count("id"),
+                earnings=Sum("driver_payout_amount"),
+            )
+            .order_by("-day")
+        )
+        return api_success(
+            {
+                "days": [
+                    {
+                        "date": row["day"].isoformat(),
+                        "trips": row["trips"],
+                        "earnings": str(row["earnings"] or Decimal("0.00")),
+                    }
+                    for row in rows
+                    if row["day"] is not None
+                ],
+            }
+        )
 
 
 class VehicleListCreateView(RideshareApiMixin, APIView):

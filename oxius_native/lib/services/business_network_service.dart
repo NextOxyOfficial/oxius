@@ -658,6 +658,7 @@ class BusinessNetworkService {
     int? parentCommentId,
     bool isGiftComment = false,
     int? diamondAmount,
+    Map<String, String>? mentionedUsers,
   }) async {
     try {
       final headers = await ApiService.getHeaders();
@@ -668,6 +669,8 @@ class BusinessNetworkService {
         if (isGiftComment) 'is_gift_comment': true,
         if (diamondAmount != null && diamondAmount > 0)
           'diamond_amount': diamondAmount,
+        if (mentionedUsers != null && mentionedUsers.isNotEmpty)
+          'mentioned_users': mentionedUsers,
       };
 
       debugPrint('=== Add Comment Debug ===');

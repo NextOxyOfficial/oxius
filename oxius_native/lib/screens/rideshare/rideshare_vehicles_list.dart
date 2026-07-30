@@ -447,7 +447,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                         Expanded(
                           child: Text(
                             t('rideshare_kyc_timeline',
-                                fallback: 'সাধারণত ২৪-৪৮ ঘণ্টায় অনুমোদন হয়'),
+                                fallback: 'সাধারণত ২৪-৪৮ ঘণ্টায় এপ্রুভ হয়'),
                             style: GoogleFonts.inter(
                               color: _warning,
                               fontSize: 12,
@@ -501,7 +501,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     t(
                       'rideshare_driver_not_approved_desc',
                       fallback:
-                          'আপনার ড্রাইভার প্রোফাইল এখনো অনুমোদিত হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন কমপ্লিট করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
+                          'আপনার ড্রাইভার প্রোফাইল এখনো এপ্রুভড হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন কমপ্লিট করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
                     ),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(

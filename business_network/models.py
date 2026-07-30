@@ -361,6 +361,11 @@ class BusinessNetworkPostComment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_comments')
     parent_comment = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
     content = models.TextField()
+    # Display-name -> user-id map for @mentions, captured at create time.
+    # Content stores mentions as plain "@Full Name" text; without this map a
+    # tap on one can only *search* by name, which is ambiguous the moment two
+    # people share a name.
+    mentioned_users = models.JSONField(blank=True, default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_gift_comment = models.BooleanField(default=False) 

@@ -6,6 +6,7 @@ from .views import (
     DriverApplyView,
     DriverCashDueSettlementView,
     DriverEarningsSummaryView,
+    DriverEarningsDailyView,
     DriverLocationUpdateView,
     DriverProfileView,
     DriverToggleOnlineView,
@@ -97,6 +98,11 @@ urlpatterns = [
         "drivers/earnings-summary/",
         DriverEarningsSummaryView.as_view(),
         name="rides-driver-earnings-summary",
+    ),
+    path(
+        "drivers/earnings-daily/",
+        DriverEarningsDailyView.as_view(),
+        name="rides-driver-earnings-daily",
     ),
     path(
         "drivers/vehicles/",

@@ -11,7 +11,7 @@ import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PostCommentInput extends StatefulWidget {
-  final Function(String) onSubmit;
+  final Function(String content, Map<String, String> mentions) onSubmit;
   final String? userAvatar;
   final String postId;
   final String postAuthorId;
@@ -73,8 +73,9 @@ class _PostCommentInputState extends State<PostCommentInput> {
       // Convert markup -> deterministic "@Full Name  " format.
       // This keeps multi-word names inside the mention span.
       final formattedText = MentionParser.markupToDelimitedText(markup).trim();
+      final mentions = MentionParser.extractMentionMapFromMarkup(markup);
 
-      await widget.onSubmit(formattedText);
+      await widget.onSubmit(formattedText, mentions);
       _mentionKey.currentState?.controller?.clear();
       setState(() {
         _hasText = false;

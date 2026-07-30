@@ -314,7 +314,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         case 'rejected':
           icon = Icons.info_outline_rounded;
           color = const Color(0xFFDC2626);
-          title = 'আবেদন অনুমোদিত হয়নি';
+          title = 'আবেদন এপ্রুভড হয়নি';
           subtitle =
               'এবার আপনার আবেদন অনুমোদন করা যায়নি। বিস্তারিত জানতে সাপোর্টে যোগাযোগ করুন।';
           break;

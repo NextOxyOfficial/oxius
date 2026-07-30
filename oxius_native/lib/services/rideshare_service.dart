@@ -1062,6 +1062,30 @@ class RideshareService {
 
   // ==================== Vehicles ====================
 
+  /// Day-by-day completed-ride earnings, newest first.
+  static Future<RideshareApiResult<List<DriverDailyEarning>>>
+      getDriverDailyEarnings({int days = 30}) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await _get(
+        Uri.parse('$_baseUrl/drivers/earnings-daily/?days=$days'),
+        headers: headers,
+      );
+      return _parseResponse<List<DriverDailyEarning>>(
+        response,
+        (data) => ((data as Map<String, dynamic>)['days'] as List? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(DriverDailyEarning.fromJson)
+            .toList(),
+      );
+    } catch (e) {
+      return RideshareApiResult<List<DriverDailyEarning>>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
   static Future<RideshareApiResult<List<Vehicle>>> listVehicles() async {
     try {
       final headers = await _getHeaders();

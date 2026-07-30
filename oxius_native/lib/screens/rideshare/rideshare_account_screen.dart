@@ -126,7 +126,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
 
     if (result.success) {
       AdsyToast.success(
-          context, 'আবেদন জমা হয়েছে। অনুমোদনের জন্য অপেক্ষা করুন।');
+          context, 'আবেদন জমা হয়েছে। এপ্রুভের জন্য অপেক্ষা করুন।');
     } else {
       AdsyToast.error(context,
           result.message.isNotEmpty ? result.message : 'আবেদন পাঠানো যায়নি');
@@ -588,7 +588,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         bg = const Color(0xFFECFDF5);
         fg = const Color(0xFF059669);
         icon = Icons.verified_rounded;
-        label = 'অনুমোদিত ড্রাইভার';
+        label = 'এপ্রুভড ড্রাইভার';
         break;
       case 'suspended':
         bg = const Color(0xFFFEF2F2);
@@ -600,7 +600,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         bg = const Color(0xFFFFF7ED);
         fg = const Color(0xFFD97706);
         icon = Icons.hourglass_top_rounded;
-        label = 'অনুমোদনের অপেক্ষায়';
+        label = 'এপ্রুভের অপেক্ষায়';
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -638,7 +638,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       return _StatusButton(
         icon: Icons.hourglass_top_rounded,
         title: 'ড্রাইভার আবেদন জমা আছে',
-        subtitle: 'অনুমোদন হলে এখানেই ড্রাইভার মোড চালু হবে',
+        subtitle: 'এপ্রুভ হলে এখানেই ড্রাইভার মোড চালু হবে',
         tint: const Color(0xFFD97706),
         background: const Color(0xFFFFFBEB),
         border: const Color(0xFFFDE68A),

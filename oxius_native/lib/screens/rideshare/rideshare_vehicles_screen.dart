@@ -139,7 +139,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Text(
-            t('rideshare_kyc_required', fallback: 'KYC অনুমোদন লাগবে'),
+            t('rideshare_kyc_required', fallback: 'KYC এপ্রুভাল লাগবে'),
             style: GoogleFonts.inter(
                 fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
           ),

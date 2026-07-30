@@ -22,7 +22,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
     }
 
     final approvalLabel = approval == 'approved'
-        ? 'অনুমোদিত'
+        ? 'এপ্রুভড'
         : approval == 'suspended'
             ? 'সাসপেন্ডেড'
             : 'অপেক্ষমাণ';
@@ -558,7 +558,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                 ],
                 if (isApproved) ...[
                   _buildBadge(
-                      t('rideshare_approved', fallback: 'অনুমোদিত'), _emerald),
+                      t('rideshare_approved', fallback: 'এপ্রুভড'), _emerald),
                   const SizedBox(width: 6),
                 ],
                 GestureDetector(
@@ -1355,6 +1355,123 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
       child: Text(label,
           style: GoogleFonts.inter(
               fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+    );
+  }
+}
+
+/// Day-by-day income, folded into the driver dashboard.
+///
+/// Collapsed it shows the last 7 days; "সব দেখুন" opens the full month. Rows
+/// and hairlines, no cards — the same flat language as the rest of the panel.
+extension _RsDriverEarningsBreakdown on _RideshareDriverPanelState {
+  Widget _buildDailyEarningsSection() {
+    final visible =
+        _earningsExpanded ? _dailyEarnings : _dailyEarnings.take(7).toList();
+    final monthTotal =
+        _dailyEarnings.fold<double>(0, (sum, d) => sum + d.earnings);
+    final monthTrips = _dailyEarnings.fold<int>(0, (sum, d) => sum + d.trips);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE9EDF3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'আয়ের হিসাব',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: _slate800,
+                  ),
+                ),
+              ),
+              Text(
+                'গত ৩০ দিনে $monthTripsটি ট্রিপে ৳${monthTotal.toStringAsFixed(0)}',
+                style: GoogleFonts.inter(fontSize: 11.5, color: _slate400),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          for (final day in visible) _buildEarningDayRow(day),
+          Center(
+            child: TextButton(
+              onPressed: () =>
+                  _rebuild(() => _earningsExpanded = !_earningsExpanded),
+              child: Text(
+                _earningsExpanded
+                    ? 'কম দেখুন'
+                    : 'সব দেখুন (${_dailyEarnings.length} দিন)',
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: _indigo,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEarningDayRow(DriverDailyEarning day) {
+    const weekdays = ['সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি', 'রবি'];
+    const months = [
+      'জানু', 'ফেব্রু', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+      'জুলাই', 'আগস্ট', 'সেপ্টে', 'অক্টো', 'নভে', 'ডিসে',
+    ];
+    final now = DateTime.now();
+    final isToday = day.date.year == now.year &&
+        day.date.month == now.month &&
+        day.date.day == now.day;
+    final label = isToday
+        ? 'আজ'
+        : '${weekdays[day.date.weekday - 1]}, ${day.date.day} ${months[day.date.month - 1]}';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF6F8FA))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
+                color: _slate800,
+              ),
+            ),
+          ),
+          Text(
+            '${day.trips} ট্রিপ',
+            style: GoogleFonts.inter(fontSize: 12, color: _slate400),
+          ),
+          const SizedBox(width: 14),
+          SizedBox(
+            width: 72,
+            child: Text(
+              '৳${day.earnings.toStringAsFixed(0)}',
+              textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF059669),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
