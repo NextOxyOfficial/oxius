@@ -70,129 +70,80 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
     );
   }
 
+  /// One quiet line above the list. The purple dashboard card this replaces
+  /// restated the list below it in three boxes and a chip.
   Widget _buildOverview() {
     final defaultVehicle = _vehicles.cast<Vehicle?>().firstWhere(
           (vehicle) => vehicle?.isDefault == true,
           orElse: () => null,
         );
+    final active = _vehicles.where((vehicle) => vehicle.isActive).length;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [_primary, _secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: _primary.withValues(alpha: 0.18),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.garage_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t('rideshare_my_vehicles', fallback: 'আমার গ্যারেজ'),
+          _overviewPhrase('${_vehicles.length}', 'মোট গাড়ি'),
+          _overviewDot(),
+          _overviewPhrase('$active', 'সক্রিয়'),
+          if (defaultVehicle != null) ...[
+            _overviewDot(),
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.verified_rounded,
+                      size: 14, color: Color(0xFF059669)),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      defaultVehicle.modelName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
                       ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      t('rideshare_my_vehicles_desc',
-                          fallback:
-                              'Manage your listed and active vehicles from one compact garage dashboard.'),
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFFD6E2FF),
-                        fontSize: 11,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              _buildStatCard(
-                label: 'মোট গাড়ি',
-                value: '${_vehicles.length}',
-                icon: Icons.local_taxi_rounded,
-                accent: _primary,
-                tint: Colors.white.withValues(alpha: 0.18),
-              ),
-              const SizedBox(width: 8),
-              _buildStatCard(
-                label: 'এখন সক্রিয়',
-                value:
-                    '${_vehicles.where((vehicle) => vehicle.isActive).length}',
-                icon: Icons.check_circle_rounded,
-                accent: _success,
-                tint: const Color(0x3322C55E),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.verified_rounded,
-                    color: Colors.white, size: 16),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    defaultVehicle == null
-                        ? 'Set one vehicle as default for faster assignment.'
-                        : 'Default vehicle: ${defaultVehicle.displayName}',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
+
+  Widget _overviewPhrase(String value, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(value,
+            style: GoogleFonts.inter(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF0F172A))),
+        const SizedBox(width: 4),
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 12, color: const Color(0xFF94A3B8))),
+      ],
+    );
+  }
+
+  Widget _overviewDot() {
+    return Container(
+      width: 3,
+      height: 3,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: const BoxDecoration(
+          color: Color(0xFFCBD5E1), shape: BoxShape.circle),
+    );
+  }
+
 
   Widget _buildVehicleCard(Vehicle vehicle) {
     final isDefault = vehicle.isDefault;
@@ -218,16 +169,10 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDefault
-                    ? const [Color(0xFF6366F1), Color(0xFF8B5CF6)]
-                    : const [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(15)),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,14 +181,12 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: isDefault
-                        ? Colors.white.withValues(alpha: 0.16)
-                        : Colors.white,
+                    color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     _vehicleIcon(vehicle.vehicleType),
-                    color: isDefault ? Colors.white : _primary,
+                    color: _primary,
                     size: 22,
                   ),
                 ),
@@ -255,7 +198,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                       Text(
                         vehicle.displayName,
                         style: GoogleFonts.inter(
-                          color: isDefault ? Colors.white : _textPrimary,
+                          color: _textPrimary,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
@@ -264,9 +207,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                       Text(
                         vehicle.registrationNumber,
                         style: GoogleFonts.inter(
-                          color: isDefault
-                              ? const Color(0xFFE8E7FF)
-                              : _textSecondary,
+                          color: _textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -279,13 +220,13 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
+                      color: const Color(0xFFECFDF5),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       t('rideshare_set_default', fallback: 'ডিফল্ট'),
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: const Color(0xFF059669),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -742,15 +683,13 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     Container(
                       width: 58,
                       height: 58,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_primary, _secondary],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.directions_car_filled_rounded,
-                        color: Colors.white,
+                        color: Color(0xFF64748B),
                         size: 28,
                       ),
                     ),

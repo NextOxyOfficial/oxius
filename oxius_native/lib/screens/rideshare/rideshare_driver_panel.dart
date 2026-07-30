@@ -1000,9 +1000,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
 
     if (type == 'ride.targeted') {
-      await _playIncomingRideAlert(rideId: event['ride_id']?.toString());
-      await _loadAvailableRequests();
-      _showSuccess('New ride request received.');
+      // The fetch is what puts the request on screen — it must not sit in
+      // line behind the ringtone player spinning up. Run both at once.
+      final loading = _loadAvailableRequests();
+      unawaited(_playIncomingRideAlert(rideId: event['ride_id']?.toString()));
+      await loading;
+      _showSuccess('নতুন রাইড রিকোয়েস্ট এসেছে!');
       return;
     }
 

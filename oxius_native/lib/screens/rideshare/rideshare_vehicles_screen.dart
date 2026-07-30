@@ -14,7 +14,6 @@ part 'rideshare_vehicles_list.dart';
 
 // Design tokens — top-level so the part files can use them unqualified.
 const Color _primary = Color(0xFF6366F1);
-const Color _secondary = Color(0xFF8B5CF6);
 const Color _surfaceSoft = Color(0xFFF1F5F9);
 const Color _card = Colors.white;
 const Color _textPrimary = Color(0xFF1E293B);

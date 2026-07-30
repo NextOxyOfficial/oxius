@@ -21,25 +21,63 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
       approvalColor = const Color(0xFFD97706);
     }
 
-    return Row(children: [
-      _buildStatChip(
-          t('rideshare_stats_status', fallback: 'স্ট্যাটাস'),
-          approval[0].toUpperCase() + approval.substring(1),
-          approvalColor,
-          isApproved ? Icons.verified_rounded : Icons.hourglass_top_rounded),
-      const SizedBox(width: 8),
-      _buildStatChip(
-          t('rideshare_stats_trips', fallback: 'ট্রিপ'),
-          '${_earnings?.totalTrips ?? 0}',
-          _indigo,
-          Icons.directions_car_rounded),
-      const SizedBox(width: 8),
-      _buildStatChip(
-          t('rideshare_stats_earned', fallback: 'আয়'),
-          '৳${(_earnings?.totalEarnings ?? 0).toStringAsFixed(0)}',
-          _emerald,
-          Icons.account_balance_wallet_rounded),
-    ]);
+    final approvalLabel = approval == 'approved'
+        ? 'অনুমোদিত'
+        : approval == 'suspended'
+            ? 'সাসপেন্ডেড'
+            : 'অপেক্ষমাণ';
+    // One line instead of three bordered boxes — the numbers speak, the
+    // chrome does not.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+              isApproved
+                  ? Icons.verified_rounded
+                  : Icons.hourglass_top_rounded,
+              size: 15,
+              color: approvalColor),
+          const SizedBox(width: 4),
+          Text(approvalLabel,
+              style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: approvalColor)),
+          _buildStatDot(),
+          Text('${_earnings?.totalTrips ?? 0}',
+              style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                  color: _slate800)),
+          const SizedBox(width: 4),
+          Text('ট্রিপ',
+              style:
+                  GoogleFonts.inter(fontSize: 12, color: _slate400)),
+          _buildStatDot(),
+          Text('৳${(_earnings?.totalEarnings ?? 0).toStringAsFixed(0)}',
+              style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                  color: _slate800)),
+          const SizedBox(width: 4),
+          Text('আয়',
+              style:
+                  GoogleFonts.inter(fontSize: 12, color: _slate400)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatDot() {
+    return Container(
+      width: 3,
+      height: 3,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: const BoxDecoration(
+          color: Color(0xFFCBD5E1), shape: BoxShape.circle),
+    );
   }
 
   Widget _buildLocationRequiredCard() {
@@ -1171,7 +1209,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
           const SizedBox(height: 10),
           Text(
             hasSubmittedIdentity
-                ? 'Identity fields are locked after first submission. Open this section only when you need to review status or update service radius.'
+                ? 'পরিচয়ের তথ্য একবার জমা দিলে আর বদলানো যায় না। স্ট্যাটাস দেখতে বা সার্ভিস রেডিয়াস বদলাতে এই অংশটি খুলুন।'
                 : 'Open this section to complete your driver profile before going online.',
             style:
                 GoogleFonts.inter(fontSize: 11, color: _slate500, height: 1.35),

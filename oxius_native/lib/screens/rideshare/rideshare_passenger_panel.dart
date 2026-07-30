@@ -117,6 +117,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   // Booking step: 0=drop input, 1=pickup input, 2=vehicle+payment+confirm
   int _bookingStep = 0;
 
+  /// Sheet pulled down: suggestions hide and the map takes the screen.
+  bool _sheetCollapsed = false;
+
   // Completed-ride receipt: the ride that just finished stays on screen as a
   // receipt until "নতুন রাইড খুঁজুন", and this is where the driver gets rated.
   Ride? _completedRide;
@@ -251,105 +254,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final safeHeight = screenHeight - MediaQuery.of(context).padding.vertical;
     final preferredHeight = safeHeight * 0.62;
     return preferredHeight < 320 ? 320 : preferredHeight;
-  }
-
-  Widget _buildMapSectionFrame({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String badge,
-    required Widget child,
-    Color accentColor = const Color(0xFF6366F1),
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: accentColor.withValues(alpha: 0.14)),
-        boxShadow: [
-          BoxShadow(
-            color: accentColor.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Compact header: icon + title + badge in a single tight row
-          Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [accentColor, accentColor.withValues(alpha: 0.72)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 14, color: Colors.white),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(999),
-                  border:
-                      Border.all(color: accentColor.withValues(alpha: 0.14)),
-                ),
-                child: Text(
-                  badge,
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: accentColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            height: _mapViewportHeight(context),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.72), width: 1.2),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: child,
-          ),
-        ],
-      ),
-    );
   }
 
   String _currentTargetedDriverName(Ride ride) {

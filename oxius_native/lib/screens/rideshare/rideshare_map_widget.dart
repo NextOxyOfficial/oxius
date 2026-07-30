@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'dart:ui' as ui;
 import '../../models/rideshare_models.dart';
+import 'rideshare_vehicle_catalog.dart';
 
 class RideshareMapWidget extends StatefulWidget {
   final RidePoint? pickupPoint;
@@ -31,6 +33,11 @@ class RideshareMapWidget extends StatefulWidget {
   final RidePoint? passengerLocation;
   final String? passengerName;
   final String? passengerAvatar;
+
+  /// True while the trip is actually running. Flipping to true glides the
+  /// camera down to street-level zoom over the driver, which reads like the
+  /// ride "starting" instead of a map that keeps hovering at city scale.
+  final bool streetFocus;
 
   /// How far down the floating overlays (status panel, action buttons) start.
   ///
@@ -62,6 +69,7 @@ class RideshareMapWidget extends StatefulWidget {
     this.passengerLocation,
     this.passengerName,
     this.passengerAvatar,
+    this.streetFocus = false,
     this.topInset = 12,
   });
 
@@ -70,7 +78,7 @@ class RideshareMapWidget extends StatefulWidget {
 }
 
 class _RideshareMapWidgetState extends State<RideshareMapWidget>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   bool _initialFitDone = false;
   double _lastKnownZoom = 13;
@@ -101,6 +109,39 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
   );
 
   bool get _statusPanelExpanded => _statusPanelController.value > 0.5;
+
+  /// Street zoom the camera settles at while the trip runs.
+  static const double _streetZoom = 17.0;
+
+  AnimationController? _cameraController;
+
+  /// Glides the camera instead of jumping it. Every internal reposition goes
+  /// through here; one controller means a newer move silently cancels the
+  /// one still in flight.
+  void _animatedMove(LatLng target, double zoom,
+      {Duration duration = const Duration(milliseconds: 650)}) {
+    final camera = _mapController.camera;
+    final latTween = Tween<double>(
+        begin: camera.center.latitude, end: target.latitude);
+    final lngTween = Tween<double>(
+        begin: camera.center.longitude, end: target.longitude);
+    final zoomTween = Tween<double>(begin: camera.zoom, end: zoom);
+
+    _cameraController?.dispose();
+    final controller =
+        AnimationController(vsync: this, duration: duration);
+    _cameraController = controller;
+    final curve =
+        CurvedAnimation(parent: controller, curve: Curves.easeInOutCubic);
+
+    controller.addListener(() {
+      _mapController.move(
+        LatLng(latTween.evaluate(curve), lngTween.evaluate(curve)),
+        zoomTween.evaluate(curve),
+      );
+    });
+    controller.forward();
+  }
 
   void _cycleMapStyle() {
     final next = _MapStyle
@@ -163,6 +204,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
 
   @override
   void dispose() {
+    _cameraController?.dispose();
     _statusPanelController.dispose();
     super.dispose();
   }
@@ -177,14 +219,33 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
     final routeChanged =
         widget.routeGeometry?.toString() != oldWidget.routeGeometry?.toString();
 
-    // Auto-fit bounds when points change
-    if (widget.pickupPoint != oldWidget.pickupPoint ||
-        widget.dropPoint != oldWidget.dropPoint ||
-        routeChanged ||
-        (driverChanged && !widget.followDriver)) {
+    // Auto-fit bounds when points change — never while street-focused, or
+    // every driver ping would zoom the trip view back out to city scale.
+    if (!widget.streetFocus &&
+        (widget.pickupPoint != oldWidget.pickupPoint ||
+            widget.dropPoint != oldWidget.dropPoint ||
+            routeChanged ||
+            (driverChanged && !widget.followDriver))) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fitBounds();
       });
+    }
+
+    // The trip just started: dive from overview to street level over the
+    // driver, smoothly — the moment that makes the map feel live.
+    if (widget.streetFocus &&
+        !oldWidget.streetFocus &&
+        widget.driverLocation != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _animatedMove(
+          LatLng(widget.driverLocation!.latitude,
+              widget.driverLocation!.longitude),
+          _streetZoom,
+          duration: const Duration(milliseconds: 1100),
+        );
+      });
+      return;
     }
 
     if (driverChanged && widget.followDriver && widget.driverLocation != null) {
@@ -192,10 +253,16 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
         if (!mounted || _shouldPauseAutoFollow()) {
           return;
         }
-        _mapController.move(
+        // While street-focused, stay at street zoom even if the rider had
+        // zoomed elsewhere earlier; otherwise keep whatever zoom they chose.
+        final zoom = widget.streetFocus
+            ? math.max(_lastKnownZoom, _streetZoom - 0.5)
+            : _lastKnownZoom.clamp(6.0, 19.0).toDouble();
+        _animatedMove(
           LatLng(widget.driverLocation!.latitude,
               widget.driverLocation!.longitude),
-          _lastKnownZoom.clamp(6.0, 19.0).toDouble(),
+          zoom.clamp(6.0, 19.0).toDouble(),
+          duration: const Duration(milliseconds: 900),
         );
       });
     }
@@ -920,23 +987,23 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
   List<Marker> _buildMarkers() {
     final markers = <Marker>[];
 
-    // Pickup marker (with rider profile if available)
+    // Pickup marker: the rider's own face pins the pickup when we have it —
+    // a photo says "this is where I am" better than any glyph.
     if (widget.pickupPoint != null) {
-      final hasRiderInfo =
-          widget.riderName != null && widget.riderName!.isNotEmpty;
+      final hasAvatar =
+          widget.riderAvatar != null && widget.riderAvatar!.isNotEmpty;
       markers.add(
         Marker(
           point: LatLng(
               widget.pickupPoint!.latitude, widget.pickupPoint!.longitude),
-          width: hasRiderInfo ? 160 : 116,
-          height: hasRiderInfo ? 72 : 80,
-          child: hasRiderInfo
-              ? _buildProfileMarker(
-                  name: widget.riderName!,
-                  avatarUrl: widget.riderAvatar,
-                  subtitle: 'যাত্রী',
-                  gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  icon: Icons.person_rounded,
+          width: hasAvatar ? 64 : 116,
+          height: hasAvatar ? 78 : 80,
+          alignment: hasAvatar ? Alignment.topCenter : Alignment.center,
+          child: hasAvatar
+              ? _buildAvatarPin(
+                  avatarUrl: widget.riderAvatar!,
+                  ringColor: const Color(0xFF6366F1),
+                  fallbackIcon: Icons.person_rounded,
                 )
               : _buildPickupMarker(),
         ),
@@ -956,25 +1023,28 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
       );
     }
 
-    // Driver marker (with driver profile if available)
+    // Driver marker. While the trip runs the big name card gets out of the
+    // way and the vehicle itself moves down the street; before that, the
+    // card tells the waiting rider who is coming.
     if (widget.driverLocation != null) {
       final hasDriverInfo =
           widget.driverName != null && widget.driverName!.isNotEmpty;
+      final asVehicle = widget.streetFocus || !hasDriverInfo;
       markers.add(
         Marker(
           point: LatLng(widget.driverLocation!.latitude,
               widget.driverLocation!.longitude),
-          width: hasDriverInfo ? 180 : 50,
-          height: hasDriverInfo ? 82 : 50,
-          child: hasDriverInfo
-              ? _buildProfileMarker(
+          width: asVehicle ? 54 : 180,
+          height: asVehicle ? 54 : 82,
+          child: asVehicle
+              ? _buildVehicleMarker()
+              : _buildProfileMarker(
                   name: widget.driverName!,
                   avatarUrl: widget.driverAvatar,
-                  subtitle: widget.driverVehicleInfo ?? 'Driver',
+                  subtitle: widget.driverVehicleInfo ?? 'ড্রাইভার',
                   gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
                   icon: Icons.directions_car_rounded,
-                )
-              : _buildDriverMarker(),
+                ),
         ),
       );
     }
@@ -1117,6 +1187,80 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
           ),
         ),
       ],
+    );
+  }
+
+  /// A circular photo pin: the face in a ringed circle with a pointer tail.
+  Widget _buildAvatarPin({
+    required String avatarUrl,
+    required Color ringColor,
+    required IconData fallbackIcon,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          padding: const EdgeInsets.all(2.5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: ringColor, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.22),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: Image.network(
+              avatarUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: const Color(0xFFF1F5F9),
+                child: Icon(fallbackIcon,
+                    size: 22, color: const Color(0xFF64748B)),
+              ),
+            ),
+          ),
+        ),
+        // Pointer tail so the pin reads as "exactly here", not "around here".
+        CustomPaint(
+          size: const Size(12, 7),
+          painter: _PinTailPainter(ringColor),
+        ),
+      ],
+    );
+  }
+
+  /// The moving vehicle during the trip: bundled artwork in a white puck,
+  /// rotated to the live heading so it drives down the street, not sideways.
+  Widget _buildVehicleMarker() {
+    final vehicle = RideVehicle.byKey(widget.vehicleType);
+    final heading = widget.driverHeading;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFF059669), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(7),
+      child: heading == null
+          ? vehicle.artwork(size: 34)
+          : Transform.rotate(
+              angle: heading * (math.pi / 180),
+              child: vehicle.artwork(size: 34),
+            ),
     );
   }
 
@@ -1313,33 +1457,6 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
     );
   }
 
-  Widget _buildDriverMarker() {
-    final heading = widget.driverHeading ?? 0;
-    return Transform.rotate(
-      angle: heading * (math.pi / 180),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFF6366F1), width: 3),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(
-          _vehicleIconData(widget.vehicleType),
-          size: 22,
-          color: const Color(0xFF6366F1),
-        ),
-      ),
-    );
-  }
-
   Widget _buildNearbyDriverMarker(NearbyDriver driver) {
     return Container(
       padding: const EdgeInsets.all(6),
@@ -1432,4 +1549,25 @@ enum _MapStyle {
     final next = _MapStyle.values[(index + 1) % _MapStyle.values.length];
     return next.label;
   }
+}
+
+/// The little triangle under an avatar pin.
+class _PinTailPainter extends CustomPainter {
+  final Color color;
+  const _PinTailPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // flutter_map exports its own Path<LatLng>, which shadows dart:ui's.
+    final path = ui.Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_PinTailPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

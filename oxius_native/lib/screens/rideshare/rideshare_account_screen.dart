@@ -433,8 +433,10 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // The row names the mode you are IN, not the one the switch
+              // would take you to — the badge above and this line must agree.
               Text(
-                'ড্রাইভার মোড',
+                isDriver ? 'ড্রাইভার মোড' : 'প্যাসেঞ্জার মোড',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -443,8 +445,8 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
               ),
               Text(
                 isDriver
-                    ? 'রাইড নিচ্ছেন — ড্যাশবোর্ডে ড্রাইভার প্যানেল'
-                    : 'চালু করলে ড্যাশবোর্ড ড্রাইভার প্যানেল দেখাবে',
+                    ? 'সুইচ বন্ধ করলে প্যাসেঞ্জার মোডে ফিরবেন'
+                    : 'সুইচ চালু করলে ড্রাইভার মোডে যাবেন',
                 style: GoogleFonts.inter(fontSize: 11, color: _muted),
               ),
             ],

@@ -175,6 +175,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
           passengerAvatar: ride.riderAvatar,
           vehicleType: ride.requestedVehicleType,
           followDriver: ride.isDriverArriving || ride.isInProgress,
+          streetFocus: ride.isInProgress,
         ),
       ),
     ]);

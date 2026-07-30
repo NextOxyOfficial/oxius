@@ -31,6 +31,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 ? 'drop'
                 : (_bookingStep == 1 ? 'pickup' : ''),
             vehicleType: _selectedVehicleType,
+            riderAvatar: AuthService.currentUser?.profilePicture,
             onMapTap: _onMapTap,
             onCenterChanged: _onPlannerMapCenterChanged,
             // Clear the status bar AND the shell's floating avatar, which
@@ -135,19 +136,21 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             onTap: () => _rebuild(() {
               _activeInput = 'drop';
               _hideDropSuggestionsUntilEdit = false;
+              // Reaching for the field means they want the full sheet back.
+              _sheetCollapsed = false;
             }),
             isSearching: _isSearchingDrop,
           ),
 
-          // Suggestions
-          if (dropSuggestions.isNotEmpty) ...[
+          // Suggestions — all hidden while the sheet is pulled down.
+          if (dropSuggestions.isNotEmpty && !_sheetCollapsed) ...[
             const SizedBox(height: 6),
             _buildLocationSuggestionsDropdown(
               suggestions: dropSuggestions,
               showingRecent: showingRecent,
               onSuggestionTap: _selectDropSuggestion,
             ),
-          ] else if (_dropController.text.isEmpty) ...[
+          ] else if (_dropController.text.isEmpty && !_sheetCollapsed) ...[
             const SizedBox(height: 6),
             _buildQuickDestinationRow(
               icon: Icons.star_rounded,
@@ -395,18 +398,38 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
 
   Widget _buildStepSheetContainer(
       {required Widget child, VoidCallback? onBack}) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-              color: Color(0x26000000), blurRadius: 32, offset: Offset(0, -8)),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    // A flick down folds the sheet so the map takes the screen; a flick up
+    // (or touching the search field) brings it back. AnimatedSize makes the
+    // fold glide instead of snap.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onVerticalDragEnd: (details) {
+        final v = details.primaryVelocity ?? 0;
+        if (v > 250 && !_sheetCollapsed) {
+          _rebuild(() => _sheetCollapsed = true);
+          FocusScope.of(context).unfocus();
+        } else if (v < -250 && _sheetCollapsed) {
+          _rebuild(() => _sheetCollapsed = false);
+        }
+      },
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topCenter,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                  color: Color(0x26000000),
+                  blurRadius: 32,
+                  offset: Offset(0, -8)),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
           // Drag handle
           Container(
             margin: const EdgeInsets.only(top: 10, bottom: 4),
@@ -449,7 +472,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               ],
             ),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

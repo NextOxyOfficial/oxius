@@ -230,40 +230,28 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
 
                       const SizedBox(height: 16),
 
-                      // Stats row
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          children: [
-                            _buildStatItem(
-                                t('rideshare_fare', fallback: 'ভাড়া'),
-                                '৳${ride.payableFare.toStringAsFixed(0)}'),
-                            _buildStatDivider(),
-                            _buildStatItem(
-                                t('rideshare_distance', fallback: 'দূরত্ব'),
-                                '${_currentPassengerDistanceKm(ride).toStringAsFixed(1)} km'),
-                            _buildStatDivider(),
-                            _buildStatItem(t('rideshare_eta', fallback: 'সময়'),
-                                _currentPassengerEta(ride)),
-                          ],
-                        ),
+                      // One line of facts — the boxes around these numbers
+                      // were pure height.
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildFactPhrase('৳${ride.payableFare.toStringAsFixed(0)}',
+                              t('rideshare_fare', fallback: 'ভাড়া')),
+                          _buildFactDot(),
+                          _buildFactPhrase(
+                              '${_currentPassengerDistanceKm(ride).toStringAsFixed(1)} km',
+                              t('rideshare_distance', fallback: 'দূরত্ব')),
+                          _buildFactDot(),
+                          _buildFactPhrase(_currentPassengerEta(ride),
+                              t('rideshare_eta', fallback: 'সময়')),
+                        ],
                       ),
 
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
+                      const SizedBox(height: 10),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Row(
                           children: [
                             Icon(
@@ -455,26 +443,12 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
 
           const SizedBox(height: 12),
 
-          _buildMapSectionFrame(
-            context: context,
-            icon: ride.isInProgress
-                ? Icons.navigation_rounded
-                : Icons.radar_rounded,
-            title: t('rideshare_live_trip_map', fallback: 'লাইভ ট্রিপ ম্যাপ'),
-            subtitle: ride.isInProgress
-                ? t('rideshare_live_trip_map_subtitle',
-                    fallback:
-                        'Track the ride path, your driver and destination in one place.')
-                : t('rideshare_driver_arrival_map_subtitle',
-                    fallback:
-                        'Watch your driver approach in real time with the active route preview.'),
-            badge: ride.isInProgress
-                ? t('rideshare_live_badge', fallback: 'লাইভ')
-                : t('rideshare_tracking_badge', fallback: 'ট্র্যাকিং'),
-            accentColor: ride.isInProgress
-                ? const Color(0xFF0F766E)
-                : const Color(0xFF6366F1),
-            child: RideshareMapWidget(
+          // The map needs no title card announcing it is a map.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              height: _mapViewportHeight(context),
+              child: RideshareMapWidget(
               pickupPoint: ride.pickupPoint,
               dropPoint: ride.dropPoint,
               routeGeometry: _currentPassengerRouteGeometry(ride),
@@ -484,11 +458,49 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
               driverAvatar: ride.assignedDriver?.userAvatar,
               driverVehicleInfo: _driverMapVehicleInfo(ride),
               vehicleType: ride.requestedVehicleType,
+              riderAvatar: AuthService.currentUser?.profilePicture,
               followDriver: ride.isDriverArriving || ride.isInProgress,
+              streetFocus: ride.isInProgress,
               onMapTap: null,
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// value in ink, label in muted, side by side — one phrase per fact.
+  Widget _buildFactPhrase(String value, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+              fontSize: 12, color: const Color(0xFF94A3B8)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFactDot() {
+    return Container(
+      width: 3,
+      height: 3,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: const BoxDecoration(
+        color: Color(0xFFCBD5E1),
+        shape: BoxShape.circle,
       ),
     );
   }
@@ -508,12 +520,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
 
   Widget _buildRouteInfo(Ride ride) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
         children: [
           Row(

@@ -276,7 +276,9 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
         ? ride.riderName
         : (ride.assignedDriver?.userName ?? '');
 
-    return Column(
+    return InkWell(
+      onTap: () => _showTripDetails(ride),
+      child: Column(
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -367,6 +369,130 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
         ),
         const Divider(height: 1, thickness: 1, color: Color(0xFFF3F5F8)),
       ],
+      ),
+    );
+  }
+
+  /// One trip, in full, as a plain sheet — rows and hairlines, no cards.
+  void _showTripDetails(Ride ride) {
+    final vehicle = RideVehicle.byKey(ride.vehicle?.vehicleType);
+    final statusColor = _getStatusColor(ride.status);
+    final fare = ride.finalFare ?? ride.fareEstimate;
+    final counterpartName = widget.asDriver
+        ? ride.riderName
+        : (ride.assignedDriver?.userName ?? '');
+    final plate = ride.vehicle?.registrationNumber ?? '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  SizedBox(width: 36, child: vehicle.artwork(size: 30)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ride.statusDisplay,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: statusColor,
+                          ),
+                        ),
+                        Text(
+                          '${_formatDate(ride.requestedAt)} · '
+                          '${_formatTime(ride.requestedAt)}',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '$_bdtSymbol${fare.toStringAsFixed(0)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildRouteRail(ride),
+              const SizedBox(height: 16),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              _detailRow(t('rideshare_distance', fallback: 'দূরত্ব'),
+                  '${ride.distanceKm.toStringAsFixed(1)} km'),
+              _detailRow(t('rideshare_eta', fallback: 'সময়'),
+                  ride.etaDisplay.trim().isNotEmpty ? ride.etaDisplay : '—'),
+              _detailRow(t('rideshare_payment_method', fallback: 'পেমেন্ট'),
+                  _paymentMethodLabel(ride.paymentMethod)),
+              if (counterpartName.trim().isNotEmpty)
+                _detailRow(
+                    widget.asDriver ? 'যাত্রী' : 'ড্রাইভার', counterpartName),
+              if (plate.trim().isNotEmpty) _detailRow('গাড়ি', plate),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+                fontSize: 13, color: const Color(0xFF94A3B8)),
+          ),
+          const Spacer(),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
