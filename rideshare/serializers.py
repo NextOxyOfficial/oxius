@@ -67,6 +67,14 @@ class VehicleSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+        extra_kwargs = {
+            # The default unique-validator message confirms which plates are
+            # registered on the platform — an enumeration oracle. Same 400,
+            # generic words.
+            "registration_number": {
+                "error_messages": {"unique": "This registration cannot be used."}
+            },
+        }
 
 
 class DriverProfileSerializer(serializers.ModelSerializer):
@@ -207,12 +215,36 @@ class DriverProfileSerializer(serializers.ModelSerializer):
                         {"additional_documents": "Each document must be a string."}
                     )
                 value = item.strip()
+                # Per-entry cap: without one, each PUT can park the full
+                # DATA_UPLOAD_MAX_MEMORY_SIZE of base64 in this JSONField,
+                # repeatable forever — unbounded DB growth on a free endpoint.
+                # 1.5M chars ≈ 1.1MB binary, plenty for a document photo.
+                if len(value) > 1_500_000:
+                    raise serializers.ValidationError(
+                        {"additional_documents": "Each document is too large."}
+                    )
                 if value:
                     cleaned_documents.append(value)
 
             if len(cleaned_documents) > 10:
                 raise serializers.ValidationError(
                     {"additional_documents": "You can upload up to 10 additional documents."}
+                )
+
+            # KYC evidence freezes once it has been approved — otherwise a
+            # driver passes review with real documents and swaps them out
+            # afterwards, with nobody ever looking again.
+            if (
+                self.instance is not None
+                and self.instance.approval_status == "approved"
+                and cleaned_documents != (self.instance.additional_documents or [])
+            ):
+                raise serializers.ValidationError(
+                    {
+                        "additional_documents": (
+                            "Approved documents cannot be changed. Contact support."
+                        )
+                    }
                 )
 
             attrs["additional_documents"] = cleaned_documents

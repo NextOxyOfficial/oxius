@@ -1485,21 +1485,24 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     )..repeat();
+    // Rings 2 and 3 stay parked until their stagger delay, then REPEAT —
+    // forward() here would run one pass and freeze the ring invisible at
+    // value 1.0 for the rest of the search.
     _pulseController2 = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
-    )..repeat();
+    );
     _pulseController3 = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
-    )..repeat();
+    );
 
     // Stagger: ring2 starts 600ms later, ring3 starts 1200ms later
     Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) _pulseController2.forward(from: 0);
+      if (mounted) _pulseController2.repeat();
     });
     Future.delayed(const Duration(milliseconds: 1200), () {
-      if (mounted) _pulseController3.forward(from: 0);
+      if (mounted) _pulseController3.repeat();
     });
 
     _pulse1 = Tween<double>(begin: 0.0, end: 1.0).animate(

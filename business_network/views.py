@@ -1593,8 +1593,18 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs.get("post_id")
-        return BusinessNetworkPostComment.objects.filter(post__id=post_id).order_by(
-            "-created_at"
+        # Same visibility gate the feed uses — without it, comments on
+        # followers-only and banned posts were readable by anyone, logged
+        # in or not, straight off the post id.
+        from .feed_visibility import visible_posts_q
+
+        visible = BusinessNetworkPost.objects.filter(
+            visible_posts_q(self.request.user)
+        ).values("id")
+        return (
+            BusinessNetworkPostComment.objects.filter(
+                post__id=post_id, post__in=visible
+            ).order_by("-created_at")
         )
 
     def perform_create(self, serializer):
@@ -1603,6 +1613,14 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
         serializer.save(post=post, author=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        # AllowAny stays on for reading public-post comments, so the write
+        # path needs its own gate — anonymous create used to die deep in
+        # save() as a 400 with an internal error string.
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         content = request.data.get("content")
         if not content or not content.strip():
             return Response(
@@ -1619,9 +1637,18 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
             # Create data object with all required fields
             data = {"content": content, "post": post_id, "author": request.user.id}
             
-            # Include parent_comment if provided (for replies)
+            # Include parent_comment if provided (for replies) — pinned to
+            # THIS post, or a reply can be grafted onto any thread on the
+            # site by id.
             parent_comment_id = request.data.get("parent_comment")
             if parent_comment_id:
+                if not BusinessNetworkPostComment.objects.filter(
+                    id=parent_comment_id, post_id=post_id
+                ).exists():
+                    return Response(
+                        {"detail": "Parent comment does not belong to this post."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 data["parent_comment"] = parent_comment_id
 
             # The @mention name->id map travels with the comment; this view

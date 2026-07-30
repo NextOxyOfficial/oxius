@@ -206,6 +206,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
   void dispose() {
     _cameraController?.dispose();
     _statusPanelController.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 

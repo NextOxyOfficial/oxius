@@ -162,10 +162,28 @@ export const useMentions = () => {
    * Creates mention chips/tags with the same design as the input component
    * @param {string} content - The comment content
    * @returns {string} HTML string with mention chips and regular text
-   */  const processMentionsAsHTML = (content) => {
+   */  // The output of this function is rendered with v-html, so EVERYTHING that
+  // is not chip markup we generate ourselves must be escaped first. Without
+  // this, a comment containing <img onerror=...> executes in every viewer's
+  // browser — stored XSS with a 30-day token sitting in reach.
+  // Single quotes stay literal: every attribute in the chip markup is
+  // double-quoted, so ' is inert — and escaping it would break the mention
+  // regex on names like O'Brien (the ' is part of its character class).
+  const escapeHTML = (text) =>
+    String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const processMentionsAsHTML = (content) => {
     if (!content) return content;
     
     try {
+      // Escape first, substitute chips after — the mention regex only
+      // matches letters/marks/digits/_'-, all of which survive escaping
+      // unchanged, so chip detection still works on the escaped text.
+      content = escapeHTML(content);
       // Enhanced regex that stops at double spaces (our delimiter), punctuation, or other mentions
       // Double space acts as a clear boundary between mentions and regular text
       // Supports all Unicode scripts including Bangla, Arabic, Chinese, etc.
@@ -200,7 +218,8 @@ export const useMentions = () => {
       return result;
     } catch (error) {
       console.error('Error processing mentions in HTML:', error);
-      return content; // Return original content on error
+      // Never hand raw user text back to v-html, even on error.
+      return escapeHTML(content);
     }
   };
   /**

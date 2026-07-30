@@ -642,6 +642,16 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
             )
 
         if next_status == Ride.STATUS_COMPLETED:
+            # SECURITY: the wallet debit below runs before transition_to(), so
+            # the transition must be proven legal FIRST. Without this gate a
+            # driver could POST status=completed straight from "accepted":
+            # transition_to would raise, the view would return 400 — but the
+            # payment call had already debited the rider inside this atomic
+            # block, and a caught exception does not roll a transaction back.
+            if not ride.can_transition_to(Ride.STATUS_COMPLETED):
+                return api_error(
+                    "This ride cannot be completed from its current state."
+                )
             # Always use the payment_method set at ride creation by the passenger.
             # Ignore any driver-supplied value to prevent payment method tampering.
             payment_method = ride.payment_method or Ride.PAYMENT_METHOD_WALLET
@@ -675,6 +685,10 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
                 )
             ride.transition_to(next_status, actor=request.user)
         except DjangoValidationError as exc:
+            # Returning a response from inside @transaction.atomic COMMITS
+            # whatever already ran — including a wallet debit. Any write made
+            # before a rejected transition must die with the transition.
+            transaction.set_rollback(True)
             return api_error(str(exc))
         if ride.assigned_driver_id and next_status in [
             Ride.STATUS_COMPLETED,
@@ -711,7 +725,7 @@ class RideEarlyCompleteView(RideshareApiMixin, APIView):
     @transaction.atomic
     def post(self, request, id):
         ride = get_object_or_404(
-            Ride.objects.select_for_update()
+            Ride.objects.select_for_update(of=("self",))
             .select_related("rider", "assigned_driver__user")
             .prefetch_related("driver_locations"),
             id=id,
@@ -741,7 +755,7 @@ class RideConfirmEarlyCompletionView(RideshareApiMixin, APIView):
     @transaction.atomic
     def post(self, request, id):
         ride = get_object_or_404(
-            Ride.objects.select_for_update()
+            Ride.objects.select_for_update(of=("self",))
             .select_related("rider", "assigned_driver__user")
             .prefetch_related("driver_locations"),
             id=id,
@@ -1141,6 +1155,10 @@ class VehicleListCreateView(RideshareApiMixin, APIView):
                 "Your KYC must be approved before you can add a vehicle.",
                 status.HTTP_403_FORBIDDEN,
             )
+        # Unbounded creates were a junk-row faucet; nobody drives six
+        # vehicles at once.
+        if driver_profile.vehicles.count() >= 5:
+            return api_error("You can register at most 5 vehicles.")
         serializer = VehicleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(driver=driver_profile)

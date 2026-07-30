@@ -124,12 +124,13 @@ class _RideshareScreenState extends State<RideshareScreen> {
       return;
     }
 
-    // Only ensure the target panel is instantiated so it can process the
-    // event internally.  Do NOT auto-switch the active tab — that yanks the
-    // user away from whatever they are doing (e.g. driver completing a ride
-    // would jump to the passenger tab because the notification resolves as
-    // mode=passenger).
-    _ensureModePanel(requestedMode!);
+    // Mount the target panel so it can process the event internally — inside
+    // setState, because a panel assigned without a rebuild never enters the
+    // tree, its initState never runs, and the event lands on nothing. Do NOT
+    // auto-switch the active tab — that yanks the user away from whatever
+    // they are doing (e.g. driver completing a ride would jump to the
+    // passenger tab because the notification resolves as mode=passenger).
+    setState(() => _ensureModePanel(requestedMode!));
   }
 
   void _openAccount() {

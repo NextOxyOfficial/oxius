@@ -90,7 +90,13 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       _loading = false;
     });
 
-    if (!_isApprovedDriver && _mode != RideshareMode.passenger) {
+    // Demote ONLY on a definitive server answer. getDriverProfile() also
+    // returns success=false for timeouts and dead networks — flipping an
+    // approved driver to passenger (and wiping their sticky choice) because
+    // the connection blinked would strand them until a successful reload.
+    if (profile.success &&
+        profile.data?.isApproved != true &&
+        _mode != RideshareMode.passenger) {
       setState(() => _mode = RideshareMode.passenger);
       await RideshareMode.clear();
       widget.onModeChanged?.call(RideshareMode.passenger);

@@ -732,7 +732,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         final consented =
             await LocationDisclosure.ensure(context, background: false);
         if (!consented) {
-          setState(() => _locationGranted = false);
+          if (mounted) setState(() => _locationGranted = false);
           _showError('রাইড শেয়ার ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।');
           return;
         }
@@ -860,8 +860,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   Future<void> _selectPickupSuggestion(RidePoint point) async {
+    _searchDebounce?.cancel();
     await _rememberRecentPlace(point);
     setState(() {
+      _isSearchingPickup = false;
       _pickupPoint = point;
       _pickupController.text = point.name;
       _pickupSuggestions = [];
@@ -873,8 +875,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   Future<void> _selectDropSuggestion(RidePoint point) async {
+    _searchDebounce?.cancel();
     await _rememberRecentPlace(point);
     setState(() {
+      _isSearchingDrop = false;
       _dropPoint = point;
       _dropController.text = point.name;
       _dropSuggestions = [];
@@ -935,7 +939,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     final seeded = <RidePoint>[];
     for (final ride in result.data ?? const <Ride>[]) {
+      // Only trips that actually happened — a cancelled ride's destination
+      // is noise — and never a blank or (0,0) point, which would render as
+      // an empty suggestion row.
+      if (ride.status != 'completed') continue;
       final drop = ride.dropPoint;
+      if (drop.name.trim().isEmpty ||
+          (drop.latitude == 0 && drop.longitude == 0)) {
+        continue;
+      }
       final duplicate = seeded.any((p) =>
           p.latitude == drop.latitude && p.longitude == drop.longitude);
       if (!duplicate) seeded.add(drop);
@@ -1183,6 +1195,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           _noDriversInRange = false;
           _targetedAtFromEvent = null;
           _dispatchAttempt = 0;
+          // Without this the form re-renders the confirm step with nothing
+          // in it — the ride was booked from step 2 and cancelling never
+          // rewound it.
+          _bookingStep = 0;
         });
         _pickupController.clear();
         _dropController.clear();
@@ -1297,13 +1313,16 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     );
 
     if (confirmed != true) {
+      controller.dispose();
       return;
     }
 
     setState(() => _isReportingCancellation = true);
+    final details = controller.text.trim();
+    controller.dispose();
     final result = await RideshareService.reportDriverCancellation(
       ride.id,
-      details: controller.text.trim(),
+      details: details,
     );
     if (!mounted) return;
 

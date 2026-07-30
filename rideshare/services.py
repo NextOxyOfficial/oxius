@@ -16,7 +16,7 @@ from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 from channels.layers import get_channel_layer
 
@@ -1798,13 +1798,21 @@ class WalletService:
         driver_user = driver.user
 
         if payment_method == Ride.PAYMENT_METHOD_WALLET:
-            if rider.balance < amount:
+            UserModel = type(rider)
+            # Conditional F() debit: atomic against every other balance write
+            # (withdrawals, transfers). Read-modify-write here would let a
+            # concurrent write be silently overwritten — a mintable race on
+            # real money. The WHERE clause doubles as the funds check.
+            debited = UserModel.objects.filter(
+                pk=rider.pk, balance__gte=amount
+            ).update(balance=F("balance") - amount)
+            if not debited:
                 raise ValidationError("Insufficient wallet balance to complete this ride.")
-
-            rider.balance -= amount
-            driver_user.balance += driver_payout_amount
-            rider.save(update_fields=["balance"])
-            driver_user.save(update_fields=["balance"])
+            UserModel.objects.filter(pk=driver_user.pk).update(
+                balance=F("balance") + driver_payout_amount
+            )
+            rider.refresh_from_db(fields=["balance"])
+            driver_user.refresh_from_db(fields=["balance"])
 
             transaction_record = Balance.objects.create(
                 user=rider,
@@ -1890,14 +1898,18 @@ class WalletService:
             sum((ride.driver_due_amount or Decimal("0.00")) for ride in due_rides)
         )
         driver_user = driver_profile.user
-        current_balance = decimal_money(driver_user.balance or Decimal("0.00"))
-        if current_balance < total_due:
+        # Conditional F() decrement — the absolute write this replaces raced
+        # a concurrent withdrawal into free money (settle reads 500, withdraw
+        # commits -500, settle writes back 200: 500 minted).
+        UserModel = type(driver_user)
+        settled = UserModel.objects.filter(
+            pk=driver_user.pk, balance__gte=total_due
+        ).update(balance=F("balance") - total_due)
+        if not settled:
             raise ValidationError(
                 f"Insufficient Adsy balance. You need ৳{total_due} to clear your rideshare due."
             )
-
-        driver_user.balance = current_balance - total_due
-        driver_user.save(update_fields=["balance"])
+        driver_user.refresh_from_db(fields=["balance"])
 
         settlement = None
         last_error = None

@@ -64,7 +64,13 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
         ]
 
     def validate_mentioned_users(self, value):
-        """A small {display_name: user_id} map — nothing else."""
+        """A small {display_name: user_id} map — nothing else.
+
+        Every id must belong to a real user. Unverified ids would let a
+        comment read "@Trusted Person" while the tap lands on an attacker's
+        profile — mention-spoofing as a phishing ramp — and would become a
+        spam cannon the day notifications get wired to this field.
+        """
         if not isinstance(value, dict):
             raise serializers.ValidationError("mentioned_users must be a map")
         if len(value) > 20:
@@ -75,6 +81,21 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
             user_id = str(user_id).strip()[:64]
             if name and user_id:
                 cleaned[name] = user_id
+        if cleaned:
+            from django.core.exceptions import ValidationError as DjangoValidationError
+
+            try:
+                real_ids = {
+                    str(pk)
+                    for pk in User.objects.filter(
+                        id__in=list(cleaned.values())
+                    ).values_list("id", flat=True)
+                }
+            except (ValueError, DjangoValidationError):
+                # A malformed id in id__in (non-UUID) raises before the query
+                # runs — treat the whole map as garbage rather than 500ing.
+                real_ids = set()
+            cleaned = {n: uid for n, uid in cleaned.items() if uid in real_ids}
         return cleaned
 
     def get_author_details(self, obj):
