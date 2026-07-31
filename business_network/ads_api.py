@@ -7,6 +7,7 @@ POST /api/bn/ads/track/   {"events": [{...}, ...]}
     → records AdEvents (max 50/batch). Drives ad counters + budget burn,
       viewer daily reward counters and the per-user interest profile.
 """
+import logging
 import random
 from datetime import date, timedelta
 from decimal import Decimal
@@ -29,6 +30,8 @@ from .models import (
     AdViewerDaily,
     UserAdProfile,
 )
+
+logger = logging.getLogger(__name__)
 
 VALID_PLACEMENTS = {
     "bn_feed", "shorts_banner", "shorts_fullscreen", "shorts_reel",
@@ -402,6 +405,15 @@ def serve_ad(request):
             images.append(_abs(m.image.url))
         if m.video and not video_url:
             video_url = _abs(m.video.url)
+            # A video creative carries no still image, so compact surfaces
+            # had nothing to draw. Generate the poster once, then reuse it.
+            if not m.thumbnail:
+                try:
+                    m.ensure_thumbnail()
+                except Exception:
+                    logger.exception("ad poster generation failed (media %s)", m.pk)
+            if m.thumbnail:
+                images.append(_abs(m.thumbnail.url))
 
     payload = {
         "id": chosen.pk,

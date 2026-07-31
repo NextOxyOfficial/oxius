@@ -51,6 +51,40 @@ class HouseAd {
     }
   }
 
+  /// The one place any surface asks "what picture represents this ad?".
+  ///
+  /// A poster can live in four different places depending on the creative,
+  /// and every caller that guessed at a subset ended up with blank tiles:
+  ///   image creative → images.first
+  ///   video creative → companion banner (its only still frame today)
+  ///   boost          → the promoted post's own thumbnail, then its media
+  /// Empty means there is genuinely nothing to show — callers render a
+  /// format-appropriate placeholder rather than a broken image.
+  String get thumbUrl {
+    if (images.isNotEmpty && images.first.trim().isNotEmpty) {
+      return images.first.trim();
+    }
+    if (companionBanner.trim().isNotEmpty) return companionBanner.trim();
+
+    // Boost: the payload carries a flat thumbnail, and the fully parsed post
+    // carries its own share thumb. Prefer the flat one — it is the poster the
+    // server picked for the promoted video.
+    final flat = (boostedPost?['thumbnail'] ?? '').toString().trim();
+    if (flat.isNotEmpty) return flat;
+    final post = boostedPostModel;
+    final share = post?.shareThumbUrl.trim() ?? '';
+    if (share.isNotEmpty) return share;
+
+    return '';
+  }
+
+  /// True when this ad is a video with no still frame anywhere — the caller
+  /// shows a play tile instead of an empty box.
+  bool get isVideoWithoutPoster =>
+      thumbUrl.isEmpty &&
+      (format == 'video' && videoUrl.trim().isNotEmpty ||
+          (boostedPost?['video_url'] ?? '').toString().trim().isNotEmpty);
+
   const HouseAd({
     required this.id,
     required this.title,
@@ -115,7 +149,7 @@ class HouseAd {
     final post = boostedPostModel;
     final thumb = post?.shareThumbUrl.trim().isNotEmpty == true
         ? post!.shareThumbUrl.trim()
-        : (images.isNotEmpty ? images.first : companionBanner);
+        : thumbUrl;
     final headline = title.trim().isNotEmpty ? title.trim() : advertiser;
     final sub = description.trim().isNotEmpty ? description.trim() : categoryName;
     var url = '';

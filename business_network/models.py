@@ -475,7 +475,23 @@ class AbnAdsPanelMedia(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     image = models.ImageField(upload_to='business_network/abn/', blank=True, null=True)
     video = models.FileField(upload_to='business_network/abn/', blank=True, null=True)
+    # Poster frame for a video creative. Without it a video ad had no still
+    # image anywhere, so every compact surface (the strip under post media,
+    # list rows) rendered a blank tile.
+    thumbnail = models.ImageField(
+        upload_to='business_network/abn/thumbnails/', blank=True, null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # The shared poster generator keys off `type`; ad media has only a video
+    # file, so report the type it implies.
+    @property
+    def type(self):
+        return "video" if self.video else "image"
+
+    def ensure_thumbnail(self, force=False):
+        from .tasks import make_video_thumbnail
+        return make_video_thumbnail(self, force=force)
 
     def generate_id(self):
         return make_timestamp_id(AbnAdsPanelMedia)

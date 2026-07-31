@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/house_ads_service.dart';
 import 'house_ad_card.dart';
+import '../../config/app_config.dart';
 
 /// The one-row sponsored strip: thumbnail, headline, "Sponsored", action.
 ///
@@ -48,7 +49,9 @@ class HouseAdStripView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumb = ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
+    // Was `images.first ?? companionBanner`, which is only ever set for plain
+    // image creatives — boost and video ads came out blank.
+    final thumb = ad.thumbUrl;
     final subtitle = ad.description.trim();
 
     return Padding(
@@ -90,11 +93,12 @@ class HouseAdStripView extends StatelessWidget {
                         height: 56,
                         child: thumb.isNotEmpty
                             ? Image.network(
-                                thumb,
+                                AppConfig.getAbsoluteUrl(thumb),
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _thumbFallback(),
+                                errorBuilder: (_, __, ___) =>
+                                    _thumbFallback(ad),
                               )
-                            : _thumbFallback(),
+                            : _thumbFallback(ad),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -193,9 +197,21 @@ class HouseAdStripView extends StatelessWidget {
     );
   }
 
-  Widget _thumbFallback() => Container(
-        color: const Color(0xFFF1F5F9),
-        child: const Icon(Icons.campaign_outlined,
-            size: 22, color: Color(0xFF94A3B8)),
+  /// A video ad with no stored poster gets a video tile, not the generic
+  /// megaphone — the megaphone reads as "this image failed to load".
+  Widget _thumbFallback(HouseAd ad) {
+    if (ad.isVideoWithoutPoster) {
+      return Container(
+        color: const Color(0xFF0F172A),
+        alignment: Alignment.center,
+        child: const Icon(Icons.play_arrow_rounded,
+            size: 26, color: Colors.white),
       );
+    }
+    return Container(
+      color: const Color(0xFFF1F5F9),
+      child: const Icon(Icons.campaign_outlined,
+          size: 22, color: Color(0xFF94A3B8)),
+    );
+  }
 }
