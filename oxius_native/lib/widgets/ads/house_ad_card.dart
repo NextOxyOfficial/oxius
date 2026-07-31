@@ -519,12 +519,13 @@ class _HouseAdCardState extends State<HouseAdCard>
                     children: [
                       Text(
                         ad.title,
-                        // Three lines: one or two cut most offers off before
-                        // they said anything useful.
-                        maxLines: ad.description.trim().isEmpty ? 3 : 2,
+                        // Three lines whether or not there is a description:
+                        // the two-line title was cutting offers off mid
+                        // sentence, and one clamp is easier to reason about.
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 14.5,
+                          fontSize: 13.5,
                           height: 1.3,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF0F172A),
@@ -537,7 +538,7 @@ class _HouseAdCardState extends State<HouseAdCard>
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 11.5,
                             color: Color(0xFF64748B),
                             height: 1.35,
                           ),
