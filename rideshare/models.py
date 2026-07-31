@@ -130,6 +130,14 @@ class Vehicle(models.Model):
     seat_capacity = models.PositiveIntegerField(default=1)
     is_active = models.BooleanField(default=True)
     is_default = models.BooleanField(default=False)
+    # SECURITY: fare tier is keyed off vehicle_type, and drivers self-declare
+    # it at create time. Without this gate a bike-approved driver could add a
+    # "car" and be dispatched car-tier rides at car fares. Only an admin can
+    # flip this, and only verified vehicles are dispatched.
+    is_verified = models.BooleanField(
+        default=False,
+        help_text="Admin has verified this vehicle's papers. Unverified vehicles are never dispatched.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -63,10 +63,13 @@ class VehicleSerializer(serializers.ModelSerializer):
             "seat_capacity",
             "is_active",
             "is_default",
+            "is_verified",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        # is_verified is the admin's word alone — a writable flag here would
+        # be the exact bypass this field exists to close.
+        read_only_fields = ["id", "is_verified", "created_at", "updated_at"]
         extra_kwargs = {
             # The default unique-validator message confirms which plates are
             # registered on the platform — an enumeration oracle. Same 400,
@@ -150,7 +153,9 @@ class DriverProfileSerializer(serializers.ModelSerializer):
         if cached is not None:
             vehicle = cached[0] if cached else None
         else:
-            vehicle = obj.vehicles.filter(is_active=True, is_default=True).first()
+            vehicle = obj.vehicles.filter(
+                is_active=True, is_verified=True, is_default=True
+            ).first()
             if not vehicle:
                 vehicle = obj.vehicles.filter(is_active=True).first()
         return VehicleSerializer(vehicle).data if vehicle else None

@@ -37,17 +37,31 @@ class VehicleAdmin(admin.ModelAdmin):
         "registration_number",
         "driver",
         "vehicle_type",
+        "is_verified",
         "is_default",
         "is_active",
         "updated_at",
     )
-    list_filter = ("vehicle_type", "is_default", "is_active")
+    # Default landing: unverified first, so the review queue is the list.
+    list_filter = ("is_verified", "vehicle_type", "is_default", "is_active")
+    ordering = ("is_verified", "-created_at")
     search_fields = (
         "registration_number",
         "driver__user__username",
         "brand",
         "model_name",
     )
+    actions = ["verify_vehicles", "unverify_vehicles"]
+
+    @admin.action(description="Verify selected vehicles (enable dispatch)")
+    def verify_vehicles(self, request, queryset):
+        updated = queryset.update(is_verified=True)
+        self.message_user(request, f"{updated} vehicle(s) verified.")
+
+    @admin.action(description="Un-verify selected vehicles (stop dispatch)")
+    def unverify_vehicles(self, request, queryset):
+        updated = queryset.update(is_verified=False)
+        self.message_user(request, f"{updated} vehicle(s) un-verified.")
 
 
 class FareDistanceTierInline(admin.TabularInline):

@@ -924,6 +924,11 @@ class DriverToggleOnlineView(RideshareApiMixin, APIView):
         is_online = serializer.validated_data["is_online"]
 
         if is_online and not get_driver_default_vehicle(driver_profile):
+            if driver_profile.vehicles.filter(is_active=True).exists():
+                return api_error(
+                    "Your vehicle is awaiting admin verification. "
+                    "You can go online once it is verified."
+                )
             return api_error("Add an active vehicle before going online.")
 
         if is_online and driver_profile.cash_due_limit_reached:
@@ -1163,7 +1168,9 @@ class VehicleListCreateView(RideshareApiMixin, APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(driver=driver_profile)
         return api_success(
-            serializer.data, "Vehicle added successfully.", status.HTTP_201_CREATED
+            serializer.data,
+            "Vehicle added. It will start receiving rides once an admin verifies it.",
+            status.HTTP_201_CREATED,
         )
 
 

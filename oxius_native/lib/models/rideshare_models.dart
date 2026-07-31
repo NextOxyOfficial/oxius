@@ -201,6 +201,10 @@ class Vehicle {
   final int seatCapacity;
   final bool isActive;
   final bool isDefault;
+
+  /// Admin has checked the papers. Unverified vehicles are never dispatched,
+  /// so the garage shows a pending badge until this flips.
+  final bool isVerified;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -214,6 +218,9 @@ class Vehicle {
     required this.seatCapacity,
     required this.isActive,
     required this.isDefault,
+    // Absent on servers older than the verification gate — treat as verified
+    // so the badge never lies about a vehicle the server still dispatches.
+    this.isVerified = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -229,6 +236,7 @@ class Vehicle {
       seatCapacity: json['seat_capacity'] ?? 1,
       isActive: json['is_active'] ?? true,
       isDefault: json['is_default'] ?? false,
+      isVerified: json['is_verified'] ?? true,
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
     );

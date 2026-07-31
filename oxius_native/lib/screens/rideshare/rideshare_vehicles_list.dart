@@ -215,8 +215,36 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     ],
                   ),
                 ),
-                if (isDefault)
+                if (!vehicle.isVerified)
                   Container(
+                    margin: const EdgeInsets.only(left: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.hourglass_top_rounded,
+                            size: 11, color: Color(0xFFD97706)),
+                        const SizedBox(width: 4),
+                        Text(
+                          t('rideshare_vehicle_pending',
+                              fallback: 'ভেরিফিকেশন পেন্ডিং'),
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFD97706),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (isDefault)
+                  Container(
+                    margin: const EdgeInsets.only(left: 6),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                     decoration: BoxDecoration(
@@ -235,6 +263,22 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
               ],
             ),
           ),
+          if (!vehicle.isVerified)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              color: const Color(0xFFFFFBEB),
+              child: Text(
+                t('rideshare_vehicle_pending_note',
+                    fallback:
+                        'অ্যাডমিন গাড়িটি যাচাই করলে তবেই রাইড রিকোয়েস্ট পাবেন — সাধারণত ২৪ ঘণ্টার মধ্যে হয়ে যায়।'),
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF92400E),
+                  fontSize: 11.5,
+                  height: 1.4,
+                ),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.all(14),
             child: Column(

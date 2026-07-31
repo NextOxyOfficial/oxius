@@ -2127,7 +2127,9 @@ class DriverLocationService:
 
         if vehicle_type:
             query = query.filter(
-                vehicles__is_active=True, vehicles__vehicle_type=vehicle_type
+                vehicles__is_active=True,
+                vehicles__is_verified=True,
+                vehicles__vehicle_type=vehicle_type
             ).distinct()
 
         nearby_drivers = []
@@ -2149,10 +2151,14 @@ class DriverLocationService:
 
 
 def get_driver_default_vehicle(driver_profile):
-    return (
-        driver_profile.vehicles.filter(is_active=True, is_default=True).first()
-        or driver_profile.vehicles.filter(is_active=True).first()
-    )
+    """The vehicle this driver is dispatched with — verified only.
+
+    An unverified vehicle must be invisible to dispatch, or the admin gate on
+    vehicle_type means nothing: delete-and-recreate would put a self-declared
+    "car" straight back into car-tier matching.
+    """
+    qs = driver_profile.vehicles.filter(is_active=True, is_verified=True)
+    return qs.filter(is_default=True).first() or qs.first()
 
 
 def assign_driver_to_ride(ride, driver_profile, actor=None, assignment_source="manual"):
@@ -2177,6 +2183,10 @@ def assign_driver_to_ride(ride, driver_profile, actor=None, assignment_source="m
 
     vehicle = get_driver_default_vehicle(driver_profile)
     if not vehicle:
+        if driver_profile.vehicles.filter(is_active=True).exists():
+            raise ValidationError(
+                "Your vehicle is awaiting admin verification. You will be dispatched once it is verified."
+            )
         raise ValidationError("Add an active vehicle before accepting rides.")
     if vehicle.vehicle_type != ride.requested_vehicle_type:
         raise ValidationError("Driver vehicle type does not match this ride.")
@@ -2247,6 +2257,7 @@ def attempt_auto_assign_driver(ride):
             is_online=True,
             is_available=True,
             vehicles__is_active=True,
+            vehicles__is_verified=True,
             vehicles__vehicle_type=ride.requested_vehicle_type,
         )
         .exclude(user=ride.rider)
@@ -2457,6 +2468,7 @@ class RideNotificationService:
                 is_online=True,
                 is_available=True,
                 vehicles__is_active=True,
+                vehicles__is_verified=True,
                 vehicles__vehicle_type=ride.requested_vehicle_type,
             )
             .select_related("user")
@@ -2641,6 +2653,7 @@ class NearestDriverDispatch:
                 is_online=True,
                 is_available=True,
                 vehicles__is_active=True,
+                vehicles__is_verified=True,
                 vehicles__vehicle_type=ride.requested_vehicle_type,
                 # Only include drivers whose device was active recently.
                 # last_seen_at=None means the driver was online before this feature
