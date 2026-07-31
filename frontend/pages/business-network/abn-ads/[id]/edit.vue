@@ -347,6 +347,7 @@ const adTypes = computed(() => [
   // Needs no detail: the tap opens an AdsyConnect chat with the advertiser.
   { value: "message_on_adsyconnect", label: t("ads_edit_cta_message") },
   { value: "click_to_website", label: t("ads_edit_cta_website") },
+  { value: "shop_now", label: t("ads_edit_cta_shop") },
   { value: "call_on_whatsapp", label: t("ads_edit_cta_whatsapp") },
   { value: "call_on_phone", label: t("ads_edit_cta_phone") },
   { value: "email_us", label: t("ads_edit_cta_email") },
@@ -409,6 +410,7 @@ const adTypeDetailLabel = computed(
   () =>
     ({
       click_to_website: t("ads_edit_link"),
+      shop_now: t("ads_edit_link"),
       call_on_whatsapp: t("ads_edit_whatsapp_no"),
       call_on_phone: t("ads_edit_phone_no"),
       email_us: t("ads_edit_email_addr"),
@@ -418,6 +420,7 @@ const adTypeDetailPlaceholder = computed(
   () =>
     ({
       click_to_website: "https://example.com",
+      shop_now: "https://your-shop.com/product",
       call_on_whatsapp: "01XXXXXXXXX",
       call_on_phone: "01XXXXXXXXX",
       email_us: "you@example.com",
@@ -428,7 +431,10 @@ const adTypeDetailPlaceholder = computed(
 const detailError = computed(() => {
   const v = (form.ad_type_details || "").trim();
   if (!v) return "";
-  if (form.ad_type === "click_to_website" && !/^https?:\/\/.+/i.test(v)) {
+  if (
+    (form.ad_type === "click_to_website" || form.ad_type === "shop_now") &&
+    !/^https?:\/\/.+/i.test(v)
+  ) {
     return t("ads_edit_err_link");
   }
   if (form.ad_type === "email_us" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {

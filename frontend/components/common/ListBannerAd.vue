@@ -88,6 +88,7 @@ const ctaLabel = computed(
     ({
       message_on_adsyconnect: "মেসেজ করুন",
       click_to_website: "ভিজিট করুন",
+      shop_now: "এখনই কিনুন",
       call_on_whatsapp: "হোয়াটসঅ্যাপ",
       call_on_phone: "কল করুন",
       email_us: "ইমেইল",
@@ -101,6 +102,7 @@ const ctaIcon = computed(
     ({
       message_on_adsyconnect: "i-heroicons-chat-bubble-oval-left-ellipsis",
       click_to_website: "i-heroicons-arrow-top-right-on-square",
+      shop_now: "i-heroicons-shopping-bag",
       call_on_whatsapp: "i-heroicons-chat-bubble-left-right",
       call_on_phone: "i-heroicons-phone",
       email_us: "i-heroicons-envelope",
@@ -130,7 +132,9 @@ const ctaHref = computed(() => {
 });
 
 const ctaTarget = computed(() =>
-  ad.value?.ad_type === "click_to_website" ? "_blank" : "_self"
+  ["click_to_website", "shop_now"].includes(ad.value?.ad_type)
+    ? "_blank"
+    : "_self"
 );
 
 function track(eventType) {

@@ -44,6 +44,7 @@ export default defineI18nConfig(() => ({
       ads_edit_cta_message_note:
         "No number or link needed — tapping the button opens an AdsyConnect chat with you, and the message arrives right in the app.",
       ads_edit_cta_website: "Go to website",
+      ads_edit_cta_shop: "Shop now",
       ads_edit_cta_whatsapp: "Message on WhatsApp",
       ads_edit_cta_phone: "Phone call",
       ads_edit_cta_email: "Send email",
@@ -1128,6 +1129,7 @@ export default defineI18nConfig(() => ({
       ads_edit_cta_message_note:
         "কোনো নম্বর বা লিংক দিতে হবে না — বাটনে ট্যাপ করলেই আপনার সাথে AdsyConnect চ্যাট খুলে যাবে, আর মেসেজটি আপনি অ্যাপেই পাবেন।",
       ads_edit_cta_website: "ওয়েবসাইটে নিয়ে যান",
+      ads_edit_cta_shop: "এখনই কিনুন",
       ads_edit_cta_whatsapp: "হোয়াটসঅ্যাপে বার্তা",
       ads_edit_cta_phone: "ফোন কল",
       ads_edit_cta_email: "ইমেইল করুন",

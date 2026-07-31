@@ -1881,6 +1881,14 @@ const adTypes = [
     placeholder: "https://your-website.com",
   },
   {
+    value: "shop_now",
+    label: "Shop Now",
+    cta: "Shop Now",
+    icon: "i-heroicons-shopping-bag",
+    inputType: "url",
+    placeholder: "https://your-shop.com/product",
+  },
+  {
     value: "call_on_whatsapp",
     label: "WhatsApp",
     cta: "Message on WhatsApp",

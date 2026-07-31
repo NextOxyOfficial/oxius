@@ -177,6 +177,8 @@ class HouseAd {
         return 'কল করুন';
       case 'email_us':
         return 'ইমেইল করুন';
+      case 'shop_now':
+        return 'এখনই কিনুন';
       default:
         return 'ভিজিট করুন';
     }
@@ -214,6 +216,8 @@ class HouseAd {
         return Icons.phone_outlined;
       case 'email_us':
         return Icons.mail_outline_rounded;
+      case 'shop_now':
+        return Icons.shopping_bag_outlined;
       default:
         return Icons.open_in_new_rounded;
     }

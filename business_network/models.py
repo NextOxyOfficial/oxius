@@ -523,6 +523,10 @@ class AbnAdsPanel(models.Model):
     country = models.CharField(max_length=15, choices=COUNTRY_CHOICES, default='bangladesh')
     AD_TyPES = (
         ('click_to_website', 'Click To Website'),
+        # Same mechanic as click_to_website — a URL — but the wording tells a
+        # shopper what they are about to do, which is what a store campaign
+        # is buying. Kept separate so the label/icon can differ.
+        ('shop_now', 'Shop Now'),
         ('call_on_whatsapp', 'Call On WhatsApp'),
         ('call_on_phone', 'Call On Phone'),
         ('email_us', 'Email Us'),
