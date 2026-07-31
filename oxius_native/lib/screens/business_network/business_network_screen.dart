@@ -349,6 +349,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   // Server-config driven: insert a MAX native ad after every N posts, at
   // slots that don't collide with suggestions (every 10th) or sponsored
   // products (every 5th).
+  /// These posts came out of the cache because the network was unreachable.
+  bool _isOffline = false;
+
   bool get _feedAdsActive => AdsService.hybridSlotActive('bn_feed_native');
   int get _feedAdFrequency => AdsService.feedFrequency('bn_feed_native');
 
@@ -453,7 +456,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
     if (mounted) {
       setState(() {
-        _posts = result['posts'] as List<BusinessNetworkPost>;
+        final fetched = result['posts'] as List<BusinessNetworkPost>;
+        _isOffline = result['offline'] == true;
+
+        // A failed load must never blank a feed the reader is already
+        // reading. Empty + we had posts = keep what is on screen.
+        if (fetched.isNotEmpty || _posts.isEmpty) {
+          _posts = fetched;
+        }
         _hasMore = result['hasMore'] as bool? ?? false;
         _isLoading = false;
 
@@ -461,7 +471,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         if (result.containsKey('error')) {
           if (result['error'] == 'unauthorized') {
             _errorMessage = 'Please log in to view business network posts';
-          } else {
+          } else if (_posts.isEmpty) {
+            // Only an empty feed deserves an error; otherwise the offline
+            // strip already explains why nothing new arrived.
             _errorMessage = 'Failed to load posts. Please try again.';
           }
         }
@@ -787,10 +799,56 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     }
   }
 
+  /// Says why the feed is not moving. The alternative — an empty page or a
+  /// red error — throws away posts the reader already has and can still read.
+  Widget _buildOfflineStrip() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(8, 6, 8, 2),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off_rounded,
+              size: 16, color: Color(0xFFD97706)),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'ইন্টারনেট নেই — আগে দেখা পোস্টগুলো দেখানো হচ্ছে',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF92400E),
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => _loadPosts(forceRefresh: true),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Text(
+                'আবার চেষ্টা',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFB45309),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFeedTopHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (_isOffline) _buildOfflineStrip(),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: GoldSponsorsSlider(),

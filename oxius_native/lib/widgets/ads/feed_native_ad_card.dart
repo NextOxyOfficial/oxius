@@ -193,13 +193,22 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
               ],
             ),
           ),
-          // Medium native template height flexes with the device text scale —
-          // a fixed 320 clipped the CTA on phones with larger fonts.
-          Builder(builder: (context) {
+          // The medium template is a 16:9 media image stacked on a text +
+          // CTA block, so its height follows the CARD WIDTH — not just the
+          // text scale. Sizing on text scale alone fitted a 360dp phone and
+          // clipped the CTA on every wider one, which is exactly how the
+          // "Open" button ended up sliced in half.
+          LayoutBuilder(builder: (context, constraints) {
+            final width = constraints.maxWidth.isFinite
+                ? constraints.maxWidth
+                : MediaQuery.sizeOf(context).width;
             final textScale =
                 MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.6);
+            // 16:9 media + headline/body/CTA block, the latter growing with
+            // the reader's font size. The floor keeps short ads from looking
+            // cramped; the ceiling stops a giant tablet ad eating the feed.
             final height =
-                (356.0 + (textScale - 1.0) * 140.0).clamp(356.0, 440.0);
+                (width / 1.78 + 150.0 * textScale).clamp(340.0, 520.0);
             return SizedBox(
               height: height,
               width: double.infinity,

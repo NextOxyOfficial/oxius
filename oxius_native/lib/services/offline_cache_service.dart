@@ -168,6 +168,32 @@ class OfflineCacheService {
     }
   }
   
+  /// How old the cached [key] section is, or null when nothing is cached.
+  /// The UI uses this to say how stale what it is showing actually is.
+  static Future<Duration?> getCacheAge(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final ts = prefs.getString('${key}_timestamp');
+      if (ts == null) return null;
+      return DateTime.now().difference(DateTime.parse(ts));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// True when the cached section is past the freshness window. Nothing is
+  /// deleted on the strength of this — it only changes what we SAY.
+  static Future<bool> isStale(String key) async {
+    final age = await getCacheAge(key);
+    return age != null && age > _cacheDuration;
+  }
+
+  /// Section keys, so callers don't hardcode strings.
+  static const String newsKey = _newsKey;
+  static const String productsKey = _productsKey;
+  static const String salePostsKey = _salePostsKey;
+  static const String bannersKey = _bannersKey;
+
   /// Check if we have any cached data
   static Future<bool> hasCachedData() async {
     try {

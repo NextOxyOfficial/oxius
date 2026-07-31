@@ -362,9 +362,13 @@ class _HomeScreenState extends State<HomeScreen> {
             _isLoadingPosts = false;
           });
 
-          // Show offline indicator
+          // Say how old it is — "cached content" alone leaves the reader
+          // wondering whether they are looking at today or last week.
           if (NetworkErrorHandler.isNetworkError(e)) {
-            AdsyToast.info(context, 'Showing cached content');
+            final age = await OfflineCacheService.getCacheAge(
+                OfflineCacheService.salePostsKey);
+            if (!mounted) return;
+            AdsyToast.info(context, _offlineAgeMessage(age));
           }
         } else {
           setState(() {
@@ -381,6 +385,20 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     }
+  }
+
+  /// "ইন্টারনেট নেই — ২ ঘণ্টা আগের সংরক্ষিত কনটেন্ট দেখানো হচ্ছে"
+  String _offlineAgeMessage(Duration? age) {
+    if (age == null) return 'ইন্টারনেট নেই — সংরক্ষিত কনটেন্ট দেখানো হচ্ছে';
+    final String when;
+    if (age.inMinutes < 60) {
+      when = '${age.inMinutes} মিনিট';
+    } else if (age.inHours < 24) {
+      when = '${age.inHours} ঘণ্টা';
+    } else {
+      when = '${age.inDays} দিন';
+    }
+    return 'ইন্টারনেট নেই — $when আগের সংরক্ষিত কনটেন্ট দেখানো হচ্ছে';
   }
 
   Future<void> _handleRefresh() async {

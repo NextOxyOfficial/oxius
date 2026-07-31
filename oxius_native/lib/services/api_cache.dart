@@ -25,6 +25,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _CacheEntry {
@@ -85,12 +86,16 @@ class ApiCache {
   ///
   /// This is the "stale-while-revalidate" pattern used by Facebook/Instagram
   /// for instant feed paint.
+  /// [onServedOffline] fires when the network failed and a cached copy was
+  /// returned instead — the caller can then say so in the UI rather than
+  /// pretending the data is live.
   static Future<T> getOrFetch<T>(
     String key,
     Future<T> Function() fetch, {
     Duration freshTtl = defaultFreshTtl,
     Duration staleTtl = defaultStaleTtl,
     bool forceRefresh = false,
+    VoidCallback? onServedOffline,
   }) async {
     if (!forceRefresh) {
       final mem = _memory[key];
@@ -115,8 +120,37 @@ class ApiCache {
       }
     }
 
-    // Network — dedupe concurrent callers.
-    return _fetchAndStore<T>(key, fetch);
+    // Network — dedupe concurrent callers. If it fails, anything we ever
+    // cached for this key beats an empty screen, however old it is.
+    try {
+      return await _fetchAndStore<T>(key, fetch);
+    } catch (_) {
+      final salvaged = await _anyCached<T>(key);
+      if (salvaged != null) {
+        onServedOffline?.call();
+        return salvaged;
+      }
+      rethrow;
+    }
+  }
+
+  /// The cached value for [key] at ANY age, memory first then disk.
+  ///
+  /// Deliberately ignores every TTL: this is only reached when the network
+  /// already failed, and at that point a day-old feed is the best thing we
+  /// have. TTLs exist to trigger refreshes, not to destroy the only copy.
+  static Future<T?> _anyCached<T>(String key) async {
+    final mem = _memory[key];
+    if (mem != null && mem.data is T) return mem.data as T;
+    try {
+      final disk = await _readFromDisk(key);
+      if (disk != null && disk.data is T) {
+        _memory[key] = disk;
+        _trimMemory();
+        return disk.data as T;
+      }
+    } catch (_) {}
+    return null;
   }
 
   /// Stale-while-revalidate as a Stream. Useful in StreamBuilder-driven

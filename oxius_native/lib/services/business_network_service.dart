@@ -267,19 +267,20 @@ class BusinessNetworkService {
       // instantly from cache, then refreshes in the background (SWR). Any cache
       // failure falls back to a direct fetch, so behaviour never regresses.
       Map<String, dynamic> data;
+      var servedOffline = false;
       if (page == 1 && olderThan == null) {
         final uid = AuthService.currentUser?.id ?? 'anon';
-        try {
-          data = await ApiCache.getOrFetch<Map<String, dynamic>>(
-            'bn:feed:$uid:p1:s$pageSize${feed != null ? ':$feed' : ''}${videoOnly ? ':v' : ''}',
-            fetchData,
-            freshTtl: const Duration(seconds: 45),
-            staleTtl: const Duration(hours: 6),
-            forceRefresh: forceRefresh,
-          );
-        } catch (_) {
-          data = await fetchData();
-        }
+        data = await ApiCache.getOrFetch<Map<String, dynamic>>(
+          'bn:feed:$uid:p1:s$pageSize${feed != null ? ':$feed' : ''}${videoOnly ? ':v' : ''}',
+          fetchData,
+          freshTtl: const Duration(seconds: 45),
+          // A week, not six hours. This window only decides when a refresh
+          // is triggered; on a plane or in a dead zone it is the difference
+          // between yesterday's feed and a blank page.
+          staleTtl: const Duration(days: 7),
+          forceRefresh: forceRefresh,
+          onServedOffline: () => servedOffline = true,
+        );
       } else {
         data = await fetchData();
       }
@@ -313,6 +314,9 @@ class BusinessNetworkService {
         'posts': posts,
         'hasMore': data['next'] != null,
         'count': data['count'] ?? 0,
+        // True when these posts came from the cache because the network was
+        // unreachable — the feed says so instead of claiming they are live.
+        'offline': servedOffline,
       };
     } catch (e, stackTrace) {
       debugPrint('Error fetching posts: $e');
