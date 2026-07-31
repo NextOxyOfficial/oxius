@@ -50,7 +50,7 @@ class MessageReactionBar extends StatelessWidget {
                       : Colors.transparent,
                   shape: BoxShape.circle,
                 ),
-                child: Text(e, style: const TextStyle(fontSize: 24)),
+                child: Text(e, style: const TextStyle(fontSize: 30)),
               ),
             ),
         ],
@@ -110,13 +110,13 @@ class MessageReactionChips extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('${(r as Map)['emoji'] ?? ''}',
-                        style: const TextStyle(fontSize: 15)),
+                        style: const TextStyle(fontSize: 19)),
                     if (((r['count'] ?? 1) as num) > 1) ...[
                       const SizedBox(width: 2),
                       Text(
                         '${r['count']}',
                         style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF64748B),
                         ),

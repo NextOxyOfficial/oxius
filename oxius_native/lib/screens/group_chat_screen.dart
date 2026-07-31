@@ -21,6 +21,8 @@ import '../utils/video_upload_helper.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
 import '../widgets/chat/message_options_sheet.dart';
+import '../utils/shared_post_message.dart';
+import '../config/app_config.dart';
 import '../utils/adsy_ios_scale.dart';
 import '../widgets/common/adsy_back_to_top.dart';
 import '../widgets/common/adsy_loading.dart';
@@ -444,9 +446,27 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       case 'document':
         return '📄 ${m['file_name'] ?? 'Document'}';
       default:
-        final t = (m['content'] ?? '').toString();
+        var t = (m['content'] ?? '').toString();
+        // A shared post travels as an encoded envelope. Quoting one used to
+        // put 'ADSYPOST::eyJuIjoi…' in the reply strip — describe the post.
+        final shared = SharedPostMessage.tryDecode(t);
+        if (shared != null) t = shared.quoteLine;
         return t.length > 60 ? '${t.substring(0, 60)}…' : t;
     }
+  }
+
+  /// The picture that belongs with a quoted message: the media itself for a
+  /// photo/video, or the shared post's thumbnail.
+  String? _replyThumbUrl(Map<String, dynamic> m) {
+    final type = (m['message_type'] ?? 'text').toString();
+    if (type == 'image' || type == 'video') {
+      final url = (m['media_url'] ?? '').toString();
+      return url.isEmpty ? null : AppConfig.getAbsoluteUrl(url);
+    }
+    final shared =
+        SharedPostMessage.tryDecode((m['content'] ?? '').toString());
+    final thumb = shared?.thumbUrl.trim() ?? '';
+    return thumb.isEmpty ? null : AppConfig.getAbsoluteUrl(thumb);
   }
 
   void _setReplyingTo(Map<String, dynamic> raw) {
@@ -1071,6 +1091,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 : null,
             replyPreviewText:
                 _replyingTo != null ? _rawPreview(_replyingTo!) : null,
+            replyThumbUrl:
+                _replyingTo != null ? _replyThumbUrl(_replyingTo!) : null,
             onSend: _sendText,
             onStartRecording: _startRecording,
             onStopRecording: _stopAndSendRecording,

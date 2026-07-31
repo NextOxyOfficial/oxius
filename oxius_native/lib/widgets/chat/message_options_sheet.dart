@@ -36,6 +36,11 @@ Future<void> showChatMessageOptions(
   // in the pressed-message preview where the post itself belongs.
   final sharedPost = SharedPostMessage.tryDecode(rawText);
   final text = sharedPost?.quoteLine ?? rawText;
+  // Copy should hand over something usable. For a shared post that is the
+  // post link — "পোস্ট" on the clipboard helps nobody.
+  final copyText = (sharedPost?.postUrl.trim().isNotEmpty ?? false)
+      ? sharedPost!.postUrl.trim()
+      : text;
   final sharedThumb = AppConfig.getAbsoluteUrl(sharedPost?.thumbUrl ?? '');
   final canCopy = isTextLike && !isDeleted && text.trim().isNotEmpty;
   final canReply = onReply != null && !isDeleted;
@@ -137,7 +142,7 @@ Future<void> showChatMessageOptions(
                 label: 'Copy',
                 icon: Icons.copy_rounded,
                 onTap: () {
-                  Clipboard.setData(ClipboardData(text: text));
+                  Clipboard.setData(ClipboardData(text: copyText));
                   AdsyToast.success(context, 'Message copied');
                 },
               ),

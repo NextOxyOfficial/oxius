@@ -524,14 +524,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     try {
       final nextPage = _currentPage + 1;
-      debugPrint('ðŸ”µ Loading older messages, page: $nextPage');
+      debugPrint('🔵 Loading older messages, page: $nextPage');
 
       final messages = await AdsyConnectService.getMessages(
         widget.chatroomId,
         page: nextPage,
       );
 
-      debugPrint('ðŸŸ¢ Loaded ${messages.length} older messages');
+      debugPrint('🟢 Loaded ${messages.length} older messages');
 
       if (mounted && messages.isNotEmpty) {
         // Backend returns oldest-to-newest (ascending by created_at)
@@ -564,7 +564,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
       }
     } catch (e) {
-      debugPrint('ðŸ”´ Error loading older messages: $e');
+      debugPrint('🔴 Error loading older messages: $e');
       if (mounted) {
         setState(() => _isLoadingMoreMessages = false);
       }
@@ -1221,7 +1221,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       }
     } catch (e) {
       // Silently fail for polling errors to avoid spamming user
-      debugPrint('ðŸ”´ Error polling messages: $e');
+      debugPrint('🔴 Error polling messages: $e');
     }
   }
 
@@ -1236,14 +1236,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     try {
       debugPrint(
-          'ðŸ”µ Loading messages for chatroom: ${widget.chatroomId}, page: $_currentPage');
+          '🔵 Loading messages for chatroom: ${widget.chatroomId}, page: $_currentPage');
 
       final messages = await AdsyConnectService.getMessages(
         widget.chatroomId,
         page: _currentPage,
       );
 
-      debugPrint('ðŸŸ¢ Loaded ${messages.length} messages');
+      debugPrint('🟢 Loaded ${messages.length} messages');
 
       if (mounted) {
         // Backend returns oldest-to-newest (ascending by created_at)
@@ -1275,7 +1275,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
     } catch (e) {
-      debugPrint('ðŸ”´ Error loading messages: $e');
+      debugPrint('🔴 Error loading messages: $e');
       if (mounted) {
         setState(() => _isLoadingMessages = false);
         NetworkErrorHandler.showErrorSnackbar(
@@ -1401,7 +1401,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       // Update local state immediately - mark all received messages as read
       _markLocalIncomingMessagesAsRead();
     } catch (e) {
-      debugPrint('ðŸ”´ Error marking messages as read: $e');
+      debugPrint('🔴 Error marking messages as read: $e');
       // Don't show error to user - this is a background operation
     }
   }
@@ -1581,7 +1581,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _scrollToBottom();
 
     try {
-      debugPrint('ðŸ”µ Sending message: $messageText');
+      debugPrint('🔵 Sending message: $messageText');
 
       String contentToSend = body;
       if (replyTo != null) {
@@ -1590,7 +1590,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         final replyToSender = replyTo['isMe'] == true ? 'You' : widget.userName;
         final idPart = replyToId.isNotEmpty ? '($replyToId) ' : '';
         contentToSend =
-            'â†©ï¸ $idPart$replyToSender: $replyToText\n\n$body';
+            '↩️ $idPart$replyToSender: $replyToText\n\n$body';
       }
 
       final sentMessage = await AdsyConnectService.sendTextMessage(
@@ -1599,7 +1599,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         content: contentToSend,
       );
 
-      debugPrint('ðŸŸ¢ Message sent: ${sentMessage['id']}');
+      debugPrint('🟢 Message sent: ${sentMessage['id']}');
 
       // The message is stored — now, and only now, it counts as a lead for
       // the ad that opened this chat. Fire-and-forget: the advertiser's
@@ -1623,7 +1623,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _scrollToBottom();
       }
     } catch (e) {
-      debugPrint('ðŸ”´ Error sending message: $e');
+      debugPrint('🔴 Error sending message: $e');
       if (mounted) {
         setState(() {
           // Roll back the optimistic message on failure.
@@ -1822,7 +1822,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         // Send voice message to backend
         try {
           debugPrint(
-              'ðŸ”µ Sending voice message: $path, duration: $_recordDuration seconds');
+              '🔵 Sending voice message: $path, duration: $_recordDuration seconds');
 
           final sentMessage = await AdsyConnectService.sendMediaMessage(
             chatroomId: widget.chatroomId,
@@ -1832,7 +1832,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             voiceDuration: _recordDuration,
           );
 
-          debugPrint('ðŸŸ¢ Voice message sent: ${sentMessage['id']}');
+          debugPrint('🟢 Voice message sent: ${sentMessage['id']}');
 
           if (mounted) {
             setState(() {
@@ -1849,7 +1849,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             _scrollToBottom();
           }
         } catch (e) {
-          debugPrint('ðŸ”´ Error sending voice message: $e');
+          debugPrint('🔴 Error sending voice message: $e');
           if (mounted) {
             setState(() {
               _isSendingMessage = false;
@@ -2253,16 +2253,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
                         // Then call backend to soft delete
                         try {
-                          debugPrint('ðŸ”µ Deleting message ID: ${message['id']}');
+                          debugPrint('🔵 Deleting message ID: ${message['id']}');
                           await AdsyConnectService.deleteMessage(
                               message['id'].toString());
-                          debugPrint('ðŸŸ¢ Message deleted successfully');
+                          debugPrint('🟢 Message deleted successfully');
 
                           if (context.mounted) {
                             AdsyToast.success(context, 'Message deleted');
                           }
                         } catch (e) {
-                          debugPrint('ðŸ”´ Error deleting message: $e');
+                          debugPrint('🔴 Error deleting message: $e');
                           // Message already marked as deleted in UI, so just log the error
                           // Don't show error to user since UI is already updated
                         }
@@ -2669,7 +2669,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     });
 
     try {
-      debugPrint('ðŸ”µ Sending $type message: $filePath');
+      debugPrint('🔵 Sending $type message: $filePath');
 
       final sentMessage = await AdsyConnectService.sendMediaMessage(
         chatroomId: widget.chatroomId,
@@ -2679,9 +2679,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         fileName: fileName,
       );
 
-      debugPrint('ðŸŸ¢ Media message sent: ${sentMessage['id']}');
-      debugPrint('ðŸŸ¢ Media URL: ${sentMessage['media_url']}');
-      debugPrint('ðŸŸ¢ Full response: $sentMessage');
+      debugPrint('🟢 Media message sent: ${sentMessage['id']}');
+      debugPrint('🟢 Media URL: ${sentMessage['media_url']}');
+      debugPrint('🟢 Full response: $sentMessage');
 
       if (mounted) {
         setState(() {
@@ -2692,7 +2692,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _scrollToBottom();
       }
     } catch (e) {
-      debugPrint('ðŸ”´ Error sending media: $e');
+      debugPrint('🔴 Error sending media: $e');
       if (mounted) {
         setState(() {
           _isSendingMessage = false;
@@ -3505,16 +3505,21 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final type = message['type']?.toString() ?? 'text';
     switch (type) {
       case 'image':
-        return 'ðŸ“· Photo';
+        return '📷 Photo';
       case 'video':
-        return 'ðŸŽ¥ Video';
+        return '🎥 Video';
       case 'voice':
-        return 'ðŸŽ¤ Voice message';
+        return '🎤 Voice message';
       case 'document':
-        return 'ðŸ“„ ${message['file_name'] ?? message['fileName'] ?? 'Document'}';
+        return '📄 ${message['file_name'] ?? message['fileName'] ?? 'Document'}';
       default:
         var text = (message['message'] ?? message['content'] ?? '').toString();
-        if (text.startsWith('ðŸ“ž')) return text;
+        // Call-log messages start with a phone glyph; older ones carry the
+        // mangled spelling, so check for both before treating this as prose.
+        if (text.startsWith(_phoneMarker) ||
+            text.startsWith(_phoneMarkerLegacy)) {
+          return text;
+        }
         // A shared post travels as an encoded envelope. Quoting one used to
         // copy that envelope into the reply header, so the other person read
         // "ADSYPOST::eyJuIjoi…" — describe the post instead.
@@ -3524,15 +3529,25 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
+  /// Messages sent by builds that carried the cp1252-mangled emoji still
+  /// have the broken marker inside them, so both spellings are accepted.
+  static const _phoneMarker = '📞';
+  static const _phoneMarkerLegacy = 'ðŸ“ž';
+  static const _replyMarker = '↩️';
+  static const _replyMarkerLegacy = 'â†©ï¸';
+
   Map<String, String>? _tryParseReplyFromText(String rawText) {
     final text = rawText.trim();
-    if (!text.startsWith('â†©ï¸')) return null;
+    final marker = text.startsWith(_replyMarker)
+        ? _replyMarker
+        : (text.startsWith(_replyMarkerLegacy) ? _replyMarkerLegacy : null);
+    if (marker == null) return null;
 
     final parts = text.split('\n\n');
     if (parts.length < 2) return null;
 
     final header = parts.first.trim();
-    String rest = header.replaceFirst('â†©ï¸', '').trim();
+    String rest = header.replaceFirst(marker, '').trim();
 
     String replyToId = '';
     if (rest.startsWith('(')) {
