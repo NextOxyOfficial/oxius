@@ -1365,6 +1365,11 @@ class AdsSystemConfig(models.Model):
     max_daily_diamonds = models.PositiveIntegerField(default=5)
     # Same ad shown to the same user at most this many times per day
     daily_frequency_cap = models.PositiveIntegerField(default=4)
+    # Share of ad slots handed to AdMob BEFORE panel ads are considered.
+    # Panel ads always matched first, so once enough campaigns were active
+    # the AdMob fallback became unreachable and Google ads stopped serving
+    # altogether. 0 = panel only, 100 = AdMob only.
+    admob_share_percent = models.PositiveIntegerField(default=30)
     # Interest profile: how many days a category interest stays boosted
     interest_decay_days = models.PositiveIntegerField(default=7)
     # CPV tiering: per-placement ৳/view overrides, e.g.

@@ -178,6 +178,14 @@ def serve_ad(request):
     today = timezone.localdate().isoformat()
     user = request.user if request.user.is_authenticated else None
 
+    # Reserve a share of slots for AdMob before looking at panel ads at all.
+    # Without this, a healthy panel inventory silently switches Google off:
+    # every slot found a match, so the fallback below was never reached.
+    # The reel is exempt — it only ever plays boosted posts.
+    share = min(int(getattr(cfg, "admob_share_percent", 0) or 0), 100)
+    if share and placement != "shorts_reel" and random.randint(1, 100) <= share:
+        return Response({"fallback": "admob"})
+
     # The shorts reel only carries boosted posts; other placements carry
     # image/video creatives.
     want_boost = placement == "shorts_reel"
