@@ -826,7 +826,10 @@ class _CallScreenState extends State<CallScreen>
   void _startConnectWatchdog() {
     if (_rejoinAttempted) return;
     _connectWatchdog?.cancel();
-    _connectWatchdog = Timer(const Duration(seconds: 9), () async {
+    // 14s, not 9. Production logs show an iPhone woken by a VoIP push needs
+    // ~6s from CallKit accept to CallScreen mount before it even joins the
+    // channel; a 9s watchdog was interrupting the peer mid-join.
+    _connectWatchdog = Timer(const Duration(seconds: 14), () async {
       if (!mounted ||
           _didEndCall ||
           _remoteUid != null ||

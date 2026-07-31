@@ -27,6 +27,11 @@ class AgoraCallService {
     'AGORA_APP_ID',
     defaultValue: '',
   );
+  /// True while rejoinChannel() is deliberately leaving and re-entering the
+  /// channel. Engine events during that window describe our own teardown, not
+  /// a broken call, and must not reach the error stream.
+  static bool _isRejoining = false;
+
   static const Duration _requestTimeout = Duration(seconds: 10);
   static const Duration _restorableCallAge = Duration(hours: 8);
   static const String _prefsInCallKey = 'adsyconnect_active_call_in_call';
@@ -323,6 +328,14 @@ class AgoraCallService {
             // Only treat as "remote left" if this uid was actually our known peer.
             // Agora can fire onUserOffline for transient internal uids — ignoring
             // unknown uids prevents the call from ending before the peer even joined.
+            // Our own leaveChannel inside rejoinChannel() makes Agora report
+            // the peer as offline. Acting on that would end the call we are
+            // in the middle of rescuing — the same trap the connection-state
+            // handler fell into.
+            if (_isRejoining) {
+              _log('ℹ️ Ignoring onUserOffline during deliberate rejoin');
+              return;
+            }
             final knownRemote = _activeCallInfo?['remoteUid'];
             if (knownRemote == null || knownRemote != remoteUid) {
               _log(
@@ -342,14 +355,24 @@ class AgoraCallService {
             Telemetry.event('agora.connection_state', tags: {
               'state': state.toString().split('.').last,
               'reason': reason.toString().split('.').last,
+              'rejoining': _isRejoining.toString(),
             });
-            if (state == ConnectionStateType.connectionStateFailed ||
-                state == ConnectionStateType.connectionStateDisconnected) {
-              _lastError = 'Connection lost. Please try again.';
-              try {
-                _engineErrorController.add(_lastError!);
-              } catch (_) {}
+            // `disconnected` is NOT a failure — it is the state after every
+            // leaveChannel, including the deliberate one inside
+            // rejoinChannel(). Reporting it as "Connection lost" made the
+            // watchdog that exists to rescue a stalled call kill it instead,
+            // exactly 9s after accept. Only `failed` is fatal.
+            if (state != ConnectionStateType.connectionStateFailed) return;
+            // And a failure observed while we are deliberately tearing the
+            // channel down belongs to the teardown, not to the call.
+            if (_isRejoining) {
+              _log('🔗 Ignoring connection failure during deliberate rejoin');
+              return;
             }
+            _lastError = 'Connection lost. Please try again.';
+            try {
+              _engineErrorController.add(_lastError!);
+            } catch (_) {}
           },
           onTokenPrivilegeWillExpire: (connection, _) {
             final channelName = connection.channelId;
@@ -478,6 +501,7 @@ class AgoraCallService {
       return joinChannel(channelName: channelName, uid: uid, callType: callType);
     }
 
+    _isRejoining = true;
     try {
       final wantsVideo = callType == 'video';
       try {
@@ -513,6 +537,10 @@ class AgoraCallService {
     } catch (error) {
       _log('❌ Re-join failed for $channelName: $error');
       return false;
+    } finally {
+      // Never leave the guard set: one failed rejoin would otherwise mute
+      // every genuine connection failure for the rest of the session.
+      _isRejoining = false;
     }
   }
 
