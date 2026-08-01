@@ -6,7 +6,7 @@ import uuid
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -502,7 +502,11 @@ def firebase_custom_token(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# Deliberately public. The App ID is not secret (it ships inside every RTC
+# client), and requiring a login here broke the one moment that matters: an
+# iPhone woken cold by a VoIP push asks for it before its auth header is
+# loaded, got a 401, and built its Agora engine with an empty project id.
+@permission_classes([AllowAny])
 def agora_config(request):
     """Expose the Agora project the backend is configured for, so the app can
     source the App ID from server settings instead of hardcoding it.

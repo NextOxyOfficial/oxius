@@ -27,6 +27,10 @@ class AgoraCallService {
     'AGORA_APP_ID',
     defaultValue: '',
   );
+  /// The App ID the cached [_engine] was built with. A cached engine that
+  /// belongs to a different (or empty) project must be rebuilt, not reused.
+  static String _engineAppId = '';
+
   /// True while rejoinChannel() is deliberately leaving and re-entering the
   /// channel. Engine events during that window describe our own teardown, not
   /// a broken call, and must not reach the error stream.
@@ -277,6 +281,28 @@ class AgoraCallService {
       await _ensureAppIdFromBackend();
     }
 
+    // An engine built with an empty App ID belongs to no project: it joins
+    // nothing, hears nobody, and reports no error — the call just sits in
+    // silence. Refuse to build one; the caller surfaces a real message.
+    if (appId.trim().isEmpty) {
+      _lastError = 'Call service is not configured yet.';
+      throw StateError('missing_agora_app_id');
+    }
+
+    // If the project changed (or the cached engine was built before the App
+    // ID was known), throw the old client away rather than reuse a dead one.
+    if (_engine != null && _engineAppId != appId.trim()) {
+      _log('♻️ App ID changed ($_engineAppId -> $appId) — rebuilding engine');
+      try {
+        await _engine!.leaveChannel();
+      } catch (_) {}
+      try {
+        await _engine!.release();
+      } catch (_) {}
+      _engine = null;
+      _joinedChannelName = null;
+    }
+
     if (_engine == null) {
       final engine = createAgoraRtcEngine();
       await engine.initialize(
@@ -396,6 +422,7 @@ class AgoraCallService {
         ),
       );
       _engine = engine;
+      _engineAppId = appId.trim();
     }
 
     await _runOptionalSetup(() => _configureVideoState(wantsVideo: wantsVideo));
@@ -721,8 +748,31 @@ class AgoraCallService {
 
   /// Load the Agora App ID from the backend (server settings) when it isn't
   /// known yet. Keeps the project out of the frontend as a hardcode.
+  static const String _prefsAppIdKey = 'agora_app_id_v1';
+
+  /// Cache the App ID so the next cold start knows it without a round-trip.
+  static Future<void> _rememberAppId(String id) async {
+    if (id.trim().isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefsAppIdKey, id.trim());
+    } catch (_) {}
+  }
+
   static Future<void> _ensureAppIdFromBackend() async {
     if (appId.trim().isNotEmpty) return;
+
+    // Disk first. A push-woken app has no time to wait on the network, and
+    // the project id does not change between launches.
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cached = (prefs.getString(_prefsAppIdKey) ?? '').trim();
+      if (cached.isNotEmpty) {
+        appId = cached;
+        _log('🔑 App ID restored from cache');
+      }
+    } catch (_) {}
+
     try {
       final headers = await ApiService.getHeaders();
       final response = await http
@@ -737,6 +787,7 @@ class AgoraCallService {
           final id = decoded['app_id']?.toString().trim();
           if (id != null && id.isNotEmpty) {
             appId = id;
+            unawaited(_rememberAppId(id));
           }
         }
       }
@@ -823,6 +874,7 @@ class AgoraCallService {
         // Backend (server settings) owns the Agora project — adopt its App ID so
         // the engine and signed token always belong to the same project.
         appId = tokenAppId;
+        unawaited(_rememberAppId(tokenAppId));
       }
       final token = decoded['token']?.toString() ?? '';
       if (tokenRequired && token.isEmpty) {

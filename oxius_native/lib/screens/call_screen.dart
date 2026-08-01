@@ -471,11 +471,16 @@ class _CallScreenState extends State<CallScreen>
         return;
       }
 
-      _engine = await AgoraCallService.initEngine(callType: widget.callType);
-
+      // NOT initEngine() here. Building the engine before the first token
+      // fetch means it is created from whatever App ID happens to be known,
+      // and on a push-woken cold start that is nothing at all — producing an
+      // engine that belongs to no project and can never carry audio.
+      // joinChannel() fetches the token (which carries the App ID) and then
+      // builds the engine in the right order; _acceptCall does the same.
       if (widget.isIncoming && widget.autoAccept) {
         await _acceptCall();
       } else {
+        _engine = await AgoraCallService.initEngine(callType: widget.callType);
         final notified = await AgoraCallService.sendCallNotification(
           calleeId: widget.calleeId,
           channelName: widget.channelName,
@@ -621,8 +626,12 @@ class _CallScreenState extends State<CallScreen>
       // two streams collide and the accepted call ends up with garbled or
       // missing audio (perceived as "the call didn't connect properly").
       await _stopIncomingAlert();
-      _engine = await AgoraCallService.initEngine(callType: widget.callType);
+      // joinChannel fetches the token FIRST — which is what carries the App
+      // ID — and builds the engine from it. Calling initEngine here instead
+      // built the engine from whatever App ID was known at accept time,
+      // which on a push-woken cold start is none.
       await _joinChannel();
+      _engine = AgoraCallService.engine;
       // We've accepted and joined — start the self-heal watchdog in case the
       // caller's media doesn't reach us within the grace window.
       _startConnectWatchdog();
