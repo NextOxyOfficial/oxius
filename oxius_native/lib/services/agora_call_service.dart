@@ -706,6 +706,34 @@ class AgoraCallService {
   /// 'none'. Useful when a call is reported as never arriving.
   static String lastRingChannel = '';
 
+  /// Tell the server that Agora media actually started flowing.
+  ///
+  /// Fire-and-forget diagnostics: without it, "accepted but never connected"
+  /// and "connected then hung up" are indistinguishable in the server log,
+  /// which is exactly the ambiguity that made this class of bug so slow to
+  /// find. Never blocks or surfaces anything to the user.
+  static Future<void> reportMediaConnected({
+    required String channelName,
+    String? callId,
+  }) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      await http
+          .post(
+            Uri.parse(
+                '${ApiService.baseUrl}/adsyconnect/call-media-connected/'),
+            headers: headers,
+            body: json.encode({
+              'channel_name': channelName,
+              'call_id': callId ?? _activeCallInfo?['callId'],
+            }),
+          )
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Diagnostics must never affect a live call.
+    }
+  }
+
   static Future<bool> sendCallStatus({
     required String receiverId,
     required String channelName,

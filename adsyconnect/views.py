@@ -501,6 +501,28 @@ def firebase_custom_token(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def call_media_connected(request):
+    """Client reports that Agora media actually started flowing.
+
+    Deliberately does NOT touch the session status: `update_status` writes
+    whatever it is given, and overwriting 'accepted' would destroy the
+    accepted_at -> ended_at duration. This exists purely so a failing call can
+    be diagnosed from the server — "accepted but never connected" and
+    "connected then hung up" look identical in the log without it.
+    """
+    channel_name = request.data.get('channel_name')
+    call_id = request.data.get('call_id')
+    logger.warning(
+        'CALLTRACE media call=%s %s channel=%s CONNECTED',
+        str(call_id)[:8] if call_id else '?',
+        request.user.email,
+        str(channel_name)[:40],
+    )
+    return Response({'success': True})
+
+
 @api_view(['GET'])
 # Deliberately public. The App ID is not secret (it ships inside every RTC
 # client), and requiring a login here broke the one moment that matters: an

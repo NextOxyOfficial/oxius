@@ -288,6 +288,11 @@ class _CallScreenState extends State<CallScreen>
         _isConnecting = false;
       });
       _startCallTimer();
+      // The one moment that proves the media path works end to end.
+      unawaited(AgoraCallService.reportMediaConnected(
+        channelName: widget.channelName,
+        callId: widget.callId,
+      ));
     });
 
     _remoteLeaveSub = AgoraCallService.remoteUserLeftStream.listen((remoteUid) {
