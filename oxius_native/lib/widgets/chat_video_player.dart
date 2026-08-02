@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../utils/media_headers.dart';
 
 import 'package:flutter/material.dart';
 
@@ -45,7 +46,12 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
     try {
       final controller = widget.videoUrl.startsWith('http://') ||
               widget.videoUrl.startsWith('https://')
-          ? VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
+          ? VideoPlayerController.networkUrl(
+              Uri.parse(widget.videoUrl),
+              // CDN rejects the default Dart User-Agent — same header every
+              // other media fetch in chat already sends.
+              httpHeaders: kMediaHeaders,
+            )
           : VideoPlayerController.file(File(widget.videoUrl));
       _controller = controller;
       await controller.initialize();

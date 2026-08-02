@@ -34,6 +34,7 @@ import '../services/fcm_service.dart';
 import '../widgets/chat/chat_app_bar.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
+import '../widgets/chat/chat_edit_message_sheet.dart';
 import '../widgets/chat/message_options_sheet.dart';
 import '../utils/video_upload_helper.dart';
 import 'business_network/profile_screen.dart';
@@ -444,8 +445,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       _loadOnlineStatus();
       _loadChatroomStatus();
       // Also pull any messages that may have arrived while we were paused —
-      // belt-and-suspenders against socket replay gaps.
-      _loadMessages();
+      // belt-and-suspenders against socket replay gaps. MERGE, don't reload:
+      // _loadMessages() would reset to page 1, collapse the loaded history
+      // and yank a user who was reading old messages back to the bottom.
+      _checkForNewMessages();
       // Back on screen: re-mark this chat active so we keep suppressing its push.
       AdsyConnectService.setActiveChat(widget.chatroomId);
       _startActiveChatHeartbeat();
@@ -503,21 +506,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   Future<void> _loadOlderMessages() async {
     if (_isLoadingMoreMessages || !_hasMoreMessages) return;
 
-    String? anchorMessageId;
-    final positions = _itemPositionsListener.itemPositions.value;
-    if (positions.isNotEmpty && _messages.isNotEmpty) {
-      int maxIndex = 0;
-      for (final p in positions) {
-        if (p.index > maxIndex) maxIndex = p.index;
-      }
-
-      final anchorBuilderIndex = maxIndex.clamp(0, _messages.length - 1);
-      final anchorMessageIndex = _messages.length - 1 - anchorBuilderIndex;
-      if (anchorMessageIndex >= 0 && anchorMessageIndex < _messages.length) {
-        anchorMessageId = _messages[anchorMessageIndex]['id']?.toString();
-      }
-    }
-
+    // No anchor capture needed: builder indexes count from the newest end,
+    // so prepending older messages never shifts an existing row.
     setState(() {
       _isLoadingMoreMessages = true;
     });
@@ -544,18 +534,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _isLoadingMoreMessages = false;
         });
 
-        if (anchorMessageId != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            final idx = _messages.indexWhere(
-              (m) => (m['id']?.toString() ?? '') == anchorMessageId,
-            );
-            if (idx == -1) return;
-            final targetBuilderIndex = _messages.length - 1 - idx;
-            if (_itemScrollController.isAttached) {
-              _itemScrollController.jumpTo(index: targetBuilderIndex);
-            }
-          });
+        // No anchor jump: in this reverse list the builder index is
+        // (length-1-i), so prepending older messages does NOT shift any
+        // existing row — the viewport is already stable. The old jumpTo
+        // relocated the anchor to the bottom edge (alignment 0 = leading
+        // edge = bottom here), leaping the view a screenful into history
+        // on every page load.
+        if (_searchQuery.trim().isNotEmpty) {
+          // Every stored match index just shifted by the prepend count.
+          _recomputeSearchMatches(keepCurrent: true);
         }
       } else {
         setState(() {
@@ -1188,6 +1175,25 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           }
           if (!_sameReactions(existing['reactions'], serverMsg['reactions'])) {
             existing['reactions'] = serverMsg['reactions'];
+            hasUpdates = true;
+          }
+          // There is no socket event for peer edits or deletes — this poll
+          // is the ONLY path that can update an open chat. Without these two
+          // syncs the "Edited" badge appeared next to the OLD words, and a
+          // deleted message stayed on screen until the chat was reopened.
+          final serverText = serverMsg['message']?.toString();
+          if (serverText != null &&
+              serverText != existing['message']?.toString()) {
+            existing['message'] = serverText;
+            existing['content'] = serverText;
+            existing['replyToId'] = serverMsg['replyToId'];
+            existing['replyToSender'] = serverMsg['replyToSender'];
+            existing['replyPreview'] = serverMsg['replyPreview'];
+            hasUpdates = true;
+          }
+          if (serverMsg['isDeleted'] == true &&
+              existing['isDeleted'] != true) {
+            existing['isDeleted'] = true;
             hasUpdates = true;
           }
         }
@@ -1873,6 +1879,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       await _audioRecorder.stop();
       _recordTimer?.cancel();
 
+      if (!mounted) return;
       setState(() {
         _isRecording = false;
         _recordDuration = 0;
@@ -1935,18 +1942,32 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final before = message['reactions'];
     final mine = _myReactionOf(message);
     setState(() {
-      message['reactions'] = mine == emoji
-          ? []
-          : [
-              {'emoji': emoji, 'count': 1, 'reacted_by_me': true}
-            ];
+      // Merge, don't replace: wiping the list also wiped the OTHER person's
+      // reactions until the server answered.
+      final others = [
+        if (before is List)
+          for (final r in before)
+            if (r is Map && r['reacted_by_me'] != true) r,
+      ];
+      message['reactions'] = [
+        ...others,
+        if (mine != emoji) {'emoji': emoji, 'count': 1, 'reacted_by_me': true},
+      ];
     });
     final updated = await AdsyConnectService.reactToMessage(id, emoji);
     if (!mounted) return;
-    setState(() => message['reactions'] = updated ?? before);
+    setState(() {
+      // Re-look the message up by id — a poll refresh during the await can
+      // replace the map, leaving `message` an orphan nothing renders.
+      final idx =
+          _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
+      if (idx != -1) {
+        _messages[idx]['reactions'] = updated ?? before;
+      }
+    });
   }
 
-  void _showEditMessageDialog(Map<String, dynamic> message) {
+  Future<void> _showEditMessageDialog(Map<String, dynamic> message) async {
     final rawContent =
         (message['message'] ?? message['content'] ?? '').toString();
     // Editing a shared post edits the WORDS on it, not the envelope — the
@@ -1954,198 +1975,70 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     // card.
     final sharedShell = SharedPostMessage.tryDecode(rawContent);
     final currentText = sharedShell != null ? sharedShell.text : rawContent;
-    final editController = TextEditingController(text: currentText);
 
-    showDialog(
-      context: context,
-      // Must use the LOCAL navigator, not the root one. This chat screen is
-      // rendered inside the AdsyConnect chat OverlayEntry which sits ABOVE the
-      // root Navigator, so a root-navigator dialog would be pushed BEHIND the
-      // overlay and stay invisible until the user pops the overlay with Back.
-      // (Same fix as _showBlockConfirmation.)
-      useRootNavigator: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Container(
-          width: 320,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF111827).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.edit_rounded,
-                      color: Color(0xFF111827),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Edit Message',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Text field
-              TextField(
-                controller: editController,
-                maxLines: 4,
-                minLines: 2,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: 'Enter your message...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFF111827)),
-                  ),
-                  contentPadding: const EdgeInsets.all(12),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final newText = editController.text.trim();
-                        if (newText.isEmpty || newText == currentText) {
-                          Navigator.pop(context);
-                          return;
-                        }
+    final newText =
+        await ChatEditMessageSheet.show(context, initialText: currentText);
+    if (newText == null || !mounted) return;
 
-                        Navigator.pop(context);
+    // A share keeps its card; only the words change. A reply keeps its
+    // quote the same way: 'message' holds the STRIPPED body (the ↩️ header
+    // was parsed off), so storing newText bare would erase the quote from
+    // the server copy — rebuild the header from the parsed fields.
+    String contentToStore = sharedShell != null
+        ? sharedShell.withText(newText).encode()
+        : newText;
+    final replyToSender = (message['replyToSender'] ?? '').toString();
+    final replyPreview = (message['replyPreview'] ?? '').toString();
+    if (sharedShell == null && replyToSender.isNotEmpty) {
+      final replyToId = (message['replyToId'] ?? '').toString();
+      final idPart = replyToId.isNotEmpty ? '($replyToId) ' : '';
+      contentToStore =
+          '↩️ $idPart$replyToSender: $replyPreview\n\n$newText';
+    }
 
-                        // A share keeps its card; only the words change.
-                        final contentToStore = sharedShell != null
-                            ? sharedShell.withText(newText).encode()
-                            : newText;
+    // Locally 'message' holds the STRIPPED body (the bubble reads the reply
+    // fields separately) — only the server copy carries the ↩️ header.
+    final localText = sharedShell != null ? contentToStore : newText;
 
-                        // Update UI immediately
-                        if (mounted) {
-                          setState(() {
-                            final index = _messages.indexWhere((m) =>
-                                m['id'].toString() == message['id'].toString());
-                            if (index != -1) {
-                              _messages[index] = {
-                                ..._messages[index],
-                                'message': contentToStore,
-                                'content': contentToStore,
-                                'isEdited': true,
-                              };
-                              _messages =
-                                  List.from(_addSmartTimestamps(_messages));
-                            }
-                          });
-                        }
+    // Optimistic: paint the edit immediately, revert if the server refuses.
+    setState(() {
+      final index = _messages.indexWhere(
+          (m) => m['id'].toString() == message['id'].toString());
+      if (index != -1) {
+        _messages[index] = {
+          ..._messages[index],
+          'message': localText,
+          'content': localText,
+          'isEdited': true,
+        };
+        _messages = List.from(_addSmartTimestamps(_messages));
+      }
+    });
 
-                        // Call backend to update
-                        try {
-                          await AdsyConnectService.editMessage(
-                            message['id'].toString(),
-                            contentToStore,
-                          );
-
-                          if (context.mounted) {
-                            AdsyToast.success(context, 'Message edited');
-                          }
-                        } catch (e) {
-                          debugPrint('Error editing message: $e');
-                          // Revert on error
-                          if (mounted) {
-                            setState(() {
-                              final index = _messages.indexWhere((m) =>
-                                  m['id'].toString() ==
-                                  message['id'].toString());
-                              if (index != -1) {
-                                _messages[index] = {
-                                  ..._messages[index],
-                                  'message': currentText,
-                                  'content': currentText,
-                                  'isEdited': message['isEdited'] ?? false,
-                                };
-                                _messages =
-                                    List.from(_addSmartTimestamps(_messages));
-                              }
-                            });
-                          }
-                          if (context.mounted) {
-                            AdsyToast.error(context, 'Failed to edit message');
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF111827),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Save',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    try {
+      await AdsyConnectService.editMessage(
+        message['id'].toString(),
+        contentToStore,
+      );
+      if (mounted) AdsyToast.success(context, 'মেসেজ এডিট হয়েছে');
+    } catch (e) {
+      debugPrint('Error editing message: $e');
+      if (!mounted) return;
+      setState(() {
+        final index = _messages.indexWhere(
+            (m) => m['id'].toString() == message['id'].toString());
+        if (index != -1) {
+          _messages[index] = {
+            ..._messages[index],
+            'message': rawContent,
+            'content': rawContent,
+            'isEdited': message['isEdited'] ?? false,
+          };
+          _messages = List.from(_addSmartTimestamps(_messages));
+        }
+      });
+      AdsyToast.error(context, 'এডিট করা যায়নি');
+    }
   }
 
   void _deleteMessage(Map<String, dynamic> message) {
@@ -2455,6 +2348,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
         // Compress all images
         List<String> compressed = [];
+        final List<XFile> accepted = [];
         for (var image in images) {
           final compressedBase64 = await ImageCompressor.compressToBase64(
             image,
@@ -2466,21 +2360,36 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
           if (compressedBase64 != null) {
             compressed.add(compressedBase64);
+            accepted.add(image);
+          } else {
+            // Fall back to the raw bytes rather than silently skipping —
+            // skipping desynced the two lists (preview strip showed fewer
+            // photos, remove-at-index deleted the WRONG photo, and the
+            // failed one was never sent while the user believed it was).
+            try {
+              final raw = await image.readAsBytes();
+              compressed.add(base64Encode(raw));
+              accepted.add(image);
+            } catch (_) {
+              if (mounted) {
+                AdsyToast.error(context, 'একটি ছবি যোগ করা যায়নি');
+              }
+            }
           }
         }
 
+        if (!mounted) return;
         setState(() {
-          _selectedImages.addAll(images);
+          _selectedImages.addAll(accepted);
           _compressedImages.addAll(compressed);
           _isCompressingImages = false;
         });
       }
     } catch (e) {
       debugPrint('Error picking images: $e');
+      if (!mounted) return;
       setState(() => _isCompressingImages = false);
-      if (mounted) {
-        AdsyToast.error(context, 'ছবি সিলেক্ট করা যায়নি');
-      }
+      AdsyToast.error(context, 'ছবি সিলেক্ট করা যায়নি');
     }
   }
 
@@ -2510,24 +2419,24 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           verbose: true,
         );
 
-        if (compressedBase64 != null) {
-          setState(() {
-            _selectedImages.add(image);
-            _compressedImages.add(compressedBase64);
-            _isCompressingImages = false;
-          });
-        } else {
-          throw Exception('Image compression failed');
-        }
+        final payload = compressedBase64 ??
+            // Compression failed — send the raw bytes rather than throwing
+            // the photo away after the user already took it.
+            base64Encode(await image.readAsBytes());
+        if (!mounted) return;
+        setState(() {
+          _selectedImages.add(image);
+          _compressedImages.add(payload);
+          _isCompressingImages = false;
+        });
       } else {
-        setState(() => _isCompressingImages = false);
+        if (mounted) setState(() => _isCompressingImages = false);
       }
     } catch (e) {
       debugPrint('Error taking photo: $e');
+      if (!mounted) return;
       setState(() => _isCompressingImages = false);
-      if (mounted) {
-        AdsyToast.error(context, 'ছবি তোলা যায়নি');
-      }
+      AdsyToast.error(context, 'ছবি তোলা যায়নি');
     }
   }
 
@@ -2890,6 +2799,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     if (!mounted) return;
     if (result != null) {
       setState(() => _messages.clear());
+      // The user explicitly removed this content — the warm-open cache must
+      // not resurrect it on the next visit (it did, indefinitely if offline).
+      ChatHistoryCache.invalidate('room:${widget.chatroomId}');
       AdsyToast.success(context, 'মেসেজ ক্লিয়ার হয়ে গেছে');
     } else {
       AdsyToast.error(context, 'মেসেজ ক্লিয়ার করা যায়নি');
@@ -3763,6 +3675,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         ? {
             ...message,
             'showTimestamp': true,
+            // Tells the bubble this reveal is fresh — only tap-opened rows
+            // play the fade/slide; the always-on smart timestamps would
+            // otherwise re-fade every time scrolling rebuilds their row.
+            'timeRevealAnimated': true,
             'timeDisplay': _fullTimeStamp(message),
           }
         : message;

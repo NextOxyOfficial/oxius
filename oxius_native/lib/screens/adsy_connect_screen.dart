@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/chat_history_cache.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -230,6 +231,18 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     } else {
       preview = _formatReplyPreview(rawPreview) ?? rawPreview;
     }
+    // Media arrives with empty content — same typed labels the group path
+    // uses, or the row shows the previous message's words under a new time.
+    switch ((message['message_type'] ?? 'text').toString()) {
+      case 'voice':
+        preview = '🎤 Voice message';
+      case 'image':
+        preview = '📷 Photo';
+      case 'video':
+        preview = '🎥 Video';
+      case 'document':
+        preview = '📄 Document';
+    }
     final createdAt =
         DateTime.tryParse((message['created_at'] ?? '').toString()) ??
             DateTime.now();
@@ -258,7 +271,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           'lastMessage': preview.isNotEmpty ? preview : 'নতুন মেসেজ',
           'timestamp': createdAt,
           'unreadCount': 1,
-          'isOnline': true,
+          // Presence comes from the payload when it carries it — a hardcoded
+          // `true` painted offline people green until the next full refresh.
+          'isOnline': sender['is_online'] == true,
           'isTyping': false,
           'isVerified':
               sender['kyc'] == true || sender['is_verified'] == true,
@@ -1692,6 +1707,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if (!mounted) return;
     if (res != null) {
       setState(() => _chatConversations.removeWhere((c) => c['id'] == chat['id']));
+      // The warm-open cache must not resurrect a chat the user deleted.
+      ChatHistoryCache.invalidate('room:$id');
       AdsyToast.success(context, 'চ্যাট মুছে গেছে');
     } else {
       AdsyToast.error(context, 'মুছতে ব্যর্থ');
@@ -2372,7 +2389,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                             errorBuilder: (context, error, stackTrace) {
                               return Center(
                                 child: Text(
-                                  chat['userName'][0].toUpperCase(),
+                                  ((chat['userName'] ?? '').toString().isNotEmpty ? chat['userName'][0] : '?').toUpperCase(),
                                   style: const TextStyle(
                                     color: Color(0xFF334155),
                                     fontSize: 18,
@@ -2384,7 +2401,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           )
                         : Center(
                             child: Text(
-                              chat['userName'][0].toUpperCase(),
+                              ((chat['userName'] ?? '').toString().isNotEmpty ? chat['userName'][0] : '?').toUpperCase(),
                               style: const TextStyle(
                                 color: Color(0xFF334155),
                                 fontSize: 18,

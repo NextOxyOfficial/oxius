@@ -456,36 +456,35 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         .clamp(margin, overlaySize.height - 236)
         .toDouble();
 
-    OverlayEntry? entry;
-    void close() {
-      entry?.remove();
-      entry = null;
-    }
-
-    entry = OverlayEntry(
-      builder: (_) => Stack(
+    // A real (transparent) route instead of a raw OverlayEntry: hardware
+    // back closes it, popping the chat can't leave it floating over the
+    // screen underneath, and there's nothing to leak on disposal.
+    showGeneralDialog(
+      context: context,
+      useRootNavigator: false,
+      barrierDismissible: true,
+      barrierLabel: 'menu',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 120),
+      transitionBuilder: (_, anim, __, child) => FadeTransition(
+        opacity: anim,
+        child: child,
+      ),
+      pageBuilder: (dialogCtx, _, __) => Stack(
         children: [
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: close,
-              child: const SizedBox.expand(),
-            ),
-          ),
           Positioned(
             top: top,
             left: left,
             width: menuWidth,
             child: Material(
               color: Colors.transparent,
-              child: _buildActionMenuSurface(close),
+              child: _buildActionMenuSurface(
+                  () => Navigator.of(dialogCtx).pop()),
             ),
           ),
         ],
       ),
     );
-
-    overlayState.insert(entry!);
   }
 
   Widget _buildActionMenuSurface(VoidCallback close) {

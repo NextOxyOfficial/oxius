@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../utils/media_headers.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -19,6 +20,7 @@ import '../utils/mention_navigator.dart';
 import '../utils/url_launcher_utils.dart';
 import '../utils/video_upload_helper.dart';
 import '../widgets/chat/chat_message_bubble.dart';
+import '../widgets/chat/chat_edit_message_sheet.dart';
 import '../widgets/chat/chat_message_input.dart';
 import '../widgets/chat/message_options_sheet.dart';
 import '../utils/shared_post_message.dart';
@@ -47,7 +49,8 @@ class GroupChatScreen extends StatefulWidget {
   State<GroupChatScreen> createState() => _GroupChatScreenState();
 }
 
-class _GroupChatScreenState extends State<GroupChatScreen> {
+class _GroupChatScreenState extends State<GroupChatScreen>
+    with WidgetsBindingObserver {
   late Map<String, dynamic> _group;
   List<Map<String, dynamic>> _messages = [];
   List<String> _typingNames = [];
@@ -149,6 +152,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     // While this group is OPEN its own message pushes stay silent — the
     // FCM handler compares incoming group_id against this tracker.
     ActiveChatTracker.setActiveChat((widget.group['id'] ?? '').toString());
+    WidgetsBinding.instance.addObserver(this);
     // The tracker alone only guards the foreground re-render; the SERVER also
     // has to know, otherwise it still delivers the push (and the system tray
     // renders it while the app is backgrounded). Refreshed periodically so a
@@ -228,6 +232,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void dispose() {
     if (ActiveChatTracker.activeChatId == _groupId) {
       ActiveChatTracker.clearActiveChat();
+      WidgetsBinding.instance.removeObserver(this);
     }
     _activeGroupTimer?.cancel();
     // Let the server resume pushing for this group.
@@ -482,45 +487,22 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   Future<void> _editGroupMessage(Map<String, dynamic> raw) async {
-    final controller =
-        TextEditingController(text: (raw['content'] ?? '').toString());
-    final newText = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text('Edit Message',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: 4,
-          minLines: 1,
-          style: const TextStyle(fontSize: 14),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.all(10),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () =>
-                  Navigator.pop(ctx, controller.text.trim()),
-              child: const Text('Save')),
-        ],
-      ),
-    );
-    if (newText == null || newText.isEmpty || !mounted) return;
+    final rawContent = (raw['content'] ?? '').toString();
+    // Editing a shared post edits the WORDS on it, not the envelope — same
+    // guard the 1:1 chat has, or the field opens full of "ADSYPOST::eyJ…"
+    // and saving destroys the card.
+    final sharedShell = SharedPostMessage.tryDecode(rawContent);
+    final currentText = sharedShell != null ? sharedShell.text : rawContent;
+
+    // Same sheet as the 1:1 chat — one design, both surfaces.
+    final newText =
+        await ChatEditMessageSheet.show(context, initialText: currentText);
+    if (newText == null || !mounted) return;
+    final contentToStore = sharedShell != null
+        ? sharedShell.withText(newText).encode()
+        : newText;
     final res = await AdsyConnectService.editGroupMessage(
-        _groupId, (raw['id'] ?? '').toString(), newText);
+        _groupId, (raw['id'] ?? '').toString(), contentToStore);
     if (!mounted) return;
     if (res != null) {
       await _loadMessages();
@@ -780,6 +762,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _recordTimer?.cancel();
     final path = await _recorder.stop();
     final duration = _recordSeconds;
+    if (!mounted) return;
     setState(() {
       _recording = false;
       _recordSeconds = 0;
@@ -788,9 +771,23 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     await _sendMedia(path, 'voice', voiceDuration: duration);
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Parity with the 1:1 chat: while backgrounded the user is NOT reading
+    // this group, so its push must come through again — the stale marker
+    // used to suppress group notifications for minutes after backgrounding.
+    if (state == AppLifecycleState.resumed) {
+      AdsyConnectService.setActiveGroup(_groupId);
+      _loadMessages();
+    } else if (state == AppLifecycleState.paused) {
+      AdsyConnectService.clearActiveChat();
+    }
+  }
+
   Future<void> _cancelRecording() async {
     _recordTimer?.cancel();
     await _recorder.stop();
+    if (!mounted) return;
     setState(() {
       _recording = false;
       _recordSeconds = 0;
@@ -818,16 +815,67 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final before = raw['reactions'];
     final mine = _myReactionOf(raw);
     setState(() {
-      raw['reactions'] = mine == emoji
-          ? []
-          : [
-              {'emoji': emoji, 'count': 1, 'reacted_by_me': true}
-            ];
+      // Merge, don't replace — wiping the list also hid everyone ELSE's
+      // reactions until the server answered.
+      final others = [
+        if (before is List)
+          for (final r in before)
+            if (r is Map && r['reacted_by_me'] != true) r,
+      ];
+      raw['reactions'] = [
+        ...others,
+        if (mine != emoji) {'emoji': emoji, 'count': 1, 'reacted_by_me': true},
+      ];
     });
     final updated =
         await AdsyConnectService.reactToMessage(id, emoji, isGroup: true);
     if (!mounted) return;
-    setState(() => raw['reactions'] = updated ?? before);
+    setState(() {
+      // Re-look the message up: the poll replaces every map on refresh, so
+      // `raw` may be an orphan by the time the server answers — writing to
+      // it made the reaction invisible until the next poll.
+      final idx =
+          _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
+      if (idx != -1) {
+        _messages[idx]['reactions'] = updated ?? before;
+      }
+    });
+  }
+
+  /// Scrolls to the quoted original. Rows carry GlobalObjectKeys, so if the
+  /// original is laid out we glide straight to it; otherwise jump by the
+  /// message's proportional position — close enough that one small scroll
+  /// lands it, instead of the tap silently doing nothing (which is what
+  /// this handler used to be).
+  void _scrollToGroupMessage(String messageId) {
+    final id = messageId.trim();
+    if (id.isEmpty) return;
+    final idx =
+        _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
+    if (idx == -1) {
+      AdsyToast.info(context, 'আগের মেসেজটি লোড করা নেই');
+      return;
+    }
+    final key = GlobalObjectKey('gmsg-$id');
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+        alignment: 0.2,
+      );
+      return;
+    }
+    if (_scroll.hasClients && _messages.length > 1) {
+      final target = _scroll.position.maxScrollExtent *
+          (idx / (_messages.length - 1));
+      _scroll.animateTo(
+        target.clamp(0, _scroll.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   Future<void> _playVoice(String id, String? url) async {
@@ -884,8 +932,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         body: Center(
           child: InteractiveViewer(
             maxScale: 5,
-            child: Image.network(path,
+            child: Image.network(AppConfig.getAbsoluteUrl(path),
                 fit: BoxFit.contain,
+                headers: kMediaHeaders,
                 errorBuilder: (_, __, ___) => const Icon(
                     Icons.broken_image_outlined,
                     color: Colors.white54,
@@ -1047,7 +1096,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               padding:
                                   const EdgeInsets.fromLTRB(8, 12, 8, 8),
                               itemCount: _messages.length,
-                              itemBuilder: (_, i) => _buildRow(i),
+                              // Keyed so reply-quote taps can
+                              // Scrollable.ensureVisible their target row.
+                              itemBuilder: (_, i) => KeyedSubtree(
+                                key: GlobalObjectKey(
+                                    'gmsg-${(_messages[i]['id'] ?? '').toString()}'),
+                                child: _buildRow(i),
+                              ),
                             ),
                           ),
                           // Quick jump-to-bottom (same circle as back-to-top,
@@ -1297,7 +1352,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             UrlLauncherUtils.launchExternalUrl(url);
           }
         },
-        onScrollToMessage: (_) {},
+        onScrollToMessage: _scrollToGroupMessage,
       ),
     );
 

@@ -53,15 +53,22 @@ class ChatAutoScroll {
 
         settled = 0;
         if (animate && frames == 0) {
-          controller.animateTo(
-            target,
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-          );
-        } else {
-          controller.jumpTo(target);
+          frames++;
+          // Correct only after the glide lands — a jumpTo on the next frame
+          // cancels the animation the user was supposed to see.
+          controller
+              .animateTo(
+                target,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+              )
+              .whenComplete(() {
+            if (frames < _maxFrames) step();
+          });
+          return;
         }
 
+        controller.jumpTo(target);
         if (++frames < _maxFrames) step();
       });
     }
@@ -107,15 +114,25 @@ class ChatAutoScroll {
 
         settled = 0;
         if (animate && frames == 0) {
-          controller.scrollTo(
-            index: 0,
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-          );
-        } else {
-          controller.jumpTo(index: 0);
+          frames++;
+          // WAIT for the animation before correcting. scrollTo over a long
+          // distance crossfades between two layered lists; a jumpTo issued
+          // on the very next frame lands mid-fade and can leave the visible
+          // layer at opacity 0 — the "chat went white" bug. scrollTo returns
+          // a Future precisely so callers can sequence against it.
+          controller
+              .scrollTo(
+                index: 0,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+              )
+              .whenComplete(() {
+            if (frames < _maxFrames) step();
+          });
+          return;
         }
 
+        controller.jumpTo(index: 0);
         if (++frames < _maxFrames) step();
       });
     }

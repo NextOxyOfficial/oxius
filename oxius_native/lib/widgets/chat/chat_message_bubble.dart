@@ -376,9 +376,66 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                               isGroup: widget.isGroupMessage,
                             ),
                           ),
-                        const SizedBox(height: 2),
-                        if (message['showTimestamp'] == true)
-                          _buildTimestamp(message, isMe),
+                        // "Edited" lives HERE — under the bubble, outside
+                        // the per-type content builders. Inside them it
+                        // existed for text/emoji/shared paths and silently
+                        // vanished for image, video, voice, document and
+                        // call-log messages.
+                        if (_isEdited(message))
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              'Edited',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: .2,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ),
+                        // Time reveal folds open instead of popping in — the
+                        // hard `if` used to snap the whole thread down a row.
+                        ClipRect(
+                          child: AnimatedSize(
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOutCubic,
+                            alignment: isMe
+                                ? Alignment.topRight
+                                : Alignment.topLeft,
+                            child: message['showTimestamp'] != true
+                                ? const SizedBox.shrink()
+                                : message['timeRevealAnimated'] == true
+                                    // Fresh tap-reveal: fade + settle up.
+                                    ? TweenAnimationBuilder<double>(
+                                        tween: Tween(begin: 0, end: 1),
+                                        duration: const Duration(
+                                            milliseconds: 260),
+                                        curve: Curves.easeOut,
+                                        builder: (_, v, child) => Opacity(
+                                          opacity: v,
+                                          child: Transform.translate(
+                                            offset: Offset(0, 4 * (1 - v)),
+                                            child: child,
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 3),
+                                          child: _buildTimestamp(
+                                              message, isMe),
+                                        ),
+                                      )
+                                    // Always-on smart timestamp: static, or
+                                    // it would re-fade on every scroll-back.
+                                    : Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 3),
+                                        child: _buildTimestamp(
+                                            message, isMe),
+                                      ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -557,10 +614,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   ) {
     final msgType = message['type']?.toString() ?? 'text';
     final text = (message['message'] ?? '').toString();
-    final isEdited = message['isEdited'] == true ||
-        message['is_edited'] == true ||
-        message['is_edited'] == 1 ||
-        message['is_edited'] == 'true';
 
     Widget wrapWithQuote(Widget child) {
       if (quoteCard == null) return child;
@@ -614,19 +667,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   decoration: TextDecoration.none,
                 ),
               ),
-              if (isEdited) ...[
-                const SizedBox(height: 4),
-                Text(
-                  'Edited',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    color: isMe
-                        ? const Color(0xFF111827).withValues(alpha: 0.6)
-                        : const Color(0xFF64748B),
-                  ),
-                ),
-              ],
             ],
           ),
         );
@@ -643,20 +683,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(text.trim(), style: TextStyle(fontSize: emojiOnlySize)),
-            if (isEdited)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  'Edited',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    color: isMe
-                        ? const Color(0xFF111827).withValues(alpha: 0.6)
-                        : const Color(0xFF64748B),
-                  ),
-                ),
-              ),
           ],
         ),
       );
@@ -729,19 +755,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       decoration: TextDecoration.none,
                     ),
                   )),
-          if (isEdited) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Edited',
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w600,
-                color: isMe
-                    ? const Color(0xFF111827).withValues(alpha: 0.6)
-                    : const Color(0xFF64748B),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -1111,6 +1124,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 width: 180,
                 height: 120,
                 fit: BoxFit.cover,
+                // The CDN rejects Dart's default User-Agent — without this
+                // header the thumbnail silently fails while the full-screen
+                // viewer (which sends it) works.
+                headers: kMediaHeaders,
                 errorBuilder: (_, __, ___) => _imagePlaceholder(
                     Icons.broken_image_rounded, 'Failed to load'),
               )
@@ -1175,7 +1192,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   Widget _buildDocumentContent(Map<String, dynamic> message, bool isMe) {
     final fileName = message['fileName'] as String? ?? 'Document';
     final extension = fileName.split('.').last.toUpperCase();
-    final filePath = message['filePath'] as String?;
+    // The 1:1 parser stores the URL under 'mediaUrl'; nothing ever wrote
+    // 'filePath', so every document tap used to dead-end on the null guard.
+    final filePath =
+        (message['mediaUrl'] ?? message['filePath']) as String?;
 
     return GestureDetector(
       onTap: () => widget.onDownloadDoc(filePath, fileName),
@@ -1247,6 +1267,12 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       ),
     );
   }
+
+  static bool _isEdited(Map<String, dynamic> message) =>
+      message['isEdited'] == true ||
+      message['is_edited'] == true ||
+      message['is_edited'] == 1 ||
+      message['is_edited'] == 'true';
 
   Widget _buildTimestamp(Map<String, dynamic> message, bool isMe) {
     return Row(
