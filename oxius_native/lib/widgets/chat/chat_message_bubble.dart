@@ -381,6 +381,31 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                         // existed for text/emoji/shared paths and silently
                         // vanished for image, video, voice, document and
                         // call-log messages.
+                        if (message['isUploading'] == true)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 3),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 9,
+                                  height: 9,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.6,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'পাঠানো হচ্ছে…',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         if (_isEdited(message))
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
@@ -1103,11 +1128,22 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     );
   }
 
-  Widget _buildImageContent(Map<String, dynamic> message) {
-    final filePath =
-        (message['mediaUrl'] as String?) ?? (message['filePath'] as String?);
+  /// The path a media bubble should actually paint.
+  ///
+  /// While a send is in flight the message carries only a local file path;
+  /// right after the server answers it also carries `localPreviewPath`, and
+  /// painting THAT until the network copy is cached is what stops the bubble
+  /// from flashing empty at the exact moment the send succeeds.
+  static String _mediaPathFor(Map<String, dynamic> message) {
+    final local = (message['localPreviewPath'] ?? '').toString();
+    if (local.isNotEmpty && !local.startsWith('http')) return local;
+    return (message['mediaUrl'] ?? message['filePath'] ?? '').toString();
+  }
 
-    if (filePath == null || filePath.isEmpty) {
+  Widget _buildImageContent(Map<String, dynamic> message) {
+    final filePath = _mediaPathFor(message);
+
+    if (filePath.isEmpty) {
       return _imagePlaceholder(Icons.image_rounded, 'Image');
     }
 
@@ -1163,10 +1199,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   Widget _buildVideoContent(Map<String, dynamic> message, bool isMe) {
-    final videoUrl =
-        (message['mediaUrl'] as String?) ?? (message['filePath'] as String?);
+    final videoUrl = _mediaPathFor(message);
 
-    if (videoUrl == null || videoUrl.isEmpty) {
+    if (videoUrl.isEmpty) {
       return Container(
         width: 280,
         height: 180,
@@ -1286,9 +1321,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         if (isMe) ...[
           const SizedBox(width: 4),
           Icon(
-            message['isSeen'] == true
-                ? Icons.done_all_rounded
-                : Icons.done_rounded,
+            // A message still on its way is NOT delivered — showing the same
+            // grey tick as a delivered one made a failed send look sent.
+            message['pending'] == true || message['isUploading'] == true
+                ? Icons.schedule_rounded
+                : message['isSeen'] == true
+                    ? Icons.done_all_rounded
+                    : Icons.done_rounded,
             size: 14,
             color: message['isSeen'] == true
                 ? const Color(0xFF111827)

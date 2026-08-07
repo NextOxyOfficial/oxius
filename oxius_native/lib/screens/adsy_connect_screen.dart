@@ -475,10 +475,20 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     });
   }
 
+  /// Monotonic id for background refreshes. Three callers fire this (the 20s
+  /// timer, every socket message, and the on-return refresh), so an OLDER
+  /// response routinely landed after a newer one and restored a pre-send
+  /// preview — the "last message not showing until reload" report.
+  int _refreshSeq = 0;
+
   Future<void> _refreshChatsInBackground() async {
+    final seq = ++_refreshSeq;
     try {
       final chatRooms =
           await AdsyConnectService.getChatRooms(page: 1, pageSize: _pageSize);
+
+      // A newer refresh already applied — this response is stale.
+      if (seq != _refreshSeq) return;
 
       if (mounted) {
         setState(() {

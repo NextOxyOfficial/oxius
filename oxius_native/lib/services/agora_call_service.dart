@@ -517,6 +517,42 @@ class AgoraCallService {
   /// join may have silently stalled (transient token/network hiccup). Leave the
   /// current channel (keeping the engine) and join again with a fresh token,
   /// without tearing the whole call down. Returns true on success.
+  /// True once we've escalated this call to Agora's cloud proxy, so the
+  /// ladder never repeats a rung.
+  static bool _cloudProxyEngaged = false;
+
+  static bool get cloudProxyEngaged => _cloudProxyEngaged;
+
+  /// Routes media through Agora's proxy (TCP/TLS 443).
+  ///
+  /// This is the fix for the single biggest cause of "both sides joined but
+  /// nobody hears anybody": mobile carriers and public/office Wi-Fi that drop
+  /// or NAT-break the UDP that Agora needs. Direct UDP simply never
+  /// establishes, Agora reports "Connection lost" ~9s later, and the call
+  /// dies — symmetrically, on every platform, which is exactly the ~50%
+  /// failure rate the production call log shows.
+  static Future<bool> rejoinViaCloudProxy({
+    required String channelName,
+    required int uid,
+    required String callType,
+  }) async {
+    final engine = _engine;
+    if (engine == null) return false;
+    try {
+      _log('🛡️ Escalating to Agora cloud proxy (TCP/443)');
+      await engine.setCloudProxy(CloudProxyType.tcpProxy);
+      _cloudProxyEngaged = true;
+    } catch (error) {
+      _log('❌ setCloudProxy failed: $error');
+      return false;
+    }
+    return rejoinChannel(
+      channelName: channelName,
+      uid: uid,
+      callType: callType,
+    );
+  }
+
   static Future<bool> rejoinChannel({
     required String channelName,
     required int uid,
@@ -584,6 +620,7 @@ class AgoraCallService {
       _joinedChannelName = null;
       _joinedUid = null;
       _joinedToken = null;
+      _cloudProxyEngaged = false;
       if (_activeCallInfo != null) {
         _activeCallInfo!['remoteUid'] = null;
         _schedulePersistedCallStateSync();
@@ -618,6 +655,7 @@ class AgoraCallService {
       _joinedChannelName = null;
       _joinedUid = null;
       _joinedToken = null;
+      _cloudProxyEngaged = false;
       _activeCallInfo = null;
       _isInCall = false;
       unawaited(clearPersistedCallState());

@@ -1229,13 +1229,18 @@ class MessageViewSet(viewsets.ModelViewSet):
         # Realtime delivery first (in-process, fast) so the sender's request is
         # never held up by anything network-bound.
         output_serializer = MessageSerializer(message, context={'request': request})
-        _broadcast_to_user(
-            message.receiver_id,
-            {
-                'type': 'new_message',
-                'message': output_serializer.data,
-            },
-        )
+        payload = {
+            'type': 'new_message',
+            'message': output_serializer.data,
+        }
+        _broadcast_to_user(message.receiver_id, payload)
+        # Echo to the SENDER too. Without it the sender's own chat LIST never
+        # learns about the message it just sent (so the row's preview stays on
+        # the previous message until a manual reload), and the sender's other
+        # devices stay blank until a poll. The client dedupes by message id, so
+        # the composing screen simply ignores its own echo.
+        if message.sender_id != message.receiver_id:
+            _broadcast_to_user(message.sender_id, payload)
 
         # Push notification is offloaded to Celery. Each FCM send is a blocking
         # network call, and sending them inline here intermittently exceeded the

@@ -1173,7 +1173,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             existing['isEdited'] = serverMsg['isEdited'];
             hasUpdates = true;
           }
-          if (!_sameReactions(existing['reactions'], serverMsg['reactions'])) {
+          // Skip while our own reaction is in flight — see
+          // _pendingReactionIds.
+          if (!_pendingReactionIds.contains(existing['id']?.toString()) &&
+              !_sameReactions(existing['reactions'], serverMsg['reactions'])) {
             existing['reactions'] = serverMsg['reactions'];
             hasUpdates = true;
           }
@@ -1830,6 +1833,35 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           debugPrint(
               '🔵 Sending voice message: $path, duration: $_recordDuration seconds');
 
+          // Same instant-bubble treatment as photos: the recording is on
+          // disk already, so there is no reason to show an empty thread
+          // while it uploads.
+          final voiceTempId =
+              'local_voice_${DateTime.now().microsecondsSinceEpoch}';
+          if (mounted) {
+            setState(() {
+              _messages.add(<String, dynamic>{
+                'id': voiceTempId,
+                'senderId': AuthService.currentUser?.id ?? '',
+                'message': '',
+                'timestamp': DateTime.now(),
+                'isMe': true,
+                'type': 'voice',
+                'mediaUrl': path,
+                'voice_duration': _recordDuration,
+                'voiceDuration': _recordDuration,
+                'isSeen': false,
+                'is_read': false,
+                'isDeleted': false,
+                'isEdited': false,
+                'reactions': const [],
+                'isUploading': true,
+              });
+              _messages = List.from(_addSmartTimestamps(_messages));
+            });
+            _scrollToBottom();
+          }
+
           final sentMessage = await AdsyConnectService.sendMediaMessage(
             chatroomId: widget.chatroomId,
             receiverId: widget.userId,
@@ -1842,6 +1874,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
           if (mounted) {
             setState(() {
+              _messages.removeWhere((m) => m['id'] == voiceTempId);
               final parsed = _parseSingleMessage(sentMessage);
               parsed['voice_duration'] =
                   (sentMessage['voice_duration'] as int?) ??
@@ -1935,10 +1968,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   /// Optimistic react: paint it immediately, then reconcile with the server
   /// (and roll back if the call fails).
+  /// Messages whose reaction is mid-flight. A poll GET issued BEFORE the tap
+  /// can land after the server committed it, carrying a pre-reaction snapshot
+  /// that wipes the chip — which is exactly the "reaction disappears, comes
+  /// back only after reload" report.
+  final Set<String> _pendingReactionIds = <String>{};
+
   Future<void> _reactToMessage(
       Map<String, dynamic> message, String emoji) async {
     final id = message['id']?.toString();
     if (id == null || id.isEmpty) return;
+    _pendingReactionIds.add(id);
     final before = message['reactions'];
     final mine = _myReactionOf(message);
     setState(() {
@@ -1965,6 +2005,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _messages[idx]['reactions'] = updated ?? before;
       }
     });
+    _pendingReactionIds.remove(id);
   }
 
   Future<void> _showEditMessageDialog(Map<String, dynamic> message) async {
@@ -2464,17 +2505,50 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             driveHint: true, compress: false);
         if (!mounted) return;
         if (prepared != null) {
-          setState(() => _isSendingMessage = true);
+          // The compress pass takes tens of seconds. _isSendingMessage alone
+          // renders NOTHING (the input strip watches _isUploadingAttachment),
+          // so the app looked frozen for the entire encode — the single
+          // biggest reason video "doesn't work".
+          setState(() {
+            _isSendingMessage = true;
+            _isUploadingAttachment = true;
+          });
           final encoded = await VideoUploadHelper.compressOnly(prepared);
           if (!mounted) return;
-          _sendMediaMessage(encoded, 'video');
+
+          // Size gate AFTER compression. The upload has a hard 180s timeout,
+          // which on a typical mobile uplink buys ~20MB — anything larger was
+          // guaranteed to fail, and the Retry button failed identically.
+          final sizeOk = await VideoUploadHelper.isWithinUploadSize(encoded);
+          if (!mounted) return;
+          if (!sizeOk) {
+            setState(() {
+              _isSendingMessage = false;
+              _isUploadingAttachment = false;
+            });
+            await VideoUploadHelper.showTooLargeSheet(context);
+            return;
+          }
+
+          await _sendMediaMessage(encoded, 'video');
+          // _sendMediaMessage clears these on both its paths, but it returns
+          // early when the chat became blocked mid-encode.
+          if (mounted && _isSendingMessage) {
+            setState(() {
+              _isSendingMessage = false;
+              _isUploadingAttachment = false;
+            });
+          }
         }
       }
     } catch (e) {
       debugPrint('Error picking video: $e');
       if (mounted) {
-        setState(() => _isSendingMessage = false);
-        AdsyToast.error(context, 'Failed to pick video');
+        setState(() {
+          _isSendingMessage = false;
+          _isUploadingAttachment = false;
+        });
+        AdsyToast.error(context, 'ভিডিও পাঠানো যায়নি');
       }
     }
   }
@@ -2505,13 +2579,71 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           final b64 = b64raw.contains(',')
               ? b64raw.substring(b64raw.indexOf(',') + 1)
               : b64raw;
-          await AdsyConnectService.sendMediaMessage(
+          final bytes = base64Decode(b64);
+          final name =
+              'photo_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+
+          // Park the compressed bytes in a temp file so the bubble has a real
+          // path to paint RIGHT NOW. Without it this path showed nothing at
+          // all until the 24s poll happened to notice the message — the
+          // server response was being thrown away here.
+          String? localPath;
+          try {
+            final dir = await getTemporaryDirectory();
+            final f = File('${dir.path}/$name');
+            await f.writeAsBytes(bytes);
+            localPath = f.path;
+          } catch (_) {
+            localPath = null;
+          }
+
+          final tempId =
+              'local_img_${DateTime.now().microsecondsSinceEpoch}_$i';
+          if (localPath != null && mounted) {
+            setState(() {
+              _messages.add(<String, dynamic>{
+                'id': tempId,
+                'senderId': AuthService.currentUser?.id ?? '',
+                'message': '',
+                'timestamp': DateTime.now(),
+                'isMe': true,
+                'type': 'image',
+                'mediaUrl': localPath,
+                'fileName': name,
+                'isSeen': false,
+                'is_read': false,
+                'isDeleted': false,
+                'isEdited': false,
+                'reactions': const [],
+                'isUploading': true,
+              });
+              _messages = List.from(_addSmartTimestamps(_messages));
+            });
+            _scrollToBottom();
+          }
+
+          final sent = await AdsyConnectService.sendMediaMessage(
             chatroomId: widget.chatroomId,
             receiverId: widget.userId,
             messageType: 'image',
-            mediaBytes: base64Decode(b64),
-            fileName: 'photo_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
+            mediaBytes: bytes,
+            fileName: name,
           );
+
+          // Reconcile in place — the response used to be dropped entirely.
+          if (mounted) {
+            setState(() {
+              final parsed = _parseSingleMessage(sent);
+              if (localPath != null) parsed['localPreviewPath'] = localPath;
+              final idx = _messages.indexWhere((m) => m['id'] == tempId);
+              if (idx != -1) {
+                _messages[idx] = parsed;
+              } else {
+                _upsertMessage(parsed);
+              }
+              _messages = List.from(_addSmartTimestamps(_messages));
+            });
+          }
         } else {
           await _sendMediaMessage(_selectedImages[i].path, 'image');
         }
@@ -2572,10 +2704,39 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   Future<void> _sendMediaMessage(String filePath, String type,
       {String? fileName}) async {
     if (_isChatBlocked) return;
+
+    // Paint the bubble NOW from the local file. Photos and videos used to
+    // appear only after the whole upload finished — on a slow uplink that is
+    // many seconds of the thread showing nothing, which reads as "it didn't
+    // send". The bubble already renders a non-http path with Image.file, so
+    // the local path is all it needs.
+    final tempId = 'local_media_${DateTime.now().microsecondsSinceEpoch}';
+    final optimistic = <String, dynamic>{
+      'id': tempId,
+      'senderId': AuthService.currentUser?.id ?? '',
+      'message': '',
+      'timestamp': DateTime.now(),
+      'timeDisplay': null,
+      'isMe': true,
+      'type': type,
+      'mediaUrl': filePath,
+      'fileName': fileName,
+      'isSeen': false,
+      'is_read': false,
+      'isDeleted': false,
+      'isEdited': false,
+      'reactions': const [],
+      // Drives the little spinner/opacity while the bytes are in flight.
+      'isUploading': true,
+    };
+
     setState(() {
       _isSendingMessage = true;
       _isUploadingAttachment = true;
+      _messages.add(optimistic);
+      _messages = List.from(_addSmartTimestamps(_messages));
     });
+    _scrollToBottom();
 
     try {
       debugPrint('🔵 Sending $type message: $filePath');
@@ -2589,18 +2750,32 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       );
 
       debugPrint('🟢 Media message sent: ${sentMessage['id']}');
-      debugPrint('🟢 Media URL: ${sentMessage['media_url']}');
-      debugPrint('🟢 Full response: $sentMessage');
 
       if (mounted) {
         setState(() {
-          _upsertMessage(_parseSingleMessage(sentMessage));
+          // Swap the local placeholder for the server's copy in place, so the
+          // bubble never disappears and reappears.
+          final parsed = _parseSingleMessage(sentMessage);
+          final idx = _messages.indexWhere((m) => m['id'] == tempId);
+          if (idx != -1) {
+            // Keep showing the LOCAL file until the network image is cached —
+            // swapping straight to the remote URL flashes an empty box.
+            parsed['localPreviewPath'] = filePath;
+            _messages[idx] = parsed;
+          } else {
+            _upsertMessage(parsed);
+          }
+          _messages = List.from(_addSmartTimestamps(_messages));
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });
         _scrollToBottom();
       }
     } catch (e) {
+      // Drop the placeholder — leaving it would claim a failed send succeeded.
+      if (mounted) {
+        setState(() => _messages.removeWhere((m) => m['id'] == tempId));
+      }
       debugPrint('🔴 Error sending media: $e');
       if (mounted) {
         setState(() {

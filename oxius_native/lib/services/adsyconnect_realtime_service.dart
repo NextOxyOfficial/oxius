@@ -224,15 +224,13 @@ class AdsyConnectRealtimeService {
     // dropped as a duplicate. That is what kept reactions from the other
     // side invisible until the thread was rebuilt. Hash the state instead.
     if (type == 'message_reaction') {
-      final reactions = event['reactions'];
-      final state = reactions is List
-          ? reactions
-              .map((r) => r is Map
-                  ? '${r['emoji']}:${(r['user_ids'] as List?)?.join(',') ?? r['count']}'
-                  : '$r')
-              .join('|')
-          : '$reactions';
-      return 'reaction:${event['message_id']}|$state';
+      // Do NOT dedupe reaction events at all. Keying on the state's CONTENT
+      // looked right but reaction state legitimately repeats: react ❤️,
+      // un-react, react ❤️ again produces a fingerprint identical to the
+      // first — still in the 64-entry ring — so the peer never saw the
+      // reaction come back. The handler just assigns the server's full list,
+      // so replaying one is harmless; dropping one is not.
+      return '';
     }
 
     final eventId = event['event_id'] ?? event['id'] ?? event['message_id'];

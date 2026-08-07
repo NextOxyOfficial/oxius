@@ -67,6 +67,8 @@ class _CallScreenState extends State<CallScreen>
   Timer? _outgoingRingbackTimer;
   Timer? _connectWatchdog;
   bool _rejoinAttempted = false;
+  bool _proxyAttempted = false;
+  bool _recoveryInFlight = false;
   DateTime? _callStartedAt;
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
@@ -321,8 +323,23 @@ class _CallScreenState extends State<CallScreen>
 
       // If the Agora connection completely failed/disconnected and the call
       // was never connected (still ringing), end the call gracefully.
+      // "Connection lost" BEFORE anyone connected is not a reason to hang up
+      // — it is the signal that our media path never came up. Killing the
+      // call here (which is what used to happen, ~9s after accept — the
+      // production log is full of failed/dur=9 rows) also killed the 14s
+      // self-heal watchdog before it could ever run, so the one recovery
+      // mechanism in this screen was dead in exactly the case it was
+      // written for. Escalate instead; only give up when the ladder is done.
       if (!_didEndCall &&
           _remoteUid == null &&
+          message.contains('Connection lost')) {
+        unawaited(_escalateConnectRecovery('connection-lost'));
+        return;
+      }
+
+      // Lost AFTER we were connected is a genuine drop — end it.
+      if (!_didEndCall &&
+          _remoteUid != null &&
           message.contains('Connection lost')) {
         _showOverlayAndClose('Connection lost');
         unawaited(_endCall(
@@ -838,26 +855,74 @@ class _CallScreenState extends State<CallScreen>
   /// "Could not connect" timeout gives up — this rescues calls that would
   /// otherwise sit on "Connecting…" forever.
   void _startConnectWatchdog() {
-    if (_rejoinAttempted) return;
     _connectWatchdog?.cancel();
-    // 14s, not 9. Production logs show an iPhone woken by a VoIP push needs
-    // ~6s from CallKit accept to CallScreen mount before it even joins the
-    // channel; a 9s watchdog was interrupting the peer mid-join.
-    _connectWatchdog = Timer(const Duration(seconds: 14), () async {
-      if (!mounted ||
-          _didEndCall ||
-          _remoteUid != null ||
-          _rejoinAttempted) {
+    // Stage 1 at 10s: a plain re-join with a fresh token, which rescues a
+    // transient stall. An iPhone woken by VoIP push needs ~6s from CallKit
+    // accept to mounting this screen, so anything earlier interrupts the
+    // peer mid-join.
+    _connectWatchdog = Timer(const Duration(seconds: 10), () {
+      unawaited(_escalateConnectRecovery('watchdog'));
+    });
+  }
+
+  /// The connect-recovery ladder. Each rung runs once per call.
+  ///
+  ///   1. re-join with a fresh token   — fixes a stalled/transient join
+  ///   2. re-join through Agora's cloud proxy (TCP/443) — fixes the
+  ///      restrictive-network case, which is what actually breaks half the
+  ///      calls in production
+  ///   3. give up with an honest message
+  Future<void> _escalateConnectRecovery(String reason) async {
+    if (!mounted || _didEndCall || _remoteUid != null) return;
+    if (_recoveryInFlight) return;
+    _recoveryInFlight = true;
+    try {
+      if (!_rejoinAttempted) {
+        _rejoinAttempted = true;
+        debugPrint('🔁 Connect recovery [$reason] stage 1: re-join');
+        final ok = await AgoraCallService.rejoinChannel(
+          channelName: widget.channelName,
+          uid: _localUid,
+          callType: widget.callType,
+        );
+        debugPrint('🔁 stage 1 re-join: $ok');
+        // Give the peer a moment to appear before escalating again.
+        _connectWatchdog?.cancel();
+        _connectWatchdog = Timer(const Duration(seconds: 8), () {
+          unawaited(_escalateConnectRecovery('stage1-timeout'));
+        });
         return;
       }
-      _rejoinAttempted = true;
-      final ok = await AgoraCallService.rejoinChannel(
-        channelName: widget.channelName,
-        uid: _localUid,
-        callType: widget.callType,
-      );
-      debugPrint('🔁 Connect watchdog re-join attempted: $ok');
-    });
+
+      if (!_proxyAttempted) {
+        _proxyAttempted = true;
+        debugPrint('🛡️ Connect recovery [$reason] stage 2: cloud proxy');
+        if (mounted) setState(() => _isConnecting = true);
+        final ok = await AgoraCallService.rejoinViaCloudProxy(
+          channelName: widget.channelName,
+          uid: _localUid,
+          callType: widget.callType,
+        );
+        debugPrint('🛡️ stage 2 cloud-proxy re-join: $ok');
+        _connectWatchdog?.cancel();
+        _connectWatchdog = Timer(const Duration(seconds: 10), () {
+          unawaited(_escalateConnectRecovery('stage2-timeout'));
+        });
+        return;
+      }
+
+      // Ladder exhausted — now it is a real failure.
+      if (!mounted || _didEndCall || _remoteUid != null) return;
+      debugPrint('❌ Connect recovery exhausted [$reason]');
+      _showOverlayAndClose('Could not connect');
+      unawaited(_endCall(
+        notifyPeer: true,
+        allowLog: !widget.isIncoming,
+        outcomeOverride: 'failed',
+      ));
+    } finally {
+      _recoveryInFlight = false;
+    }
   }
 
   void _cancelConnectWatchdog() {

@@ -119,8 +119,31 @@ class VideoUploadHelper {
     return path;
   }
 
+  /// Hard byte ceiling for a chat upload.
+  ///
+  /// The send has a 180s timeout; on a typical Bangladeshi mobile uplink that
+  /// buys roughly 20MB. Anything past this was a guaranteed timeout — and the
+  /// "Retry" it offered was guaranteed to fail the same way. Better to say so
+  /// up front and point at Drive.
+  static const int maxUploadBytes = 24 * 1024 * 1024;
+
+  static Future<bool> isWithinUploadSize(String path) async {
+    try {
+      final len = await File(path).length();
+      return len <= maxUploadBytes;
+    } catch (_) {
+      // Unreadable — let the server decide rather than blocking the send.
+      return true;
+    }
+  }
+
+  /// Public entry for "this file is too big for chat" — same Drive sheet the
+  /// duration gate uses, so both limits land the user in one place.
+  static Future<void> showTooLargeSheet(BuildContext context) =>
+      _showDriveSheet(context, null);
+
   static Future<void> _showDriveSheet(
-      BuildContext context, Duration duration) {
+      BuildContext context, Duration? duration) {
     String mmss(Duration d) =>
         '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
     return showModalBottomSheet(
@@ -172,8 +195,11 @@ class VideoUploadHelper {
                         Text(
                             // Derived from the one cap, so raising it can never
                             // leave this sheet quoting an old number.
-                            'দৈর্ঘ্য ${mmss(duration)} — চ্যাটে সর্বোচ্চ '
-                            '${mmss(const Duration(seconds: maxSeconds))} মিনিট পাঠানো যায়',
+                            (duration == null
+                                ? 'ফাইলটি বড় — চ্যাটে সর্বোচ্চ '
+                                    '${maxUploadBytes ~/ (1024 * 1024)}MB পাঠানো যায়'
+                                : 'দৈর্ঘ্য ${mmss(duration)} — চ্যাটে সর্বোচ্চ '
+                                    '${mmss(const Duration(seconds: maxSeconds))} মিনিট পাঠানো যায়'),
                             style: const TextStyle(
                                 fontSize: 12.5, color: Color(0xFF64748B))),
                       ],
