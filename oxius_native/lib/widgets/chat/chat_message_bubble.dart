@@ -428,7 +428,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                             alignment: isMe
                                 ? Alignment.topRight
                                 : Alignment.topLeft,
-                            child: message['showTimestamp'] != true
+                            child: (message['showTimestamp'] != true &&
+                                    message['showStatus'] != true)
                                 ? const SizedBox.shrink()
                                 : message['timeRevealAnimated'] == true
                                     // Fresh tap-reveal: fade + settle up.
@@ -1310,16 +1311,21 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       message['is_edited'] == 'true';
 
   Widget _buildTimestamp(Map<String, dynamic> message, bool isMe) {
+    // Two reasons this row can exist: the smart timestamp, or the delivery
+    // status on the newest outgoing message. When only the latter applies,
+    // show the ticks alone — printing a time under every last message would
+    // clutter the thread.
+    final showTime = message['showTimestamp'] == true;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (message['timeDisplay'] != null)
+        if (showTime && message['timeDisplay'] != null)
           Text(
             message['timeDisplay'].toString(),
             style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
           ),
         if (isMe) ...[
-          const SizedBox(width: 4),
+          if (showTime) const SizedBox(width: 4),
           Icon(
             // A message still on its way is NOT delivered — showing the same
             // grey tick as a delivered one made a failed send look sent.
@@ -1333,6 +1339,24 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 ? const Color(0xFF111827)
                 : Colors.grey.shade400,
           ),
+          // Spelled out on the newest outgoing message only, so "did they
+          // read it?" is answerable at a glance instead of by decoding
+          // one tick versus two.
+          if (message['showStatus'] == true &&
+              message['pending'] != true &&
+              message['isUploading'] != true) ...[
+            const SizedBox(width: 3),
+            Text(
+              message['isSeen'] == true ? 'সিন' : 'পাঠানো হয়েছে',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+                color: message['isSeen'] == true
+                    ? const Color(0xFF111827)
+                    : Colors.grey.shade500,
+              ),
+            ),
+          ],
         ],
       ],
     );

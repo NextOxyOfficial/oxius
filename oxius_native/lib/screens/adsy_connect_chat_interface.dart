@@ -1399,7 +1399,35 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       messages[i]['showTimestamp'] = showTimestamp;
     }
 
+    _refreshStatusAnchor(messages);
     return messages;
+  }
+
+  /// Puts the delivery/read state on the LAST message you sent.
+  ///
+  /// It must survive a reload. It used to ride along inside the timestamp
+  /// row, which only appears on the first message or after a 3-minute gap —
+  /// so the tick showed right after sending (that optimistic entry forces
+  /// showTimestamp) and then vanished the next time the thread was rebuilt
+  /// from the server. WhatsApp/Messenger keep the ticks on the newest
+  /// outgoing message permanently; so do we.
+  ///
+  /// Lives here rather than in one caller because messages arrive through
+  /// several paths (socket, poll, send, media) and the anchor has to move
+  /// with every one of them.
+  static void _refreshStatusAnchor(List<Map<String, dynamic>> messages) {
+    var anchored = false;
+    for (int i = messages.length - 1; i >= 0; i--) {
+      final m = messages[i];
+      if (!anchored &&
+          m['isMe'] == true &&
+          m['isDeleted'] != true) {
+        m['showStatus'] = true;
+        anchored = true;
+      } else {
+        m['showStatus'] = false;
+      }
+    }
   }
 
   Future<void> _markMessagesAsRead() async {
@@ -1471,6 +1499,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _upsertMessage(Map<String, dynamic> message) {
+    _upsertMessageInner(message);
+    _refreshStatusAnchor(_messages);
+  }
+
+  void _upsertMessageInner(Map<String, dynamic> message) {
     final id = message['id']?.toString() ?? '';
     if (id.isEmpty) {
       _messages.add(message);
