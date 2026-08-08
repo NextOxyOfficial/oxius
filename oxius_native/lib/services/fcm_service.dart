@@ -284,7 +284,7 @@ class _CallkitLifecycleObserver extends WidgetsBindingObserver {
       // Android: a ring delivered while paused lives as a notification; if
       // the user re-enters through the launcher instead of tapping it, put
       // them on the ringing screen now.
-      FCMService._tryResumePendingBackgroundRing();
+      unawaited(FCMService._tryResumePendingBackgroundRing());
       // A device that failed to register for VoIP pushes cannot be called at
       // all, so every return to the foreground is another chance to fix it.
       unawaited(FCMService._ensureVoipTokenRegistered());
@@ -341,6 +341,20 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         if (channelName != null && channelName.isNotEmpty) {
           final plugin = FlutterLocalNotificationsPlugin();
           await plugin.cancel(_callNotificationIdForChannel(channelName));
+          // This isolate cannot touch the main isolate's in-memory ring
+          // stash. Leave a persisted marker so a resumed app can tell the
+          // ring it stashed is for a call that already died — without it,
+          // opening the app within 90s rang a cancelled call.
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(
+              FCMService.bgRingTerminalPrefsKey,
+              jsonEncode({
+                'channel': channelName,
+                'at': DateTime.now().millisecondsSinceEpoch,
+              }),
+            );
+          } catch (_) {}
         }
         // Stop FlutterRingtonePlayer and vibration explicitly — endAllCalls()
         // only stops the CallKit foreground service, NOT the Flutter-level
@@ -440,6 +454,61 @@ Future<void> _showMissedCallNotification(Map<String, dynamic> data) async {
   }
 }
 
+/// Raises the full-screen incoming-call ring notification with the plugin
+/// instance the CALLER owns. Never initializes the plugin — see the note in
+/// _showBackgroundCallNotification for why that must stay isolate-specific.
+Future<void> _showRingNotificationWith(
+    FlutterLocalNotificationsPlugin plugin, Map<String, dynamic> data) async {
+  final callerName = _safeCallerName(data['caller_name']);
+  final callType = data['call_type']?.toString() ?? 'video';
+  final channelName = data['channel_name']?.toString() ?? '';
+
+  final androidPlugin = plugin.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>();
+  await androidPlugin
+      ?.createNotificationChannel(const AndroidNotificationChannel(
+    _callNotificationChannelId,
+    'Incoming Calls',
+    description: 'Incoming voice and video call alerts',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+    enableLights: true,
+    showBadge: true,
+    audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
+  ));
+
+  final callTypeLabel = callType == 'video' ? 'Video Call' : 'Voice Call';
+  const details = AndroidNotificationDetails(
+    _callNotificationChannelId,
+    'Incoming Calls',
+    channelDescription: 'Incoming voice and video call alerts',
+    importance: Importance.max,
+    priority: Priority.max,
+    playSound: true,
+    enableVibration: true,
+    fullScreenIntent: true,
+    category: AndroidNotificationCategory.call,
+    visibility: NotificationVisibility.public,
+    icon: '@mipmap/ic_launcher',
+    timeoutAfter: 60000,
+    autoCancel: true,
+    ongoing: true,
+    audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
+  );
+
+  await plugin.show(
+    _callNotificationIdForChannel(channelName),
+    '$callerName is calling',
+    callTypeLabel,
+    NotificationDetails(android: details),
+    payload: jsonEncode({
+      ...data,
+      'type': 'incoming_call',
+    }),
+  );
+}
+
 Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
   // Check if call is too old (more than 30 seconds)
   final timestampStr = data['timestamp']?.toString();
@@ -475,55 +544,19 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
   // which are known to be reliable. Without this, a killed-process device that
   // blocks the CallKit foreground service (Xiaomi/Oppo/Vivo) silently drops
   // the call.
+  //
+  // The BACKGROUND isolate has no initialized plugin, so it makes and
+  // initializes its own here. The main isolate must NEVER do that: the
+  // plugin is a process-wide singleton and initialize() unconditionally
+  // overwrites the tap callback — initializing with none would null the
+  // app's registered handler and every notification tap after it would be
+  // silently dropped. The main isolate calls _showRingNotificationWith()
+  // below with its already-initialized instance instead.
   try {
     final plugin = FlutterLocalNotificationsPlugin();
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     await plugin.initialize(const InitializationSettings(android: androidInit));
-
-    final androidPlugin = plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin
-        ?.createNotificationChannel(const AndroidNotificationChannel(
-      _callNotificationChannelId,
-      'Incoming Calls',
-      description: 'Incoming voice and video call alerts',
-      importance: Importance.max,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      showBadge: true,
-      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
-    ));
-
-    final callTypeLabel = callType == 'video' ? 'Video Call' : 'Voice Call';
-    const details = AndroidNotificationDetails(
-      _callNotificationChannelId,
-      'Incoming Calls',
-      channelDescription: 'Incoming voice and video call alerts',
-      importance: Importance.max,
-      priority: Priority.max,
-      playSound: true,
-      enableVibration: true,
-      fullScreenIntent: true,
-      category: AndroidNotificationCategory.call,
-      visibility: NotificationVisibility.public,
-      icon: '@mipmap/ic_launcher',
-      timeoutAfter: 60000,
-      autoCancel: true,
-      ongoing: true,
-      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
-    );
-
-    await plugin.show(
-      _callNotificationIdForChannel(channelName),
-      '$callerName is calling',
-      callTypeLabel,
-      NotificationDetails(android: details),
-      payload: jsonEncode({
-        ...data,
-        'type': 'incoming_call',
-      }),
-    );
+    await _showRingNotificationWith(plugin, data);
   } catch (e) {
     _log('⚠️ Primary call notification failed: $e');
   }
@@ -1146,7 +1179,17 @@ class FCMService {
   /// dead ring can never resurface on resume.
   static void _clearBackgroundRingIfTerminal(Map<String, dynamic> data) {
     final status = (data['status'] ?? '').toString();
-    const terminal = {'cancelled', 'missed', 'ended', 'rejected', 'busy'};
+    // Keep in lockstep with the background isolate's terminalStatuses set.
+    const terminal = {
+      'rejected',
+      'declined',
+      'busy',
+      'cancelled',
+      'ended',
+      'missed',
+      'failed',
+      'accepted',
+    };
     if (!terminal.contains(status)) return;
     final channel = (data['channel_name'] ?? '').toString();
     if (channel.isEmpty ||
@@ -1155,7 +1198,11 @@ class FCMService {
     }
   }
 
-  static void _tryResumePendingBackgroundRing() {
+  /// Prefs key the BACKGROUND isolate writes when it sees a terminal
+  /// call_status. Shared across isolates, not part of any app API.
+  static const String bgRingTerminalPrefsKey = 'bg_ring_terminal_v1';
+
+  static Future<void> _tryResumePendingBackgroundRing() async {
     if (Platform.isIOS) return;
     final data = _pendingBackgroundRing;
     if (data == null) return;
@@ -1167,6 +1214,32 @@ class FCMService {
     if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
       return;
     }
+
+    // A terminal status may have been delivered ONLY to the FCM background
+    // isolate (socket frozen under Doze). That isolate cannot clear our
+    // in-memory stash, so it leaves a persisted marker instead. reload() is
+    // required: SharedPreferences caches per isolate, and the write happened
+    // after our cache was loaded.
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      final rawMarker = prefs.getString(bgRingTerminalPrefsKey);
+      if (rawMarker != null && rawMarker.isNotEmpty) {
+        final marker = jsonDecode(rawMarker);
+        if (marker is Map &&
+            (marker['channel'] ?? '').toString() ==
+                (data['channel_name'] ?? '').toString()) {
+          final at = int.tryParse('${marker['at'] ?? ''}') ?? 0;
+          if (at >= _pendingBackgroundRingAt) {
+            _log('📞 Stashed ring died in background — not resuming');
+            _pendingBackgroundRing = null;
+            return;
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (_pendingBackgroundRing == null) return;
     final navigator = navigatorKey.currentState;
     if (navigator == null) return;
     _pendingBackgroundRing = null;
@@ -2280,9 +2353,22 @@ class FCMService {
     // reportNewIncomingCall gets the app killed and its push privileges
     // revoked, so CallKit stays mandatory there.
     if (!Platform.isIOS) {
+      final ts = _parseCallTimestamp(data['timestamp']);
+      if (ts != null && !_isCallTimestampFresh(ts)) {
+        _log('🚫 Ignoring stale background ring');
+        return;
+      }
       final ringData = {...data, 'caller_name': callerName};
       _stashBackgroundRing(ringData);
-      await _showBackgroundCallNotification(ringData);
+      // MAIN isolate: ring through the app's own initialized plugin. Never
+      // call _showBackgroundCallNotification here — it initializes the
+      // process-wide plugin singleton with no callbacks, which would null
+      // the app's tap handler and kill every notification tap after it.
+      try {
+        await _showRingNotificationWith(_localNotifications, ringData);
+      } catch (e) {
+        _log('⚠️ Foreground-isolate ring notification failed: $e');
+      }
       return;
     }
 
@@ -2487,6 +2573,12 @@ class FCMService {
       source: 'foreground',
     )) {
       return;
+    }
+
+    // Whichever path pushes the screen owns the ring now; drop the stash so
+    // the resume hook can't push a SECOND CallScreen for the same call.
+    if (_pendingBackgroundRing?['channel_name']?.toString() == channelName) {
+      _pendingBackgroundRing = null;
     }
 
     unawaited(dismissVisibleCallUi(channelName: channelName));
