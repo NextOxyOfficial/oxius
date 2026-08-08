@@ -281,6 +281,10 @@ class _CallkitLifecycleObserver extends WidgetsBindingObserver {
       // When user taps the CallKit notification, Android may resume the app without
       // triggering FCM onMessageOpenedApp. Check active calls and navigate.
       FCMService._tryNavigateToActiveCallkitCall();
+      // Android: a ring delivered while paused lives as a notification; if
+      // the user re-enters through the launcher instead of tapping it, put
+      // them on the ringing screen now.
+      FCMService._tryResumePendingBackgroundRing();
       // A device that failed to register for VoIP pushes cannot be called at
       // all, so every return to the foreground is another chance to fix it.
       unawaited(FCMService._ensureVoipTokenRegistered());
@@ -1122,6 +1126,52 @@ class FCMService {
     final callId = _buildCallId(callerId, channelName);
     _activeCallIds.remove(callId);
     _callTimestamps.remove(callId);
+    if (_pendingBackgroundRing?['channel_name']?.toString() == channelName) {
+      _pendingBackgroundRing = null;
+    }
+  }
+
+  /// The call that is currently RINGING as a background notification on
+  /// Android. Held so that a user who opens the app from the launcher —
+  /// without touching the notification — still lands on the ringing screen.
+  static Map<String, dynamic>? _pendingBackgroundRing;
+  static int _pendingBackgroundRingAt = 0;
+
+  static void _stashBackgroundRing(Map<String, dynamic> data) {
+    _pendingBackgroundRing = Map<String, dynamic>.from(data);
+    _pendingBackgroundRingAt = DateTime.now().millisecondsSinceEpoch;
+  }
+
+  /// Clears the stash when a terminal status arrives for its channel, so a
+  /// dead ring can never resurface on resume.
+  static void _clearBackgroundRingIfTerminal(Map<String, dynamic> data) {
+    final status = (data['status'] ?? '').toString();
+    const terminal = {'cancelled', 'missed', 'ended', 'rejected', 'busy'};
+    if (!terminal.contains(status)) return;
+    final channel = (data['channel_name'] ?? '').toString();
+    if (channel.isEmpty ||
+        _pendingBackgroundRing?['channel_name']?.toString() == channel) {
+      _pendingBackgroundRing = null;
+    }
+  }
+
+  static void _tryResumePendingBackgroundRing() {
+    if (Platform.isIOS) return;
+    final data = _pendingBackgroundRing;
+    if (data == null) return;
+    final age = DateTime.now().millisecondsSinceEpoch - _pendingBackgroundRingAt;
+    if (age > _callRecoveryMaxAgeMs) {
+      _pendingBackgroundRing = null;
+      return;
+    }
+    if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
+      return;
+    }
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) return;
+    _pendingBackgroundRing = null;
+    _log('📞 Resuming background ring after app open: ${data['channel_name']}');
+    _navigateToIncomingCallScreen(navigator, data);
   }
 
   static Map<String, dynamic>? _parseCallkitExtra(dynamic rawExtra) {
@@ -2209,18 +2259,30 @@ class FCMService {
     required String channelName,
     required String callType,
   }) async {
-    // Android gets ONE ringing surface: the app's own call screen.
+    // Android gets ONE ringing surface. Which one depends on visibility.
     //
-    // CallKit here was the second one — the FCM isolate already raises a
-    // full-screen-intent notification, and the live socket bridge would then
-    // put the CallKit UI on top of it. iOS has no choice: waking from a VoIP
-    // push without reportNewIncomingCall gets the app killed and its push
-    // privileges revoked, so CallKit stays mandatory there.
+    // This helper only runs when the app is NOT resumed. In that state a
+    // pushed CallScreen route does not build — Flutter pumps no frames while
+    // paused — so navigating here produced a silent, invisible ring, and
+    // worse, _navigateToIncomingCallScreen cancels the full-screen ringing
+    // notification the FCM isolate had just raised: the phone went quiet
+    // seconds into the ring. And if the call was never answered, the unbuilt
+    // route sat in the navigator and started RINGING hours later when the
+    // user next opened the app.
+    //
+    // So in the background the full-screen-intent notification IS the ring.
+    // Both isolates address it by the same per-channel id, so whichever
+    // arrives second just replaces the first — never two surfaces. The
+    // foreground (resumed) case never reaches this helper; it navigates
+    // directly to the call screen.
+    //
+    // iOS has no such choice: waking from a VoIP push without
+    // reportNewIncomingCall gets the app killed and its push privileges
+    // revoked, so CallKit stays mandatory there.
     if (!Platform.isIOS) {
-      _navigateToIncomingCallScreen(navigator, {
-        ...data,
-        'caller_name': callerName,
-      });
+      final ringData = {...data, 'caller_name': callerName};
+      _stashBackgroundRing(ringData);
+      await _showBackgroundCallNotification(ringData);
       return;
     }
 
@@ -3070,6 +3132,7 @@ class FCMService {
     // CALL STATUS (busy/rejected/cancelled/ended)
     // ============================================
     else if (type == 'call_status') {
+      _clearBackgroundRingIfTerminal(data);
       unawaited(AgoraCallService.handleRemoteCallStatus(data));
     }
     // ============================================

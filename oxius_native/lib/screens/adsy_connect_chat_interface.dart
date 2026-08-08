@@ -736,18 +736,41 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     // An edit or a delete used to reach the peer only on the next poll, so
     // they kept reading text the sender had already changed or removed.
+    //
+    // This mirrors the poll's sync loop KEY FOR KEY, and parses with
+    // _parseMessages (which derives isMe from the sender id). The first
+    // version merged _parseSingleMessage's output wholesale — that helper is
+    // for parsing the response to YOUR OWN send and hardcodes isMe: true, so
+    // a peer's edit flipped their bubble onto your side of the thread and
+    // dragged the read ticks with it.
     if (type == 'message_edited' || type == 'message_deleted') {
       final raw = event['message'];
       if (raw is! Map) return;
-      final parsed = _parseSingleMessage(Map<String, dynamic>.from(raw));
-      final id = (parsed['id'] ?? '').toString();
+      final serverMsg = _parseMessages([raw]).firstOrNull;
+      if (serverMsg == null) return;
+      final id = (serverMsg['id'] ?? '').toString();
       if (id.isEmpty) return;
       final idx = _messages.indexWhere((m) => (m['id'] ?? '').toString() == id);
       if (idx == -1) return;
       setState(() {
-        _messages[idx] = {..._messages[idx], ...parsed};
-        if (type == 'message_deleted') {
-          _messages[idx]['isDeleted'] = true;
+        final existing = _messages[idx];
+        existing['isSeen'] = serverMsg['isSeen'];
+        existing['isEdited'] = serverMsg['isEdited'];
+        if (!_pendingReactionIds.contains(id) &&
+            !_sameReactions(existing['reactions'], serverMsg['reactions'])) {
+          existing['reactions'] = serverMsg['reactions'];
+        }
+        final serverText = serverMsg['message']?.toString();
+        if (serverText != null &&
+            serverText != existing['message']?.toString()) {
+          existing['message'] = serverText;
+          existing['content'] = serverText;
+          existing['replyToId'] = serverMsg['replyToId'];
+          existing['replyToSender'] = serverMsg['replyToSender'];
+          existing['replyPreview'] = serverMsg['replyPreview'];
+        }
+        if (type == 'message_deleted' || serverMsg['isDeleted'] == true) {
+          existing['isDeleted'] = true;
         }
         // A deleted newest message can no longer carry the tick.
         _refreshStatusAnchor(_messages);
