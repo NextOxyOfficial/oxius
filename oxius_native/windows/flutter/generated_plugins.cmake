@@ -12,8 +12,10 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   flutter_inappwebview_windows
   flutter_secure_storage_windows
+  flutter_webrtc
   geolocator_windows
   iris_method_channel
+  livekit_client
   permission_handler_windows
   record_windows
   share_plus

@@ -10,7 +10,10 @@ import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'dart:io' show Platform;
 
+import 'package:livekit_client/livekit_client.dart' as lk;
+
 import '../services/agora_call_service.dart';
+import '../services/livekit_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
 import 'inbox_screen.dart';
@@ -269,7 +272,7 @@ class _CallScreenState extends State<CallScreen>
       }
     });
 
-    _localJoinSub = AgoraCallService.localUserJoinedStream.listen((_) {
+    _localJoinSub = _localJoinedStream.listen((_) {
       if (!mounted) return;
       setState(() {
         _localUserJoined = true;
@@ -278,7 +281,7 @@ class _CallScreenState extends State<CallScreen>
     });
 
     _remoteJoinSub =
-        AgoraCallService.remoteUserJoinedStream.listen((remoteUid) {
+        _remoteJoinedStream.listen((remoteUid) {
       if (!mounted) return;
       _ringingTimer?.cancel();
       _ringingTimer = null;
@@ -297,7 +300,7 @@ class _CallScreenState extends State<CallScreen>
       ));
     });
 
-    _remoteLeaveSub = AgoraCallService.remoteUserLeftStream.listen((remoteUid) {
+    _remoteLeaveSub = _remoteLeftStream.listen((remoteUid) {
       if (!mounted || _didEndCall) return;
       // Only end the call when our KNOWN remote peer leaves.
       // If _remoteUid is null (peer never joined yet), ignore — this prevents
@@ -316,7 +319,7 @@ class _CallScreenState extends State<CallScreen>
       ));
     });
 
-    _engineErrorSub = AgoraCallService.engineErrorStream.listen((message) {
+    _engineErrorSub = _engineErrorStream.listen((message) {
       // Log the error for debugging but never expose raw Agora SDK messages
       // to the user — they are technical and unprofessional.
       debugPrint('🎤 Agora engine error (suppressed from UI): $message');
@@ -376,7 +379,11 @@ class _CallScreenState extends State<CallScreen>
   Future<void> _resumeExistingChannelConnection() async {
     await _enableWakelock();
     try {
-      _engine = await AgoraCallService.initEngine(callType: widget.callType);
+      // LiveKit creates its room inside joinChannel; there is no engine to
+      // spin up first.
+      if (!_useLiveKit) {
+        _engine = await AgoraCallService.initEngine(callType: widget.callType);
+      }
       await _joinChannel();
     } catch (_) {
       if (!mounted) return;
@@ -575,25 +582,62 @@ class _CallScreenState extends State<CallScreen>
     }
   }
 
+  /// Which media engine this call uses. Read once when the screen is built
+  /// so a call cannot change engines halfway through, and so the answer is
+  /// already known — the provider is fetched at app start.
+  late final bool _useLiveKit =
+      AdsyConnectService.callProvider == 'livekit';
+
+  Stream<int> get _localJoinedStream => _useLiveKit
+      ? LiveKitCallService.localUserJoinedStream
+      : AgoraCallService.localUserJoinedStream;
+
+  Stream<int> get _remoteJoinedStream => _useLiveKit
+      ? LiveKitCallService.remoteUserJoinedStream
+      : AgoraCallService.remoteUserJoinedStream;
+
+  Stream<int> get _remoteLeftStream => _useLiveKit
+      ? LiveKitCallService.remoteUserLeftStream
+      : AgoraCallService.remoteUserLeftStream;
+
+  Stream<String> get _engineErrorStream => _useLiveKit
+      ? LiveKitCallService.engineErrorStream
+      : AgoraCallService.engineErrorStream;
+
+  String? get _engineLastError =>
+      _useLiveKit ? LiveKitCallService.lastError : AgoraCallService.lastError;
+
+  Future<bool> _engineJoin() => _useLiveKit
+      ? LiveKitCallService.joinChannel(
+          channelName: widget.channelName,
+          callType: widget.callType,
+          callId: widget.callId,
+        )
+      : AgoraCallService.joinChannel(
+          channelName: widget.channelName,
+          uid: _localUid,
+          callType: widget.callType,
+        );
+
+  Future<void> _engineLeave() => _useLiveKit
+      ? LiveKitCallService.leaveChannel()
+      : AgoraCallService.leaveChannel();
+
   Future<void> _joinChannel() async {
     setState(() => _isConnecting = true);
 
-    final success = await AgoraCallService.joinChannel(
-      channelName: widget.channelName,
-      uid: _localUid,
-      callType: widget.callType,
-    );
+    final success = await _engineJoin();
 
     // Keep a local reference so _restoreActiveCallState works if the user
     // minimizes and returns while on an incoming call that was accepted here.
-    _engine ??= AgoraCallService.engine;
+    if (!_useLiveKit) _engine ??= AgoraCallService.engine;
 
     if (!success && mounted) {
       setState(() => _isConnecting = false);
       AdsyToast.error(
         context,
         _formatCallStartError(
-          AgoraCallService.lastError,
+          _engineLastError,
           fallback: 'Could not join the call. Please try again.',
         ),
       );
@@ -662,7 +706,7 @@ class _CallScreenState extends State<CallScreen>
       _ringingTimer = null;
       if (mounted) {
         final errStr = e.toString();
-        unawaited(AgoraCallService.leaveChannel());
+        unawaited(_engineLeave());
         AgoraCallService.setInCall(false);
         if (errStr.contains('permission_permanently_denied')) {
           final isMic = errStr.contains('microphone');
@@ -748,7 +792,7 @@ class _CallScreenState extends State<CallScreen>
     }
 
     // 4. Clean up Agora state (engine is null for incoming — fast no-op).
-    unawaited(AgoraCallService.leaveChannel());
+    unawaited(_engineLeave());
     AgoraCallService.setInCall(false);
 
     // 5. Pop the screen immediately.
@@ -809,7 +853,7 @@ class _CallScreenState extends State<CallScreen>
     }
 
     // Clean up Agora state.
-    unawaited(AgoraCallService.leaveChannel());
+    unawaited(_engineLeave());
     AgoraCallService.setInCall(false);
 
     // Show brief overlay, then close the screen.
@@ -880,11 +924,17 @@ class _CallScreenState extends State<CallScreen>
       if (!_rejoinAttempted) {
         _rejoinAttempted = true;
         debugPrint('🔁 Connect recovery [$reason] stage 1: re-join');
-        final ok = await AgoraCallService.rejoinChannel(
-          channelName: widget.channelName,
-          uid: _localUid,
-          callType: widget.callType,
-        );
+        final ok = await (_useLiveKit
+            ? LiveKitCallService.rejoinChannel(
+                channelName: widget.channelName,
+                callType: widget.callType,
+                callId: widget.callId,
+              )
+            : AgoraCallService.rejoinChannel(
+                channelName: widget.channelName,
+                uid: _localUid,
+                callType: widget.callType,
+              ));
         debugPrint('🔁 stage 1 re-join: $ok');
         // rejoinChannel awaits a token fetch with retries. The user can hang
         // up inside that window — _endCall and dispose both cancel the
@@ -903,11 +953,21 @@ class _CallScreenState extends State<CallScreen>
         _proxyAttempted = true;
         debugPrint('🛡️ Connect recovery [$reason] stage 2: cloud proxy');
         if (mounted) setState(() => _isConnecting = true);
-        final ok = await AgoraCallService.rejoinViaCloudProxy(
-          channelName: widget.channelName,
-          uid: _localUid,
-          callType: widget.callType,
-        );
+        // Cloud Proxy is an Agora-specific escape hatch. On LiveKit the same
+        // job is done by our own TURN over TLS on 443, which the client
+        // already falls back to on its own — so a full re-join is the only
+        // escalation left.
+        final ok = await (_useLiveKit
+            ? LiveKitCallService.rejoinChannel(
+                channelName: widget.channelName,
+                callType: widget.callType,
+                callId: widget.callId,
+              )
+            : AgoraCallService.rejoinViaCloudProxy(
+                channelName: widget.channelName,
+                uid: _localUid,
+                callType: widget.callType,
+              ));
         debugPrint('🛡️ stage 2 cloud-proxy re-join: $ok');
         if (!mounted || _didEndCall || _remoteUid != null) return;
         _connectWatchdog?.cancel();
@@ -1052,21 +1112,29 @@ class _CallScreenState extends State<CallScreen>
 
   void _toggleMute() {
     setState(() => _isMuted = !_isMuted);
-    AgoraCallService.toggleMute(_isMuted);
+    _useLiveKit
+        ? LiveKitCallService.toggleMute(_isMuted)
+        : AgoraCallService.toggleMute(_isMuted);
   }
 
   void _toggleCamera() {
     setState(() => _isCameraOff = !_isCameraOff);
-    AgoraCallService.toggleCamera(!_isCameraOff);
+    _useLiveKit
+        ? LiveKitCallService.toggleCamera(!_isCameraOff)
+        : AgoraCallService.toggleCamera(!_isCameraOff);
   }
 
   void _switchCamera() {
-    AgoraCallService.switchCamera();
+    _useLiveKit
+        ? LiveKitCallService.switchCamera()
+        : AgoraCallService.switchCamera();
   }
 
   void _toggleSpeaker() {
     setState(() => _isSpeakerOn = !_isSpeakerOn);
-    AgoraCallService.toggleSpeaker(_isSpeakerOn);
+    _useLiveKit
+        ? LiveKitCallService.toggleSpeaker(_isSpeakerOn)
+        : AgoraCallService.toggleSpeaker(_isSpeakerOn);
   }
 
   @override
@@ -1117,7 +1185,7 @@ class _CallScreenState extends State<CallScreen>
         ));
       }
 
-      unawaited(AgoraCallService.leaveChannel());
+      unawaited(_engineLeave());
       AgoraCallService.setInCall(false);
       unawaited(_disableWakelock());
     } else {
@@ -1523,18 +1591,43 @@ class _CallScreenState extends State<CallScreen>
     );
   }
 
+  Widget _remoteVideoView() {
+    if (_useLiveKit) {
+      final track = LiveKitCallService.remoteVideoTrack;
+      // Their camera may be off or not yet subscribed; the stage behind this
+      // already shows the avatar, so an empty box here is the right answer.
+      if (track == null) return const SizedBox.shrink();
+      return lk.VideoTrackRenderer(track, fit: lk.VideoViewFit.cover);
+    }
+    return AgoraVideoView(
+      controller: VideoViewController.remote(
+        rtcEngine: _engine!,
+        canvas: VideoCanvas(uid: _remoteUid),
+        connection: RtcConnection(channelId: widget.channelName),
+      ),
+    );
+  }
+
+  Widget _localVideoView() {
+    if (_useLiveKit) {
+      final track = LiveKitCallService.localVideoTrack;
+      if (track == null) return const SizedBox.shrink();
+      return lk.VideoTrackRenderer(track, fit: lk.VideoViewFit.cover);
+    }
+    return AgoraVideoView(
+      controller: VideoViewController(
+        rtcEngine: _engine!,
+        canvas: const VideoCanvas(uid: 0),
+      ),
+    );
+  }
+
   Widget _buildRemoteVideoStage() {
     return Positioned.fill(
       child: Stack(
         fit: StackFit.expand,
         children: [
-          AgoraVideoView(
-            controller: VideoViewController.remote(
-              rtcEngine: _engine!,
-              canvas: VideoCanvas(uid: _remoteUid),
-              connection: RtcConnection(channelId: widget.channelName),
-            ),
-          ),
+          _remoteVideoView(),
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -1714,12 +1807,7 @@ class _CallScreenState extends State<CallScreen>
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  AgoraVideoView(
-                    controller: VideoViewController(
-                      rtcEngine: _engine!,
-                      canvas: const VideoCanvas(uid: 0),
-                    ),
-                  ),
+                  _localVideoView(),
                   Positioned(
                     left: 8,
                     right: 8,

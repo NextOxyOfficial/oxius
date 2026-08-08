@@ -49,6 +49,7 @@ import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
 import 'services/deep_link_service.dart';
 import 'services/adsyconnect_realtime_service.dart';
+import 'services/adsyconnect_service.dart';
 import 'services/agora_call_service.dart';
 import 'services/app_update_service.dart';
 import 'services/rideshare_driver_presence_service.dart';
@@ -216,6 +217,10 @@ Future<void> _bootstrap(UserStateService userState) async {
       _safeInit('FCM token sync', () => FCMService.syncTokenWithBackend()),
       _safeInit('AdsyConnect connect',
           () => AdsyConnectRealtimeService.instance.connect()),
+      // Learn which call engine the server wants before anyone places a call,
+      // so the call screen never has to wait on a network round trip at the
+      // exact moment it needs to start ringing.
+      _safeInit('Call provider', () => AdsyConnectService.fetchCallProvider()),
       _safeInit('RideshareDriverPresence restore',
           () => RideshareDriverPresenceService.restoreIfNeeded()),
     ]);

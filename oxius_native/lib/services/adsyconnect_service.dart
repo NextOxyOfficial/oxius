@@ -67,6 +67,69 @@ class AdsyConnectService {
     }
   }
 
+  /// Which call engine the server wants this app to use, cached per launch.
+  ///
+  /// Server-controlled on purpose: switching engines — or rolling straight
+  /// back to Agora if the new one misbehaves — must not need an app release.
+  static String? _cachedCallProvider;
+
+  /// Synchronous view of the cached provider, for code paths that cannot
+  /// await — a call screen must not stall on a network round trip. Warmed at
+  /// app start; until then it reports the engine that already works.
+  static String get callProvider => _cachedCallProvider ?? 'agora';
+
+  static Future<String> fetchCallProvider({bool refresh = false}) async {
+    if (!refresh && _cachedCallProvider != null) return _cachedCallProvider!;
+    try {
+      final response = await http
+          .get(Uri.parse('${ApiService.baseUrl}/adsyconnect/call-config/'),
+              headers: await _getHeaders())
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final provider = (data['provider'] ?? 'agora').toString();
+        _cachedCallProvider = provider;
+        return provider;
+      }
+    } catch (e) {
+      debugPrint('call-config unavailable, staying on agora: $e');
+    }
+    // Unknown means keep doing what already works.
+    return _cachedCallProvider ?? 'agora';
+  }
+
+  /// A LiveKit token for one call. The server checks the caller really is a
+  /// participant of this call session before minting anything.
+  static Future<LiveKitAuth?> fetchLiveKitToken({
+    required String channelName,
+    String? callId,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/adsyconnect/livekit-token/'),
+            headers: await _getHeaders(),
+            body: jsonEncode({
+              'channel_name': channelName,
+              if (callId != null && callId.isNotEmpty) 'call_id': callId,
+            }),
+          )
+          .timeout(const Duration(seconds: 12));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final url = (data['url'] ?? '').toString();
+        final token = (data['token'] ?? '').toString();
+        if (url.isEmpty || token.isEmpty) return null;
+        return LiveKitAuth(url: url, token: token);
+      }
+      debugPrint('livekit-token ${response.statusCode}: ${response.body}');
+      return null;
+    } catch (e) {
+      debugPrint('livekit-token failed: $e');
+      return null;
+    }
+  }
+
   // Get headers with auth token
   static Future<Map<String, String>> _getHeaders() async {
     final token = AuthService.accessToken;
@@ -1208,4 +1271,11 @@ class AdsyConnectService {
       return null;
     }
   }
+}
+
+/// Where to connect for a call, and the credential that authorises it.
+class LiveKitAuth {
+  final String url;
+  final String token;
+  const LiveKitAuth({required this.url, required this.token});
 }

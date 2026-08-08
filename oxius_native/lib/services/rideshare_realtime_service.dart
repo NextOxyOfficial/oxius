@@ -56,7 +56,7 @@ class RideshareRealtimeService {
   // Connectivity awareness \u2014 force immediate reconnect when the network
   // returns instead of waiting for the next backoff tick.
   final Connectivity _connectivity = Connectivity();
-  StreamSubscription<ConnectivityResult>? _connectivitySub;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _isOffline = false;
 
   // Small LRU of recent message fingerprints to suppress duplicates that
@@ -152,9 +152,12 @@ class RideshareRealtimeService {
     await _authFailureController.close();
   }
 
-  Future<void> _onConnectivityChanged(ConnectivityResult result) async {
+  // connectivity_plus 6 reports a LIST of active transports (a phone can be
+  // on wifi and mobile at once). Offline means every one of them is none.
+  Future<void> _onConnectivityChanged(List<ConnectivityResult> results) async {
     final wasOffline = _isOffline;
-    _isOffline = result == ConnectivityResult.none;
+    _isOffline = results.isEmpty ||
+        results.every((r) => r == ConnectivityResult.none);
 
     if (_isOffline) {
       // Don't churn reconnect timers while we know we have no network.

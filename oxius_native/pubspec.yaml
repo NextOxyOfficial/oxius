@@ -88,7 +88,7 @@ dependencies:
   webview_flutter: ^4.10.0
   share_plus: ^7.2.1
   open_filex: ^4.7.0
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^6.1.5
   intl: ^0.19.0
   timeago: ^3.6.0
   youtube_player_flutter: ^9.0.3
@@ -126,6 +126,11 @@ dependencies:
 
   # Agora Video Call SDK
   agora_rtc_engine: ^6.3.0
+
+  # Self-hosted call engine (LiveKit SFU on our own server). Runs alongside
+  # Agora behind a server-controlled switch until it is proven on real
+  # devices, so a bad rollout is one server flag away from being undone.
+  livekit_client: ^2.4.0
   
   # Native incoming call UI (WhatsApp-style)
   flutter_callkit_incoming: ^2.0.4+1

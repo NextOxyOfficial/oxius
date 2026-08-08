@@ -32,7 +32,7 @@ class AdsyConnectRealtimeService {
   final Connectivity _connectivity = Connectivity();
 
   WebSocketChannel? _channel;
-  StreamSubscription<ConnectivityResult>? _connectivitySub;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   Timer? _reconnectTimer;
   Timer? _pingTimer;
   Timer? _handshakeTimer;
@@ -123,9 +123,12 @@ class AdsyConnectRealtimeService {
     unawaited(_connectivity.checkConnectivity().then(_onConnectivityChanged));
   }
 
-  Future<void> _onConnectivityChanged(ConnectivityResult result) async {
+  // connectivity_plus 6 reports a LIST of active transports (a phone can be
+  // on wifi and mobile at once). Offline means every one of them is none.
+  Future<void> _onConnectivityChanged(List<ConnectivityResult> results) async {
     final wasOffline = _isOffline;
-    _isOffline = result == ConnectivityResult.none;
+    _isOffline = results.isEmpty ||
+        results.every((r) => r == ConnectivityResult.none);
 
     if (_isOffline) {
       _reconnectTimer?.cancel();
