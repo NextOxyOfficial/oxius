@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:async/async.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -585,24 +587,41 @@ class _CallScreenState extends State<CallScreen>
   /// Which media engine this call uses. Read once when the screen is built
   /// so a call cannot change engines halfway through, and so the answer is
   /// already known — the provider is fetched at app start.
-  late final bool _useLiveKit =
-      AdsyConnectService.callProvider == 'livekit';
+  /// Which media engine this call uses.
+  ///
+  /// Seeded from whatever is already known so the UI has an answer
+  /// immediately, then CONFIRMED with the server right before joining. It
+  /// cannot be decided once at build time: a call that wakes a killed app
+  /// builds this screen before the startup provider fetch has finished, and
+  /// the stale default made the callee join a different server than the
+  /// caller — the call rang, was accepted, and never connected.
+  bool _useLiveKit = AdsyConnectService.callProvider == 'livekit';
 
-  Stream<int> get _localJoinedStream => _useLiveKit
-      ? LiveKitCallService.localUserJoinedStream
-      : AgoraCallService.localUserJoinedStream;
+  // Merged: the engine that is not in use never emits, and merging removes
+  // any dependence on knowing which one that is at subscribe time.
+  Stream<int> get _localJoinedStream => StreamGroup.merge([
+        LiveKitCallService.localUserJoinedStream,
+        AgoraCallService.localUserJoinedStream,
+      ]);
 
-  Stream<int> get _remoteJoinedStream => _useLiveKit
-      ? LiveKitCallService.remoteUserJoinedStream
-      : AgoraCallService.remoteUserJoinedStream;
+  // Merged: the engine that is not in use never emits, and merging removes
+  // any dependence on knowing which one that is at subscribe time.
+  Stream<int> get _remoteJoinedStream => StreamGroup.merge([
+        LiveKitCallService.remoteUserJoinedStream,
+        AgoraCallService.remoteUserJoinedStream,
+      ]);
 
-  Stream<int> get _remoteLeftStream => _useLiveKit
-      ? LiveKitCallService.remoteUserLeftStream
-      : AgoraCallService.remoteUserLeftStream;
+  // Merged: the engine that is not in use never emits, and merging removes
+  // any dependence on knowing which one that is at subscribe time.
+  Stream<int> get _remoteLeftStream => StreamGroup.merge([
+        LiveKitCallService.remoteUserLeftStream,
+        AgoraCallService.remoteUserLeftStream,
+      ]);
 
-  Stream<String> get _engineErrorStream => _useLiveKit
-      ? LiveKitCallService.engineErrorStream
-      : AgoraCallService.engineErrorStream;
+  Stream<String> get _engineErrorStream => StreamGroup.merge([
+        LiveKitCallService.engineErrorStream,
+        AgoraCallService.engineErrorStream,
+      ]);
 
   String? get _engineLastError =>
       _useLiveKit ? LiveKitCallService.lastError : AgoraCallService.lastError;
@@ -625,6 +644,20 @@ class _CallScreenState extends State<CallScreen>
 
   Future<void> _joinChannel() async {
     setState(() => _isConnecting = true);
+
+    // Settle the engine question before touching the network. On a cold start
+    // this is the first chance to ask; the answer is cached in memory and on
+    // disk, so a warm app pays nothing. If the server cannot be reached we
+    // keep the last known answer rather than guessing.
+    await AdsyConnectService.restoreCallProvider();
+    try {
+      final provider = await AdsyConnectService.fetchCallProvider()
+          .timeout(const Duration(seconds: 6));
+      _useLiveKit = provider == 'livekit';
+    } catch (_) {
+      _useLiveKit = AdsyConnectService.callProvider == 'livekit';
+    }
+    debugPrint('📞 call engine: ${_useLiveKit ? "livekit" : "agora"}');
 
     final success = await _engineJoin();
 

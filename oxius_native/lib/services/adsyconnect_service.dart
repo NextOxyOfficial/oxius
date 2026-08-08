@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'active_chat_tracker.dart';
@@ -72,6 +74,26 @@ class AdsyConnectService {
   /// Server-controlled on purpose: switching engines — or rolling straight
   /// back to Agora if the new one misbehaves — must not need an app release.
   static String? _cachedCallProvider;
+  static const String _callProviderPrefsKey = 'call_provider_v1';
+
+  /// Remember the engine across launches.
+  ///
+  /// The cache is filled by a network call at startup, but a call can arrive
+  /// before that finishes — a phone woken from a killed state by an incoming
+  /// call reaches the call screen in well under the time a request takes. With
+  /// only an in-memory cache the screen fell back to the old engine and joined
+  /// a different server than the caller, so the call rang and then never
+  /// connected. The last known answer on disk is far better than a guess.
+  static Future<void> restoreCallProvider() async {
+    if (_cachedCallProvider != null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_callProviderPrefsKey);
+      if (saved != null && saved.isNotEmpty) {
+        _cachedCallProvider = saved;
+      }
+    } catch (_) {}
+  }
 
   /// Synchronous view of the cached provider, for code paths that cannot
   /// await — a call screen must not stall on a network round trip. Warmed at
@@ -81,6 +103,7 @@ class AdsyConnectService {
   static Future<String> fetchCallProvider({bool refresh = false}) async {
     if (!refresh && _cachedCallProvider != null) return _cachedCallProvider!;
     try {
+      await AuthService.getValidToken();
       final response = await http
           .get(Uri.parse('${ApiService.baseUrl}/adsyconnect/call-config/'),
               headers: await _getHeaders())
@@ -89,6 +112,10 @@ class AdsyConnectService {
         final data = jsonDecode(response.body);
         final provider = (data['provider'] ?? 'agora').toString();
         _cachedCallProvider = provider;
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_callProviderPrefsKey, provider);
+        } catch (_) {}
         return provider;
       }
     } catch (e) {
@@ -105,6 +132,11 @@ class AdsyConnectService {
     String? callId,
   }) async {
     try {
+      // A call that wakes a killed app runs before the in-memory access token
+      // has been restored, so the plain header helper would send "Bearer null"
+      // and the join would fail with a 401 — the call rings, is accepted, and
+      // never connects. getValidToken loads (and refreshes) it first.
+      await AuthService.getValidToken();
       final response = await http
           .post(
             Uri.parse('${ApiService.baseUrl}/adsyconnect/livekit-token/'),

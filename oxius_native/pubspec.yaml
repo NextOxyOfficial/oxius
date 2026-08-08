@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.android.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 8.1.87+180
+version: 8.1.88+181
 
 environment:
   sdk: ^3.6.0
@@ -50,6 +50,9 @@ dependencies:
   # State management
   provider: ^6.1.1
   characters: ^1.4.0
+  # StreamGroup: lets the call screen listen to both engines at once, so it
+  # never has to know which one is in use at subscribe time.
+  async: ^2.11.0
 
   # Storage
   shared_preferences: ^2.2.2
