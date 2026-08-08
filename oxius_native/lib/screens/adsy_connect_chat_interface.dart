@@ -734,6 +734,27 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       return;
     }
 
+    // An edit or a delete used to reach the peer only on the next poll, so
+    // they kept reading text the sender had already changed or removed.
+    if (type == 'message_edited' || type == 'message_deleted') {
+      final raw = event['message'];
+      if (raw is! Map) return;
+      final parsed = _parseSingleMessage(Map<String, dynamic>.from(raw));
+      final id = (parsed['id'] ?? '').toString();
+      if (id.isEmpty) return;
+      final idx = _messages.indexWhere((m) => (m['id'] ?? '').toString() == id);
+      if (idx == -1) return;
+      setState(() {
+        _messages[idx] = {..._messages[idx], ...parsed};
+        if (type == 'message_deleted') {
+          _messages[idx]['isDeleted'] = true;
+        }
+        // A deleted newest message can no longer carry the tick.
+        _refreshStatusAnchor(_messages);
+      });
+      return;
+    }
+
     if (type == 'user_online_status') {
       final userId = event['user_id']?.toString();
       if (userId != widget.userId) {

@@ -379,9 +379,12 @@ class GroupMessageSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'group', 'sender', 'message_type', 'content', 'media_url',
             'file_name', 'voice_duration', 'created_at', 'is_deleted',
+            'is_edited', 'edited_at',
             'reply_to', 'reply_preview', 'reply_sender_name', 'reactions',
         ]
-        read_only_fields = ['id', 'sender', 'created_at', 'is_deleted']
+        read_only_fields = [
+            'id', 'sender', 'created_at', 'is_deleted', 'is_edited', 'edited_at',
+        ]
 
     def get_reply_to(self, obj):
         return str(obj.reply_to_id) if obj.reply_to_id else None

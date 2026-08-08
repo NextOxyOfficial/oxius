@@ -1151,6 +1151,23 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         })
 
 
+def _broadcast_message_mutation(message, event_type, payload):
+    """Push an edit/delete to BOTH participants over the socket.
+
+    Only creation was ever broadcast, so a message that changed after the fact
+    stayed stale on the peer's screen until a poll happened to notice. The
+    sender gets it too — they may have the same conversation open on a second
+    device.
+    """
+    event = {'type': event_type, 'message': payload}
+    try:
+        _broadcast_to_user(message.receiver_id, event)
+        if message.sender_id != message.receiver_id:
+            _broadcast_to_user(message.sender_id, event)
+    except Exception:
+        logger.exception('Failed to broadcast %s for message %s', event_type, message.id)
+
+
 class MessageViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing messages
@@ -1367,6 +1384,12 @@ class MessageViewSet(viewsets.ModelViewSet):
         
         # Return the updated message data so frontend can update UI immediately
         serializer = self.get_serializer(message)
+
+        # Tell the other side NOW. Without this, an edit or a delete only
+        # surfaced on the peer's next poll — up to 12s of them reading text
+        # that no longer exists.
+        _broadcast_message_mutation(message, 'message_deleted', serializer.data)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['patch'])
@@ -1416,6 +1439,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         message.save(update_fields=['content', 'is_edited', 'edited_at', 'updated_at'])
         
         serializer = self.get_serializer(message)
+        _broadcast_message_mutation(message, 'message_edited', serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -1847,7 +1871,12 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                 {'error': 'মেসেজ পাঠানোর ১০ মিনিটের মধ্যে এডিট করা যায়'},
                 status=400)
         msg.content = new_content
-        msg.save(update_fields=['content'])
+        # Group messages had no edited flag at all, so an edited group message
+        # was indistinguishable from an original one — the "Edited" label the
+        # 1:1 chat shows simply never appeared here.
+        msg.is_edited = True
+        msg.edited_at = timezone.now()
+        msg.save(update_fields=['content', 'is_edited', 'edited_at'])
         payload = GroupMessageSerializer(
             msg, context={'request': request}
         ).data

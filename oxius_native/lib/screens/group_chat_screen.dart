@@ -960,6 +960,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       'voiceDuration':
           int.tryParse('${m['voice_duration'] ?? ''}') ?? 0,
       'isDeleted': m['is_deleted'] == true,
+      'isEdited': m['is_edited'] == true,
       // Quote-reply metadata — the bubble renders its standard quote card.
       'replyToId': m['reply_to']?.toString(),
       'replyPreview': m['reply_preview']?.toString(),
