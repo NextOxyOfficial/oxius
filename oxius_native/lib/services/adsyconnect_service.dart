@@ -276,16 +276,12 @@ class AdsyConnectService {
           return List<dynamic>.from(data['results'] ?? []);
         }
 
-        // Otherwise assume it's a direct list.
-        //
-        // The server windows the page for us now. The old tail-slice stays as
-        // a fallback for a backend that predates ?window= — recognisable
-        // because it returns more rows than we asked for.
+        // A bare list means the backend predates ?window= and sent the whole
+        // thread — slice our page out of the tail exactly as before. (A
+        // windowed backend answers with a {'results': ...} dict, handled
+        // above; row-count alone can't tell the two apart.)
         if (data is List) {
           final full = List<dynamic>.from(data);
-          if (full.length <= pageSize) {
-            return full;
-          }
           final end = full.length - (page - 1) * pageSize;
           if (end <= 0) {
             return [];

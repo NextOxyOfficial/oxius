@@ -1233,10 +1233,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         # versions: an old client asking for page 2 of an already-windowed
         # response would slice it down to nothing and lose its history. Only
         # clients that stopped slicing send the flag.
-        wants_window = str(
-            self.request.query_params.get('window', '')
-        ).lower() in ('1', 'true')
-        if chatroom_id and wants_window:
+        if chatroom_id and self._wants_window():
             try:
                 page = max(1, int(self.request.query_params.get('page', 1)))
             except (TypeError, ValueError):
@@ -1262,7 +1259,28 @@ class MessageViewSet(viewsets.ModelViewSet):
             ).prefetch_related('reactions').order_by('created_at', 'id')
 
         return queryset
-    
+
+    def _wants_window(self):
+        return str(
+            self.request.query_params.get('window', '')
+        ).lower() in ('1', 'true')
+
+    def list(self, request, *args, **kwargs):
+        """Windowed responses are wrapped in {'results': ...}.
+
+        A bare list is ambiguous to the client: a windowed page of 20 rows and
+        an old backend's ENTIRE 20-message thread look identical, and guessing
+        wrong either duplicates the thread on page 2 or slices a real page down
+        to nothing. The shape says which one it is — the app already unwraps a
+        'results' dict, and old app versions never send ?window=1 so they never
+        see it.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        if self._wants_window():
+            return Response({'results': serializer.data, 'windowed': True})
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):
         """Create a new message and return full serialization"""
         serializer = self.get_serializer(data=request.data)

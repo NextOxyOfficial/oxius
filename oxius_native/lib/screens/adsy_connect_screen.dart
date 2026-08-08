@@ -148,6 +148,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       return;
     }
 
+    // If the edited/deleted message was a conversation's LAST message, the
+    // list preview is now showing text that no longer exists — refresh from
+    // the server rather than guessing which room it belonged to.
+    if (type == 'message_edited' || type == 'message_deleted') {
+      unawaited(_refreshChatsInBackground());
+      return;
+    }
+
     if (type == 'group_message') {
       _applyIncomingGroupMessage(event['message']);
       return;
@@ -198,17 +206,46 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         preview = '📄 Document';
     }
 
+    // Edits and deletes are re-broadcast as group_message too, so this can be
+    // an update to an OLD message. Blindly treating it as the newest one put
+    // stale text in the preview, moved last_message_at BACKWARD, hoisted the
+    // group to the top and rang up a fake unread.
+    final createdAt =
+        DateTime.tryParse((message['created_at'] ?? '').toString());
+    final g0 = _groups[index];
+    final currentLastAt =
+        DateTime.tryParse((g0['last_message_at'] ?? '').toString());
+    final isOlder = createdAt != null &&
+        currentLastAt != null &&
+        createdAt.isBefore(currentLastAt);
+    final isSameAsLast = createdAt != null &&
+        currentLastAt != null &&
+        createdAt.isAtSameMomentAs(currentLastAt);
+    if (isOlder) {
+      // An older message changed — nothing about the list row is affected.
+      return;
+    }
+    if (message['is_deleted'] == true) {
+      preview = 'মেসেজ মুছে ফেলা হয়েছে';
+    }
+
     setState(() {
       final g = Map<String, dynamic>.from(_groups[index]);
       g['last_message_preview'] =
           senderName.isNotEmpty ? '$senderName: $preview' : preview;
       g['last_message_at'] = (message['created_at'] ?? '').toString();
-      if (senderId.isNotEmpty && senderId != myId) {
-        g['unread_count'] = ((g['unread_count'] as num?) ?? 0).toInt() + 1;
+      // An edit/delete of the message that was ALREADY the newest one changes
+      // its text, not its newness — no unread, no reorder.
+      if (!isSameAsLast) {
+        if (senderId.isNotEmpty && senderId != myId) {
+          g['unread_count'] = ((g['unread_count'] as num?) ?? 0).toInt() + 1;
+        }
+        _groups
+          ..removeAt(index)
+          ..insert(0, g);
+      } else {
+        _groups[index] = g;
       }
-      _groups
-        ..removeAt(index)
-        ..insert(0, g);
     });
   }
 

@@ -221,6 +221,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': event['message']
         }))
 
+    async def message_edited(self, event):
+        """Forward an in-place edit of a 1:1 message.
+
+        group_send dispatches on the event type NAME — without this method the
+        broadcast dies here with "No handler for message type message_edited"
+        and the peer never hears about the edit at all.
+        """
+        await self.send(text_data=json.dumps({
+            'type': 'message_edited',
+            'message': event['message']
+        }))
+
+    async def message_deleted(self, event):
+        """Forward a soft-delete of a 1:1 message."""
+        await self.send(text_data=json.dumps({
+            'type': 'message_deleted',
+            'message': event['message']
+        }))
+
     async def message_reaction(self, event):
         """A reaction was added/changed/cleared on a message this user can see.
 

@@ -270,6 +270,14 @@ class AdsyConnectRealtimeService {
       return '';
     }
 
+    // Same reasoning as reactions: edit A->B->A->B makes the last event's
+    // content-keyed fingerprint identical to the first's, still inside the
+    // ring — and the peer misses the final state. Applying a replayed
+    // edit/delete is a harmless idempotent merge; dropping a real one is not.
+    if (type == 'message_edited' || type == 'message_deleted') {
+      return '';
+    }
+
     final eventId = event['event_id'] ?? event['id'] ?? event['message_id'];
     if (eventId != null && eventId.toString().isNotEmpty) {
       return 'id:$eventId';
