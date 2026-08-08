@@ -1239,7 +1239,10 @@ class FCMService {
       }
     } catch (_) {}
 
-    if (_pendingBackgroundRing == null) return;
+    // The awaits above yield the event loop: a socket terminal may have
+    // cleared the stash, or a NEWER call may have replaced it. Either way
+    // this resume pass is about `data` only — never push someone else's ring.
+    if (!identical(_pendingBackgroundRing, data)) return;
     final navigator = navigatorKey.currentState;
     if (navigator == null) return;
     _pendingBackgroundRing = null;
