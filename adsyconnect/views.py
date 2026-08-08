@@ -608,6 +608,141 @@ def agora_rtc_token(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def _build_livekit_token(*, room, identity, display_name=''):
+    """Mint a LiveKit access token scoped to ONE room and ONE identity.
+
+    LiveKit reads a plain HS256 JWT, so this needs no extra dependency beyond
+    the PyJWT the auth stack already pulls in. The grant is deliberately
+    narrow: join this room, publish and subscribe — nothing else. No room
+    creation, no admin, no listing. A leaked token buys a seat in one call
+    that is already ending, and nothing more.
+    """
+    import jwt
+
+    api_key = str(getattr(settings, 'LIVEKIT_API_KEY', '') or '').strip()
+    api_secret = str(getattr(settings, 'LIVEKIT_API_SECRET', '') or '').strip()
+    url = str(getattr(settings, 'LIVEKIT_URL', '') or '').strip()
+    if not api_key or not api_secret or not url:
+        raise ValueError('LiveKit is not configured')
+
+    expire_seconds = max(
+        60,
+        _to_int(getattr(settings, 'LIVEKIT_TOKEN_EXPIRE_SECONDS', 600), 600),
+    )
+    now = int(time.time())
+    expires_at = now + expire_seconds
+    claims = {
+        'iss': api_key,
+        'sub': str(identity),
+        'nbf': now - 10,          # tolerate a little clock skew on devices
+        'exp': expires_at,
+        'name': display_name or str(identity),
+        'video': {
+            'room': str(room),
+            'roomJoin': True,
+            'canPublish': True,
+            'canSubscribe': True,
+            'canPublishData': True,
+        },
+    }
+    return {
+        'url': url,
+        'token': jwt.encode(claims, api_secret, algorithm='HS256'),
+        'identity': str(identity),
+        'room': str(room),
+        'expires_at': expires_at,
+    }
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def call_config(request):
+    """Tell the app which call engine to use, and where.
+
+    Server-controlled so the engine can be switched — or rolled straight back
+    to Agora — without shipping an app build.
+    """
+    provider = str(getattr(settings, 'CALL_PROVIDER', 'agora') or 'agora').lower()
+    livekit_ready = all([
+        str(getattr(settings, 'LIVEKIT_URL', '') or '').strip(),
+        str(getattr(settings, 'LIVEKIT_API_KEY', '') or '').strip(),
+        str(getattr(settings, 'LIVEKIT_API_SECRET', '') or '').strip(),
+    ])
+    # Never advertise a provider that cannot actually mint a token.
+    if provider == 'livekit' and not livekit_ready:
+        provider = 'agora'
+    return Response({
+        'provider': provider,
+        'livekit_url': str(getattr(settings, 'LIVEKIT_URL', '') or ''),
+        'agora_app_id': str(getattr(settings, 'AGORA_APP_ID', '') or ''),
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def livekit_token(request):
+    """Return a LiveKit token for a call the requester is genuinely part of.
+
+    Mirrors agora_rtc_token's checks exactly — the room name is never taken on
+    trust. Without the session lookup anyone could mint a token for any room
+    name they guessed and drop into someone else's call.
+    """
+    try:
+        channel_name = request.data.get('channel_name')
+        call_id = request.data.get('call_id')
+
+        if not channel_name:
+            return Response(
+                {'error': 'channel_name is required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not _is_valid_channel_name(channel_name):
+            return Response(
+                {'error': 'Invalid channel_name'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        call_session = _get_call_session_for_user(
+            user=request.user,
+            channel_name=str(channel_name),
+            call_id=call_id,
+        )
+        if call_session is None:
+            return Response(
+                {'error': 'Call session not found'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if call_session.status in CallSession.TERMINAL_STATUSES:
+            return Response(
+                {'error': 'Call session has ended'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        user = request.user
+        display_name = (
+            (getattr(user, 'name', '') or '').strip()
+            or (getattr(user, 'username', '') or '').strip()
+            or 'AdsyClub user'
+        )
+        data = _build_livekit_token(
+            room=call_session.channel_name,
+            identity=user.id,
+            display_name=display_name,
+        )
+        return Response({
+            'success': True,
+            'call_id': str(call_session.id),
+            'channel_name': str(call_session.channel_name),
+            **data,
+        })
+    except Exception as e:
+        logger.exception('LiveKit token generation failed')
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def send_call_notification(request):

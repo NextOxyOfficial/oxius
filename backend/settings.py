@@ -509,6 +509,22 @@ AGORA_APP_ID = os.getenv("AGORA_APP_ID", "")
 AGORA_APP_CERTIFICATE = os.getenv("AGORA_APP_CERTIFICATE", "")
 AGORA_TOKEN_EXPIRE_SECONDS = int(os.getenv("AGORA_TOKEN_EXPIRE_SECONDS", "3600"))
 
+# ---------------------------------------------------------------------------
+# Calls: LiveKit (self-hosted SFU)
+# ---------------------------------------------------------------------------
+# CALL_PROVIDER is the switch the app obeys. It stays on "agora" until the
+# LiveKit path is proven on real devices, and flipping it back is a one-line
+# rollback that needs no app release.
+CALL_PROVIDER = os.getenv("CALL_PROVIDER", "agora").strip().lower()
+LIVEKIT_URL = os.getenv("LIVEKIT_URL", "").strip()
+LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY", "").strip()
+LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET", "").strip()
+# Tokens only need to outlive the join handshake, not the call: LiveKit checks
+# the JWT once, at connect. A short life limits the damage of a leaked token.
+LIVEKIT_TOKEN_EXPIRE_SECONDS = int(
+    os.getenv("LIVEKIT_TOKEN_EXPIRE_SECONDS", "600")
+)
+
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # You can change this to your Redis URL
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'

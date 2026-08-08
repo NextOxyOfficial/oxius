@@ -11,6 +11,7 @@ from .views import (
     BlockedUserViewSet, OnlineStatusViewSet, TypingStatusViewSet,
     ChatGroupViewSet,
     agora_rtc_token, agora_config, call_media_connected, firebase_custom_token, send_call_notification, send_call_status,
+    call_config, livekit_token,
     set_active_chat, clear_active_chat, heartbeat
 )
 
@@ -27,6 +28,9 @@ urlpatterns = [
     path('firebase-token/', firebase_custom_token, name='firebase_custom_token'),
     path('agora-config/', agora_config, name='agora_config'),
     path('agora-token/', agora_rtc_token, name='agora_rtc_token'),
+    # Which engine the app should use, and a token scoped to one live call.
+    path('call-config/', call_config, name='call_config'),
+    path('livekit-token/', livekit_token, name='livekit_token'),
     path('call-media-connected/', call_media_connected,
          name='call_media_connected'),
     path('send-call-notification/', send_call_notification, name='send_call_notification'),
