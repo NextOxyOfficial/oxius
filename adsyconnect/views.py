@@ -768,6 +768,25 @@ def send_call_notification(request):
         if caller == callee:
             return Response({'error': 'Cannot call yourself'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Placing a call is proof the caller is not in the old one.
+        #
+        # A session that was accepted but never properly hung up (the app was
+        # killed, the media never connected, the user backed out) stays
+        # 'accepted' and makes BOTH parties look busy — after which every
+        # later call is refused with "recipient is in another call" and calling
+        # is effectively bricked until the rows age out. Closing the caller's
+        # own leftovers here makes that self-healing.
+        stale = CallSession.objects.filter(
+            Q(caller=caller) | Q(callee=caller),
+            status__in=[CallSession.STATUS_RINGING, CallSession.STATUS_ACCEPTED],
+        ).exclude(channel_name=str(channel_name))
+        for old_session in stale:
+            old_session.update_status(CallSession.STATUS_ENDED)
+            logger.warning(
+                'CALLTRACE reclaim stale call=%s %s status was %s',
+                str(old_session.id)[:8], caller.email, old_session.status,
+            )
+
         caller_active_call = _active_call_for_user(caller)
         if caller_active_call:
             return Response(

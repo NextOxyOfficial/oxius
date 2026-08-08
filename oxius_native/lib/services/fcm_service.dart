@@ -561,25 +561,21 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     _log('⚠️ Primary call notification failed: $e');
   }
 
-  // -------- 2. CallKit — iOS ONLY --------
+  // -------- 2. CallKit: the actual ring --------
   //
-  // Android used to get this on TOP of the full-screen notification above,
-  // so one call produced two ringing UIs with two Accept buttons, and then a
-  // third accept/reject inside the app once it opened. On Android the
-  // fullScreenIntent notification already launches the Activity straight
-  // into the in-app call screen, which is the experience we want: the call
-  // lives in the app, and notifications are reserved for what happened
-  // (ended / missed).
+  // This runs only when the app is NOT in the foreground, so it cannot
+  // collide with the app's own call screen — that one is used when the app
+  // is already open, and this one when it is not. One ringing surface at a
+  // time, either way.
   //
-  // iOS is different and this is NOT a preference: a PushKit VoIP wake MUST
-  // be answered with CallKit's reportNewIncomingCall or iOS terminates the
-  // app and eventually stops delivering VoIP pushes altogether. So CallKit
-  // stays on iOS — there is no legal way to ring a backgrounded iPhone
-  // without it.
-  if (!Platform.isIOS) {
-    return;
-  }
-
+  // The notification above stays as the fallback for the case where CallKit
+  // cannot start (OEM restrictions on the foreground service); it is
+  // dismissed below the moment CallKit takes over, so the user never sees
+  // both.
+  //
+  // On iOS this is not a preference at all: a PushKit VoIP wake MUST be
+  // answered with reportNewIncomingCall or iOS kills the app and eventually
+  // stops delivering VoIP pushes.
   final uuid = const Uuid().v4();
 
   final params = CallKitParams(
@@ -633,8 +629,15 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
 
   try {
     await FlutterCallkitIncoming.showCallkitIncoming(params);
+    // CallKit is ringing now, so the fallback banner raised above would only
+    // be a duplicate. It stays raised if CallKit throws, which is the whole
+    // reason it is shown first.
+    try {
+      await FlutterLocalNotificationsPlugin()
+          .cancel(_callNotificationIdForChannel(channelName));
+    } catch (_) {}
   } catch (e) {
-    _log('⚠️ Secondary CallKit call UI failed (non-fatal): $e');
+    _log('⚠️ CallKit ring failed, keeping the notification fallback: $e');
   }
 }
 
@@ -2295,7 +2298,11 @@ class FCMService {
       },
       headers: <String, dynamic>{'platform': 'android'},
       android: const AndroidParams(
-        isCustomNotification: false,
+        // The plugin's own full-screen incoming-call activity. Without this
+        // an incoming call arrives as a notification-shaped card, which is
+        // not what a ringing phone should look like and is easy to miss.
+        isCustomNotification: true,
+        isShowFullLockedScreen: true,
         isShowLogo: false,
         ringtonePath: 'system_ringtone_default',
         backgroundColor: '#0955fa',
