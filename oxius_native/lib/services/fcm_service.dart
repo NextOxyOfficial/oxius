@@ -313,6 +313,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await _showBackgroundCallNotification(message.data);
     return;
   }
+  // NOTE: this is the BACKGROUND isolate. The foreground path routes through
+  // _navigateBasedOnData, which opens the in-app call screen directly — no
+  // notification is raised there, so a call never shows two ringing UIs.
 
   // Handle terminal call_status in background — dismiss any pending CallKit
   // so the recipient doesn't see a ghost incoming call after the caller
@@ -346,6 +349,13 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         } catch (_) {}
         await FlutterCallkitIncoming.endAllCalls();
       } catch (_) {}
+
+      // Push is now reserved for what HAPPENED, not for ringing: the ring
+      // itself belongs to the app's own call screen. A call the user never
+      // answered has to leave a trace, or it vanishes without a word.
+      if (bgStatus == 'missed' || bgStatus == 'cancelled') {
+        await _showMissedCallNotification(message.data);
+      }
     }
     return;
   }
@@ -360,6 +370,56 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 /// Show native incoming call screen when app is in background/killed (WhatsApp-style)
+/// A quiet "you missed a call" entry — no ringtone, no full-screen intent,
+/// tapping it opens the chat with that person.
+Future<void> _showMissedCallNotification(Map<String, dynamic> data) async {
+  try {
+    final callerName = _safeCallerName(data['caller_name']);
+    final callType = data['call_type']?.toString() ?? 'audio';
+    final channelName = data['channel_name']?.toString() ?? '';
+
+    final plugin = FlutterLocalNotificationsPlugin();
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await plugin.initialize(const InitializationSettings(android: androidInit));
+
+    final androidPlugin = plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin
+        ?.createNotificationChannel(const AndroidNotificationChannel(
+      'missed_calls',
+      'Missed Calls',
+      description: 'Calls you did not answer',
+      importance: Importance.defaultImportance,
+    ));
+
+    await plugin.show(
+      // Distinct id so it does not replace (or get replaced by) the ringing
+      // notification we just cancelled.
+      ('missed_$channelName').hashCode & 0x7fffffff,
+      'মিসড কল',
+      '$callerName — ${callType == 'video' ? 'ভিডিও কল' : 'অডিও কল'}',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'missed_calls',
+          'Missed Calls',
+          channelDescription: 'Calls you did not answer',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/ic_launcher',
+          category: AndroidNotificationCategory.missedCall,
+          autoCancel: true,
+        ),
+      ),
+      payload: jsonEncode({
+        ...data,
+        'type': 'missed_call',
+      }),
+    );
+  } catch (e) {
+    _log('⚠️ Missed-call notification failed: $e');
+  }
+}
+
 Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
   // Check if call is too old (more than 30 seconds)
   final timestampStr = data['timestamp']?.toString();
@@ -448,7 +508,25 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     _log('⚠️ Primary call notification failed: $e');
   }
 
-  // -------- 2. SECONDARY: CallKit-style full-screen call UI (best effort) --------
+  // -------- 2. CallKit — iOS ONLY --------
+  //
+  // Android used to get this on TOP of the full-screen notification above,
+  // so one call produced two ringing UIs with two Accept buttons, and then a
+  // third accept/reject inside the app once it opened. On Android the
+  // fullScreenIntent notification already launches the Activity straight
+  // into the in-app call screen, which is the experience we want: the call
+  // lives in the app, and notifications are reserved for what happened
+  // (ended / missed).
+  //
+  // iOS is different and this is NOT a preference: a PushKit VoIP wake MUST
+  // be answered with CallKit's reportNewIncomingCall or iOS terminates the
+  // app and eventually stops delivering VoIP pushes altogether. So CallKit
+  // stays on iOS — there is no legal way to ring a backgrounded iPhone
+  // without it.
+  if (!Platform.isIOS) {
+    return;
+  }
+
   final uuid = const Uuid().v4();
 
   final params = CallKitParams(

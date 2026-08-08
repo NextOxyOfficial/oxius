@@ -1316,6 +1316,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // show the ticks alone — printing a time under every last message would
     // clutter the thread.
     final showTime = message['showTimestamp'] == true;
+    // Ticks belong to the newest outgoing message (always) and to whichever
+    // older one the reader taps open. Showing them under every message that
+    // happens to carry a gap-rule timestamp is noise.
+    final showTicks =
+        message['showStatus'] == true || message['timeRevealAnimated'] == true;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1324,7 +1329,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             message['timeDisplay'].toString(),
             style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
           ),
-        if (isMe) ...[
+        if (isMe && showTicks) ...[
           if (showTime) const SizedBox(width: 4),
           Icon(
             // A message still on its way is NOT delivered — showing the same
@@ -1339,24 +1344,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 ? const Color(0xFF111827)
                 : Colors.grey.shade400,
           ),
-          // Spelled out on the newest outgoing message only, so "did they
-          // read it?" is answerable at a glance instead of by decoding
-          // one tick versus two.
-          if (message['showStatus'] == true &&
-              message['pending'] != true &&
-              message['isUploading'] != true) ...[
-            const SizedBox(width: 3),
-            Text(
-              message['isSeen'] == true ? 'সিন' : 'পাঠানো হয়েছে',
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w600,
-                color: message['isSeen'] == true
-                    ? const Color(0xFF111827)
-                    : Colors.grey.shade500,
-              ),
-            ),
-          ],
         ],
       ],
     );

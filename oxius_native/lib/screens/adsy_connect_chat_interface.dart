@@ -1114,7 +1114,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         // requests a minute for nothing. Poll every ~24s while connected, and
         // snap back to 4s the moment the socket drops.
         if (AdsyConnectRealtimeService.instance.isConnected) {
-          _idlePollTick = (_idlePollTick + 1) % 6;
+          // 6 ticks (24s) was too slow to be a safety net: anything the
+          // socket dropped — a reaction, a read receipt, a peer edit — sat
+          // invisible for up to 24 seconds and read as "needs a reload".
+          // 3 ticks (12s) costs one extra request per half-minute per open
+          // chat and halves the worst case.
+          _idlePollTick = (_idlePollTick + 1) % 3;
         } else {
           _idlePollTick = 0;
         }
@@ -1533,26 +1538,47 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _messages[existingIndex] = merged;
   }
 
+  /// True for any locally-created placeholder awaiting its server copy.
+  static bool _isLocalPlaceholder(Map<String, dynamic> m) {
+    final id = (m['id'] ?? '').toString();
+    return id.startsWith('temp_') ||
+        id.startsWith('local_media_') ||
+        id.startsWith('local_img_') ||
+        id.startsWith('local_voice_');
+  }
+
+  /// Finds the placeholder a freshly-arrived server message belongs to.
+  ///
+  /// Text matched on its words. Media could not match on anything — the text
+  /// is empty — so once the server started echoing a sender their own
+  /// message, every photo appeared TWICE: once as the local bubble the HTTP
+  /// response reconciled, and once appended by the socket echo. Media now
+  /// matches the oldest in-flight placeholder of the same type, which is
+  /// correct because sends are awaited one at a time.
   int _findEquivalentPendingMessageIndex(Map<String, dynamic> message) {
-    final id = message['id']?.toString() ?? '';
-    if (id.startsWith('temp_') || message['isMe'] != true) {
+    if (_isLocalPlaceholder(message) || message['isMe'] != true) {
       return -1;
     }
 
     final messageText = (message['message'] ?? '').toString().trim();
     final messageType = (message['type'] ?? 'text').toString();
-    if (messageText.isEmpty) {
-      return -1;
-    }
+    final isMedia = messageType != 'text';
 
     return _messages.indexWhere((existing) {
-      final existingId = existing['id']?.toString() ?? '';
-      if (!existingId.startsWith('temp_') || existing['pending'] != true) {
-        return false;
+      if (!_isLocalPlaceholder(existing)) return false;
+      if (existing['isMe'] != true) return false;
+      if ((existing['type'] ?? 'text').toString() != messageType) return false;
+
+      if (isMedia) {
+        // A filename is the strongest key when both sides carry one.
+        final a = (existing['fileName'] ?? '').toString();
+        final b = (message['fileName'] ?? '').toString();
+        if (a.isNotEmpty && b.isNotEmpty) return a == b;
+        return true; // oldest in-flight placeholder of this type
       }
-      return existing['isMe'] == true &&
-          (existing['type'] ?? 'text').toString() == messageType &&
-          (existing['message'] ?? '').toString().trim() == messageText;
+
+      if (existing['pending'] != true) return false;
+      return (existing['message'] ?? '').toString().trim() == messageText;
     });
   }
 
@@ -1907,8 +1933,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
           if (mounted) {
             setState(() {
-              _messages.removeWhere((m) => m['id'] == voiceTempId);
               final parsed = _parseSingleMessage(sentMessage);
+              _messages.removeWhere((m) => m['id'] == voiceTempId);
               parsed['voice_duration'] =
                   (sentMessage['voice_duration'] as int?) ??
                       (sentMessage['voiceDuration'] as int?) ??
@@ -2668,9 +2694,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             setState(() {
               final parsed = _parseSingleMessage(sent);
               if (localPath != null) parsed['localPreviewPath'] = localPath;
-              final idx = _messages.indexWhere((m) => m['id'] == tempId);
-              if (idx != -1) {
-                _messages[idx] = parsed;
+              final realId = (parsed['id'] ?? '').toString();
+              final tempIdx = _messages.indexWhere((m) => m['id'] == tempId);
+              final realIdx = _messages.indexWhere((m) =>
+                  (m['id'] ?? '').toString() == realId && realId.isNotEmpty);
+              if (realIdx != -1) {
+                _messages[realIdx] = {..._messages[realIdx], ...parsed};
+                if (tempIdx != -1) _messages.removeAt(tempIdx);
+              } else if (tempIdx != -1) {
+                _messages[tempIdx] = parsed;
               } else {
                 _upsertMessage(parsed);
               }
@@ -2789,12 +2821,22 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           // Swap the local placeholder for the server's copy in place, so the
           // bubble never disappears and reappears.
           final parsed = _parseSingleMessage(sentMessage);
-          final idx = _messages.indexWhere((m) => m['id'] == tempId);
-          if (idx != -1) {
+          parsed['localPreviewPath'] = filePath;
+          final realId = (parsed['id'] ?? '').toString();
+          final tempIdx = _messages.indexWhere((m) => m['id'] == tempId);
+          final realIdx = _messages.indexWhere(
+              (m) => (m['id'] ?? '').toString() == realId && realId.isNotEmpty);
+
+          if (realIdx != -1) {
+            // The socket echo beat the HTTP response here. Merge into the
+            // real row and DROP the placeholder — replacing it would leave
+            // two bubbles for one photo.
+            _messages[realIdx] = {..._messages[realIdx], ...parsed};
+            if (tempIdx != -1) _messages.removeAt(tempIdx);
+          } else if (tempIdx != -1) {
             // Keep showing the LOCAL file until the network image is cached —
             // swapping straight to the remote URL flashes an empty box.
-            parsed['localPreviewPath'] = filePath;
-            _messages[idx] = parsed;
+            _messages[tempIdx] = parsed;
           } else {
             _upsertMessage(parsed);
           }

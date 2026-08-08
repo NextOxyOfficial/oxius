@@ -55,27 +55,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
   }
 
-  testWidgets('newest outgoing message shows "সিন" once the peer reads it',
+  testWidgets('newest outgoing message keeps its double tick after a rebuild',
       (tester) async {
     // No timestamp row at all — this is the post-reload shape that used to
     // render nothing.
     await pump(tester, msg(isMe: true, seen: true, showStatus: true));
-    expect(find.text('সিন'), findsOneWidget);
+    // Icon only — no words. The double tick IS the "seen" signal.
     expect(find.byIcon(Icons.done_all_rounded), findsOneWidget);
+    expect(find.text('সিন'), findsNothing);
     // The time is not printed when only the status asked for the row.
     expect(find.text('10:00 AM'), findsNothing);
   });
 
-  testWidgets('delivered-but-unread reads "পাঠানো হয়েছে"', (tester) async {
+  testWidgets('delivered-but-unread shows a single tick', (tester) async {
     await pump(tester, msg(isMe: true, seen: false, showStatus: true));
-    expect(find.text('পাঠানো হয়েছে'), findsOneWidget);
     expect(find.byIcon(Icons.done_rounded), findsOneWidget);
+    expect(find.text('পাঠানো হয়েছে'), findsNothing);
   });
 
   testWidgets('older outgoing messages carry no status row', (tester) async {
     await pump(tester, msg(isMe: true, seen: true, showStatus: false));
-    expect(find.text('সিন'), findsNothing);
-    expect(find.text('পাঠানো হয়েছে'), findsNothing);
+    expect(find.byIcon(Icons.done_all_rounded), findsNothing);
+    expect(find.byIcon(Icons.done_rounded), findsNothing);
   });
 
   testWidgets('a message still sending shows a clock, not a verdict',
@@ -83,12 +84,19 @@ void main() {
     await pump(
         tester, msg(isMe: true, showStatus: true, pending: true));
     expect(find.byIcon(Icons.schedule_rounded), findsOneWidget);
-    expect(find.text('পাঠানো হয়েছে'), findsNothing);
+  });
+
+  testWidgets('an older message reveals its tick when tapped open',
+      (tester) async {
+    final m = msg(isMe: true, seen: true, showStatus: false)
+      ..['showTimestamp'] = true
+      ..['timeRevealAnimated'] = true;
+    await pump(tester, m);
+    expect(find.byIcon(Icons.done_all_rounded), findsOneWidget);
   });
 
   testWidgets('incoming messages never show a status', (tester) async {
     await pump(tester, msg(isMe: false, seen: true, showStatus: true));
-    expect(find.text('সিন'), findsNothing);
     expect(find.byIcon(Icons.done_all_rounded), findsNothing);
   });
 
@@ -98,6 +106,6 @@ void main() {
         tester,
         msg(isMe: true, seen: true, showStatus: true, showTimestamp: true));
     expect(find.text('10:00 AM'), findsOneWidget);
-    expect(find.text('সিন'), findsOneWidget);
+    expect(find.byIcon(Icons.done_all_rounded), findsOneWidget);
   });
 }

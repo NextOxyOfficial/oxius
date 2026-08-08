@@ -43,7 +43,18 @@ class AdsyConnectRealtimeService {
   final math.Random _jitter = math.Random();
 
   Stream<Map<String, dynamic>> get events => _eventsController.stream;
-  bool get isConnected => _channel != null;
+  /// True only once the server has actually sent us something.
+  ///
+  /// This used to be `_channel != null`, which is true the instant the socket
+  /// object is constructed — before the handshake, before auth, and while a
+  /// dead connection sits there. Every screen throttles its safety poll when
+  /// this says "connected", so a socket that looked up but delivered nothing
+  /// silently downgraded the whole app to a 24-second poll. That is what made
+  /// reactions and read receipts feel like they needed a reload.
+  bool get isConnected => _channel != null && _handshakeOk;
+
+  /// Flipped by the first inbound frame; cleared whenever we reconnect.
+  bool _handshakeOk = false;
 
   /// Force the socket to reconnect now (e.g. after AppLifecycleState.resumed).
   /// Safe to call even if already connected — will only reopen if the user is
@@ -161,7 +172,15 @@ class AdsyConnectRealtimeService {
     try {
       final channel = WebSocketChannel.connect(await _buildUri(userId));
       _channel = channel;
+      _handshakeOk = false;
       _lastInboundAt = DateTime.now();
+      // The server greets us on connect; if nothing arrives within this
+      // window the socket is not usable and callers must keep polling.
+      Timer(const Duration(seconds: 6), () {
+        if (_channel == channel && !_handshakeOk) {
+          _scheduleReconnect(expectedChannel: channel);
+        }
+      });
       _pingTimer = Timer.periodic(_pingInterval, (_) {
         _checkSocketHealth();
       });
@@ -169,6 +188,7 @@ class AdsyConnectRealtimeService {
       channel.stream.listen(
         (message) {
           _lastInboundAt = DateTime.now();
+          _handshakeOk = true;
           // First successful frame — reset backoff so transient hiccups don't
           // poison the next reconnect cycle.
           if (_reconnectAttempts != 0) {
@@ -322,6 +342,7 @@ class AdsyConnectRealtimeService {
   }
 
   void _scheduleReconnect({WebSocketChannel? expectedChannel}) {
+    _handshakeOk = false;
     if (expectedChannel != null && !identical(_channel, expectedChannel)) {
       return;
     }
