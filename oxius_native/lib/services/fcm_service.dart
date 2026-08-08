@@ -1103,6 +1103,23 @@ class FCMService {
     bool notifyCallerOnBusy = true,
   }) {
     if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
+      // Before believing "we are busy", check there is a real call behind the
+      // flags. A call that ended badly — process killed, screen disposed
+      // without a hangup, media that never connected — can leave these set
+      // with nothing running. From then on EVERY incoming call is dropped in
+      // silence and the caller is told "busy", which is exactly the
+      // "the first call works, later ones don't" report. Nothing is ringing
+      // and no screen is up, so the safe reading is: we are free.
+      final info = AgoraCallService.activeCallInfo;
+      if (info == null && !AgoraCallService.isCallScreenVisible) {
+        _log('🩹 Clearing stale in-call flag — no active call behind it');
+        AgoraCallService.setInCall(false);
+        _activeCallIds.clear();
+        _callTimestamps.clear();
+      }
+    }
+
+    if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
       // If this is a duplicate notification for the SAME call we are already
       // handling, silently ignore it — do NOT send "busy" back to the caller
       // because that would kill the real call.
