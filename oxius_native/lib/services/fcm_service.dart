@@ -353,8 +353,24 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       // Push is now reserved for what HAPPENED, not for ringing: the ring
       // itself belongs to the app's own call screen. A call the user never
       // answered has to leave a trace, or it vanishes without a word.
+      //
+      // Only the person who was CALLED gets it. A ring timeout is reported by
+      // the callee's own screen with notifyPeer:true, so the caller receives a
+      // 'missed' event for a call they placed themselves — telling them they
+      // missed it is nonsense. caller_id comes off the call session, so it is
+      // authoritative about direction regardless of who sent this event.
       if (bgStatus == 'missed' || bgStatus == 'cancelled') {
-        await _showMissedCallNotification(message.data);
+        //
+        // Decided from the payload alone — this runs in the FCM background
+        // isolate, where AuthService holds no logged-in user. receiver_id is
+        // by construction the device this event was addressed to, so if that
+        // is also the caller, we placed the call and stay quiet.
+        final callerId = message.data['caller_id']?.toString() ?? '';
+        final addressedTo = message.data['receiver_id']?.toString() ?? '';
+        final iPlacedThisCall = callerId.isNotEmpty && callerId == addressedTo;
+        if (!iPlacedThisCall) {
+          await _showMissedCallNotification(message.data);
+        }
       }
     }
     return;
@@ -2193,6 +2209,21 @@ class FCMService {
     required String channelName,
     required String callType,
   }) async {
+    // Android gets ONE ringing surface: the app's own call screen.
+    //
+    // CallKit here was the second one — the FCM isolate already raises a
+    // full-screen-intent notification, and the live socket bridge would then
+    // put the CallKit UI on top of it. iOS has no choice: waking from a VoIP
+    // push without reportNewIncomingCall gets the app killed and its push
+    // privileges revoked, so CallKit stays mandatory there.
+    if (!Platform.isIOS) {
+      _navigateToIncomingCallScreen(navigator, {
+        ...data,
+        'caller_name': callerName,
+      });
+      return;
+    }
+
     try {
       await showIncomingCall(
         callerId: callerId,
@@ -2969,6 +3000,21 @@ class FCMService {
     // ============================================
     else if (type == 'accepted_call') {
       _navigateToCallScreenDirectly(navigator, data);
+    }
+    // ============================================
+    // MISSED CALL — open the conversation with whoever called
+    // ============================================
+    else if (type == 'missed_call') {
+      final callerId = data['caller_id']?.toString() ??
+          data['sender_id']?.toString() ??
+          '';
+      _log('   → Missed call from $callerId — opening AdsyConnect');
+      _dismissBlockingChatOverlay();
+      navigator.push(
+        MaterialPageRoute(
+          builder: (context) => const InboxScreen(initialTab: 0),
+        ),
+      );
     }
     // ============================================
     // INCOMING CALL (Agora)

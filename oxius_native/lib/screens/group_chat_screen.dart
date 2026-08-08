@@ -966,6 +966,11 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       'replyToSender': m['reply_sender_name']?.toString(),
       // Time stays hidden until the message is tapped (Messenger-style).
       'showTimestamp': (m['id'] ?? '').toString() == _timeShownId,
+      // The bubble now gates its delivery tick on one of these two flags. The
+      // group screen set neither, so outgoing group messages lost their tick
+      // outright — including on tap. Tapping opens the row, so the tick rides
+      // along with it exactly as it used to.
+      'timeRevealAnimated': (m['id'] ?? '').toString() == _timeShownId,
       'timeDisplay': _formatTime(
           DateTime.tryParse((m['created_at'] ?? '').toString())),
       'isSeen': false,

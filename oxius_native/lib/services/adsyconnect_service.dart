@@ -257,14 +257,16 @@ class AdsyConnectService {
       debugPrint(
           '🔵 Fetching messages from: $baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize');
 
+      // window=1 asks the server to return ONLY this page. Without it the
+      // endpoint hands back the entire conversation and we slice it below —
+      // which meant every 12s poll re-downloaded the whole thread.
       final response = await http.get(
-        Uri.parse(
-            '$baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize'),
+        Uri.parse('$baseUrl/messages/?chatroom=$chatroomId'
+            '&page=$page&page_size=$pageSize&window=1'),
         headers: headers,
       );
 
       debugPrint('🔵 Messages response status: ${response.statusCode}');
-      debugPrint('🔵 Messages response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -274,12 +276,17 @@ class AdsyConnectService {
           return List<dynamic>.from(data['results'] ?? []);
         }
 
-        // Otherwise assume it's a direct list
+        // Otherwise assume it's a direct list.
+        //
+        // The server windows the page for us now. The old tail-slice stays as
+        // a fallback for a backend that predates ?window= — recognisable
+        // because it returns more rows than we asked for.
         if (data is List) {
           final full = List<dynamic>.from(data);
-          final total = full.length;
-
-          final end = total - (page - 1) * pageSize;
+          if (full.length <= pageSize) {
+            return full;
+          }
+          final end = full.length - (page - 1) * pageSize;
           if (end <= 0) {
             return [];
           }

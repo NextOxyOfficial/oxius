@@ -41,7 +41,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         # Accept the connection
         await self.accept()
-        
+
+        # Greet the client immediately.
+        #
+        # Nothing else here ever sends a frame to the CONNECTING socket —
+        # broadcast_online_status fans out to the other party only — so a
+        # client had no way to tell a working socket from one that accepted
+        # and then went silent. It needs that signal to decide whether its
+        # safety poll can back off.
+        await self.send(text_data=json.dumps({
+            'type': 'connection_ready',
+            'user_id': self.user_id,
+        }))
+
         # Update user's online status
         last_seen = await self.update_online_status(True)
         

@@ -35,6 +35,7 @@ class AdsyConnectRealtimeService {
   StreamSubscription<ConnectivityResult>? _connectivitySub;
   Timer? _reconnectTimer;
   Timer? _pingTimer;
+  Timer? _handshakeTimer;
   String? _connectedUserId;
   bool _shouldStayConnected = false;
   bool _isOffline = false;
@@ -98,6 +99,9 @@ class AdsyConnectRealtimeService {
     _reconnectTimer = null;
     _pingTimer?.cancel();
     _pingTimer = null;
+    _handshakeTimer?.cancel();
+    _handshakeTimer = null;
+    _handshakeOk = false;
     _reconnectAttempts = 0;
     _lastInboundAt = null;
     _recentFingerprints.clear();
@@ -158,8 +162,10 @@ class AdsyConnectRealtimeService {
 
     _reconnectTimer?.cancel();
     _pingTimer?.cancel();
+    _handshakeTimer?.cancel();
     _reconnectTimer = null;
     _pingTimer = null;
+    _handshakeTimer = null;
     final previousChannel = _channel;
     _channel = null;
     await previousChannel?.sink.close();
@@ -174,17 +180,24 @@ class AdsyConnectRealtimeService {
       _channel = channel;
       _handshakeOk = false;
       _lastInboundAt = DateTime.now();
-      // The server greets us on connect; if nothing arrives within this
-      // window the socket is not usable and callers must keep polling.
-      Timer(const Duration(seconds: 6), () {
-        if (_channel == channel && !_handshakeOk) {
+      // A socket that accepted but never speaks is worse than no socket: every
+      // screen backs its safety poll off believing it is live. So we make the
+      // server prove it. The consumer greets us with `connection_ready`, and we
+      // also fire our own ping below in case an older backend is deployed —
+      // either reply flips _handshakeOk.
+      //
+      // The window has to clear a real round-trip on a bad mobile connection,
+      // and it must be cancellable: a tab-out or logout closes the socket, and
+      // a surviving timer would resurrect it.
+      _handshakeTimer?.cancel();
+      _handshakeTimer = Timer(const Duration(seconds: 12), () {
+        if (identical(_channel, channel) && !_handshakeOk) {
           _scheduleReconnect(expectedChannel: channel);
         }
       });
       _pingTimer = Timer.periodic(_pingInterval, (_) {
         _checkSocketHealth();
       });
-
       channel.stream.listen(
         (message) {
           _lastInboundAt = DateTime.now();
@@ -200,6 +213,10 @@ class AdsyConnectRealtimeService {
         onError: (_) => _scheduleReconnect(expectedChannel: channel),
         cancelOnError: true,
       );
+
+      // Prove the socket now instead of waiting 20s for the first periodic
+      // health tick. Sent after listen() so the pong can't land unheard.
+      _send({'type': 'ping'});
     } catch (_) {
       _scheduleReconnect();
     }
@@ -342,17 +359,31 @@ class AdsyConnectRealtimeService {
   }
 
   void _scheduleReconnect({WebSocketChannel? expectedChannel}) {
-    _handshakeOk = false;
+    // The identity guard comes FIRST. A superseded channel's late onDone must
+    // not clear the handshake flag of the live one that replaced it — that
+    // would report a healthy socket as dead and drop every screen back to
+    // polling until the next inbound frame.
     if (expectedChannel != null && !identical(_channel, expectedChannel)) {
+      unawaited(expectedChannel.sink.close());
       return;
     }
+    _handshakeOk = false;
     if (_reconnectTimer?.isActive ?? false) {
       return;
     }
+    final dying = _channel;
     _channel = null;
     _lastInboundAt = null;
     _pingTimer?.cancel();
     _pingTimer = null;
+    _handshakeTimer?.cancel();
+    _handshakeTimer = null;
+    // Abandoning a channel without closing it leaks a live socket server-side:
+    // every broadcast keeps fanning out to it and its listener keeps pushing
+    // into our stream controller until nginx reaps it.
+    if (dying != null) {
+      unawaited(dying.sink.close());
+    }
 
     if (!_shouldStayConnected || _connectedUserId == null || _isOffline) {
       return;

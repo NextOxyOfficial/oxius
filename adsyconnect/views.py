@@ -795,6 +795,25 @@ def send_call_status(request):
             'receiver_id': str(receiver.id),
             'timestamp': str(int(time.time() * 1000)),
         }
+
+        # Who actually placed the call, and what to name them.
+        #
+        # The missed-call notification needs both: without caller_id it has
+        # nowhere to navigate on tap, and without caller_name every missed
+        # call reads "AdsyClub user". sender/receiver here are the sender and
+        # receiver OF THIS STATUS EVENT, which are reversed when the callee's
+        # ring times out — so read the direction off the session.
+        # Only the session knows the direction. Guessing from the event's own
+        # sender would be wrong exactly in the case that matters.
+        caller = call_session.caller if call_session else None
+        if caller is not None:
+            payload['caller_id'] = str(caller.id)
+            payload['caller_name'] = (
+                (getattr(caller, 'name', '') or '').strip()
+                or (getattr(caller, 'username', '') or '').strip()
+                or 'AdsyClub user'
+            )
+
         if call_session:
             payload['call_id'] = str(call_session.id)
         elif call_id:
@@ -1185,6 +1204,45 @@ class MessageViewSet(viewsets.ModelViewSet):
                 )
             )
         )
+
+        # Opt-in server-side windowing.
+        #
+        # pagination_class is None, so this endpoint returned the ENTIRE thread
+        # on every call and the app threw all but the last 20 rows away — a
+        # 500-message conversation re-serialized itself (reactions prefetch,
+        # absolute URLs, both participants' online status) on every 12s poll.
+        #
+        # Gated behind ?window=1 because the slicing lives in shipped app
+        # versions: an old client asking for page 2 of an already-windowed
+        # response would slice it down to nothing and lose its history. Only
+        # clients that stopped slicing send the flag.
+        wants_window = str(
+            self.request.query_params.get('window', '')
+        ).lower() in ('1', 'true')
+        if chatroom_id and wants_window:
+            try:
+                page = max(1, int(self.request.query_params.get('page', 1)))
+            except (TypeError, ValueError):
+                page = 1
+            try:
+                page_size = int(self.request.query_params.get('page_size', 20))
+            except (TypeError, ValueError):
+                page_size = 20
+            page_size = min(max(page_size, 1), 100)
+
+            # Walk back from the newest, then hand the window back in the
+            # ascending order every caller expects.
+            offset = (page - 1) * page_size
+            newest_first = list(
+                queryset.order_by('-created_at', '-id')[offset:offset + page_size]
+            )
+            newest_first.reverse()
+            return Message.objects.filter(
+                id__in=[m.id for m in newest_first]
+            ).select_related(
+                'sender', 'receiver', 'chatroom',
+                'sender__online_status', 'receiver__online_status',
+            ).prefetch_related('reactions').order_by('created_at', 'id')
 
         return queryset
     

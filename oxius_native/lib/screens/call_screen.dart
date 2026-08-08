@@ -886,6 +886,11 @@ class _CallScreenState extends State<CallScreen>
           callType: widget.callType,
         );
         debugPrint('🔁 stage 1 re-join: $ok');
+        // rejoinChannel awaits a token fetch with retries. The user can hang
+        // up inside that window — _endCall and dispose both cancel the
+        // watchdog, and re-arming it afterwards would leave a timer holding a
+        // closure over a dead State, still climbing the ladder.
+        if (!mounted || _didEndCall || _remoteUid != null) return;
         // Give the peer a moment to appear before escalating again.
         _connectWatchdog?.cancel();
         _connectWatchdog = Timer(const Duration(seconds: 8), () {
@@ -904,6 +909,7 @@ class _CallScreenState extends State<CallScreen>
           callType: widget.callType,
         );
         debugPrint('🛡️ stage 2 cloud-proxy re-join: $ok');
+        if (!mounted || _didEndCall || _remoteUid != null) return;
         _connectWatchdog?.cancel();
         _connectWatchdog = Timer(const Duration(seconds: 10), () {
           unawaited(_escalateConnectRecovery('stage2-timeout'));

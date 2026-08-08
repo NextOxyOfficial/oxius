@@ -579,6 +579,14 @@ class AgoraCallService {
         uid: uid,
       );
 
+      // The token fetch retries, so it can outlive the call. If leaveChannel()
+      // released the engine meanwhile, `engine` is a dangling handle and
+      // joining through it races native teardown.
+      if (!identical(_engine, engine)) {
+        _log('🔁 Re-join abandoned: engine was released mid-flight');
+        return false;
+      }
+
       await engine.joinChannel(
         token: agoraToken,
         channelId: channelName,

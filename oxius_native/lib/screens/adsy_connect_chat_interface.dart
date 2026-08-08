@@ -529,6 +529,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         setState(() {
           // Insert older messages at the beginning
           _messages.insertAll(0, parsedMessages);
+          // _addSmartTimestamps anchored the tick on the newest message OF
+          // THIS PAGE. Prepending it without recomputing leaves two anchors:
+          // one correct, one stranded mid-thread.
+          _refreshStatusAnchor(_messages);
           _currentPage = nextPage;
           _hasMoreMessages = messages.length >= 20;
           _isLoadingMoreMessages = false;
@@ -1231,6 +1235,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
       // Update UI if there were any changes
       if (hasUpdates && mounted) {
+        // A peer edit/delete can retire the anchored row (the anchor skips
+        // deleted messages), so recompute before painting or the ticks
+        // disappear from the thread entirely.
+        _refreshStatusAnchor(_messages);
         setState(() {});
       }
     } catch (e) {
@@ -1265,6 +1273,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         setState(() {
           if (loadMore) {
             _messages.insertAll(0, parsedMessages);
+            _refreshStatusAnchor(_messages);
           } else {
             _messages = parsedMessages;
             // Set last message ID for polling
@@ -1525,6 +1534,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         final merged = Map<String, dynamic>.from(_messages[pendingIndex]);
         merged.addAll(message);
         merged['pending'] = false;
+        // The server copy carries no upload flag, so a plain merge would keep
+        // the placeholder's `isUploading: true` forever — a delivered photo
+        // stuck behind a spinner and a clock icon until the chat is reopened.
+        merged['isUploading'] = false;
         _messages[pendingIndex] = merged;
         return;
       }
@@ -1535,6 +1548,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     final merged = Map<String, dynamic>.from(_messages[existingIndex]);
     merged.addAll(message);
+    // Same reason as the pending branch: a server-backed row is never still
+    // uploading, and the incoming copy carries no key to overwrite it with.
+    if (!_isLocalPlaceholder(merged)) {
+      merged['isUploading'] = false;
+    }
     _messages[existingIndex] = merged;
   }
 
@@ -1696,6 +1714,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         setState(() {
           // Roll back the optimistic message on failure.
           _messages.removeWhere((m) => (m['id']?.toString() ?? '') == tempId);
+          // The row we just dropped was the tick anchor, so without this the
+          // status vanishes from the WHOLE thread until the next new message.
+          _refreshStatusAnchor(_messages);
           _isSendingMessage = false;
           // The send failed, so the attachment was never delivered — put it
           // back with the text, or the retry would drop the ad silently.
@@ -2625,6 +2646,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     setState(() => _isSendingMessage = true);
 
+    // Placeholders raised by THIS batch. If the loop throws part-way, the
+    // survivors have to be swept up: they carry `isUploading: true` forever
+    // and claim a photo was delivered that never left the device.
+    final batchTempIds = <String>[];
+
     try {
       // Send the COMPRESSED bytes, not the original file. This loop iterated
       // _compressedImages but uploaded _selectedImages[i].path, so multi-MB
@@ -2658,6 +2684,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
           final tempId =
               'local_img_${DateTime.now().microsecondsSinceEpoch}_$i';
+          batchTempIds.add(tempId);
           if (localPath != null && mounted) {
             setState(() {
               _messages.add(<String, dynamic>{
@@ -2698,6 +2725,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               final tempIdx = _messages.indexWhere((m) => m['id'] == tempId);
               final realIdx = _messages.indexWhere((m) =>
                   (m['id'] ?? '').toString() == realId && realId.isNotEmpty);
+              parsed['isUploading'] = false;
               if (realIdx != -1) {
                 _messages[realIdx] = {..._messages[realIdx], ...parsed};
                 if (tempIdx != -1) _messages.removeAt(tempIdx);
@@ -2731,7 +2759,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         AdsyToast.success(context, '$sentCount photos sent successfully');
       }
     } catch (e) {
-      setState(() => _isSendingMessage = false);
+      setState(() {
+        _messages.removeWhere(
+            (m) => batchTempIds.contains((m['id'] ?? '').toString()));
+        _refreshStatusAnchor(_messages);
+        _isSendingMessage = false;
+      });
       if (mounted) {
         AdsyToast.error(context, 'ছবি পাঠানো যায়নি');
       }
@@ -2826,6 +2859,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           final tempIdx = _messages.indexWhere((m) => m['id'] == tempId);
           final realIdx = _messages.indexWhere(
               (m) => (m['id'] ?? '').toString() == realId && realId.isNotEmpty);
+          // The upload is done by definition — the server answered. Say so
+          // explicitly so a merge can't inherit the placeholder's spinner.
+          parsed['isUploading'] = false;
 
           if (realIdx != -1) {
             // The socket echo beat the HTTP response here. Merge into the
@@ -2849,7 +2885,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     } catch (e) {
       // Drop the placeholder — leaving it would claim a failed send succeeded.
       if (mounted) {
-        setState(() => _messages.removeWhere((m) => m['id'] == tempId));
+        setState(() {
+          _messages.removeWhere((m) => m['id'] == tempId);
+          _refreshStatusAnchor(_messages);
+        });
       }
       debugPrint('🔴 Error sending media: $e');
       if (mounted) {
