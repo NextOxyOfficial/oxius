@@ -482,12 +482,12 @@ class _ProfileScreenState extends State<ProfileScreen>
       title: 'Report Profile',
       prompt: 'Why are you reporting this profile?',
       options: const [
-        AdsyReportOption(
-            label: 'Fake or impersonating account', value: 'fake'),
+        AdsyReportOption(label: 'Fake or impersonating account', value: 'fake'),
         AdsyReportOption(label: 'Spam or scam', value: 'spam'),
         AdsyReportOption(
             label: 'Harassment or hate speech', value: 'harassment'),
-        AdsyReportOption(label: 'Inappropriate content', value: 'inappropriate'),
+        AdsyReportOption(
+            label: 'Inappropriate content', value: 'inappropriate'),
         AdsyReportOption(label: 'Other', value: 'other'),
       ],
       successMessage: 'Profile reported. Our team will review it.',
@@ -616,115 +616,115 @@ class _ProfileScreenState extends State<ProfileScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(2),
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              const Text(
-                'প্রোফাইল শেয়ার করুন',
-                style: TextStyle(
-                    fontSize: 15.5,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A)),
-              ),
-              const SizedBox(height: 12),
-              // Profile link + one-tap copy.
-              Container(
-                padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                const Text(
+                  'প্রোফাইল শেয়ার করুন',
+                  style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A)),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.link_rounded,
-                        size: 18, color: Color(0xFF64748B)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        profileUrl,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 12.5, color: Color(0xFF475569)),
+                const SizedBox(height: 12),
+                // Profile link + one-tap copy.
+                Container(
+                  padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.link_rounded,
+                          size: 18, color: Color(0xFF64748B)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          profileUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 12.5, color: Color(0xFF475569)),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Material(
-                      color: const Color(0xFF2563EB),
-                      borderRadius: BorderRadius.circular(9),
-                      child: InkWell(
+                      const SizedBox(width: 6),
+                      Material(
+                        color: const Color(0xFF2563EB),
                         borderRadius: BorderRadius.circular(9),
-                        onTap: () async {
-                          await Clipboard.setData(
-                              ClipboardData(text: profileUrl));
-                          if (!context.mounted) return;
-                          AdsyToast.success(context, 'লিংক কপি হয়েছে');
-                          Navigator.pop(context);
-                        },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 9),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.copy_rounded,
-                                  size: 14, color: Colors.white),
-                              SizedBox(width: 5),
-                              Text('Copy',
-                                  style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white)),
-                            ],
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(9),
+                          onTap: () async {
+                            await Clipboard.setData(
+                                ClipboardData(text: profileUrl));
+                            if (!context.mounted) return;
+                            AdsyToast.success(context, 'লিংক কপি হয়েছে');
+                            Navigator.pop(context);
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 9),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.copy_rounded,
+                                    size: 14, color: Colors.white),
+                                SizedBox(width: 5),
+                                Text('Copy',
+                                    style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white)),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              _profileOptionTile(
-                icon: Icons.share_outlined,
-                color: const Color(0xFF3B82F6),
-                title: 'আরও শেয়ার করুন',
-                subtitle: 'WhatsApp, Facebook, X, Messenger…',
-                onTap: _shareProfile,
-              ),
-              if (!isOwnProfile && AuthService.isAuthenticated) ...[
+                const SizedBox(height: 6),
                 _profileOptionTile(
-                  icon: Icons.flag_rounded,
-                  color: const Color(0xFFF59E0B),
-                  title: 'Report Profile',
-                  subtitle: 'Fake, impersonating or spam account',
-                  onTap: _reportProfileUser,
+                  icon: Icons.share_outlined,
+                  color: const Color(0xFF3B82F6),
+                  title: 'আরও শেয়ার করুন',
+                  subtitle: 'WhatsApp, Facebook, X, Messenger…',
+                  onTap: _shareProfile,
                 ),
-                _isBlockedProfile
-                    ? _profileOptionTile(
-                        icon: Icons.lock_open_rounded,
-                        color: const Color(0xFF059669),
-                        title: 'Unblock User',
-                        onTap: _unblockProfileUser,
-                      )
-                    : _profileOptionTile(
-                        icon: Icons.block_rounded,
-                        color: const Color(0xFFDC2626),
-                        title: 'Block User',
-                        danger: true,
-                        onTap: _blockProfileUser,
-                      ),
+                if (!isOwnProfile && AuthService.isAuthenticated) ...[
+                  _profileOptionTile(
+                    icon: Icons.flag_rounded,
+                    color: const Color(0xFFF59E0B),
+                    title: 'Report Profile',
+                    subtitle: 'Fake, impersonating or spam account',
+                    onTap: _reportProfileUser,
+                  ),
+                  _isBlockedProfile
+                      ? _profileOptionTile(
+                          icon: Icons.lock_open_rounded,
+                          color: const Color(0xFF059669),
+                          title: 'Unblock User',
+                          onTap: _unblockProfileUser,
+                        )
+                      : _profileOptionTile(
+                          icon: Icons.block_rounded,
+                          color: const Color(0xFFDC2626),
+                          title: 'Block User',
+                          danger: true,
+                          onTap: _blockProfileUser,
+                        ),
+                ],
               ],
-            ],
-          ),
+            ),
           ),
         );
       },
@@ -919,23 +919,26 @@ class _ProfileScreenState extends State<ProfileScreen>
                 minScale: 0.5,
                 maxScale: 4.0,
                 child: Center(
-                  child: AppNetworkImage(
-                    _getImageUrl(_userData!['image']),
-                    fit: BoxFit.contain,
-                    // Full-screen avatar: it should simply be there, not
-                    // arrive with a fade.
-                    fadeIn: false,
-                    errorWidget: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade800,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 100,
-                        color: Colors.white54,
+                  child: Hero(
+                    tag: 'profile-avatar-${widget.userId}',
+                    child: AppNetworkImage(
+                      _getImageUrl(_userData!['image']),
+                      fit: BoxFit.contain,
+                      // Full-screen avatar: it should simply be there, not
+                      // arrive with a fade.
+                      fadeIn: false,
+                      errorWidget: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade800,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 100,
+                          color: Colors.white54,
+                        ),
                       ),
                     ),
                   ),
@@ -1132,8 +1135,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    ProfileScreen(userId: currentUser.id),
+                builder: (context) => ProfileScreen(userId: currentUser.id),
               ),
             );
           }
@@ -1432,16 +1434,23 @@ class _ProfileScreenState extends State<ProfileScreen>
                     padding: const EdgeInsets.all(2),
                     child: ClipOval(
                       child: _userData?['image'] != null
-                          ? AppNetworkImage(
-                              _getImageUrl(_userData!['image']),
-                              width: double.infinity,
-                              height: double.infinity,
-                              errorWidget: Container(
-                                color: Colors.grey.shade200,
-                                child: Icon(
-                                  Icons.person,
-                                  size: 50,
-                                  color: Colors.grey.shade400,
+                          ? Hero(
+                              // One avatar per profile screen and one viewer,
+                              // so this tag cannot collide — which matters,
+                              // because two heroes sharing a tag on one screen
+                              // is a hard crash, not a missing animation.
+                              tag: 'profile-avatar-${widget.userId}',
+                              child: AppNetworkImage(
+                                _getImageUrl(_userData!['image']),
+                                width: double.infinity,
+                                height: double.infinity,
+                                errorWidget: Container(
+                                  color: Colors.grey.shade200,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 50,
+                                    color: Colors.grey.shade400,
+                                  ),
                                 ),
                               ),
                             )
@@ -1937,10 +1946,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   // productivity tab).
 
   void _showAboutSheet() {
-    final userName =
-        _stringValue(_userData?['name']).isNotEmpty
-            ? _stringValue(_userData?['name'])
-            : (_userData?['first_name'] ?? 'this user').toString();
+    final userName = _stringValue(_userData?['name']).isNotEmpty
+        ? _stringValue(_userData?['name'])
+        : (_userData?['first_name'] ?? 'this user').toString();
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -2065,8 +2073,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         'visible': _isFieldVisible('linkedin_public'),
       },
     ]
-        .where((e) =>
-            (e['url'] as String).isNotEmpty && (e['visible'] as bool))
+        .where((e) => (e['url'] as String).isNotEmpty && (e['visible'] as bool))
         .toList();
 
     final sections = <Widget>[];
@@ -2101,16 +2108,15 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     final contactRows = <Widget>[];
     if (email.isNotEmpty) {
-      contactRows.add(_aboutRow(Icons.email_outlined,
-          _maskEmail(email, _userData?['email_public'])));
+      contactRows.add(_aboutRow(
+          Icons.email_outlined, _maskEmail(email, _userData?['email_public'])));
     }
     if (phone.isNotEmpty) {
       contactRows.add(_aboutRow(Icons.phone_outlined,
           _maskPhoneNumber(phone, _userData?['phone_public'])));
     }
     if (website.isNotEmpty && _isFieldVisible('website_public')) {
-      contactRows.add(_aboutRow(Icons.language_rounded, website,
-          url: website));
+      contactRows.add(_aboutRow(Icons.language_rounded, website, url: website));
     }
     if (contactRows.isNotEmpty) {
       sections.add(_aboutSection('Contact', contactRows));
@@ -2131,8 +2137,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     final placeRows = <Widget>[];
     if (city.isNotEmpty || state.isNotEmpty) {
-      placeRows.add(_aboutRow(
-          Icons.location_on_outlined,
+      placeRows.add(_aboutRow(Icons.location_on_outlined,
           '$city${city.isNotEmpty && state.isNotEmpty ? ', ' : ''}$state'));
     }
     if (_userData?['date_joined'] != null) {
@@ -2196,8 +2201,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget _aboutRow(IconData icon, String text, {String? url}) {
     final tappable = url != null && url.isNotEmpty;
     return InkWell(
-      onTap:
-          tappable ? () => UrlLauncherUtils.launchExternalUrl(url) : null,
+      onTap: tappable ? () => UrlLauncherUtils.launchExternalUrl(url) : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         child: Row(
@@ -2244,8 +2248,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         runSpacing: 7,
         children: items
             .map((e) => Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 11, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(999),
@@ -2942,7 +2946,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             Colors.green.shade500,
           ),
 
-
         // "See more about [Name]" — opens the full About bottom sheet.
         if (hasAdditionalInfo) ...[
           const SizedBox(height: 4),
@@ -3423,8 +3426,8 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                       rowUid.isNotEmpty &&
                                       AuthService.isAuthenticated)
                                     GestureDetector(
-                                      onTap: () => _toggleFollow(
-                                          rowUid, rowFollowing),
+                                      onTap: () =>
+                                          _toggleFollow(rowUid, rowFollowing),
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 12, vertical: 6),
@@ -3436,14 +3439,12 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                               BorderRadius.circular(8),
                                           border: rowFollowing
                                               ? Border.all(
-                                                  color: const Color(
-                                                      0xFFE2E8F0))
+                                                  color:
+                                                      const Color(0xFFE2E8F0))
                                               : null,
                                         ),
                                         child: Text(
-                                          rowFollowing
-                                              ? 'Following'
-                                              : 'Follow',
+                                          rowFollowing ? 'Following' : 'Follow',
                                           style: TextStyle(
                                             fontSize: 11.5,
                                             fontWeight: FontWeight.w700,
