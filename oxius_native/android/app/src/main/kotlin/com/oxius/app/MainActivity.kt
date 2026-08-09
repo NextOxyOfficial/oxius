@@ -7,6 +7,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.WindowManager
@@ -16,6 +18,27 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 class MainActivity : FlutterActivity() {
+	companion object {
+		/**
+		 * The live call channel, so the foreground service can hand a
+		 * notification tap back to the Dart side that actually owns the call.
+		 * Cleared in onDestroy — a channel bound to a dead engine would throw.
+		 */
+		private var callChannel: MethodChannel? = null
+
+		fun invokeCallMethod(method: String) {
+			val channel = callChannel ?: return
+			// Platform channels are main-thread only, and this is reached from
+			// a service's onStartCommand.
+			Handler(Looper.getMainLooper()).post {
+				try {
+					channel.invokeMethod(method, null)
+				} catch (_: Exception) {
+				}
+			}
+		}
+	}
+
 	private val mediaChannel = "com.oxius.app/media_saver"
 	private val callServiceChannel = "com.oxius.app/call_service"
 
@@ -89,7 +112,10 @@ class MainActivity : FlutterActivity() {
 				}
 			}
 
-		MethodChannel(flutterEngine.dartExecutor.binaryMessenger, callServiceChannel)
+		val callMethodChannel =
+			MethodChannel(flutterEngine.dartExecutor.binaryMessenger, callServiceChannel)
+		callChannel = callMethodChannel
+		callMethodChannel
 			.setMethodCallHandler { call, result ->
 				when (call.method) {
 					"start" -> {
@@ -148,6 +174,7 @@ class MainActivity : FlutterActivity() {
 		// The bubble is a window this activity's process owns; leaving it up
 		// after the app is gone would strand a control with nothing behind it.
 		CallBubbleOverlay.hide()
+		callChannel = null
 		super.onDestroy()
 	}
 

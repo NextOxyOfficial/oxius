@@ -103,6 +103,9 @@ class _CallScreenState extends State<CallScreen>
   StreamSubscription<bool>? _reconnectingSub;
   StreamSubscription<Map<String, dynamic>>? _signalSub;
   StreamSubscription<void>? _tracksSub;
+  StreamSubscription<bool>? _poorConnectionSub;
+  StreamSubscription<bool>? _callStateSub;
+  bool _hasPoorConnection = false;
   late final AnimationController _pulseController;
 
   /// The call's current mode. Starts as whatever the call was placed as, and
@@ -376,6 +379,24 @@ class _CallScreenState extends State<CallScreen>
     });
 
     _signalSub = LiveKitCallService.signalStream.listen(_handleInCallSignal);
+
+    _poorConnectionSub =
+        LiveKitCallService.poorConnectionStream.listen((poor) {
+      if (!mounted) return;
+      setState(() => _hasPoorConnection = poor);
+    });
+
+    // The call can be ended from outside this screen — the "কল শেষ" action on
+    // the ongoing-call notification. When that happens the screen has to go,
+    // and it has no other way of finding out.
+    _callStateSub = AgoraCallService.callStateStream.listen((inCall) {
+      if (!mounted || inCall || _didEndCall || _isClosing) return;
+      _didEndCall = true;
+      _isClosing = true;
+      _durationTimer?.cancel();
+      _cancelConnectWatchdog();
+      _popCallScreen();
+    });
 
     // A camera coming on or going off at either end changes what there is to
     // render, and nothing else would tell this screen to look again.
@@ -883,6 +904,10 @@ class _CallScreenState extends State<CallScreen>
     _isClosing = true;
     _didEndCall = true;
 
+    if (_callStartedAt != null) {
+      unawaited(HapticFeedback.lightImpact());
+    }
+
     _durationTimer?.cancel();
     _durationTimer = null;
     _ringingTimer?.cancel();
@@ -1052,6 +1077,9 @@ class _CallScreenState extends State<CallScreen>
 
   void _startCallTimer({DateTime? connectedAt, bool syncGlobalState = true}) {
     if (_callStartedAt != null) return;
+    // The moment the call actually connects, felt rather than read — the phone
+    // is often already at an ear by now.
+    unawaited(HapticFeedback.mediumImpact());
     _callStartedAt = connectedAt ?? DateTime.now();
     _callDuration = DateTime.now().difference(_callStartedAt!);
     if (syncGlobalState) {
@@ -1386,6 +1414,8 @@ class _CallScreenState extends State<CallScreen>
     _reconnectingSub?.cancel();
     _signalSub?.cancel();
     _tracksSub?.cancel();
+    _poorConnectionSub?.cancel();
+    _callStateSub?.cancel();
     _upgradeTimeout?.cancel();
     _durationTimer?.cancel();
     _ringingTimer?.cancel();
@@ -1511,6 +1541,8 @@ class _CallScreenState extends State<CallScreen>
                     _buildIncomingCallUI(),
                   if (_upgrade == _VideoUpgrade.invited)
                     _buildVideoUpgradeInvite(),
+                  if (_hasPoorConnection && _stage == _CallStage.connected)
+                    _buildPoorConnectionBanner(),
                   if (_statusOverlay != null) _buildStatusOverlay(),
                   if (_callAccepted || !widget.isIncoming) _buildCallControls(),
                 ],
@@ -1607,6 +1639,16 @@ class _CallScreenState extends State<CallScreen>
                             : Icons.call_outlined,
                         label: _callModeLabel,
                       ),
+                      // Silence from a muted microphone looks exactly like
+                      // silence from a broken call, and only one of them is
+                      // worth hanging up over.
+                      if (_stage == _CallStage.connected &&
+                          _peers.length == 1 &&
+                          _peers.first.isMuted)
+                        _buildInfoPill(
+                          icon: Icons.mic_off_rounded,
+                          label: '${widget.calleeName} মিউট করেছেন',
+                        ),
                     ],
                   ),
                 ],
@@ -2417,6 +2459,43 @@ class _CallScreenState extends State<CallScreen>
                   ),
                 );
           },
+        ),
+      ),
+    );
+  }
+
+  /// Says the quiet part out loud when this device's own link is struggling.
+  ///
+  /// Without it a bad connection is indistinguishable from the other person
+  /// having stopped talking, and the usual response is to say "hello?" for
+  /// twenty seconds and then blame the app.
+  Widget _buildPoorConnectionBanner() {
+    return Positioned(
+      top: _isCompactLayout ? 78 : 92,
+      left: 18,
+      right: 18,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFB45309).withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.wifi_off_rounded, color: Colors.white, size: 15),
+              SizedBox(width: 8),
+              Text(
+                'আপনার নেটওয়ার্ক দুর্বল',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

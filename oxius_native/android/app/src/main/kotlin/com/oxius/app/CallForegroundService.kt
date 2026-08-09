@@ -47,6 +47,9 @@ class CallForegroundService : Service() {
         private const val CHANNEL_ID = "adsyclub_ongoing_call"
         private const val NOTIFICATION_ID = 0x0A11
 
+        /// Tapped "Hang up" on the ongoing-call notification.
+        const val ACTION_HANGUP = "com.oxius.app.call.HANGUP"
+
         private const val EXTRA_TITLE = "title"
         private const val EXTRA_TEXT = "text"
         private const val EXTRA_VIDEO = "video"
@@ -104,6 +107,15 @@ class CallForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_HANGUP) {
+            // Dart owns the call — the LiveKit room, the peer notification and
+            // the call log all live there — so this only forwards the tap. The
+            // engine is necessarily alive: it is the thing carrying the call.
+            MainActivity.invokeCallMethod("hangup")
+            stopEverything()
+            return START_NOT_STICKY
+        }
+
         val title = intent?.getStringExtra(EXTRA_TITLE) ?: "AdsyClub"
         val text = intent?.getStringExtra(EXTRA_TEXT) ?: "কল চলছে"
         val video = intent?.getBooleanExtra(EXTRA_VIDEO, false) ?: false
@@ -189,6 +201,21 @@ class CallForegroundService : Service() {
                 .setWhen(connectedAt)
                 .setUsesChronometer(true)
         }
+
+        // Ending a call should not require finding the app first.
+        val hangupIntent = Intent(this, CallForegroundService::class.java).apply {
+            action = ACTION_HANGUP
+        }
+        builder.addAction(
+            0,
+            "কল শেষ",
+            PendingIntent.getService(
+                this,
+                1,
+                hangupIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        )
 
         return builder.build()
     }

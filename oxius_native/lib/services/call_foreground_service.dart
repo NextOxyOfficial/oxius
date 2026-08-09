@@ -32,6 +32,24 @@ class CallForegroundService {
     if (kDebugMode) debugPrint('📞 CallForegroundService: $message');
   }
 
+  static bool _handlerAttached = false;
+
+  /// What to run when the user hangs up from the notification. Injected so
+  /// this service does not have to know how a call is torn down — that lives
+  /// with the call state, not with the notification that describes it.
+  static Future<void> Function()? onHangUp;
+
+  static void _ensureHandler() {
+    if (_handlerAttached) return;
+    _handlerAttached = true;
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'hangup') {
+        await onHangUp?.call();
+      }
+      return null;
+    });
+  }
+
   /// Brings the service in line with the current call state.
   ///
   /// [info] is `AgoraCallService.activeCallInfo` — peer name, call type and
@@ -41,6 +59,7 @@ class CallForegroundService {
     Map<String, dynamic>? info,
   }) async {
     if (!Platform.isAndroid) return;
+    _ensureHandler();
 
     if (!inCall) {
       if (!_running) return;

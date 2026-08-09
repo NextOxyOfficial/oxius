@@ -112,6 +112,26 @@ class LiveKitCallService {
   static Stream<void> get videoTracksChangedStream =>
       _tracksChangedController.stream;
 
+  /// True while this device's own link to the SFU is bad enough that the
+  /// other side is hearing it.
+  ///
+  /// Only the local participant's quality is reported: a remote peer's poor
+  /// connection is their problem to see and act on, and telling this user
+  /// their network is bad when it is not sends them to reset a working router.
+  static final StreamController<bool> _poorConnectionController =
+      StreamController<bool>.broadcast();
+  static Stream<bool> get poorConnectionStream =>
+      _poorConnectionController.stream;
+
+  static bool _hasPoorConnection = false;
+  static bool get hasPoorConnection => _hasPoorConnection;
+
+  static void _setPoorConnection(bool value) {
+    if (_hasPoorConnection == value) return;
+    _hasPoorConnection = value;
+    _poorConnectionController.add(value);
+  }
+
   static bool _isReconnecting = false;
   static bool get isReconnecting => _isReconnecting;
 
@@ -305,6 +325,13 @@ class LiveKitCallService {
           _errorController.add('Call ended');
         }
       })
+      ..on<lk.ParticipantConnectionQualityUpdatedEvent>((e) {
+        if (e.participant is! lk.LocalParticipant) return;
+        _setPoorConnection(
+          e.connectionQuality == lk.ConnectionQuality.poor ||
+              e.connectionQuality == lk.ConnectionQuality.lost,
+        );
+      })
       ..on<lk.TrackSubscribedEvent>((_) => _tracksChangedController.add(null))
       ..on<lk.TrackUnsubscribedEvent>((_) => _tracksChangedController.add(null))
       ..on<lk.TrackMutedEvent>((_) => _tracksChangedController.add(null))
@@ -349,6 +376,7 @@ class LiveKitCallService {
     _room = null;
     _joinedRoomName = null;
     _setReconnecting(false);
+    _setPoorConnection(false);
     try {
       _listener?.dispose();
     } catch (_) {}

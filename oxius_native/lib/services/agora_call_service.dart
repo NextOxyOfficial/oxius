@@ -87,6 +87,41 @@ class AgoraCallService {
   /// must not raise a foreground service for a call nobody is on.
   static bool _callLiveInProcess = false;
 
+  /// Ends the running call from outside the call screen — today, the "কল শেষ"
+  /// action on the ongoing-call notification.
+  ///
+  /// The screen may not be mounted at all (the call was minimised, or the user
+  /// is in another app entirely), so this does the whole teardown itself
+  /// rather than asking the UI to: leave the room, tell the other side, drop
+  /// the call state. The screen, if it is up, closes on the state change.
+  static Future<void> hangUpActiveCall() async {
+    final info = _activeCallInfo;
+    if (!_isInCall && info == null) return;
+
+    try {
+      await LiveKitCallService.leaveChannel();
+    } catch (_) {
+      // The room is going away regardless.
+    }
+
+    final peerId = info?['peerId']?.toString();
+    final channelName = info?['channelName']?.toString();
+    if (peerId != null &&
+        peerId.isNotEmpty &&
+        channelName != null &&
+        channelName.isNotEmpty) {
+      unawaited(sendCallStatus(
+        receiverId: peerId,
+        channelName: channelName,
+        status: 'ended',
+        callType: info?['callType']?.toString() ?? 'audio',
+        callId: info?['callId']?.toString(),
+      ));
+    }
+
+    setInCall(false);
+  }
+
   static void setInCall(bool value) {
     _isInCall = value;
     _callLiveInProcess = value;
