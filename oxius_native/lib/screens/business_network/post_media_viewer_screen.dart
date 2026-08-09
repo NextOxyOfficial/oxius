@@ -730,26 +730,24 @@ class _ZoomablePhotoState extends State<_ZoomablePhoto>
         minScale: 1.0,
         maxScale: _maxScale,
         child: SizedBox.expand(
-          child: Image.network(
+          child: AppNetworkImage(
             widget.media.bestUrl,
             // The CDN refuses requests without this, which is exactly what
             // "Failed to load media" was: a rejected request, not a bad URL.
-            headers: kMediaHeaders,
+            httpHeaders: kMediaHeaders,
             fit: BoxFit.contain,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return const Center(
-                child: AdsyLoadingIndicator(color: Colors.white),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Center(
-                child: Text(
-                  'Failed to load media',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.75)),
-                ),
-              );
-            },
+            // Opened deliberately and shown full screen: no fade, and no width
+            // to cap the decode by, so it stays full resolution.
+            fadeIn: false,
+            placeholder: const Center(
+              child: AdsyLoadingIndicator(color: Colors.white),
+            ),
+            errorWidget: Center(
+              child: Text(
+                'Failed to load media',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.75)),
+              ),
+            ),
           ),
         ),
       ),

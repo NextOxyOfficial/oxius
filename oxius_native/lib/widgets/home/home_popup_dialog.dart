@@ -90,6 +90,12 @@ class _HomePopupDialogState extends State<HomePopupDialog> {
               onTap: _openTarget,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18),
+                // Deliberately NOT AppNetworkImage. This frameBuilder is what
+                // records the impression — it fires when a frame actually
+                // reaches the screen, which is the only honest definition of
+                // "the user saw it". A cached loader has no equivalent hook,
+                // and a popup shown once has little to gain from a disk cache
+                // anyway, so the tracking wins.
                 child: Image.network(
                   widget.popup.imageUrl,
                   fit: BoxFit.contain,

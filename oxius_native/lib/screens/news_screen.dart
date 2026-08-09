@@ -9,6 +9,7 @@ import '../widgets/news/news_card.dart';
 import '../widgets/news/news_search_delegate.dart';
 import 'news_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../widgets/app_network_image.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -177,17 +178,14 @@ class _NewsScreenState extends State<NewsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: _newsLogoUrl != null && _newsLogoUrl!.isNotEmpty
-            ? Image.network(
+            ? AppNetworkImage(
                 _newsLogoUrl!,
                 height: 28,
                 fit: BoxFit.contain,
-                gaplessPlayback: true,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildAdsyNewsTextLogo(),
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return _buildAdsyNewsTextLogo();
-                },
+                // The wordmark stands in while the image is on its way and if
+                // it never arrives, so the masthead is never empty.
+                placeholder: _buildAdsyNewsTextLogo(),
+                errorWidget: _buildAdsyNewsTextLogo(),
               )
             : _buildAdsyNewsTextLogo(),
         actions: [

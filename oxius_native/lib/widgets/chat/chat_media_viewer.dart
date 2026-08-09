@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../config/app_config.dart';
 import '../../utils/media_headers.dart';
 import '../common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 /// One item a chat can open full screen.
 class ChatMediaItem {
@@ -239,8 +240,7 @@ class _PhotoStageState extends State<_PhotoStage> {
   void initState() {
     super.initState();
     _transform.addListener(() {
-      widget.onZoomChanged
-          ?.call(_transform.value.getMaxScaleOnAxis() > 1.02);
+      widget.onZoomChanged?.call(_transform.value.getMaxScaleOnAxis() > 1.02);
     });
   }
 
@@ -260,20 +260,18 @@ class _PhotoStageState extends State<_PhotoStage> {
         minScale: 1,
         maxScale: 4,
         child: isRemote
-            ? Image.network(
+            ? AppNetworkImage(
                 AppConfig.getAbsoluteUrl(url),
                 fit: BoxFit.contain,
-                headers: kMediaHeaders,
-                loadingBuilder: (context, child, progress) => progress == null
-                    ? child
-                    : const Center(
-                        child: AdsyLoadingIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white70),
-                          strokeWidth: 2.5,
-                        ),
-                      ),
-                errorBuilder: (_, __, ___) => const _Broken(),
+                httpHeaders: kMediaHeaders,
+                fadeIn: false,
+                placeholder: const Center(
+                  child: AdsyLoadingIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                    strokeWidth: 2.5,
+                  ),
+                ),
+                errorWidget: const _Broken(),
               )
             : Image.file(File(url),
                 fit: BoxFit.contain,
@@ -364,7 +362,8 @@ class _VideoStageState extends State<_VideoStage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           AspectRatio(
-            aspectRatio: c.value.aspectRatio == 0 ? 16 / 9 : c.value.aspectRatio,
+            aspectRatio:
+                c.value.aspectRatio == 0 ? 16 / 9 : c.value.aspectRatio,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -373,8 +372,8 @@ class _VideoStageState extends State<_VideoStage> {
                 // used, so it gets the biggest target.
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: () => setState(
-                      () => c.value.isPlaying ? c.pause() : c.play()),
+                  onTap: () =>
+                      setState(() => c.value.isPlaying ? c.pause() : c.play()),
                   child: ValueListenableBuilder<VideoPlayerValue>(
                     valueListenable: c,
                     builder: (_, value, __) => AnimatedOpacity(

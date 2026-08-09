@@ -4,6 +4,7 @@ import '../../services/translation_service.dart';
 import '../../services/mobile_recharge_service.dart';
 import '../../screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 // Design tokens — mirrors the rideshare panel palette
 const _emerald = Color(0xFF10B981);
@@ -196,14 +197,13 @@ class _OperatorChip extends StatelessWidget {
 
   Widget _buildContent() {
     if (iconUrl != null && iconUrl!.isNotEmpty) {
-      return Image.network(
+      return AppNetworkImage(
         iconUrl!,
         width: double.infinity,
         height: 30,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => _textFallback(),
-        loadingBuilder: (_, child, progress) =>
-            progress == null ? child : _textFallback(),
+        placeholder: _textFallback(),
+        errorWidget: _textFallback(),
       );
     }
     return _textFallback();

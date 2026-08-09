@@ -412,39 +412,33 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 operator['icon'].toString().isNotEmpty
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(3),
-                                child: Image.network(
+                                child: AppNetworkImage(
                                   operator['icon'],
                                   width: 16,
                                   height: 16,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      _getOperatorIcon(operatorName),
-                                      size: 14,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : _getOperatorColor(operatorName),
-                                    );
-                                  },
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 12,
-                                        height: 12,
-                                        child: AdsyLoadingIndicator(
-                                          strokeWidth: 1.5,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            isSelected
-                                                ? Colors.white
-                                                : const Color(0xFF10B981),
-                                          ),
+                                  placeholder: Center(
+                                    child: SizedBox(
+                                      width: 12,
+                                      height: 12,
+                                      child: AdsyLoadingIndicator(
+                                        strokeWidth: 1.5,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          isSelected
+                                              ? Colors.white
+                                              : const Color(0xFF10B981),
                                         ),
                                       ),
-                                    );
-                                  },
+                                    ),
+                                  ),
+                                  errorWidget: Icon(
+                                    _getOperatorIcon(operatorName),
+                                    size: 14,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : _getOperatorColor(operatorName),
+                                  ),
                                 ),
                               )
                             : Icon(
