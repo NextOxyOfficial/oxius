@@ -413,6 +413,68 @@ def _can_message(sender, recipient):
     return False, 'এই ব্যবহারকারী শুধু নির্দিষ্ট মানুষের মেসেজ গ্রহণ করেন।'
 
 
+def _can_call(caller, callee):
+    """Whether [caller] is allowed to make [callee]'s phone ring.
+
+    Chat has enforced blocking and who_can_message since it shipped; calling
+    enforced neither, so someone you had blocked could still ring you at three
+    in the morning — a louder intrusion than the message they were stopped
+    from sending. A call is held to at least the same bar.
+
+    Returns (allowed: bool, reason: str).
+    """
+    blocked = BlockedUser.objects.filter(
+        Q(blocker=caller, blocked=callee) | Q(blocker=callee, blocked=caller)
+    ).exists()
+    if blocked:
+        # Deliberately the same wording in both directions. Telling the caller
+        # "you are blocked" hands them information the person who blocked them
+        # did not choose to share.
+        return False, 'এই ব্যবহারকারীকে এখন কল করা যাচ্ছে না।'
+
+    allowed, _reason = _can_message(caller, callee)
+    if not allowed:
+        return False, 'এই ব্যবহারকারী শুধু নির্দিষ্ট মানুষের কল গ্রহণ করেন।'
+    return True, ''
+
+
+#: How many unanswered rings one person may send another before being asked to
+#: stop, and the window that is measured over. Generous enough for the normal
+#: "they did not pick up, try again" and short of ring-bombing.
+_RING_ATTEMPT_LIMIT = 5
+_RING_ATTEMPT_WINDOW_MINUTES = 15
+
+
+def _ring_attempts_exhausted(caller, callee):
+    """True when this pair's recent history is nothing but unanswered rings.
+
+    A single answered call resets the count, so two people who actually talk
+    are never affected by this.
+    """
+    since = timezone.now() - timezone.timedelta(minutes=_RING_ATTEMPT_WINDOW_MINUTES)
+    recent = CallSession.objects.filter(
+        caller=caller, callee=callee, started_at__gte=since,
+    ).order_by('-started_at')[:_RING_ATTEMPT_LIMIT]
+    recent = list(recent)
+    if len(recent) < _RING_ATTEMPT_LIMIT:
+        return False
+    return all(session.accepted_at is None for session in recent)
+
+
+def _valid_new_call_id(value):
+    """A client-supplied call id, only if it is a UUID nobody is using."""
+    raw = str(value or '').strip()
+    if not raw:
+        return None
+    try:
+        parsed = uuid.UUID(raw)
+    except (ValueError, AttributeError, TypeError):
+        return None
+    if CallSession.objects.filter(id=parsed).exists():
+        return None
+    return parsed
+
+
 def _receiver_follows_sender(message):
     """True when the message receiver follows the sender — used to spare
     trusted senders from the spam filter."""
@@ -809,6 +871,16 @@ def send_call_notification(request):
         if caller == callee:
             return Response({'error': 'Cannot call yourself'}, status=status.HTTP_400_BAD_REQUEST)
 
+        allowed, reason = _can_call(caller, callee)
+        if not allowed:
+            return Response({'error': reason}, status=status.HTTP_403_FORBIDDEN)
+
+        if _ring_attempts_exhausted(caller, callee):
+            return Response(
+                {'error': 'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।'},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
         # Placing a call is proof the caller is not in the old one.
         #
         # A session that was accepted but never properly hung up (the app was
@@ -866,7 +938,6 @@ def send_call_notification(request):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        provided_call_id = request.data.get('call_id')
         session_kwargs = {
             'channel_name': str(channel_name),
             'caller': caller,
@@ -874,6 +945,12 @@ def send_call_notification(request):
             'call_type': call_type,
             'status': CallSession.STATUS_RINGING,
         }
+        # A client-chosen primary key was accepted here verbatim. A malformed
+        # one turned the endpoint into a 500, and one that already existed
+        # collided with a real session. The client has no need to name the row
+        # — it reads the id back from this response — so an unusable value is
+        # simply dropped rather than argued about.
+        provided_call_id = _valid_new_call_id(request.data.get('call_id'))
         if provided_call_id:
             session_kwargs['id'] = provided_call_id
         call_session = CallSession.objects.create(**session_kwargs)
@@ -1018,6 +1095,13 @@ def invite_to_call(request):
                 results.append({'user_id': invitee_id, 'status': 'not_found'})
                 continue
 
+            # An invitation rings a phone exactly like a call does, so it
+            # answers to the same blocking and privacy rules.
+            allowed, _reason = _can_call(inviter, invitee)
+            if not allowed:
+                results.append({'user_id': invitee_id, 'status': 'not_allowed'})
+                continue
+
             if _active_call_for_user(invitee):
                 results.append({'user_id': invitee_id, 'status': 'busy'})
                 continue
@@ -1112,6 +1196,28 @@ def send_call_status(request):
             channel_name=str(channel_name),
             call_id=call_id,
         )
+
+        # No session the sender belongs to means no call to report on.
+        #
+        # This used to fall through and broadcast anyway, which made the
+        # endpoint a way for any signed-in account to push a call event —
+        # complete with a data push that wakes the device — at any other
+        # account, for any channel name it cared to name. Someone who learned a
+        # live channel name could hang up a stranger's call with it.
+        if call_session is None:
+            return Response(
+                {'error': 'Call session not found'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # And the status only travels to someone who is also on that call.
+        if not CallSession.objects.filter(
+            pk=call_session.pk,
+        ).filter(_call_membership_q(receiver)).exists():
+            return Response(
+                {'error': 'Receiver is not part of this call'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         if call_session:
             # An invited third party speaks only for themselves. Letting their

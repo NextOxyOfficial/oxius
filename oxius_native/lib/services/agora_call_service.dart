@@ -19,15 +19,6 @@ void _log(String message) {
 }
 
 class AgoraCallService {
-  // Agora RTC App ID — the backend (server settings AGORA_APP_ID) is the source
-  // of truth. It is adopted from the token endpoint response at call time, so
-  // there is no stale hardcoded App ID in the app. The build-time define is only
-  // an optional bootstrap fallback and is normally empty.
-  static String appId = const String.fromEnvironment(
-    'AGORA_APP_ID',
-    defaultValue: '',
-  );
-
   /// True while rejoinChannel() is deliberately leaving and re-entering the
   /// channel. Engine events during that window describe our own teardown, not
   /// a broken call, and must not reach the error stream.
@@ -434,28 +425,6 @@ class AgoraCallService {
     }
   }
 
-  /// Load the Agora App ID from the backend (server settings) when it isn't
-  /// known yet. Keeps the project out of the frontend as a hardcode.
-  static const String _prefsAppIdKey = 'agora_app_id_v1';
-
-  /// Cache the App ID so the next cold start knows it without a round-trip.
-  static Future<void> _rememberAppId(String id) async {
-    if (id.trim().isEmpty) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_prefsAppIdKey, id.trim());
-    } catch (_) {}
-  }
-
-  static int generateUid() {
-    // Use the full positive 31-bit range so two independently-generated UIDs in
-    // the same channel practically never collide. A collision would make Agora
-    // kick the first joiner when the second joins with the same UID, which looks
-    // exactly like "the other party can't connect". 1..2147483646 is always a
-    // valid Agora UID (0 is reserved for "let the SDK assign one").
-    return Random().nextInt(2147483646) + 1;
-  }
-
   /// iOS only: proactively request microphone and camera so the app appears
   /// under Settings > Privacy & Security > Microphone / Camera on first launch,
   /// even before the user makes their first call.  On Android this is a no-op
@@ -555,26 +524,50 @@ class AgoraCallService {
   }
 
   static String _friendlyHttpError(http.Response response) {
+    // The server explains a refusal in words meant for this user — blocked,
+    // privacy-restricted, ringing too often. Its own sentence beats anything
+    // guessed from a status code, and a 403 in particular is no longer only
+    // ever an expired session.
+    final serverMessage = _serverErrorMessage(response.body);
+    if (serverMessage != null) return serverMessage;
+
     switch (response.statusCode) {
       case 400:
-        return 'Invalid call request. Please try again.';
+        return 'কল অনুরোধটি সঠিক নয়। আবার চেষ্টা করুন।';
       case 401:
+        return 'আপনার সেশন শেষ হয়ে গেছে। আবার সাইন ইন করুন।';
       case 403:
-        return 'Your session expired. Please sign in again.';
+        return 'এই ব্যবহারকারীকে এখন কল করা যাচ্ছে না।';
       case 404:
-        return 'Recipient is unavailable right now.';
+        return 'ব্যবহারকারী এখন উপলব্ধ নন।';
       case 409:
-        return 'Recipient is already on another call.';
+        return 'ব্যবহারকারী এখন অন্য কলে আছেন।';
+      case 429:
+        return 'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
       default:
         if (response.statusCode >= 500) {
-          return 'Call service is unavailable right now. Please try again.';
+          return 'কল সার্ভিস এখন কাজ করছে না। একটু পরে চেষ্টা করুন।';
         }
+        return 'কল অনুরোধটি সম্পন্ন করা গেল না।';
+    }
+  }
 
-        final body = response.body.trim();
-        if (body.isEmpty || body.length > 160 || body.startsWith('<!DOCTYPE')) {
-          return 'Unable to complete the call request right now.';
-        }
-        return body;
+  /// The backend's own `error` / `detail` string, when it sent one that is
+  /// safe to show. Anything HTML-shaped, empty or overlong is a stack trace or
+  /// a proxy page, not a message for a user.
+  static String? _serverErrorMessage(String body) {
+    final trimmed = body.trim();
+    if (trimmed.isEmpty || !trimmed.startsWith('{')) return null;
+    try {
+      final decoded = json.decode(trimmed);
+      if (decoded is! Map) return null;
+      final raw = decoded['error'] ?? decoded['detail'];
+      if (raw is! String) return null;
+      final message = raw.trim();
+      if (message.isEmpty || message.length > 160) return null;
+      return message;
+    } catch (_) {
+      return null;
     }
   }
 }
