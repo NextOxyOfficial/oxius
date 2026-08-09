@@ -9,6 +9,7 @@ import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/house_ads_service.dart';
 import '../../widgets/ads/ad_follow_button.dart';
+import '../../widgets/app_network_image.dart';
 import '../../widgets/ads/house_ad_card.dart';
 import '../../widgets/ads/shorts_cta_bar.dart';
 import '../../services/user_suggestions_service.dart';
@@ -1025,12 +1026,11 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               if (ad.images.isNotEmpty)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
+                  child: AppNetworkImage(
                     ad.images.first,
                     width: double.infinity,
                     height: 180,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    errorWidget: const SizedBox.shrink(),
                   ),
                 ),
               const SizedBox(height: 12),
@@ -1635,10 +1635,10 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
           if (thumbUrl.isNotEmpty)
             ImageFiltered(
               imageFilter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
-              child: Image.network(
+              child: AppNetworkImage(
                 thumbUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(color: Colors.black),
+                errorWidget: const ColoredBox(color: Colors.black),
+                placeholder: const ColoredBox(color: Colors.black),
               ),
             )
           else
@@ -1763,12 +1763,10 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
               fit: StackFit.expand,
               children: [
                 if (thumbUrl.isNotEmpty)
-                  Image.network(
+                  AppNetworkImage(
                     thumbUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return thumbFallback();
-                    },
+                    errorWidget: thumbFallback(),
+                    placeholder: thumbFallback(),
                   )
                 else
                   thumbFallback(),
@@ -1984,11 +1982,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                   width: 54,
                                   height: 54,
                                   child: _bannerAd!.images.isNotEmpty
-                                      ? Image.network(
+                                      ? AppNetworkImage(
                                           _bannerAd!.images.first,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
-                                              const ColoredBox(
+                                          errorWidget: const ColoredBox(
                                             color: Color(0x33FFFFFF),
                                             child: Icon(Icons.campaign_outlined,
                                                 size: 22,
@@ -2137,11 +2133,10 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                                     post.user.image) ??
                                                 '')
                                             .isNotEmpty
-                                        ? Image.network(
+                                        ? AppNetworkImage(
                                             (post.user.avatar ??
                                                 post.user.image)!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (c, e, s) =>
+                                            errorWidget:
                                                 const _AvatarFallback(),
                                           )
                                         : const _AvatarFallback(),
@@ -2842,12 +2837,9 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: _authorAvatar.isNotEmpty
-                            ? Image.network(_authorAvatar,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                    Icons.person_rounded,
-                                    size: 20,
-                                    color: Colors.white70))
+                            ? AppNetworkImage(_authorAvatar,
+                                errorWidget: const Icon(Icons.person_rounded,
+                                    size: 20, color: Colors.white70))
                             : const Icon(Icons.person_rounded,
                                 size: 20, color: Colors.white70),
                         ),

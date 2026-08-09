@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import 'package:flutter_html/flutter_html.dart';
 import '../../models/gold_sponsor_models.dart';
+import '../app_network_image.dart';
 import '../../screens/business_network/gold_sponsors_screen.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../utils/url_launcher_utils.dart';
@@ -211,16 +212,13 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                     ),
                     child: ClipOval(
                       child: sponsor.logo != null
-                          ? Image.network(
+                          ? AppNetworkImage(
                               sponsor.logo!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey.shade200,
-                                  child: Icon(Icons.business,
-                                      color: Colors.grey.shade400, size: 24),
-                                );
-                              },
+                              errorWidget: Container(
+                                color: Colors.grey.shade200,
+                                child: Icon(Icons.business,
+                                    color: Colors.grey.shade400, size: 24),
+                              ),
                             )
                           : Container(
                               color: Colors.grey.shade200,
@@ -596,10 +594,9 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
                 controller: _pageController,
                 onPageChanged: (i) => setState(() => _currentBannerIndex = i),
                 itemCount: _banners.length,
-                itemBuilder: (context, index) => Image.network(
+                itemBuilder: (context, index) => AppNetworkImage(
                   _banners[index].image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _bannerFallback(),
+                  errorWidget: _bannerFallback(),
                 ),
               )
             else
@@ -756,10 +753,9 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: widget.sponsor.logo != null
-            ? Image.network(
+            ? AppNetworkImage(
                 widget.sponsor.logo!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _logoFallback(),
+                errorWidget: _logoFallback(),
               )
             : _logoFallback(),
       ),
@@ -849,11 +845,9 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
                                             () => _currentBannerIndex = i),
                                         itemCount: _banners.length,
                                         itemBuilder: (context, index) =>
-                                            Image.network(
+                                            AppNetworkImage(
                                           _banners[index].image,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
-                                              _bannerFallback(),
+                                          errorWidget: _bannerFallback(),
                                         ),
                                       )
                                     else
@@ -952,10 +946,9 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(13),
                                     child: widget.sponsor.logo != null
-                                        ? Image.network(widget.sponsor.logo!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
-                                                _logoFallback())
+                                        ? AppNetworkImage(
+                                            widget.sponsor.logo!,
+                                            errorWidget: _logoFallback())
                                         : _logoFallback(),
                                   ),
                                 ),

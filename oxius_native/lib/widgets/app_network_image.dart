@@ -24,6 +24,7 @@ class AppNetworkImage extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.fadeIn = true,
+    this.httpHeaders,
   });
 
   final String? url;
@@ -44,6 +45,11 @@ class AppNetworkImage extends StatelessWidget {
   /// would add a delay the user can see. Off for hero-sized art that should
   /// simply appear.
   final bool fadeIn;
+
+  /// Headers the fetch must carry. Chat and post media live behind a CDN that
+  /// refuses Dart's default User-Agent, so those call sites pass
+  /// `kMediaHeaders` — without it the picture simply never arrives.
+  final Map<String, String>? httpHeaders;
 
   Widget _fallback(BuildContext context) =>
       errorWidget ??
@@ -81,6 +87,7 @@ class AppNetworkImage extends StatelessWidget {
     return _wrap(
       CachedNetworkImage(
         imageUrl: src,
+        httpHeaders: httpHeaders,
         width: width,
         height: height,
         fit: fit,

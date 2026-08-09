@@ -5,6 +5,7 @@ import 'message_reaction_bar.dart';
 import 'message_reactors_sheet.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
+import '../app_network_image.dart';
 import '../../services/business_network_service.dart';
 import '../../utils/media_headers.dart';
 import '../../utils/mention_navigator.dart';
@@ -91,13 +92,12 @@ class ChatReplyQuoteCard extends StatelessWidget {
             if (quotedThumb.isNotEmpty) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
-                child: Image.network(
+                child: AppNetworkImage(
                   quotedThumb,
                   width: 34,
                   height: 34,
-                  fit: BoxFit.cover,
-                  headers: kMediaHeaders,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  httpHeaders: kMediaHeaders,
+                  errorWidget: const SizedBox.shrink(),
                 ),
               ),
               const SizedBox(width: 8),
@@ -498,10 +498,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       child: avatarUrl.isEmpty
           ? fallback()
           : ClipOval(
-              child: Image.network(
+              child: AppNetworkImage(
                 avatarUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => fallback(),
+                errorWidget: fallback(),
               ),
             ),
     );
@@ -839,13 +838,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                         // a stripe beside the text rather than the thing the
                         // card is about.
                         width: 98,
-                        child: Image.network(
+                        child: AppNetworkImage(
                           thumb,
-                          fit: BoxFit.cover,
                           // The CDN serves media only to a recognised client.
-                          headers: kMediaHeaders,
-                          errorBuilder: (_, __, ___) =>
-                              _sharedThumbFallback(),
+                          httpHeaders: kMediaHeaders,
+                          errorWidget: _sharedThumbFallback(),
                         ),
                       )
                     else
@@ -1156,16 +1153,15 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: isUrl
-            ? Image.network(
+            ? AppNetworkImage(
                 filePath,
                 width: 180,
                 height: 120,
-                fit: BoxFit.cover,
                 // The CDN rejects Dart's default User-Agent — without this
                 // header the thumbnail silently fails while the full-screen
                 // viewer (which sends it) works.
-                headers: kMediaHeaders,
-                errorBuilder: (_, __, ___) => _imagePlaceholder(
+                httpHeaders: kMediaHeaders,
+                errorWidget: _imagePlaceholder(
                     Icons.broken_image_rounded, 'Failed to load'),
               )
             : Image.file(
@@ -1452,10 +1448,9 @@ class _SharedThumbResolverState extends State<_SharedThumbResolver> {
     if (t.isEmpty) return const SizedBox.shrink();
     return SizedBox(
       width: 78,
-      child: Image.network(
+      child: AppNetworkImage(
         AppConfig.getAbsoluteUrl(t),
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+        errorWidget: const SizedBox.shrink(),
       ),
     );
   }
