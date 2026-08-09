@@ -52,6 +52,7 @@ class UserProfile {
   final bool? skillsPublic;
   // AdsyConnect messaging privacy: everyone | followers | following | mutual.
   final String? whoCanMessage;
+  final String? followListVisibility;
 
   UserProfile({
     this.id,
@@ -104,6 +105,7 @@ class UserProfile {
     this.educationPublic,
     this.skillsPublic,
     this.whoCanMessage,
+    this.followListVisibility,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -158,6 +160,8 @@ class UserProfile {
       educationPublic: json['education_public'],
       skillsPublic: json['skills_public'],
       whoCanMessage: json['who_can_message']?.toString(),
+      followListVisibility:
+          json['follow_list_visibility']?.toString(),
     );
   }
 
@@ -243,6 +247,7 @@ class UserProfile {
     bool? whatsappPublic,
     bool? aboutPublic,
     String? whoCanMessage,
+    String? followListVisibility,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -283,6 +288,8 @@ class UserProfile {
       whatsappPublic: whatsappPublic ?? this.whatsappPublic,
       aboutPublic: aboutPublic ?? this.aboutPublic,
       whoCanMessage: whoCanMessage ?? this.whoCanMessage,
+      followListVisibility:
+          followListVisibility ?? this.followListVisibility,
     );
   }
 }

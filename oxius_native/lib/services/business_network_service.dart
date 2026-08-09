@@ -1013,6 +1013,17 @@ class BusinessNetworkService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       }
+      // 403 is the owner keeping this list private — a real answer, not a
+      // failure. Returning a bare empty list here would render as "no one",
+      // which is a different and wrong statement.
+      if (response.statusCode == 403) {
+        return {
+          'results': [],
+          'count': 0,
+          'restricted': true,
+          'message': _restrictedListMessage(response.body),
+        };
+      }
       return {'results': [], 'count': 0};
     } catch (e) {
       debugPrint('Error fetching followers: $e');
@@ -1033,11 +1044,35 @@ class BusinessNetworkService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       }
+      // 403 is the owner keeping this list private — a real answer, not a
+      // failure. Returning a bare empty list here would render as "no one",
+      // which is a different and wrong statement.
+      if (response.statusCode == 403) {
+        return {
+          'results': [],
+          'count': 0,
+          'restricted': true,
+          'message': _restrictedListMessage(response.body),
+        };
+      }
       return {'results': [], 'count': 0};
     } catch (e) {
       debugPrint('Error fetching following: $e');
       return {'results': [], 'count': 0};
     }
+  }
+
+  /// Pulls the server's explanation out of a 403 body, falling back to a
+  /// plain one so the UI never has to invent wording.
+  static String _restrictedListMessage(String body) {
+    try {
+      final decoded = json.decode(body);
+      if (decoded is Map) {
+        final detail = decoded['detail'] ?? decoded['error'];
+        if (detail is String && detail.trim().isNotEmpty) return detail.trim();
+      }
+    } catch (_) {}
+    return 'এই তালিকাটি ব্যবহারকারী গোপন রেখেছেন।';
   }
 
   /// Get user profile data

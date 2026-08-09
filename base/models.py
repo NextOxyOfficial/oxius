@@ -212,6 +212,22 @@ class User(AbstractUser):
     who_can_message = models.CharField(
         max_length=20, choices=WHO_CAN_MESSAGE_CHOICES, default="everyone"
     )
+    # Who may open this user's follower and following lists.
+    #
+    # Only the lists — the counts stay visible to everyone. A hidden count
+    # tells the visitor something is being kept from them, which is a louder
+    # signal than the number itself; hiding who those people are is the thing
+    # users actually ask for.
+    FOLLOW_LIST_VISIBILITY_CHOICES = [
+        ("everyone", "Everyone"),
+        ("followers", "People who follow me"),
+        ("only_me", "Only me"),
+    ]
+    follow_list_visibility = models.CharField(
+        max_length=20,
+        choices=FOLLOW_LIST_VISIBILITY_CHOICES,
+        default="everyone",
+    )
     # Account suspension. Unlike is_active (which blocks auth entirely), a
     # suspended user can still authenticate so the app can show a "suspended"
     # lock screen — but middleware blocks every service endpoint.

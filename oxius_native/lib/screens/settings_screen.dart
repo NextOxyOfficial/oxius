@@ -438,7 +438,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         (current.whatsappPublic ?? true) != (original.whatsappPublic ?? true) ||
         (current.aboutPublic ?? true) != (original.aboutPublic ?? true) ||
         (current.whoCanMessage ?? 'everyone') !=
-            (original.whoCanMessage ?? 'everyone');
+            (original.whoCanMessage ?? 'everyone') ||
+        (current.followListVisibility ?? 'everyone') !=
+            (original.followListVisibility ?? 'everyone');
   }
 
   int get _passwordStrength {
@@ -703,6 +705,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'whatsapp_public': _userProfile?.whatsappPublic ?? true,
         'about_public': _userProfile?.aboutPublic ?? true,
         'who_can_message': _userProfile?.whoCanMessage ?? 'everyone',
+        'follow_list_visibility':
+            _userProfile?.followListVisibility ?? 'everyone',
       };
 
       if (!_isKycLocked) {
@@ -763,6 +767,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'whatsapp_public': _userProfile?.whatsappPublic ?? true,
         'about_public': _userProfile?.aboutPublic ?? true,
         'who_can_message': _userProfile?.whoCanMessage ?? 'everyone',
+        'follow_list_visibility':
+            _userProfile?.followListVisibility ?? 'everyone',
       };
 
       final result =
@@ -2105,6 +2111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final phonePreview = _maskPhone(profile.phone ?? '', phonePublic);
 
     final whoCanMessage = profile.whoCanMessage ?? 'everyone';
+    final followListVisibility = profile.followListVisibility ?? 'everyone';
 
     return _buildRefreshableTab(
       key: const ValueKey('privacy-tab'),
@@ -2149,6 +2156,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   description: _t('settings_msg_mutual_desc',
                       'দুজন দুজনকে ফলো করলে তবেই মেসেজ পাঠানো যাবে।'),
                   isLast: true,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildSectionCard(
+            title: _t('settings_follow_list_visibility',
+                'ফলোয়ার ও ফলোইং তালিকা'),
+            subtitle: _t('settings_follow_list_visibility_sub',
+                'আপনার ফলোয়ার ও ফলোইং তালিকা কারা দেখতে পাবে ঠিক করুন। সংখ্যা সবাই দেখতে পাবে।'),
+            icon: Icons.groups_outlined,
+            child: Column(
+              children: [
+                _buildMessagePrivacyOption(
+                  value: 'everyone',
+                  groupValue: followListVisibility,
+                  icon: Icons.public_rounded,
+                  title: _t('settings_follow_list_everyone', 'সবাই'),
+                  description: _t('settings_follow_list_everyone_desc',
+                      'যে কেউ আপনার ফলোয়ার ও ফলোইং তালিকা দেখতে পাবে।'),
+                  onSelect: _setFollowListVisibility,
+                ),
+                _buildMessagePrivacyOption(
+                  value: 'followers',
+                  groupValue: followListVisibility,
+                  icon: Icons.group_outlined,
+                  title: _t('settings_follow_list_followers', 'যারা ফলো করে'),
+                  description: _t('settings_follow_list_followers_desc',
+                      'শুধু আপনাকে ফলো করা ব্যবহারকারীরাই তালিকা দেখতে পাবে।'),
+                  onSelect: _setFollowListVisibility,
+                ),
+                _buildMessagePrivacyOption(
+                  value: 'only_me',
+                  groupValue: followListVisibility,
+                  icon: Icons.lock_outline_rounded,
+                  title: _t('settings_follow_list_only_me', 'শুধু আমি'),
+                  description: _t('settings_follow_list_only_me_desc',
+                      'আপনি ছাড়া কেউ এই তালিকা দেখতে পাবে না।'),
+                  isLast: true,
+                  onSelect: _setFollowListVisibility,
                 ),
               ],
             ),
@@ -2357,6 +2404,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // A single selectable "who can message me" choice — radio-style row.
+  void _setFollowListVisibility(String value) {
+    setState(() {
+      _userProfile = _userProfile?.copyWith(followListVisibility: value);
+    });
+  }
+
   Widget _buildMessagePrivacyOption({
     required String value,
     required String groupValue,
@@ -2364,6 +2417,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String description,
     bool isLast = false,
+    // Which setting this row belongs to. Defaults to who-can-message so the
+    // existing card keeps working untouched.
+    ValueChanged<String>? onSelect,
   }) {
     final selected = value == groupValue;
     const accent = Color(0xFF3B82F6);
@@ -2372,6 +2428,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
+          if (onSelect != null) {
+            onSelect(value);
+            return;
+          }
           setState(() {
             _userProfile = _userProfile?.copyWith(whoCanMessage: value);
           });

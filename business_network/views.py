@@ -1940,22 +1940,70 @@ class UserUnfollowDestroyView(generics.DestroyAPIView):
         _clear_business_network_social_cache(self.request.user, following)
 
 
-class UserFollowersListView(generics.ListAPIView):
+def can_view_follow_lists(viewer, owner):
+    """Whether [viewer] may open [owner]'s follower / following lists.
+
+    The setting belongs to the person whose lists they are, so this reads it
+    off the owner and never off the request. An anonymous visitor is only ever
+    allowed when the lists are public — they cannot be anyone's follower.
+    """
+    if owner is None:
+        return False
+
+    pref = getattr(owner, "follow_list_visibility", "everyone") or "everyone"
+    if pref == "everyone":
+        return True
+
+    viewer_id = getattr(viewer, "id", None)
+    if viewer_id is None or not getattr(viewer, "is_authenticated", False):
+        return False
+    if str(viewer_id) == str(owner.id):
+        return True  # your own lists are always yours to read
+
+    if pref == "followers":
+        return BusinessNetworkFollowerModel.objects.filter(
+            follower_id=viewer_id, following_id=owner.id
+        ).exists()
+
+    # "only_me", or an unrecognised value stored by an older client.
+    return False
+
+
+class _FollowListPrivacyMixin:
+    """Shared 403 for a follow list its owner has chosen to keep private."""
+
+    def _guard(self):
+        from django.http import Http404
+
+        user_id = self.kwargs.get("user_id")
+        owner = User.objects.filter(id=user_id).first()
+        if owner is None:
+            raise Http404("User not found")
+        if not can_view_follow_lists(self.request.user, owner):
+            raise PermissionDenied(
+                "এই তালিকাটি ব্যবহারকারী গোপন রেখেছেন।"
+            )
+        return owner
+
+
+class UserFollowersListView(_FollowListPrivacyMixin, generics.ListAPIView):
     serializer_class = BusinessNetworkFollowerSerializer
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        self._guard()
         user_id = self.kwargs.get("user_id")
         return BusinessNetworkFollowerModel.objects.filter(following=user_id).order_by(
             "-created_at"
         )
 
 
-class UserFollowingListView(generics.ListAPIView):
+class UserFollowingListView(_FollowListPrivacyMixin, generics.ListAPIView):
     serializer_class = BusinessNetworkFollowerSerializer
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        self._guard()
         user_id = self.kwargs.get("user_id")
         return BusinessNetworkFollowerModel.objects.filter(follower=user_id).order_by(
             "-created_at"

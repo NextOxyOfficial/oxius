@@ -3078,6 +3078,10 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
   bool _isLoading = true;
   int _page = 1;
   bool _hasMore = true;
+
+  /// Set when the owner keeps this list private — the empty list then means
+  /// "you may not see this", not "there is no one".
+  String? _restrictedMessage;
   final ScrollController _scrollController = ScrollController();
   // Local overrides after a follow/unfollow tap (key: user id).
   final Map<String, bool> _followState = {};
@@ -3132,6 +3136,8 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
       setState(() {
         _users = List<Map<String, dynamic>>.from(result['results'] ?? []);
         _hasMore = result['next'] != null;
+        _restrictedMessage =
+            result['restricted'] == true ? result['message']?.toString() : null;
         _isLoading = false;
       });
     }
@@ -3234,23 +3240,35 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                   )
                 : _users.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.people_outline_rounded,
-                                size: 40, color: Colors.grey.shade300),
-                            const SizedBox(height: 8),
-                            Text(
-                              widget.type == 'followers'
-                                  ? 'No followers yet'
-                                  : 'Not following anyone',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade500,
-                                fontWeight: FontWeight.w500,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                  _restrictedMessage != null
+                                      ? Icons.lock_outline_rounded
+                                      : Icons.people_outline_rounded,
+                                  size: 40,
+                                  color: Colors.grey.shade300),
+                              const SizedBox(height: 8),
+                              Text(
+                                // "Private" and "empty" are different answers,
+                                // and showing the second for the first tells
+                                // the visitor something untrue about the user.
+                                _restrictedMessage ??
+                                    (widget.type == 'followers'
+                                        ? 'এখনো কোনো ফলোয়ার নেই'
+                                        : 'কাউকে ফলো করছেন না'),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade500,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       )
                     : ListView.builder(
