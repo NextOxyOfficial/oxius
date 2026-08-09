@@ -770,6 +770,30 @@ class CallSession(models.Model):
     last_status_at = models.DateTimeField(default=timezone.now)
     duration_seconds = models.PositiveIntegerField(null=True, blank=True)
 
+    # When the original pair left, individually.
+    #
+    # A one-to-one call needs neither: whoever hangs up, the call is over.
+    # The moment a third person is invited that stops being true — the
+    # person who started the call can drop out while the other two keep
+    # talking — and 'status' alone cannot express "the caller is gone but
+    # the call is not". These two can.
+    caller_left_at = models.DateTimeField(null=True, blank=True)
+    callee_left_at = models.DateTimeField(null=True, blank=True)
+
+    # The group chat this call turned into, once a third person joined it.
+    #
+    # Adding someone to a two-person call makes it a group, and a group that
+    # exists only for the duration of the call is a group people lose the
+    # moment they hang up. Held on the session so a fourth and fifth invite
+    # land in the same group rather than starting new ones.
+    chat_group = models.ForeignKey(
+        'ChatGroup',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='call_sessions',
+    )
+
     class Meta:
         db_table = 'adsyconnect_call_sessions'
         ordering = ['-started_at']
@@ -810,6 +834,63 @@ class CallSession(models.Model):
                 update_fields.append('duration_seconds')
 
         self.save(update_fields=update_fields)
+
+    def has_extra_participants(self):
+        """Whether anyone beyond the original pair is still on this call.
+
+        This is what makes a call a group call, and it is deliberately the
+        only thing that switches on the group behaviour below — a call that
+        never had a third person keeps the exact one-to-one semantics it
+        always had, where whoever hangs up ends it.
+        """
+        return self.participants.exclude(
+            status__in=CallParticipant.TERMINAL_STATUSES
+        ).exists()
+
+    def live_member_ids(self):
+        """Everyone still on the call, or still expected to join it.
+
+        Invitees who are only ringing count: they have not declined, and
+        hanging up on them because the two people already talking dropped to
+        one would cut off a call somebody is in the middle of answering.
+        """
+        ids = []
+        if self.caller_left_at is None:
+            ids.append(self.caller_id)
+        if self.callee_left_at is None:
+            ids.append(self.callee_id)
+        ids.extend(
+            self.participants.exclude(
+                status__in=CallParticipant.TERMINAL_STATUSES
+            ).values_list('user_id', flat=True)
+        )
+
+        seen = set()
+        unique = []
+        for user_id in ids:
+            if user_id in seen:
+                continue
+            seen.add(user_id)
+            unique.append(user_id)
+        return unique
+
+    def mark_member_left(self, user, *, at=None):
+        """Record one person leaving a group call, whoever they are.
+
+        Returns True when the departure was recorded against this session's
+        own pair. An invited participant carries their own status row and is
+        not this method's business.
+        """
+        timestamp = at or timezone.now()
+        if user.id == self.caller_id and self.caller_left_at is None:
+            self.caller_left_at = timestamp
+            self.save(update_fields=['caller_left_at'])
+            return True
+        if user.id == self.callee_id and self.callee_left_at is None:
+            self.callee_left_at = timestamp
+            self.save(update_fields=['callee_left_at'])
+            return True
+        return False
 
 
 class CallParticipant(models.Model):

@@ -92,6 +92,10 @@ class _CallScreenState extends State<CallScreen>
   DateTime? _callStartedAt;
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
+
+  /// "Someone left the call" and the like — shown briefly, then gone.
+  String? _transientNote;
+  Timer? _transientNoteTimer;
   bool _isClosing = false;
   bool _isMinimizing = false;
   bool _didEndCall = false;
@@ -273,6 +277,22 @@ class _CallScreenState extends State<CallScreen>
       }
 
       if (_didEndCall) {
+        return;
+      }
+
+      // One person out of several leaving. Not the end of anything — the
+      // media layer drops their tile on its own, and the rest keep talking.
+      if (status == 'participant_left') {
+        final who = data['left_user_name']?.toString().trim() ?? '';
+        if (who.isNotEmpty) _showTransientNote('$who left the call');
+        return;
+      }
+
+      // The same protection one level down, for a terminal status that
+      // somehow arrives while other people are still connected. Whoever sent
+      // it is speaking for themselves; the call is over when the last person
+      // goes, and the remote-leave handler above is what decides that.
+      if (_peers.isNotEmpty) {
         return;
       }
 
@@ -1206,6 +1226,21 @@ class _CallScreenState extends State<CallScreen>
     });
   }
 
+  /// A note that clears itself, for something that happened to someone else.
+  ///
+  /// [_showOverlayAndClose] is for the end of a call and stays up until the
+  /// screen goes. "Someone left" is not the end of anything, so it must not
+  /// use the same overlay — it would sit there reading like a hang-up
+  /// through the rest of the conversation.
+  void _showTransientNote(String text) {
+    if (!mounted) return;
+    setState(() => _transientNote = text);
+    _transientNoteTimer?.cancel();
+    _transientNoteTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _transientNote = null);
+    });
+  }
+
   // ---------------------------------------------------------------------
   // Group calls
   // ---------------------------------------------------------------------
@@ -1435,6 +1470,7 @@ class _CallScreenState extends State<CallScreen>
     _tracksSub?.cancel();
     _poorConnectionSub?.cancel();
     _callStateSub?.cancel();
+    _transientNoteTimer?.cancel();
     _upgradeTimeout?.cancel();
     _durationTimer?.cancel();
     _ringingTimer?.cancel();
@@ -1566,6 +1602,7 @@ class _CallScreenState extends State<CallScreen>
                   if (_hasPoorConnection && _stage == _CallStage.connected)
                     _buildPoorConnectionBanner(),
                   if (_statusOverlay != null) _buildStatusOverlay(),
+                  if (_transientNote != null) _buildTransientNote(),
                   if (_callAccepted || !widget.isIncoming) _buildCallControls(),
                 ],
               ),
@@ -2527,6 +2564,46 @@ class _CallScreenState extends State<CallScreen>
   /// Without it a bad connection is indistinguishable from the other person
   /// having stopped talking, and the usual response is to say "hello?" for
   /// twenty seconds and then blame the app.
+  /// "X left the call" — same pill as the connection warning, sitting just
+  /// below it so the two can be on screen at once without overlapping.
+  Widget _buildTransientNote() {
+    return Positioned(
+      top: (_isCompactLayout ? 78 : 92) + (_hasPoorConnection ? 40 : 0),
+      left: 18,
+      right: 18,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.logout_rounded,
+                  color: Color(0xFF94A3B8), size: 15),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  _transientNote!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPoorConnectionBanner() {
     return Positioned(
       top: _isCompactLayout ? 78 : 92,

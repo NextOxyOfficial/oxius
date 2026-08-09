@@ -1155,6 +1155,119 @@ def send_call_notification(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def _group_display_name(user):
+    return (
+        (getattr(user, 'first_name', '') or '').strip()
+        or (getattr(user, 'name', '') or '').strip().split(' ')[0]
+        or (getattr(user, 'username', '') or '').strip()
+        or 'Someone'
+    )
+
+
+def _post_group_system_message(group, sender, text, *, request=None):
+    """A centered activity notice, pushed to every member's socket.
+
+    Mirrors ChatGroupViewSet._system_msg. Kept as a plain function because
+    this one is posted from the call endpoints, which have no viewset around
+    them to borrow the method from.
+    """
+    msg = GroupMessage.objects.create(
+        group=group, sender=sender, message_type='system', content=text,
+    )
+    group.last_message_at = msg.created_at
+    group.last_message_preview = text[:80]
+    group.save(update_fields=['last_message_at', 'last_message_preview'])
+
+    payload = GroupMessageSerializer(
+        msg, context={'request': request} if request else {}
+    ).data
+    for member_id in group.memberships.values_list('user_id', flat=True):
+        _broadcast_to_user(member_id, {'type': 'group_message', 'message': payload})
+    return msg
+
+
+def _ensure_call_chat_group(call_session, *, inviter, invitees, request=None):
+    """Turn a two-person call into a real group the moment a third joins.
+
+    Adding someone to a one-to-one call makes it a group call, and a group
+    that exists only while the call is running is one people lose the second
+    they hang up — the conversation has nowhere to continue. So the call
+    creates an actual ChatGroup with everyone in it, which shows up in the
+    chat list like any other group and behaves like one afterwards.
+
+    Idempotent per session: a fourth and fifth invite join the same group
+    rather than starting new ones.
+    """
+    if not invitees:
+        return None
+
+    members = [call_session.caller, call_session.callee]
+    members.extend(
+        p.user for p in call_session.participants.filter(
+            status__in=[CallParticipant.STATUS_RINGING,
+                        CallParticipant.STATUS_ACCEPTED],
+        ).select_related('user')
+    )
+    members.extend(invitees)
+
+    unique_members = []
+    seen = set()
+    for member in members:
+        if member is None or member.id in seen:
+            continue
+        seen.add(member.id)
+        unique_members.append(member)
+
+    group = call_session.chat_group
+    created = group is None
+
+    if created:
+        # Named after the people in it, the way a group nobody bothered to
+        # name is named everywhere else.
+        names = [_group_display_name(m) for m in unique_members[:3]]
+        label = ', '.join(names)
+        if len(unique_members) > 3:
+            label = f'{label} +{len(unique_members) - 3}'
+        group = ChatGroup.objects.create(
+            name=label[:80],
+            creator=call_session.caller,
+        )
+        call_session.chat_group = group
+        call_session.save(update_fields=['chat_group'])
+
+    for member in unique_members:
+        ChatGroupMembership.objects.get_or_create(
+            group=group,
+            user=member,
+            defaults={
+                'role': 'admin' if member.id == call_session.caller_id else 'member',
+            },
+        )
+
+    if created:
+        _post_group_system_message(
+            group, inviter, 'কল থেকে গ্রুপটি তৈরি হয়েছে', request=request,
+        )
+    added = ', '.join(_group_display_name(u) for u in invitees)
+    if added:
+        _post_group_system_message(
+            group,
+            inviter,
+            f'{_group_display_name(inviter)} {added}-কে কলে যোগ করেছেন',
+            request=request,
+        )
+
+    # Every member's chat list has changed shape — a new group appeared, or
+    # an existing one gained people. Push it so nobody has to pull to refresh.
+    data = ChatGroupSerializer(
+        group, context={'request': request} if request else {}
+    ).data
+    for member in unique_members:
+        _broadcast_to_user(member.id, {'type': 'group_updated', 'group': data})
+
+    return group
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def invite_to_call(request):
@@ -1216,6 +1329,10 @@ def invite_to_call(request):
 
         inviter_name = _build_call_display_name(request, inviter)
         results = []
+        # Only the people actually rung become group members. Someone who was
+        # busy, blocked or nonexistent was never added to the call and has no
+        # business appearing in a chat group because of it.
+        invited_users = []
 
         for invitee_id in invitee_ids:
             if invitee_id in existing_ids:
@@ -1253,6 +1370,7 @@ def invite_to_call(request):
                 },
             )
             existing_ids.add(str(invitee.id))
+            invited_users.append(invitee)
 
             payload = {
                 'type': 'incoming_call',
@@ -1287,11 +1405,31 @@ def invite_to_call(request):
                 'reachable': reachable,
             })
 
+        # The call is now a group, so give it a group to be. Deliberately
+        # outside the per-invitee loop and after it: one group for the whole
+        # batch, and only if at least one person was really rung.
+        chat_group = None
+        try:
+            chat_group = _ensure_call_chat_group(
+                call_session,
+                inviter=inviter,
+                invitees=invited_users,
+                request=request,
+            )
+        except Exception:
+            # A chat group is a nice place for the conversation to carry on;
+            # it is not worth failing an invite that already rang phones.
+            logger.exception(
+                'Call chat group creation failed for call=%s',
+                str(call_session.id)[:8],
+            )
+
         return Response({
             'success': True,
             'call_id': str(call_session.id),
             'channel_name': str(call_session.channel_name),
             'participant_count': len(existing_ids),
+            'group_id': str(chat_group.id) if chat_group else None,
             'results': results,
         })
     except Exception as e:
@@ -1355,25 +1493,55 @@ def send_call_status(request):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        if call_session:
-            # An invited third party speaks only for themselves. Letting their
-            # "rejected" or "ended" run through update_status would hang up on
-            # everyone else in the call because one person declined to join.
-            own_participation = call_session.participants.filter(user=sender).first()
-            is_extra_participant = (
-                own_participation is not None
-                and sender != call_session.caller
-                and sender != call_session.callee
-            )
-            if is_extra_participant:
-                own_participation.update_status(
-                    _PARTICIPANT_STATUS_FROM_CALL.get(
-                        status_value, CallParticipant.STATUS_LEFT
-                    )
+        # Is this one person leaving, or the call ending?
+        #
+        # On a one-to-one call there is no difference and none of the group
+        # branching below runs — whoever hangs up, the call is over, exactly
+        # as before. Once a third person has been pulled in, the two stop
+        # being the same thing: someone hanging up leaves the others talking,
+        # which is what Messenger and WhatsApp do and what people expect.
+        # Sending everyone a plain 'ended' was hanging up on the whole room
+        # because one person walked out of it.
+        group_call = call_session.has_extra_participants()
+        is_departure = status_value in CallSession.TERMINAL_STATUSES
+        remaining_ids = []
+        # True when this event has been demoted from "the call ended" to
+        # "one person left" — the clients read it as the latter.
+        one_left = False
+
+        # An invited third party speaks only for themselves. Letting their
+        # "rejected" or "ended" run through update_status would hang up on
+        # everyone else in the call because one person declined to join.
+        own_participation = call_session.participants.filter(user=sender).first()
+        is_extra_participant = (
+            own_participation is not None
+            and sender != call_session.caller
+            and sender != call_session.callee
+        )
+
+        if is_extra_participant:
+            own_participation.update_status(
+                _PARTICIPANT_STATUS_FROM_CALL.get(
+                    status_value, CallParticipant.STATUS_LEFT
                 )
-            else:
-                call_session.update_status(str(status_value))
-            call_type = call_session.call_type
+            )
+        elif group_call and is_departure:
+            # The caller or the callee leaving a group call. Recorded against
+            # them alone; the session's own status stays 'accepted' while
+            # anyone is still talking.
+            call_session.mark_member_left(sender)
+        else:
+            call_session.update_status(str(status_value))
+
+        if group_call and is_departure:
+            remaining_ids = call_session.live_member_ids()
+            if len(remaining_ids) >= 2:
+                one_left = True
+            elif call_session.status not in CallSession.TERMINAL_STATUSES:
+                # Down to one person, or none. Now the call really is over.
+                call_session.update_status(CallSession.STATUS_ENDED)
+
+        call_type = call_session.call_type
 
         payload = {
             'type': 'call_status',
@@ -1385,6 +1553,18 @@ def send_call_status(request):
             'receiver_id': str(receiver.id),
             'timestamp': str(int(time.time() * 1000)),
         }
+
+        if one_left:
+            # A status the clients are required not to recognise as terminal.
+            # Naming it something new rather than reusing 'ended' with a flag
+            # means an old build cannot misread it: an unknown status falls
+            # through every teardown branch and is ignored, which is exactly
+            # the behaviour wanted.
+            payload['status'] = 'participant_left'
+            payload['left_user_id'] = str(sender.id)
+            payload['left_user_name'] = _build_call_display_name(request, sender)
+            payload['left_reason'] = str(status_value)
+            payload['remaining'] = str(len(remaining_ids))
 
         # Who actually placed the call, and what to name them.
         #
@@ -1409,25 +1589,53 @@ def send_call_status(request):
         elif call_id:
             payload['call_id'] = str(call_id)
 
-        _broadcast_to_user(
-            receiver.id,
-            {
-                'type': 'call_status_event',
-                'payload': payload,
-            },
-        )
-        delivery_result = _send_call_data_message(target_user=receiver, payload=payload)
+        # Who hears about it.
+        #
+        # The client names one receiver, because a call screen only ever knew
+        # about its one peer. That is fine for two people and wrong for
+        # three: the third would never be told the second had gone, and would
+        # sit looking at a tile for someone who left. On a group call the
+        # server ignores the named receiver and tells everyone still on it.
+        if group_call and is_departure:
+            target_ids = [uid for uid in remaining_ids if str(uid) != str(sender.id)]
+        else:
+            target_ids = [receiver.id]
+
+        targets = list(User.objects.filter(id__in=target_ids)) if target_ids else []
+        delivery_result = {}
+        for target in targets:
+            target_payload = dict(payload, receiver_id=str(target.id))
+            _broadcast_to_user(
+                target.id,
+                {
+                    'type': 'call_status_event',
+                    'payload': target_payload,
+                },
+            )
+            # The named receiver's delivery is the one the caller is told
+            # about, so the response keeps meaning what it always meant.
+            result = _send_call_data_message(
+                target_user=target, payload=target_payload)
+            if str(target.id) == str(receiver.id) or not delivery_result:
+                delivery_result = result
+
         logger.warning(
-            'CALLTRACE status call=%s %s -> %s status=%s',
+            'CALLTRACE status call=%s %s -> %s status=%s group=%s remaining=%s',
             str(call_session.id)[:8] if call_session else '?',
-            sender.email, receiver.email, status_value,
+            sender.email,
+            ','.join(t.email for t in targets) or '-',
+            payload['status'],
+            group_call,
+            len(remaining_ids) if group_call else '-',
         )
 
         return Response({
             'success': True,
             'call_id': str(call_session.id) if call_session else None,
-            'status': str(status_value),
+            'status': str(payload['status']),
             'sent_to_ws': True,
+            'group_call': group_call,
+            'remaining': len(remaining_ids) if group_call else None,
             **delivery_result,
         })
     except Exception as e:
