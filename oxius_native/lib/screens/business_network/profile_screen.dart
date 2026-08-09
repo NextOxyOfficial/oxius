@@ -37,6 +37,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../../widgets/app_network_image.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -918,24 +919,25 @@ class _ProfileScreenState extends State<ProfileScreen>
                 minScale: 0.5,
                 maxScale: 4.0,
                 child: Center(
-                  child: Image.network(
+                  child: AppNetworkImage(
                     _getImageUrl(_userData!['image']),
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade800,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 100,
-                          color: Colors.white54,
-                        ),
-                      );
-                    },
+                    // Full-screen avatar: it should simply be there, not
+                    // arrive with a fade.
+                    fadeIn: false,
+                    errorWidget: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        size: 100,
+                        color: Colors.white54,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1430,21 +1432,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                     padding: const EdgeInsets.all(2),
                     child: ClipOval(
                       child: _userData?['image'] != null
-                          ? Image.network(
+                          ? AppNetworkImage(
                               _getImageUrl(_userData!['image']),
                               width: double.infinity,
                               height: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey.shade200,
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 50,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                );
-                              },
+                              errorWidget: Container(
+                                color: Colors.grey.shade200,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.grey.shade400,
+                                ),
+                              ),
                             )
                           : Container(
                               color: Colors.grey.shade200,
@@ -2450,25 +2449,22 @@ class _ProfileScreenState extends State<ProfileScreen>
                       // Image.network was refused by the CDN, which is why
                       // this grid showed placeholders for media the feed
                       // rendered without trouble.
-                      Image.network(
+                      AppNetworkImage(
                         displayUrl,
-                        headers: kMediaHeaders,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Grey placeholder for failed thumbnails
-                          return Container(
-                            color: Colors.grey.shade400,
-                            child: Center(
-                              child: Icon(
-                                media.isVideo
-                                    ? Icons.play_circle_outline
-                                    : Icons.image_outlined,
-                                color: Colors.white.withValues(alpha: 0.7),
-                                size: 40,
-                              ),
+                        httpHeaders: kMediaHeaders,
+                        // Grey placeholder for failed thumbnails
+                        errorWidget: Container(
+                          color: Colors.grey.shade400,
+                          child: Center(
+                            child: Icon(
+                              media.isVideo
+                                  ? Icons.play_circle_outline
+                                  : Icons.image_outlined,
+                              color: Colors.white.withValues(alpha: 0.7),
+                              size: 40,
                             ),
-                          );
-                        },
+                          ),
+                        ),
                       )
                     else
                       Container(
@@ -2678,11 +2674,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                   width: 55,
                   height: 55,
                   child: thumbnail != null
-                      ? Image.network(
+                      ? AppNetworkImage(
                           thumbnail,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
+                          errorWidget: Container(
                             color: Colors.grey[200],
                             child: Icon(Icons.work_outline,
                                 color: Colors.grey[400], size: 24),

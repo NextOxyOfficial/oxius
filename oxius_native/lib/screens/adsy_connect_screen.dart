@@ -25,6 +25,7 @@ import 'package:oxius_native/widgets/common/adsy_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import '../utils/adsy_ios_scale.dart';
+import '../widgets/app_network_image.dart';
 
 /// Chat-list buckets. Spam is hidden from every tab except its own so junk
 /// never clutters real conversations.
@@ -1334,10 +1335,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: avatar.isNotEmpty
-                            ? Image.network(
+                            ? AppNetworkImage(
                                 avatar,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Center(
+                                errorWidget: Center(
                                   child: Text(
                                     name.isNotEmpty
                                         ? name[0].toUpperCase()
@@ -1877,9 +1877,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               clipBehavior: Clip.antiAlias,
               alignment: Alignment.center,
               child: imageUrl.isNotEmpty
-                  ? Image.network(imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.groups,
+                  ? AppNetworkImage(imageUrl,
+                      errorWidget: const Icon(Icons.groups,
                           color: Color(0xFF334155), size: 24))
                   : const Icon(Icons.groups,
                       color: Color(0xFF334155), size: 24),
@@ -2166,10 +2165,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               ),
               clipBehavior: Clip.antiAlias,
               child: avatar.isNotEmpty
-                  ? Image.network(
+                  ? AppNetworkImage(
                       avatar,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Center(
+                      errorWidget: Center(
                         child: Text(
                           name.isNotEmpty ? name[0].toUpperCase() : '?',
                           style: const TextStyle(
@@ -2430,21 +2428,21 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     child: chat['userAvatar'] != null &&
                             AppConfig.getAbsoluteUrl(chat['userAvatar'])
                                 .isNotEmpty
-                        ? Image.network(
+                        ? AppNetworkImage(
                             AppConfig.getAbsoluteUrl(chat['userAvatar']),
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Text(
-                                  ((chat['userName'] ?? '').toString().isNotEmpty ? chat['userName'][0] : '?').toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Color(0xFF334155),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                            errorWidget: Center(
+                              child: Text(
+                                ((chat['userName'] ?? '').toString().isNotEmpty
+                                        ? chat['userName'][0]
+                                        : '?')
+                                    .toUpperCase(),
+                                style: const TextStyle(
+                                  color: Color(0xFF334155),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
                                 ),
-                              );
-                            },
+                              ),
+                            ),
                           )
                         : Center(
                             child: Text(
@@ -2806,9 +2804,8 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
               ),
               clipBehavior: Clip.antiAlias,
               child: avatar.isNotEmpty
-                  ? Image.network(avatar,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Icon(Icons.person,
+                  ? AppNetworkImage(avatar,
+                      errorWidget: Icon(Icons.person,
                           color: Colors.grey.shade400, size: 24))
                   : Icon(Icons.person, color: Colors.grey.shade400, size: 24),
             ),

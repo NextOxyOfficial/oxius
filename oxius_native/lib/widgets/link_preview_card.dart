@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/link_preview_service.dart';
 import '../utils/first_url_extractor.dart';
 import '../utils/url_launcher_utils.dart';
+import 'app_network_image.dart';
 
 class FirstLinkPreview extends StatelessWidget {
   final String text;
@@ -197,10 +198,9 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
               SizedBox(
                 width: 92,
                 child: hasImage
-                    ? Image.network(
+                    ? AppNetworkImage(
                         data.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _chatThumbFallback(data),
+                        errorWidget: _chatThumbFallback(data),
                       )
                     : _chatThumbFallback(data),
               ),
@@ -275,12 +275,12 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       color: const Color(0xFFF1F5F9),
       alignment: Alignment.center,
       child: (favicon != null && favicon.isNotEmpty)
-          ? Image.network(
+          ? AppNetworkImage(
               favicon,
               width: 26,
               height: 26,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Icon(Icons.link_rounded,
+              errorWidget: const Icon(Icons.link_rounded,
                   size: 24, color: Color(0xFF94A3B8)),
             )
           : const Icon(Icons.link_rounded, size: 24, color: Color(0xFF94A3B8)),
@@ -331,11 +331,10 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
               borderRadius: BorderRadius.circular(12),
               child: AspectRatio(
                 aspectRatio: 1.91,
-                child: Image.network(
+                child: AppNetworkImage(
                   data.imageUrl!,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorWidget: Container(
                     color: const Color(0xFFF3F4F6),
                     alignment: Alignment.center,
                     child: const Icon(Icons.link_rounded,
@@ -366,13 +365,12 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                     // Prefer the site's real favicon; fall back to a link icon.
                     child: (data.faviconUrl != null &&
                             data.faviconUrl!.isNotEmpty)
-                        ? Image.network(
+                        ? AppNetworkImage(
                             data.faviconUrl!,
                             width: 24,
                             height: 24,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Icon(
-                                Icons.link_rounded,
+                            errorWidget: Icon(Icons.link_rounded,
                                 size: 22,
                                 color: onDark
                                     ? Colors.white.withValues(alpha: 0.85)
