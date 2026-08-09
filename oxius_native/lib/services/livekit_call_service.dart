@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
 
 import 'adsyconnect_service.dart';
+import 'agora_call_service.dart';
 
 /// Media engine backed by our own LiveKit SFU.
 ///
@@ -103,6 +104,10 @@ class LiveKitCallService {
       await leaveChannel();
 
       final wantsVideo = callType == 'video';
+      // Ask for mic (and camera) up front with the app's own wording, rather
+      // than letting the first track request surface a bare system prompt
+      // mid-connect — and so a refusal fails here with a clear reason.
+      await AgoraCallService.ensurePermissions(callType: callType);
       final room = lk.Room(
         roomOptions: lk.RoomOptions(
           adaptiveStream: true,

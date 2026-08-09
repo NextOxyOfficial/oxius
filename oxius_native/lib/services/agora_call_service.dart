@@ -2,14 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
 import 'auth_service.dart';
-import 'telemetry.dart';
+import 'livekit_call_service.dart';
 import 'package:flutter/foundation.dart';
 
 void _log(String message) {
@@ -27,14 +26,10 @@ class AgoraCallService {
     'AGORA_APP_ID',
     defaultValue: '',
   );
-  /// The App ID the cached [_engine] was built with. A cached engine that
-  /// belongs to a different (or empty) project must be rebuilt, not reused.
-  static String _engineAppId = '';
 
   /// True while rejoinChannel() is deliberately leaving and re-entering the
   /// channel. Engine events during that window describe our own teardown, not
   /// a broken call, and must not reach the error stream.
-  static bool _isRejoining = false;
 
   static const Duration _requestTimeout = Duration(seconds: 10);
   static const Duration _restorableCallAge = Duration(hours: 8);
@@ -42,18 +37,13 @@ class AgoraCallService {
   static const String _prefsCallInfoKey = 'adsyconnect_active_call_info';
   static const String _prefsUpdatedAtKey = 'adsyconnect_active_call_updated_at';
 
-  static RtcEngine? _engine;
   static bool _isInCall = false;
   static bool _isCallScreenVisible = false;
-  static String? _joinedChannelName;
-  static int? _joinedUid;
-  static String? _joinedToken;
   static String? _lastError;
   static String? get lastError => _lastError;
   static String? _lastNotificationError;
   static String? get lastNotificationError => _lastNotificationError;
   static bool get isCallScreenVisible => _isCallScreenVisible;
-  static RtcEngine? get engine => _engine;
 
   static void setCallScreenVisible(bool value) {
     final changed = _isCallScreenVisible != value;
@@ -102,9 +92,6 @@ class AgoraCallService {
   static void setInCall(bool value) {
     _isInCall = value;
     if (!value) {
-      _joinedChannelName = null;
-      _joinedUid = null;
-      _joinedToken = null;
       _activeCallInfo = null;
     }
     _schedulePersistedCallStateSync();
@@ -193,7 +180,6 @@ class AgoraCallService {
 
       _isInCall = true;
       _isCallScreenVisible = false;
-      _joinedChannelName = channelName;
       _activeCallInfo = info;
       _emitCallState();
     } catch (error) {
@@ -264,170 +250,9 @@ class AgoraCallService {
       return;
     }
 
-    await leaveChannel();
+    // Media teardown belongs to the engine that owns it.
+    await LiveKitCallService.leaveChannel();
     setInCall(false);
-  }
-
-  static Future<RtcEngine> initEngine({required String callType}) async {
-    final wantsVideo = callType == 'video';
-
-    await _ensurePermissions(callType: callType);
-
-    _lastError = null;
-
-    // The Agora App ID comes from the backend (server settings), not a frontend
-    // hardcode. Make sure we have it before creating the engine.
-    if (appId.trim().isEmpty) {
-      await _ensureAppIdFromBackend();
-    }
-
-    // An engine built with an empty App ID belongs to no project: it joins
-    // nothing, hears nobody, and reports no error — the call just sits in
-    // silence. Refuse to build one; the caller surfaces a real message.
-    if (appId.trim().isEmpty) {
-      _lastError = 'Call service is not configured yet.';
-      throw StateError('missing_agora_app_id');
-    }
-
-    // If the project changed (or the cached engine was built before the App
-    // ID was known), throw the old client away rather than reuse a dead one.
-    if (_engine != null && _engineAppId != appId.trim()) {
-      _log('♻️ App ID changed ($_engineAppId -> $appId) — rebuilding engine');
-      try {
-        await _engine!.leaveChannel();
-      } catch (_) {}
-      try {
-        await _engine!.release();
-      } catch (_) {}
-      _engine = null;
-      _joinedChannelName = null;
-    }
-
-    if (_engine == null) {
-      final engine = createAgoraRtcEngine();
-      await engine.initialize(
-        RtcEngineContext(
-          appId: appId,
-          channelProfile: ChannelProfileType.channelProfileCommunication,
-        ),
-      );
-      // Enable audio - wrap in try-catch so initialization continues even if this fails
-      try {
-        await engine.enableAudio();
-      } catch (e) {
-        _log('⚠️ Warning: enableAudio failed: $e');
-      }
-
-      // Set client role - wrap in try-catch so initialization continues
-      try {
-        await engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
-      } catch (e) {
-        _log('⚠️ Warning: setClientRole failed: $e');
-      }
-
-      engine.registerEventHandler(
-        RtcEngineEventHandler(
-          onJoinChannelSuccess: (connection, _) {
-            Telemetry.event('agora.joined', tags: {
-              'channel': connection.channelId,
-              'local_uid': connection.localUid,
-            });
-            try {
-              final localUid = connection.localUid;
-              if (localUid != null) {
-                _localUserJoinedController.add(localUid);
-              }
-            } catch (_) {}
-          },
-          onUserJoined: (_, remoteUid, __) {
-            Telemetry.event('agora.remote_joined',
-                tags: {'remote_uid': remoteUid});
-            _ensureActiveInfo();
-            _activeCallInfo!['remoteUid'] = remoteUid;
-            _schedulePersistedCallStateSync();
-            markCallAccepted();
-            try {
-              _remoteUserJoinedController.add(remoteUid);
-            } catch (_) {}
-          },
-          onUserOffline: (_, remoteUid, __) {
-            // Only treat as "remote left" if this uid was actually our known peer.
-            // Agora can fire onUserOffline for transient internal uids — ignoring
-            // unknown uids prevents the call from ending before the peer even joined.
-            // Our own leaveChannel inside rejoinChannel() makes Agora report
-            // the peer as offline. Acting on that would end the call we are
-            // in the middle of rescuing — the same trap the connection-state
-            // handler fell into.
-            if (_isRejoining) {
-              _log('ℹ️ Ignoring onUserOffline during deliberate rejoin');
-              return;
-            }
-            final knownRemote = _activeCallInfo?['remoteUid'];
-            if (knownRemote == null || knownRemote != remoteUid) {
-              _log(
-                  'ℹ️ Ignoring onUserOffline for unknown uid $remoteUid (known: $knownRemote)');
-              return;
-            }
-            Telemetry.event('agora.remote_left',
-                tags: {'remote_uid': remoteUid});
-            _activeCallInfo!['remoteUid'] = null;
-            _schedulePersistedCallStateSync();
-            try {
-              _remoteUserLeftController.add(remoteUid);
-            } catch (_) {}
-          },
-          onConnectionStateChanged: (_, state, reason) {
-            _log('🔗 Connection state: $state, reason: $reason');
-            Telemetry.event('agora.connection_state', tags: {
-              'state': state.toString().split('.').last,
-              'reason': reason.toString().split('.').last,
-              'rejoining': _isRejoining.toString(),
-            });
-            // `disconnected` is NOT a failure — it is the state after every
-            // leaveChannel, including the deliberate one inside
-            // rejoinChannel(). Reporting it as "Connection lost" made the
-            // watchdog that exists to rescue a stalled call kill it instead,
-            // exactly 9s after accept. Only `failed` is fatal.
-            if (state != ConnectionStateType.connectionStateFailed) return;
-            // And a failure observed while we are deliberately tearing the
-            // channel down belongs to the teardown, not to the call.
-            if (_isRejoining) {
-              _log('🔗 Ignoring connection failure during deliberate rejoin');
-              return;
-            }
-            _lastError = 'Connection lost. Please try again.';
-            try {
-              _engineErrorController.add(_lastError!);
-            } catch (_) {}
-          },
-          onTokenPrivilegeWillExpire: (connection, _) {
-            final channelName = connection.channelId;
-            final uid = connection.localUid ?? _joinedUid;
-            if (channelName != null && uid != null) {
-              unawaited(_renewAgoraToken(channelName: channelName, uid: uid));
-            }
-          },
-          onError: (error, message) {
-            _lastError = _friendlyAgoraError(error, message);
-            Telemetry.event('agora.error',
-                tags: {
-                  'code': error.toString().split('.').last,
-                  'message': message,
-                },
-                severity: TelemetrySeverity.error);
-            try {
-              _engineErrorController.add(_lastError!);
-            } catch (_) {}
-          },
-        ),
-      );
-      _engine = engine;
-      _engineAppId = appId.trim();
-    }
-
-    await _runOptionalSetup(() => _configureVideoState(wantsVideo: wantsVideo));
-    await _runOptionalSetup(() => toggleSpeaker(wantsVideo));
-    return _engine!;
   }
 
   static String generateChannelName(String callerId, String calleeId) {
@@ -438,232 +263,12 @@ class AgoraCallService {
     return 'c_${pairHash}_$ts$rnd';
   }
 
-  static Future<bool> joinChannel({
-    required String channelName,
-    required int uid,
-    required String callType,
-  }) async {
-    try {
-      _lastError = null;
-      final channelNameOk = channelName.isNotEmpty &&
-          channelName.length <= 64 &&
-          RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(channelName);
-      if (!channelNameOk) {
-        throw ArgumentError('Invalid channel name');
-      }
-
-      final wantsVideo = callType == 'video';
-
-      // Fetch the token FIRST — this also adopts the backend's Agora App ID, so
-      // the engine below is initialized for the correct (server-configured)
-      // project instead of any hardcoded value.
-      final agoraToken = await _fetchAgoraTokenWithRetry(
-        channelName: channelName,
-        uid: uid,
-      );
-
-      if (appId.trim().isEmpty) {
-        throw StateError('missing_agora_app_id');
-      }
-
-      final engine = await initEngine(callType: callType);
-
-      _log(
-          '📱 Attempting to join channel: $channelName (uid: $uid, video: $wantsVideo)');
-
-      if (_joinedChannelName != null && _joinedChannelName != channelName) {
-        await engine.leaveChannel();
-      }
-
-      await engine.joinChannel(
-        token: agoraToken,
-        channelId: channelName,
-        uid: uid,
-        options: ChannelMediaOptions(
-          autoSubscribeVideo: wantsVideo,
-          autoSubscribeAudio: true,
-          publishCameraTrack: wantsVideo,
-          publishMicrophoneTrack: true,
-          clientRoleType: ClientRoleType.clientRoleBroadcaster,
-        ),
-      );
-
-      _joinedChannelName = channelName;
-      _joinedUid = uid;
-      _joinedToken = agoraToken;
-      _log('✅ Successfully joined channel: $channelName');
-      return true;
-    } catch (error) {
-      _log('❌ Join channel failed for $channelName: $error');
-      // Always store a user-friendly message — never expose raw SDK exceptions.
-      final raw = error.toString().toLowerCase();
-      if (raw.contains('permission')) {
-        _lastError = 'Microphone permission is required to make calls.';
-      } else if (raw.contains('invalid') && raw.contains('channel')) {
-        _lastError = 'Invalid call session. Please try again.';
-      } else if (raw.contains('token')) {
-        _lastError = 'Call session expired. Please try again.';
-      } else if (raw.contains('missing_agora_app_id')) {
-        _lastError = 'Call service is not configured yet.';
-      } else {
-        _lastError = 'Could not join the call. Please try again.';
-      }
-      return false;
-    }
-  }
-
-  /// Self-heal re-join used by the CallScreen watchdog: when the call has been
-  /// accepted but no remote peer shows up within a few seconds, our own channel
-  /// join may have silently stalled (transient token/network hiccup). Leave the
-  /// current channel (keeping the engine) and join again with a fresh token,
-  /// without tearing the whole call down. Returns true on success.
-  /// True once we've escalated this call to Agora's cloud proxy, so the
-  /// ladder never repeats a rung.
-  static bool _cloudProxyEngaged = false;
-
-  static bool get cloudProxyEngaged => _cloudProxyEngaged;
-
-  /// Routes media through Agora's proxy (TCP/TLS 443).
-  ///
-  /// This is the fix for the single biggest cause of "both sides joined but
-  /// nobody hears anybody": mobile carriers and public/office Wi-Fi that drop
-  /// or NAT-break the UDP that Agora needs. Direct UDP simply never
-  /// establishes, Agora reports "Connection lost" ~9s later, and the call
-  /// dies — symmetrically, on every platform, which is exactly the ~50%
-  /// failure rate the production call log shows.
-  static Future<bool> rejoinViaCloudProxy({
-    required String channelName,
-    required int uid,
-    required String callType,
-  }) async {
-    final engine = _engine;
-    if (engine == null) return false;
-    try {
-      _log('🛡️ Escalating to Agora cloud proxy (TCP/443)');
-      await engine.setCloudProxy(CloudProxyType.tcpProxy);
-      _cloudProxyEngaged = true;
-    } catch (error) {
-      _log('❌ setCloudProxy failed: $error');
-      return false;
-    }
-    return rejoinChannel(
-      channelName: channelName,
-      uid: uid,
-      callType: callType,
-    );
-  }
-
-  static Future<bool> rejoinChannel({
-    required String channelName,
-    required int uid,
-    required String callType,
-  }) async {
-    final engine = _engine;
-    if (engine == null) {
-      // No live engine — fall back to a full join.
-      return joinChannel(channelName: channelName, uid: uid, callType: callType);
-    }
-
-    _isRejoining = true;
-    try {
-      final wantsVideo = callType == 'video';
-      try {
-        await engine.leaveChannel();
-      } catch (_) {
-        // Ignore — we may not have been fully in the channel.
-      }
-      _joinedChannelName = null;
-
-      final agoraToken = await _fetchAgoraTokenWithRetry(
-        channelName: channelName,
-        uid: uid,
-      );
-
-      // The token fetch retries, so it can outlive the call. If leaveChannel()
-      // released the engine meanwhile, `engine` is a dangling handle and
-      // joining through it races native teardown.
-      if (!identical(_engine, engine)) {
-        _log('🔁 Re-join abandoned: engine was released mid-flight');
-        return false;
-      }
-
-      await engine.joinChannel(
-        token: agoraToken,
-        channelId: channelName,
-        uid: uid,
-        options: ChannelMediaOptions(
-          autoSubscribeVideo: wantsVideo,
-          autoSubscribeAudio: true,
-          publishCameraTrack: wantsVideo,
-          publishMicrophoneTrack: true,
-          clientRoleType: ClientRoleType.clientRoleBroadcaster,
-        ),
-      );
-
-      _joinedChannelName = channelName;
-      _joinedUid = uid;
-      _joinedToken = agoraToken;
-      _log('🔁 Re-joined channel: $channelName');
-      return true;
-    } catch (error) {
-      _log('❌ Re-join failed for $channelName: $error');
-      return false;
-    } finally {
-      // Never leave the guard set: one failed rejoin would otherwise mute
-      // every genuine connection failure for the rest of the session.
-      _isRejoining = false;
-    }
-  }
-
-  static Future<void> leaveChannel() async {
-    // Leave the channel first, then release the engine so the next call always
-    // starts with a fresh Agora instance and correct audio routing.
-    try {
-      await _engine?.leaveChannel();
-      await _engine?.release();
-    } catch (_) {
-      // Ignore leave/release failures.
-    } finally {
-      _engine = null;
-      _joinedChannelName = null;
-      _joinedUid = null;
-      _joinedToken = null;
-      _cloudProxyEngaged = false;
-      if (_activeCallInfo != null) {
-        _activeCallInfo!['remoteUid'] = null;
-        _schedulePersistedCallStateSync();
-      }
-    }
-  }
-
-  static Future<void> toggleMute(bool muted) async {
-    await _engine?.muteLocalAudioStream(muted);
-  }
-
-  static Future<void> toggleCamera(bool enabled) async {
-    await _engine?.enableLocalVideo(enabled);
-  }
-
-  static Future<void> switchCamera() async {
-    await _engine?.switchCamera();
-  }
-
-  static Future<void> toggleSpeaker(bool speakerOn) async {
-    await _engine?.setEnableSpeakerphone(speakerOn);
-  }
-
   static Future<void> dispose() async {
     try {
-      await _engine?.leaveChannel();
-      await _engine?.release();
+      await LiveKitCallService.leaveChannel();
     } catch (_) {
-      // Ignore engine disposal failures.
+      // Ignore teardown failures.
     } finally {
-      _engine = null;
-      _joinedChannelName = null;
-      _joinedUid = null;
-      _joinedToken = null;
-      _cloudProxyEngaged = false;
       _activeCallInfo = null;
       _isInCall = false;
       unawaited(clearPersistedCallState());
@@ -833,154 +438,6 @@ class AgoraCallService {
     } catch (_) {}
   }
 
-  static Future<void> _ensureAppIdFromBackend() async {
-    if (appId.trim().isNotEmpty) return;
-
-    // Disk first. A push-woken app has no time to wait on the network, and
-    // the project id does not change between launches.
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cached = (prefs.getString(_prefsAppIdKey) ?? '').trim();
-      if (cached.isNotEmpty) {
-        appId = cached;
-        _log('🔑 App ID restored from cache');
-      }
-    } catch (_) {}
-
-    try {
-      final headers = await ApiService.getHeaders();
-      final response = await http
-          .get(
-            Uri.parse('${ApiService.baseUrl}/adsyconnect/agora-config/'),
-            headers: headers,
-          )
-          .timeout(_requestTimeout);
-      if (response.statusCode == 200) {
-        final decoded = json.decode(response.body);
-        if (decoded is Map) {
-          final id = decoded['app_id']?.toString().trim();
-          if (id != null && id.isNotEmpty) {
-            appId = id;
-            unawaited(_rememberAppId(id));
-          }
-        }
-      }
-    } catch (e) {
-      _log('⚠️ agora-config fetch failed: $e');
-    }
-  }
-
-  /// Fetch the Agora token, retrying a few times on transient failures.
-  ///
-  /// When a call is accepted, the callee may request its token a moment before
-  /// the backend CallSession is fully visible (replication/commit race), or a
-  /// brief network blip can drop the first request. Either way the raw fetch
-  /// throws and the join used to fail outright — leaving the other party stuck
-  /// on "Connecting…". A short bounded retry makes the join reliable regardless
-  /// of which screen each party is on. A 409 (call already ended) is terminal
-  /// and is NOT retried.
-  static Future<String> _fetchAgoraTokenWithRetry({
-    required String channelName,
-    required int uid,
-    int attempts = 3,
-  }) async {
-    Object? lastError;
-    for (var attempt = 0; attempt < attempts; attempt++) {
-      try {
-        return await _fetchAgoraToken(channelName: channelName, uid: uid);
-      } catch (error) {
-        lastError = error;
-        final raw = error.toString().toLowerCase();
-        // Don't retry when the call has genuinely ended.
-        if (raw.contains(':409') || raw.contains('mismatch')) {
-          rethrow;
-        }
-        if (attempt < attempts - 1) {
-          await Future<void>.delayed(
-            Duration(milliseconds: 400 * (attempt + 1)),
-          );
-        }
-      }
-    }
-    throw lastError ?? StateError('agora_token_unavailable');
-  }
-
-  static Future<String> _fetchAgoraToken({
-    required String channelName,
-    required int uid,
-  }) async {
-    try {
-      final headers = await ApiService.getHeaders();
-      final response = await http
-          .post(
-            Uri.parse('${ApiService.baseUrl}/adsyconnect/agora-token/'),
-            headers: headers,
-            body: json.encode({
-              'channel_name': channelName,
-              'uid': uid,
-              'role': 'publisher',
-              'call_id': _activeCallInfo?['callId'],
-            }),
-          )
-          .timeout(_requestTimeout);
-
-      if (response.statusCode == 404) {
-        final contentType = response.headers['content-type'] ?? '';
-        if (!contentType.toLowerCase().contains('application/json')) {
-          return '';
-        }
-      }
-
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        _lastError = _friendlyHttpError(response);
-        throw StateError('agora_token_request_failed:${response.statusCode}');
-      }
-
-      final decoded = json.decode(response.body);
-      if (decoded is! Map<String, dynamic>) {
-        throw StateError('invalid_agora_token_response');
-      }
-
-      final tokenRequired = decoded['token_required'] == true ||
-          decoded['token_required']?.toString().toLowerCase() == 'true';
-      final tokenAppId = decoded['app_id']?.toString().trim();
-      if (tokenAppId != null && tokenAppId.isNotEmpty) {
-        // Backend (server settings) owns the Agora project — adopt its App ID so
-        // the engine and signed token always belong to the same project.
-        appId = tokenAppId;
-        unawaited(_rememberAppId(tokenAppId));
-      }
-      final token = decoded['token']?.toString() ?? '';
-      if (tokenRequired && token.isEmpty) {
-        throw StateError('empty_agora_token');
-      }
-
-      return token;
-    } on TimeoutException {
-      _lastError = 'Call token request timed out. Please try again.';
-      rethrow;
-    }
-  }
-
-  static Future<void> _renewAgoraToken({
-    required String channelName,
-    required int uid,
-  }) async {
-    try {
-      final token = await _fetchAgoraToken(channelName: channelName, uid: uid);
-      if (token.isEmpty || token == _joinedToken) {
-        return;
-      }
-      await _engine?.renewToken(token);
-      _joinedToken = token;
-    } catch (error) {
-      _lastError = 'Call session expired. Please reconnect.';
-      try {
-        _engineErrorController.add(_lastError!);
-      } catch (_) {}
-    }
-  }
-
   static int generateUid() {
     // Use the full positive 31-bit range so two independently-generated UIDs in
     // the same channel practically never collide. A collision would make Agora
@@ -1008,7 +465,7 @@ class AgoraCallService {
     }
   }
 
-  static Future<void> _ensurePermissions({required String callType}) async {
+  static Future<void> ensurePermissions({required String callType}) async {
     // Check status first to avoid showing a redundant in-app prompt when the
     // OS already remembers the user's decision (especially on iOS where the
     // system dialog is one-shot and subsequent .request() returns the cached
@@ -1035,25 +492,6 @@ class AgoraCallService {
       if (!camStatus.isGranted) {
         throw StateError('permission_denied:camera');
       }
-    }
-  }
-
-  static Future<void> _configureVideoState({required bool wantsVideo}) async {
-    if (_engine == null) {
-      return;
-    }
-
-    if (wantsVideo) {
-      await _engine!.enableVideo();
-      await _engine!.setVideoEncoderConfiguration(
-        const VideoEncoderConfiguration(
-          dimensions: VideoDimensions(width: 640, height: 480),
-          frameRate: 15,
-          bitrate: 0,
-        ),
-      );
-    } else {
-      await _engine!.disableVideo();
     }
   }
 
@@ -1092,36 +530,11 @@ class AgoraCallService {
     }
   }
 
-  static Future<void> _runOptionalSetup(Future<void> Function() action) async {
-    try {
-      await action();
-    } catch (_) {
-      // Ignore non-essential device-specific setup failures.
-    }
-  }
-
   static void _emitCallState() {
     try {
       _callStateController.add(_isInCall);
     } catch (_) {
       // Ignore stream delivery issues.
-    }
-  }
-
-  static String _friendlyAgoraError(ErrorCodeType error, String message) {
-    switch (error) {
-      case ErrorCodeType.errNotInitialized:
-        return 'Call service not ready. Please try again.';
-      case ErrorCodeType.errInvalidToken:
-      case ErrorCodeType.errTokenExpired:
-        return 'Call session expired. Please try again.';
-      case ErrorCodeType.errConnectionLost:
-      case ErrorCodeType.errConnectionInterrupted:
-        return 'Network connection lost during the call.';
-      case ErrorCodeType.errInvalidChannelName:
-        return 'Invalid call session. Please try again.';
-      default:
-        return 'Unable to continue the call right now.';
     }
   }
 
