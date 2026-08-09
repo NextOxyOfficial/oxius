@@ -1686,10 +1686,27 @@ class FCMService {
 
       final map = Map<String, dynamic>.from(last);
 
-      // Check if this call was already accepted
+      // Check if this call was already accepted.
+      //
+      // _acceptedCallkitUuids only knows about accepts this isolate saw, and
+      // the native accept broadcast is dropped outright when no Flutter engine
+      // is attached to receive it — exactly what happens when the phone is in
+      // a pocket and the app has been killed. The user's tap on Accept was
+      // then forgotten, this recovery pass rebuilt the call as a fresh
+      // *incoming* one, and they had to answer a second time.
+      //
+      // The plugin itself does remember: it writes the call to its own store
+      // with isAccepted=true before broadcasting. Trust that, and re-arm the
+      // in-memory record from it — _handleCallEnded reads the same set to
+      // decide whether a CallKit teardown means "the user hung up", and
+      // without it our own dismissal of the CallKit UI would report the
+      // just-accepted call as ended to the caller.
       final callkitUuid = map['id']?.toString() ?? '';
-      final wasAccepted =
-          callkitUuid.isNotEmpty && _acceptedCallkitUuids.contains(callkitUuid);
+      final wasAccepted = map['isAccepted'] == true ||
+          (callkitUuid.isNotEmpty && _acceptedCallkitUuids.contains(callkitUuid));
+      if (wasAccepted && callkitUuid.isNotEmpty) {
+        _acceptedCallkitUuids.add(callkitUuid);
+      }
 
       Map<String, dynamic>? extra;
       final rawExtra = map['extra'];
@@ -1764,6 +1781,16 @@ class FCMService {
         'caller_name': _safeCallerName(extra?['caller_name']),
         'caller_avatar': extra?['caller_avatar']?.toString() ?? '',
       };
+
+      if (wasAccepted &&
+          _pendingBackgroundRing?['channel_name']?.toString() == channelName) {
+        // The stash exists to put a user who re-entered through the launcher
+        // back on the ringing screen. This call has already been answered, so
+        // leaving it armed would stack a second, still-ringing call screen on
+        // top of the live one — and that screen's Accept button is the second
+        // press this whole path exists to remove.
+        _pendingBackgroundRing = null;
+      }
 
       _navigateBasedOnData(callData);
     } catch (e) {
