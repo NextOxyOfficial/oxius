@@ -246,283 +246,318 @@ class _NewsScreenState extends State<NewsScreen> {
                     ],
                   ),
                 )
-              : SingleChildScrollView(
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 1280),
-                    margin: const EdgeInsets.all(2),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Hero Banner
-                        if (_allPosts.isNotEmpty)
-                          HeroBanner(
-                            article: _allPosts.first,
-                            onTap: () => _navigateToDetail(_allPosts.first),
-                          ),
-
-                        // Trending Carousel
-                        if (_allPosts.length > 1)
-                          TrendingCarousel(
-                            articles: _getTrendingArticles(),
-                            onArticleTap: _navigateToDetail,
-                          ),
-
-                        // All News Section Header
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(2, 16, 2, 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  _selectedCategory?.name ??
-                                      _t('all_news',
-                                          en: 'All News', bn: 'সব সংবাদ'),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.1,
-                                    color: Color(0xFF1F2937),
-                                  ),
-                                ),
+              // A CustomScrollView so the article list below can stay lazy.
+              // It used to be a shrink-wrapped builder inside a
+              // SingleChildScrollView, which builds every card it has loaded
+              // on every layout pass — and this list grows by a page each
+              // time the reader taps "Read More News".
+              : CustomScrollView(
+                  slivers: [
+                    _constrained(
+                      const EdgeInsets.fromLTRB(2, 2, 2, 0),
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Hero Banner
+                            if (_allPosts.isNotEmpty)
+                              HeroBanner(
+                                article: _allPosts.first,
+                                onTap: () => _navigateToDetail(_allPosts.first),
                               ),
-                              Row(
+
+                            // Trending Carousel
+                            if (_allPosts.length > 1)
+                              TrendingCarousel(
+                                articles: _getTrendingArticles(),
+                                onArticleTap: _navigateToDetail,
+                              ),
+
+                            // All News Section Header
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(2, 16, 2, 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isGridLayout = true;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      Icons.grid_view_rounded,
-                                      size: 20,
-                                      color: _isGridLayout
-                                          ? const Color(0xFFE53E3E)
-                                          : Colors.grey,
+                                  Expanded(
+                                    child: Text(
+                                      _selectedCategory?.name ??
+                                          _t('all_news',
+                                              en: 'All News', bn: 'সব সংবাদ'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.1,
+                                        color: Color(0xFF1F2937),
+                                      ),
                                     ),
                                   ),
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isGridLayout = false;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      Icons.view_list_rounded,
-                                      size: 20,
-                                      color: !_isGridLayout
-                                          ? const Color(0xFFE53E3E)
-                                          : Colors.grey,
-                                    ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isGridLayout = true;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.grid_view_rounded,
+                                          size: 20,
+                                          color: _isGridLayout
+                                              ? const Color(0xFFE53E3E)
+                                              : Colors.grey,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isGridLayout = false;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.view_list_rounded,
+                                          size: 20,
+                                          color: !_isGridLayout
+                                              ? const Color(0xFFE53E3E)
+                                              : Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
+                    ),
 
-                        // News Grid/List
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          child: _isGridLayout
-                              ? GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: isMobile ? 2 : 4,
-                                    crossAxisSpacing: 6,
-                                    mainAxisSpacing: 6,
-                                    childAspectRatio: 0.75,
-                                  ),
-                                  itemCount: _allPosts.length,
-                                  itemBuilder: (context, index) {
-                                    return NewsCard(
-                                      post: _allPosts[index],
-                                      isListLayout: false,
-                                      onTap: () =>
-                                          _navigateToDetail(_allPosts[index]),
-                                    );
-                                  },
-                                )
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: _allPosts.length,
-                                  itemBuilder: (context, index) {
-                                    return Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12),
-                                      child: NewsCard(
-                                        post: _allPosts[index],
-                                        isListLayout: true,
-                                        onTap: () =>
-                                            _navigateToDetail(_allPosts[index]),
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ),
-
-                        // Load More Button
-                        if (_hasMore)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 16, horizontal: 2),
-                            child: Center(
-                              child: ElevatedButton(
-                                onPressed: _loadingMore ? null : _loadMorePosts,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE53E3E),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
-                                  ),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: Text(
-                                  _loadingMore
-                                      ? _t('loading_news',
-                                          en: 'Loading news...',
-                                          bn: 'সংবাদ লোড হচ্ছে...')
-                                      : _t('read_more_news',
-                                          en: 'Read More News',
-                                          bn: 'আরও সংবাদ পড়ুন'),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13),
-                                ),
+                    // News Grid/List — the whole reason this screen is a
+                    // CustomScrollView. Outer margin (2) plus the inset this
+                    // block always had (2).
+                    _constrained(
+                      const EdgeInsets.symmetric(horizontal: 4),
+                      _isGridLayout
+                          ? SliverGrid.builder(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isMobile ? 2 : 4,
+                                crossAxisSpacing: 6,
+                                mainAxisSpacing: 6,
+                                childAspectRatio: 0.75,
                               ),
+                              itemCount: _allPosts.length,
+                              itemBuilder: (context, index) {
+                                return NewsCard(
+                                  post: _allPosts[index],
+                                  isListLayout: false,
+                                  onTap: () =>
+                                      _navigateToDetail(_allPosts[index]),
+                                );
+                              },
+                            )
+                          : SliverList.builder(
+                              itemCount: _allPosts.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: NewsCard(
+                                    post: _allPosts[index],
+                                    isListLayout: true,
+                                    onTap: () =>
+                                        _navigateToDetail(_allPosts[index]),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
+                    ),
 
-                        // Tips and Suggestions
-                        if (_tips.isNotEmpty)
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 2),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _t('tips_and_suggestions',
-                                      en: 'Tips and Suggestions',
-                                      bn: 'টিপস ও পরামর্শ'),
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.1,
-                                    color: Color(0xFF1F2937),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: isMobile ? 1 : 3,
-                                    crossAxisSpacing: 8,
-                                    mainAxisSpacing: 8,
-                                    childAspectRatio: isMobile ? 3 : 2,
-                                  ),
-                                  itemCount: _visibleTips.length,
-                                  itemBuilder: (context, index) {
-                                    final tip = _visibleTips[index];
-                                    return Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
+                    _constrained(
+                      const EdgeInsets.fromLTRB(2, 0, 2, 2),
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Load More Button
+                            if (_hasMore)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16, horizontal: 2),
+                                child: Center(
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        _loadingMore ? null : _loadMorePosts,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFE53E3E),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 12,
+                                      ),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black
-                                                .withValues(alpha: 0.05),
-                                            blurRadius: 4,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            tip.title,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: -0.1,
-                                              color: Color(0xFF1F2937),
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Expanded(
-                                            child: Text(
-                                              tip.description,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.grey.shade600,
-                                              ),
-                                              maxLines: 3,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                                if (_visibleTips.length < _tips.length)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 12),
-                                    child: Center(
-                                      child: ElevatedButton(
-                                        onPressed: _loadMoreTips,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFFE53E3E),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20, vertical: 10),
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                        ),
-                                        child: Text(
-                                            _t('news_load_more',
-                                                en: 'Load More',
-                                                bn: 'আরও দেখুন'),
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600)),
                                       ),
                                     ),
+                                    child: Text(
+                                      _loadingMore
+                                          ? _t('loading_news',
+                                              en: 'Loading news...',
+                                              bn: 'সংবাদ লোড হচ্ছে...')
+                                          : _t('read_more_news',
+                                              en: 'Read More News',
+                                              bn: 'আরও সংবাদ পড়ুন'),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13),
+                                    ),
                                   ),
-                              ],
-                            ),
-                          ),
+                                ),
+                              ),
 
-                        const SizedBox(height: 20),
-                      ],
+                            // Tips and Suggestions
+                            if (_tips.isNotEmpty)
+                              Container(
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 2),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _t('tips_and_suggestions',
+                                          en: 'Tips and Suggestions',
+                                          bn: 'টিপস ও পরামর্শ'),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.1,
+                                        color: Color(0xFF1F2937),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: isMobile ? 1 : 3,
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8,
+                                        childAspectRatio: isMobile ? 3 : 2,
+                                      ),
+                                      itemCount: _visibleTips.length,
+                                      itemBuilder: (context, index) {
+                                        final tip = _visibleTips[index];
+                                        return Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.05),
+                                                blurRadius: 4,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                tip.title,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: -0.1,
+                                                  color: Color(0xFF1F2937),
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  tip.description,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.grey.shade600,
+                                                  ),
+                                                  maxLines: 3,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    if (_visibleTips.length < _tips.length)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 12),
+                                        child: Center(
+                                          child: ElevatedButton(
+                                            onPressed: _loadMoreTips,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  const Color(0xFFE53E3E),
+                                              foregroundColor: Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 10),
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            child: Text(
+                                                _t('news_load_more',
+                                                    en: 'Load More',
+                                                    bn: 'আরও দেখুন'),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                        FontWeight.w600)),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+    );
+  }
+
+  /// Wraps a sliver the way the old layout wrapped its column: capped at
+  /// 1280 logical pixels and inset by the margin it used to carry.
+  ///
+  /// The cap only bites on a tablet or a desktop window; on a phone it is a
+  /// no-op, which is exactly what the Container it replaces did.
+  Widget _constrained(EdgeInsets padding, Widget sliver) {
+    return SliverConstrainedCrossAxis(
+      maxExtent: 1280,
+      sliver: SliverPadding(padding: padding, sliver: sliver),
     );
   }
 
