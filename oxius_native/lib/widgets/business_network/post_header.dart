@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/time_utils.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../app_network_image.dart';
 
 class PostHeader extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -22,7 +22,7 @@ class PostHeader extends StatelessWidget {
     required this.post,
     this.onFollowToggle,
     this.onMorePressed,
-      this.isSponsored = false,
+    this.isSponsored = false,
   });
 
   void _navigateToProfile(BuildContext context) {
@@ -51,11 +51,10 @@ class PostHeader extends StatelessWidget {
     }
 
     if (avatarUrl.isNotEmpty) {
-      return CachedNetworkImage(
-        imageUrl: avatarUrl,
-        fit: BoxFit.cover,
+      return AppNetworkImage(
+        avatarUrl,
         memCacheWidth: 128, // avatars are tiny — decode small
-        placeholder: (context, url) => Container(
+        placeholder: Container(
           color: Colors.grey.shade100,
           child: Center(
             child: SizedBox(
@@ -66,7 +65,7 @@ class PostHeader extends StatelessWidget {
             ),
           ),
         ),
-        errorWidget: (context, url, error) => _buildDefaultAvatar(),
+        errorWidget: _buildDefaultAvatar(),
       );
     }
 

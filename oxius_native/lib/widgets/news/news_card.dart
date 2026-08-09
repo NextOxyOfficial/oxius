@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/news_models.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../app_network_image.dart';
@@ -49,22 +48,21 @@ class NewsCard extends StatelessWidget {
                   const BorderRadius.vertical(top: Radius.circular(12)),
               child: Stack(
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: post.image ?? '',
+                  AppNetworkImage(
+                    post.image ?? '',
                     height: 180,
                     width: double.infinity,
-                    fit: BoxFit.cover,
                     // Decode image at display size (~2x devicePixelRatio).
                     // Prevents 4000×3000 source images from chewing 48 MB
                     // of GPU memory when only 180-tall display is needed.
                     memCacheHeight: 360,
                     fadeInDuration: const Duration(milliseconds: 120),
-                    placeholder: (context, url) => Container(
+                    placeholder: Container(
                       height: 180,
                       color: Colors.grey.shade200,
                       child: const Center(child: AdsyLoadingIndicator()),
                     ),
-                    errorWidget: (context, url, error) => Container(
+                    errorWidget: Container(
                       height: 180,
                       color: Colors.grey.shade200,
                       child: const Icon(Icons.image_not_supported, size: 40),

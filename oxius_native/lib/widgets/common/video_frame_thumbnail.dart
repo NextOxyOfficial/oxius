@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../utils/media_headers.dart';
+import '../app_network_image.dart';
 
 /// A real frame from a video, used anywhere a video needs to look like a photo.
 ///
@@ -158,8 +158,8 @@ class _VideoFrameThumbnailState extends State<VideoFrameThumbnail> {
     final poster = widget.posterUrl ?? '';
     Widget base;
     if (poster.isNotEmpty) {
-      base = CachedNetworkImage(
-        imageUrl: poster,
+      base = AppNetworkImage(
+        poster,
         // Without this the CDN turns the request away and the tile falls back
         // to a blank surface — the exact symptom of "thumbnails don't show".
         httpHeaders: kMediaHeaders,
@@ -168,8 +168,8 @@ class _VideoFrameThumbnailState extends State<VideoFrameThumbnail> {
         height: double.infinity,
         memCacheWidth: 1080,
         fadeInDuration: const Duration(milliseconds: 120),
-        placeholder: (_, __) => _resting(),
-        errorWidget: (_, __, ___) => _resting(),
+        placeholder: _resting(),
+        errorWidget: _resting(),
       );
     } else if (_frame != null) {
       base = Image.file(

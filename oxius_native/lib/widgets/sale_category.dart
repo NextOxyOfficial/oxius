@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:oxius_native/theme/app_text.dart';
@@ -183,31 +182,31 @@ class _SaleCategoryState extends State<SaleCategory> {
     final localAsset = CategoryIconMapping.getSaleIconAsset(categoryName);
 
     if (iconUrl != null && iconUrl.isNotEmpty) {
-      return CachedNetworkImage(
-        imageUrl: iconUrl,
-        cacheKey: 'sale_category_icon_${category['id']}',
-        width: 28,
-        height: 28,
-        fit: BoxFit.contain,
-        placeholder: (context, url) => Container(
-          width: 28,
-          height: 28,
-          color: Colors.grey.shade200,
-        ),
-        errorWidget: (context, url, error) {
-          // Try local asset first, then fallback icon
-          if (localAsset != null) {
-            return Image.asset(
+      // The error path never looked at the failure itself, only at whether
+      // this category ships a local icon — so it is a widget, not a builder.
+      final Widget iconFallback = localAsset != null
+          ? Image.asset(
               localAsset,
               width: 28,
               height: 28,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) =>
                   CategoryIconMapping.getDefaultIcon(isSale: true, size: 28),
-            );
-          }
-          return CategoryIconMapping.getDefaultIcon(isSale: true, size: 28);
-        },
+            )
+          : CategoryIconMapping.getDefaultIcon(isSale: true, size: 28);
+
+      return AppNetworkImage(
+        iconUrl,
+        cacheKey: 'sale_category_icon_${category['id']}',
+        width: 28,
+        height: 28,
+        fit: BoxFit.contain,
+        placeholder: Container(
+          width: 28,
+          height: 28,
+          color: Colors.grey.shade200,
+        ),
+        errorWidget: iconFallback,
       );
     }
 
