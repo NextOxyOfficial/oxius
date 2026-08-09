@@ -794,14 +794,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                   _buildDescriptionTabs(product),
                   const SizedBox(height: 6),
                   _buildStoreProducts(product),
-                  if (_similarProducts.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    _buildSimilarProducts(),
-                  ],
+                  if (_similarProducts.isNotEmpty) const SizedBox(height: 6),
                 ],
               ),
             ),
           ),
+          if (_similarProducts.isNotEmpty) ..._buildSimilarProductsSlivers(),
         ],
       ),
       bottomNavigationBar: _buildBottomActionBar(stock: stock),
@@ -2029,63 +2027,79 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     commentController.dispose();
   }
 
-  Widget _buildSimilarProducts() {
-    return _buildSectionCard(
-      padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle('আপনার পছন্দ হতে পারে'),
-          const SizedBox(height: 10),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const crossAxisCount = 2;
-              const crossAxisSpacing = 8.0;
-              const mainAxisSpacing = 8.0;
+  /// "You might also like", as slivers rather than one box.
+  ///
+  /// This grid fills by infinite scroll, so it is the one list on the page
+  /// with no ceiling — and it was shrink-wrapped, which makes a builder build
+  /// every card it has ever loaded on every layout pass. The page was already
+  /// a CustomScrollView, so the grid only had to stop being a box inside it.
+  List<Widget> _buildSimilarProductsSlivers() {
+    // The old LayoutBuilder measured the width inside the section's padding;
+    // that is the screen less the same 4px on each side.
+    final availableWidth = MediaQuery.sizeOf(context).width - 8;
+    const crossAxisCount = 2;
+    const crossAxisSpacing = 8.0;
+    const mainAxisSpacing = 8.0;
 
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                gridDelegate: ProductCardLayout.buildGridDelegate(
-                  availableWidth: constraints.maxWidth,
-                  screenWidth: MediaQuery.of(context).size.width,
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: crossAxisSpacing,
-                  mainAxisSpacing: mainAxisSpacing,
-                  textScale: MediaQuery.textScalerOf(context).scale(1.0),
-                ),
-                itemCount: _similarProducts.length,
-                itemBuilder: (context, index) {
-                  return ProductCard(
-                    product: _similarProducts[index],
-                    isLoading: false,
-                    onBuyNow: () =>
-                        _handleBuyNowForProduct(_similarProducts[index]),
-                    onTap: () => _openProductDetails(_similarProducts[index]),
-                  );
-                },
-              );
-            },
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle('আপনার পছন্দ হতে পারে'),
+              const SizedBox(height: 10),
+            ],
           ),
-          if (_isLoadingMoreSimilarProducts)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: AdsyLoadingIndicator(
-                    strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
+        ),
+      ),
+      SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        sliver: SliverGrid.builder(
+          gridDelegate: ProductCardLayout.buildGridDelegate(
+            availableWidth: availableWidth,
+            screenWidth: MediaQuery.sizeOf(context).width,
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: crossAxisSpacing,
+            mainAxisSpacing: mainAxisSpacing,
+            textScale: MediaQuery.textScalerOf(context).scale(1.0),
+          ),
+          itemCount: _similarProducts.length,
+          itemBuilder: (context, index) {
+            return ProductCard(
+              product: _similarProducts[index],
+              isLoading: false,
+              onBuyNow: () => _handleBuyNowForProduct(_similarProducts[index]),
+              onTap: () => _openProductDetails(_similarProducts[index]),
+            );
+          },
+        ),
+      ),
+      SliverToBoxAdapter(
+        child: Column(
+          children: [
+            if (_isLoadingMoreSimilarProducts)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: AdsyLoadingIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+            const SizedBox(height: 10),
+            Container(height: 1, color: _slate200),
+          ],
+        ),
       ),
-    );
+    ];
   }
 
   Widget _buildStoreProducts(Map<String, dynamic> product) {
