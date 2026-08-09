@@ -451,6 +451,14 @@ def _ring_attempts_exhausted(caller, callee):
     A single answered call resets the count, so two people who actually talk
     are never affected by this.
     """
+    # Someone the callee follows is someone they chose to hear from. Ringing
+    # repeatedly there is a worried friend, not harassment, and this limit
+    # exists for the second case — it must never be what stops the first.
+    from business_network.models import BusinessNetworkFollowerModel as F_
+
+    if F_.objects.filter(follower=callee, following=caller).exists():
+        return False
+
     since = timezone.now() - timezone.timedelta(minutes=_RING_ATTEMPT_WINDOW_MINUTES)
     recent = CallSession.objects.filter(
         caller=caller, callee=callee, started_at__gte=since,

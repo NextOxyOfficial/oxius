@@ -797,8 +797,11 @@ class PersonImageDeleteView(APIView):
 
 
 @api_view(["GET"])
+# Handing an email or a phone number back a user's id, name and phone is an
+# account-enumeration oracle and a PII leak, and it answered anyone at all.
+# Nothing in the app or the site calls it; authentication is the floor.
+@permission_classes([IsAuthenticated])
 def get_user_with_identifier(request, identifier):
-    print(identifier)
     try:
         user = User.objects.get(Q(email=identifier) | Q(phone=identifier))
         return Response(
@@ -2845,6 +2848,9 @@ def verify_reset_otp(request):
 
 
 @api_view(["GET"])
+# Reads request.user straight away; anonymous callers got a 500 out of the
+# database layer instead of being told to sign in.
+@permission_classes([IsAuthenticated])
 def subscribeToPro(request):
     user = request.user
     months = request.GET.get("months")
@@ -4147,6 +4153,15 @@ class ProductCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
 
+    # Reads are public; writes are staff-only. With no permission class at all
+    # an unauthenticated DELETE removed an eShop category outright — the same
+    # hole ClassifiedCategoryDetailView was fixed for, and with the same blast
+    # radius: every product filed under it loses its place in the taxonomy.
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [AllowAny()]
+        return [IsAdminUser()]
+
 
 # ORDER VIEWS
 class OrderListCreate(generics.ListCreateAPIView):
@@ -4291,8 +4306,16 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Set user if not provided in the request
-        if "user" not in order_data and request.user.is_authenticated:
+        # Whose order this is, is the server's call.
+        #
+        # The client's own "user" field used to be honoured when present, so
+        # anyone — signed in or not — could file an order against another
+        # account: it appears in that person's history and in front of the
+        # seller as theirs. Guest checkout stays possible (cash on delivery
+        # below does not need an account), it simply cannot claim to be
+        # somebody.
+        order_data.pop("user", None)
+        if request.user.is_authenticated:
             order_data["user"] = request.user.id
 
         # Validate payment method

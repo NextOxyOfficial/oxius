@@ -201,25 +201,31 @@
         >
           <p class="sr-only" role="status">
             {{
-              activeTab === "followers"
+              restrictedMessage ||
+              (activeTab === "followers"
                 ? "No followers found"
-                : "Not following anyone"
+                : "Not following anyone")
             }}
           </p>
           <div
             class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mb-4"
           >
             <UIcon
-              name="i-heroicons-user-group"
+              :name="
+                restrictedMessage
+                  ? 'i-heroicons-lock-closed'
+                  : 'i-heroicons-user-group'
+              "
               class="w-8 h-8 text-gray-300 dark:text-gray-600"
               aria-hidden="true"
             />
           </div>
           <h3 class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-1">
             {{
-              activeTab === "followers"
+              restrictedMessage ||
+              (activeTab === "followers"
                 ? "No followers found"
-                : "Not following anyone"
+                : "Not following anyone")
             }}
           </h3>
           <p
@@ -402,6 +408,8 @@ const { user: currentUser } = useAuth();
 const activeTab = ref(props.initialTab);
 const users = ref([]);
 const isLoading = ref(false);
+// Set when the owner keeps this list private, so the empty list can say why.
+const restrictedMessage = ref("");
 const loadingMore = ref(false);
 const searchTerm = ref("");
 const page = ref(1);
@@ -476,6 +484,7 @@ async function fetchUsers() {
   if (!props.userId) return;
 
   isLoading.value = true;
+  restrictedMessage.value = "";
   try {
     const endpoint =
       activeTab.value === "followers"
@@ -537,7 +546,24 @@ async function fetchUsers() {
       console.error("Invalid response format:", data);
     }
   } catch (error) {
-    console.error(`Error fetching ${activeTab.value}:`, error);
+    // 403 is the owner keeping this list private — an answer, not a failure.
+    // Falling through to "No followers found" states something untrue about
+    // them.
+    const status = error?.response?.status || error?.status;
+    if (status === 403) {
+      const detail =
+        error?.response?._data?.detail ||
+        error?.response?._data?.error ||
+        error?.data?.detail;
+      restrictedMessage.value =
+        typeof detail === "string" && detail.trim()
+          ? detail.trim()
+          : "এই তালিকাটি ব্যবহারকারী গোপন রেখেছেন।";
+      users.value = [];
+      hasMoreUsers.value = false;
+    } else {
+      console.error(`Error fetching ${activeTab.value}:`, error);
+    }
   } finally {
     isLoading.value = false;
     loadingMore.value = false;

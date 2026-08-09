@@ -228,7 +228,9 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
 
     // Guard: without packages, firstWhere's orElse (_packages.first) would
     // throw a StateError on the empty list and crash the submit.
-    if (_packages.isEmpty || _selectedPackageId == null) {
+    // _selectedPackageId is always set; only an empty package list can
+    // break the firstWhere below.
+    if (_packages.isEmpty) {
       setState(() => _error = 'Please select a sponsorship package.');
       return;
     }
@@ -512,7 +514,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 decoration: _dec(
                   hint: 'Link to your page or profile (optional)',
                   helper:
-                      "Users will be redirected here when clicking 'Visit Sponsor\'s Profile'",
+                      "Users will be redirected here when clicking 'Visit Sponsor's Profile'",
                 ),
                 validator: (value) {
                   final v = value?.trim() ?? '';

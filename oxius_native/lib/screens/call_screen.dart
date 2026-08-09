@@ -391,8 +391,7 @@ class _CallScreenState extends State<CallScreen>
     // and it has no other way of finding out.
     _callStateSub = AgoraCallService.callStateStream.listen((inCall) {
       if (!mounted || inCall || _didEndCall || _isClosing) return;
-      _didEndCall = true;
-      _isClosing = true;
+      _markScreenClosing();
       _durationTimer?.cancel();
       _cancelConnectWatchdog();
       _popCallScreen();
@@ -469,7 +468,8 @@ class _CallScreenState extends State<CallScreen>
       await _joinChannel();
     } catch (_) {
       if (!mounted) return;
-      AdsyToast.error(context, 'Could not restore the call. Please try again.');
+      AdsyToast.error(context, 'কলটি ফিরিয়ে আনা যায়নি। আবার চেষ্টা করুন।');
+      _markScreenClosing();
       Navigator.of(context).pop();
     }
   }
@@ -607,6 +607,7 @@ class _CallScreenState extends State<CallScreen>
               fallback: 'কলটি পৌঁছানো যায়নি। আবার চেষ্টা করুন।',
             ),
           );
+          _markScreenClosing();
           Navigator.of(context).pop();
           AgoraCallService.setInCall(false);
           return;
@@ -619,6 +620,7 @@ class _CallScreenState extends State<CallScreen>
         final errStr = e.toString();
         if (errStr.contains('permission_permanently_denied')) {
           final isMic = errStr.contains('microphone');
+          _markScreenClosing();
           Navigator.pop(context);
           showDialog(
             context: context,
@@ -657,6 +659,7 @@ class _CallScreenState extends State<CallScreen>
                       'কল শুরু করা যায়নি। ইন্টারনেট সংযোগ দেখে নিন।',
                 );
           AdsyToast.error(context, msg);
+          _markScreenClosing();
           Navigator.pop(context);
         }
       }
@@ -729,6 +732,7 @@ class _CallScreenState extends State<CallScreen>
           fallback: 'কলে যোগ দেওয়া যায়নি। আবার চেষ্টা করুন।',
         ),
       );
+      _markScreenClosing();
       AgoraCallService.setInCall(false);
       Navigator.pop(context);
     }
@@ -794,6 +798,7 @@ class _CallScreenState extends State<CallScreen>
       if (mounted) {
         final errStr = e.toString();
         unawaited(_engineLeave());
+        _markScreenClosing();
         AgoraCallService.setInCall(false);
         if (errStr.contains('permission_permanently_denied')) {
           final isMic = errStr.contains('microphone');
@@ -963,6 +968,17 @@ class _CallScreenState extends State<CallScreen>
     navigator.pushReplacement(
       MaterialPageRoute(builder: (_) => const InboxScreen(initialTab: 0)),
     );
+  }
+
+  /// Records that this screen is closing itself.
+  ///
+  /// The call-state listener exists to close the screen when the call is ended
+  /// from somewhere else — the notification's hang-up action. Without this
+  /// flag it also fires for the screen's own failure paths, which pop
+  /// directly, and pops a second time: the chat underneath disappears too.
+  void _markScreenClosing() {
+    _isClosing = true;
+    _didEndCall = true;
   }
 
   /// Shared helper to pop or replace the call screen.
@@ -2068,14 +2084,20 @@ class _CallScreenState extends State<CallScreen>
   /// from the screen is not how anyone reads that.
   Widget _buildParticipantGrid() {
     final peers = _peers;
+    // The user is in the call too. The floating self-view is suppressed in a
+    // grid because it would hover over the tiles, so without a tile of their
+    // own they would be the one person on the call who cannot see themselves.
+    final tiles = peers.length + 1;
     // Two across is the most a phone can show without faces becoming stamps.
-    final columns = peers.length <= 2 ? 1 : 2;
+    final columns = tiles <= 2 ? 1 : 2;
 
     return Positioned.fill(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 68, 10, 120),
         child: GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
+          // Eight people is two columns of four, which does not fit a phone.
+          // Scrolling is the difference between "the rest are below" and
+          // "the rest are not on the call".
           padding: EdgeInsets.zero,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columns,
@@ -2083,15 +2105,41 @@ class _CallScreenState extends State<CallScreen>
             crossAxisSpacing: 8,
             childAspectRatio: columns == 1 ? 1.1 : 0.78,
           ),
-          itemCount: peers.length,
-          itemBuilder: (context, index) => _buildPeerTile(peers[index]),
+          itemCount: tiles,
+          itemBuilder: (context, index) {
+            if (index == 0) return _buildSelfTile();
+            return _buildPeerTile(peers[index - 1]);
+          },
         ),
       ),
     );
   }
 
-  Widget _buildPeerTile(CallPeer peer) {
-    final track = peer.videoTrack;
+  Widget _buildSelfTile() {
+    final track = _callType == 'video' && !_isCameraOff
+        ? LiveKitCallService.localVideoTrack
+        : null;
+    return _buildTile(
+      name: 'আপনি',
+      videoTrack: track,
+      isMuted: _isMuted,
+      isSpeaking: false,
+    );
+  }
+
+  Widget _buildPeerTile(CallPeer peer) => _buildTile(
+        name: peer.name,
+        videoTrack: peer.videoTrack,
+        isMuted: peer.isMuted,
+        isSpeaking: peer.isSpeaking,
+      );
+
+  Widget _buildTile({
+    required String name,
+    required lk.VideoTrack? videoTrack,
+    required bool isMuted,
+    required bool isSpeaking,
+  }) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
@@ -2099,18 +2147,18 @@ class _CallScreenState extends State<CallScreen>
         border: Border.all(
           // Whoever is talking gets the ring. In a group call that is the one
           // thing you cannot work out from the audio alone.
-          color: peer.isSpeaking
+          color: isSpeaking
               ? _accentColor
               : Colors.white.withValues(alpha: 0.10),
-          width: peer.isSpeaking ? 2 : 1,
+          width: isSpeaking ? 2 : 1,
         ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (track != null)
-            lk.VideoTrackRenderer(track, fit: lk.VideoViewFit.cover)
+          if (videoTrack != null)
+            lk.VideoTrackRenderer(videoTrack, fit: lk.VideoViewFit.cover)
           else
             Center(
               child: Container(
@@ -2132,7 +2180,7 @@ class _CallScreenState extends State<CallScreen>
             bottom: 8,
             child: Row(
               children: [
-                if (peer.isMuted)
+                if (isMuted)
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: Container(
@@ -2154,7 +2202,7 @@ class _CallScreenState extends State<CallScreen>
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      peer.name,
+                      name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

@@ -106,6 +106,9 @@ class CallForegroundService : Service() {
                 PackageManager.PERMISSION_GRANTED
     }
 
+    /// True once this service has successfully gone foreground at least once.
+    private var isForeground = false
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_HANGUP) {
             // Dart owns the call — the LiveKit room, the peer notification and
@@ -130,9 +133,18 @@ class CallForegroundService : Service() {
 
         try {
             startForegroundCompat(buildNotification(title, text, connectedAt), video)
+            isForeground = true
         } catch (e: Exception) {
             Log.w(TAG, "startForeground failed: ${e.message}")
-            stopEverything()
+            // A call upgraded from audio to video re-enters here to add the
+            // camera type, and Android can refuse that while the app is in the
+            // background. Tearing the service down over a refused *upgrade*
+            // would take the microphone with it and silence a call that was
+            // working perfectly well a moment ago. Only a service that never
+            // managed to go foreground at all has nothing to keep.
+            if (!isForeground) {
+                stopEverything()
+            }
         }
         // A restarted service with no call to attach to would be a phantom
         // notification, so never let the system revive it on its own.
@@ -140,6 +152,7 @@ class CallForegroundService : Service() {
     }
 
     private fun stopEverything() {
+        isForeground = false
         try {
             ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         } catch (_: Exception) {
@@ -207,7 +220,9 @@ class CallForegroundService : Service() {
             action = ACTION_HANGUP
         }
         builder.addAction(
-            0,
+            // A zero resource id is not a valid icon and some OEM shades treat
+            // it as a broken action rather than an icon-less one.
+            R.drawable.ic_call_notification,
             "কল শেষ",
             PendingIntent.getService(
                 this,

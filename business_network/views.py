@@ -1215,6 +1215,9 @@ class UserSavedPostListCreateView(generics.ListCreateAPIView):
 
 
 @api_view(["DELETE"])
+# Filters on request.user, so an anonymous call died inside the ORM rather
+# than at the door.
+@permission_classes([IsAuthenticated])
 def delete_saved_post(request, post_id):
     try:
         saved_post = UserSavedPosts.objects.get(post=post_id, user=request.user)
