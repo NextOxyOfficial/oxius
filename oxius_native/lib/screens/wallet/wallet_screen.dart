@@ -653,7 +653,12 @@ class _WalletScreenState extends State<WalletScreen> {
         _transactionTab == 'sent' ? _isLoadingMoreSent : _isLoadingMoreReceived;
 
     return SliverList.builder(
-      key: ValueKey('${_transactionTab}_${transactions.length}'),
+      // Keyed by the tab alone. The length used to be part of this, which was
+      // harmless while the list was shrink-wrapped inside another scroll view
+      // — the outer view owned the scroll position. Now that this sliver *is*
+      // the scrolling content, changing its key on every loaded page would
+      // replace the element mid-scroll and throw the reader back up the list.
+      key: ValueKey(_transactionTab),
       itemCount: transactions.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         // Show loading skeleton at bottom
