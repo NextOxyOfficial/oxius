@@ -9,6 +9,7 @@ import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../../widgets/app_network_image.dart';
 
 class GigsOrderedTab extends StatefulWidget {
   const GigsOrderedTab({super.key});
@@ -494,13 +495,10 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                   child: SizedBox(
                     width: 56,
                     height: 56,
-                    child: CachedNetworkImage(
-                      imageUrl:
-                          _getImageUrl(gig?['image_url'] ?? gig?['image']),
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          Container(color: Colors.grey[200]),
-                      errorWidget: (context, url, error) => Container(
+                    child: AppNetworkImage(
+                      _getImageUrl(gig?['image_url'] ?? gig?['image']),
+                      placeholder: Container(color: Colors.grey[200]),
+                      errorWidget: Container(
                         color: Colors.grey[200],
                         child: const Icon(Icons.image, color: Colors.grey),
                       ),
@@ -565,8 +563,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                               child: Icon(Icons.verified,
                                   size: 12, color: Colors.blue),
                             ),
-                          if (seller?['is_pro'] == true)
-                            const AdsyProBadge(),
+                          if (seller?['is_pro'] == true) const AdsyProBadge(),
                         ],
                       ),
                       const SizedBox(height: 4),

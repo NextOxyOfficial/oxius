@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
@@ -10,6 +9,7 @@ import 'gigs_ordered_tab.dart';
 import 'create_gig_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../utils/app_fonts.dart';
+import '../../widgets/app_network_image.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -280,15 +280,13 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
               itemCount: _banners.length,
               itemBuilder: (context, index) {
                 final banner = _banners[index];
-                return CachedNetworkImage(
-                  imageUrl:
-                      _getImageUrl(banner['image_url'] ?? banner['image']),
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
+                return AppNetworkImage(
+                  _getImageUrl(banner['image_url'] ?? banner['image']),
+                  placeholder: Container(
                     color: Colors.grey[200],
                     child: const Center(child: AdsyLoadingIndicator()),
                   ),
-                  errorWidget: (context, url, error) => Container(
+                  errorWidget: Container(
                     color: Colors.grey[200],
                     child:
                         const Icon(Icons.image, size: 40, color: Colors.grey),

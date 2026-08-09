@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/ads_service.dart';
 import '../widgets/ads/compact_house_ad_strip.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 import '../models/classified_post.dart';
@@ -19,6 +18,7 @@ import '../widgets/skeleton_loader.dart';
 import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class ClassifiedCategoryListScreen extends StatefulWidget {
   final String categoryId;
@@ -547,7 +547,6 @@ class _ClassifiedCategoryListScreenState
     );
   }
 
-
   Future<void> _handleRefresh() async {
     // Refresh all data
     await Future.wait([
@@ -939,8 +938,9 @@ class _ClassifiedCategoryListScreenState
 
   Widget _buildPostsList(List<ClassifiedPost> posts, {bool isNearby = false}) {
     final adsOn = AdsService.hybridSlotActive('classified_list_native');
-    final every =
-        adsOn ? AdsService.feedFrequency('classified_list_native', fallback: 6) : 0;
+    final every = adsOn
+        ? AdsService.feedFrequency('classified_list_native', fallback: 6)
+        : 0;
     final block = every + 1;
     final adCount = every == 0 ? 0 : posts.length ~/ every;
     return ListView.separated(
@@ -995,11 +995,11 @@ class _ClassifiedCategoryListScreenState
                       ? Builder(
                           builder: (context) {
                             final imageUrl = post.medias!.first.image ?? '';
-                            debugPrint('🖼️ Classified List - Image URL: $imageUrl');
-                            return CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
+                            debugPrint(
+                                '🖼️ Classified List - Image URL: $imageUrl');
+                            return AppNetworkImage(
+                              imageUrl,
+                              placeholder: const Center(
                                 child: SizedBox(
                                   width: 16,
                                   height: 16,
@@ -1010,7 +1010,7 @@ class _ClassifiedCategoryListScreenState
                                   ),
                                 ),
                               ),
-                              errorWidget: (context, url, error) => const Icon(
+                              errorWidget: const Icon(
                                 Icons.image_outlined,
                                 color: Color(0xFF9CA3AF),
                                 size: 28,
@@ -1019,10 +1019,9 @@ class _ClassifiedCategoryListScreenState
                           },
                         )
                       : post.categoryDetails?.image != null
-                          ? CachedNetworkImage(
-                              imageUrl: post.categoryDetails!.image!,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) => Center(
+                          ? AppNetworkImage(
+                              post.categoryDetails!.image!,
+                              errorWidget: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -2022,10 +2021,9 @@ class _ClassifiedCategoryListScreenState
                   height: 55,
                   color: const Color(0xFFFEF3C7),
                   child: post.medias != null && post.medias!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: post.medias!.first.image ?? '',
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => const Center(
+                      ? AppNetworkImage(
+                          post.medias!.first.image ?? '',
+                          placeholder: const Center(
                             child: SizedBox(
                               width: 12,
                               height: 12,
@@ -2036,7 +2034,7 @@ class _ClassifiedCategoryListScreenState
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => const Icon(
+                          errorWidget: const Icon(
                             Icons.image_outlined,
                             color: Color(0xFF92400E),
                             size: 20,

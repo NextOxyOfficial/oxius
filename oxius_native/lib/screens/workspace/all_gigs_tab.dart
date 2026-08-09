@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../widgets/app_network_image.dart';
 
 class AllGigsTab extends StatefulWidget {
   const AllGigsTab({super.key});
@@ -211,8 +212,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                         controller: _scrollController,
                         padding: const EdgeInsets.fromLTRB(10, 8, 10, 14),
                         itemCount: _gigs.length + (_isLoadingMore ? 1 : 0),
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           if (index >= _gigs.length) {
                             return const Center(
@@ -296,12 +296,10 @@ class _AllGigsTabState extends State<AllGigsTab> {
               child: SizedBox(
                 width: 112,
                 height: 88,
-                child: CachedNetworkImage(
-                  imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      Container(color: Colors.grey[200]),
-                  errorWidget: (context, url, error) => Container(
+                child: AppNetworkImage(
+                  _getImageUrl(gig['image_url'] ?? gig['image']),
+                  placeholder: Container(color: Colors.grey[200]),
+                  errorWidget: Container(
                     color: Colors.grey[200],
                     child:
                         const Icon(Icons.image, color: Colors.grey, size: 22),
@@ -363,8 +361,8 @@ class _AllGigsTabState extends State<AllGigsTab> {
                       if (user?['kyc'] == true)
                         const Padding(
                           padding: EdgeInsets.only(left: 3),
-                          child:
-                              Icon(Icons.verified, size: 13, color: Colors.blue),
+                          child: Icon(Icons.verified,
+                              size: 13, color: Colors.blue),
                         ),
                     ],
                   ),

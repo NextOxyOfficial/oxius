@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/news_models.dart';
 import '../../services/news_service.dart';
 import '../../screens/news_detail_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
   @override
@@ -190,17 +190,16 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
             if (post.image != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: post.image!,
+                child: AppNetworkImage(
+                  post.image!,
                   width: 72,
                   height: 72,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
+                  placeholder: Container(
                     width: 72,
                     height: 72,
                     color: Colors.grey.shade200,
                   ),
-                  errorWidget: (context, url, error) => Container(
+                  errorWidget: Container(
                     width: 72,
                     height: 72,
                     color: Colors.grey.shade200,

@@ -23,6 +23,7 @@ import '../utils/app_fonts.dart';
 import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/dob_picker.dart';
+import '../widgets/app_network_image.dart';
 
 enum _SettingsTab { profile, privacy, security }
 
@@ -245,8 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       }
     } catch (_) {
       if (mounted) {
-        _showSnackBar(
-            _t('settings_load_failed', 'সেটিংস আনা গেল না'),
+        _showSnackBar(_t('settings_load_failed', 'সেটিংস আনা গেল না'),
             isError: true);
       }
     } finally {
@@ -338,8 +338,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       setState(() => _divisions = divisions);
     } catch (_) {
       if (mounted) {
-        _showSnackBar(
-            _t('settings_divisions_load_failed', 'বিভাগ আনা গেল না'),
+        _showSnackBar(_t('settings_divisions_load_failed', 'বিভাগ আনা গেল না'),
             isError: true);
       }
     } finally {
@@ -371,8 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       setState(() => _cities = cities);
     } catch (_) {
       if (mounted) {
-        _showSnackBar(
-            _t('settings_cities_load_failed', 'শহর আনা গেল না'),
+        _showSnackBar(_t('settings_cities_load_failed', 'শহর আনা গেল না'),
             isError: true);
       }
     } finally {
@@ -402,8 +400,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       setState(() => _upazilas = upazilas);
     } catch (_) {
       if (mounted) {
-        _showSnackBar(
-            _t('settings_upazilas_load_failed', 'উপজেলা আনা গেল না'),
+        _showSnackBar(_t('settings_upazilas_load_failed', 'উপজেলা আনা গেল না'),
             isError: true);
       }
     } finally {
@@ -755,7 +752,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           result['data'] is Map<String, dynamic>) {
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
-          successMessage: _t('settings_profile_updated', 'প্রোফাইল আপডেট হয়েছে'),
+          successMessage:
+              _t('settings_profile_updated', 'প্রোফাইল আপডেট হয়েছে'),
         );
       } else {
         _showSnackBar(
@@ -949,8 +947,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
 
     if (passwordController.text.trim().isEmpty) {
-      _showSnackBar(
-          _t('settings_password_required', 'পাসওয়ার্ড দিতে হবে'),
+      _showSnackBar(_t('settings_password_required', 'পাসওয়ার্ড দিতে হবে'),
           isError: true);
       passwordController.dispose();
       return;
@@ -993,7 +990,8 @@ class _SettingsScreenState extends State<SettingsScreen>
   Future<void> _pickProfileImage() async {
     await _pickAndUploadImage(
       fieldName: 'image',
-      successMessage: _t('settings_profile_photo_updated', 'প্রোফাইল ছবি আপডেট হয়েছে'),
+      successMessage:
+          _t('settings_profile_photo_updated', 'প্রোফাইল ছবি আপডেট হয়েছে'),
       targetWidth: 1080,
       quality: 94,
       maxFileSizeBytes: 6 * 1024 * 1024,
@@ -1056,8 +1054,7 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     try {
       if (bytes.length > maxFileSizeBytes) {
-        _showSnackBar(
-            _t('settings_image_too_large', 'ছবিটা অনেক বড়'),
+        _showSnackBar(_t('settings_image_too_large', 'ছবিটা অনেক বড়'),
             isError: true);
         return;
       }
@@ -1114,8 +1111,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             isError: true);
       }
     } catch (_) {
-      _showSnackBar(
-          _t('settings_image_upload_failed', 'ছবি আপলোড করা গেল না'),
+      _showSnackBar(_t('settings_image_upload_failed', 'ছবি আপলোড করা গেল না'),
           isError: true);
     } finally {
       if (mounted) {
@@ -1167,7 +1163,8 @@ class _SettingsScreenState extends State<SettingsScreen>
         }
         await _loadUserProfile();
         await _refreshUserCaches();
-        _showSnackBar(_t('settings_photo_removed', 'প্রোফাইল ছবি সরানো হয়েছে'));
+        _showSnackBar(
+            _t('settings_photo_removed', 'প্রোফাইল ছবি সরানো হয়েছে'));
       } else {
         _showSnackBar(
             _t('settings_photo_remove_failed', 'প্রোফাইল ছবি সরানো গেল না'),
@@ -1224,8 +1221,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             isError: true);
       }
     } catch (_) {
-      _showSnackBar(
-          _t('settings_banner_remove_failed', 'ব্যানার সরানো গেল না'),
+      _showSnackBar(_t('settings_banner_remove_failed', 'ব্যানার সরানো গেল না'),
           isError: true);
     } finally {
       if (mounted) {
@@ -1402,17 +1398,20 @@ class _SettingsScreenState extends State<SettingsScreen>
         child: Row(
           children: [
             Expanded(
-                child: _buildTabChip(_SettingsTab.profile,
+                child: _buildTabChip(
+                    _SettingsTab.profile,
                     _t('settings_tab_profile', 'প্রোফাইল'),
                     Icons.badge_rounded)),
             const SizedBox(width: 6),
             Expanded(
-                child: _buildTabChip(_SettingsTab.privacy,
+                child: _buildTabChip(
+                    _SettingsTab.privacy,
                     _t('settings_tab_privacy', 'প্রাইভেসি'),
                     Icons.privacy_tip_rounded)),
             const SizedBox(width: 6),
             Expanded(
-                child: _buildTabChip(_SettingsTab.security,
+                child: _buildTabChip(
+                    _SettingsTab.security,
                     _t('settings_tab_security', 'সিকিউরিটি'),
                     Icons.lock_rounded)),
           ],
@@ -1554,8 +1553,8 @@ class _SettingsScreenState extends State<SettingsScreen>
             ],
             _buildSectionCard(
               title: _t('settings_identity_contact', 'পরিচয় ও যোগাযোগ'),
-              subtitle: _t('settings_identity_contact_sub',
-                  'অ্যাকাউন্টের বেসিক তথ্য।'),
+              subtitle: _t(
+                  'settings_identity_contact_sub', 'অ্যাকাউন্টের বেসিক তথ্য।'),
               icon: Icons.person_outline_rounded,
               child: Column(
                 children: [
@@ -1563,8 +1562,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     left: _buildTextField(
                       controller: _firstNameController,
                       label: _t('settings_first_name', 'নামের প্রথম অংশ'),
-                      hintText:
-                          _t('settings_first_name_hint', 'নামের প্রথম অংশ লিখুন'),
+                      hintText: _t(
+                          'settings_first_name_hint', 'নামের প্রথম অংশ লিখুন'),
                       icon: Icons.badge_outlined,
                       enabled: !_isKycLocked,
                       validator: (value) => _normalized(value).isEmpty
@@ -1590,8 +1589,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     left: _buildTextField(
                       controller: _emailController,
                       label: _t('settings_email', 'ইমেইল'),
-                      hintText: _t('settings_email_hint',
-                          'অ্যাকাউন্টের মূল ইমেইল'),
+                      hintText:
+                          _t('settings_email_hint', 'অ্যাকাউন্টের মূল ইমেইল'),
                       icon: Icons.alternate_email_rounded,
                       enabled: false,
                     ),
@@ -1649,7 +1648,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                   _buildResponsivePair(
                     left: _buildDropdownField(
                       label: _t('settings_division', 'বিভাগ'),
-                      hintText: _t('settings_division_hint', 'বিভাগ সিলেক্ট করুন'),
+                      hintText:
+                          _t('settings_division_hint', 'বিভাগ সিলেক্ট করুন'),
                       icon: Icons.flag_outlined,
                       value: _selectedDivision,
                       items: _divisions.map((item) => item.nameEng).toList(),
@@ -1682,7 +1682,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                   _buildResponsivePair(
                     left: _buildDropdownField(
                       label: _t('settings_upazila', 'উপজেলা / এলাকা'),
-                      hintText: _t('settings_upazila_hint', 'উপজেলা সিলেক্ট করুন'),
+                      hintText:
+                          _t('settings_upazila_hint', 'উপজেলা সিলেক্ট করুন'),
                       icon: Icons.place_outlined,
                       value: _selectedUpazila,
                       items: _upazilas.map((item) => item.nameEng).toList(),
@@ -1723,8 +1724,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     right: _buildTextField(
                       controller: _companyController,
                       label: _t('settings_company', 'কোম্পানি / ব্র্যান্ড'),
-                      hintText: _t('settings_company_hint',
-                          'বিজনেস বা ব্র্যান্ডের নাম'),
+                      hintText: _t(
+                          'settings_company_hint', 'বিজনেস বা ব্র্যান্ডের নাম'),
                       icon: Icons.apartment_rounded,
                     ),
                   ),
@@ -1768,16 +1769,16 @@ class _SettingsScreenState extends State<SettingsScreen>
                     left: _buildTextField(
                       controller: _tiktokController,
                       label: _t('settings_tiktok', 'টিকটক'),
-                      hintText: _t('settings_tiktok_hint',
-                          'টিকটক প্রোফাইলের লিংক'),
+                      hintText:
+                          _t('settings_tiktok_hint', 'টিকটক প্রোফাইলের লিংক'),
                       icon: Icons.music_note_rounded,
                       keyboardType: TextInputType.url,
                     ),
                     right: _buildTextField(
                       controller: _youtubeController,
                       label: _t('settings_youtube', 'ইউটিউব'),
-                      hintText: _t('settings_youtube_hint',
-                          'ইউটিউব চ্যানেলের লিংক'),
+                      hintText:
+                          _t('settings_youtube_hint', 'ইউটিউব চ্যানেলের লিংক'),
                       icon: Icons.play_circle_outline_rounded,
                       keyboardType: TextInputType.url,
                     ),
@@ -1786,8 +1787,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                   _buildTextField(
                     controller: _linkedinController,
                     label: _t('settings_linkedin', 'লিংকডইন'),
-                    hintText: _t(
-                        'settings_linkedin_hint', 'লিংকডইন প্রোফাইলের লিংক'),
+                    hintText:
+                        _t('settings_linkedin_hint', 'লিংকডইন প্রোফাইলের লিংক'),
                     icon: Icons.work_outline_rounded,
                     keyboardType: TextInputType.url,
                   ),
@@ -1864,8 +1865,8 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     return _buildSectionCard(
       title: _t('settings_profile_media', 'প্রোফাইল ছবি ও ব্যানার'),
-      subtitle: _t('settings_profile_media_sub',
-          'ছবি আর ব্যানার একজায়গায় ঠিক করুন।'),
+      subtitle: _t(
+          'settings_profile_media_sub', 'ছবি আর ব্যানার একজায়গায় ঠিক করুন।'),
       icon: Icons.photo_library_outlined,
       child: Column(
         children: [
@@ -1914,11 +1915,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                       child: ClipOval(
                         child:
                             profile.image != null && profile.image!.isNotEmpty
-                                ? CachedNetworkImage(
-                                    imageUrl: _mediaUrl(profile.image),
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, error) =>
-                                        _buildAvatarFallback(),
+                                ? AppNetworkImage(
+                                    _mediaUrl(profile.image),
+                                    errorWidget: _buildAvatarFallback(),
                                   )
                                 : _buildAvatarFallback(),
                       ),
@@ -2190,8 +2189,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
           const SizedBox(height: 10),
           _buildSectionCard(
-            title: _t('settings_follow_list_visibility',
-                'ফলোয়ার ও ফলোইং তালিকা'),
+            title:
+                _t('settings_follow_list_visibility', 'ফলোয়ার ও ফলোইং তালিকা'),
             subtitle: _t('settings_follow_list_visibility_sub',
                 'আপনার ফলোয়ার ও ফলোইং তালিকা কারা দেখতে পাবে ঠিক করুন। সংখ্যা সবাই দেখতে পাবে।'),
             icon: Icons.groups_outlined,
@@ -2230,7 +2229,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
           const SizedBox(height: 10),
           _buildSectionCard(
-            title: _t('settings_contact_visibility', 'যেভাবে যোগাযোগের তথ্য দেখাবেন'),
+            title: _t(
+                'settings_contact_visibility', 'যেভাবে যোগাযোগের তথ্য দেখাবেন'),
             subtitle: _t('settings_contact_visibility_sub',
                 'বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার যোগাযোগের তথ্য কীভাবে দেখাবে ঠিক করুন।'),
             icon: Icons.visibility_outlined,
@@ -2298,7 +2298,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.business_rounded,
-                  title: _t('settings_show_company', 'কোম্পানি / ব্র্যান্ড দেখান'),
+                  title:
+                      _t('settings_show_company', 'কোম্পানি / ব্র্যান্ড দেখান'),
                   description: _t('settings_show_company_desc',
                       'প্রোফাইল সামারিতে আপনার কোম্পানি বা ব্র্যান্ড দেখান।'),
                   previewLabel: _visibilityPreview(
@@ -2324,8 +2325,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                   previewLabel: _visibilityPreview(
                     profile.website,
                     websitePublic,
-                    emptyLabel:
-                        _t('settings_no_website', 'এখনও ওয়েবসাইট দেওয়া হয়নি'),
+                    emptyLabel: _t(
+                        'settings_no_website', 'এখনও ওয়েবসাইট দেওয়া হয়নি'),
                   ),
                   value: websitePublic,
                   onChanged: (value) {
@@ -2344,8 +2345,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                   previewLabel: _visibilityPreview(
                     profile.faceLink,
                     facebookPublic,
-                    emptyLabel: _t(
-                        'settings_no_facebook', 'এখনও ফেসবুক লিংক দেওয়া হয়নি'),
+                    emptyLabel: _t('settings_no_facebook',
+                        'এখনও ফেসবুক লিংক দেওয়া হয়নি'),
                   ),
                   value: facebookPublic,
                   onChanged: (value) {
@@ -2358,7 +2359,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.camera_alt_outlined,
-                  title: _t('settings_show_instagram', 'ইনস্টাগ্রাম লিংক দেখান'),
+                  title:
+                      _t('settings_show_instagram', 'ইনস্টাগ্রাম লিংক দেখান'),
                   description: _t('settings_show_instagram_desc',
                       'যোগাযোগ অংশে আপনার ইনস্টাগ্রাম প্রোফাইলের লিংক দেখান।'),
                   previewLabel: _visibilityPreview(
@@ -2378,7 +2380,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                 const SizedBox(height: 12),
                 _buildPrivacyTile(
                   icon: Icons.chat_bubble_outline_rounded,
-                  title: _t('settings_show_whatsapp', 'হোয়াটসঅ্যাপ লিংক দেখান'),
+                  title:
+                      _t('settings_show_whatsapp', 'হোয়াটসঅ্যাপ লিংক দেখান'),
                   description: _t('settings_show_whatsapp_desc',
                       'বিজনেস নেটওয়ার্ক প্রোফাইল থেকে সরাসরি হোয়াটসঅ্যাপে যোগাযোগ করতে দিন।'),
                   previewLabel: _visibilityPreview(
@@ -2404,7 +2407,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                   previewLabel: _visibilityPreview(
                     profile.about,
                     aboutPublic,
-                    emptyLabel: _t('settings_no_bio', 'এখনও বায়ো দেওয়া হয়নি'),
+                    emptyLabel:
+                        _t('settings_no_bio', 'এখনও বায়ো দেওয়া হয়নি'),
                   ),
                   value: aboutPublic,
                   onChanged: (value) {
@@ -2529,7 +2533,8 @@ class _SettingsScreenState extends State<SettingsScreen>
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: selected ? accent.withValues(alpha: 0.06) : _softSurfaceColor,
+            color:
+                selected ? accent.withValues(alpha: 0.06) : _softSurfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: selected ? accent : Colors.transparent,
@@ -2539,8 +2544,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           child: Row(
             children: [
               Icon(icon,
-                  size: 20,
-                  color: selected ? accent : Colors.grey.shade500),
+                  size: 20, color: selected ? accent : Colors.grey.shade500),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -2550,9 +2554,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: selected
-                                ? accent
-                                : const Color(0xFF1F2937))),
+                            color:
+                                selected ? accent : const Color(0xFF1F2937))),
                     const SizedBox(height: 2),
                     Text(description,
                         style: TextStyle(
@@ -2658,7 +2661,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                 children: [
                   _buildTextField(
                     controller: _oldPasswordController,
-                    label: _t('settings_current_password', 'বর্তমান পাসওয়ার্ড'),
+                    label:
+                        _t('settings_current_password', 'বর্তমান পাসওয়ার্ড'),
                     hintText: _t('settings_current_password_input',
                         'বর্তমান পাসওয়ার্ড দিন'),
                     icon: Icons.lock_outline_rounded,
@@ -2689,16 +2693,16 @@ class _SettingsScreenState extends State<SettingsScreen>
                               'নতুন পাসওয়ার্ড দিতে হবে');
                         }
                         if ((value ?? '').length < 8) {
-                          return _t('settings_min_8_chars',
-                              'অন্তত ৮ অক্ষর দিতে হবে');
+                          return _t(
+                              'settings_min_8_chars', 'অন্তত ৮ অক্ষর দিতে হবে');
                         }
                         return null;
                       },
                     ),
                     right: _buildTextField(
                       controller: _confirmPasswordController,
-                      label:
-                          _t('settings_confirm_password', 'পাসওয়ার্ড নিশ্চিত করুন'),
+                      label: _t('settings_confirm_password',
+                          'পাসওয়ার্ড নিশ্চিত করুন'),
                       hintText: _t('settings_confirm_password_hint',
                           'নতুন পাসওয়ার্ডটা আবার দিন'),
                       icon: Icons.verified_user_outlined,
@@ -3069,8 +3073,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           labelText: _t('settings_dob', 'জন্ম তারিখ'),
           labelStyle: AppFonts.roboto(
               fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
-          prefixIcon: const Icon(Icons.cake_outlined,
-              color: _primaryColor, size: 20),
+          prefixIcon:
+              const Icon(Icons.cake_outlined, color: _primaryColor, size: 20),
           suffixIcon: const Icon(Icons.calendar_today_rounded,
               color: _mutedTextColor, size: 18),
           filled: true,

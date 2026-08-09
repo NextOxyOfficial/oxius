@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/common/adsy_dialog.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
@@ -14,6 +13,7 @@ import '../utils/url_launcher_utils.dart';
 import '../widgets/home/account_balance_section.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class MyGigsScreen extends StatefulWidget {
   const MyGigsScreen({super.key});
@@ -482,7 +482,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
 
   Future<void> _handleGigAction(String gigId, String action, bool value) async {
     // Show loading indicator
-    AdsyToast.info(context,
+    AdsyToast.info(
+        context,
         '${action == "completed" ? "Stopping" : value ? "Activating" : "Pausing"} gig...');
 
     try {
@@ -1327,8 +1328,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   ? AdsService.feedFrequency('gig_list_native', fallback: 5)
                   : 0;
               final block = every + 1;
-              final adCount =
-                  every == 0 ? 0 : _filteredGigs.length ~/ every;
+              final adCount = every == 0 ? 0 : _filteredGigs.length ~/ every;
               final total = _filteredGigs.length + adCount;
               return ListView.separated(
                 key: ValueKey(
@@ -1336,8 +1336,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: total,
-                separatorBuilder: (context, index) =>
-                    const Divider(height: 1),
+                separatorBuilder: (context, index) => const Divider(height: 1),
                 itemBuilder: (context, i) {
                   if (every != 0 && (i + 1) % block == 0) {
                     return const FeedNativeAdCard(
@@ -1410,12 +1409,12 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         ClipRRect(
           borderRadius: BorderRadius.circular(24),
           child: categoryIconUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: categoryIconUrl,
+              ? AppNetworkImage(
+                  categoryIconUrl,
                   width: 48,
                   height: 48,
                   fit: BoxFit.contain,
-                  errorWidget: (context, url, error) => Container(
+                  errorWidget: Container(
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(

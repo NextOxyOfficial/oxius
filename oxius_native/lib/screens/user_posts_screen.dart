@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 import '../models/classified_post.dart';
@@ -518,17 +517,16 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                 width: 80,
                 height: 80,
                 child: imageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
+                    ? AppNetworkImage(
+                        imageUrl,
+                        placeholder: Container(
                           color: const Color(0xFFF3F4F6),
                           child: const Center(
                             child: Icon(Icons.image_outlined,
                                 color: Color(0xFF9CA3AF), size: 24),
                           ),
                         ),
-                        errorWidget: (context, url, error) => Container(
+                        errorWidget: Container(
                           color: const Color(0xFFF3F4F6),
                           child: const Center(
                             child: Icon(Icons.image_outlined,

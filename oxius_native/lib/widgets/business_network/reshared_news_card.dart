@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/html_content_utils.dart';
 import 'news_comments_sheet.dart';
+import '../app_network_image.dart';
 
 /// The embedded Adsy News story shown inside a news reshare — used by both the
 /// feed and the post-detail screen so the design lives in one place.
@@ -46,10 +46,9 @@ class ResharedNewsCard extends StatelessWidget {
                       const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: CachedNetworkImage(
-                      imageUrl: image,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => Container(
+                    child: AppNetworkImage(
+                      image,
+                      errorWidget: Container(
                         color: const Color(0xFFE2E8F0),
                         child: const Icon(Icons.newspaper_rounded,
                             color: Color(0xFF94A3B8)),

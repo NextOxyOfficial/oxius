@@ -12,6 +12,7 @@ import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../../widgets/app_network_image.dart';
 
 class GigDetailScreen extends StatefulWidget {
   final String gigId;
@@ -753,12 +754,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 setState(() => _currentImageIndex = index),
             itemCount: images.length,
             itemBuilder: (context, index) {
-              return CachedNetworkImage(
-                imageUrl: images[index],
-                fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    Container(color: Colors.grey[200]),
-                errorWidget: (context, url, error) => Container(
+              return AppNetworkImage(
+                images[index],
+                placeholder: Container(color: Colors.grey[200]),
+                errorWidget: Container(
                   color: Colors.grey[200],
                   child: const Icon(Icons.image, size: 40, color: Colors.grey),
                 ),
@@ -915,8 +914,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                             padding: EdgeInsets.only(left: 4),
                             child: Icon(Icons.verified,
                                 size: 14, color: Colors.blue)),
-                      if (user?['is_pro'] == true)
-                        const AdsyProBadge(),
+                      if (user?['is_pro'] == true) const AdsyProBadge(),
                     ],
                   ),
                   const SizedBox(height: 2),
@@ -1583,15 +1581,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(8)),
-                          child: CachedNetworkImage(
-                            imageUrl:
-                                _getImageUrl(gig['image_url'] ?? gig['image']),
+                          child: AppNetworkImage(
+                            _getImageUrl(gig['image_url'] ?? gig['image']),
                             height: 80,
                             width: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: (c, u) =>
-                                Container(color: Colors.grey[200]),
-                            errorWidget: (c, u, e) => Container(
+                            placeholder: Container(color: Colors.grey[200]),
+                            errorWidget: Container(
                                 color: Colors.grey[200],
                                 child: const Icon(Icons.image, size: 20)),
                           ),
@@ -1816,8 +1811,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                               padding: EdgeInsets.only(left: 4),
                               child: Icon(Icons.verified,
                                   size: 12, color: Colors.blue)),
-                        if (user?['is_pro'] == true)
-                          const AdsyProBadge(),
+                        if (user?['is_pro'] == true) const AdsyProBadge(),
                       ],
                     ),
                     Row(

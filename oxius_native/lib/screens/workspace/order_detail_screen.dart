@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../widgets/app_network_image.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -203,13 +203,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         child: SizedBox(
                           width: 60,
                           height: 60,
-                          child: CachedNetworkImage(
-                            imageUrl:
-                                _getImageUrl(gig['image_url'] ?? gig['image']),
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                Container(color: Colors.grey[200]),
-                            errorWidget: (context, url, error) => Container(
+                          child: AppNetworkImage(
+                            _getImageUrl(gig['image_url'] ?? gig['image']),
+                            placeholder: Container(color: Colors.grey[200]),
+                            errorWidget: Container(
                               color: Colors.grey[200],
                               child:
                                   const Icon(Icons.image, color: Colors.grey),

@@ -251,26 +251,24 @@ class PostMediaGallery extends StatelessWidget {
       children: [
         // Disk + memory cached, decoded at a capped width so full-res photos
         // never blow up memory or re-download on every scroll.
-        CachedNetworkImage(
-          imageUrl: imageUrl,
+        AppNetworkImage(
+          imageUrl,
           httpHeaders: _kMediaHeaders,
           fit: fit,
           width: double.infinity,
           memCacheWidth: 1080,
           fadeInDuration: const Duration(milliseconds: 120),
-          placeholder: (context, url) => Container(color: Colors.grey.shade200),
-          errorWidget: (context, url, error) {
-            return Container(
-              color: Colors.grey.shade200,
-              child: Center(
-                child: Icon(
-                  item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
-                  size: errorIconSize,
-                  color: item.isVideo ? Colors.grey.shade700 : Colors.grey,
-                ),
+          placeholder: Container(color: Colors.grey.shade200),
+          errorWidget: Container(
+            color: Colors.grey.shade200,
+            child: Center(
+              child: Icon(
+                item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
+                size: errorIconSize,
+                color: item.isVideo ? Colors.grey.shade700 : Colors.grey,
               ),
-            );
-          },
+            ),
+          ),
         ),
         if (item.isVideo)
           Positioned(
@@ -1221,13 +1219,12 @@ class AutoPlaySingleVideoPreviewState
         ),
         // Poster (cover-fills the box, no letterbox).
         if (thumbUrl.isNotEmpty)
-          CachedNetworkImage(
-            imageUrl: thumbUrl,
+          AppNetworkImage(
+            thumbUrl,
             httpHeaders: _kMediaHeaders,
-            fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
-            errorWidget: (context, url, error) => const SizedBox.shrink(),
+            errorWidget: const SizedBox.shrink(),
           ),
         // Video, cover-filled so it exactly covers the box (matches images).
         if (!_hasError && _isInitialized && c != null)

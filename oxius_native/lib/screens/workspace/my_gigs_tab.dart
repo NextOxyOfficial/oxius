@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
@@ -7,6 +6,7 @@ import '../../services/translation_service.dart';
 import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../widgets/app_network_image.dart';
 
 class MyGigsTab extends StatefulWidget {
   const MyGigsTab({super.key});
@@ -218,12 +218,10 @@ class _MyGigsTabState extends State<MyGigsTab> {
               child: SizedBox(
                 width: 50,
                 height: 50,
-                child: CachedNetworkImage(
-                  imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      Container(color: Colors.grey[200]),
-                  errorWidget: (context, url, error) => Container(
+                child: AppNetworkImage(
+                  _getImageUrl(gig['image_url'] ?? gig['image']),
+                  placeholder: Container(color: Colors.grey[200]),
+                  errorWidget: Container(
                     color: Colors.grey[200],
                     child:
                         const Icon(Icons.image, color: Colors.grey, size: 20),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -8,6 +7,7 @@ import '../../screens/news_detail_screen.dart';
 import '../../screens/news_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 class DrawerNews extends StatefulWidget {
   const DrawerNews({super.key});
@@ -323,17 +323,14 @@ class _DrawerNewsState extends State<DrawerNews> {
         children: [
           // Image
           imageUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
+              ? AppNetworkImage(
+                  imageUrl,
                   memCacheWidth: 720,
-                  errorWidget: (context, url, error) {
-                    return Container(
-                      color: Colors.grey.shade100,
-                      child:
-                          const Icon(Icons.image, size: 40, color: Colors.grey),
-                    );
-                  },
+                  errorWidget: Container(
+                    color: Colors.grey.shade100,
+                    child:
+                        const Icon(Icons.image, size: 40, color: Colors.grey),
+                  ),
                 )
               : Container(
                   color: Colors.grey.shade100,
@@ -385,7 +382,8 @@ class _DrawerNewsState extends State<DrawerNews> {
                       Row(
                         children: [
                           Icon(Icons.access_time,
-                              size: 12, color: Colors.white.withValues(alpha: 0.8)),
+                              size: 12,
+                              color: Colors.white.withValues(alpha: 0.8)),
                           const SizedBox(width: 4),
                           Text(
                             _formatDate(news['created_at']),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/news_models.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 class NewsCard extends StatelessWidget {
   final NewsPost post;
@@ -148,15 +149,14 @@ class NewsCard extends StatelessWidget {
                   const BorderRadius.horizontal(left: Radius.circular(12)),
               child: Stack(
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: post.image ?? '',
+                  AppNetworkImage(
+                    post.image ?? '',
                     width: 120,
                     height: 120,
-                    fit: BoxFit.cover,
                     memCacheWidth: 240,
                     memCacheHeight: 240,
                     fadeInDuration: const Duration(milliseconds: 120),
-                    placeholder: (context, url) => Container(
+                    placeholder: Container(
                       width: 120,
                       height: 120,
                       color: Colors.grey.shade200,
@@ -164,7 +164,7 @@ class NewsCard extends StatelessWidget {
                         child: AdsyLoadingIndicator(strokeWidth: 2),
                       ),
                     ),
-                    errorWidget: (context, url, error) => Container(
+                    errorWidget: Container(
                       width: 120,
                       height: 120,
                       color: Colors.grey.shade200,

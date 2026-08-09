@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/classified_post.dart';
 import '../models/geo_location.dart';
 import '../services/food_zone_service.dart';
@@ -11,6 +10,7 @@ import '../widgets/geo_selector_dialog.dart';
 import '../widgets/geo_location_breadcrumb.dart';
 import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../widgets/app_network_image.dart';
 
 /// One sponsored strip after every N food listings.
 const int _kFoodAdEvery = 6;
@@ -161,7 +161,6 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
       setState(() => _isLoadingMore = false);
     }
   }
-
 
   void _clearSearch() {
     _searchController.clear();
@@ -423,17 +422,16 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                 width: 80,
                 height: 80,
                 child: imageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
+                    ? AppNetworkImage(
+                        imageUrl,
+                        placeholder: Container(
                           color: const Color(0xFFFCE4EC),
                           child: const Center(
                             child: Icon(Icons.restaurant_menu,
                                 color: Color(0xFFE91E63), size: 24),
                           ),
                         ),
-                        errorWidget: (context, url, error) => Container(
+                        errorWidget: Container(
                           color: const Color(0xFFFCE4EC),
                           child: const Center(
                             child: Icon(Icons.restaurant_menu,

@@ -1,7 +1,6 @@
 ﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/auth_service.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../utils/payment_policy.dart';
@@ -14,6 +13,7 @@ import 'drawer_featured_product.dart';
 import 'drawer_contributors.dart';
 import '../ads/advertise_button.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../app_network_image.dart';
 
 /// Side drawer used across the Business Network screens.
 ///
@@ -274,11 +274,10 @@ class BusinessNetworkDrawer extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: img != null && img.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: img,
-              fit: BoxFit.cover,
+          ? AppNetworkImage(
+              img,
               memCacheWidth: 128,
-              errorWidget: (_, __, ___) => _avatarFallback(initials),
+              errorWidget: _avatarFallback(initials),
             )
           : _avatarFallback(initials),
     );

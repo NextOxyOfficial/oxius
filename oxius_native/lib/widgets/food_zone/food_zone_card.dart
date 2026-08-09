@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/classified_post.dart';
 import 'package:oxius_native/theme/app_text.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 class FoodZoneCard extends StatelessWidget {
   final ClassifiedPost post;
@@ -42,21 +42,20 @@ class FoodZoneCard extends StatelessWidget {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(12)),
                   child: imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
+                      ? AppNetworkImage(
+                          imageUrl,
                           height: 100,
                           width: double.infinity,
-                          fit: BoxFit.cover,
                           memCacheHeight: 200,
                           fadeInDuration: const Duration(milliseconds: 120),
-                          placeholder: (context, url) => Container(
+                          placeholder: Container(
                             height: 100,
                             color: Colors.grey[200],
                             child: const Center(
                               child: AdsyLoadingIndicator(strokeWidth: 2),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
+                          errorWidget: Container(
                             height: 100,
                             color: Colors.grey[200],
                             child: const Icon(Icons.restaurant,
@@ -225,15 +224,14 @@ class FoodZoneListCard extends StatelessWidget {
                   borderRadius:
                       const BorderRadius.horizontal(left: Radius.circular(12)),
                   child: imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
+                      ? AppNetworkImage(
+                          imageUrl,
                           height: 100,
                           width: 100,
-                          fit: BoxFit.cover,
                           memCacheWidth: 200,
                           memCacheHeight: 200,
                           fadeInDuration: const Duration(milliseconds: 120),
-                          placeholder: (context, url) => Container(
+                          placeholder: Container(
                             height: 100,
                             width: 100,
                             color: Colors.grey[200],
@@ -241,7 +239,7 @@ class FoodZoneListCard extends StatelessWidget {
                               child: AdsyLoadingIndicator(strokeWidth: 2),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
+                          errorWidget: Container(
                             height: 100,
                             width: 100,
                             color: Colors.grey[200],

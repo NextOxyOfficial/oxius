@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../models/cart_item.dart';
 import '../../config/app_config.dart';
 import '../../screens/product_details_screen.dart';
 import '../../widgets/common/adsy_toast.dart';
+import '../app_network_image.dart';
 
 /// Sponsored products as a horizontal carousel — same visual language as the
 /// other feed discovery rows (workspace gigs / micro gigs) so the feed reads
@@ -131,8 +131,8 @@ class SponsoredProductsCard extends StatelessWidget {
             : null,
         imageDetails: product['image_details'] != null
             ? (product['image_details'] as List)
-                .map((img) =>
-                    ProductImage.fromJson(img as Map<String, dynamic>))
+                .map(
+                    (img) => ProductImage.fromJson(img as Map<String, dynamic>))
                 .toList()
             : null,
       );
@@ -175,9 +175,7 @@ class _ProductTile extends StatelessWidget {
       if (first is Map && first['image'] != null) {
         final raw = first['image'].toString();
         if (raw.isNotEmpty) {
-          return raw.startsWith('http')
-              ? raw
-              : '${AppConfig.mediaBaseUrl}$raw';
+          return raw.startsWith('http') ? raw : '${AppConfig.mediaBaseUrl}$raw';
         }
       }
     }
@@ -214,13 +212,11 @@ class _ProductTile extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     if (img.isNotEmpty)
-                      CachedNetworkImage(
-                        imageUrl: img,
-                        fit: BoxFit.cover,
+                      AppNetworkImage(
+                        img,
                         memCacheWidth: 320,
-                        placeholder: (c, u) =>
-                            Container(color: const Color(0xFFF1F5F9)),
-                        errorWidget: (c, u, e) => _iconTile(),
+                        placeholder: Container(color: const Color(0xFFF1F5F9)),
+                        errorWidget: _iconTile(),
                       )
                     else
                       _iconTile(),

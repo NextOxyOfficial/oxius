@@ -3,10 +3,10 @@ import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
 import '../models/sale_post.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 /// My Sale Posts — manage the user's পুরোনো কেনাবেচা ads.
 /// Shop-manager style: filter chips + flat stripe list with hairline dividers.
@@ -358,8 +358,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
 
   Future<void> _showEditSheet(SalePost post) async {
     final titleController = TextEditingController(text: post.title);
-    final descController =
-        TextEditingController(text: post.description ?? '');
+    final descController = TextEditingController(text: post.description ?? '');
     final priceController =
         TextEditingController(text: post.price.toStringAsFixed(0));
     final phoneController = TextEditingController(text: post.phone ?? '');
@@ -414,8 +413,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  _editField(_t('sale_title_label', 'টাইটেল'),
-                      titleController),
+                  _editField(_t('sale_title_label', 'টাইটেল'), titleController),
                   const SizedBox(height: 12),
                   _editField(_t('sale_desc_label', 'ডিটেইলস'), descController,
                       maxLines: 3),
@@ -439,9 +437,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 11, vertical: 6),
                           decoration: BoxDecoration(
-                            color: selected
-                                ? _green
-                                : const Color(0xFFF1F5F9),
+                            color: selected ? _green : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                                 color: selected
@@ -463,16 +459,15 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                     }).toList(),
                   ),
                   const SizedBox(height: 12),
-                  _editField(_t('sale_price_label', 'দাম (৳)'),
-                      priceController,
+                  _editField(_t('sale_price_label', 'দাম (৳)'), priceController,
                       keyboardType: TextInputType.number),
                   const SizedBox(height: 12),
-                  _editField(_t('sale_phone_label', 'ফোন নাম্বার'),
-                      phoneController,
+                  _editField(
+                      _t('sale_phone_label', 'ফোন নাম্বার'), phoneController,
                       keyboardType: TextInputType.phone),
                   const SizedBox(height: 12),
-                  _editField(_t('sale_address_label', 'ঠিকানা'),
-                      addressController,
+                  _editField(
+                      _t('sale_address_label', 'ঠিকানা'), addressController,
                       maxLines: 2),
                   const SizedBox(height: 8),
                   Row(
@@ -516,8 +511,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                                 // rejects explicitly-blanked required fields.
                                 final desc = descController.text.trim();
                                 final phone = phoneController.text.trim();
-                                final address =
-                                    addressController.text.trim();
+                                final address = addressController.text.trim();
                                 final payload = <String, dynamic>{
                                   'title': title,
                                   'condition': condition,
@@ -530,8 +524,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                                   if (address.isNotEmpty)
                                     'detailed_address': address,
                                 };
-                                final updated = await _postService
-                                    .updatePost(post.slug, payload);
+                                final updated = await _postService.updatePost(
+                                    post.slug, payload);
                                 saving.value = false;
                                 if (!ctx.mounted) return;
                                 if (updated != null) {
@@ -632,8 +626,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Row(
           children: [
             const Icon(Icons.warning_rounded,
@@ -641,8 +634,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
             const SizedBox(width: 8),
             Text(
               _t('sale_delete_post', 'বিজ্ঞাপন ডিলিট'),
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -679,8 +671,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
           context, _t('sale_post_deleted', 'বিজ্ঞাপন ডিলিট হয়ে গেছে'));
       _fetchMyPosts(refresh: true);
     } else {
-      AdsyToast.error(
-          context, _t('sale_delete_failed', 'ডিলিট করা গেল না'));
+      AdsyToast.error(context, _t('sale_delete_failed', 'ডিলিট করা গেল না'));
     }
   }
 
@@ -729,8 +720,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _filterChip(null, _t('sale_filter_all', 'সব'),
-                      _stats['total'] ?? 0),
+                  _filterChip(
+                      null, _t('sale_filter_all', 'সব'), _stats['total'] ?? 0),
                   const SizedBox(width: 6),
                   _filterChip('active', _t('sale_status_active', 'অ্যাক্টিভ'),
                       _stats['active'] ?? 0),
@@ -763,8 +754,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           _t('sale_create_post', 'বিজ্ঞাপন দিন'),
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.w600),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -851,8 +842,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                       child: SizedBox(
                         width: 20,
                         height: 20,
-                        child: AdsyLoadingIndicator(
-                            strokeWidth: 2, color: _green),
+                        child:
+                            AdsyLoadingIndicator(strokeWidth: 2, color: _green),
                       ),
                     ),
                   );
@@ -917,17 +908,16 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                   width: 78,
                   height: 78,
                   child: imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
+                      ? AppNetworkImage(
+                          imageUrl,
+                          placeholder: Container(
                             color: Colors.grey.shade100,
                             child: const Center(
                               child: AdsyLoadingIndicator(
                                   strokeWidth: 2, color: _green),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
+                          errorWidget: Container(
                             color: Colors.grey.shade100,
                             child: Icon(Icons.image_not_supported_outlined,
                                 color: Colors.grey.shade400, size: 26),

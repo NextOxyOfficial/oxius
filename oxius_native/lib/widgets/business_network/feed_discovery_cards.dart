@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 
 import '../../services/api_service.dart';
@@ -22,6 +21,7 @@ import '../common/adsy_share_sheet.dart';
 import '../common/adsy_toast.dart';
 import '../login_prompt_dialog.dart';
 import 'news_comments_sheet.dart';
+import '../app_network_image.dart';
 
 /// One tile inside a discovery row.
 class FeedDiscoveryItem {
@@ -110,8 +110,8 @@ class FeedDiscoveryCard extends StatelessWidget {
                 GestureDetector(
                   onTap: onSeeAll,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     child: Row(
                       children: [
                         Text('সব দেখুন',
@@ -119,7 +119,8 @@ class FeedDiscoveryCard extends StatelessWidget {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: accent)),
-                        Icon(Icons.chevron_right_rounded, size: 16, color: accent),
+                        Icon(Icons.chevron_right_rounded,
+                            size: 16, color: accent),
                       ],
                     ),
                   ),
@@ -173,13 +174,11 @@ class FeedDiscoveryCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     if (item.imageUrl != null && item.imageUrl!.isNotEmpty)
-                      CachedNetworkImage(
-                        imageUrl: item.imageUrl!,
-                        fit: BoxFit.cover,
+                      AppNetworkImage(
+                        item.imageUrl!,
                         memCacheWidth: 320,
-                        placeholder: (c, u) =>
-                            Container(color: const Color(0xFFF1F5F9)),
-                        errorWidget: (c, u, e) => _iconTile(),
+                        placeholder: Container(color: const Color(0xFFF1F5F9)),
+                        errorWidget: _iconTile(),
                       )
                     else
                       _iconTile(),
@@ -256,13 +255,11 @@ class FeedDiscoveryCard extends StatelessWidget {
                 width: 58,
                 height: 58,
                 child: (item.imageUrl != null && item.imageUrl!.isNotEmpty)
-                    ? CachedNetworkImage(
-                        imageUrl: item.imageUrl!,
-                        fit: BoxFit.cover,
+                    ? AppNetworkImage(
+                        item.imageUrl!,
                         memCacheWidth: 160,
-                        placeholder: (c, u) =>
-                            Container(color: const Color(0xFFF1F5F9)),
-                        errorWidget: (c, u, e) => _iconTile(),
+                        placeholder: Container(color: const Color(0xFFF1F5F9)),
+                        errorWidget: _iconTile(),
                       )
                     : _iconTile(),
               ),
@@ -309,7 +306,8 @@ class FeedDiscoveryCard extends StatelessWidget {
     return Container(
       color: const Color(0xFFF1F5F9),
       child: const Center(
-          child: Icon(Icons.image_outlined, size: 28, color: Color(0xFF94A3B8))),
+          child:
+              Icon(Icons.image_outlined, size: 28, color: Color(0xFF94A3B8))),
     );
   }
 }
@@ -398,8 +396,7 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
         .load(() => MicrogigService.getMicroGigs(showSubmitted: false))
         .then((v) {
       if (mounted) {
-        setState(
-            () => _gigs = v.where((g) => g.isAvailable).take(12).toList());
+        setState(() => _gigs = v.where((g) => g.isAvailable).take(12).toList());
       }
     });
   }
@@ -499,13 +496,12 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                       width: 46,
                       height: 46,
                       child: categoryImg.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: categoryImg,
-                              fit: BoxFit.cover,
+                          ? AppNetworkImage(
+                              categoryImg,
                               memCacheWidth: 120,
-                              placeholder: (c, u) =>
+                              placeholder:
                                   Container(color: const Color(0xFFF1F5F9)),
-                              errorWidget: (c, u, e) => _thumbFallback(),
+                              errorWidget: _thumbFallback(),
                             )
                           : _thumbFallback(),
                     ),
@@ -550,8 +546,8 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                                   horizontal: 8, vertical: 2.5),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                border: Border.all(
-                                    color: const Color(0xFFE2E8F0)),
+                                border:
+                                    Border.all(color: const Color(0xFFE2E8F0)),
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
@@ -614,8 +610,8 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                       ),
                       child: const Text(
                         'ইনকাম করুন',
-                        style:
-                            TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700),
                       ),
                     ),
             ),
@@ -742,14 +738,11 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
               onTap: openStory,
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: CachedNetworkImage(
-                  imageUrl: img,
-                  fit: BoxFit.cover,
+                child: AppNetworkImage(
+                  img,
                   memCacheWidth: 1080,
-                  placeholder: (c, u) =>
-                      Container(color: const Color(0xFFF1F5F9)),
-                  errorWidget: (c, u, e) =>
-                      Container(color: const Color(0xFFF1F5F9)),
+                  placeholder: Container(color: const Color(0xFFF1F5F9)),
+                  errorWidget: Container(color: const Color(0xFFF1F5F9)),
                 ),
               ),
             ),
@@ -812,8 +805,8 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
                 ),
                 _newsAction(
                   icon: Icons.share_outlined,
-                  label: _labelWithCount(
-                      'Share', _shareCount ?? post.shareCount),
+                  label:
+                      _labelWithCount('Share', _shareCount ?? post.shareCount),
                   onTap: () => _shareStory(post),
                 ),
               ],
@@ -879,8 +872,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
           );
           if (created == null) return false;
           if (mounted) {
-            setState(() =>
-                _shareCount = (_shareCount ?? post.shareCount) + 1);
+            setState(() => _shareCount = (_shareCount ?? post.shareCount) + 1);
             AdsyToast.success(context, 'খবরটি আপনার ফিডে শেয়ার হয়েছে');
           }
           return true;
@@ -927,8 +919,8 @@ class _FeedWorkspaceGigsCardState extends State<FeedWorkspaceGigsCard> {
       accent: const Color(0xFF059669),
       title: 'ওয়ার্কস্পেস গিগস',
       listStyle: true,
-      onSeeAll: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => const WorkspaceScreen())),
+      onSeeAll: () => Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const WorkspaceScreen())),
       items: _gigs.map((g) {
         final price = g['price']?.toString() ?? '0';
         return FeedDiscoveryItem(
@@ -938,8 +930,7 @@ class _FeedWorkspaceGigsCardState extends State<FeedWorkspaceGigsCard> {
           onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) =>
-                      GigDetailScreen(gigId: g['id'].toString()))),
+                  builder: (_) => GigDetailScreen(gigId: g['id'].toString()))),
         );
       }).toList(),
     );
@@ -1013,11 +1004,10 @@ class _FeedSaleCardState extends State<FeedSaleCard> {
           imageUrl: _img(p),
           // Route params are typed String? — raw map values may be ints and
           // hard-crash the detail page with a TypeError.
-          onTap: () => Navigator.pushNamed(context, '/sale/detail',
-              arguments: {
-                'slug': p['slug']?.toString(),
-                'id': p['id']?.toString(),
-              }),
+          onTap: () => Navigator.pushNamed(context, '/sale/detail', arguments: {
+            'slug': p['slug']?.toString(),
+            'id': p['id']?.toString(),
+          }),
         );
       }).toList(),
     );

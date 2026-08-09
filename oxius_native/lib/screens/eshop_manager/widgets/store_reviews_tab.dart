@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../../models/store_review.dart';
 import '../../../services/review_service.dart';
 import '../../../services/translation_service.dart';
 import '../../product_details_screen.dart';
+import '../../../widgets/app_network_image.dart';
 
 /// Reviews left on the store owner's products, with the ability to reply.
 class StoreReviewsTab extends StatefulWidget {
@@ -140,8 +140,8 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
                 maxLength: 1000,
                 style: const TextStyle(fontSize: 13.5),
                 decoration: InputDecoration(
-                  hintText: _t('eshop_reply_hint',
-                      'কাস্টমারকে সুন্দরভাবে উত্তর দিন...'),
+                  hintText: _t(
+                      'eshop_reply_hint', 'কাস্টমারকে সুন্দরভাবে উত্তর দিন...'),
                   isDense: true,
                   contentPadding: const EdgeInsets.all(12),
                   border: OutlineInputBorder(
@@ -165,10 +165,8 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
                         : () async {
                             final text = controller.text.trim();
                             if (text.isEmpty) {
-                              AdsyToast.error(
-                                  context,
-                                  _t('eshop_reply_required',
-                                      'রিপ্লাই লিখুন'));
+                              AdsyToast.error(context,
+                                  _t('eshop_reply_required', 'রিপ্লাই লিখুন'));
                               return;
                             }
                             saving.value = true;
@@ -188,7 +186,8 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
                                   _t('eshop_reply_saved',
                                       'রিপ্লাই সেভ হয়েছে'));
                             } else {
-                              final msg = (result['message'] as String?)?.trim();
+                              final msg =
+                                  (result['message'] as String?)?.trim();
                               AdsyToast.error(
                                   context,
                                   (msg != null && msg.isNotEmpty)
@@ -230,13 +229,11 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(_t('eshop_delete_reply', 'রিপ্লাই ডিলিট'),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
-            _t('eshop_delete_reply_confirm',
-                'আপনার রিপ্লাই মুছে ফেলতে চান?'),
+            _t('eshop_delete_reply_confirm', 'আপনার রিপ্লাই মুছে ফেলতে চান?'),
             style: const TextStyle(fontSize: 13)),
         actions: [
           TextButton(
@@ -283,8 +280,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(
-          child: AdsyLoadingIndicator(color: _green));
+      return const Center(child: AdsyLoadingIndicator(color: _green));
     }
     return AdsyRefreshIndicator(
       onRefresh: _load,
@@ -332,7 +328,8 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.rate_review_outlined, size: 56, color: Colors.grey.shade400),
+          Icon(Icons.rate_review_outlined,
+              size: 56, color: Colors.grey.shade400),
           const SizedBox(height: 14),
           Text(_t('eshop_no_reviews_yet', 'এখনো কোনো রিভিউ নেই'),
               style: const TextStyle(
@@ -404,8 +401,8 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
                         _stars(r.rating),
                         const SizedBox(width: 6),
                         Text(r.formattedDate,
-                            style: const TextStyle(
-                                fontSize: 10.5, color: _slate)),
+                            style:
+                                const TextStyle(fontSize: 10.5, color: _slate)),
                       ],
                     ),
                   ],
@@ -420,8 +417,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
               onTap: () => _openProduct(r),
               borderRadius: BorderRadius.circular(6),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(6),
@@ -452,8 +448,8 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
           if (r.title != null && r.title!.trim().isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(r.title!,
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w700)),
+                style:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
           ],
           const SizedBox(height: 5),
           Text(r.comment,
@@ -542,12 +538,11 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
     if (img != null && img.startsWith('http')) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: CachedNetworkImage(
-          imageUrl: img,
+        child: AppNetworkImage(
+          img,
           width: 38,
           height: 38,
-          fit: BoxFit.cover,
-          errorWidget: (_, __, ___) => _initialAvatar(r.reviewerName),
+          errorWidget: _initialAvatar(r.reviewerName),
         ),
       );
     }
@@ -555,8 +550,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
   }
 
   Widget _initialAvatar(String name) {
-    final letter =
-        name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
+    final letter = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
     return Container(
       width: 38,
       height: 38,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/theme/app_text.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 class AdsScrollWidget extends StatefulWidget {
   final Map<String, dynamic> ads;
@@ -286,72 +286,71 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
 
             // Carousel content
             GestureDetector(
-                onPanStart: (details) {
-                  _isUserInteracting = true;
-                  _startX = details.globalPosition.dx;
-                  _startScrollPos = _scrollController.offset;
-                  _pauseAutoScroll();
-                },
-                onPanUpdate: (details) {
-                  if (!_scrollController.hasClients || !mounted) return;
+              onPanStart: (details) {
+                _isUserInteracting = true;
+                _startX = details.globalPosition.dx;
+                _startScrollPos = _scrollController.offset;
+                _pauseAutoScroll();
+              },
+              onPanUpdate: (details) {
+                if (!_scrollController.hasClients || !mounted) return;
 
-                  final currentX = details.globalPosition.dx;
-                  final diff = _startX - currentX;
-                  final newPosition = _startScrollPos + diff;
+                final currentX = details.globalPosition.dx;
+                final diff = _startX - currentX;
+                final newPosition = _startScrollPos + diff;
 
-                  // Apply position with bounds
-                  final maxScroll = _scrollController.position.maxScrollExtent;
-                  if (newPosition >= 0 && newPosition <= maxScroll) {
-                    try {
-                      _scrollController.jumpTo(newPosition);
-                    } catch (e) {
-                      // Ignore scroll errors during user interaction
-                    }
+                // Apply position with bounds
+                final maxScroll = _scrollController.position.maxScrollExtent;
+                if (newPosition >= 0 && newPosition <= maxScroll) {
+                  try {
+                    _scrollController.jumpTo(newPosition);
+                  } catch (e) {
+                    // Ignore scroll errors during user interaction
                   }
-                },
-                onPanEnd: (details) {
-                  _isUserInteracting = false;
-                  // Resume auto-scroll after delay
-                  Future.delayed(const Duration(seconds: 2), () {
-                    if (mounted) _resumeAutoScroll();
-                  });
-                },
-                child: MouseRegion(
-                  onEnter: (_) => _pauseAutoScroll(),
-                  onExit: (_) => _resumeAutoScroll(),
-                  child: Container(
-                    height: 220, // Fixed height for card + padding
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 2, vertical: 14),
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      scrollDirection: Axis.horizontal,
-                      physics:
-                          const ClampingScrollPhysics(), // Prevent overscroll
-                      itemCount: _displayedAds.length,
-                      itemBuilder: (context, index) {
-                        final ad = _displayedAds[index];
-                        // RepaintBoundary ensures each card paints independently;
-                        // when the auto-scroll Timer nudges the controller, only
-                        // visible cards repaint instead of the entire row.
-                        return RepaintBoundary(
-                          child: Container(
-                            width: _cardWidth,
-                            margin: EdgeInsets.only(
-                              right: index < _displayedAds.length - 1
-                                  ? _cardGap
-                                  : 0,
-                            ),
-                            child: _buildAdCard(ad),
+                }
+              },
+              onPanEnd: (details) {
+                _isUserInteracting = false;
+                // Resume auto-scroll after delay
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted) _resumeAutoScroll();
+                });
+              },
+              child: MouseRegion(
+                onEnter: (_) => _pauseAutoScroll(),
+                onExit: (_) => _resumeAutoScroll(),
+                child: Container(
+                  height: 220, // Fixed height for card + padding
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 2, vertical: 14),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics:
+                        const ClampingScrollPhysics(), // Prevent overscroll
+                    itemCount: _displayedAds.length,
+                    itemBuilder: (context, index) {
+                      final ad = _displayedAds[index];
+                      // RepaintBoundary ensures each card paints independently;
+                      // when the auto-scroll Timer nudges the controller, only
+                      // visible cards repaint instead of the entire row.
+                      return RepaintBoundary(
+                        child: Container(
+                          width: _cardWidth,
+                          margin: EdgeInsets.only(
+                            right:
+                                index < _displayedAds.length - 1 ? _cardGap : 0,
                           ),
-                        );
-                      },
-                    ),
+                          child: _buildAdCard(ad),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       );
     } catch (e) {
       // Return a fallback widget if there's any error
@@ -405,14 +404,13 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                       height: 120,
                       width: double.infinity,
                       color: Colors.grey.shade100,
-                      child: CachedNetworkImage(
-                        imageUrl: _getImageSrc(ad),
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => const Center(
+                      child: AppNetworkImage(
+                        _getImageSrc(ad),
+                        placeholder: const Center(
                           child: AdsyLoadingIndicator(
                               strokeWidth: 2, color: Color(0xFF10B981)),
                         ),
-                        errorWidget: (context, url, error) => Center(
+                        errorWidget: Center(
                           child: Icon(Icons.image_not_supported,
                               color: Colors.grey.shade400, size: 32),
                         ),

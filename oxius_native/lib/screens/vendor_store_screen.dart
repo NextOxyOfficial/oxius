@@ -14,6 +14,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import '../utils/app_fonts.dart';
+import '../widgets/app_network_image.dart';
 
 // Clean marketplace palette (screenshot-matched): white surfaces, green
 // accent, near-black text.
@@ -520,15 +521,12 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(9),
                     child: logo != null && logo.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: logo,
+                        ? AppNetworkImage(
+                            logo,
                             width: 30,
                             height: 30,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => const Icon(
-                                Icons.storefront_rounded,
-                                color: _green,
-                                size: 24),
+                            errorWidget: const Icon(Icons.storefront_rounded,
+                                color: _green, size: 24),
                           )
                         : const Icon(Icons.storefront_rounded,
                             color: _green, size: 24),
@@ -792,13 +790,10 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             ),
             clipBehavior: Clip.antiAlias,
             child: logo != null && logo.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: logo,
-                    fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) => const Icon(
-                        Icons.storefront_rounded,
-                        color: _slate400,
-                        size: 24),
+                ? AppNetworkImage(
+                    logo,
+                    errorWidget: const Icon(Icons.storefront_rounded,
+                        color: _slate400, size: 24),
                   )
                 : const Icon(Icons.storefront_rounded,
                     color: _slate400, size: 24),
@@ -1057,11 +1052,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: img.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: img,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => const Icon(
-                                Icons.category_outlined,
+                        ? AppNetworkImage(
+                            img,
+                            errorWidget: const Icon(Icons.category_outlined,
                                 color: _slate400),
                           )
                         : const Icon(Icons.category_outlined, color: _slate400),
@@ -1180,11 +1173,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: image.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: image,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => const Icon(
-                              Icons.image_outlined,
+                      ? AppNetworkImage(
+                          image,
+                          errorWidget: const Icon(Icons.image_outlined,
                               color: _slate400),
                         )
                       : const Icon(Icons.image_outlined, color: _slate400),
@@ -1315,10 +1306,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
         child: banner != null
-            ? CachedNetworkImage(
-                imageUrl: banner,
-                fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => _promoFallback(),
+            ? AppNetworkImage(
+                banner,
+                errorWidget: _promoFallback(),
               )
             : _promoFallback(),
       ),
@@ -1424,10 +1414,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: img.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: img,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) => const Icon(
+                              ? AppNetworkImage(
+                                  img,
+                                  errorWidget: const Icon(
                                       Icons.category_outlined,
                                       color: _slate400),
                                 )

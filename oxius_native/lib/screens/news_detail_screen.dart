@@ -11,6 +11,7 @@ import '../utils/html_content_utils.dart';
 import 'business_network/profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_share_sheet.dart';
+import '../widgets/app_network_image.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final String slug;
@@ -167,8 +168,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
         child: Row(
           children: [
-            _glassCircle(Icons.arrow_back_rounded,
-                () => Navigator.pop(context)),
+            _glassCircle(
+                Icons.arrow_back_rounded, () => Navigator.pop(context)),
             const Spacer(),
             _glassCircle(Icons.share_outlined, _sharePost),
           ],
@@ -320,8 +321,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: post.image != null
-                        ? const BorderRadius.vertical(
-                            top: Radius.circular(26))
+                        ? const BorderRadius.vertical(top: Radius.circular(26))
                         : BorderRadius.zero,
                   ),
                   padding: const EdgeInsets.fromLTRB(12, 18, 12, 0),
@@ -347,8 +347,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                         _buildTags(post),
                       ],
                       const SizedBox(height: 14),
-                      const Divider(
-                          color: _hairline, height: 1, thickness: 1),
+                      const Divider(color: _hairline, height: 1, thickness: 1),
                       const SizedBox(height: 4),
                       _buildArticleBody(post),
                       if (post.comments.isNotEmpty) ...[
@@ -375,16 +374,15 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     return SizedBox(
       height: 280 + topPad,
       width: double.infinity,
-      child: CachedNetworkImage(
-        imageUrl: post.image!,
-        fit: BoxFit.cover,
+      child: AppNetworkImage(
+        post.image!,
         memCacheWidth: 1280,
         fadeInDuration: const Duration(milliseconds: 120),
-        placeholder: (context, url) => Container(
+        placeholder: Container(
           color: _hairline,
           child: const Center(child: AdsyLoadingIndicator()),
         ),
-        errorWidget: (context, url, error) => Container(
+        errorWidget: Container(
           color: _hairline,
           child: const Icon(
             Icons.image_not_supported_outlined,
@@ -481,9 +479,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     return Row(
       children: [
         Text(
-          _isBn
-              ? '${post.readTime} মিনিটের পড়া'
-              : '${post.readTime} min read',
+          _isBn ? '${post.readTime} মিনিটের পড়া' : '${post.readTime} min read',
           style: const TextStyle(fontSize: 12, color: _muted),
         ),
         const Spacer(),
@@ -704,16 +700,14 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                 ),
                 child: ClipOval(
                   child: avatarUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: avatarUrl,
-                          fit: BoxFit.cover,
+                      ? AppNetworkImage(
+                          avatarUrl,
                           width: 30,
                           height: 30,
                           memCacheWidth: 90,
                           fadeInDuration: const Duration(milliseconds: 120),
-                          placeholder: (context, url) => initialFallback,
-                          errorWidget: (context, url, error) =>
-                              initialFallback,
+                          placeholder: initialFallback,
+                          errorWidget: initialFallback,
                         )
                       : initialFallback,
                 ),
@@ -825,15 +819,13 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                 width: 72,
                 height: 72,
                 child: post.image != null
-                    ? CachedNetworkImage(
-                        imageUrl: post.image!,
-                        fit: BoxFit.cover,
+                    ? AppNetworkImage(
+                        post.image!,
                         memCacheWidth: 144,
                         memCacheHeight: 144,
                         fadeInDuration: const Duration(milliseconds: 120),
-                        placeholder: (context, url) =>
-                            Container(color: _hairline),
-                        errorWidget: (context, url, error) => Container(
+                        placeholder: Container(color: _hairline),
+                        errorWidget: Container(
                           color: _hairline,
                           child: const Icon(
                             Icons.image_not_supported_outlined,

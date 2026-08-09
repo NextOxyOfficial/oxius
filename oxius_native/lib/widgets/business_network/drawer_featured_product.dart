@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../../services/api_service.dart';
 import '../../screens/product_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 class DrawerFeaturedProduct extends StatefulWidget {
   const DrawerFeaturedProduct({super.key});
@@ -253,17 +253,14 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
               AspectRatio(
                 aspectRatio: 16 / 9,
                 child: imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
+                    ? AppNetworkImage(
+                        imageUrl,
                         memCacheWidth: 720,
-                        errorWidget: (context, url, error) {
-                          return Container(
-                            color: Colors.grey.shade100,
-                            child: const Icon(Icons.image,
-                                size: 40, color: Colors.grey),
-                          );
-                        },
+                        errorWidget: Container(
+                          color: Colors.grey.shade100,
+                          child: const Icon(Icons.image,
+                              size: 40, color: Colors.grey),
+                        ),
                       )
                     : Container(
                         color: Colors.grey.shade100,

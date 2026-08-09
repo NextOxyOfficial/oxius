@@ -26,6 +26,10 @@ class AppNetworkImage extends StatelessWidget {
     this.errorWidget,
     this.fadeIn = true,
     this.httpHeaders,
+    this.memCacheWidth,
+    this.memCacheHeight,
+    this.cacheKey,
+    this.fadeInDuration,
   });
 
   final String? url;
@@ -51,6 +55,22 @@ class AppNetworkImage extends StatelessWidget {
   /// refuses Dart's default User-Agent, so those call sites pass
   /// `kMediaHeaders` — without it the picture simply never arrives.
   final Map<String, String>? httpHeaders;
+
+  /// Decode cap, when the call site knows better than the display width does.
+  ///
+  /// The width-derived cap below is the right answer for a picture whose box
+  /// is known; it is no answer at all for one sized by its parent. A call site
+  /// that already worked this out keeps its number.
+  final int? memCacheWidth;
+  final int? memCacheHeight;
+
+  /// Cache identity, for a URL that is not stable enough to be one — a signed
+  /// link whose query string changes on every fetch would otherwise be a cache
+  /// miss every time.
+  final String? cacheKey;
+
+  /// Overrides the default fade, for call sites that had tuned it.
+  final Duration? fadeInDuration;
 
   Widget _fallback(BuildContext context) =>
       errorWidget ??
@@ -97,8 +117,8 @@ class AppNetworkImage extends StatelessWidget {
     // a width to go on, leave it alone rather than guess — a wrong cap shows
     // as a blurry image, which is worse than a heavy one.
     final ratio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
-    final cacheWidth =
-        width != null && width!.isFinite ? (width! * ratio).round() : null;
+    final cacheWidth = memCacheWidth ??
+        (width != null && width!.isFinite ? (width! * ratio).round() : null);
 
     return _wrap(
       CachedNetworkImage(
@@ -108,12 +128,15 @@ class AppNetworkImage extends StatelessWidget {
         height: height,
         fit: fit,
         memCacheWidth: cacheWidth,
+        memCacheHeight: memCacheHeight,
+        cacheKey: cacheKey,
         // Cap what is written to disk as well, not just what is decoded.
         // Storing a 2000px original to paint a 64px avatar spends the user's
         // storage — and their data — on pixels nothing will ever read.
         maxWidthDiskCache: cacheWidth,
-        fadeInDuration:
-            fadeIn ? const Duration(milliseconds: 180) : Duration.zero,
+        fadeInDuration: fadeIn
+            ? (fadeInDuration ?? const Duration(milliseconds: 180))
+            : Duration.zero,
         placeholder: (context, _) => _placeholder(context),
         errorWidget: (context, _, __) => _fallback(context),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/news_models.dart';
 import 'dart:async';
+import '../app_network_image.dart';
 
 class TrendingCarousel extends StatefulWidget {
   final List<NewsPost> articles;
@@ -157,8 +157,10 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
             itemCount: _getPageCount(),
             itemBuilder: (context, pageIndex) {
               final startIndex = pageIndex * itemsPerPage;
-              final endIndex = (startIndex + itemsPerPage).clamp(0, widget.articles.length);
-              final pageArticles = widget.articles.sublist(startIndex, endIndex);
+              final endIndex =
+                  (startIndex + itemsPerPage).clamp(0, widget.articles.length);
+              final pageArticles =
+                  widget.articles.sublist(startIndex, endIndex);
 
               return Row(
                 children: pageArticles.map((article) {
@@ -224,19 +226,19 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(8)),
               child: Stack(
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: article.image ?? '',
+                  AppNetworkImage(
+                    article.image ?? '',
                     height: 160,
                     width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
+                    placeholder: Container(
                       height: 160,
                       color: Colors.grey.shade200,
                     ),
-                    errorWidget: (context, url, error) => Container(
+                    errorWidget: Container(
                       height: 160,
                       color: Colors.grey.shade200,
                       child: const Icon(Icons.image_not_supported),

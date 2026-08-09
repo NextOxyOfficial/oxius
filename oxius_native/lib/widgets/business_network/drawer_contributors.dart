@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../services/api_service.dart';
 import '../../screens/business_network/profile_screen.dart';
+import '../app_network_image.dart';
 
 class DrawerContributors extends StatefulWidget {
   const DrawerContributors({super.key});
@@ -92,7 +92,8 @@ class _DrawerContributorsState extends State<DrawerContributors> {
             children: _contributors.asMap().entries.map((entry) {
               final index = entry.key;
               final contributor = entry.value;
-              final name = contributor['name'] ?? contributor['username'] ?? 'User';
+              final name =
+                  contributor['name'] ?? contributor['username'] ?? 'User';
               final postCount = contributor['post_count'] ?? 0;
               final isVerified = contributor['is_verified'] == true;
               final avatarUrl = contributor['avatar'] ?? contributor['image'];
@@ -101,19 +102,22 @@ class _DrawerContributorsState extends State<DrawerContributors> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    final userId = contributor['uuid'] ?? contributor['id']?.toString();
+                    final userId =
+                        contributor['uuid'] ?? contributor['id']?.toString();
                     if (userId != null) {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => ProfileScreen(userId: userId)),
+                        MaterialPageRoute(
+                            builder: (_) => ProfileScreen(userId: userId)),
                       );
                     }
                   },
                   borderRadius: BorderRadius.circular(7),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -145,13 +149,12 @@ class _DrawerContributorsState extends State<DrawerContributors> {
                         // Avatar
                         ClipOval(
                           child: avatarUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: avatarUrl,
+                              ? AppNetworkImage(
+                                  avatarUrl,
                                   width: 24,
                                   height: 24,
-                                  fit: BoxFit.cover,
                                   memCacheWidth: 128,
-                                  errorWidget: (_, __, ___) => _avatarPlaceholder(),
+                                  errorWidget: _avatarPlaceholder(),
                                 )
                               : _avatarPlaceholder(),
                         ),
@@ -178,13 +181,15 @@ class _DrawerContributorsState extends State<DrawerContributors> {
                                   ),
                                   if (isVerified) ...[
                                     const SizedBox(width: 3),
-                                    const Icon(Icons.verified, size: 11, color: Color(0xFF3B82F6)),
+                                    const Icon(Icons.verified,
+                                        size: 11, color: Color(0xFF3B82F6)),
                                   ],
                                 ],
                               ),
                               Text(
                                 '$postCount posts',
-                                style: TextStyle(fontSize: 9, color: Colors.grey.shade500),
+                                style: TextStyle(
+                                    fontSize: 9, color: Colors.grey.shade500),
                               ),
                             ],
                           ),
@@ -192,7 +197,8 @@ class _DrawerContributorsState extends State<DrawerContributors> {
 
                         // Trophy for top 3
                         if (index < 3)
-                          Icon(Icons.emoji_events, size: 14, color: _trophyColor(index)),
+                          Icon(Icons.emoji_events,
+                              size: 14, color: _trophyColor(index)),
                       ],
                     ),
                   ),
@@ -215,19 +221,27 @@ class _DrawerContributorsState extends State<DrawerContributors> {
 
   Color _rankColor(int index) {
     switch (index) {
-      case 0: return const Color(0xFFFFB800);
-      case 1: return const Color(0xFF94A3B8);
-      case 2: return const Color(0xFFCD7F32);
-      default: return Colors.grey.shade400;
+      case 0:
+        return const Color(0xFFFFB800);
+      case 1:
+        return const Color(0xFF94A3B8);
+      case 2:
+        return const Color(0xFFCD7F32);
+      default:
+        return Colors.grey.shade400;
     }
   }
 
   Color _trophyColor(int index) {
     switch (index) {
-      case 0: return const Color(0xFFFFB800);
-      case 1: return const Color(0xFF94A3B8);
-      case 2: return const Color(0xFFCD7F32);
-      default: return Colors.grey;
+      case 0:
+        return const Color(0xFFFFB800);
+      case 1:
+        return const Color(0xFF94A3B8);
+      case 2:
+        return const Color(0xFFCD7F32);
+      default:
+        return Colors.grey;
     }
   }
 }

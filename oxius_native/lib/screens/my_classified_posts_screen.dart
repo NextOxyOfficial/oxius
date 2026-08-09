@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/classified_post.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
@@ -7,6 +6,7 @@ import 'classified_post_form_screen.dart';
 import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class MyClassifiedPostsScreen extends StatefulWidget {
   const MyClassifiedPostsScreen({super.key});
@@ -192,8 +192,9 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
     return _posts.where((p) => _statusOf(p) == _statusFilter).toList();
   }
 
-  int _statusCount(String key) =>
-      key == 'all' ? _posts.length : _posts.where((p) => _statusOf(p) == key).length;
+  int _statusCount(String key) => key == 'all'
+      ? _posts.length
+      : _posts.where((p) => _statusOf(p) == key).length;
 
   @override
   Widget build(BuildContext context) {
@@ -272,8 +273,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                               color: _brand,
                               child: ListView.builder(
                                 // 2px side padding as requested.
-                                padding:
-                                    const EdgeInsets.fromLTRB(2, 8, 2, 16),
+                                padding: const EdgeInsets.fromLTRB(2, 8, 2, 16),
                                 itemCount: _filteredPosts.length,
                                 itemBuilder: (context, index) =>
                                     _buildPostCard(_filteredPosts[index]),
@@ -303,15 +303,13 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                 onTap: () => setState(() => _statusFilter = tab.key),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: selected ? _brand : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
-                      color: selected
-                          ? _brand
-                          : const Color(0xFFE2E8F0),
+                      color: selected ? _brand : const Color(0xFFE2E8F0),
                     ),
                   ),
                   child: Row(
@@ -322,9 +320,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
-                          color: selected
-                              ? Colors.white
-                              : const Color(0xFF475569),
+                          color:
+                              selected ? Colors.white : const Color(0xFF475569),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -432,7 +429,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                 },
                 icon: const Icon(Icons.add_rounded, size: 20),
                 label: const Text('Create Post',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                    style:
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _brand,
                   foregroundColor: Colors.white,
@@ -480,11 +478,9 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         child: Container(
                           color: const Color(0xFFF3F4F6),
                           child: post.medias != null && post.medias!.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: post.medias!.first.image ?? '',
-                                  fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(
+                              ? AppNetworkImage(
+                                  post.medias!.first.image ?? '',
+                                  errorWidget: const Icon(
                                     Icons.image_not_supported_outlined,
                                     color: Color(0xFF9CA3AF),
                                     size: 32,
@@ -576,25 +572,32 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                                 label: 'View',
                                 onTap: () => _handleAction(post, 'view'),
                               ),
-                              if (post.serviceStatus.toLowerCase() != 'completed')
+                              if (post.serviceStatus.toLowerCase() !=
+                                  'completed')
                                 _buildActionButton(
                                   icon: Icons.edit_outlined,
                                   label: 'Edit',
                                   onTap: () => _handleAction(post, 'edit'),
                                 ),
-                              if (post.serviceStatus.toLowerCase() != 'completed')
+                              if (post.serviceStatus.toLowerCase() !=
+                                  'completed')
                                 _buildActionButton(
                                   icon: post.activeService
                                       ? Icons.pause_circle_outline
                                       : Icons.play_circle_outline,
-                                  label: post.activeService ? 'Pause' : 'Activate',
+                                  label:
+                                      post.activeService ? 'Pause' : 'Activate',
                                   onTap: () => _handleAction(
-                                      post, post.activeService ? 'pause' : 'activate'),
+                                      post,
+                                      post.activeService
+                                          ? 'pause'
+                                          : 'activate'),
                                   color: post.activeService
                                       ? Colors.orange
                                       : const Color(0xFF10B981),
                                 ),
-                              if (post.serviceStatus.toLowerCase() != 'completed')
+                              if (post.serviceStatus.toLowerCase() !=
+                                  'completed')
                                 _buildActionButton(
                                   icon: Icons.check_circle_outline,
                                   label: 'Complete',
@@ -684,5 +687,4 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
       ),
     );
   }
-
 }

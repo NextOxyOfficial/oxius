@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
 import '../../utils/html_content_utils.dart';
@@ -7,6 +6,7 @@ import '../../utils/payment_policy.dart';
 import '../ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
+import '../app_network_image.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
@@ -223,8 +223,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
 
   Widget _buildStatChip(String label, String value, bool isLoading,
       {bool isWarning = false}) {
-    final color =
-        isWarning ? Colors.orange.shade600 : const Color(0xFF0F172A);
+    final color = isWarning ? Colors.orange.shade600 : const Color(0xFF0F172A);
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 7),
@@ -250,8 +249,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                       fontSize: 14, fontWeight: FontWeight.w700, color: color)),
             const SizedBox(height: 2),
             Text(label,
-                style: const TextStyle(
-                    fontSize: 10, color: Color(0xFF94A3B8))),
+                style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
           ],
         ),
       ),
@@ -293,13 +291,12 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: (sponsor['image'] ?? '').toString().isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: sponsor['image'],
+                    ? AppNetworkImage(
+                        sponsor['image'],
                         width: 20,
                         height: 20,
-                        fit: BoxFit.cover,
                         memCacheWidth: 128,
-                        errorWidget: (_, __, ___) => Container(
+                        errorWidget: Container(
                           width: 20,
                           height: 20,
                           color: const Color(0xFFF1F5F9),

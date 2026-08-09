@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -14,6 +13,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../widgets/app_network_image.dart';
 
 /// Seller Profile Screen - Display seller information and their listings
 class SellerProfileScreen extends StatefulWidget {
@@ -335,13 +335,10 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                   ),
                   child: ClipOval(
                     child: image != null
-                        ? CachedNetworkImage(
-                            imageUrl: image,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                Container(color: Colors.grey.shade200),
-                            errorWidget: (context, url, error) =>
-                                _buildAvatarFallback(name),
+                        ? AppNetworkImage(
+                            image,
+                            placeholder: Container(color: Colors.grey.shade200),
+                            errorWidget: _buildAvatarFallback(name),
                           )
                         : _buildAvatarFallback(name),
                   ),
@@ -775,10 +772,9 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
               child: AspectRatio(
                 aspectRatio: 1.1,
                 child: post.images != null && post.images!.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: post.images![0].image,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
+                    ? AppNetworkImage(
+                        post.images![0].image,
+                        placeholder: Container(
                           color: Colors.grey.shade100,
                           child: const Center(
                             child: AdsyLoadingIndicator(
@@ -787,7 +783,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                             ),
                           ),
                         ),
-                        errorWidget: (context, url, error) => Container(
+                        errorWidget: Container(
                           color: Colors.grey.shade100,
                           child: Center(
                             child: Icon(

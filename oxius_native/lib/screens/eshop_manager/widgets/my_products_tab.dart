@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../../services/translation_service.dart';
 import '../../product_details_screen.dart';
+import '../../../widgets/app_network_image.dart';
 
 class MyProductsTab extends StatefulWidget {
   final List<ShopProduct> products;
@@ -303,7 +303,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
                                       debugPrint(
                                           '📝 Updating product: ${product.id}');
-                                      debugPrint('📝 New status: $selectedStatus');
+                                      debugPrint(
+                                          '📝 New status: $selectedStatus');
                                       debugPrint(
                                           '📝 New name: ${nameController.text.trim()}');
                                       debugPrint(
@@ -423,8 +424,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                             size: 18),
                                         const SizedBox(width: 8),
                                         Text(
-                                          _t('eshop_save_changes',
-                                              'সেভ করুন'),
+                                          _t('eshop_save_changes', 'সেভ করুন'),
                                           style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
@@ -494,7 +494,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
             color: bgColor,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? borderColor : borderColor.withValues(alpha: 0.3),
+              color:
+                  isSelected ? borderColor : borderColor.withValues(alpha: 0.3),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -536,8 +537,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
             const SizedBox(width: 8),
             Text(
               _t('eshop_delete_product', 'প্রোডাক্ট ডিলিট'),
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -639,7 +639,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
     if (result['success'] == true) {
       _showSnackBar(makeActive
           ? _t('eshop_product_activated', 'প্রোডাক্ট অ্যাক্টিভ করা হয়েছে')
-          : _t('eshop_product_deactivated', 'প্রোডাক্ট ইনঅ্যাক্টিভ করা হয়েছে'));
+          : _t(
+              'eshop_product_deactivated', 'প্রোডাক্ট ইনঅ্যাক্টিভ করা হয়েছে'));
       widget.onProductUpdated();
     } else {
       // Revert on failure
@@ -708,7 +709,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                 _buildFilterChip('inactive',
                     _t('eshop_status_inactive', 'ইনঅ্যাক্টিভ'), _inactiveCount),
                 const SizedBox(width: 6),
-                _buildFilterChip('out-of-stock',
+                _buildFilterChip(
+                    'out-of-stock',
                     _t('eshop_status_out_of_stock', 'স্টক আউট'),
                     _outOfStockCount),
               ],
@@ -722,63 +724,63 @@ class _MyProductsTabState extends State<MyProductsTab> {
             onRefresh: widget.onRefresh,
             color: const Color(0xFF10B981),
             child: _filteredProducts.isEmpty
-              ? ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: _buildEmptyState(),
-                    ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    Expanded(
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(2, 4, 2, 12),
-                        itemCount: _filteredProducts.length,
-                        separatorBuilder: (context, index) => const Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Color(0xFFF1F5F9),
-                        ),
-                        itemBuilder: (context, index) {
-                          return _buildProductListItem(
-                              _filteredProducts[index]);
-                        },
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: _buildEmptyState(),
                       ),
-                    ),
-                    if (_isLoadingMore)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: AdsyLoadingIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation(Color(0xFF10B981)),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _t('eshop_loading_more',
-                                  'আরও প্রোডাক্ট লোড হচ্ছে...'),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ),
-                          ],
+                    ],
+                  )
+                : Column(
+                    children: [
+                      Expanded(
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(2, 4, 2, 12),
+                          itemCount: _filteredProducts.length,
+                          separatorBuilder: (context, index) => const Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Color(0xFFF1F5F9),
+                          ),
+                          itemBuilder: (context, index) {
+                            return _buildProductListItem(
+                                _filteredProducts[index]);
+                          },
                         ),
                       ),
-                  ],
-                ),
+                      if (_isLoadingMore)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: AdsyLoadingIndicator(
+                                  strokeWidth: 2,
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Color(0xFF10B981)),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _t('eshop_loading_more',
+                                    'আরও প্রোডাক্ট লোড হচ্ছে...'),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
           ),
         ),
       ],
@@ -894,10 +896,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
                   width: 78,
                   height: 78,
                   child: imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
+                      ? AppNetworkImage(
+                          imageUrl,
+                          placeholder: Container(
                             color: Colors.grey.shade100,
                             child: const Center(
                               child: AdsyLoadingIndicator(
@@ -907,10 +908,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
+                          errorWidget: Container(
                             color: Colors.grey.shade100,
-                            child: const Icon(
-                                Icons.image_not_supported_rounded,
+                            child: const Icon(Icons.image_not_supported_rounded,
                                 size: 28),
                           ),
                         )
@@ -970,102 +970,101 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
                     // Price & Stock & Views
                     Row(
-                    children: [
-                      Text(
-                        '৳${product.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF10B981),
+                      children: [
+                        Text(
+                          '৳${product.price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF10B981),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.inventory_2_rounded,
-                                size: 10, color: Color(0xFF6B7280)),
-                            const SizedBox(width: 3),
-                            Text(
-                              '${product.stock}',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF6B7280),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.inventory_2_rounded,
+                                  size: 10, color: Color(0xFF6B7280)),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${product.stock}',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6B7280),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.visibility_rounded,
-                                size: 10, color: Color(0xFF6B7280)),
-                            const SizedBox(width: 3),
-                            Text(
-                              '${product.views}',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF6B7280),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.visibility_rounded,
+                                  size: 10, color: Color(0xFF6B7280)),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${product.views}',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6B7280),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
 
-                  // Actions
-                  Row(
-                    children: [
-                      _actionButton(
-                        icon: Icons.edit_outlined,
-                        label: _t('eshop_edit', 'এডিট'),
-                        color: const Color(0xFF059669),
-                        onTap: () => _showEditDialog(product),
-                      ),
-                      const SizedBox(width: 4),
-                      _actionButton(
-                        icon: Icons.delete_outline,
-                        label: _t('eshop_delete', 'ডিলিট'),
-                        color: const Color(0xFFDC2626),
-                        onTap: () => _showDeleteDialog(product),
-                      ),
-                      const Spacer(),
-                      _actionButton(
-                        icon: Icons.visibility_outlined,
-                        label: _t('eshop_view', 'দেখুন'),
-                        color: const Color(0xFF2563EB),
-                        onTap: () => _openProduct(product),
-                      ),
-                    ],
-                  ),
-                ],
+                    // Actions
+                    Row(
+                      children: [
+                        _actionButton(
+                          icon: Icons.edit_outlined,
+                          label: _t('eshop_edit', 'এডিট'),
+                          color: const Color(0xFF059669),
+                          onTap: () => _showEditDialog(product),
+                        ),
+                        const SizedBox(width: 4),
+                        _actionButton(
+                          icon: Icons.delete_outline,
+                          label: _t('eshop_delete', 'ডিলিট'),
+                          color: const Color(0xFFDC2626),
+                          onTap: () => _showDeleteDialog(product),
+                        ),
+                        const Spacer(),
+                        _actionButton(
+                          icon: Icons.visibility_outlined,
+                          label: _t('eshop_view', 'দেখুন'),
+                          color: const Color(0xFF2563EB),
+                          onTap: () => _openProduct(product),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
-
 
   Widget _buildStatusBadge(String status) {
     Color bgColor;

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
 import '../screens/classified_category_list_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'app_network_image.dart';
 
 /// Widget to display classified categories in a grid
 /// Can be added to the home screen or any other screen
@@ -80,7 +80,8 @@ class _ClassifiedCategoriesWidgetState
                 TextButton(
                   onPressed: () {
                     // Navigate to all categories screen
-                    AdsyToast.info(context, 'View All Categories - Coming Soon');
+                    AdsyToast.info(
+                        context, 'View All Categories - Coming Soon');
                   },
                   child: const Text('View All'),
                 ),
@@ -183,17 +184,16 @@ class _ClassifiedCategoriesWidgetState
                   borderRadius: BorderRadius.circular(12),
                   child: category.image != null && category.image!.isNotEmpty
                       ? category.image!.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: category.image!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
+                          ? AppNetworkImage(
+                              category.image!,
+                              placeholder: const Center(
                                 child: SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: AdsyLoadingIndicator(strokeWidth: 2),
                                 ),
                               ),
-                              errorWidget: (context, url, error) => const Icon(
+                              errorWidget: const Icon(
                                 Icons.category,
                                 color: Color(0xFF10B981),
                                 size: 32,
@@ -349,10 +349,9 @@ class _ClassifiedCategoriesHorizontalListState
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: category.image!.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: category.image!,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) => const Icon(
+                          ? AppNetworkImage(
+                              category.image!,
+                              errorWidget: const Icon(
                                 Icons.category,
                                 color: Color(0xFF10B981),
                                 size: 24,

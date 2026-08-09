@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/classified_post.dart';
 import '../screens/classified_post_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 /// AdsScroll Widget - Horizontal scrolling carousel for recent classified ads
 /// Optimized for mobile performance with auto-scrolling and touch controls
@@ -215,14 +215,13 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(10),
                     ),
-                    child: CachedNetworkImage(
-                      imageUrl: _getImageUrl(ad),
+                    child: AppNetworkImage(
+                      _getImageUrl(ad),
                       height: 110,
                       width: double.infinity,
-                      fit: BoxFit.cover,
                       memCacheWidth: 360,
                       fadeInDuration: const Duration(milliseconds: 150),
-                      placeholder: (context, url) => Container(
+                      placeholder: Container(
                         color: Colors.grey.shade200,
                         child: const Center(
                           child: AdsyLoadingIndicator(
@@ -233,7 +232,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                           ),
                         ),
                       ),
-                      errorWidget: (context, url, error) => Container(
+                      errorWidget: Container(
                         color: Colors.grey.shade200,
                         child: const Icon(
                           Icons.image_not_supported_outlined,

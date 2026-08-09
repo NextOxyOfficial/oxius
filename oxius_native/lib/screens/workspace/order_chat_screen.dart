@@ -9,6 +9,7 @@ import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
+import '../../widgets/app_network_image.dart';
 
 class OrderChatScreen extends StatefulWidget {
   final String orderId;
@@ -403,18 +404,17 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                   ClipRRect(
                     borderRadius:
                         const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: CachedNetworkImage(
-                      imageUrl: _getImageUrl(mediaUrl),
+                    child: AppNetworkImage(
+                      _getImageUrl(mediaUrl),
                       width: 200,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
+                      placeholder: Container(
                         width: 200,
                         height: 150,
                         color: Colors.grey[200],
                         child: const Center(
                             child: AdsyLoadingIndicator(strokeWidth: 2)),
                       ),
-                      errorWidget: (context, url, error) => Container(
+                      errorWidget: Container(
                         width: 200,
                         height: 150,
                         color: Colors.grey[200],

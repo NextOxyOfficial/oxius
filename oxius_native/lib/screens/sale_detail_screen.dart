@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/sale_post.dart';
@@ -15,6 +14,7 @@ import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
+import '../widgets/app_network_image.dart';
 
 /// Sale Post Detail Screen - View full post details with image gallery and all features
 class SaleDetailScreen extends StatefulWidget {
@@ -99,7 +99,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       if (mounted) {
         final filtered =
             response.results.where((p) => p.id != _post?.id).take(4).toList();
-        debugPrint('After filtering current post: ${filtered.length} similar posts');
+        debugPrint(
+            'After filtering current post: ${filtered.length} similar posts');
         setState(() {
           _similarPosts = filtered;
           _isLoadingSimilar = false;
@@ -282,16 +283,16 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     });
                   },
                   itemBuilder: (context, index) {
-                    return CachedNetworkImage(
-                      imageUrl: images[index].image,
+                    return AppNetworkImage(
+                      images[index].image,
                       fit: BoxFit.contain,
-                      placeholder: (context, url) => Container(
+                      placeholder: Container(
                         color: const Color(0xFFF3F4F6),
                         child: const Center(
                           child: AdsyLoadingIndicator(color: Color(0xFF10B981)),
                         ),
                       ),
-                      errorWidget: (context, url, error) => Container(
+                      errorWidget: Container(
                         color: const Color(0xFFF3F4F6),
                         child: Icon(Icons.image_not_supported_rounded,
                             size: 72, color: Colors.grey.shade400),
@@ -405,10 +406,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(7),
-                        child: CachedNetworkImage(
-                          imageUrl: images[index].image,
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, error) => Container(
+                        child: AppNetworkImage(
+                          images[index].image,
+                          errorWidget: Container(
                             color: const Color(0xFFF3F4F6),
                             child: Icon(Icons.image_rounded,
                                 color: Colors.grey.shade400),
@@ -716,8 +716,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           const SizedBox(height: 10),
           if (locations.isEmpty)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
                 borderRadius: BorderRadius.circular(16),
@@ -750,8 +749,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     ? '$district, $division'
                     : '$division (${_t('sale_dl_whole_division', 'পুরো বিভাগ')})';
                 return Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFFECFDF5),
                     borderRadius: BorderRadius.circular(16),
@@ -960,13 +959,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 ),
                 child: ClipOval(
                   child: user.profilePicture != null
-                      ? CachedNetworkImage(
-                          imageUrl: user.profilePicture!,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade200),
-                          errorWidget: (context, url, error) =>
-                              _buildAvatarFallback(user.displayName),
+                      ? AppNetworkImage(
+                          user.profilePicture!,
+                          placeholder: Container(color: Colors.grey.shade200),
+                          errorWidget: _buildAvatarFallback(user.displayName),
                         )
                       : _buildAvatarFallback(user.displayName),
                 ),
@@ -978,10 +974,11 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(
-                          context, '/seller-profile', arguments: {
-                        'userId': user.id,
-                        'userName': user.displayName,
-                      }),
+                          context, '/seller-profile',
+                          arguments: {
+                            'userId': user.id,
+                            'userName': user.displayName,
+                          }),
                       child: Row(
                         children: [
                           Flexible(
@@ -1181,16 +1178,15 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             AspectRatio(
               aspectRatio: 1.3,
               child: hasImage
-                  ? CachedNetworkImage(
-                      imageUrl: post.images![0].image,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
+                  ? AppNetworkImage(
+                      post.images![0].image,
+                      placeholder: Container(
                         color: const Color(0xFFF3F4F6),
                         child: const Center(
                             child: AdsyLoadingIndicator(
                                 strokeWidth: 2, color: Color(0xFF10B981))),
                       ),
-                      errorWidget: (context, url, error) => Container(
+                      errorWidget: Container(
                         color: const Color(0xFFF3F4F6),
                         child: Icon(Icons.image_not_supported_rounded,
                             size: 34, color: Colors.grey.shade400),
@@ -1240,8 +1236,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     const Spacer(),
                     Text(
                       post.price > 0
-                    ? _formatPrice(post.price)
-                    : _t('sale_negotiable', 'দামাদামি করা যাবে'),
+                          ? _formatPrice(post.price)
+                          : _t('sale_negotiable', 'দামাদামি করা যাবে'),
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
@@ -1423,8 +1419,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           _showLoginRequiredDialog();
         }
       } else if (mounted) {
-        AdsyToast.error(context,
-            _t('sale_chat_open_failed', 'চ্যাট খোলা গেল না, আবার চেষ্টা করুন।'));
+        AdsyToast.error(
+            context,
+            _t('sale_chat_open_failed',
+                'চ্যাট খোলা গেল না, আবার চেষ্টা করুন।'));
       }
     }
   }
@@ -1471,8 +1469,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              _t('sale_login_or_signup',
-                  'লগইন করুন বা নতুন একাউন্ট খুলে নিন।'),
+              _t('sale_login_or_signup', 'লগইন করুন বা নতুন একাউন্ট খুলে নিন।'),
               style: const TextStyle(
                 fontSize: 14,
                 color: Color(0xFF6B7280),

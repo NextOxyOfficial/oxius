@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
@@ -9,6 +8,7 @@ import 'diamond_gift_bottom_sheet.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 class PostCommentInput extends StatefulWidget {
   final Function(String content, Map<String, String> mentions) onSubmit;
@@ -182,47 +182,44 @@ class _PostCommentInputState extends State<PostCommentInput> {
               );
             },
             child: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(19),
-              border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(19),
+                border: Border.all(
+                  color: Colors.grey.shade200,
+                  width: 1,
+                ),
               ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(19),
-              child: () {
-                final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(19),
+                child: () {
+                  final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
 
-                if (avatarUrl.isNotEmpty) {
-                  return CachedNetworkImage(
-                    imageUrl: avatarUrl,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 128,
-                    errorWidget: (context, url, error) {
-                      return Container(
+                  if (avatarUrl.isNotEmpty) {
+                    return AppNetworkImage(
+                      avatarUrl,
+                      memCacheWidth: 128,
+                      errorWidget: Container(
                         color: Colors.grey.shade100,
                         child: Icon(
                           Icons.person,
                           color: Colors.grey.shade400,
                           size: 18,
                         ),
-                      );
-                    },
+                      ),
+                    );
+                  }
+                  return Container(
+                    color: Colors.grey.shade100,
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.grey.shade400,
+                      size: 18,
+                    ),
                   );
-                }
-                return Container(
-                  color: Colors.grey.shade100,
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.grey.shade400,
-                    size: 18,
-                  ),
-                );
-              }(),
-            ),
+                }(),
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -349,17 +346,14 @@ class _PostCommentInputState extends State<PostCommentInput> {
                                     AppConfig.getAbsoluteUrl(data['photo']);
 
                                 if (avatarUrl.isNotEmpty) {
-                                  return CachedNetworkImage(
-                                    imageUrl: avatarUrl,
-                                    fit: BoxFit.cover,
+                                  return AppNetworkImage(
+                                    avatarUrl,
                                     memCacheWidth: 128,
-                                    errorWidget: (context, url, error) {
-                                      return Icon(
-                                        Icons.person,
-                                        color: Colors.grey.shade400,
-                                        size: 18,
-                                      );
-                                    },
+                                    errorWidget: Icon(
+                                      Icons.person,
+                                      color: Colors.grey.shade400,
+                                      size: 18,
+                                    ),
                                   );
                                 }
                                 return Icon(

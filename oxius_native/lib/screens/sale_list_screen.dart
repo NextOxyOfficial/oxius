@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/sale_post.dart';
 import '../models/geo_location.dart';
 import '../services/sale_post_service.dart';
@@ -13,6 +12,7 @@ import '../widgets/sale_skeleton_loader.dart';
 import '../widgets/sale_list_skeleton_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../widgets/app_network_image.dart';
 
 /// Sale Listing Screen - Browse sale posts with filters and search
 /// One sponsored strip after every N listings.
@@ -1263,13 +1263,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   height: 75,
                   color: const Color(0xFFF3F4F6),
                   child: hasImage && imageUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
+                      ? AppNetworkImage(
+                          imageUrl,
                           memCacheWidth: 150,
                           memCacheHeight: 150,
                           fadeInDuration: const Duration(milliseconds: 120),
-                          placeholder: (context, url) => const Center(
+                          placeholder: const Center(
                             child: SizedBox(
                               width: 16,
                               height: 16,
@@ -1280,7 +1279,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => const Icon(
+                          errorWidget: const Icon(
                             Icons.image_outlined,
                             color: Color(0xFF9CA3AF),
                             size: 28,
@@ -1470,12 +1469,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   child: AspectRatio(
                     aspectRatio: 1.1,
                     child: hasImage
-                        ? CachedNetworkImage(
-                            imageUrl: getImageUrl(),
-                            fit: BoxFit.cover,
+                        ? AppNetworkImage(
+                            getImageUrl(),
                             memCacheWidth: 400,
                             fadeInDuration: const Duration(milliseconds: 120),
-                            placeholder: (context, url) => Container(
+                            placeholder: Container(
                               color: Colors.grey.shade100,
                               child: const Center(
                                 child: AdsyLoadingIndicator(
@@ -1484,7 +1482,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 ),
                               ),
                             ),
-                            errorWidget: (context, url, error) => Container(
+                            errorWidget: Container(
                               color: Colors.grey.shade100,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1836,15 +1834,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           child: Stack(
                             children: [
                               hasImage
-                                  ? CachedNetworkImage(
-                                      imageUrl: getImageUrl(),
+                                  ? AppNetworkImage(
+                                      getImageUrl(),
                                       height: 92,
                                       width: double.infinity,
-                                      fit: BoxFit.cover,
                                       memCacheHeight: 156,
                                       fadeInDuration:
                                           const Duration(milliseconds: 120),
-                                      placeholder: (context, url) => Container(
+                                      placeholder: Container(
                                         height: 92,
                                         color: Colors.grey.shade100,
                                         child: const Center(
@@ -1854,8 +1851,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                           ),
                                         ),
                                       ),
-                                      errorWidget: (context, url, error) =>
-                                          Container(
+                                      errorWidget: Container(
                                         height: 92,
                                         color: Colors.grey.shade100,
                                         child: Icon(
@@ -2071,10 +2067,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               ? ClipOval(
                                   child: Padding(
                                     padding: const EdgeInsets.all(9),
-                                    child: CachedNetworkImage(
-                                      imageUrl: cat.icon!,
+                                    child: AppNetworkImage(
+                                      cat.icon!,
                                       fit: BoxFit.contain,
-                                      errorWidget: (c, u, e) => Icon(
+                                      errorWidget: Icon(
                                           _iconForCategory(cat.name),
                                           size: 22,
                                           color: active
@@ -2694,13 +2690,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                                 child: ClipRRect(
                                                   borderRadius:
                                                       BorderRadius.circular(6),
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: category.icon!,
+                                                  child: AppNetworkImage(
+                                                    category.icon!,
                                                     width: 32,
                                                     height: 32,
-                                                    fit: BoxFit.cover,
-                                                    placeholder:
-                                                        (context, url) => Icon(
+                                                    placeholder: Icon(
                                                       Icons.folder_outlined,
                                                       color: isSelected
                                                           ? const Color(
@@ -2709,9 +2703,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                                               .grey.shade600,
                                                       size: 20,
                                                     ),
-                                                    errorWidget:
-                                                        (context, url, error) =>
-                                                            Icon(
+                                                    errorWidget: Icon(
                                                       Icons.folder_outlined,
                                                       color: isSelected
                                                           ? const Color(
