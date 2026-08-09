@@ -812,6 +812,80 @@ class CallSession(models.Model):
         self.save(update_fields=update_fields)
 
 
+class CallParticipant(models.Model):
+    """Someone pulled into a call who is neither its caller nor its callee.
+
+    A CallSession keeps its original pair as plain foreign keys, and this table
+    carries everyone invited afterwards. Modelling the extra people separately
+    rather than reshaping CallSession means every existing one-to-one query —
+    busy checks, call logs, the stale-session reclaim — keeps working unchanged
+    on the calls that are still one to one, which is nearly all of them.
+
+    A participant's status is their own. Someone declining an invitation to
+    join has said nothing about whether the call itself is still going on.
+    """
+
+    STATUS_RINGING = 'ringing'
+    STATUS_ACCEPTED = 'accepted'
+    STATUS_REJECTED = 'rejected'
+    STATUS_MISSED = 'missed'
+    STATUS_LEFT = 'left'
+
+    PARTICIPANT_STATUSES = [
+        (STATUS_RINGING, 'Ringing'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_REJECTED, 'Rejected'),
+        (STATUS_MISSED, 'Missed'),
+        (STATUS_LEFT, 'Left'),
+    ]
+
+    #: Statuses that mean this person is no longer coming.
+    TERMINAL_STATUSES = {STATUS_REJECTED, STATUS_MISSED, STATUS_LEFT}
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    session = models.ForeignKey(
+        CallSession,
+        on_delete=models.CASCADE,
+        related_name='participants',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='adsyconnect_call_participations',
+    )
+    invited_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='adsyconnect_call_invites_sent',
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=PARTICIPANT_STATUSES,
+        default=STATUS_RINGING,
+    )
+    invited_at = models.DateTimeField(default=timezone.now)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'adsyconnect_call_participants'
+        ordering = ['invited_at']
+        unique_together = ('session', 'user')
+        indexes = [
+            models.Index(fields=['user', '-invited_at']),
+            models.Index(fields=['session', 'status']),
+        ]
+
+    def __str__(self):
+        return f'{self.user_id} in {self.session_id} [{self.status}]'
+
+    def update_status(self, status_value, *, at=None):
+        self.status = status_value
+        self.responded_at = at or timezone.now()
+        self.save(update_fields=['status', 'responded_at'])
+
+
 class MessageReaction(models.Model):
     """Emoji reaction on a 1:1 message (long-press the bubble).
 

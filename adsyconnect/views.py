@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models import F, Q, Max, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -18,7 +19,7 @@ from django.contrib.auth import get_user_model
 from .models import (
     ChatRoom, Message, MessageReport,
     BlockedUser, TypingStatus, OnlineStatus, ActiveChatSession, CallSession,
-    ChatGroup, ChatGroupMembership, GroupMessage
+    CallParticipant, ChatGroup, ChatGroupMembership, GroupMessage
 )
 from .serializers import (
     ChatRoomSerializer, MessageSerializer, MessageCreateSerializer,
@@ -31,6 +32,24 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 _CALL_TYPE_SET = {'audio', 'video'}
+
+#: Ceiling on how many people one call may hold, counting the original pair.
+#: Chosen for what a phone can actually decode and what the SFU should be
+#: asked to fan out, not for what the model can store.
+_MAX_CALL_PARTICIPANTS = 8
+
+#: How a call-level status reads when it came from an invited participant
+#: rather than one of the two people the call is between.
+_PARTICIPANT_STATUS_FROM_CALL = {
+    'accepted': CallParticipant.STATUS_ACCEPTED,
+    'rejected': CallParticipant.STATUS_REJECTED,
+    'declined': CallParticipant.STATUS_REJECTED,
+    'busy': CallParticipant.STATUS_REJECTED,
+    'missed': CallParticipant.STATUS_MISSED,
+    'cancelled': CallParticipant.STATUS_MISSED,
+    'ended': CallParticipant.STATUS_LEFT,
+    'failed': CallParticipant.STATUS_LEFT,
+}
 _CHANNEL_NAME_RE = re.compile(r'^[A-Za-z0-9_]{1,64}$')
 _CALL_STATUS_ALIASES = {
     'declined': CallSession.STATUS_REJECTED,
@@ -45,10 +64,32 @@ def _is_valid_channel_name(channel_name):
 def _active_call_for_user(user):
     cutoff = timezone.now() - timezone.timedelta(seconds=90)
     return CallSession.objects.filter(
-        Q(caller=user) | Q(callee=user),
+        _call_membership_q(user),
         status__in=[CallSession.STATUS_RINGING, CallSession.STATUS_ACCEPTED],
         last_status_at__gte=cutoff,
     ).order_by('-last_status_at').first()
+
+
+def _call_membership_q(user):
+    """Sessions [user] is genuinely part of — the original pair, or invited.
+
+    Every place that asks "may this person touch this call?" goes through here,
+    so adding a third party to a call grants them exactly what the original two
+    have and nothing more. A participant whose own invitation is dead no longer
+    counts: declining and then minting a token would otherwise let someone walk
+    back into a call they had refused.
+    """
+    return (
+        Q(caller=user)
+        | Q(callee=user)
+        | Q(
+            participants__user=user,
+            participants__status__in=[
+                CallParticipant.STATUS_RINGING,
+                CallParticipant.STATUS_ACCEPTED,
+            ],
+        )
+    )
 
 
 def _build_user_avatar_url(request, user):
@@ -110,8 +151,8 @@ def _build_call_display_name(request, user):
 def _get_call_session_for_user(*, user, channel_name, call_id=None):
     # Any session on this channel where the requester is a participant.
     base_qs = CallSession.objects.filter(channel_name=channel_name).filter(
-        Q(caller=user) | Q(callee=user)
-    )
+        _call_membership_q(user)
+    ).distinct()
 
     # Prefer an exact call_id match when one is supplied, but DO NOT let a
     # stale/mismatched call_id block a legitimate participant: if the id match
@@ -903,6 +944,143 @@ def send_call_notification(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def invite_to_call(request):
+    """Ring more people into a call that is already running.
+
+    Only someone already in the call may invite, and only into a call that has
+    not ended — otherwise this endpoint would be a way to make a stranger's
+    phone ring by guessing a channel name.
+
+    Each invitee is rung on the same three channels a normal call uses (socket,
+    push, VoIP), and each one's outcome is reported back separately: with three
+    people invited at once, "it worked" is not a useful answer.
+    """
+    try:
+        channel_name = request.data.get('channel_name')
+        call_id = request.data.get('call_id')
+        raw_ids = request.data.get('invitee_ids') or []
+        if isinstance(raw_ids, (str, int)):
+            raw_ids = [raw_ids]
+        invitee_ids = [str(value).strip() for value in raw_ids if str(value).strip()]
+
+        if not channel_name or not invitee_ids:
+            return Response(
+                {'error': 'channel_name and invitee_ids are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not _is_valid_channel_name(channel_name):
+            return Response({'error': 'Invalid channel_name'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(invitee_ids) > _MAX_CALL_PARTICIPANTS:
+            return Response(
+                {'error': f'At most {_MAX_CALL_PARTICIPANTS} people can be invited at once'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        inviter = request.user
+        call_session = _get_call_session_for_user(
+            user=inviter,
+            channel_name=str(channel_name),
+            call_id=call_id,
+        )
+        if call_session is None:
+            return Response(
+                {'error': 'Call session not found'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if call_session.status in CallSession.TERMINAL_STATUSES:
+            return Response(
+                {'error': 'Call session has ended'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        # Everyone already on this call, so the room size can be enforced and
+        # a duplicate invite cannot ring someone who is already in it.
+        existing_ids = {str(call_session.caller_id), str(call_session.callee_id)}
+        live_participants = call_session.participants.filter(
+            status__in=[CallParticipant.STATUS_RINGING, CallParticipant.STATUS_ACCEPTED],
+        )
+        existing_ids.update(str(p.user_id) for p in live_participants)
+
+        inviter_name = _build_call_display_name(request, inviter)
+        results = []
+
+        for invitee_id in invitee_ids:
+            if invitee_id in existing_ids:
+                results.append({'user_id': invitee_id, 'status': 'already_in_call'})
+                continue
+            if len(existing_ids) >= _MAX_CALL_PARTICIPANTS:
+                results.append({'user_id': invitee_id, 'status': 'call_full'})
+                continue
+
+            try:
+                invitee = User.objects.get(id=invitee_id)
+            except (User.DoesNotExist, ValidationError, ValueError):
+                results.append({'user_id': invitee_id, 'status': 'not_found'})
+                continue
+
+            if _active_call_for_user(invitee):
+                results.append({'user_id': invitee_id, 'status': 'busy'})
+                continue
+
+            participant, _created = CallParticipant.objects.update_or_create(
+                session=call_session,
+                user=invitee,
+                defaults={
+                    'invited_by': inviter,
+                    'status': CallParticipant.STATUS_RINGING,
+                    'invited_at': timezone.now(),
+                    'responded_at': None,
+                },
+            )
+            existing_ids.add(str(invitee.id))
+
+            payload = {
+                'type': 'incoming_call',
+                'call_id': str(call_session.id),
+                'channel_name': str(call_session.channel_name),
+                # The invitee's phone rings showing whoever pulled them in,
+                # not the person who originally started the call — that is who
+                # they will think is calling them.
+                'caller_id': str(inviter.id),
+                'caller_name': inviter_name,
+                'call_type': call_session.call_type,
+                'caller_avatar': _build_user_avatar_url(request, inviter) or '',
+                'is_group_call': True,
+                **_call_event_metadata(),
+            }
+
+            _broadcast_to_user(
+                invitee.id,
+                {'type': 'incoming_call_event', 'payload': payload},
+            )
+            delivery = _send_call_data_message(target_user=invitee, payload=payload)
+            reachable = bool(delivery.get('voip_sent_to') or delivery.get('sent_to'))
+
+            logger.warning(
+                'CALLTRACE invite call=%s %s -> %s reachable=%s',
+                str(call_session.id)[:8], inviter.email, invitee.email, reachable,
+            )
+            results.append({
+                'user_id': str(invitee.id),
+                'status': 'ringing' if reachable else 'unreachable',
+                'participant_id': str(participant.id),
+                'reachable': reachable,
+            })
+
+        return Response({
+            'success': True,
+            'call_id': str(call_session.id),
+            'channel_name': str(call_session.channel_name),
+            'participant_count': len(existing_ids),
+            'results': results,
+        })
+    except Exception as e:
+        logger.exception('Call invite failed')
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def send_call_status(request):
     """Update an existing call session and deliver the status signal."""
     try:
@@ -936,7 +1114,23 @@ def send_call_status(request):
         )
 
         if call_session:
-            call_session.update_status(str(status_value))
+            # An invited third party speaks only for themselves. Letting their
+            # "rejected" or "ended" run through update_status would hang up on
+            # everyone else in the call because one person declined to join.
+            own_participation = call_session.participants.filter(user=sender).first()
+            is_extra_participant = (
+                own_participation is not None
+                and sender != call_session.caller
+                and sender != call_session.callee
+            )
+            if is_extra_participant:
+                own_participation.update_status(
+                    _PARTICIPANT_STATUS_FROM_CALL.get(
+                        status_value, CallParticipant.STATUS_LEFT
+                    )
+                )
+            else:
+                call_session.update_status(str(status_value))
             call_type = call_session.call_type
 
         payload = {

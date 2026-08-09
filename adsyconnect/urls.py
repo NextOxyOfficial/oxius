@@ -11,7 +11,7 @@ from .views import (
     BlockedUserViewSet, OnlineStatusViewSet, TypingStatusViewSet,
     ChatGroupViewSet,
     agora_rtc_token, agora_config, call_media_connected, firebase_custom_token, send_call_notification, send_call_status,
-    call_config, livekit_token,
+    call_config, livekit_token, invite_to_call,
     set_active_chat, clear_active_chat, heartbeat
 )
 
@@ -35,6 +35,8 @@ urlpatterns = [
          name='call_media_connected'),
     path('send-call-notification/', send_call_notification, name='send_call_notification'),
     path('send-call-status/', send_call_status, name='send_call_status'),
+    # Ring more people into a call that is already running.
+    path('invite-to-call/', invite_to_call, name='invite_to_call'),
     path('set-active-chat/', set_active_chat, name='set_active_chat'),
     path('clear-active-chat/', clear_active_chat, name='clear_active_chat'),
     path('heartbeat/', heartbeat, name='heartbeat'),

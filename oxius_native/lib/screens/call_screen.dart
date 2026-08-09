@@ -14,10 +14,12 @@ import 'dart:io' show Platform;
 import 'package:livekit_client/livekit_client.dart' as lk;
 
 import '../services/agora_call_service.dart';
+import '../services/auth_service.dart';
 import '../services/call_bubble_service.dart';
 import '../services/livekit_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
+import '../widgets/call/add_participant_sheet.dart';
 import 'inbox_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
@@ -322,7 +324,11 @@ class _CallScreenState extends State<CallScreen>
       _cancelConnectWatchdog();
       _stopOutgoingRingback();
       setState(() {
-        _remoteUid = remoteUid;
+        // The first peer to arrive stays the "primary" one the timers and
+        // watchdogs are written against. A third person joining a group call
+        // must not overwrite it, or their leaving would look like the call
+        // itself ending.
+        _remoteUid ??= remoteUid;
         _callAccepted = true;
         _isConnecting = false;
       });
@@ -336,12 +342,22 @@ class _CallScreenState extends State<CallScreen>
 
     _remoteLeaveSub = _remoteLeftStream.listen((remoteUid) {
       if (!mounted || _didEndCall) return;
-      // Only end the call when our KNOWN remote peer leaves.
       // If _remoteUid is null (peer never joined yet), ignore — this prevents
-      // the call from ending prematurely due to stale Agora events.
-      if (_remoteUid == null || remoteUid != _remoteUid) {
+      // the call from ending prematurely due to stale engine events.
+      if (_remoteUid == null) return;
+
+      // A call is over when the last other person has gone, not when a
+      // particular one has. In a group call the person who started it can
+      // drop out while three others carry on talking.
+      final remaining = _peers;
+      if (remaining.isNotEmpty) {
+        setState(() {
+          if (remoteUid == _remoteUid) _remoteUid = remaining.first.uid;
+        });
         return;
       }
+      if (remoteUid != _remoteUid) return;
+
       setState(() {
         _remoteUid = null;
       });
@@ -1149,6 +1165,66 @@ class _CallScreenState extends State<CallScreen>
   }
 
   // ---------------------------------------------------------------------
+  // Group calls
+  // ---------------------------------------------------------------------
+
+  /// Everyone else currently in the room.
+  List<CallPeer> get _peers => LiveKitCallService.peers;
+
+  bool get _isGroupCall => _peers.length > 1;
+
+  Future<void> _addParticipants() async {
+    if (_stage != _CallStage.connected) {
+      AdsyToast.info(context, 'কল সংযুক্ত হলে কাউকে যোগ করতে পারবেন');
+      return;
+    }
+
+    final excluded = <String>{
+      widget.calleeId,
+      for (final peer in _peers) peer.identity,
+      if (AuthService.currentUser?.id != null)
+        AuthService.currentUser!.id.toString(),
+    }..removeWhere((id) => id.isEmpty);
+
+    final picked =
+        await AddParticipantSheet.show(context, excludedUserIds: excluded);
+    if (picked == null || picked.isEmpty || !mounted) return;
+
+    final results = await AdsyConnectService.inviteToCall(
+      channelName: widget.channelName,
+      inviteeIds: picked,
+      callId: widget.callId,
+    );
+    if (!mounted) return;
+
+    if (results.isEmpty) {
+      AdsyToast.error(context, 'কাউকে যোগ করা যায়নি');
+      return;
+    }
+
+    // Report what actually happened per person. "Invited 3" would be a lie
+    // when one of them was already on another call.
+    final ringing =
+        results.where((r) => r['status'] == 'ringing').length;
+    final busy = results.where((r) => r['status'] == 'busy').length;
+    final unreachable =
+        results.where((r) => r['status'] == 'unreachable').length;
+
+    final parts = <String>[
+      if (ringing > 0) '$ringing জনকে রিং করা হচ্ছে',
+      if (busy > 0) '$busy জন অন্য কলে আছেন',
+      if (unreachable > 0) '$unreachable জনের কাছে পৌঁছানো যায়নি',
+    ];
+    if (parts.isEmpty) {
+      AdsyToast.error(context, 'কাউকে যোগ করা যায়নি');
+    } else if (ringing > 0) {
+      AdsyToast.success(context, parts.join(' • '));
+    } else {
+      AdsyToast.info(context, parts.join(' • '));
+    }
+  }
+
+  // ---------------------------------------------------------------------
   // Audio → video upgrade
   //
   // Turning a voice call into a video call cannot be one-sided: the camera
@@ -1380,7 +1456,11 @@ class _CallScreenState extends State<CallScreen>
 
   @override
   Widget build(BuildContext context) {
-    final hasRemoteVideo = _remoteUid != null && _callType == 'video';
+    // With three or more people the single full-bleed remote stage stops
+    // being the right shape and everyone goes into a grid instead.
+    final isGroup = _isGroupCall;
+    final hasRemoteVideo =
+        !isGroup && _remoteUid != null && _callType == 'video';
 
     return PopScope(
       canPop: false,
@@ -1397,7 +1477,10 @@ class _CallScreenState extends State<CallScreen>
             SafeArea(
               child: Stack(
                 children: [
-                  if (!hasRemoteVideo) _buildWaitingView(),
+                  if (isGroup)
+                    _buildParticipantGrid()
+                  else if (!hasRemoteVideo)
+                    _buildWaitingView(),
                   Positioned.fill(
                     child: IgnorePointer(
                       child: DecoratedBox(
@@ -1419,7 +1502,10 @@ class _CallScreenState extends State<CallScreen>
                   _buildTopPanel(),
                   if (_localUserJoined &&
                       _callType == 'video' &&
-                      !_isCameraOff)
+                      !_isCameraOff &&
+                      // In a grid the self-view would float over the tiles it
+                      // is already sitting beside.
+                      !isGroup)
                     _buildLocalPreview(),
                   if (widget.isIncoming && !_callAccepted)
                     _buildIncomingCallUI(),
@@ -1618,10 +1704,15 @@ class _CallScreenState extends State<CallScreen>
               horizontal: hPad, vertical: compact ? 8 : 10),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.42),
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(36),
             border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
           ),
-          child: Row(
+          // A video group call carries six controls, which is wider than a
+          // small phone. Scrolling keeps every one of them reachable rather
+          // than clipping whichever happens to fall off the end.
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1676,6 +1767,14 @@ class _CallScreenState extends State<CallScreen>
                   onTap: _switchCamera,
                 ),
               ],
+              SizedBox(width: compact ? 8 : 10),
+              _buildRoundControl(
+                icon: Icons.person_add_alt_1_rounded,
+                label: 'যোগ করুন',
+                size: btnSize,
+                isActive: false,
+                onTap: () => unawaited(_addParticipants()),
+              ),
               SizedBox(width: compact ? 10 : 12),
               _buildRoundControl(
                 icon: Icons.call_end_rounded,
@@ -1690,7 +1789,8 @@ class _CallScreenState extends State<CallScreen>
                   closeImmediately: true,
                 )),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -1918,6 +2018,119 @@ class _CallScreenState extends State<CallScreen>
     return lk.VideoTrackRenderer(track, fit: lk.VideoViewFit.cover);
   }
 
+  /// Everyone in a group call, as a grid.
+  ///
+  /// A one-to-one call gives the other person the whole screen; that stops
+  /// making sense the moment there are three of you, and someone whose camera
+  /// is off still needs a tile — they are in the call, and silently vanishing
+  /// from the screen is not how anyone reads that.
+  Widget _buildParticipantGrid() {
+    final peers = _peers;
+    // Two across is the most a phone can show without faces becoming stamps.
+    final columns = peers.length <= 2 ? 1 : 2;
+
+    return Positioned.fill(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 68, 10, 120),
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: columns == 1 ? 1.1 : 0.78,
+          ),
+          itemCount: peers.length,
+          itemBuilder: (context, index) => _buildPeerTile(peers[index]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPeerTile(CallPeer peer) {
+    final track = peer.videoTrack;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: const Color(0xFF111827),
+        border: Border.all(
+          // Whoever is talking gets the ring. In a group call that is the one
+          // thing you cannot work out from the audio alone.
+          color: peer.isSpeaking
+              ? _accentColor
+              : Colors.white.withValues(alpha: 0.10),
+          width: peer.isSpeaking ? 2 : 1,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (track != null)
+            lk.VideoTrackRenderer(track, fit: lk.VideoViewFit.cover)
+          else
+            Center(
+              child: Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.08),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.16)),
+                ),
+                child: const Icon(Icons.person_rounded,
+                    color: Colors.white70, size: 32),
+              ),
+            ),
+          Positioned(
+            left: 8,
+            right: 8,
+            bottom: 8,
+            child: Row(
+              children: [
+                if (peer.isMuted)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Icon(Icons.mic_off_rounded,
+                          color: Colors.white, size: 12),
+                    ),
+                  ),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.48),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      peer.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRemoteVideoStage() {
     return Positioned.fill(
       child: Stack(
@@ -1944,7 +2157,11 @@ class _CallScreenState extends State<CallScreen>
 
   Widget _buildTopPanel() {
     final compact = _isCompactLayout;
-    final hasRemoteVideo = _remoteUid != null && _callType == 'video';
+    final hasRemoteVideo =
+        !_isGroupCall && _remoteUid != null && _callType == 'video';
+    // In a group call the header names the call, not one person in it.
+    final title =
+        _isGroupCall ? 'গ্রুপ কল • ${_peers.length + 1} জন' : widget.calleeName;
     final subtitle = _stageLabel;
 
     // Slim pill for active video call to keep the opponent's video unobstructed;
@@ -1971,7 +2188,7 @@ class _CallScreenState extends State<CallScreen>
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        widget.calleeName,
+                        title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -2044,7 +2261,7 @@ class _CallScreenState extends State<CallScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          widget.calleeName,
+                          title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

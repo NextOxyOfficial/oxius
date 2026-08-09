@@ -162,6 +162,49 @@ class AdsyConnectService {
     }
   }
 
+  /// Rings more people into a call that is already running.
+  ///
+  /// Returns the server's per-invitee outcome list — with several people
+  /// invited at once, one overall success flag would hide the one who was
+  /// busy or unreachable, which is the only part the caller can act on.
+  static Future<List<Map<String, dynamic>>> inviteToCall({
+    required String channelName,
+    required List<String> inviteeIds,
+    String? callId,
+  }) async {
+    if (inviteeIds.isEmpty) return const [];
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/adsyconnect/invite-to-call/'),
+            headers: await _getHeaders(),
+            body: jsonEncode({
+              'channel_name': channelName,
+              'invitee_ids': inviteeIds,
+              if (callId != null && callId.isNotEmpty) 'call_id': callId,
+            }),
+          )
+          .timeout(const Duration(seconds: 12));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final results = data is Map ? data['results'] : null;
+        if (results is List) {
+          return results
+              .whereType<Map>()
+              .map((entry) => Map<String, dynamic>.from(entry))
+              .toList();
+        }
+        return const [];
+      }
+      debugPrint('invite-to-call ${response.statusCode}: ${response.body}');
+      return const [];
+    } catch (e) {
+      debugPrint('invite-to-call failed: $e');
+      return const [];
+    }
+  }
+
   // Get headers with auth token
   static Future<Map<String, String>> _getHeaders() async {
     final token = AuthService.accessToken;

@@ -20,6 +20,29 @@ import 'agora_call_service.dart';
 /// connection attempt lands in a log we can read, and the transports are ours
 /// to fix — including TURN over TLS on 443, which is the only path that
 /// survives a network that drops UDP outright.
+/// One other person in the call, as the UI needs them.
+class CallPeer {
+  const CallPeer({
+    required this.uid,
+    required this.identity,
+    required this.name,
+    required this.videoTrack,
+    required this.isMuted,
+    required this.isSpeaking,
+  });
+
+  /// The synthetic integer the call screen keys its existing logic off.
+  final int uid;
+
+  /// The server puts the user's id here when minting the token, so this is
+  /// what ties a tile back to an AdsyClub account.
+  final String identity;
+  final String name;
+  final lk.VideoTrack? videoTrack;
+  final bool isMuted;
+  final bool isSpeaking;
+}
+
 class LiveKitCallService {
   LiveKitCallService._();
 
@@ -133,6 +156,39 @@ class LiveKitCallService {
       }
     }
     return null;
+  }
+
+  /// Everyone else in the room, in a shape the call screen can render without
+  /// knowing anything about LiveKit.
+  ///
+  /// A one-to-one call only ever has one of these and the screen shows it
+  /// full-bleed; a group call has several and they go into a grid. Sorted by
+  /// identity so the tiles do not reshuffle themselves on every rebuild.
+  static List<CallPeer> get peers {
+    final room = _room;
+    if (room == null) return const [];
+    final list = room.remoteParticipants.values.map((participant) {
+      lk.VideoTrack? video;
+      for (final pub in participant.videoTrackPublications) {
+        final track = pub.track;
+        if (track is lk.VideoTrack && pub.subscribed && !pub.muted) {
+          video = track;
+          break;
+        }
+      }
+      final audioMuted = participant.audioTrackPublications.isEmpty ||
+          participant.audioTrackPublications.every((pub) => pub.muted);
+      return CallPeer(
+        uid: _uidFor(participant.identity),
+        identity: participant.identity,
+        name: participant.name.isNotEmpty ? participant.name : participant.identity,
+        videoTrack: video,
+        isMuted: audioMuted,
+        isSpeaking: participant.isSpeaking,
+      );
+    }).toList()
+      ..sort((a, b) => a.identity.compareTo(b.identity));
+    return list;
   }
 
   static lk.VideoTrack? get localVideoTrack {
