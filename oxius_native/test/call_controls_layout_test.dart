@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oxius_native/screens/call_screen.dart';
+import 'package:oxius_native/widgets/call/call_controls_bar.dart';
 
 /// The control bar must never overflow and never hide a control behind a
 /// scroll gesture — End is in that bar, and a control you cannot see is a
@@ -14,7 +14,7 @@ void main() {
     final end = compact ? 62.0 : 68.0;
     final gap = compact ? 8.0 : 10.0;
     final hPad = compact ? 10.0 : 14.0;
-    const inset = 12.0;
+    const inset = kCallControlsInset;
     return (count - 1) * btn + end + (count - 1) * gap + hPad * 2 + inset * 2;
   }
 

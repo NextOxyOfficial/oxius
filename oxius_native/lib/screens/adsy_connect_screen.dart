@@ -1511,14 +1511,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             },
             icon: Icon(
               _chatSearchOpen ? Icons.close_rounded : Icons.search_rounded,
-              color: const Color(0xFF64748B),
-              size: 21,
+              color: const Color(0xFF475569),
+              size: 25,
             ),
           ),
           if (!_chatSearchOpen)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_horiz_rounded,
-                  color: Color(0xFF64748B), size: 22),
+                  color: Color(0xFF475569), size: 26),
               color: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),

@@ -19,50 +19,15 @@ import '../services/livekit_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
 import '../widgets/call/add_participant_sheet.dart';
+import '../widgets/call/call_banners.dart';
+import '../widgets/call/call_chrome.dart';
+import '../widgets/call/call_controls_bar.dart';
 import 'inbox_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
-import '../widgets/app_network_image.dart';
 
 /// The audio-to-video handshake. An upgrade needs both sides to agree — the
 /// other person may be somewhere they would rather not be seen.
 enum _VideoUpgrade { idle, asked, invited }
-
-/// Screen-edge gap the control bar is allowed to reach.
-///
-/// Top level rather than a field because both the bar and the width test
-/// that decides its shape need it, and they must use the same number.
-const double _kControlsInset = 12;
-
-/// Whether the call controls need a second row at this width.
-///
-/// Pulled out of the widget as a plain function so the arithmetic can be
-/// tested at specific screen widths — the whole point is that the controls
-/// never overflow and never hide behind a scroll gesture, and neither is
-/// something you can eyeball on one device.
-///
-/// The numbers are the same ones the bar lays out with: [count] round
-/// buttons, the last of them the larger End button, separated by [gap], all
-/// inside the bar's own horizontal padding and the screen inset.
-@visibleForTesting
-bool callControlsNeedTwoRows({
-  required double screenWidth,
-  required bool compact,
-  required bool isVideo,
-}) {
-  // mute, speaker, add, end always; video adds camera and flip, audio adds
-  // the upgrade-to-video button.
-  final count = isVideo ? 6 : 5;
-  final btn = compact ? 52.0 : 56.0;
-  final end = compact ? 62.0 : 68.0;
-  final gap = compact ? 8.0 : 10.0;
-  final hPad = compact ? 10.0 : 14.0;
-  final needed = (count - 1) * btn +
-      end +
-      (count - 1) * gap +
-      hPad * 2 +
-      _kControlsInset * 2;
-  return needed > screenWidth;
-}
 
 /// The states a call passes through, in the order the user experiences them.
 enum _CallStage {
@@ -1676,10 +1641,16 @@ class _CallScreenState extends State<CallScreen>
                   if (_upgrade == _VideoUpgrade.invited)
                     _buildVideoUpgradeInvite(),
                   if (_hasPoorConnection && _stage == _CallStage.connected)
-                    _buildPoorConnectionBanner(),
-                  if (_statusOverlay != null) _buildStatusOverlay(),
-                  if (_transientNote != null) _buildTransientNote(),
-                  if (_callAccepted || !widget.isIncoming) _buildCallControls(),
+                    CallPoorConnectionBanner(compact: _isCompactLayout),
+                  if (_statusOverlay != null)
+                    CallStatusOverlay(text: _statusOverlay!),
+                  if (_transientNote != null)
+                    CallTransientNote(
+                      text: _transientNote!,
+                      compact: _isCompactLayout,
+                      stacked: _hasPoorConnection,
+                    ),
+                  if (_callAccepted || !widget.isIncoming) _callControlsBar(),
                 ],
               ),
             ),
@@ -1710,9 +1681,18 @@ class _CallScreenState extends State<CallScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildCallTypeBadge(),
+                  CallTypeBadge(
+                    isVideo: _callType == 'video',
+                    label: _callModeLabel,
+                    accent: _accentColor,
+                  ),
                   SizedBox(height: compact ? 20 : 24),
-                  _buildAnimatedAvatar(size: compact ? 116 : 138),
+                  CallAnimatedAvatar(
+                    size: compact ? 116 : 138,
+                    pulse: _pulseController,
+                    accent: _accentColor,
+                    avatarUrl: widget.calleeAvatar,
+                  ),
                   SizedBox(height: compact ? 18 : 24),
                   Text(
                     widget.calleeName,
@@ -1764,15 +1744,17 @@ class _CallScreenState extends State<CallScreen>
                     spacing: 10,
                     runSpacing: 10,
                     children: [
-                      _buildInfoPill(
+                      CallInfoPill(
                         icon: Icons.lock_outline_rounded,
                         label: 'Secure',
+                        accent: _accentColor,
                       ),
-                      _buildInfoPill(
+                      CallInfoPill(
                         icon: _callType == 'video'
                             ? Icons.videocam_outlined
                             : Icons.call_outlined,
                         label: _callModeLabel,
+                        accent: _accentColor,
                       ),
                       // Silence from a muted microphone looks exactly like
                       // silence from a broken call, and only one of them is
@@ -1780,9 +1762,10 @@ class _CallScreenState extends State<CallScreen>
                       if (_stage == _CallStage.connected &&
                           _peers.length == 1 &&
                           _peers.first.isMuted)
-                        _buildInfoPill(
+                        CallInfoPill(
                           icon: Icons.mic_off_rounded,
                           label: '${widget.calleeName} is muted',
+                          accent: _accentColor,
                         ),
                     ],
                   ),
@@ -1803,7 +1786,7 @@ class _CallScreenState extends State<CallScreen>
         padding: EdgeInsets.fromLTRB(18, 0, 18, compact ? 14 : 20),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
-          child: _buildGlassPanel(
+          child: CallGlassPanel(
             padding: EdgeInsets.fromLTRB(
               compact ? 18 : 20,
               compact ? 18 : 20,
@@ -1836,22 +1819,24 @@ class _CallScreenState extends State<CallScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: _buildIncomingResponseButton(
+                      child: CallResponseButton(
                         label: 'Decline',
                         icon: Icons.call_end_rounded,
                         backgroundColor: const Color(0xFFEF4444),
                         onTap: _rejectCall,
+                        compact: _isCompactLayout,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildIncomingResponseButton(
+                      child: CallResponseButton(
                         label: 'Accept',
                         icon: _callType == 'video'
                             ? Icons.videocam_rounded
                             : Icons.call_rounded,
                         backgroundColor: _accentColor,
                         onTap: _acceptCall,
+                        compact: _isCompactLayout,
                       ),
                     ),
                   ],
@@ -1872,195 +1857,30 @@ class _CallScreenState extends State<CallScreen>
         isVideo: _callType == 'video',
       );
 
-  Widget _buildCallControls() {
-    final compact = _isCompactLayout;
-    final isVideo = _callType == 'video';
-    final hPad = compact ? 10.0 : 14.0;
-    final endSize = compact ? 62.0 : 68.0;
-    final btnSize = compact ? 52.0 : 56.0;
-    final gap = compact ? 8.0 : 10.0;
-
-    // Split by what a control does, not by where the arithmetic happens to
-    // land: things you toggle about your own devices, then the two that
-    // change who is on the call. A width-balanced split would put Flip and
-    // Add together on one row and read like an accident.
-    final toggles = <Widget>[
-      _buildRoundControl(
-        icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-        label: _isMuted ? 'Unmute' : 'Mute',
-        size: btnSize,
-        isActive: _isMuted,
-        activeBg: const Color(0xFFEF4444),
-        onTap: _toggleMute,
-      ),
-      _buildRoundControl(
-        icon:
-            _isSpeakerOn ? Icons.volume_up_rounded : Icons.volume_down_rounded,
-        label: 'Speaker',
-        size: btnSize,
-        isActive: _isSpeakerOn,
-        activeBg: _accentColor,
-        onTap: _toggleSpeaker,
-      ),
-      if (!isVideo)
-        _buildRoundControl(
-          icon: Icons.videocam_outlined,
-          label: _upgrade == _VideoUpgrade.asked ? 'Waiting' : 'Video',
-          size: btnSize,
-          isActive: _upgrade == _VideoUpgrade.asked,
-          activeBg: _accentColor,
-          onTap: () => unawaited(_requestVideoUpgrade()),
-        ),
-      if (isVideo) ...[
-        _buildRoundControl(
-          icon: _isCameraOff
-              ? Icons.videocam_off_rounded
-              : Icons.videocam_rounded,
-          label: 'Camera',
-          size: btnSize,
-          isActive: _isCameraOff,
-          activeBg: const Color(0xFFEF4444),
-          onTap: _toggleCamera,
-        ),
-        _buildRoundControl(
-          icon: Icons.cameraswitch_rounded,
-          label: 'Flip',
-          size: btnSize,
-          isActive: false,
-          onTap: _switchCamera,
-        ),
-      ],
-    ];
-
-    final actions = <Widget>[
-      _buildRoundControl(
-        icon: Icons.person_add_alt_1_rounded,
-        label: 'Add',
-        size: btnSize,
-        isActive: false,
-        onTap: () => unawaited(_addParticipants()),
-      ),
-      _buildRoundControl(
-        icon: Icons.call_end_rounded,
-        label: 'End',
-        size: endSize,
-        isActive: true,
-        activeBg: const Color(0xFFEF4444),
-        iconColor: Colors.white,
-        onTap: () => unawaited(_endCall(
-          notifyPeer: true,
-          allowLog: true,
-          closeImmediately: true,
-        )),
-      ),
-    ];
-
-    Widget row(List<Widget> children) => Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var i = 0; i < children.length; i++) ...[
-              if (i > 0) SizedBox(width: gap),
-              children[i],
-            ],
-          ],
-        );
-
-    final wrap = _controlsWrap;
-
-    return Positioned(
-      left: _kControlsInset,
-      right: _kControlsInset,
-      bottom: compact ? 16 : 24,
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: hPad, vertical: compact ? 8 : 10),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.42),
-            borderRadius: BorderRadius.circular(wrap ? 28 : 36),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
-          ),
-          // Two rows rather than a horizontal scroller. A scrolling control
-          // bar hides controls behind a gesture nobody thinks to try during
-          // a call — End can be the one off the edge — and gives no hint
-          // that anything is there.
-          child: wrap
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    row(toggles),
-                    SizedBox(height: compact ? 8 : 10),
-                    row(actions),
-                  ],
-                )
-              : row([...toggles, ...actions]),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRoundControl({
-    required IconData icon,
-    required String label,
-    required double size,
-    required bool isActive,
-    Color? activeBg,
-    Color? iconColor,
-    required VoidCallback onTap,
-  }) {
-    final bg = isActive
-        ? (activeBg ?? Colors.white)
-            .withValues(alpha: activeBg != null ? 1 : 0.22)
-        : Colors.white.withValues(alpha: 0.14);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            customBorder: const CircleBorder(),
-            child: Ink(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: bg,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: isActive ? 0.0 : 0.14),
-                  width: 1,
-                ),
-              ),
-              child: Icon(
-                icon,
-                color: iconColor ?? Colors.white,
-                size: size * 0.42,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 5),
-        // Icons alone leave people guessing which one is the speaker and
-        // which the microphone, and a call is the worst place to find out by
-        // trial and error.
-        SizedBox(
-          width: size + 12,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.72),
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  /// The control bar, wired to this call.
+  ///
+  /// The bar itself knows nothing about calls — it takes flags and
+  /// callbacks — so this is the one place the two are joined.
+  Widget _callControlsBar() => CallControlsBar(
+        compact: _isCompactLayout,
+        isVideo: _callType == 'video',
+        accent: _accentColor,
+        isMuted: _isMuted,
+        isSpeakerOn: _isSpeakerOn,
+        isCameraOff: _isCameraOff,
+        awaitingVideoUpgrade: _upgrade == _VideoUpgrade.asked,
+        onToggleMute: _toggleMute,
+        onToggleSpeaker: _toggleSpeaker,
+        onToggleCamera: _toggleCamera,
+        onSwitchCamera: _switchCamera,
+        onRequestVideo: () => unawaited(_requestVideoUpgrade()),
+        onAddParticipants: () => unawaited(_addParticipants()),
+        onEndCall: () => unawaited(_endCall(
+              notifyPeer: true,
+              allowLog: true,
+              closeImmediately: true,
+            )),
+      );
 
   Color get _accentColor {
     return _callType == 'video'
@@ -2467,7 +2287,7 @@ class _CallScreenState extends State<CallScreen>
               ),
             ),
             const SizedBox(width: 10),
-            _buildIconChip(
+            CallIconChip(
               icon: Icons.remove_rounded,
               label: 'Minimise',
               onTap: _minimizeCall,
@@ -2485,7 +2305,7 @@ class _CallScreenState extends State<CallScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: _buildGlassPanel(
+            child: CallGlassPanel(
               padding: EdgeInsets.fromLTRB(compact ? 12 : 14, compact ? 12 : 14,
                   compact ? 12 : 14, compact ? 12 : 14),
               borderRadius: BorderRadius.circular(24),
@@ -2500,7 +2320,8 @@ class _CallScreenState extends State<CallScreen>
                           color: Colors.white.withValues(alpha: 0.18)),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: _buildAvatarImage(iconSize: 22),
+                    child: CallAvatarImage(
+                        avatarUrl: widget.calleeAvatar, iconSize: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -2548,7 +2369,7 @@ class _CallScreenState extends State<CallScreen>
             ),
           ),
           const SizedBox(width: 12),
-          _buildIconChip(
+          CallIconChip(
             icon: Icons.remove_rounded,
             label: 'Minimise',
             onTap: _minimizeCall,
@@ -2577,7 +2398,10 @@ class _CallScreenState extends State<CallScreen>
       14,
       74,
       14,
-      116 + (_controlsWrap ? (compact ? 64.0 : 70.0) : 0.0),
+      116 +
+          (_controlsWrap
+              ? callControlsWrapExtraHeight(compact: compact)
+              : 0.0),
     );
 
     return Positioned.fill(
@@ -2629,7 +2453,7 @@ class _CallScreenState extends State<CallScreen>
                     _selfViewAlignment.y < 0 ? -1 : 1,
                   );
                 }),
-                child: _buildGlassPanel(
+                child: CallGlassPanel(
                   padding: const EdgeInsets.all(4),
                   borderRadius: BorderRadius.circular(22),
                   child: Container(
@@ -2686,76 +2510,6 @@ class _CallScreenState extends State<CallScreen>
   /// twenty seconds and then blame the app.
   /// "X left the call" — same pill as the connection warning, sitting just
   /// below it so the two can be on screen at once without overlapping.
-  Widget _buildTransientNote() {
-    return Positioned(
-      top: (_isCompactLayout ? 78 : 92) + (_hasPoorConnection ? 40 : 0),
-      left: 18,
-      right: 18,
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.88),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.logout_rounded,
-                  color: Color(0xFF94A3B8), size: 15),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  _transientNote!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPoorConnectionBanner() {
-    return Positioned(
-      top: _isCompactLayout ? 78 : 92,
-      left: 18,
-      right: 18,
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFB45309).withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.wifi_off_rounded, color: Colors.white, size: 15),
-              SizedBox(width: 8),
-              Text(
-                'Your connection is weak',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   /// The other side has asked to turn the voice call into a video call.
   ///
   /// Deliberately a panel above the controls rather than a modal dialog: a
@@ -2771,7 +2525,7 @@ class _CallScreenState extends State<CallScreen>
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
-          child: _buildGlassPanel(
+          child: CallGlassPanel(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             borderRadius: BorderRadius.circular(24),
             child: Column(
@@ -2797,298 +2551,28 @@ class _CallScreenState extends State<CallScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: _buildIncomingResponseButton(
+                      child: CallResponseButton(
                         label: 'No',
                         icon: Icons.videocam_off_rounded,
                         backgroundColor: const Color(0xFF334155),
                         onTap: () => unawaited(_answerVideoUpgrade(false)),
+                        compact: _isCompactLayout,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildIncomingResponseButton(
+                      child: CallResponseButton(
                         label: 'Turn on camera',
                         icon: Icons.videocam_rounded,
                         backgroundColor: _accentColor,
                         onTap: () => unawaited(_answerVideoUpgrade(true)),
+                        compact: _isCompactLayout,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusOverlay() {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            child: KeyedSubtree(
-              key: ValueKey<String>(_statusOverlay!),
-              child: _buildGlassPanel(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                borderRadius: BorderRadius.circular(20),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      color: Colors.white.withValues(alpha: 0.92),
-                      size: 18,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      _statusOverlay!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCallTypeBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
-            size: 16,
-            color: _accentColor,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            _callModeLabel,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnimatedAvatar({required double size}) {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, _) {
-        final pulse = Curves.easeOut.transform(_pulseController.value);
-        return SizedBox(
-          width: size + 42,
-          height: size + 42,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Opacity(
-                opacity: 0.2 * (1 - pulse),
-                child: Container(
-                  width: size + 34 + (pulse * 20),
-                  height: size + 34 + (pulse * 20),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: _accentColor.withValues(alpha: 0.7), width: 1.6),
-                  ),
-                ),
-              ),
-              Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.18),
-                      Colors.white.withValues(alpha: 0.08),
-                    ],
-                  ),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.18),
-                      blurRadius: 20,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: _buildAvatarImage(iconSize: size * 0.34),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAvatarImage({required double iconSize}) {
-    if (widget.calleeAvatar != null && widget.calleeAvatar!.isNotEmpty) {
-      return AppNetworkImage(
-        widget.calleeAvatar!,
-        errorWidget: Icon(
-          Icons.person_rounded,
-          size: iconSize,
-          color: Colors.white.withValues(alpha: 0.72),
-        ),
-      );
-    }
-
-    return Icon(
-      Icons.person_rounded,
-      size: iconSize,
-      color: Colors.white.withValues(alpha: 0.72),
-    );
-  }
-
-  Widget _buildInfoPill({
-    required IconData icon,
-    required String label,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: _accentColor),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIncomingResponseButton({
-    required String label,
-    required IconData icon,
-    required Color backgroundColor,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Ink(
-          padding: EdgeInsets.symmetric(
-            horizontal: _isCompactLayout ? 12 : 14,
-            vertical: _isCompactLayout ? 14 : 16,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            color: backgroundColor,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white, size: _isCompactLayout ? 20 : 22),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: _isCompactLayout ? 14 : 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassPanel({
-    required Widget child,
-    required EdgeInsetsGeometry padding,
-    required BorderRadius borderRadius,
-  }) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        color: const Color(0xFF0F172A).withValues(alpha: 0.72),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildIconChip({
-    required IconData icon,
-    required VoidCallback onTap,
-    String? label,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Ink(
-          height: 50,
-          padding: EdgeInsets.symmetric(horizontal: label == null ? 13 : 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: const Color(0xFF0F172A).withValues(alpha: 0.72),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: Colors.white, size: 24),
-              // A bare minus reads as "hide" or even "mute" to plenty of
-              // people; the word removes the guess for the cost of 50px.
-              if (label != null) ...[
-                const SizedBox(width: 5),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ],
           ),
         ),
       ),
