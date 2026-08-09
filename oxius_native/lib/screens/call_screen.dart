@@ -1248,16 +1248,21 @@ class _CallScreenState extends State<CallScreen>
 
     // Report what actually happened per person. "Invited 3" would be a lie
     // when one of them was already on another call.
-    final ringing =
-        results.where((r) => r['status'] == 'ringing').length;
-    final busy = results.where((r) => r['status'] == 'busy').length;
-    final unreachable =
-        results.where((r) => r['status'] == 'unreachable').length;
+    int count(String status) =>
+        results.where((r) => r['status'] == status).length;
+
+    final ringing = count('ringing');
+    final busy = count('busy');
+    final unreachable = count('unreachable');
+    final notAllowed = count('not_allowed');
+    final full = count('call_full');
 
     final parts = <String>[
       if (ringing > 0) '$ringing জনকে রিং করা হচ্ছে',
       if (busy > 0) '$busy জন অন্য কলে আছেন',
       if (unreachable > 0) '$unreachable জনের কাছে পৌঁছানো যায়নি',
+      if (notAllowed > 0) '$notAllowed জনকে কলে যোগ করার অনুমতি নেই',
+      if (full > 0) 'কলে আর জায়গা নেই',
     ];
     if (parts.isEmpty) {
       AdsyToast.error(context, 'কাউকে যোগ করা যায়নি');

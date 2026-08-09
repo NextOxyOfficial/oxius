@@ -432,6 +432,17 @@ def _can_call(caller, callee):
         # did not choose to share.
         return False, 'এই ব্যবহারকারীকে এখন কল করা যাচ্ছে না।'
 
+    # who_can_message gates a NEW conversation, not an existing one — that is
+    # the rule messaging itself follows. Calls are placed from inside a chat,
+    # so applying it to a thread these two already have would be stricter for
+    # calling than for the messages they are already exchanging: tighten the
+    # setting and the person you talk to daily silently loses the call button.
+    already_talking = ChatRoom.objects.filter(
+        Q(user1=caller, user2=callee) | Q(user1=callee, user2=caller)
+    ).exists()
+    if already_talking:
+        return True, ''
+
     allowed, _reason = _can_message(caller, callee)
     if not allowed:
         return False, 'এই ব্যবহারকারী শুধু নির্দিষ্ট মানুষের কল গ্রহণ করেন।'
