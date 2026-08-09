@@ -269,6 +269,23 @@ def _send_call_data_message(*, target_user, payload):
                 if fcm_token.pk in voip_result.get('voip_delivered_ids', ()):
                     continue
 
+                # A second, older iOS row for the same user that carries no
+                # VoIP token is nearly always the SAME phone's registration
+                # from before it had one — the app refreshes its FCM token on
+                # every launch, so a row untouched for weeks is not a device
+                # someone is holding. Ringing it puts the alert banner back on
+                # top of the CallKit call we just raised. Only skip it when
+                # CallKit definitely rang somewhere: a user with no VoIP
+                # delivery at all still needs every alert we can send.
+                if (
+                    is_ios_stale_duplicate(fcm_token, voip_result)
+                ):
+                    logger.info(
+                        'CALLTRACE skip stale iOS alert token=%s updated=%s',
+                        fcm_token.pk, fcm_token.updated_at,
+                    )
+                    continue
+
                 # Bug fix: enforce ALL payload values are strings.
                 str_payload = {k: str(v) if v is not None else '' for k, v in payload.items()}
 
@@ -567,6 +584,30 @@ def _build_callkit_voip_payload(payload):
         'duration': 60000,
         'extra': {k: str(v) if v is not None else '' for k, v in payload.items()},
     }
+
+
+# How long an FCM token may go unrefreshed before its device is treated as
+# gone. The app re-registers on every launch, so this is "has not opened the
+# app in a week", not "has not been used in a week".
+_STALE_TOKEN_AFTER = timezone.timedelta(days=7)
+
+
+def is_ios_stale_duplicate(fcm_token, voip_result):
+    """True when this iOS row is an old registration of a phone CallKit rang.
+
+    Only ever says yes if some device DID get the VoIP push — otherwise the
+    alert is the user's only ring and must go out regardless of age.
+    """
+    if fcm_token.device_type != 'ios':
+        return False
+    if not voip_result.get('voip_sent_to'):
+        return False
+    if fcm_token.voip_token:
+        return False
+    updated = getattr(fcm_token, 'updated_at', None)
+    if updated is None:
+        return False
+    return timezone.now() - updated > _STALE_TOKEN_AFTER
 
 
 def _send_voip_call_pushes(*, target_user, payload):
