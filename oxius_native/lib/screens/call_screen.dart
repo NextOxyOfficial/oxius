@@ -21,6 +21,17 @@ import '../services/fcm_service.dart';
 import 'inbox_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
+/// The states a call passes through, in the order the user experiences them.
+enum _CallStage {
+  incoming,
+  ringing,
+  connecting,
+  connected,
+  reconnecting,
+  unreachable,
+  ended,
+}
+
 class CallScreen extends StatefulWidget {
   final String channelName;
   final String calleeId;
@@ -82,7 +93,15 @@ class _CallScreenState extends State<CallScreen>
   final AudioPlayer _outgoingTonePlayer = AudioPlayer();
   bool _incomingAlertActive = false;
   bool _acceptanceSent = false;
+  bool _isReconnecting = false;
+  StreamSubscription<bool>? _reconnectingSub;
   late final AnimationController _pulseController;
+
+  /// Where the user has dragged the self-view to, as a fraction of the free
+  /// space in each axis. Fractions rather than pixels so the preview keeps its
+  /// corner across a rotation or a keyboard resize.
+  Alignment _selfViewAlignment = const Alignment(1, -1);
+  Offset? _selfViewDragOrigin;
 
   bool get _isCompactLayout => MediaQuery.sizeOf(context).height < 760;
 
@@ -139,7 +158,7 @@ class _CallScreenState extends State<CallScreen>
       _startOutgoingRingback();
       _ringingTimer = Timer(const Duration(seconds: 60), () {
         if (!mounted || _didEndCall || _remoteUid != null) return;
-        _showOverlayAndClose('No answer');
+        _showOverlayAndClose('কেউ ধরেনি');
         unawaited(_endCall(
           notifyPeer: true,
           allowLog: true,
@@ -154,7 +173,7 @@ class _CallScreenState extends State<CallScreen>
     if (widget.isIncoming && !widget.autoAccept) {
       _ringingTimer = Timer(const Duration(seconds: 55), () {
         if (!mounted || _didEndCall || _callAccepted) return;
-        _showOverlayAndClose('Missed call');
+        _showOverlayAndClose('মিসড কল');
         unawaited(_endCall(
           notifyPeer: true,
           allowLog: false,
@@ -237,7 +256,7 @@ class _CallScreenState extends State<CallScreen>
       }
 
       if (status == 'rejected' || status == 'declined') {
-        _showOverlayAndClose('Call declined');
+        _showOverlayAndClose('কল কেটে দেওয়া হয়েছে');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -245,7 +264,7 @@ class _CallScreenState extends State<CallScreen>
           closeImmediately: true,
         ));
       } else if (status == 'busy') {
-        _showOverlayAndClose('User busy');
+        _showOverlayAndClose('ব্যবহারকারী এখন ব্যস্ত');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -253,7 +272,7 @@ class _CallScreenState extends State<CallScreen>
           closeImmediately: true,
         ));
       } else if (status == 'cancelled' || status == 'missed') {
-        _showOverlayAndClose('Call cancelled');
+        _showOverlayAndClose('কল বাতিল হয়েছে');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -261,7 +280,7 @@ class _CallScreenState extends State<CallScreen>
           closeImmediately: true,
         ));
       } else if (status == 'ended' || status == 'failed') {
-        _showOverlayAndClose('Call ended');
+        _showOverlayAndClose('কল শেষ হয়েছে');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -310,12 +329,18 @@ class _CallScreenState extends State<CallScreen>
       setState(() {
         _remoteUid = null;
       });
-      _showOverlayAndClose('Call ended');
+      _showOverlayAndClose('কল শেষ হয়েছে');
       unawaited(_endCall(
         notifyPeer: false,
         allowLog: !widget.isIncoming,
         outcomeOverride: 'ended',
       ));
+    });
+
+    _isReconnecting = LiveKitCallService.isReconnecting;
+    _reconnectingSub = LiveKitCallService.reconnectingStream.listen((value) {
+      if (!mounted) return;
+      setState(() => _isReconnecting = value);
     });
 
     _engineErrorSub = _engineErrorStream.listen((message) {
@@ -343,7 +368,7 @@ class _CallScreenState extends State<CallScreen>
       if (!_didEndCall &&
           _remoteUid != null &&
           message.contains('Connection lost')) {
-        _showOverlayAndClose('Connection lost');
+        _showOverlayAndClose('সংযোগ বিচ্ছিন্ন হয়েছে');
         unawaited(_endCall(
           notifyPeer: true,
           allowLog: !widget.isIncoming,
@@ -518,7 +543,7 @@ class _CallScreenState extends State<CallScreen>
             context,
             _formatCallStartError(
               AgoraCallService.lastNotificationError,
-              fallback: 'Could not reach the recipient. Please try again.',
+              fallback: 'কলটি পৌঁছানো যায়নি। আবার চেষ্টা করুন।',
             ),
           );
           Navigator.of(context).pop();
@@ -538,37 +563,37 @@ class _CallScreenState extends State<CallScreen>
             context: context,
             builder: (ctx) => AlertDialog(
               title: Text(isMic
-                  ? 'Microphone Access Required'
-                  : 'Camera Access Required'),
+                  ? 'মাইক্রোফোনের অনুমতি দরকার'
+                  : 'ক্যামেরার অনুমতি দরকার'),
               content: Text(
                 isMic
-                    ? 'Microphone permission is blocked. Please go to Settings → AdsyClub → Microphone and enable it.'
-                    : 'Camera permission is blocked. Please go to Settings → AdsyClub → Camera and enable it.',
+                    ? 'মাইক্রোফোনের অনুমতি বন্ধ আছে। Settings → AdsyClub → Microphone থেকে চালু করুন।'
+                    : 'ক্যামেরার অনুমতি বন্ধ আছে। Settings → AdsyClub → Camera থেকে চালু করুন।',
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel'),
+                  child: const Text('থাক'),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);
                     openAppSettings();
                   },
-                  child: const Text('Open Settings'),
+                  child: const Text('সেটিংসে যান'),
                 ),
               ],
             ),
           );
         } else {
           final msg = errStr.toLowerCase().contains('permission')
-              ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.'
+              ? 'কল শুরু করতে মাইক্রোফোন${widget.callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
               : _formatCallStartError(
                   AgoraCallService.lastError ??
                       AgoraCallService.lastNotificationError ??
                       errStr,
                   fallback:
-                      'Unable to start call. Please check your connection.',
+                      'কল শুরু করা যায়নি। ইন্টারনেট সংযোগ দেখে নিন।',
                 );
           AdsyToast.error(context, msg);
           Navigator.pop(context);
@@ -640,7 +665,7 @@ class _CallScreenState extends State<CallScreen>
         context,
         _formatCallStartError(
           _engineLastError,
-          fallback: 'Could not join the call. Please try again.',
+          fallback: 'কলে যোগ দেওয়া যায়নি। আবার চেষ্টা করুন।',
         ),
       );
       AgoraCallService.setInCall(false);
@@ -678,7 +703,7 @@ class _CallScreenState extends State<CallScreen>
     _ringingTimer?.cancel();
     _ringingTimer = Timer(const Duration(seconds: 30), () {
       if (!mounted || _didEndCall || _remoteUid != null) return;
-      _showOverlayAndClose('Could not connect');
+      _showOverlayAndClose('সংযোগ করা যায়নি');
       unawaited(_endCall(
         notifyPeer: true,
         allowLog: widget.isIncoming,
@@ -716,32 +741,32 @@ class _CallScreenState extends State<CallScreen>
             context: context,
             builder: (ctx) => AlertDialog(
               title: Text(isMic
-                  ? 'Microphone Access Required'
-                  : 'Camera Access Required'),
+                  ? 'মাইক্রোফোনের অনুমতি দরকার'
+                  : 'ক্যামেরার অনুমতি দরকার'),
               content: Text(
                 isMic
-                    ? 'Microphone permission is blocked. Please go to Settings → AdsyClub → Microphone and enable it.'
-                    : 'Camera permission is blocked. Please go to Settings → AdsyClub → Camera and enable it.',
+                    ? 'মাইক্রোফোনের অনুমতি বন্ধ আছে। Settings → AdsyClub → Microphone থেকে চালু করুন।'
+                    : 'ক্যামেরার অনুমতি বন্ধ আছে। Settings → AdsyClub → Camera থেকে চালু করুন।',
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel'),
+                  child: const Text('থাক'),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);
                     openAppSettings();
                   },
-                  child: const Text('Open Settings'),
+                  child: const Text('সেটিংসে যান'),
                 ),
               ],
             ),
           );
         } else {
           final msg = errStr.toLowerCase().contains('permission')
-              ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission.'
-              : 'Unable to join the call. Please try again.';
+              ? 'মাইক্রোফোন${widget.callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
+              : 'কলে যোগ দেওয়া যায়নি। আবার চেষ্টা করুন।';
           AdsyToast.error(context, msg);
           if (mounted) Navigator.of(context).pop();
         }
@@ -969,7 +994,7 @@ class _CallScreenState extends State<CallScreen>
       // Ladder exhausted — now it is a real failure.
       if (!mounted || _didEndCall || _remoteUid != null) return;
       debugPrint('❌ Connect recovery exhausted [$reason]');
-      _showOverlayAndClose('Could not connect');
+      _showOverlayAndClose('সংযোগ করা যায়নি');
       unawaited(_endCall(
         notifyPeer: true,
         allowLog: !widget.isIncoming,
@@ -1022,28 +1047,28 @@ class _CallScreenState extends State<CallScreen>
 
     final lower = value.toLowerCase();
     if (lower.contains('permission')) {
-      return 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.';
+      return 'কল শুরু করতে মাইক্রোফোন${widget.callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।';
     }
     if (lower.contains('session expired') || lower.contains('sign in again')) {
-      return 'Your session expired. Please sign in again.';
+      return 'আপনার সেশন শেষ হয়ে গেছে। আবার সাইন ইন করুন।';
     }
     if (lower.contains('timed out') || lower.contains('timeout')) {
-      return 'Call request timed out. Please check your connection and try again.';
+      return 'কলের অনুরোধে সময় শেষ। সংযোগ দেখে আবার চেষ্টা করুন।';
     }
     if (lower.contains('recipient is unavailable')) {
-      return 'Recipient is unavailable right now.';
+      return 'ব্যবহারকারী এখন উপলব্ধ নন।';
     }
     if (lower.contains('service is unavailable')) {
-      return 'Call service is unavailable right now. Please try again.';
+      return 'কল সার্ভিস এখন কাজ করছে না। একটু পরে চেষ্টা করুন।';
     }
     if (lower.contains('network') || lower.contains('connection')) {
-      return 'Network error while starting the call. Please try again.';
+      return 'কল শুরুর সময় নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।';
     }
     if (lower.contains('invalid channel')) {
-      return 'Invalid call session. Please try again.';
+      return 'কল সেশনটি সঠিক নয়। আবার চেষ্টা করুন।';
     }
     if (lower.contains('token')) {
-      return 'Call session expired. Please try again.';
+      return 'কল সেশনের মেয়াদ শেষ। আবার চেষ্টা করুন।';
     }
     if (value.startsWith('{') ||
         value.startsWith('[') ||
@@ -1131,6 +1156,7 @@ class _CallScreenState extends State<CallScreen>
     _remoteJoinSub?.cancel();
     _remoteLeaveSub?.cancel();
     _engineErrorSub?.cancel();
+    _reconnectingSub?.cancel();
     _durationTimer?.cancel();
     _ringingTimer?.cancel();
     _cancelConnectWatchdog();
@@ -1289,16 +1315,40 @@ class _CallScreenState extends State<CallScreen>
                       letterSpacing: -0.4,
                     ),
                   ),
-                  SizedBox(height: compact ? 8 : 10),
-                  Text(
-                    _primaryStatusText,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.76),
-                      fontSize: compact ? 14 : 16,
-                      height: 1.4,
+                  SizedBox(height: compact ? 10 : 12),
+                  // The duration is the headline once a call is up — it is
+                  // the one number the user actually looks for — so it gets
+                  // the size and weight, and the prose steps aside.
+                  if (_stage == _CallStage.connected)
+                    Text(
+                      _formatDuration(_callDuration),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: compact ? 30 : 34,
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 1,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    )
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildStageDot(),
+                        const SizedBox(width: 9),
+                        Flexible(
+                          child: Text(
+                            _primaryStatusText,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.80),
+                              fontSize: compact ? 14 : 16,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
                   SizedBox(height: compact ? 18 : 22),
                   Wrap(
                     alignment: WrapAlignment.center,
@@ -1307,21 +1357,14 @@ class _CallScreenState extends State<CallScreen>
                     children: [
                       _buildInfoPill(
                         icon: Icons.lock_outline_rounded,
-                        label: 'Secure call',
+                        label: 'নিরাপদ সংযোগ',
                       ),
                       _buildInfoPill(
                         icon: widget.callType == 'video'
                             ? Icons.videocam_outlined
                             : Icons.call_outlined,
-                        label: widget.callType == 'video'
-                            ? 'Video ready'
-                            : 'Voice ready',
+                        label: _callModeLabel,
                       ),
-                      if (_callAccepted && _callStartedAt != null)
-                        _buildInfoPill(
-                          icon: Icons.schedule_rounded,
-                          label: _formatDuration(_callDuration),
-                        ),
                     ],
                   ),
                 ],
@@ -1353,7 +1396,7 @@ class _CallScreenState extends State<CallScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Incoming ${_callModeLabel.toLowerCase()}',
+                  '$_callModeLabel আসছে',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.72),
                     fontSize: compact ? 14 : 15,
@@ -1362,7 +1405,7 @@ class _CallScreenState extends State<CallScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Answer now or decline the call.',
+                  'কলটি ধরবেন, নাকি কেটে দেবেন?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -1375,7 +1418,7 @@ class _CallScreenState extends State<CallScreen>
                   children: [
                     Expanded(
                       child: _buildIncomingResponseButton(
-                        label: 'Decline',
+                        label: 'কেটে দিন',
                         icon: Icons.call_end_rounded,
                         backgroundColor: const Color(0xFFEF4444),
                         onTap: _rejectCall,
@@ -1384,7 +1427,7 @@ class _CallScreenState extends State<CallScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildIncomingResponseButton(
-                        label: 'Accept',
+                        label: 'ধরুন',
                         icon: widget.callType == 'video'
                             ? Icons.videocam_rounded
                             : Icons.call_rounded,
@@ -1424,9 +1467,11 @@ class _CallScreenState extends State<CallScreen>
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildRoundControl(
                 icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                label: _isMuted ? 'আনমিউট' : 'মিউট',
                 size: btnSize,
                 isActive: _isMuted,
                 activeBg: const Color(0xFFEF4444),
@@ -1437,6 +1482,7 @@ class _CallScreenState extends State<CallScreen>
                 icon: _isSpeakerOn
                     ? Icons.volume_up_rounded
                     : Icons.volume_down_rounded,
+                label: 'স্পিকার',
                 size: btnSize,
                 isActive: _isSpeakerOn,
                 activeBg: _accentColor,
@@ -1448,6 +1494,7 @@ class _CallScreenState extends State<CallScreen>
                   icon: _isCameraOff
                       ? Icons.videocam_off_rounded
                       : Icons.videocam_rounded,
+                  label: 'ক্যামেরা',
                   size: btnSize,
                   isActive: _isCameraOff,
                   activeBg: const Color(0xFFEF4444),
@@ -1456,6 +1503,7 @@ class _CallScreenState extends State<CallScreen>
                 SizedBox(width: compact ? 8 : 10),
                 _buildRoundControl(
                   icon: Icons.cameraswitch_rounded,
+                  label: 'ঘোরান',
                   size: btnSize,
                   isActive: false,
                   onTap: _switchCamera,
@@ -1464,6 +1512,7 @@ class _CallScreenState extends State<CallScreen>
               SizedBox(width: compact ? 10 : 12),
               _buildRoundControl(
                 icon: Icons.call_end_rounded,
+                label: 'কল শেষ',
                 size: endSize,
                 isActive: true,
                 activeBg: const Color(0xFFEF4444),
@@ -1483,6 +1532,7 @@ class _CallScreenState extends State<CallScreen>
 
   Widget _buildRoundControl({
     required IconData icon,
+    required String label,
     required double size,
     required bool isActive,
     Color? activeBg,
@@ -1492,29 +1542,52 @@ class _CallScreenState extends State<CallScreen>
     final bg = isActive
         ? (activeBg ?? Colors.white).withValues(alpha: activeBg != null ? 1 : 0.22)
         : Colors.white.withValues(alpha: 0.14);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Ink(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: bg,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: isActive ? 0.0 : 0.14),
-              width: 1,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            child: Ink(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: bg,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: isActive ? 0.0 : 0.14),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor ?? Colors.white,
+                size: size * 0.42,
+              ),
             ),
           ),
-          child: Icon(
-            icon,
-            color: iconColor ?? Colors.white,
-            size: size * 0.42,
+        ),
+        const SizedBox(height: 5),
+        // Icons alone leave people guessing which one is the speaker and
+        // which the microphone, and a call is the worst place to find out by
+        // trial and error.
+        SizedBox(
+          width: size + 12,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.72),
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -1525,32 +1598,119 @@ class _CallScreenState extends State<CallScreen>
   }
 
   String get _callModeLabel {
-    return widget.callType == 'video' ? 'Video Call' : 'Voice Call';
+    return widget.callType == 'video' ? 'ভিডিও কল' : 'অডিও কল';
   }
 
+  /// A dot that pulses while the call is still being worked on and holds
+  /// steady once it is up, so progress is visible at a glance.
+  Widget _buildStageDot() {
+    final settled = _stage == _CallStage.connected;
+    final dot = Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _stageColor,
+        boxShadow: [
+          BoxShadow(color: _stageColor.withValues(alpha: 0.5), blurRadius: 6),
+        ],
+      ),
+    );
+    if (settled) return dot;
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final t = (math.sin(_pulseController.value * 2 * math.pi) + 1) / 2;
+        return Opacity(opacity: 0.45 + (t * 0.55), child: child);
+      },
+      child: dot,
+    );
+  }
+
+  /// Where the call is right now, as one value instead of four booleans read
+  /// in a different order by each part of the screen. Every label — the header
+  /// line, the big status under the name, the notification — comes from here,
+  /// so they cannot disagree about whether a call is ringing or connected.
+  _CallStage get _stage {
+    if (_didEndCall) return _CallStage.ended;
+    if (widget.isIncoming && !_callAccepted) return _CallStage.incoming;
+    if (_callStartedAt != null) {
+      return _isReconnecting ? _CallStage.reconnecting : _CallStage.connected;
+    }
+    if (_callAccepted) return _CallStage.connecting;
+    if (widget.isIncoming) return _CallStage.connecting;
+    // Our own side of an outgoing call is still coming up: the room has not
+    // been joined yet, so "ringing" would be describing something that has
+    // not started.
+    if (_isConnecting) return _CallStage.connecting;
+    if (!AgoraCallService.lastCallReachable) return _CallStage.unreachable;
+    return _CallStage.ringing;
+  }
+
+  /// The short line that sits beside the name — a duration once there is one.
+  String get _stageLabel {
+    switch (_stage) {
+      case _CallStage.incoming:
+        return 'ইনকামিং কল';
+      case _CallStage.ringing:
+        return 'রিং হচ্ছে…';
+      case _CallStage.connecting:
+        return 'সংযোগ করা হচ্ছে…';
+      case _CallStage.connected:
+        return _formatDuration(_callDuration);
+      case _CallStage.reconnecting:
+        return 'আবার সংযোগ করা হচ্ছে…';
+      case _CallStage.unreachable:
+        return 'কল পৌঁছাচ্ছে না';
+      case _CallStage.ended:
+        return 'কল শেষ';
+    }
+  }
+
+  /// The fuller sentence shown under the name while there is no video to look
+  /// at. A status overlay ("Call declined") outranks it — that is the last
+  /// thing the user needs to read before the screen closes.
   String get _primaryStatusText {
     if (_statusOverlay != null) return _statusOverlay!;
-    if (widget.isIncoming && !_callAccepted) {
-      return 'Ready to answer this call.';
-    }
-    if (_callAccepted && _callStartedAt != null) {
-      return 'Connected and stable.';
-    }
-    if (_isConnecting) {
-      if (_callAccepted) {
-        return 'Connecting the call...';
-      }
-      if (!widget.isIncoming && !AgoraCallService.lastCallReachable) {
+    switch (_stage) {
+      case _CallStage.incoming:
+        return widget.callType == 'video'
+            ? 'ভিডিও কল আসছে'
+            : 'অডিও কল আসছে';
+      case _CallStage.ringing:
+        return 'ওপাশে রিং হচ্ছে…';
+      case _CallStage.connecting:
+        return 'সংযোগ করা হচ্ছে…';
+      case _CallStage.connected:
+        return _formatDuration(_callDuration);
+      case _CallStage.reconnecting:
+        return 'নেটওয়ার্ক ফিরে এলেই কল চালু হবে';
+      case _CallStage.unreachable:
         // The server had nowhere to deliver the ring. Saying "ringing" here
         // is simply untrue, and it costs the caller thirty seconds to learn
         // it themselves.
         return 'ব্যবহারকারীর ডিভাইসে কল পৌঁছানো যাচ্ছে না';
-      }
-      return widget.isIncoming
-          ? 'Joining the call...'
-          : 'Ringing on the other side.';
+      case _CallStage.ended:
+        return 'কল শেষ হয়েছে';
     }
-    return widget.isIncoming ? 'Incoming call' : 'Calling now.';
+  }
+
+  /// Green once the media is up, amber while it is being worked on, red when
+  /// the call cannot proceed. Read together with [_stageLabel] it answers
+  /// "is this working?" without the user parsing any text at all.
+  Color get _stageColor {
+    switch (_stage) {
+      case _CallStage.connected:
+        return const Color(0xFF34D399);
+      case _CallStage.reconnecting:
+      case _CallStage.connecting:
+      case _CallStage.ringing:
+      case _CallStage.incoming:
+        return const Color(0xFFFBBF24);
+      case _CallStage.unreachable:
+      case _CallStage.ended:
+        return const Color(0xFFEF4444);
+    }
   }
 
   Widget _buildBackgroundLayer() {
@@ -1618,11 +1778,7 @@ class _CallScreenState extends State<CallScreen>
   Widget _buildTopPanel() {
     final compact = _isCompactLayout;
     final hasRemoteVideo = _remoteUid != null && widget.callType == 'video';
-    final subtitle = _callAccepted && _callStartedAt != null
-        ? _formatDuration(_callDuration)
-        : _isConnecting
-            ? (widget.isIncoming ? 'Incoming…' : 'Calling…')
-            : 'In call';
+    final subtitle = _stageLabel;
 
     // Slim pill for active video call to keep the opponent's video unobstructed;
     // fuller header while waiting (audio call or pre-connect).
@@ -1644,6 +1800,8 @@ class _CallScreenState extends State<CallScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    _buildStageDot(),
+                    const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         widget.calleeName,
@@ -1669,6 +1827,9 @@ class _CallScreenState extends State<CallScreen>
                         color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
+                        // A ticking duration must not shuffle the name
+                        // sideways every second.
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
@@ -1726,16 +1887,26 @@ class _CallScreenState extends State<CallScreen>
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          _callAccepted && _callStartedAt != null
-                              ? '${_callModeLabel.toUpperCase()} • ${_formatDuration(_callDuration)}'
-                              : _primaryStatusText.toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.62),
-                            fontSize: compact ? 10 : 11,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.1,
-                          ),
+                        Row(
+                          children: [
+                            _buildStageDot(),
+                            const SizedBox(width: 7),
+                            Flexible(
+                              child: Text(
+                                '$_callModeLabel • $_stageLabel',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.68),
+                                  fontSize: compact ? 11 : 12,
+                                  fontWeight: FontWeight.w600,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -1754,56 +1925,115 @@ class _CallScreenState extends State<CallScreen>
     );
   }
 
+  /// The self-view, draggable anywhere on the stage and snapping to the
+  /// nearest corner on release.
+  ///
+  /// Fixed to the top-right it covered the other person's face whenever they
+  /// happened to be standing on that side of their own frame, and there was
+  /// nothing the user could do about it. The position is kept as an
+  /// [Alignment] so a rotation or a keyboard does not throw it off screen.
   Widget _buildLocalPreview() {
     final compact = _isCompactLayout;
-    return Positioned(
-      top: compact ? 82 : 96,
-      right: 18,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _buildGlassPanel(
-            padding: const EdgeInsets.all(4),
-            borderRadius: BorderRadius.circular(22),
-            child: Container(
-              width: compact ? 92 : 108,
-              height: compact ? 128 : 150,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  _localVideoView(),
-                  Positioned(
-                    left: 8,
-                    right: 8,
-                    bottom: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.46),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'You',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+    final width = compact ? 92.0 : 108.0;
+    final height = compact ? 128.0 : 150.0;
+    // Clear of the header pill above and the control bar below.
+    const margin = EdgeInsets.fromLTRB(14, 74, 14, 116);
+
+    return Positioned.fill(
+      child: Padding(
+        padding: margin,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final freeX = math.max(0.0, constraints.maxWidth - width);
+            final freeY = math.max(0.0, constraints.maxHeight - height);
+
+            return AnimatedAlign(
+                  // Only the settle after a release is animated; during the
+                  // drag the finger sets the position directly.
+                  duration: _selfViewDragOrigin == null
+                      ? const Duration(milliseconds: 220)
+                      : Duration.zero,
+                  curve: Curves.easeOutCubic,
+                  alignment: _selfViewAlignment,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onPanStart: (_) => setState(() {
+                      _selfViewDragOrigin = Offset(
+                        (_selfViewAlignment.x + 1) / 2 * freeX,
+                        (_selfViewAlignment.y + 1) / 2 * freeY,
+                      );
+                    }),
+                    onPanUpdate: (details) {
+                      final origin = _selfViewDragOrigin;
+                      if (origin == null) return;
+                      final next = origin + details.delta;
+                      setState(() {
+                        _selfViewDragOrigin = next;
+                        _selfViewAlignment = Alignment(
+                          freeX == 0
+                              ? 0
+                              : (next.dx.clamp(0.0, freeX) / freeX) * 2 - 1,
+                          freeY == 0
+                              ? 0
+                              : (next.dy.clamp(0.0, freeY) / freeY) * 2 - 1,
+                        );
+                      });
+                    },
+                    onPanEnd: (_) => setState(() {
+                      _selfViewDragOrigin = null;
+                      // Snap to the nearest corner. Anywhere in between reads
+                      // as dropped-by-accident.
+                      _selfViewAlignment = Alignment(
+                        _selfViewAlignment.x < 0 ? -1 : 1,
+                        _selfViewAlignment.y < 0 ? -1 : 1,
+                      );
+                    }),
+                    child: _buildGlassPanel(
+                      padding: const EdgeInsets.all(4),
+                      borderRadius: BorderRadius.circular(22),
+                      child: Container(
+                        width: width,
+                        height: height,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12)),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            _localVideoView(),
+                            Positioned(
+                              left: 8,
+                              right: 8,
+                              bottom: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.46),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'আপনি',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ],
+                );
+          },
+        ),
       ),
     );
   }

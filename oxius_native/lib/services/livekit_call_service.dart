@@ -35,6 +35,23 @@ class LiveKitCallService {
   static final StreamController<String> _errorController =
       StreamController<String>.broadcast();
 
+  /// True while the SDK is re-establishing a dropped transport. The call is
+  /// not over and must not be torn down, but the audio has stopped — and a
+  /// call screen that keeps counting a duration through silence is lying to
+  /// the user about what is happening.
+  static final StreamController<bool> _reconnectingController =
+      StreamController<bool>.broadcast();
+  static Stream<bool> get reconnectingStream => _reconnectingController.stream;
+
+  static bool _isReconnecting = false;
+  static bool get isReconnecting => _isReconnecting;
+
+  static void _setReconnecting(bool value) {
+    if (_isReconnecting == value) return;
+    _isReconnecting = value;
+    _reconnectingController.add(value);
+  }
+
   /// The call screen keys its UI off integer uids (an Agora concept). LiveKit
   /// identifies participants by string identity, so each remote identity is
   /// given a stable synthetic uid for the duration of the process.
@@ -176,6 +193,7 @@ class LiveKitCallService {
       })
       ..on<lk.RoomDisconnectedEvent>((e) {
         _log('disconnected: ${e.reason}');
+        _setReconnecting(false);
         // Only a terminal disconnect is worth reporting. LiveKit reconnects
         // on its own for transient drops, and shouting about those would make
         // the call screen tear down a call that is about to recover.
@@ -185,8 +203,14 @@ class LiveKitCallService {
           _errorController.add('Call ended');
         }
       })
-      ..on<lk.RoomReconnectingEvent>((_) => _log('reconnecting…'))
-      ..on<lk.RoomReconnectedEvent>((_) => _log('reconnected'));
+      ..on<lk.RoomReconnectingEvent>((_) {
+        _log('reconnecting…');
+        _setReconnecting(true);
+      })
+      ..on<lk.RoomReconnectedEvent>((_) {
+        _log('reconnected');
+        _setReconnecting(false);
+      });
   }
 
   /// Full reconnect. LiveKit already retries internally, so this is the call
@@ -203,6 +227,7 @@ class LiveKitCallService {
     final room = _room;
     _room = null;
     _joinedRoomName = null;
+    _setReconnecting(false);
     try {
       _listener?.dispose();
     } catch (_) {}
