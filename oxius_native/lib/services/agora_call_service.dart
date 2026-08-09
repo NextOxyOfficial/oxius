@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'call_foreground_service.dart';
 import 'livekit_call_service.dart';
 import 'package:flutter/foundation.dart';
 
@@ -89,8 +90,15 @@ class AgoraCallService {
 
   static bool get isInCall => _isInCall;
 
+  /// True only for a call this process is actually running. Restored state
+  /// (see [restorePersistedCallState]) rebuilds the ongoing-call bar from
+  /// disk after the app was killed, and that call's media is long gone — it
+  /// must not raise a foreground service for a call nobody is on.
+  static bool _callLiveInProcess = false;
+
   static void setInCall(bool value) {
     _isInCall = value;
+    _callLiveInProcess = value;
     if (!value) {
       _activeCallInfo = null;
     }
@@ -271,6 +279,7 @@ class AgoraCallService {
     } finally {
       _activeCallInfo = null;
       _isInCall = false;
+      _callLiveInProcess = false;
       unawaited(clearPersistedCallState());
       _emitCallState();
     }
@@ -531,6 +540,13 @@ class AgoraCallService {
   }
 
   static void _emitCallState() {
+    // Every path that changes call state ends up here, which makes it the one
+    // place that can keep the Android foreground service honest — without it
+    // the microphone is cut the moment the app leaves the screen.
+    unawaited(CallForegroundService.sync(
+      inCall: _isInCall && _callLiveInProcess,
+      info: _activeCallInfo,
+    ));
     try {
       _callStateController.add(_isInCall);
     } catch (_) {

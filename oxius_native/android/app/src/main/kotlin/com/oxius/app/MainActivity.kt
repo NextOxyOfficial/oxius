@@ -17,6 +17,7 @@ import java.io.File
 
 class MainActivity : FlutterActivity() {
 	private val mediaChannel = "com.oxius.app/media_saver"
+	private val callServiceChannel = "com.oxius.app/call_service"
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -71,6 +72,30 @@ class MainActivity : FlutterActivity() {
 						} catch (e: Exception) {
 							result.error("open_failed", e.message, null)
 						}
+					}
+					else -> result.notImplemented()
+				}
+			}
+
+		MethodChannel(flutterEngine.dartExecutor.binaryMessenger, callServiceChannel)
+			.setMethodCallHandler { call, result ->
+				when (call.method) {
+					"start" -> {
+						CallForegroundService.start(
+							applicationContext,
+							call.argument<String>("title") ?: "AdsyClub",
+							call.argument<String>("text") ?: "কল চলছে",
+							call.argument<Boolean>("video") ?: false,
+							// Dart sends an int, which arrives as Integer below
+							// 2^31 and Long above it — read it as a Number so
+							// both shapes work.
+							call.argument<Number>("connectedAt")?.toLong() ?: 0L
+						)
+						result.success(true)
+					}
+					"stop" -> {
+						CallForegroundService.stop(applicationContext)
+						result.success(true)
 					}
 					else -> result.notImplemented()
 				}

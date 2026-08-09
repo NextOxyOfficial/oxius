@@ -200,6 +200,16 @@
             android:foregroundServiceType="location"
             tools:node="merge" />
 
+        <!-- Keeps a call's microphone (and, for a video call, camera) alive
+             while the user is in another app. The types are declared here but
+             chosen at runtime in CallForegroundService, because Android 14
+             rejects a foreground service that claims a type whose permission
+             the user has not granted. -->
+        <service
+            android:name=".CallForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="microphone|camera" />
+
         <!-- Facebook Login configuration. The actual values live in
              res/values/strings.xml (facebook_app_id / facebook_client_token /
              fb_login_protocol_scheme) and must be filled with your Facebook
