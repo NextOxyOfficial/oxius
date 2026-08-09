@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../utils/app_fonts.dart';
 
 enum RideshareTab { passenger, driver, vehicles, history }
@@ -117,6 +120,8 @@ class RideshareBottomNav extends StatelessWidget {
 
   void _handleTap(BuildContext context, RideshareTab tab) {
     if (tab == activeTab) return;
+
+    unawaited(HapticFeedback.selectionClick());
 
     // If a custom handler is provided (used in RideshareScreen), call it
     if (onTabChange != null) {

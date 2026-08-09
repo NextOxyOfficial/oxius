@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// THE one confirm/alert dialog for the whole app — matches the AdsySheet /
 /// AdsyConnect design language: white rounded card, ink title, slate body, a
@@ -208,7 +211,13 @@ class _DialogButton extends StatelessWidget {
       color: background,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: onTap,
+        // Confirming from this dialog is usually the irreversible half of a
+        // decision — deleting, blocking, cancelling an order. A short pulse
+        // marks the moment it actually happened.
+        onTap: () {
+          unawaited(HapticFeedback.selectionClick());
+          onTap();
+        },
         borderRadius: BorderRadius.circular(12),
         child: Container(
           height: 46,

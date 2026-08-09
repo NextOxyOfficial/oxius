@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 
 /// Toast type → drives the accent colour and leading icon.
@@ -37,6 +38,24 @@ class AdsyToast {
     // Root overlay so the toast floats above dialogs/sheets too.
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
+
+    // A toast is often the only sign that something happened, and it appears
+    // at the top of the screen — away from the button the user was looking
+    // at. A tap felt in the hand carries "that failed" or "that worked" even
+    // when the message itself is missed. Only the two outcomes that mean
+    // something buzz; info and warning stay silent, because a phone that
+    // vibrates at everything is a phone people learn to ignore.
+    switch (type) {
+      case AdsyToastType.error:
+        unawaited(HapticFeedback.mediumImpact());
+        break;
+      case AdsyToastType.success:
+        unawaited(HapticFeedback.lightImpact());
+        break;
+      case AdsyToastType.info:
+      case AdsyToastType.warning:
+        break;
+    }
 
     dismiss();
     final entry = OverlayEntry(

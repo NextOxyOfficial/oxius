@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
 import '../../services/auth_service.dart';
 import '../login_prompt_dialog.dart';
@@ -186,7 +189,12 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
 
     return Expanded(
       child: GestureDetector(
-        onTap: () => onTap(index),
+        onTap: () {
+          // A tick on tab change: the destination is what confirms the tap,
+          // and that arrives a frame later.
+          unawaited(HapticFeedback.selectionClick());
+          onTap(index);
+        },
         behavior: HitTestBehavior.opaque,
         child: Column(
           children: [
