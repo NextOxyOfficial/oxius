@@ -260,6 +260,15 @@ def _send_call_data_message(*, target_user, payload):
                 if str(fcm_token.token or '').startswith('voip:'):
                     continue
 
+                # This device's VoIP push landed, so CallKit is already
+                # showing the full-screen incoming call. Sending the alert
+                # too stacks a second banner — with its own accept/decline
+                # buttons — over the real call UI. Devices whose VoIP push
+                # failed, or that have no VoIP token at all, still fall
+                # through to the alert below; it is their only ring.
+                if fcm_token.pk in voip_result.get('voip_delivered_ids', ()):
+                    continue
+
                 # Bug fix: enforce ALL payload values are strings.
                 str_payload = {k: str(v) if v is not None else '' for k, v in payload.items()}
 
@@ -562,7 +571,12 @@ def _build_callkit_voip_payload(payload):
 
 def _send_voip_call_pushes(*, target_user, payload):
     if payload.get('type') != 'incoming_call':
-        return {'voip_sent_to': 0, 'voip_total_tokens': 0, 'voip_error': None}
+        return {
+            'voip_sent_to': 0,
+            'voip_total_tokens': 0,
+            'voip_error': None,
+            'voip_delivered_ids': set(),
+        }
 
     from base.models import FCMToken
     from .apns_voip import send_voip_push
@@ -575,6 +589,9 @@ def _send_voip_call_pushes(*, target_user, payload):
     total_tokens = tokens.count()
     success_count = 0
     last_error = None
+    # Which rows CallKit already owns. The FCM pass reads this so it does not
+    # put a second, redundant alert on the same screen.
+    delivered_ids = set()
     callkit_payload = _build_callkit_voip_payload(payload)
     collapse_id = payload.get('channel_name') or payload.get('call_id')
 
@@ -588,6 +605,7 @@ def _send_voip_call_pushes(*, target_user, payload):
             )
             if result.get('sent'):
                 success_count += 1
+                delivered_ids.add(token.pk)
             elif result.get('error'):
                 last_error = result.get('error')
         except Exception as exc:
@@ -598,6 +616,7 @@ def _send_voip_call_pushes(*, target_user, payload):
         'voip_sent_to': success_count,
         'voip_total_tokens': total_tokens,
         'voip_error': last_error,
+        'voip_delivered_ids': delivered_ids,
     }
 
 
