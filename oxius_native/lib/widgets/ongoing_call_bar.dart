@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/agora_call_service.dart';
-import '../services/fcm_service.dart';
-import '../screens/call_screen.dart';
+import '../services/call_navigation.dart';
 
 class OngoingCallBar extends StatefulWidget {
   const OngoingCallBar({super.key});
@@ -88,29 +87,7 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
     return '${two(minutes)}:${two(seconds)}';
   }
 
-  void _returnToCall() {
-    final info = AgoraCallService.activeCallInfo;
-    if (info == null) return;
-
-    // Use the global navigator key to ensure navigation works from the app builder context
-    final navigator = FCMService.navigatorKey.currentState;
-    if (navigator == null) return;
-
-    navigator.push(
-      MaterialPageRoute(
-        builder: (_) => CallScreen(
-          channelName: info['channelName'] ?? '',
-          calleeId: info['peerId'] ?? '',
-          calleeName: info['peerName'] ?? 'Unknown',
-          calleeAvatar: info['peerAvatar'],
-          callId: info['callId']?.toString(),
-          isIncoming: info['isIncoming'] ?? false,
-          callType: info['callType'] ?? 'video',
-          isReturning: true,
-        ),
-      ),
-    );
-  }
+  void _returnToCall() => CallNavigation.openActiveCall();
 
   @override
   void dispose() {

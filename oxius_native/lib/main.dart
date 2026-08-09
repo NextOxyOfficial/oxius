@@ -51,6 +51,7 @@ import 'services/deep_link_service.dart';
 import 'services/adsyconnect_realtime_service.dart';
 import 'services/adsyconnect_service.dart';
 import 'services/agora_call_service.dart';
+import 'services/call_bubble_service.dart';
 import 'services/app_update_service.dart';
 import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
@@ -134,6 +135,9 @@ void main() async {
   // accounts suspended while the app was backgrounded (validateToken locks the
   // app if the refreshed profile is suspended).
   WidgetsBinding.instance.addObserver(_SuspensionLifecycleObserver());
+  // Puts the floating call bubble on screen whenever a call is running and the
+  // app is not — and takes it away again on return.
+  CallBubbleService.instance.start();
   Telemetry.event('app.start');
 
   // Bootstrap everything else in the background, with timeouts.

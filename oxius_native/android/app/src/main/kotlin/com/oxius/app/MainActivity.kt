@@ -19,8 +19,20 @@ class MainActivity : FlutterActivity() {
 	private val mediaChannel = "com.oxius.app/media_saver"
 	private val callServiceChannel = "com.oxius.app/call_service"
 
+	/**
+	 * Set when the floating call bubble is what brought the app back. Dart
+	 * reads it on resume rather than being pushed to, because a tap on the
+	 * bubble can arrive before the Flutter engine is up — a flag survives that
+	 * wait, a method call would not.
+	 */
+	private var pendingCallOpen = false
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+
+		if (intent?.getBooleanExtra(CallBubbleOverlay.EXTRA_OPEN_CALL, false) == true) {
+			pendingCallOpen = true
+		}
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
 			setShowWhenLocked(true)
@@ -97,9 +109,46 @@ class MainActivity : FlutterActivity() {
 						CallForegroundService.stop(applicationContext)
 						result.success(true)
 					}
+					"bubbleShow" -> {
+						CallBubbleOverlay.show(
+							applicationContext,
+							call.argument<Boolean>("video") ?: false,
+							call.argument<Number>("connectedAt")?.toLong() ?: 0L,
+							call.argument<String>("status") ?: ""
+						)
+						result.success(CallBubbleOverlay.isShowing)
+					}
+					"bubbleHide" -> {
+						CallBubbleOverlay.hide()
+						result.success(true)
+					}
+					"canDrawOverlays" ->
+						result.success(CallBubbleOverlay.canDrawOverlays(applicationContext))
+					"requestOverlayPermission" -> {
+						CallBubbleOverlay.requestOverlayPermission(this)
+						result.success(true)
+					}
+					"consumePendingCallOpen" -> {
+						result.success(pendingCallOpen)
+						pendingCallOpen = false
+					}
 					else -> result.notImplemented()
 				}
 			}
+	}
+
+	override fun onNewIntent(intent: Intent) {
+		super.onNewIntent(intent)
+		if (intent.getBooleanExtra(CallBubbleOverlay.EXTRA_OPEN_CALL, false)) {
+			pendingCallOpen = true
+		}
+	}
+
+	override fun onDestroy() {
+		// The bubble is a window this activity's process owns; leaving it up
+		// after the app is gone would strand a control with nothing behind it.
+		CallBubbleOverlay.hide()
+		super.onDestroy()
 	}
 
 	/**

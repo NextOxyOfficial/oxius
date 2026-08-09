@@ -14,6 +14,7 @@ import 'dart:io' show Platform;
 import 'package:livekit_client/livekit_client.dart' as lk;
 
 import '../services/agora_call_service.dart';
+import '../services/call_bubble_service.dart';
 import '../services/livekit_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
@@ -1186,6 +1187,11 @@ class _CallScreenState extends State<CallScreen>
     if (_isMinimizing) return;
     _isMinimizing = true;
     AgoraCallService.setCallScreenVisible(false);
+
+    // Minimising is the moment the floating bubble becomes useful, so it is
+    // also the only honest moment to ask for the permission it needs. Asked
+    // at most once, and the call carries on either way.
+    unawaited(CallBubbleService.instance.ensurePermission(context));
 
     // Always minimize back to AdsyConnect instead of revealing unrelated
     // routes that may be sitting under the call screen.
