@@ -662,41 +662,53 @@ class _SaleListScreenState extends State<SaleListScreen> {
           : AdsyRefreshIndicator(
               color: const Color(0xFF10B981),
               onRefresh: _handleRefresh,
-              child: ListView(
+              // A CustomScrollView so the listings themselves can be a real
+              // sliver. As a shrink-wrapped builder inside a ListView they
+              // were all rebuilt on every layout pass, and this feed grows by
+              // a page each time the user scrolls to the bottom.
+              child: CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  // Location Header
-                  if (_selectedDivision != null ||
-                      _selectedDistrict != null ||
-                      _selectedArea != null)
-                    _buildLocationHeader(),
+                slivers: [
+                  SliverList(
+                    delegate: SliverChildListDelegate([
+                      // Location Header
+                      if (_selectedDivision != null ||
+                          _selectedDistrict != null ||
+                          _selectedArea != null)
+                        _buildLocationHeader(),
 
-                  // Results Count & Sort
-                  _buildResultsBar(),
+                      // Results Count & Sort
+                      _buildResultsBar(),
 
-                  // Applied Filters
-                  if (_hasActiveFilters()) _buildAppliedFilters(),
+                      // Applied Filters
+                      if (_hasActiveFilters()) _buildAppliedFilters(),
 
-                  // Browse by category (horizontal scroller)
-                  _buildCategoryScroller(),
+                      // Browse by category (horizontal scroller)
+                      _buildCategoryScroller(),
+                    ]),
+                  ),
 
-                  // Posts Grid
+                  // Posts
                   if (_posts.isEmpty)
-                    _buildEmptyState()
+                    SliverToBoxAdapter(child: _buildEmptyState())
                   else
-                    _buildPostsGridSection(),
+                    ..._buildPostsSlivers(),
 
-                  // Trust / feature highlights
-                  _buildTrustStrip(),
+                  SliverList(
+                    delegate: SliverChildListDelegate([
+                      // Trust / feature highlights
+                      _buildTrustStrip(),
 
-                  // Recent Listings
-                  _buildRecentListings(),
+                      // Recent Listings
+                      _buildRecentListings(),
 
-                  // Safe-marketplace guide
-                  _buildSafetyGuide(),
+                      // Safe-marketplace guide
+                      _buildSafetyGuide(),
 
-                  const SizedBox(height: 80),
+                      const SizedBox(height: 80),
+                    ]),
+                  ),
                 ],
               ),
             ),
@@ -834,7 +846,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             ),
                           ),
                           TextSpan(
-                            text: ' ${_t('sale_ads_count_suffix', 'টি বিজ্ঞাপন')}',
+                            text:
+                                ' ${_t('sale_ads_count_suffix', 'টি বিজ্ঞাপন')}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade700,
@@ -854,7 +867,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1025,181 +1039,201 @@ class _SaleListScreenState extends State<SaleListScreen> {
     );
   }
 
-  Widget _buildPostsGridSection() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(2, 10, 2, 8),
-            child: Row(
-              children: [
-                Container(
-                  height: 26,
-                  width: 26,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.shopping_bag_outlined,
-                      size: 15, color: Colors.white),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _selectedCategoryId != null
-                        ? '${_getCategoryName(_selectedCategoryId)}'
-                        : _t('sale_all_ads', 'সব বিজ্ঞাপন'),
-                    style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1F2937),
-                        letterSpacing: -0.2),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${_posts.length} ${_t('sale_count_suffix', 'টি')}',
-                    style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _isListView
-              ? ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  // Every 6th row is a compact sponsored strip — the same
-                  // row style used under post media, so it sits in the list
-                  // instead of interrupting it.
-                  itemCount: _posts.length + _posts.length ~/ _kAdEvery,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 1, thickness: 1),
-                  itemBuilder: (context, index) {
-                    if ((index + 1) % (_kAdEvery + 1) == 0) {
-                      return const CompactHouseAdStrip(placement: 'sale_list');
-                    }
-                    final i = index - (index ~/ (_kAdEvery + 1));
-                    if (i >= _posts.length) return const SizedBox.shrink();
-                    return _buildListItem(_posts[i]);
-                  },
-                )
-              : GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount:
-                        MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                    childAspectRatio: 0.68,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: _posts.length,
-                  itemBuilder: (context, index) =>
-                      _buildPostCard(_posts[index]),
-                ),
-          // Grid mode can't host a full-width row inside the grid itself, so
-          // the sponsored strip sits directly under it — the list mode gets
-          // one every 6 rows instead.
-          if (!_isListView && _posts.isNotEmpty)
-            const CompactHouseAdStrip(placement: 'sale_list'),
-          if (_isLoadingMore)
-            _isListView
-                ? const SaleListSkeletonLoader(itemCount: 4)
-                : const SaleSkeletonLoader(itemCount: 4),
-          // See More Button
-          if (!_isLoadingMore && _posts.length < _totalCount)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Center(
-                child: GestureDetector(
-                  onTap: _loadMore,
-                  child: Container(
-                    height: 34,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _t('sale_see_more', 'আরও দেখুন'),
-                          style: const TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF059669)),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down_rounded,
-                            size: 16, color: Color(0xFF059669)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          // All Posts Loaded Message
-          if (!_isLoadingMore &&
-              _posts.length >= _totalCount &&
-              _posts.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Center(
-                child: Column(
+  /// The listings, as slivers.
+  ///
+  /// The section keeps its 4px horizontal inset, its header and its footer;
+  /// only the feed in the middle stops being a shrink-wrapped builder. That
+  /// matters here because the list grows by a page every time the user
+  /// reaches the bottom, and shrinkWrap rebuilds all of it each layout.
+  List<Widget> _buildPostsSlivers() {
+    const sectionPadding = EdgeInsets.symmetric(horizontal: 4);
+    return [
+      SliverPadding(
+        padding: sectionPadding,
+        sliver: SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(2, 10, 2, 8),
+                child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      height: 26,
+                      width: 26,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.check_circle,
-                          color: Color(0xFF10B981), size: 32),
+                      child: const Icon(Icons.shopping_bag_outlined,
+                          size: 15, color: Colors.white),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _t('sale_all_ads_seen', 'সব বিজ্ঞাপন দেখা হয়ে গেছে!'),
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _selectedCategoryId != null
+                            ? '${_getCategoryName(_selectedCategoryId)}'
+                            : _t('sale_all_ads', 'সব বিজ্ঞাপন'),
+                        style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1F2937),
+                            letterSpacing: -0.2),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${_t('sale_total', 'মোট')} $_totalCount ${_t('sale_all_shown_suffix', 'টি বিজ্ঞাপনের সবগুলোই দেখানো হয়েছে')}',
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${_posts.length} ${_t('sale_count_suffix', 'টি')}',
+                        style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF6B7280)),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
-    );
+      SliverPadding(
+        padding: sectionPadding,
+        sliver: _isListView
+            ? SliverList.separated(
+                // Every 6th row is a compact sponsored strip — the same row
+                // style used under post media, so it sits in the list instead
+                // of interrupting it.
+                itemCount: _posts.length + _posts.length ~/ _kAdEvery,
+                separatorBuilder: (context, index) =>
+                    const Divider(height: 1, thickness: 1),
+                itemBuilder: (context, index) {
+                  if ((index + 1) % (_kAdEvery + 1) == 0) {
+                    return const CompactHouseAdStrip(placement: 'sale_list');
+                  }
+                  final i = index - (index ~/ (_kAdEvery + 1));
+                  if (i >= _posts.length) return const SizedBox.shrink();
+                  return _buildListItem(_posts[i]);
+                },
+              )
+            : SliverGrid.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount:
+                      MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                  childAspectRatio: 0.68,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: _posts.length,
+                itemBuilder: (context, index) => _buildPostCard(_posts[index]),
+              ),
+      ),
+      SliverPadding(
+        padding: sectionPadding,
+        sliver: SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Grid mode can't host a full-width row inside the grid itself, so
+              // the sponsored strip sits directly under it — the list mode gets
+              // one every 6 rows instead.
+              if (!_isListView && _posts.isNotEmpty)
+                const CompactHouseAdStrip(placement: 'sale_list'),
+              if (_isLoadingMore)
+                _isListView
+                    ? const SaleListSkeletonLoader(itemCount: 4)
+                    : const SaleSkeletonLoader(itemCount: 4),
+              // See More Button
+              if (!_isLoadingMore && _posts.length < _totalCount)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: _loadMore,
+                      child: Container(
+                        height: 34,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _t('sale_see_more', 'আরও দেখুন'),
+                              style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF059669)),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.keyboard_arrow_down_rounded,
+                                size: 16, color: Color(0xFF059669)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // All Posts Loaded Message
+              if (!_isLoadingMore &&
+                  _posts.length >= _totalCount &&
+                  _posts.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.check_circle,
+                              color: Color(0xFF10B981), size: 32),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _t('sale_all_ads_seen',
+                              'সব বিজ্ঞাপন দেখা হয়ে গেছে!'),
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1F2937)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_t('sale_total', 'মোট')} $_totalCount ${_t('sale_all_shown_suffix', 'টি বিজ্ঞাপনের সবগুলোই দেখানো হয়েছে')}',
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    ];
   }
 
   Widget _buildListItem(SalePost post) {
@@ -1260,7 +1294,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   color: Colors.grey[400], size: 24),
                               const SizedBox(height: 4),
                               Text(
-                                _t('sale_no_photo_uploaded', 'ছবি দেওয়া\nহয়নি'),
+                                _t('sale_no_photo_uploaded',
+                                    'ছবি দেওয়া\nহয়নি'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontSize: 9,
@@ -1321,8 +1356,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 5, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFF10B981).withValues(alpha: 0.1),
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
                                       color: const Color(0xFF10B981)
@@ -1845,7 +1880,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.95),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.95),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -1863,8 +1899,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           ),
                         ),
                         Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8, 7, 8, 8),
+                          padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -2170,8 +2205,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
       ],
       [
         _t('sale_tip_payment_care', 'পেমেন্টে সাবধান থাকুন'),
-        _t('sale_tip_payment_care_sub',
-            'জিনিস বুঝে পাওয়ার পরেই পুরো টাকা দিন')
+        _t('sale_tip_payment_care_sub', 'জিনিস বুঝে পাওয়ার পরেই পুরো টাকা দিন')
       ],
     ];
     const buyingIcons = [
@@ -2290,8 +2324,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
   Widget _trustDivider() =>
       Container(width: 1, height: 34, color: const Color(0xFFF1F5F9));
 
-  Widget _trustCell(
-      IconData icon, String title, String sub, Color color) {
+  Widget _trustCell(IconData icon, String title, String sub, Color color) {
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -2482,8 +2515,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           items: [
                             DropdownMenuItem<String>(
                                 value: null,
-                                child: Text(
-                                    _t('sale_all_divisions', 'সব বিভাগ'))),
+                                child:
+                                    Text(_t('sale_all_divisions', 'সব বিভাগ'))),
                             ..._regions.map((region) => DropdownMenuItem(
                                   value: region.nameEng,
                                   child: Text(region.nameEng),
@@ -2564,8 +2597,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           items: [
                             DropdownMenuItem<String>(
                                 value: null,
-                                child:
-                                    Text(_t('sale_all_areas', 'সব এলাকা'))),
+                                child: Text(_t('sale_all_areas', 'সব এলাকা'))),
                             ..._upazilas.map((upazila) => DropdownMenuItem(
                                   value: upazila.nameEng,
                                   child: Text(upazila.nameEng),
@@ -2610,8 +2642,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   leading: const Icon(Icons.apps,
                                       color: Color(0xFF10B981), size: 20),
                                   title: Text(
-                                      _t('sale_all_categories',
-                                          'সব ক্যাটাগরি'),
+                                      _t('sale_all_categories', 'সব ক্যাটাগরি'),
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14)),
@@ -2620,8 +2651,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                           color: Color(0xFF10B981), size: 20)
                                       : null,
                                   selected: _selectedCategoryId == null,
-                                  selectedTileColor:
-                                      const Color(0xFF10B981).withValues(alpha: 0.1),
+                                  selectedTileColor: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.1),
                                   onTap: () {
                                     setModalState(() {
                                       setState(() {
@@ -2654,7 +2685,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                                 decoration: BoxDecoration(
                                                   color: isSelected
                                                       ? const Color(0xFF10B981)
-                                                          .withValues(alpha: 0.1)
+                                                          .withValues(
+                                                              alpha: 0.1)
                                                       : Colors.grey.shade100,
                                                   borderRadius:
                                                       BorderRadius.circular(6),
@@ -2793,7 +2825,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                                 selected: isSubSelected,
                                                 selectedTileColor:
                                                     const Color(0xFF10B981)
-                                                        .withValues(alpha: 0.15),
+                                                        .withValues(
+                                                            alpha: 0.15),
                                                 onTap: () {
                                                   setModalState(() {
                                                     setState(() {
