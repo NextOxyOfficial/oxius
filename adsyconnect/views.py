@@ -318,7 +318,29 @@ def _send_call_data_message(*, target_user, payload):
                 call_type = str_payload.get('call_type', 'audio')
                 call_type_label = 'Video Call' if call_type == 'video' else 'Voice Call'
 
-                if is_ios:
+                # A ring banner belongs to a ring and to nothing else.
+                #
+                # call_status rides this same function, and it carries
+                # caller_name on purpose (the missed-call entry needs it).
+                # With the alert attached unconditionally, the 'accepted'
+                # status the server sends BACK to the caller the moment
+                # their callee picks up arrived on the caller's own phone
+                # as "<their own name> is calling", ringtone and all.
+                # Status is a state sync: the app drives the call screen
+                # and dismisses CallKit off message.data. Ship it silently.
+                status_value = str_payload.get('status', '').strip().lower()
+
+                # The exception. A ring the callee never reached is worth a
+                # notification — a quiet one, titled for what it actually
+                # is. Never to the person who placed the call: they know.
+                is_missed_alert = (
+                    msg_type == 'call_status'
+                    and status_value in ('missed', 'cancelled')
+                    and str(str_payload.get('caller_id') or '')
+                    != str(getattr(target_user, 'id', ''))
+                )
+
+                if is_ios and msg_type == 'incoming_call':
                     message = messaging.Message(
                         data=str_payload,
                         notification=messaging.Notification(
@@ -366,6 +388,41 @@ def _send_call_data_message(*, target_user, payload):
                                     'interruption-level': 'time-sensitive',
                                     'relevance-score': 1.0,
                                 },
+                            ),
+                        ),
+                        token=fcm_token.token,
+                    )
+                elif is_ios and is_missed_alert:
+                    message = messaging.Message(
+                        data=str_payload,
+                        notification=messaging.Notification(
+                            title='Missed call',
+                            body=f'{caller_name} tried to reach you',
+                        ),
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            ttl=datetime.timedelta(seconds=60),
+                            collapse_key=collapse_key,
+                        ),
+                        apns=messaging.APNSConfig(
+                            headers={
+                                # Still an alert, and still priority 10: this
+                                # is what wakes the app to tear down a CallKit
+                                # screen that is otherwise left ringing at a
+                                # caller who already hung up.
+                                'apns-push-type': 'alert',
+                                'apns-priority': '10',
+                                'apns-collapse-id': collapse_key or '',
+                            },
+                            payload=messaging.APNSPayload(
+                                aps=messaging.Aps(
+                                    # No sound and no time-sensitive: the ring
+                                    # already happened. This is the record of
+                                    # it, not a second attempt at it.
+                                    content_available=True,
+                                    thread_id='adsyclub_call',
+                                ),
+                                custom_data={'interruption-level': 'active'},
                             ),
                         ),
                         token=fcm_token.token,
