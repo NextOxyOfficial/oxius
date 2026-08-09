@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/house_ads_service.dart';
 import 'house_ad_card.dart';
 import '../../config/app_config.dart';
+import '../app_network_image.dart';
 
 /// The one-row sponsored strip: thumbnail, headline, "Sponsored", action.
 ///
@@ -92,11 +93,9 @@ class HouseAdStripView extends StatelessWidget {
                         width: 56,
                         height: 56,
                         child: thumb.isNotEmpty
-                            ? Image.network(
+                            ? AppNetworkImage(
                                 AppConfig.getAbsoluteUrl(thumb),
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _thumbFallback(ad),
+                                errorWidget: _thumbFallback(ad),
                               )
                             : _thumbFallback(ad),
                       ),
@@ -204,8 +203,8 @@ class HouseAdStripView extends StatelessWidget {
       return Container(
         color: const Color(0xFF0F172A),
         alignment: Alignment.center,
-        child: const Icon(Icons.play_arrow_rounded,
-            size: 26, color: Colors.white),
+        child:
+            const Icon(Icons.play_arrow_rounded, size: 26, color: Colors.white),
       );
     }
     return Container(

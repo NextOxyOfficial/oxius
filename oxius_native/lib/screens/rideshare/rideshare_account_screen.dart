@@ -13,6 +13,7 @@ import 'rideshare_history_screen.dart';
 import 'rideshare_mode.dart';
 import 'rideshare_page_header.dart';
 import 'rideshare_vehicles_screen.dart';
+import '../../widgets/app_network_image.dart';
 
 /// The rideshare account page — and, since the sidebar drawer is gone, the
 /// single place every rideshare destination now lives.
@@ -196,7 +197,6 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         ),
       ]),
       const SizedBox(height: 18),
-
       _SectionLabel('রাইড'),
       _MenuRow(
         icon: Icons.directions_car_rounded,
@@ -221,7 +221,6 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         // method" means here.
         onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
       ),
-
       const SizedBox(height: 14),
       _SectionLabel('অ্যাকাউন্ট'),
       _MenuRow(
@@ -242,13 +241,10 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         label: 'রেফার করে ডিসকাউন্ট নিন',
         onTap: () => Navigator.pushNamed(context, '/refer-a-friend'),
       ),
-
       const SizedBox(height: 14),
       ..._buildSupportSection(),
-
       const SizedBox(height: 18),
       _buildDriverCallToAction(),
-
       const SizedBox(height: 18),
       _MenuRow(
         icon: Icons.logout_rounded,
@@ -296,13 +292,13 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         ),
       ]),
       const SizedBox(height: 18),
-
       _SectionLabel('ড্রাইভিং'),
       _MenuRow(
         icon: Icons.two_wheeler_rounded,
         label: 'আমার গাড়ি',
-        trailingText:
-            driver.vehicles.isEmpty ? 'যোগ করুন' : '${driver.vehicles.length}টি',
+        trailingText: driver.vehicles.isEmpty
+            ? 'যোগ করুন'
+            : '${driver.vehicles.length}টি',
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const RideshareVehiclesScreen()),
@@ -322,9 +318,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         label: 'আয় ও পেমেন্ট',
         onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
       ),
-      if (driver.outstandingCashDueCount > 0)
-        _buildCashDueNotice(driver),
-
+      if (driver.outstandingCashDueCount > 0) _buildCashDueNotice(driver),
       const SizedBox(height: 14),
       _SectionLabel('অ্যাকাউন্ট'),
       _MenuRow(
@@ -340,10 +334,8 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
           MaterialPageRoute(builder: (_) => const SettingsScreen()),
         ),
       ),
-
       const SizedBox(height: 14),
       ..._buildSupportSection(),
-
       const SizedBox(height: 18),
       _MenuRow(
         icon: Icons.logout_rounded,
@@ -374,8 +366,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       }
       children.add(items[i]);
     }
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.center, children: children);
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: children);
   }
 
   Widget _statItem(Widget icon, String value, String label) {
@@ -424,8 +415,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
           height: 34,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color:
-                isDriver ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
+            color: isDriver ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -575,10 +565,9 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       ),
       child: ClipOval(
         child: url.isNotEmpty
-            ? Image.network(
+            ? AppNetworkImage(
                 url,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const _AvatarFallback(),
+                errorWidget: const _AvatarFallback(),
               )
             : const _AvatarFallback(),
       ),
@@ -811,11 +800,10 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text('লগ আউট করবেন?',
-            style: GoogleFonts.inter(
-                fontSize: 16, fontWeight: FontWeight.w700)),
+            style:
+                GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text('আবার ব্যবহার করতে লগ ইন করতে হবে।',
             style: GoogleFonts.inter(fontSize: 13.5)),
         actions: [
@@ -881,8 +869,7 @@ class _MenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        danger ? const Color(0xFFEF4444) : const Color(0xFF0F172A);
+    final color = danger ? const Color(0xFFEF4444) : const Color(0xFF0F172A);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),

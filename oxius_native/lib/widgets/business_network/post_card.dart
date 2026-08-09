@@ -37,6 +37,7 @@ import 'post_comment_input.dart';
 import '../../screens/business_network/post_media_viewer_screen.dart';
 import '../../screens/business_network/shorts_player_screen.dart';
 import '../../screens/business_network/shorts_viewer.dart';
+import '../app_network_image.dart';
 
 class PostCard extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -71,8 +72,8 @@ class PostCard extends StatefulWidget {
     this.onSaveChanged,
     this.onReshared,
     this.showInlineAd = false,
-      this.isSponsored = false,
-      this.sponsoredAd,
+    this.isSponsored = false,
+    this.sponsoredAd,
   });
 
   @override
@@ -339,9 +340,8 @@ class _PostCardState extends State<PostCard> {
           .map((f) => f.image!)
           .toList();
     } else {
-      final likes = [..._post.postLikes]
-        ..sort((a, b) =>
-            a.isFollowing == b.isFollowing ? 0 : (a.isFollowing ? -1 : 1));
+      final likes = [..._post.postLikes]..sort((a, b) =>
+          a.isFollowing == b.isFollowing ? 0 : (a.isFollowing ? -1 : 1));
       faceUrls = likes
           .where((l) => (l.userImage ?? '').isNotEmpty)
           .map((l) => l.userImage!)
@@ -387,56 +387,53 @@ class _PostCardState extends State<PostCard> {
         likesCount: _post.likesCount,
       ),
       child: Padding(
-      padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
-      child: Row(
-        children: [
-          SizedBox(
-            height: size,
-            width: size + (shown.length - 1) * overlap,
-            child: Stack(
-              children: [
-                for (int i = 0; i < shown.length; i++)
-                  Positioned(
-                    left: i * overlap,
-                    child: Container(
-                      width: size,
-                      height: size,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.6),
-                        color: const Color(0xFFE2E8F0),
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          AppConfig.getAbsoluteUrl(shown[i]),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
-                              Icons.person_rounded,
-                              size: 15,
-                              color: Color(0xFF94A3B8)),
+        padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
+        child: Row(
+          children: [
+            SizedBox(
+              height: size,
+              width: size + (shown.length - 1) * overlap,
+              child: Stack(
+                children: [
+                  for (int i = 0; i < shown.length; i++)
+                    Positioned(
+                      left: i * overlap,
+                      child: Container(
+                        width: size,
+                        height: size,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.6),
+                          color: const Color(0xFFE2E8F0),
+                        ),
+                        child: ClipOval(
+                          child: AppNetworkImage(
+                            AppConfig.getAbsoluteUrl(shown[i]),
+                            errorWidget: const Icon(Icons.person_rounded,
+                                size: 15, color: Color(0xFF94A3B8)),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              likeLabel,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                // Slightly darker so the names read clearly on white.
-                color: Color(0xFF3F4A5A),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                likeLabel,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  // Slightly darker so the names read clearly on white.
+                  color: Color(0xFF3F4A5A),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -452,8 +449,7 @@ class _PostCardState extends State<PostCard> {
             'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
         // Text-only posts share with NO thumb — the chat card then renders a
         // clean text-only preview instead of a placeholder image box.
-        imageUrl:
-            _post.shareThumbUrl.isNotEmpty ? _post.shareThumbUrl : null,
+        imageUrl: _post.shareThumbUrl.isNotEmpty ? _post.shareThumbUrl : null,
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
@@ -461,8 +457,8 @@ class _PostCardState extends State<PostCard> {
         onShared: () {
           BusinessNetworkService.trackShare(_post.sharedFrom?.id ?? _post.id);
           if (mounted) {
-            setState(() =>
-                _post = _post.copyWith(shareCount: _post.shareCount + 1));
+            setState(
+                () => _post = _post.copyWith(shareCount: _post.shareCount + 1));
           }
         },
         // Repost-to-profile composer inside the share sheet.
@@ -987,8 +983,7 @@ class _PostCardState extends State<PostCard> {
             onPressed: _handleUnhidePost,
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF2563EB),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -1078,41 +1073,41 @@ class _PostCardState extends State<PostCard> {
                             context, 'Content copied to clipboard');
                       },
                       child: Text.rich(
-                      TextSpan(
-                        children: [
-                          ...MentionParser.parseTextWithMentions(
-                            previewPostContent,
-                            context,
-                            onMentionTap: _handleMentionTap,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xFF111827),
-                              height: 1.55,
+                        TextSpan(
+                          children: [
+                            ...MentionParser.parseTextWithMentions(
+                              previewPostContent,
+                              context,
+                              onMentionTap: _handleMentionTap,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF111827),
+                                height: 1.55,
+                              ),
                             ),
-                          ),
-                          if (plainPostContent.length > 320)
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.baseline,
-                              baseline: TextBaseline.alphabetic,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() =>
-                                      _showFullContent = !_showFullContent);
-                                },
-                                child: Text(
-                                  _showFullContent
-                                      ? '  কম পড়ুন'
-                                      : '  আরো পড়ুন',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF6B7280),
-                                    height: 1.55,
+                            if (plainPostContent.length > 320)
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.baseline,
+                                baseline: TextBaseline.alphabetic,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() =>
+                                        _showFullContent = !_showFullContent);
+                                  },
+                                  child: Text(
+                                    _showFullContent
+                                        ? '  কম পড়ুন'
+                                        : '  আরো পড়ুন',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF6B7280),
+                                      height: 1.55,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -1123,7 +1118,8 @@ class _PostCardState extends State<PostCard> {
               ),
             ),
           // Embedded original when this post is a reshare/repost.
-          if (_post.sharedFrom != null) _buildResharedOriginal(_post.sharedFrom!),
+          if (_post.sharedFrom != null)
+            _buildResharedOriginal(_post.sharedFrom!),
           // Embedded news story when this post is a news reshare.
           if (_post.sharedNews != null)
             ResharedNewsCard(
@@ -1131,7 +1127,8 @@ class _PostCardState extends State<PostCard> {
               onOpen: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => NewsDetailScreen(slug: _post.sharedNews!.slug),
+                  builder: (_) =>
+                      NewsDetailScreen(slug: _post.sharedNews!.slug),
                 ),
               ),
             ),
@@ -1194,98 +1191,98 @@ class _PostCardState extends State<PostCard> {
           // it opens the sheet above.
           if (!widget.isSponsored)
             PostCommentsPreview(
-            post: _post,
-            onViewAll: _handleViewAllComments,
-            onCommentCountChanged: () {
-              setState(() {
-                _post = _post.copyWith(
-                  commentsCount:
-                      _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
-                );
-              });
-            },
-            onReplySubmit: (comment, content, mentions) async {
-              if (_isAddingComment) return;
-
-              setState(() => _isAddingComment = true);
-
-              // Don't add automatic @mention - user can type @ if they want
-              final newComment = await BusinessNetworkService.addComment(
-                postId: _post.id,
-                content: content,
-                parentCommentId: comment.id,
-                mentionedUsers: mentions,
-              );
-
-              if (newComment != null && mounted) {
-                // Just add the new comment to existing list instead of reloading
-                // This prevents losing parent comments when API returns incomplete data
-                debugPrint('=== Adding Reply to Post ===');
-                debugPrint('Current comments count: ${_post.comments.length}');
-                debugPrint('Parent comment ID: ${comment.id}');
-                debugPrint('New reply ID: ${newComment.id}');
-                debugPrint('Comments before add:');
-                for (var c in _post.comments) {
-                  debugPrint(
-                      '  - Comment ${c.id}: parentComment=${c.parentComment}');
-                }
-
+              post: _post,
+              onViewAll: _handleViewAllComments,
+              onCommentCountChanged: () {
                 setState(() {
-                  // Create a completely new immutable list
-                  final updatedComments =
-                      List<BusinessNetworkComment>.from(_post.comments)
-                        ..add(newComment);
-
                   _post = _post.copyWith(
-                    commentsCount: _post.commentsCount + 1,
-                    comments: updatedComments,
+                    commentsCount:
+                        _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
                   );
-                  _isAddingComment = false;
                 });
+              },
+              onReplySubmit: (comment, content, mentions) async {
+                if (_isAddingComment) return;
 
-                debugPrint('Comments after add:');
-                for (var c in _post.comments) {
+                setState(() => _isAddingComment = true);
+
+                // Don't add automatic @mention - user can type @ if they want
+                final newComment = await BusinessNetworkService.addComment(
+                  postId: _post.id,
+                  content: content,
+                  parentCommentId: comment.id,
+                  mentionedUsers: mentions,
+                );
+
+                if (newComment != null && mounted) {
+                  // Just add the new comment to existing list instead of reloading
+                  // This prevents losing parent comments when API returns incomplete data
+                  debugPrint('=== Adding Reply to Post ===');
                   debugPrint(
-                      '  - Comment ${c.id}: parentComment=${c.parentComment}');
-                }
-                debugPrint(
-                    'Post comments list identity: ${_post.comments.hashCode}');
-                debugPrint('Post object identity: ${_post.hashCode}');
+                      'Current comments count: ${_post.comments.length}');
+                  debugPrint('Parent comment ID: ${comment.id}');
+                  debugPrint('New reply ID: ${newComment.id}');
+                  debugPrint('Comments before add:');
+                  for (var c in _post.comments) {
+                    debugPrint(
+                        '  - Comment ${c.id}: parentComment=${c.parentComment}');
+                  }
 
-                widget.onCommentAdded?.call(newComment);
-              } else if (mounted) {
-                setState(() => _isAddingComment = false);
-              }
-            },
-          ),
+                  setState(() {
+                    // Create a completely new immutable list
+                    final updatedComments =
+                        List<BusinessNetworkComment>.from(_post.comments)
+                          ..add(newComment);
+
+                    _post = _post.copyWith(
+                      commentsCount: _post.commentsCount + 1,
+                      comments: updatedComments,
+                    );
+                    _isAddingComment = false;
+                  });
+
+                  debugPrint('Comments after add:');
+                  for (var c in _post.comments) {
+                    debugPrint(
+                        '  - Comment ${c.id}: parentComment=${c.parentComment}');
+                  }
+                  debugPrint(
+                      'Post comments list identity: ${_post.comments.hashCode}');
+                  debugPrint('Post object identity: ${_post.hashCode}');
+
+                  widget.onCommentAdded?.call(newComment);
+                } else if (mounted) {
+                  setState(() => _isAddingComment = false);
+                }
+              },
+            ),
           // Add Comment Input — promoted posts comment through the sheet.
           if (!widget.isSponsored)
             PostCommentInput(
-            onSubmit: _addComment,
-            userAvatar: AuthService.currentUser?.profilePicture,
-            postId: _post.id.toString(),
-            postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
-            postAuthorName: _post.user.name,
-            onGiftSent: () async {
-              // Small delay to allow UI to update smoothly
-              await Future.delayed(const Duration(milliseconds: 100));
+              onSubmit: _addComment,
+              userAvatar: AuthService.currentUser?.profilePicture,
+              postId: _post.id.toString(),
+              postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
+              postAuthorName: _post.user.name,
+              onGiftSent: () async {
+                // Small delay to allow UI to update smoothly
+                await Future.delayed(const Duration(milliseconds: 100));
 
-              // Reload post data to show new gift comment
-              final updatedPost =
-                  await BusinessNetworkService.getPost(_post.id);
-              if (updatedPost != null && mounted) {
-                setState(() {
-                  _post = updatedPost;
-                });
-              }
-            },
-          ),
+                // Reload post data to show new gift comment
+                final updatedPost =
+                    await BusinessNetworkService.getPost(_post.id);
+                if (updatedPost != null && mounted) {
+                  setState(() {
+                    _post = updatedPost;
+                  });
+                }
+              },
+            ),
         ],
       ),
     );
   }
 }
-
 
 /// The action button under a boosted post's media.
 ///

@@ -6,6 +6,7 @@ import '../services/translation_service.dart';
 import '../services/sale_service.dart';
 import '../services/category_icon_mapping.dart';
 import '../services/auth_service.dart';
+import 'app_network_image.dart';
 
 class SaleCategory extends StatefulWidget {
   final EdgeInsetsGeometry margin;
@@ -132,7 +133,8 @@ class _SaleCategoryState extends State<SaleCategory> {
       products = [];
     });
     try {
-      final data = await SaleService.fetchPosts(categoryId: categoryId, page: 1, limit: 8);
+      final data = await SaleService.fetchPosts(
+          categoryId: categoryId, page: 1, limit: 8);
       final results = (data['results'] ?? []) as List<dynamic>;
       setState(() {
         products = results.take(8).toList();
@@ -179,7 +181,7 @@ class _SaleCategoryState extends State<SaleCategory> {
     final iconUrl = category['icon'] as String?;
     final categoryName = category['name'] as String?;
     final localAsset = CategoryIconMapping.getSaleIconAsset(categoryName);
-    
+
     if (iconUrl != null && iconUrl.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: iconUrl,
@@ -200,15 +202,15 @@ class _SaleCategoryState extends State<SaleCategory> {
               width: 28,
               height: 28,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => 
-                CategoryIconMapping.getDefaultIcon(isSale: true, size: 28),
+              errorBuilder: (context, error, stackTrace) =>
+                  CategoryIconMapping.getDefaultIcon(isSale: true, size: 28),
             );
           }
           return CategoryIconMapping.getDefaultIcon(isSale: true, size: 28);
         },
       );
     }
-    
+
     // No network URL - try local asset first
     if (localAsset != null) {
       return Image.asset(
@@ -216,11 +218,11 @@ class _SaleCategoryState extends State<SaleCategory> {
         width: 28,
         height: 28,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => 
-          CategoryIconMapping.getDefaultIcon(isSale: true, size: 28),
+        errorBuilder: (context, error, stackTrace) =>
+            CategoryIconMapping.getDefaultIcon(isSale: true, size: 28),
       );
     }
-    
+
     return CategoryIconMapping.getDefaultIcon(isSale: true, size: 28);
   }
 
@@ -230,9 +232,8 @@ class _SaleCategoryState extends State<SaleCategory> {
     }
     try {
       final num p = price is String ? num.parse(price) : (price as num);
-      final s = p
-          .toStringAsFixed(0)
-          .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+      final s = p.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
       return '৳$s';
     } catch (_) {
       return '৳${price ?? ''}';
@@ -245,13 +246,16 @@ class _SaleCategoryState extends State<SaleCategory> {
     final division = p['division'];
     final district = p['district'];
     final area = p['area'];
-    
-    if (division != null && division.toString().trim().isNotEmpty &&
-        district != null && district.toString().trim().isNotEmpty &&
-        area != null && area.toString().trim().isNotEmpty) {
+
+    if (division != null &&
+        division.toString().trim().isNotEmpty &&
+        district != null &&
+        district.toString().trim().isNotEmpty &&
+        area != null &&
+        area.toString().trim().isNotEmpty) {
       return '$division, $district, $area';
     }
-    
+
     return 'All Over Bangladesh';
   }
 
@@ -281,13 +285,13 @@ class _SaleCategoryState extends State<SaleCategory> {
         children: [
           // Header Section
           _buildHeader(context),
-          
+
           // Banner Section
           _buildBannerSection(),
-          
+
           // Categories Section
           _buildCategoriesSection(isMobile),
-          
+
           // Products Section
           if (selectedCategory != null) _buildProductsSection(isMobile),
         ],
@@ -297,7 +301,7 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildHeader(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Container(
       // 6px effective screen-side inset (2 outer + 4 here)
       margin: const EdgeInsets.fromLTRB(4, 8, 4, 8),
@@ -341,18 +345,21 @@ class _SaleCategoryState extends State<SaleCategory> {
               ),
             ],
           ),
-          
+
           SizedBox(height: screenWidth * 0.03),
-          
+
           // Action buttons - Responsive layout
           LayoutBuilder(
             builder: (context, constraints) {
-              final marketplaceLabel = _translationService.t('marketplace', fallback: 'Marketplace');
-              final myPostsLabel = _translationService.t('my_posts', fallback: 'My Posts');
-              final postSaleLabel = _translationService.t('post_sale', fallback: 'Post Sale');
-              
+              final marketplaceLabel =
+                  _translationService.t('marketplace', fallback: 'Marketplace');
+              final myPostsLabel =
+                  _translationService.t('my_posts', fallback: 'My Posts');
+              final postSaleLabel =
+                  _translationService.t('post_sale', fallback: 'Post Sale');
+
               final isLoggedIn = AuthService.isAuthenticated;
-              
+
               return Row(
                 children: [
                   Expanded(
@@ -411,26 +418,25 @@ class _SaleCategoryState extends State<SaleCategory> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, bool isHighlighted, double containerWidth) {
+  Widget _buildActionButton(
+      String label, IconData icon, bool isHighlighted, double containerWidth) {
     // Calculate responsive sizes based on available width
     final buttonPadding = containerWidth < 300 ? 6.0 : 8.0;
     final iconSize = containerWidth < 300 ? 14.0 : 16.0;
     final fontSize = containerWidth < 300 ? 10.0 : 11.0;
     final iconTextGap = containerWidth < 300 ? 2.0 : 4.0;
-    
+
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: buttonPadding,
         horizontal: buttonPadding,
       ),
       decoration: BoxDecoration(
-        color: isHighlighted 
+        color: isHighlighted
             ? const Color(0xFF10B981).withValues(alpha: 0.1)
             : Colors.white,
         border: Border.all(
-          color: isHighlighted 
-              ? const Color(0xFF10B981)
-              : Colors.grey.shade300,
+          color: isHighlighted ? const Color(0xFF10B981) : Colors.grey.shade300,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(6),
@@ -442,9 +448,8 @@ class _SaleCategoryState extends State<SaleCategory> {
           Icon(
             icon,
             size: iconSize,
-            color: isHighlighted 
-                ? const Color(0xFF10B981)
-                : Colors.grey.shade600,
+            color:
+                isHighlighted ? const Color(0xFF10B981) : Colors.grey.shade600,
           ),
           SizedBox(width: iconTextGap),
           Flexible(
@@ -453,7 +458,7 @@ class _SaleCategoryState extends State<SaleCategory> {
               style: AppFonts.roboto(
                 fontSize: fontSize,
                 fontWeight: FontWeight.w500,
-                color: isHighlighted 
+                color: isHighlighted
                     ? const Color(0xFF10B981)
                     : Colors.grey.shade600,
               ),
@@ -471,24 +476,24 @@ class _SaleCategoryState extends State<SaleCategory> {
     return Column(
       children: [
         ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox(
-              height: 80,
-              width: double.infinity,
-              child: _buildBannerTile(index: 0),
-            ),
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox(
+            height: 80,
+            width: double.infinity,
+            child: _buildBannerTile(index: 0),
           ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox(
-              height: 80,
-              width: double.infinity,
-              child: _buildBannerTile(index: 1),
-            ),
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox(
+            height: 80,
+            width: double.infinity,
+            child: _buildBannerTile(index: 1),
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
   Widget _buildBannerTile({required int index}) {
@@ -497,16 +502,16 @@ class _SaleCategoryState extends State<SaleCategory> {
     }
     if (banners.isEmpty || index >= banners.length) {
       final colors = [0xFF3B82F6, 0xFF4F46E5];
-      return Container(color: Color(colors[index % colors.length]).withValues(alpha: 0.1));
+      return Container(
+          color: Color(colors[index % colors.length]).withValues(alpha: 0.1));
     }
     final b = banners[index];
     final img = b['image'] as String?;
     return img == null || img.isEmpty
         ? Container(color: Colors.grey.shade100)
-        : Image.network(
+        : AppNetworkImage(
             img,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(
+            errorWidget: Container(
               color: Colors.grey.shade100,
               alignment: Alignment.center,
               child: Icon(
@@ -524,23 +529,22 @@ class _SaleCategoryState extends State<SaleCategory> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: (categories.isEmpty
-                  ? <dynamic> []
-                  : categories)
-              .map((category) {
+          children:
+              (categories.isEmpty ? <dynamic>[] : categories).map((category) {
             final isSelected = selectedCategory == category['id'];
-            
+
             return GestureDetector(
               onTap: () => selectCategory(Map<String, dynamic>.from(category)),
               child: Container(
                 margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected 
+                  color: isSelected
                       ? const Color(0xFF10B981).withValues(alpha: 0.1)
                       : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(20),
-                  border: isSelected 
+                  border: isSelected
                       ? Border.all(color: const Color(0xFF10B981))
                       : null,
                 ),
@@ -551,9 +555,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     Text(
                       category['name'] ?? category['category'] ?? 'Category',
                       style: AppText.tileLabel(
-                        color: isSelected
-                            ? const Color(0xFF10B981)
-                            : null,
+                        color: isSelected ? const Color(0xFF10B981) : null,
                       ),
                     ),
                   ],
@@ -572,17 +574,17 @@ class _SaleCategoryState extends State<SaleCategory> {
     }
 
     final products = getFilteredProducts();
-    
+
     if (products.isEmpty) {
       return _buildNoProductsFound();
     }
 
     return Column(
       children: [
-          // Section header — 6px effective screen-side inset (2 outer + 4 here)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
+        // Section header — 6px effective screen-side inset (2 outer + 4 here)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -616,20 +618,20 @@ class _SaleCategoryState extends State<SaleCategory> {
                 ),
               ),
             ],
-            ),
           ),
+        ),
 
-          const SizedBox(height: 12),
+        const SizedBox(height: 12),
 
-          // Products grid
-          if (isMobile)
-            _buildMobileProductsList(products)
-          else
-            _buildDesktopProductsGrid(products),
-          
-          const SizedBox(height: 16),
-        ],
-      );
+        // Products grid
+        if (isMobile)
+          _buildMobileProductsList(products)
+        else
+          _buildDesktopProductsGrid(products),
+
+        const SizedBox(height: 16),
+      ],
+    );
   }
 
   Widget _buildMobileProductsList(List<dynamic> products) {
@@ -651,7 +653,8 @@ class _SaleCategoryState extends State<SaleCategory> {
             },
             child: Container(
               width: MediaQuery.of(context).size.width * 0.45,
-              margin: EdgeInsets.only(right: index == products.length - 1 ? 4 : 8),
+              margin:
+                  EdgeInsets.only(right: index == products.length - 1 ? 4 : 8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
@@ -672,21 +675,24 @@ class _SaleCategoryState extends State<SaleCategory> {
                   Stack(
                     children: [
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(8)),
                         child: Container(
                           height: 120,
                           width: double.infinity,
                           color: Colors.grey.shade100,
-                          child: ((product['main_image'] is String) && (product['main_image'] as String).isNotEmpty)
-                              ? Image.network(
+                          child: ((product['main_image'] is String) &&
+                                  (product['main_image'] as String).isNotEmpty)
+                              ? AppNetworkImage(
                                   product['main_image'] as String,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Center(
-                                    child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 32),
+                                  errorWidget: Center(
+                                    child: Icon(Icons.image_not_supported,
+                                        color: Colors.grey.shade400, size: 32),
                                   ),
                                 )
                               : Center(
-                                  child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 32),
+                                  child: Icon(Icons.image_not_supported,
+                                      color: Colors.grey.shade400, size: 32),
                                 ),
                         ),
                       ),
@@ -695,7 +701,8 @@ class _SaleCategoryState extends State<SaleCategory> {
                         top: 6,
                         right: 6,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             color: const Color(0xFF10B981),
                             borderRadius: BorderRadius.circular(4),
@@ -708,14 +715,16 @@ class _SaleCategoryState extends State<SaleCategory> {
                             ],
                           ),
                           child: Text(
-                            _formatPrice(product['price'], product['negotiable'] == true),
-                            style: AppText.price(color: Colors.white).copyWith(fontSize: 10),
+                            _formatPrice(product['price'],
+                                product['negotiable'] == true),
+                            style: AppText.price(color: Colors.white)
+                                .copyWith(fontSize: 10),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   // Product details
                   Padding(
                     padding: const EdgeInsets.all(8),
@@ -730,9 +739,9 @@ class _SaleCategoryState extends State<SaleCategory> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        
+
                         const SizedBox(height: 6),
-                        
+
                         // Location
                         Row(
                           children: [
@@ -752,24 +761,27 @@ class _SaleCategoryState extends State<SaleCategory> {
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 6),
-                        
+
                         // Condition and date
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            if (product['condition'] != null && product['condition'].toString().isNotEmpty)
+                            if (product['condition'] != null &&
+                                product['condition'].toString().isNotEmpty)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   product['condition'] ?? '',
-                                  style: AppText.meta(color: Colors.grey.shade600)
-                                      .copyWith(fontSize: 9),
+                                  style:
+                                      AppText.meta(color: Colors.grey.shade600)
+                                          .copyWith(fontSize: 9),
                                 ),
                               ),
                             const Spacer(),
@@ -821,44 +833,48 @@ class _SaleCategoryState extends State<SaleCategory> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              // Similar structure as mobile but adjusted for desktop
-              Expanded(
-                flex: 3,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    image: ((product['main_image'] is String) && (product['main_image'] as String).isNotEmpty)
-                        ? DecorationImage(
-                            image: NetworkImage(product['main_image'] as String),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
+                // Similar structure as mobile but adjusted for desktop
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(12)),
+                      image: ((product['main_image'] is String) &&
+                              (product['main_image'] as String).isNotEmpty)
+                          ? DecorationImage(
+                              image:
+                                  NetworkImage(product['main_image'] as String),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product['title'] ?? '',
-                        style: AppText.cardTitle(),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const Spacer(),
-                      Text(
-                        _formatPrice(product['price'], product['negotiable'] == true),
-                        style: AppText.price(color: const Color(0xFF10B981)),
-                      ),
-                    ],
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product['title'] ?? '',
+                          style: AppText.cardTitle(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const Spacer(),
+                        Text(
+                          _formatPrice(
+                              product['price'], product['negotiable'] == true),
+                          style: AppText.price(color: const Color(0xFF10B981)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
             ),
           ),
         );
@@ -928,12 +944,14 @@ class _SaleCategoryState extends State<SaleCategory> {
           ),
           const SizedBox(height: 16),
           Text(
-            _translationService.t('no_listings_found', fallback: 'No listings found'),
+            _translationService.t('no_listings_found',
+                fallback: 'No listings found'),
             style: AppText.cardTitle(color: Colors.grey.shade600),
           ),
           const SizedBox(height: 8),
           Text(
-            _translationService.t('no_items_currently_listed', fallback: 'No items currently listed in this category'),
+            _translationService.t('no_items_currently_listed',
+                fallback: 'No items currently listed in this category'),
             style: AppText.caption(),
             textAlign: TextAlign.center,
           ),

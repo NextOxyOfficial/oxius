@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../business_network/adsypay_qr_modal.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../app_network_image.dart';
 
 /// Header Actions - Inbox, QR Code, Profile
 class HeaderActions extends StatefulWidget {
@@ -39,9 +40,9 @@ class _HeaderActionsState extends State<HeaderActions> {
           padding: const EdgeInsets.all(6),
           constraints: const BoxConstraints(),
         ),
-        
+
         const SizedBox(width: 2),
-        
+
         // QR Code Button
         IconButton(
           icon: Container(
@@ -58,15 +59,14 @@ class _HeaderActionsState extends State<HeaderActions> {
             ),
           ),
           onPressed: () {
-            AdsyPayQrSheet.show(context,
-                qrData: 'adsypay://pay/${user.id}');
+            AdsyPayQrSheet.show(context, qrData: 'adsypay://pay/${user.id}');
           },
           padding: const EdgeInsets.all(3),
           constraints: const BoxConstraints(),
         ),
-        
+
         const SizedBox(width: 2),
-        
+
         // User Avatar
         _buildUserAvatar(user, iconSize),
       ],
@@ -117,15 +117,15 @@ class _HeaderActionsState extends State<HeaderActions> {
           children: [
             // Avatar Image
             ClipOval(
-              child: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                  ? Image.network(
-                      user.profilePicture!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildAvatarInitial(user, avatarSize),
-                    )
-                  : _buildAvatarInitial(user, avatarSize),
+              child:
+                  user.profilePicture != null && user.profilePicture!.isNotEmpty
+                      ? AppNetworkImage(
+                          user.profilePicture!,
+                          errorWidget: _buildAvatarInitial(user, avatarSize),
+                        )
+                      : _buildAvatarInitial(user, avatarSize),
             ),
-            
+
             // Pro Badge
             if (isPro)
               Positioned(
@@ -133,7 +133,7 @@ class _HeaderActionsState extends State<HeaderActions> {
                 right: -6,
                 child: const AdsyProBadge(),
               ),
-            
+
             // Verified Badge
             if (isVerified)
               Positioned(

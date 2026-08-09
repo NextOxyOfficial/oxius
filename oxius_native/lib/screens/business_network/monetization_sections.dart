@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../config/app_config.dart';
+import '../../widgets/app_network_image.dart';
 
 /// Detail pages for the approved monetization view. The main screen stays a
 /// clean overview; each page here goes deep on one thing. Data comes in from
@@ -15,7 +16,9 @@ int _asInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
 String _formatCount(int n) {
   if (n >= 1000) {
     final k = n / 1000;
-    return k == k.roundToDouble() ? '${k.round()}K' : '${k.toStringAsFixed(1)}K';
+    return k == k.roundToDouble()
+        ? '${k.round()}K'
+        : '${k.toStringAsFixed(1)}K';
   }
   return '$n';
 }
@@ -133,13 +136,16 @@ class MonetizationAnalyticsScreen extends StatelessWidget {
               'ভ্যালিড ভিউ ও এনগেজমেন্ট থেকে পয়েন্ট জমা হয়।'),
           _buildPointsBreakdown(p, w),
           _sectionDivider(),
-          _sectionHeader('দৈনিক ভিউ', 'এই মাসে দিন অনুযায়ী আপনার কনটেন্টের ভিউ।'),
+          _sectionHeader(
+              'দৈনিক ভিউ', 'এই মাসে দিন অনুযায়ী আপনার কনটেন্টের ভিউ।'),
           _buildDailyChart(),
           _sectionDivider(),
-          _sectionHeader('আয় বিশ্লেষণ', 'পয়েন্ট থেকে আয় এবং মাসভিত্তিক ট্রেন্ড।'),
+          _sectionHeader(
+              'আয় বিশ্লেষণ', 'পয়েন্ট থেকে আয় এবং মাসভিত্তিক ট্রেন্ড।'),
           _buildEarningsAnalytics(),
           _sectionDivider(),
-          _sectionHeader('আপনার রিচ', 'আপনার প্রোফাইল এই মুহূর্তে যেখানে দাঁড়িয়ে আছে।'),
+          _sectionHeader(
+              'আপনার রিচ', 'আপনার প্রোফাইল এই মুহূর্তে যেখানে দাঁড়িয়ে আছে।'),
           _buildReachGrid(),
         ],
       ),
@@ -148,14 +154,30 @@ class MonetizationAnalyticsScreen extends StatelessWidget {
 
   Widget _buildPointsBreakdown(Map p, Map w) {
     final rows = [
-      (Icons.visibility_outlined, 'ভ্যালিড ভিউ', _asInt(p['valid_views']),
-          _asInt(w['view'])),
-      (Icons.favorite_outline_rounded, 'লাইক', _asInt(p['likes']),
-          _asInt(w['like'])),
-      (Icons.mode_comment_outlined, 'কমেন্ট', _asInt(p['comments']),
-          _asInt(w['comment'])),
-      (Icons.person_add_alt_outlined, 'নতুন ফলোয়ার',
-          _asInt(p['followers_gained']), _asInt(w['follower'])),
+      (
+        Icons.visibility_outlined,
+        'ভ্যালিড ভিউ',
+        _asInt(p['valid_views']),
+        _asInt(w['view'])
+      ),
+      (
+        Icons.favorite_outline_rounded,
+        'লাইক',
+        _asInt(p['likes']),
+        _asInt(w['like'])
+      ),
+      (
+        Icons.mode_comment_outlined,
+        'কমেন্ট',
+        _asInt(p['comments']),
+        _asInt(w['comment'])
+      ),
+      (
+        Icons.person_add_alt_outlined,
+        'নতুন ফলোয়ার',
+        _asInt(p['followers_gained']),
+        _asInt(w['follower'])
+      ),
     ];
 
     return Column(
@@ -261,7 +283,10 @@ class MonetizationAnalyticsScreen extends StatelessWidget {
 
     final stats = [
       ('মোট ভিউ', _formatCount(totalViews)),
-      ('দৈনিক গড়', avg >= 10 ? avg.round().toString() : avg.toStringAsFixed(1)),
+      (
+        'দৈনিক গড়',
+        avg >= 10 ? avg.round().toString() : avg.toStringAsFixed(1)
+      ),
       ('সেরা দিন', bestViews > 0 ? '$bestDay তারিখ • $bestViews ভিউ' : '—'),
       ('এনগেজমেন্ট রেট', '${engagementRate.toStringAsFixed(1)}%'),
     ];
@@ -377,15 +402,15 @@ class MonetizationAnalyticsScreen extends StatelessWidget {
     for (final h in history.reversed) {
       final period = (h['period'] ?? '').toString();
       final label = period.length >= 7 ? period.substring(5, 7) : period;
-      series.add((label, double.tryParse((h['amount'] ?? '0').toString()) ?? 0));
+      series
+          .add((label, double.tryParse((h['amount'] ?? '0').toString()) ?? 0));
     }
     final nowPeriod = (earnings['period'] ?? '').toString();
     series.add((
       nowPeriod.length >= 7 ? nowPeriod.substring(5, 7) : 'এখন',
       est,
     ));
-    final maxAmt =
-        series.fold<double>(0, (m, e) => e.$2 > m ? e.$2 : m);
+    final maxAmt = series.fold<double>(0, (m, e) => e.$2 > m ? e.$2 : m);
 
     final tiles = [
       ('এই মাসের আয়', _taka(estimated ?? '0')),
@@ -523,13 +548,26 @@ class MonetizationAnalyticsScreen extends StatelessWidget {
 
   Widget _buildReachGrid() {
     final stats = [
-      (Icons.group_outlined, 'ফলোয়ার', _formatCount(_asInt(status['followers']))),
-      (Icons.visibility_outlined, 'কনটেন্ট ভিউ',
-          _formatCount(_asInt(status['views']))),
-      (Icons.videocam_outlined, 'ভিডিও পোস্ট',
-          _formatCount(_asInt(status['video_posts']))),
-      (Icons.photo_outlined, 'ছবি পোস্ট',
-          _formatCount(_asInt(status['image_posts']))),
+      (
+        Icons.group_outlined,
+        'ফলোয়ার',
+        _formatCount(_asInt(status['followers']))
+      ),
+      (
+        Icons.visibility_outlined,
+        'কনটেন্ট ভিউ',
+        _formatCount(_asInt(status['views']))
+      ),
+      (
+        Icons.videocam_outlined,
+        'ভিডিও পোস্ট',
+        _formatCount(_asInt(status['video_posts']))
+      ),
+      (
+        Icons.photo_outlined,
+        'ছবি পোস্ট',
+        _formatCount(_asInt(status['image_posts']))
+      ),
     ];
 
     return Padding(
@@ -640,13 +678,10 @@ class MonetizationContentScreen extends StatelessWidget {
                 children: [
                   Container(color: const Color(0xFFF1F5F9)),
                   if ((item['thumbnail'] ?? '').toString().isNotEmpty)
-                    Image.network(
+                    AppNetworkImage(
                       AppConfig.getAbsoluteUrl(item['thumbnail'].toString()),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                          Icons.image_outlined,
-                          size: 20,
-                          color: Color(0xFF94A3B8)),
+                      errorWidget: const Icon(Icons.image_outlined,
+                          size: 20, color: Color(0xFF94A3B8)),
                     )
                   else
                     const Icon(Icons.article_outlined,
@@ -881,8 +916,11 @@ class MonetizationInfoScreen extends StatelessWidget {
       (Icons.visibility_outlined, 'প্রতি ভ্যালিড ভিউ', _asInt(w['view'])),
       (Icons.favorite_outline_rounded, 'প্রতি লাইক', _asInt(w['like'])),
       (Icons.mode_comment_outlined, 'প্রতি কমেন্ট', _asInt(w['comment'])),
-      (Icons.person_add_alt_outlined, 'প্রতি নতুন ফলোয়ার',
-          _asInt(w['follower'])),
+      (
+        Icons.person_add_alt_outlined,
+        'প্রতি নতুন ফলোয়ার',
+        _asInt(w['follower'])
+      ),
     ];
 
     return Scaffold(

@@ -14,6 +14,7 @@ import 'profile_options.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../../widgets/app_network_image.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -858,16 +859,13 @@ class _MindForceScreenState extends State<MindForceScreen> {
                     ),
                     child: ClipOval(
                       child: problem.userDetails.image != null
-                          ? Image.network(
+                          ? AppNetworkImage(
                               problem.userDetails.image!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.white,
-                                  child: const Icon(Icons.person_outline,
-                                      size: 16, color: _muted),
-                                );
-                              },
+                              errorWidget: Container(
+                                color: Colors.white,
+                                child: const Icon(Icons.person_outline,
+                                    size: 16, color: _muted),
+                              ),
                             )
                           : Container(
                               color: Colors.white,

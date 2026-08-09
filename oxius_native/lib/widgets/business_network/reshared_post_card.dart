@@ -4,6 +4,7 @@ import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/html_content_utils.dart';
 import 'post_media_gallery.dart';
+import '../app_network_image.dart';
 
 /// The embedded "original post" card shown inside a reshare/repost — used both
 /// in the feed and on the post-detail screen so the design lives in one place.
@@ -58,12 +59,11 @@ class ResharedPostCard extends StatelessWidget {
                       ),
                       child: ClipOval(
                         child: avatar.isNotEmpty
-                            ? Image.network(avatar,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                    Icons.person_rounded,
-                                    size: 16,
-                                    color: Color(0xFF94A3B8)))
+                            ? AppNetworkImage(
+                                avatar,
+                                errorWidget: const Icon(Icons.person_rounded,
+                                    size: 16, color: Color(0xFF94A3B8)),
+                              )
                             : const Icon(Icons.person_rounded,
                                 size: 16, color: Color(0xFF94A3B8)),
                       ),
@@ -97,35 +97,35 @@ class ResharedPostCard extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: onOpenPost,
                 child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fullText,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 13.5,
-                          color: Color(0xFF334155),
-                          height: 1.45),
-                    ),
-                    if (isLongText)
-                      GestureDetector(
-                        onTap: onOpenPost,
-                        child: const Padding(
-                          padding: EdgeInsets.only(top: 3),
-                          child: Text(
-                            'আরও পড়ুন',
-                            style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF2563EB)),
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fullText,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 13.5,
+                            color: Color(0xFF334155),
+                            height: 1.45),
+                      ),
+                      if (isLongText)
+                        GestureDetector(
+                          onTap: onOpenPost,
+                          child: const Padding(
+                            padding: EdgeInsets.only(top: 3),
+                            child: Text(
+                              'আরও পড়ুন',
+                              style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF2563EB)),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                    ],
+                  ),
                 ),
               ),
             // Full media gallery (multiple photos + video), same as the feed.

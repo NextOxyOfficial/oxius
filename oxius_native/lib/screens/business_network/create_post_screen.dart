@@ -16,6 +16,7 @@ import '../../widgets/common/video_frame_thumbnail.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../widgets/app_network_image.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -437,13 +438,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ),
                     child: currentUser?.profilePicture != null
                         ? ClipOval(
-                            child: Image.network(
+                            child: AppNetworkImage(
                               currentUser!.profilePicture!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.person,
-                                    color: Colors.grey.shade400, size: 24);
-                              },
+                              errorWidget: Icon(Icons.person,
+                                  color: Colors.grey.shade400, size: 24),
                             ),
                           )
                         : Icon(Icons.person,
@@ -650,15 +648,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   final avatarUrl =
                                       AppConfig.getAbsoluteUrl(data['photo']);
                                   if (avatarUrl.isNotEmpty) {
-                                    return Image.network(
+                                    return AppNetworkImage(
                                       avatarUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Icon(Icons.person,
-                                            color: Colors.grey.shade400,
-                                            size: 20);
-                                      },
+                                      errorWidget: Icon(Icons.person,
+                                          color: Colors.grey.shade400,
+                                          size: 20),
                                     );
                                   }
                                   return Icon(Icons.person,
@@ -782,10 +776,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                            color:
+                                const Color(0xFF3B82F6).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                              color: const Color(0xFF3B82F6)
+                                  .withValues(alpha: 0.2),
                               width: 1,
                             ),
                           ),
@@ -960,8 +956,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             child: LinearProgressIndicator(
                               value: _uploadProgress,
                               minHeight: 5,
-                              backgroundColor:
-                                  const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                              backgroundColor: const Color(0xFF3B82F6)
+                                  .withValues(alpha: 0.15),
                               valueColor: const AlwaysStoppedAnimation(
                                   Color(0xFF2563EB)),
                             ),
@@ -1010,7 +1006,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.7),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.7),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -1095,7 +1092,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.7),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.7),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(

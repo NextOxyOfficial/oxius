@@ -15,6 +15,7 @@ import '../services/api_service.dart';
 import '../widgets/geo_selector_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -170,14 +171,18 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   Widget _buildImageWidget(dynamic image) {
     // Handle URL strings (from existing posts)
     if (image is String) {
-      return Image.network(image, fit: BoxFit.cover);
+      return AppNetworkImage(
+        image,
+      );
     }
 
     // Handle XFile (from image picker)
     if (image is XFile) {
       if (kIsWeb) {
         // On web, use Image.network with the file path
-        return Image.network(image.path, fit: BoxFit.cover);
+        return AppNetworkImage(
+          image.path,
+        );
       } else {
         // On mobile, convert XFile to File
         return Image.file(File(image.path), fit: BoxFit.cover);
@@ -517,9 +522,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isEditMode
-                      ? 'Update Your Post'
-                      : 'নতুন আমার সেবা পোস্ট',
+                  _isEditMode ? 'Update Your Post' : 'নতুন আমার সেবা পোস্ট',
                   style: GoogleFonts.inter(
                     fontSize: isMobile ? 15 : 16,
                     fontWeight: FontWeight.w700,

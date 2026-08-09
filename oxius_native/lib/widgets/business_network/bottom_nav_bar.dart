@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
 import '../../services/auth_service.dart';
 import '../login_prompt_dialog.dart';
+import '../app_network_image.dart';
 
 /// Business network bottom navigation — standard social-app anatomy:
 /// solid white bar with a hairline top border, ONE accent color (active
@@ -162,10 +163,9 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
           ),
         ),
         child: ClipOval(
-          child: Image.network(
+          child: AppNetworkImage(
             avatar,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
+            errorWidget:
                 Icon(isActive ? activeIcon : icon, size: 21, color: color),
           ),
         ),
@@ -204,52 +204,53 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
             ),
             Expanded(
               child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                glyph,
-                if (badge != null && badge > 0)
-                  Positioned(
-                    top: -4,
-                    right: -7,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: Colors.white, width: 1.2),
-                      ),
-                      constraints: const BoxConstraints(minWidth: 16),
-                      child: Text(
-                        badge > 99 ? '99+' : badge.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          height: 1.1,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      glyph,
+                      if (badge != null && badge > 0)
+                        Positioned(
+                          top: -4,
+                          right: -7,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEF4444),
+                              borderRadius: BorderRadius.circular(999),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.2),
+                            ),
+                            constraints: const BoxConstraints(minWidth: 16),
+                            child: Text(
+                              badge > 99 ? '99+' : badge.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                height: 1.1,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                    ],
                   ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: color,
-                height: 1.1,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                      color: color,
+                      height: 1.1,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           ],

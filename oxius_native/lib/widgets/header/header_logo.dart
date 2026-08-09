@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 /// Header Logo Widget - Loads from backend database
 class HeaderLogo extends StatefulWidget {
@@ -88,10 +89,10 @@ class _HeaderLogoState extends State<HeaderLogo> {
       final logoText = logoData!['name'] ?? logoData!['title'];
 
       if (imageUrl != null && imageUrl.toString().isNotEmpty) {
-        return Image.network(
+        return AppNetworkImage(
           imageUrl,
           fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => _buildTextLogo(logoText ?? 'Logo'),
+          errorWidget: _buildTextLogo(logoText ?? 'Logo'),
         );
       }
 

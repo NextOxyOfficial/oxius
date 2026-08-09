@@ -6,6 +6,7 @@ import '../../services/house_ads_service.dart';
 import '../../utils/media_headers.dart';
 import '../../utils/time_utils.dart';
 import '../common/adsy_toast.dart';
+import '../app_network_image.dart';
 
 /// The people who messaged an advertiser from one of their ads.
 ///
@@ -147,8 +148,8 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                 ),
                 if (!_loading && _leads.isNotEmpty)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEFF6FF),
                       borderRadius: BorderRadius.circular(999),
@@ -186,7 +187,8 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.forum_outlined, size: 34, color: Color(0xFF94A3B8)),
+            const Icon(Icons.forum_outlined,
+                size: 34, color: Color(0xFF94A3B8)),
             const SizedBox(height: 12),
             const Text(
               'এখনো কোনো লিড আসেনি',
@@ -337,13 +339,12 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
       );
     }
     return ClipOval(
-      child: Image.network(
+      child: AppNetworkImage(
         lead.userImage,
         width: 44,
         height: 44,
-        fit: BoxFit.cover,
-        headers: kMediaHeaders,
-        errorBuilder: (_, __, ___) => Container(
+        httpHeaders: kMediaHeaders,
+        errorWidget: Container(
           width: 44,
           height: 44,
           color: const Color(0xFFF1F5F9),

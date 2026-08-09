@@ -5,6 +5,7 @@ import '../../services/gold_sponsor_service.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'become_gold_sponsor_screen.dart';
+import '../../widgets/app_network_image.dart';
 
 class GoldSponsorsScreen extends StatefulWidget {
   const GoldSponsorsScreen({super.key});
@@ -254,21 +255,20 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
       width: 64,
       height: 64,
       child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(11),
-        child: logo != null && logo.trim().isNotEmpty
-            ? Image.network(
-                logo,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildLogoFallback(),
-              )
-            : _buildLogoFallback(),
-      ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(11),
+          child: logo != null && logo.trim().isNotEmpty
+              ? AppNetworkImage(
+                  logo,
+                  errorWidget: _buildLogoFallback(),
+                )
+              : _buildLogoFallback(),
+        ),
       ),
     );
   }

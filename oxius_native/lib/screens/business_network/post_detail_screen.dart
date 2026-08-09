@@ -20,6 +20,7 @@ import 'post_media_viewer_screen.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../widgets/app_network_image.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -143,8 +144,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         url:
             'https://adsyclub.com/business-network/posts/${_post.slug.isNotEmpty ? _post.slug : _post.id}',
         // Text-only posts share with NO thumb (clean text-only chat card).
-        imageUrl:
-            _post.shareThumbUrl.isNotEmpty ? _post.shareThumbUrl : null,
+        imageUrl: _post.shareThumbUrl.isNotEmpty ? _post.shareThumbUrl : null,
         subject: 'Business Network Post',
         eyebrow: 'Business Network',
         hashtags: _post.tags.map((tag) => tag.tag).toList(),
@@ -152,8 +152,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         onShared: () {
           BusinessNetworkService.trackShare(_post.sharedFrom?.id ?? _post.id);
           if (mounted) {
-            setState(() =>
-                _post = _post.copyWith(shareCount: _post.shareCount + 1));
+            setState(
+                () => _post = _post.copyWith(shareCount: _post.shareCount + 1));
           }
         },
         // Same repost-to-profile composer as the feed's post card.
@@ -165,8 +165,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             caption: caption,
           );
           if (result != null && mounted) {
-            setState(() =>
-                _post = _post.copyWith(shareCount: _post.shareCount + 1));
+            setState(
+                () => _post = _post.copyWith(shareCount: _post.shareCount + 1));
           }
           return result != null;
         },
@@ -185,8 +185,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         );
       });
 
-      AdsyToast.success(
-          context, _post.isSaved ? 'Post saved' : 'Post unsaved');
+      AdsyToast.success(context, _post.isSaved ? 'Post saved' : 'Post unsaved');
     }
   }
 
@@ -400,20 +399,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       AppConfig.getAbsoluteUrl(rawAvatarUrl);
 
                                   if (avatarUrl.isNotEmpty) {
-                                    return Image.network(
+                                    return AppNetworkImage(
                                       avatarUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Container(
-                                          color: Colors.grey.shade100,
-                                          child: Icon(
-                                            Icons.person,
-                                            color: Colors.grey.shade400,
-                                            size: 20,
-                                          ),
-                                        );
-                                      },
+                                      errorWidget: Container(
+                                        color: Colors.grey.shade100,
+                                        child: Icon(
+                                          Icons.person,
+                                          color: Colors.grey.shade400,
+                                          size: 20,
+                                        ),
+                                      ),
                                     );
                                   }
                                   return Container(
@@ -573,8 +568,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     shared: _post.sharedFrom!,
                                     onAuthorTap: () =>
                                         _openSharedAuthor(_post.sharedFrom!),
-                                    onOpenPost: () =>
-                                        _openSharedPostDetail(_post.sharedFrom!),
+                                    onOpenPost: () => _openSharedPostDetail(
+                                        _post.sharedFrom!),
                                     onOpenVideo: () => _openSharedVideoInShorts(
                                         _post.sharedFrom!),
                                   ),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/agora_call_service.dart';
 import '../services/call_navigation.dart';
+import 'app_network_image.dart';
 
 class OngoingCallBar extends StatefulWidget {
   const OngoingCallBar({super.key});
@@ -99,7 +100,9 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
   @override
   Widget build(BuildContext context) {
     // Hide if not in call or if call screen is currently visible
-    if (!_isInCall || AgoraCallService.isCallScreenVisible) return const SizedBox.shrink();
+    if (!_isInCall || AgoraCallService.isCallScreenVisible) {
+      return const SizedBox.shrink();
+    }
 
     final info = AgoraCallService.activeCallInfo;
     final peerName = info?['peerName'] ?? 'Ongoing call';
@@ -107,14 +110,17 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
     final peerAvatar = info?['peerAvatar']?.toString();
     final subtitle = _callStartedAt != null
         ? '${_formatDuration(_callDuration)} • Tap to return'
-        : (_isAccepted ? 'Connecting… tap to return' : 'Ringing… tap to return');
+        : (_isAccepted
+            ? 'Connecting… tap to return'
+            : 'Ringing… tap to return');
 
     final media = MediaQuery.of(context);
     final width = media.size.width - _margin * 2;
     // Keep the bar on screen no matter how it was dragged or how the window
     // changed since — a bar dragged off the edge would be unreachable, and the
     // only way back to the call would be gone.
-    final maxTop = media.size.height - _barHeight - media.padding.bottom - _margin;
+    final maxTop =
+        media.size.height - _barHeight - media.padding.bottom - _margin;
     final defaultTop = maxTop - 8;
     final pos = _dragPosition ?? Offset(_margin, defaultTop);
     final left = pos.dx.clamp(_margin, media.size.width - width - _margin);
@@ -143,7 +149,8 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                   end: Alignment.bottomRight,
                   colors: [Color(0xFF06223B), Color(0xFF0F3A63)],
                 ),
-                border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.24)),
+                border: Border.all(
+                    color: const Color(0xFF60A5FA).withValues(alpha: 0.24)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.18),
@@ -160,21 +167,25 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withValues(alpha: 0.08),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: peerAvatar != null && peerAvatar.isNotEmpty
-                        ? Image.network(
+                        ? AppNetworkImage(
                             peerAvatar,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Icon(
-                              callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
+                            errorWidget: Icon(
+                              callType == 'video'
+                                  ? Icons.videocam_rounded
+                                  : Icons.call_rounded,
                               color: Colors.white,
                               size: 18,
                             ),
                           )
                         : Icon(
-                            callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
+                            callType == 'video'
+                                ? Icons.videocam_rounded
+                                : Icons.call_rounded,
                             color: Colors.white,
                             size: 18,
                           ),
@@ -192,7 +203,9 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                               height: 8,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: _callStartedAt != null ? const Color(0xFF34D399) : const Color(0xFFFBBF24),
+                                color: _callStartedAt != null
+                                    ? const Color(0xFF34D399)
+                                    : const Color(0xFFFBBF24),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -226,16 +239,19 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                   ),
                   const SizedBox(width: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white, size: 16),
+                        Icon(Icons.keyboard_arrow_up_rounded,
+                            color: Colors.white, size: 16),
                         SizedBox(width: 4),
                         Text(
                           'Back to call',

@@ -22,6 +22,7 @@ import '../services/fcm_service.dart';
 import '../widgets/call/add_participant_sheet.dart';
 import 'inbox_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 /// The audio-to-video handshake. An upgrade needs both sides to agree — the
 /// other person may be somewhere they would rather not be seen.
@@ -319,8 +320,7 @@ class _CallScreenState extends State<CallScreen>
       });
     });
 
-    _remoteJoinSub =
-        _remoteJoinedStream.listen((remoteUid) {
+    _remoteJoinSub = _remoteJoinedStream.listen((remoteUid) {
       if (!mounted) return;
       _ringingTimer?.cancel();
       _ringingTimer = null;
@@ -380,8 +380,7 @@ class _CallScreenState extends State<CallScreen>
 
     _signalSub = LiveKitCallService.signalStream.listen(_handleInCallSignal);
 
-    _poorConnectionSub =
-        LiveKitCallService.poorConnectionStream.listen((poor) {
+    _poorConnectionSub = LiveKitCallService.poorConnectionStream.listen((poor) {
       if (!mounted) return;
       setState(() => _hasPoorConnection = poor);
     });
@@ -499,7 +498,8 @@ class _CallScreenState extends State<CallScreen>
 
     try {
       if (await Vibration.hasVibrator()) {
-        if (!_incomingAlertActive) return; // stop requested during vibration check
+        // stop requested during vibration check
+        if (!_incomingAlertActive) return;
         if (await Vibration.hasCustomVibrationsSupport()) {
           if (!_incomingAlertActive) return;
           await Vibration.vibrate(pattern: const [0, 1200, 800], repeat: 0);
@@ -677,7 +677,6 @@ class _CallScreenState extends State<CallScreen>
   /// builds this screen before the startup provider fetch has finished, and
   /// the stale default made the callee join a different server than the
   /// caller — the call rang, was accepted, and never connected.
-
 
   // Merged: the engine that is not in use never emits, and merging removes
   // any dependence on knowing which one that is at subscribe time.
@@ -1540,8 +1539,8 @@ class _CallScreenState extends State<CallScreen>
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black
-                                  .withValues(alpha: hasRemoteVideo ? 0.16 : 0.02),
+                              Colors.black.withValues(
+                                  alpha: hasRemoteVideo ? 0.16 : 0.02),
                               Colors.transparent,
                               Colors.black.withValues(alpha: 0.38),
                             ],
@@ -1776,82 +1775,83 @@ class _CallScreenState extends State<CallScreen>
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildRoundControl(
-                icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-                label: _isMuted ? 'Unmute' : 'Mute',
-                size: btnSize,
-                isActive: _isMuted,
-                activeBg: const Color(0xFFEF4444),
-                onTap: _toggleMute,
-              ),
-              SizedBox(width: compact ? 8 : 10),
-              _buildRoundControl(
-                icon: _isSpeakerOn
-                    ? Icons.volume_up_rounded
-                    : Icons.volume_down_rounded,
-                label: 'Speaker',
-                size: btnSize,
-                isActive: _isSpeakerOn,
-                activeBg: _accentColor,
-                onTap: _toggleSpeaker,
-              ),
-              if (!isVideo) ...[
-                SizedBox(width: compact ? 8 : 10),
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 _buildRoundControl(
-                  icon: Icons.videocam_outlined,
-                  label: _upgrade == _VideoUpgrade.asked ? 'Waiting' : 'Video',
+                  icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                  label: _isMuted ? 'Unmute' : 'Mute',
                   size: btnSize,
-                  isActive: _upgrade == _VideoUpgrade.asked,
-                  activeBg: _accentColor,
-                  onTap: () => unawaited(_requestVideoUpgrade()),
-                ),
-              ],
-              if (isVideo) ...[
-                SizedBox(width: compact ? 8 : 10),
-                _buildRoundControl(
-                  icon: _isCameraOff
-                      ? Icons.videocam_off_rounded
-                      : Icons.videocam_rounded,
-                  label: 'Camera',
-                  size: btnSize,
-                  isActive: _isCameraOff,
+                  isActive: _isMuted,
                   activeBg: const Color(0xFFEF4444),
-                  onTap: _toggleCamera,
+                  onTap: _toggleMute,
                 ),
                 SizedBox(width: compact ? 8 : 10),
                 _buildRoundControl(
-                  icon: Icons.cameraswitch_rounded,
-                  label: 'Flip',
+                  icon: _isSpeakerOn
+                      ? Icons.volume_up_rounded
+                      : Icons.volume_down_rounded,
+                  label: 'Speaker',
+                  size: btnSize,
+                  isActive: _isSpeakerOn,
+                  activeBg: _accentColor,
+                  onTap: _toggleSpeaker,
+                ),
+                if (!isVideo) ...[
+                  SizedBox(width: compact ? 8 : 10),
+                  _buildRoundControl(
+                    icon: Icons.videocam_outlined,
+                    label:
+                        _upgrade == _VideoUpgrade.asked ? 'Waiting' : 'Video',
+                    size: btnSize,
+                    isActive: _upgrade == _VideoUpgrade.asked,
+                    activeBg: _accentColor,
+                    onTap: () => unawaited(_requestVideoUpgrade()),
+                  ),
+                ],
+                if (isVideo) ...[
+                  SizedBox(width: compact ? 8 : 10),
+                  _buildRoundControl(
+                    icon: _isCameraOff
+                        ? Icons.videocam_off_rounded
+                        : Icons.videocam_rounded,
+                    label: 'Camera',
+                    size: btnSize,
+                    isActive: _isCameraOff,
+                    activeBg: const Color(0xFFEF4444),
+                    onTap: _toggleCamera,
+                  ),
+                  SizedBox(width: compact ? 8 : 10),
+                  _buildRoundControl(
+                    icon: Icons.cameraswitch_rounded,
+                    label: 'Flip',
+                    size: btnSize,
+                    isActive: false,
+                    onTap: _switchCamera,
+                  ),
+                ],
+                SizedBox(width: compact ? 8 : 10),
+                _buildRoundControl(
+                  icon: Icons.person_add_alt_1_rounded,
+                  label: 'Add',
                   size: btnSize,
                   isActive: false,
-                  onTap: _switchCamera,
+                  onTap: () => unawaited(_addParticipants()),
                 ),
-              ],
-              SizedBox(width: compact ? 8 : 10),
-              _buildRoundControl(
-                icon: Icons.person_add_alt_1_rounded,
-                label: 'Add',
-                size: btnSize,
-                isActive: false,
-                onTap: () => unawaited(_addParticipants()),
-              ),
-              SizedBox(width: compact ? 10 : 12),
-              _buildRoundControl(
-                icon: Icons.call_end_rounded,
-                label: 'End',
-                size: endSize,
-                isActive: true,
-                activeBg: const Color(0xFFEF4444),
-                iconColor: Colors.white,
-                onTap: () => unawaited(_endCall(
-                  notifyPeer: true,
-                  allowLog: true,
-                  closeImmediately: true,
-                )),
-              ),
+                SizedBox(width: compact ? 10 : 12),
+                _buildRoundControl(
+                  icon: Icons.call_end_rounded,
+                  label: 'End',
+                  size: endSize,
+                  isActive: true,
+                  activeBg: const Color(0xFFEF4444),
+                  iconColor: Colors.white,
+                  onTap: () => unawaited(_endCall(
+                    notifyPeer: true,
+                    allowLog: true,
+                    closeImmediately: true,
+                  )),
+                ),
               ],
             ),
           ),
@@ -1870,7 +1870,8 @@ class _CallScreenState extends State<CallScreen>
     required VoidCallback onTap,
   }) {
     final bg = isActive
-        ? (activeBg ?? Colors.white).withValues(alpha: activeBg != null ? 1 : 0.22)
+        ? (activeBg ?? Colors.white)
+            .withValues(alpha: activeBg != null ? 1 : 0.22)
         : Colors.white.withValues(alpha: 0.14);
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -2152,9 +2153,8 @@ class _CallScreenState extends State<CallScreen>
         border: Border.all(
           // Whoever is talking gets the ring. In a group call that is the one
           // thing you cannot work out from the audio alone.
-          color: isSpeaking
-              ? _accentColor
-              : Colors.white.withValues(alpha: 0.10),
+          color:
+              isSpeaking ? _accentColor : Colors.white.withValues(alpha: 0.10),
           width: isSpeaking ? 2 : 1,
         ),
       ),
@@ -2200,8 +2200,8 @@ class _CallScreenState extends State<CallScreen>
                   ),
                 Flexible(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.48),
                       borderRadius: BorderRadius.circular(10),
@@ -2344,7 +2344,8 @@ class _CallScreenState extends State<CallScreen>
                     height: compact ? 40 : 46,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.18)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: _buildAvatarImage(iconSize: 22),
@@ -2427,90 +2428,90 @@ class _CallScreenState extends State<CallScreen>
             final freeY = math.max(0.0, constraints.maxHeight - height);
 
             return AnimatedAlign(
-                  // Only the settle after a release is animated; during the
-                  // drag the finger sets the position directly.
-                  duration: _selfViewDragOrigin == null
-                      ? const Duration(milliseconds: 220)
-                      : Duration.zero,
-                  curve: Curves.easeOutCubic,
-                  alignment: _selfViewAlignment,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onPanStart: (_) => setState(() {
-                      _selfViewDragOrigin = Offset(
-                        (_selfViewAlignment.x + 1) / 2 * freeX,
-                        (_selfViewAlignment.y + 1) / 2 * freeY,
-                      );
-                    }),
-                    onPanUpdate: (details) {
-                      final origin = _selfViewDragOrigin;
-                      if (origin == null) return;
-                      final next = origin + details.delta;
-                      setState(() {
-                        _selfViewDragOrigin = next;
-                        _selfViewAlignment = Alignment(
-                          freeX == 0
-                              ? 0
-                              : (next.dx.clamp(0.0, freeX) / freeX) * 2 - 1,
-                          freeY == 0
-                              ? 0
-                              : (next.dy.clamp(0.0, freeY) / freeY) * 2 - 1,
-                        );
-                      });
-                    },
-                    onPanEnd: (_) => setState(() {
-                      _selfViewDragOrigin = null;
-                      // Snap to the nearest corner. Anywhere in between reads
-                      // as dropped-by-accident.
-                      _selfViewAlignment = Alignment(
-                        _selfViewAlignment.x < 0 ? -1 : 1,
-                        _selfViewAlignment.y < 0 ? -1 : 1,
-                      );
-                    }),
-                    child: _buildGlassPanel(
-                      padding: const EdgeInsets.all(4),
-                      borderRadius: BorderRadius.circular(22),
-                      child: Container(
-                        width: width,
-                        height: height,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12)),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            _localVideoView(),
-                            Positioned(
-                              left: 8,
-                              right: 8,
-                              bottom: 8,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.46),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Text(
-                                  'You',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+              // Only the settle after a release is animated; during the
+              // drag the finger sets the position directly.
+              duration: _selfViewDragOrigin == null
+                  ? const Duration(milliseconds: 220)
+                  : Duration.zero,
+              curve: Curves.easeOutCubic,
+              alignment: _selfViewAlignment,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onPanStart: (_) => setState(() {
+                  _selfViewDragOrigin = Offset(
+                    (_selfViewAlignment.x + 1) / 2 * freeX,
+                    (_selfViewAlignment.y + 1) / 2 * freeY,
+                  );
+                }),
+                onPanUpdate: (details) {
+                  final origin = _selfViewDragOrigin;
+                  if (origin == null) return;
+                  final next = origin + details.delta;
+                  setState(() {
+                    _selfViewDragOrigin = next;
+                    _selfViewAlignment = Alignment(
+                      freeX == 0
+                          ? 0
+                          : (next.dx.clamp(0.0, freeX) / freeX) * 2 - 1,
+                      freeY == 0
+                          ? 0
+                          : (next.dy.clamp(0.0, freeY) / freeY) * 2 - 1,
+                    );
+                  });
+                },
+                onPanEnd: (_) => setState(() {
+                  _selfViewDragOrigin = null;
+                  // Snap to the nearest corner. Anywhere in between reads
+                  // as dropped-by-accident.
+                  _selfViewAlignment = Alignment(
+                    _selfViewAlignment.x < 0 ? -1 : 1,
+                    _selfViewAlignment.y < 0 ? -1 : 1,
+                  );
+                }),
+                child: _buildGlassPanel(
+                  padding: const EdgeInsets.all(4),
+                  borderRadius: BorderRadius.circular(22),
+                  child: Container(
+                    width: width,
+                    height: height,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12)),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _localVideoView(),
+                        Positioned(
+                          left: 8,
+                          right: 8,
+                          bottom: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.46),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'You',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                );
+                ),
+              ),
+            );
           },
         ),
       ),
@@ -2672,9 +2673,7 @@ class _CallScreenState extends State<CallScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            _callType == 'video'
-                ? Icons.videocam_rounded
-                : Icons.call_rounded,
+            _callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
             size: 16,
             color: _accentColor,
           ),
@@ -2751,10 +2750,9 @@ class _CallScreenState extends State<CallScreen>
 
   Widget _buildAvatarImage({required double iconSize}) {
     if (widget.calleeAvatar != null && widget.calleeAvatar!.isNotEmpty) {
-      return Image.network(
+      return AppNetworkImage(
         widget.calleeAvatar!,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Icon(
+        errorWidget: Icon(
           Icons.person_rounded,
           size: iconSize,
           color: Colors.white.withValues(alpha: 0.72),

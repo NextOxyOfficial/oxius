@@ -7,6 +7,7 @@ import '../../services/translation_service.dart';
 import '../../widgets/chat/chat_media_viewer.dart';
 import '../../widgets/linkify_text.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../widgets/app_network_image.dart';
 
 class PendingTasksScreen extends StatefulWidget {
   const PendingTasksScreen({super.key});
@@ -245,7 +246,8 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? getColor().withValues(alpha: 0.1) : Colors.grey[100],
+          color:
+              isSelected ? getColor().withValues(alpha: 0.1) : Colors.grey[100],
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? getColor() : Colors.grey[300]!,
@@ -369,9 +371,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                                     clipBehavior: Clip.antiAlias,
                                     child: Column(
                                       children: [
-                                        for (var i = 0;
-                                            i < _tasks.length;
-                                            i++)
+                                        for (var i = 0; i < _tasks.length; i++)
                                           _buildTaskRow(
                                             _tasks[i],
                                             isLast: i == _tasks.length - 1,
@@ -501,146 +501,140 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 13, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              task.gigTitle ?? 'Untitled Gig',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF0F172A),
-                                height: 1.35,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            '৳${task.gigPrice.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w800,
-                              color: task.approved
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFF334155),
-                              fontFeatures: const [
-                                FontFeature.tabularFigures()
-                              ],
-                            ),
-                          ),
-                        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      task.gigTitle ?? 'Untitled Gig',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
+                        height: 1.35,
                       ),
-                      const SizedBox(height: 7),
-                      Row(
-                        children: [
-                          Icon(statusIcon, size: 13, color: statusColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            statusLabel,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: statusColor,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 3,
-                            height: 3,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFCBD5E1),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              _relativeTime(task.createdAt),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                color: Color(0xFF94A3B8),
-                              ),
-                            ),
-                          ),
-                          if (hasProof) ...[
-                            const SizedBox(width: 8),
-                            const Icon(Icons.attachment_rounded,
-                                size: 13, color: Color(0xFF94A3B8)),
-                          ],
-                          const Spacer(),
-                          const Icon(Icons.chevron_right_rounded,
-                              size: 17, color: Color(0xFFCBD5E1)),
-                        ],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '৳${task.gigPrice.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: task.approved
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF334155),
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              Row(
+                children: [
+                  Icon(statusIcon, size: 13, color: statusColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    statusLabel,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: statusColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 3,
+                    height: 3,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFCBD5E1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      _relativeTime(task.createdAt),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFF94A3B8),
                       ),
-                      // Pending: the auto-approval clock is the single most
-                      // useful thing to know, so it stays on the row.
-                      if (!task.approved && !task.rejected) ...[
-                        const SizedBox(height: 7),
-                        Row(
-                          children: [
-                            Icon(
-                              task.is48HoursPassed
-                                  ? Icons.check_circle_outline_rounded
-                                  : Icons.timer_outlined,
-                              size: 13,
-                              color: task.is48HoursPassed
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFF59E0B),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              task.is48HoursPassed
-                                  ? 'স্বয়ংক্রিয় অনুমোদন সম্পন্ন'
-                                  : 'স্বয়ংক্রিয় অনুমোদন ${_formatCountdown(task)}',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: task.is48HoursPassed
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFF59E0B),
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures()
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      // Rejected: show WHY inline instead of making the user
-                      // open the row to find out.
-                      if (task.rejected &&
-                          (task.reason ?? '').trim().isNotEmpty) ...[
-                        const SizedBox(height: 7),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 9, vertical: 6),
-                          decoration: BoxDecoration(
-                            color:
-                                const Color(0xFFEF4444).withValues(alpha: 0.06),
-                            borderRadius: BorderRadius.circular(7),
-                          ),
-                          child: Text(
-                            task.reason!.trim(),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              height: 1.35,
-                              color: Color(0xFFB91C1C),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
+                  ),
+                  if (hasProof) ...[
+                    const SizedBox(width: 8),
+                    const Icon(Icons.attachment_rounded,
+                        size: 13, color: Color(0xFF94A3B8)),
+                  ],
+                  const Spacer(),
+                  const Icon(Icons.chevron_right_rounded,
+                      size: 17, color: Color(0xFFCBD5E1)),
+                ],
+              ),
+              // Pending: the auto-approval clock is the single most
+              // useful thing to know, so it stays on the row.
+              if (!task.approved && !task.rejected) ...[
+                const SizedBox(height: 7),
+                Row(
+                  children: [
+                    Icon(
+                      task.is48HoursPassed
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.timer_outlined,
+                      size: 13,
+                      color: task.is48HoursPassed
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF59E0B),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      task.is48HoursPassed
+                          ? 'স্বয়ংক্রিয় অনুমোদন সম্পন্ন'
+                          : 'স্বয়ংক্রিয় অনুমোদন ${_formatCountdown(task)}',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: task.is48HoursPassed
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFF59E0B),
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              // Rejected: show WHY inline instead of making the user
+              // open the row to find out.
+              if (task.rejected && (task.reason ?? '').trim().isNotEmpty) ...[
+                const SizedBox(height: 7),
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Text(
+                    task.reason!.trim(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      height: 1.35,
+                      color: Color(0xFFB91C1C),
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
@@ -812,20 +806,17 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                               borderRadius: BorderRadius.circular(9),
                               child: Stack(
                                 children: [
-                                  Image.network(
+                                  AppNetworkImage(
                                     task.mediaUrls[i],
                                     height: 110,
                                     width: 110,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stack) {
-                                      return Container(
-                                        height: 110,
-                                        width: 110,
-                                        color: const Color(0xFFF1F5F9),
-                                        child: const Icon(Icons.image_outlined,
-                                            color: Color(0xFF94A3B8)),
-                                      );
-                                    },
+                                    errorWidget: Container(
+                                      height: 110,
+                                      width: 110,
+                                      color: const Color(0xFFF1F5F9),
+                                      child: const Icon(Icons.image_outlined,
+                                          color: Color(0xFF94A3B8)),
+                                    ),
                                   ),
                                   // Affordance: without it the thumbnails read
                                   // as static decoration, not something to tap.
@@ -835,8 +826,8 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(3),
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                            alpha: 0.45),
+                                        color: Colors.black
+                                            .withValues(alpha: 0.45),
                                         borderRadius:
                                             BorderRadius.circular(999),
                                       ),

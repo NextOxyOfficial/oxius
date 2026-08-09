@@ -8,6 +8,7 @@ import '../services/auth_service.dart';
 import '../widgets/chat/member_picker_sheet.dart';
 import '../widgets/common/adsy_toast.dart';
 import 'business_network/profile_screen.dart';
+import '../widgets/app_network_image.dart';
 
 /// Group settings / management. What each side can do:
 ///
@@ -71,8 +72,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('বাতিল')),
+              onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, controller.text.trim()),
               child: const Text('সেভ করুন')),
@@ -95,8 +95,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       final picked = await ImagePicker()
           .pickImage(source: ImageSource.gallery, imageQuality: 80);
       if (picked == null || !mounted) return;
-      final res =
-          await AdsyConnectService.updateGroup(_groupId, imagePath: picked.path);
+      final res = await AdsyConnectService.updateGroup(_groupId,
+          imagePath: picked.path);
       if (!mounted) return;
       if (res != null) {
         setState(() => _group = res);
@@ -142,8 +142,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   Future<void> _leave() async {
-    final confirm = await _confirm(
-        'গ্রুপ ছাড়বেন?', '"${_group['name']}" থেকে বেরিয়ে যাবেন।', 'গ্রুপ ছাড়ুন');
+    final confirm = await _confirm('গ্রুপ ছাড়বেন?',
+        '"${_group['name']}" থেকে বেরিয়ে যাবেন।', 'গ্রুপ ছাড়ুন');
     if (confirm != true || !mounted) return;
     final ok = await AdsyConnectService.leaveGroup(_groupId);
     if (!mounted) return;
@@ -155,8 +155,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   Future<void> _deleteGroup() async {
-    final confirm = await _confirm('গ্রুপ ডিলিট করবেন?',
-        'সব মেসেজসহ গ্রুপটি স্থায়ীভাবে মুছে যাবে। এটা আর ফেরানো যাবে না।', 'ডিলিট করুন');
+    final confirm = await _confirm(
+        'গ্রুপ ডিলিট করবেন?',
+        'সব মেসেজসহ গ্রুপটি স্থায়ীভাবে মুছে যাবে। এটা আর ফেরানো যাবে না।',
+        'ডিলিট করুন');
     if (confirm != true || !mounted) return;
     final ok = await AdsyConnectService.deleteGroup(_groupId);
     if (!mounted) return;
@@ -201,13 +203,12 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                 leading: const Icon(Icons.admin_panel_settings_outlined,
                     color: Color(0xFF334155)),
                 title: const Text('কো-অ্যাডমিন বানান'),
-                subtitle: const Text(
-                    'গ্রুপ ম্যানেজমেন্টের সব ক্ষমতা পাবেন',
+                subtitle: const Text('গ্রুপ ম্যানেজমেন্টের সব ক্ষমতা পাবেন',
                     style: TextStyle(fontSize: 11.5)),
                 onTap: () async {
                   Navigator.pop(ctx);
-                  final ok = await AdsyConnectService.promoteGroupAdmin(
-                      _groupId, uid);
+                  final ok =
+                      await AdsyConnectService.promoteGroupAdmin(_groupId, uid);
                   if (!mounted) return;
                   if (ok) {
                     AdsyToast.success(context, 'কো-অ্যাডমিন বানানো হয়েছে');
@@ -224,8 +225,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                 title: const Text('কো-অ্যাডমিন থেকে সরান'),
                 onTap: () async {
                   Navigator.pop(ctx);
-                  final ok = await AdsyConnectService.demoteGroupAdmin(
-                      _groupId, uid);
+                  final ok =
+                      await AdsyConnectService.demoteGroupAdmin(_groupId, uid);
                   if (!mounted) return;
                   if (ok) {
                     AdsyToast.info(context, 'কো-অ্যাডমিন থেকে সরানো হয়েছে');
@@ -243,19 +244,19 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                     color: Color(0xFFDC2626)),
                 title: const Text('গ্রুপ থেকে remove করুন',
                     style: TextStyle(color: Color(0xFFDC2626))),
-              onTap: () async {
-                Navigator.pop(ctx);
-                final ok = await AdsyConnectService.removeGroupMember(
-                    _groupId, uid);
-                if (!mounted) return;
-                if (ok) {
-                  AdsyToast.info(context, 'Remove করা হয়েছে');
-                  _refresh();
-                } else {
-                  AdsyToast.error(context, 'Remove করা যায়নি');
-                }
-              },
-            ),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final ok =
+                      await AdsyConnectService.removeGroupMember(_groupId, uid);
+                  if (!mounted) return;
+                  if (ok) {
+                    AdsyToast.info(context, 'Remove করা হয়েছে');
+                    _refresh();
+                  } else {
+                    AdsyToast.error(context, 'Remove করা যায়নি');
+                  }
+                },
+              ),
             const SizedBox(height: 8),
           ],
         ),
@@ -303,12 +304,11 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       clipBehavior: Clip.antiAlias,
                       alignment: Alignment.center,
                       child: imageUrl.isNotEmpty
-                          ? Image.network(imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.groups,
-                                  size: 30,
-                                  color: Color(0xFF334155)))
+                          ? AppNetworkImage(
+                              imageUrl,
+                              errorWidget: const Icon(Icons.groups,
+                                  size: 30, color: Color(0xFF334155)),
+                            )
                           : const Icon(Icons.groups,
                               size: 30, color: Color(0xFF334155)),
                     ),
@@ -324,8 +324,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: const Color(0xFF111827),
-                              border:
-                                  Border.all(color: Colors.white, width: 2),
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                             child: const Icon(Icons.camera_alt,
                                 size: 12, color: Colors.white),
@@ -382,8 +381,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                 _actionTile(Icons.logout_rounded, 'গ্রুপ ছাড়ুন', _leave,
                     danger: true),
                 if (_isAdmin)
-                  _actionTile(Icons.delete_forever_outlined,
-                      'গ্রুপ ডিলিট করুন', _deleteGroup,
+                  _actionTile(Icons.delete_forever_outlined, 'গ্রুপ ডিলিট করুন',
+                      _deleteGroup,
                       danger: true),
               ],
             ),
@@ -414,8 +413,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                     style: const TextStyle(fontSize: 13.5),
                     decoration: InputDecoration(
                       hintText: 'মেম্বার খুঁজুন',
-                      hintStyle: TextStyle(
-                          color: Colors.grey.shade500, fontSize: 13),
+                      hintStyle:
+                          TextStyle(color: Colors.grey.shade500, fontSize: 13),
                       prefixIcon: Icon(Icons.search_rounded,
                           size: 18, color: Colors.grey.shade500),
                       prefixIconConstraints:
@@ -461,8 +460,18 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   static const _bnMonths = [
-    'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-    'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
+    'জানুয়ারি',
+    'ফেব্রুয়ারি',
+    'মার্চ',
+    'এপ্রিল',
+    'মে',
+    'জুন',
+    'জুলাই',
+    'আগস্ট',
+    'সেপ্টেম্বর',
+    'অক্টোবর',
+    'নভেম্বর',
+    'ডিসেম্বর',
   ];
 
   String _formatJoined(dynamic raw) {
@@ -522,8 +531,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
           ? null
           : () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => ProfileScreen(userId: uid)),
+                MaterialPageRoute(builder: (_) => ProfileScreen(userId: uid)),
               ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -537,13 +545,14 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               clipBehavior: Clip.antiAlias,
               alignment: Alignment.center,
               child: avatar.isNotEmpty
-                  ? Image.network(avatar,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Text(
+                  ? AppNetworkImage(
+                      avatar,
+                      errorWidget: Text(
                           display.isNotEmpty ? display[0].toUpperCase() : '?',
                           style: const TextStyle(
                               color: Color(0xFF334155),
-                              fontWeight: FontWeight.w700)))
+                              fontWeight: FontWeight.w700)),
+                    )
                   : Text(display.isNotEmpty ? display[0].toUpperCase() : '?',
                       style: const TextStyle(
                           color: Color(0xFF334155),
@@ -568,8 +577,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                           width: 7,
                           height: 7,
                           decoration: const BoxDecoration(
-                              color: Color(0xFF22C55E),
-                              shape: BoxShape.circle),
+                              color: Color(0xFF22C55E), shape: BoxShape.circle),
                         ),
                         const SizedBox(width: 4),
                         const Text('অনলাইন',

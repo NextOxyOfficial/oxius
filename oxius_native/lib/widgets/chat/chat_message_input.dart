@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/media_headers.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 /// The bottom input bar for the AdsyConnect chat screen.
 ///
@@ -605,13 +606,12 @@ class ChatMessageInput extends StatelessWidget {
             if ((replyThumbUrl ?? '').isNotEmpty) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
+                child: AppNetworkImage(
                   replyThumbUrl!,
                   width: 38,
                   height: 38,
-                  fit: BoxFit.cover,
-                  headers: kMediaHeaders,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  httpHeaders: kMediaHeaders,
+                  errorWidget: const SizedBox.shrink(),
                 ),
               ),
               const SizedBox(width: 9),

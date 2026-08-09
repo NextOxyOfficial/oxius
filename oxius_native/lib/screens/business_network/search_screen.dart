@@ -13,6 +13,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/business_network_service.dart';
+import '../../widgets/app_network_image.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;
@@ -475,9 +476,8 @@ class _SearchScreenState extends State<SearchScreen> {
           color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFFE2E8F0),
+            color:
+                isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
           ),
         ),
         child: Row(
@@ -496,8 +496,7 @@ class _SearchScreenState extends State<SearchScreen> {
             if (count > 0) ...[
               const SizedBox(width: 5),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF2563EB)
@@ -509,8 +508,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   style: TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w700,
-                    color:
-                        isSelected ? Colors.white : const Color(0xFF64748B),
+                    color: isSelected ? Colors.white : const Color(0xFF64748B),
                   ),
                 ),
               ),
@@ -711,13 +709,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 child: ClipOval(
                   child: person['image'] != null
-                      ? Image.network(
+                      ? AppNetworkImage(
                           person['image'],
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.person,
-                                color: Colors.grey.shade400, size: 20);
-                          },
+                          errorWidget: Icon(Icons.person,
+                              color: Colors.grey.shade400, size: 20),
                         )
                       : Icon(Icons.person,
                           color: Colors.grey.shade400, size: 20),
@@ -953,8 +948,7 @@ class _SearchScreenState extends State<SearchScreen> {
             CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFFF1F5F9),
-              backgroundImage:
-                  avatar.isNotEmpty ? NetworkImage(avatar) : null,
+              backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
               child: avatar.isEmpty
                   ? Text(
                       author.isNotEmpty ? author[0].toUpperCase() : '?',
@@ -1052,8 +1046,7 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.tag_rounded,
-                size: 17, color: Color(0xFF2563EB)),
+            const Icon(Icons.tag_rounded, size: 17, color: Color(0xFF2563EB)),
             const SizedBox(width: 11),
             Expanded(
               child: Text(

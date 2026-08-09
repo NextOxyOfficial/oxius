@@ -18,6 +18,7 @@ import 'user_posts_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
+import '../widgets/app_network_image.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -916,12 +917,9 @@ class _ClassifiedPostDetailsScreenState
                   if (avatarUrl.isEmpty) return fallback();
 
                   return ClipOval(
-                    child: Image.network(
+                    child: AppNetworkImage(
                       avatarUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return fallback();
-                      },
+                      errorWidget: fallback(),
                     ),
                   );
                 }(),

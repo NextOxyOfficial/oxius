@@ -9,6 +9,7 @@ import '../services/user_search_service.dart';
 import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_pro_badge.dart';
 import '../widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 /// Create a new AdsyConnect group.
 ///
@@ -94,8 +95,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         ].where((s) => s.isNotEmpty).join(' ');
         return {
           'id': (u['id'] ?? '').toString(),
-          'name':
-              name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
+          'name': name.isNotEmpty ? name : (u['username'] ?? 'User').toString(),
           'avatar': u['avatar'] ?? u['image'],
           'isVerified': u['kyc'] == true || u['is_verified'] == true,
           'isPro': u['is_pro'] == true,
@@ -249,8 +249,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                               ),
                               child: _memberSearchOpen
                                   ? Container(
-                                      key: const ValueKey(
-                                          'member_search_open'),
+                                      key: const ValueKey('member_search_open'),
                                       height: 38,
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF1F5F9),
@@ -260,8 +259,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                                       child: TextField(
                                         controller: _search,
                                         autofocus: true,
-                                        style: const TextStyle(
-                                            fontSize: 13.5),
+                                        style: const TextStyle(fontSize: 13.5),
                                         textAlignVertical:
                                             TextAlignVertical.center,
                                         decoration: InputDecoration(
@@ -273,8 +271,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                                           border: InputBorder.none,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
-                                                  horizontal: 16,
-                                                  vertical: 10),
+                                                  horizontal: 16, vertical: 10),
                                         ),
                                       ),
                                     )
@@ -335,8 +332,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                             ? const AdsyLoadingIndicator()
                             : Text('কেউ পাওয়া যায়নি',
                                 style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey.shade600)),
+                                    fontSize: 13, color: Colors.grey.shade600)),
                       ),
                     ),
                   )
@@ -422,8 +418,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               autofocus: true,
               maxLength: 80,
               textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               onSubmitted: (_) => setState(() => _editingName = false),
               onTapOutside: (_) {
                 FocusManager.instance.primaryFocus?.unfocus();
@@ -439,8 +434,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 isDense: true,
                 filled: true,
                 fillColor: const Color(0xFFF1F5F9),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(999),
                   borderSide: BorderSide.none,
@@ -521,17 +516,17 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           shape: BoxShape.circle,
                           color: const Color(0xFFEFF6FF),
                           border: Border.all(
-                              color: _blue.withValues(alpha: 0.35),
-                              width: 1.5),
+                              color: _blue.withValues(alpha: 0.35), width: 1.5),
                         ),
                         clipBehavior: Clip.antiAlias,
                         alignment: Alignment.center,
                         child: avatar.isNotEmpty
-                            ? Image.network(avatar,
+                            ? AppNetworkImage(
+                                avatar,
                                 width: 52,
                                 height: 52,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _initial(name))
+                                errorWidget: _initial(name),
+                              )
                             : _initial(name),
                       ),
                       Positioned(
@@ -546,8 +541,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: const Color(0xFF475569),
-                              border:
-                                  Border.all(color: Colors.white, width: 2),
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                             child: const Icon(Icons.close,
                                 size: 11, color: Colors.white),
@@ -638,11 +632,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               alignment: Alignment.center,
               // Dynamic profile photo with a letter fallback.
               child: avatar.isNotEmpty
-                  ? Image.network(avatar,
+                  ? AppNetworkImage(
+                      avatar,
                       width: 46,
                       height: 46,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _initial(name))
+                      errorWidget: _initial(name),
+                    )
                   : _initial(name),
             ),
             const SizedBox(width: 13),

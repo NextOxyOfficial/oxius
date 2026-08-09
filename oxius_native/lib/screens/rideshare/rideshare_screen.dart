@@ -10,6 +10,7 @@ import 'rideshare_account_screen.dart';
 import 'rideshare_mode.dart';
 import 'rideshare_passenger_panel.dart';
 import 'rideshare_driver_panel.dart';
+import '../../widgets/app_network_image.dart';
 
 /// The rideshare shell: a full-bleed map with one control floating on top.
 ///
@@ -141,8 +142,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
           // Flipping the switch in there swaps the panel behind here, so
           // popping back lands on the side the rider just chose.
           onModeChanged: _setMode,
-          onOpenSavedPlaces: () =>
-              _passengerPanelKey.openCustomLocationSheet(),
+          onOpenSavedPlaces: () => _passengerPanelKey.openCustomLocationSheet(),
         ),
       ),
     );
@@ -211,12 +211,11 @@ class _RideshareScreenState extends State<RideshareScreen> {
                 : null,
             child: ClipOval(
               child: avatar.isNotEmpty
-                  ? Image.network(
+                  ? AppNetworkImage(
                       avatar,
                       width: 44,
                       height: 44,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const _AvatarFallback(),
+                      errorWidget: const _AvatarFallback(),
                     )
                   : const _AvatarFallback(),
             ),

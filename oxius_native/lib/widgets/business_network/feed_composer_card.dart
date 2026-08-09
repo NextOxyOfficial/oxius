@@ -4,6 +4,7 @@ import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../screens/business_network/create_post_screen.dart';
 import '../../services/auth_service.dart';
+import '../app_network_image.dart';
 
 /// Facebook-style "What's on your mind?" composer strip: the signed-in user's
 /// avatar next to a rounded prompt, with photo/video shortcuts underneath.
@@ -50,12 +51,11 @@ class FeedComposerCard extends StatelessWidget {
                 ),
                 child: ClipOval(
                   child: avatar.isNotEmpty
-                      ? Image.network(avatar,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
-                              Icons.person_rounded,
-                              size: 22,
-                              color: Color(0xFF94A3B8)))
+                      ? AppNetworkImage(
+                          avatar,
+                          errorWidget: const Icon(Icons.person_rounded,
+                              size: 22, color: Color(0xFF94A3B8)),
+                        )
                       : const Icon(Icons.person_rounded,
                           size: 22, color: Color(0xFF94A3B8)),
                 ),

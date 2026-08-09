@@ -7,6 +7,7 @@ import '../../utils/network_error_handler.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../widgets/app_network_image.dart';
 
 class CreateProblemScreen extends StatefulWidget {
   final List<MindForceCategory> categories;
@@ -157,43 +158,43 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                   ),
                   Row(
                     children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.psychology,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Post a New Problem',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.3,
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Get expert help from the community',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white70,
-                          ),
+                        child: const Icon(
+                          Icons.psychology,
+                          size: 18,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Post a New Problem',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Get expert help from the community',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close),
@@ -531,19 +532,16 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: kIsWeb
-                ? Image.network(
+                ? AppNetworkImage(
                     image.path,
                     width: 100,
                     height: 100,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 100,
-                        height: 100,
-                        color: Colors.grey.shade200,
-                        child: Icon(Icons.image, color: Colors.grey.shade400),
-                      );
-                    },
+                    errorWidget: Container(
+                      width: 100,
+                      height: 100,
+                      color: Colors.grey.shade200,
+                      child: Icon(Icons.image, color: Colors.grey.shade400),
+                    ),
                   )
                 : Image.file(
                     image,

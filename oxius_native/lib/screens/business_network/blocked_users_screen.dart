@@ -5,6 +5,7 @@ import '../../services/business_network_service.dart';
 import '../../widgets/common/adsy_loading.dart';
 import '../../widgets/common/adsy_toast.dart';
 import 'profile_screen.dart';
+import '../../widgets/app_network_image.dart';
 
 class BlockedUsersScreen extends StatefulWidget {
   const BlockedUsersScreen({super.key});
@@ -207,10 +208,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: avatarUrl.isNotEmpty
-                      ? Image.network(
+                      ? AppNetworkImage(
                           avatarUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _avatarInitial(name),
+                          errorWidget: _avatarInitial(name),
                         )
                       : _avatarInitial(name),
                 ),

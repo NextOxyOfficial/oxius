@@ -19,6 +19,7 @@ import 'terms_and_conditions_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class GigDetailsScreen extends StatefulWidget {
   final String gigSlug;
@@ -564,7 +565,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     // 2: any other html tag (kept verbatim — protects attribute values)
     r'|(<[^>]+>)'
     // 3: a bare url in text content
-    r'|((?:https?://|www\.)[^\s<>"' "'" r']+)',
+    r'|((?:https?://|www\.)[^\s<>"'
+    "'"
+    r']+)',
     caseSensitive: false,
   );
 
@@ -654,18 +657,15 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
+                        child: AppNetworkImage(
                           media['image'],
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                size: 28,
-                                color: Colors.grey.shade400,
-                              ),
-                            );
-                          },
+                          errorWidget: Center(
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              size: 28,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -712,10 +712,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 child: InteractiveViewer(
                   minScale: 0.8,
                   maxScale: 4,
-                  child: Image.network(
+                  child: AppNetworkImage(
                     imageUrl,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
+                    errorWidget: const Icon(
                       Icons.broken_image_outlined,
                       size: 64,
                       color: Colors.white38,
@@ -903,8 +903,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(10),
-                            border:
-                                Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
@@ -946,8 +945,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF0FDF4),
                         borderRadius: BorderRadius.circular(10),
-                        border:
-                            Border.all(color: const Color(0xFFBBF7D0)),
+                        border: Border.all(color: const Color(0xFFBBF7D0)),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

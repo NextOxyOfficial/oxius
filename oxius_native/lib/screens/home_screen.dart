@@ -44,6 +44,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/home/home_popup_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../widgets/app_network_image.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool autoRefreshOnOpen;
@@ -1451,8 +1452,7 @@ class _HomeScreenState extends State<HomeScreen> {
               top: -4,
               right: -4,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEF4444),
                   borderRadius: BorderRadius.circular(999),
@@ -1612,8 +1612,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 padding: EdgeInsets.fromLTRB(20, 8, 20, bottomInset + 16),
                 child: Column(
@@ -1664,8 +1663,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontSize: 12.5,
-                                    color: Color(0xFF64748B)),
+                                    fontSize: 12.5, color: Color(0xFF64748B)),
                               ),
                             ],
                           ),
@@ -1678,8 +1676,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
-                        border:
-                            Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: const Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1703,8 +1700,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: () =>
-                            Navigator.of(sheetContext).pop(true),
+                        onPressed: () => Navigator.of(sheetContext).pop(true),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFEF4444),
                           foregroundColor: Colors.white,
@@ -1724,12 +1720,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(
                       height: 44,
                       child: OutlinedButton(
-                        onPressed: () =>
-                            Navigator.of(sheetContext).pop(false),
+                        onPressed: () => Navigator.of(sheetContext).pop(false),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF334155),
-                          side:
-                              const BorderSide(color: Color(0xFFE2E8F0)),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(13),
                           ),
@@ -1886,8 +1880,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => Scaffold.of(context).openDrawer(),
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 4, vertical: 12),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1921,10 +1915,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: userState.isAuthenticated &&
-                          userState.currentUser != null
-                      ? _buildGreeting(userState)
-                      : _buildDynamicLogo(context),
+                  child:
+                      userState.isAuthenticated && userState.currentUser != null
+                          ? _buildGreeting(userState)
+                          : _buildDynamicLogo(context),
                 ),
               ),
               const SizedBox(width: 8),
@@ -2144,8 +2138,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // QR Code button
         GestureDetector(
           onTap: () {
-            AdsyPayQrSheet.show(context,
-                qrData: 'adsypay://pay/${user.id}');
+            AdsyPayQrSheet.show(context, qrData: 'adsypay://pay/${user.id}');
           },
           child: Container(
             width: 40,
@@ -2215,26 +2208,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: ClipOval(
                 child: profilePic.isNotEmpty
-                    ? Image.network(
+                    ? AppNetworkImage(
                         profilePic,
                         width: 40,
                         height: 40,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Color(0xFF10B981),
-                            child: Center(
-                              child: Text(
-                                initial,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
+                        errorWidget: Container(
+                          color: Color(0xFF10B981),
+                          child: Center(
+                            child: Text(
+                              initial,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
                               ),
                             ),
-                          );
-                        },
+                          ),
+                        ),
                       )
                     : Container(
                         color: Color(0xFF10B981),

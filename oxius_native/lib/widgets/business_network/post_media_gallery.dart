@@ -11,7 +11,7 @@ import '../../utils/media_headers.dart';
 import '../common/video_frame_thumbnail.dart';
 import '../ads/house_ad_card.dart';
 import '../ads/house_ad_strip_view.dart';
-
+import '../app_network_image.dart';
 
 /// Budget for warm feed video controllers.
 ///
@@ -66,8 +66,8 @@ class _FeedVideoBudget {
   void _evictIfNeeded() {
     while (_warm.length > maxWarm) {
       // Oldest off-screen entry first; never evict something on screen.
-      final victim = _warm.entries
-          .firstWhere((e) => !e.value.visible, orElse: () => _warm.entries.first);
+      final victim = _warm.entries.firstWhere((e) => !e.value.visible,
+          orElse: () => _warm.entries.first);
       _warm.remove(victim.key);
       victim.value.onEvict?.call();
     }
@@ -173,8 +173,7 @@ class PostMediaGallery extends StatelessWidget {
               top: 8,
               left: 8,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(999),
@@ -222,7 +221,9 @@ class PostMediaGallery extends StatelessWidget {
             child: Icon(
               item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
               size: errorIconSize,
-              color: item.isVideo ? Colors.white.withValues(alpha: 0.9) : Colors.grey,
+              color: item.isVideo
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : Colors.grey,
             ),
           ),
           if (item.isVideo)
@@ -234,9 +235,11 @@ class PostMediaGallery extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.15)),
                 ),
-                child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
+                child: const Icon(Icons.videocam_rounded,
+                    color: Colors.white, size: 12),
               ),
             ),
         ],
@@ -255,8 +258,7 @@ class PostMediaGallery extends StatelessWidget {
           width: double.infinity,
           memCacheWidth: 1080,
           fadeInDuration: const Duration(milliseconds: 120),
-          placeholder: (context, url) =>
-              Container(color: Colors.grey.shade200),
+          placeholder: (context, url) => Container(color: Colors.grey.shade200),
           errorWidget: (context, url, error) {
             return Container(
               color: Colors.grey.shade200,
@@ -281,7 +283,8 @@ class PostMediaGallery extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
               ),
-              child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
+              child: const Icon(Icons.videocam_rounded,
+                  color: Colors.white, size: 12),
             ),
           ),
         if (item.isVideo)
@@ -621,7 +624,8 @@ class _AdaptiveAspectRatioBox extends StatefulWidget {
   });
 
   @override
-  State<_AdaptiveAspectRatioBox> createState() => _AdaptiveAspectRatioBoxState();
+  State<_AdaptiveAspectRatioBox> createState() =>
+      _AdaptiveAspectRatioBoxState();
 }
 
 class _AdaptiveAspectRatioBoxState extends State<_AdaptiveAspectRatioBox> {
@@ -732,10 +736,12 @@ class AutoPlaySingleVideoPreview extends StatefulWidget {
   });
 
   @override
-  State<AutoPlaySingleVideoPreview> createState() => AutoPlaySingleVideoPreviewState();
+  State<AutoPlaySingleVideoPreview> createState() =>
+      AutoPlaySingleVideoPreviewState();
 }
 
-class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> {
+class AutoPlaySingleVideoPreviewState
+    extends State<AutoPlaySingleVideoPreview> {
   /// Feed-wide mute preference: muting one video mutes every video the user
   /// scrolls to next (and survives feed rebuilds), like Facebook's feed.
   static final ValueNotifier<bool> feedMuted = ValueNotifier<bool>(false);
@@ -747,6 +753,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
   // pauses and a sponsored interstitial shows. Skip unlocks after 5s; a 15s
   // countdown auto-closes it; then the video resumes where it left off.
   HouseAd? _midrollAd;
+
   /// The mid-roll after it was skipped/auto-closed — rendered under the video.
   HouseAd? _skippedAd;
   bool _midrollFetched = false; // fetch + show happen at most once
@@ -943,8 +950,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
     if (!mounted || ad == null) return;
     // The interstitial needs a visual — an image creative or the video ad's
     // companion banner. Without one, skip the mid-roll entirely.
-    final visual =
-        ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
+    final visual = ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
     if (visual.isEmpty) return;
     final c = _controller;
     if (c == null || !_isInitialized || !_isVisible) return;
@@ -1007,8 +1013,7 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
   }
 
   Widget _buildMidroll(HouseAd ad) {
-    final visual =
-        ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
+    final visual = ad.images.isNotEmpty ? ad.images.first : ad.companionBanner;
     final elapsed = 15 - _midrollRemaining;
     final canSkip = elapsed >= 5;
     return Container(
@@ -1026,18 +1031,17 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
               );
               HouseAdCard.launchCta(ad, placement: 'bn_feed');
             },
-            child: Image.network(
+            child: AppNetworkImage(
               visual,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              errorWidget: const SizedBox.shrink(),
             ),
           ),
           Positioned(
             top: 8,
             left: 8,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(6),
@@ -1060,8 +1064,8 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
               children: [
                 // Auto-close countdown.
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(8),
@@ -1346,24 +1350,24 @@ class AutoPlaySingleVideoPreviewState extends State<AutoPlaySingleVideoPreview> 
       child: widget.fillParent
           ? stack
           : _withSkippedAd(LayoutBuilder(
-        builder: (context, constraints) {
-          final maxW = constraints.maxWidth;
-          var ratio = _aspect;
-          final expectedH = maxW / ratio;
-          if (expectedH > widget.maxHeight) {
-            ratio = maxW / widget.maxHeight;
-          } else if (expectedH < widget.minHeight) {
-            ratio = maxW / widget.minHeight;
-          }
-          // AnimatedSize smooths the one-time settle when a video with no
-          // thumbnail locks to its real shape.
-          return AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            child: AspectRatio(aspectRatio: ratio, child: stack),
-          );
-        },
-      )),
+              builder: (context, constraints) {
+                final maxW = constraints.maxWidth;
+                var ratio = _aspect;
+                final expectedH = maxW / ratio;
+                if (expectedH > widget.maxHeight) {
+                  ratio = maxW / widget.maxHeight;
+                } else if (expectedH < widget.minHeight) {
+                  ratio = maxW / widget.minHeight;
+                }
+                // AnimatedSize smooths the one-time settle when a video with no
+                // thumbnail locks to its real shape.
+                return AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  child: AspectRatio(aspectRatio: ratio, child: stack),
+                );
+              },
+            )),
     );
   }
 

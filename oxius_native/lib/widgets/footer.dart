@@ -10,6 +10,7 @@ import 'ios_web_redirect_screen.dart';
 import 'ads/advertise_button.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'app_network_image.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
@@ -484,12 +485,11 @@ class _AppFooterState extends State<AppFooter>
             : logoData != null && logoData!['image'] != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: Image.network(
+                    child: AppNetworkImage(
                       logoData!['image'],
                       fit: BoxFit.contain,
                       height: 40,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildFallbackLogo(context, isMobile),
+                      errorWidget: _buildFallbackLogo(context, isMobile),
                     ),
                   )
                 : _buildFallbackLogo(context, isMobile),
@@ -539,7 +539,6 @@ class _AppFooterState extends State<AppFooter>
       ),
     );
   }
-
 
   // Helper methods
   void _handleNavigation(BuildContext context, String destination) {
@@ -654,6 +653,4 @@ class _AppFooterState extends State<AppFooter>
     // Navigate using named route
     Navigator.pushNamed(context, route);
   }
-
-
 }

@@ -7,6 +7,7 @@ import '../config/app_config.dart';
 import 'classified_search_bar.dart';
 import 'classified_categories_grid.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 class ClassifiedServicesSection extends StatefulWidget {
   const ClassifiedServicesSection({super.key});
@@ -419,19 +420,16 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                         height: 64,
                         color: Colors.grey.shade100,
                         child: imageUrl != null
-                            ? Image.network(
+                            ? AppNetworkImage(
                                 imageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: const Color(0xFFE6FBF4),
-                                    child: const Icon(
-                                      Icons.image_outlined,
-                                      color: Color(0xFF10B981),
-                                      size: 28,
-                                    ),
-                                  );
-                                },
+                                errorWidget: Container(
+                                  color: const Color(0xFFE6FBF4),
+                                  child: const Icon(
+                                    Icons.image_outlined,
+                                    color: Color(0xFF10B981),
+                                    size: 28,
+                                  ),
+                                ),
                               )
                             : Container(
                                 color: const Color(0xFFE6FBF4),

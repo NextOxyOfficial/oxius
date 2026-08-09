@@ -9,6 +9,7 @@ import '../../models/gold_sponsor_models.dart';
 import '../../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../widgets/app_network_image.dart';
 
 class BecomeGoldSponsorScreen extends StatefulWidget {
   const BecomeGoldSponsorScreen({super.key});
@@ -547,8 +548,9 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: kIsWeb
-                                ? Image.network(_logoFile!.path,
-                                    fit: BoxFit.cover)
+                                ? AppNetworkImage(
+                                    _logoFile!.path,
+                                  )
                                 : Image.file(File(_logoFile!.path),
                                     fit: BoxFit.cover),
                           )

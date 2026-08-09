@@ -8,6 +8,7 @@ import 'message_reaction_bar.dart';
 import 'package:flutter/services.dart';
 
 import '../common/adsy_toast.dart';
+import '../app_network_image.dart';
 
 /// Long-press options for a chat message — ONE implementation shared by the
 /// 1:1 interface and group chats so the sheet never drifts between the two.
@@ -22,6 +23,7 @@ Future<void> showChatMessageOptions(
   VoidCallback? onReply,
   VoidCallback? onEdit,
   VoidCallback? onDelete,
+
   /// Long-press emoji reactions. When provided, a quick-reaction row sits
   /// above the options (Messenger-style): one tap to react, or fall through
   /// to reply/copy/delete.
@@ -69,111 +71,110 @@ Future<void> showChatMessageOptions(
             },
           ),
         Container(
-      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.10),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+          margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 10),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE2E8F0),
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            // Pressed-message preview bubble (text messages only).
-            if (canCopy)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(14),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 10),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    if (sharedThumb.isNotEmpty) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          sharedThumb,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                          headers: kMediaHeaders,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    Expanded(
-                      child: Text(
-                        text,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          height: 1.35,
-                          color: Color(0xFF334155),
-                        ),
-                      ),
+                // Pressed-message preview bubble (text messages only).
+                if (canCopy)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 11),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ],
-                ),
-              ),
-            if (canCopy)
-              _OptionRow(
-                sheetContext: sheetContext,
-                label: 'Copy',
-                icon: Icons.copy_rounded,
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: copyText));
-                  AdsyToast.success(context, 'Message copied');
-                },
-              ),
-            if (canReply)
-              _OptionRow(
-                sheetContext: sheetContext,
-                label: 'Reply',
-                icon: Icons.reply_rounded,
-                onTap: onReply,
-              ),
-            if (canEdit)
-              _OptionRow(
-                sheetContext: sheetContext,
-                label: 'Edit',
-                icon: Icons.edit_outlined,
-                onTap: onEdit,
-              ),
-            if (canDelete)
-              _OptionRow(
-                sheetContext: sheetContext,
-                label: 'Delete',
-                icon: Icons.delete_outline_rounded,
-                destructive: true,
-                isLast: true,
-                onTap: onDelete,
-              ),
-            const SizedBox(height: 8),
-          ],
+                    child: Row(
+                      children: [
+                        if (sharedThumb.isNotEmpty) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: AppNetworkImage(
+                              sharedThumb,
+                              width: 40,
+                              height: 40,
+                              httpHeaders: kMediaHeaders,
+                              errorWidget: const SizedBox.shrink(),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Expanded(
+                          child: Text(
+                            text,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              height: 1.35,
+                              color: Color(0xFF334155),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (canCopy)
+                  _OptionRow(
+                    sheetContext: sheetContext,
+                    label: 'Copy',
+                    icon: Icons.copy_rounded,
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: copyText));
+                      AdsyToast.success(context, 'Message copied');
+                    },
+                  ),
+                if (canReply)
+                  _OptionRow(
+                    sheetContext: sheetContext,
+                    label: 'Reply',
+                    icon: Icons.reply_rounded,
+                    onTap: onReply,
+                  ),
+                if (canEdit)
+                  _OptionRow(
+                    sheetContext: sheetContext,
+                    label: 'Edit',
+                    icon: Icons.edit_outlined,
+                    onTap: onEdit,
+                  ),
+                if (canDelete)
+                  _OptionRow(
+                    sheetContext: sheetContext,
+                    label: 'Delete',
+                    icon: Icons.delete_outline_rounded,
+                    destructive: true,
+                    isLast: true,
+                    onTap: onDelete,
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
         ),
-      ),
-    ),
       ],
     ),
   );
@@ -228,7 +229,8 @@ class _OptionRow extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(icon, size: 18, color: destructive ? color : const Color(0xFF64748B)),
+            Icon(icon,
+                size: 18, color: destructive ? color : const Color(0xFF64748B)),
           ],
         ),
       ),

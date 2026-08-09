@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
 import '../../utils/adsy_ios_scale.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../app_network_image.dart';
 
 /// A scrolling text widget for long usernames that don't fit in the AppBar.
 class MarqueeText extends StatefulWidget {
@@ -253,10 +254,9 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: avatarUrl.isNotEmpty
-              ? Image.network(
+              ? AppNetworkImage(
                   avatarUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _initials(),
+                  errorWidget: _initials(),
                 )
               : _initials(),
         ),
@@ -410,8 +410,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       IconButton(
         onPressed: onCloseSearch,
-        icon: const Icon(Icons.close_rounded,
-            color: Color(0xFF111827), size: 20),
+        icon:
+            const Icon(Icons.close_rounded, color: Color(0xFF111827), size: 20),
       ),
     ];
   }
@@ -425,8 +425,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       IconButton(
         onPressed: () => onStartCall('audio'),
-        icon: const Icon(Icons.call_outlined,
-            color: Color(0xFF111827), size: 22),
+        icon:
+            const Icon(Icons.call_outlined, color: Color(0xFF111827), size: 22),
       ),
       Builder(
         builder: (ctx) => IconButton(
@@ -478,8 +478,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             width: menuWidth,
             child: Material(
               color: Colors.transparent,
-              child: _buildActionMenuSurface(
-                  () => Navigator.of(dialogCtx).pop()),
+              child:
+                  _buildActionMenuSurface(() => Navigator.of(dialogCtx).pop()),
             ),
           ),
         ],

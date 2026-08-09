@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/mindforce_models.dart';
 import '../../utils/time_utils.dart';
 import '../../widgets/linkify_text.dart';
+import '../app_network_image.dart';
 
 class MindForceProblemCard extends StatelessWidget {
   final MindForceProblem problem;
@@ -25,7 +26,6 @@ class MindForceProblemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -52,19 +52,16 @@ class MindForceProblemCard extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: problem.userDetails.image != null
-                        ? Image.network(
+                        ? AppNetworkImage(
                             problem.userDetails.image!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return _buildAvatarFallback();
-                            },
+                            errorWidget: _buildAvatarFallback(),
                           )
                         : _buildAvatarFallback(),
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Name and time
                 Expanded(
                   child: Column(
@@ -87,13 +84,14 @@ class MindForceProblemCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Status badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: problem.status == 'solved' 
-                        ? Colors.green.shade50 
+                    color: problem.status == 'solved'
+                        ? Colors.green.shade50
                         : Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -101,12 +99,12 @@ class MindForceProblemCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        problem.status == 'solved' 
-                            ? Icons.check_circle 
+                        problem.status == 'solved'
+                            ? Icons.check_circle
                             : Icons.help_outline,
                         size: 16,
-                        color: problem.status == 'solved' 
-                            ? Colors.green.shade700 
+                        color: problem.status == 'solved'
+                            ? Colors.green.shade700
                             : Colors.blue.shade700,
                       ),
                       const SizedBox(width: 4),
@@ -115,8 +113,8 @@ class MindForceProblemCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: problem.status == 'solved' 
-                              ? Colors.green.shade700 
+                          color: problem.status == 'solved'
+                              ? Colors.green.shade700
                               : Colors.blue.shade700,
                         ),
                       ),
@@ -170,9 +168,9 @@ class MindForceProblemCard extends StatelessWidget {
                   ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Category badge
             if (problem.category != null)
               Container(
@@ -191,7 +189,7 @@ class MindForceProblemCard extends StatelessWidget {
                   ),
                 ),
               ),
-            
+
             // Title
             Text(
               problem.title,
@@ -201,9 +199,9 @@ class MindForceProblemCard extends StatelessWidget {
                 height: 1.3,
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Description
             LinkifyText(
               problem.description,
@@ -215,7 +213,7 @@ class MindForceProblemCard extends StatelessWidget {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
-            
+
             // Media preview
             if (problem.media.isNotEmpty)
               Padding(
@@ -224,7 +222,8 @@ class MindForceProblemCard extends StatelessWidget {
                   height: 80,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: problem.media.length > 3 ? 3 : problem.media.length,
+                    itemCount:
+                        problem.media.length > 3 ? 3 : problem.media.length,
                     itemBuilder: (context, index) {
                       return Container(
                         width: 80,
@@ -234,18 +233,15 @@ class MindForceProblemCard extends StatelessWidget {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.network(
+                              AppNetworkImage(
                                 problem.media[index].image,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: Colors.grey.shade200,
-                                    child: Icon(
-                                      Icons.image,
-                                      color: Colors.grey.shade400,
-                                    ),
-                                  );
-                                },
+                                errorWidget: Container(
+                                  color: Colors.grey.shade200,
+                                  child: Icon(
+                                    Icons.image,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                ),
                               ),
                               if (index == 2 && problem.media.length > 3)
                                 Container(
@@ -268,9 +264,9 @@ class MindForceProblemCard extends StatelessWidget {
                   ),
                 ),
               ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Stats
             Row(
               children: [
@@ -283,10 +279,11 @@ class MindForceProblemCard extends StatelessWidget {
                     color: Colors.grey.shade600,
                   ),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
-                Icon(Icons.chat_bubble_outline, size: 16, color: Colors.grey.shade600),
+
+                Icon(Icons.chat_bubble_outline,
+                    size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
                 Text(
                   '${problem.comments.length}',
@@ -295,13 +292,15 @@ class MindForceProblemCard extends StatelessWidget {
                     color: Colors.grey.shade600,
                   ),
                 ),
-                
+
                 const Spacer(),
-                
+
                 // Payment badge
-                if (problem.paymentOption == 'paid' && problem.paymentAmount != null)
+                if (problem.paymentOption == 'paid' &&
+                    problem.paymentAmount != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.amber.shade50,
                       borderRadius: BorderRadius.circular(12),

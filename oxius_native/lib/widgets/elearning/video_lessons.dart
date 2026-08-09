@@ -7,6 +7,7 @@ import '../ios_web_redirect_screen.dart';
 import '../../screens/elearning/video_player_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'elearning_step_header.dart';
+import '../app_network_image.dart';
 
 class VideoLessons extends StatefulWidget {
   final String? subject;
@@ -272,13 +273,12 @@ class _VideoLessonsState extends State<VideoLessons> {
                     _i18n.t('el_videos', fallback: 'Videos'),
                     Colors.red.shade500),
                 const SizedBox(width: 8),
-                _statPill(
-                    Icons.playlist_play_rounded,
-                    '${_lessons.length}',
-                    _i18n.t('el_lessons', fallback: 'Lessons'),
-                    _indigo),
+                _statPill(Icons.playlist_play_rounded, '${_lessons.length}',
+                    _i18n.t('el_lessons', fallback: 'Lessons'), _indigo),
                 const SizedBox(width: 8),
-                _statPill(Icons.schedule_rounded, _totalDuration,
+                _statPill(
+                    Icons.schedule_rounded,
+                    _totalDuration,
                     _i18n.t('el_total', fallback: 'Total'),
                     Colors.teal.shade600),
               ],
@@ -392,7 +392,10 @@ class _VideoLessonsState extends State<VideoLessons> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_indigo.withValues(alpha: 0.08), _violet.withValues(alpha: 0.08)],
+          colors: [
+            _indigo.withValues(alpha: 0.08),
+            _violet.withValues(alpha: 0.08)
+          ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _indigo.withValues(alpha: 0.18)),
@@ -406,16 +409,15 @@ class _VideoLessonsState extends State<VideoLessons> {
               _i18n.t('el_pro_notice',
                   fallback:
                       'Playback is a Pro feature. Upgrade to watch every lesson.'),
-              style: const TextStyle(
-                  fontSize: 12, height: 1.35, color: _slate800),
+              style:
+                  const TextStyle(fontSize: 12, height: 1.35, color: _slate800),
             ),
           ),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: _showProGate,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [_indigo, _violet]),
                 borderRadius: BorderRadius.circular(999),
@@ -514,8 +516,8 @@ class _VideoLessonsState extends State<VideoLessons> {
             items: [
               DropdownMenuItem(
                   value: 'all',
-                  child: Text(
-                      _i18n.t('el_all_lessons', fallback: 'All lessons'))),
+                  child:
+                      Text(_i18n.t('el_all_lessons', fallback: 'All lessons'))),
               ..._lessons.map((lesson) => DropdownMenuItem(
                     value: lesson,
                     child: Text(lesson, overflow: TextOverflow.ellipsis),
@@ -530,10 +532,9 @@ class _VideoLessonsState extends State<VideoLessons> {
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText:
-                  _i18n.t('el_search_hint', fallback: 'Search by title or description'),
-              hintStyle:
-                  TextStyle(fontSize: 13, color: Colors.grey.shade400),
+              hintText: _i18n.t('el_search_hint',
+                  fallback: 'Search by title or description'),
+              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
               prefixIcon: const Icon(Icons.search, size: 20),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -588,12 +589,12 @@ class _VideoLessonsState extends State<VideoLessons> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(
+                      AppNetworkImage(
                         video.getYoutubeThumbnail(),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        errorWidget: Container(
                           color: Colors.grey.shade300,
-                          child: const Icon(Icons.play_circle_outline, size: 32),
+                          child:
+                              const Icon(Icons.play_circle_outline, size: 32),
                         ),
                       ),
                       Container(
@@ -751,8 +752,7 @@ class _ProGateSheet extends StatelessWidget {
     final perks = <(IconData, String)>[
       (
         Icons.play_circle_fill_rounded,
-        i18n.t('el_perk_1',
-            fallback: 'Unlimited access to every video lesson')
+        i18n.t('el_perk_1', fallback: 'Unlimited access to every video lesson')
       ),
       (
         Icons.workspace_premium_rounded,
@@ -864,8 +864,8 @@ class _ProGateSheet extends StatelessWidget {
               ),
               child: Text(
                 i18n.t('el_upgrade_pro', fallback: 'Upgrade to Pro'),
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w700),
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -875,9 +875,7 @@ class _ProGateSheet extends StatelessWidget {
             child: Text(
               i18n.t('el_maybe_later', fallback: 'Maybe later'),
               style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: _slate500),
+                  fontSize: 13, fontWeight: FontWeight.w600, color: _slate500),
             ),
           ),
         ],

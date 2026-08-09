@@ -11,6 +11,7 @@ import '../services/classified_category_service.dart';
 import '../services/translation_service.dart';
 import 'classified_categories_grid.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 class ClassifiedSearchBar extends StatefulWidget {
   final ValueChanged<String> onSearch;
@@ -691,13 +692,11 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: category.image != null && category.image!.isNotEmpty
-                    ? Image.network(
+                    ? AppNetworkImage(
                         category.image!.startsWith('http')
                             ? category.image!
                             : '${AppConfig.mediaBaseUrl}${category.image}',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _buildCategoryFallbackIcon(),
+                        errorWidget: _buildCategoryFallbackIcon(),
                       )
                     : Image.asset(
                         category.getIconAsset(),
@@ -824,10 +823,9 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       final resolvedUrl = imageUrl.startsWith('http')
           ? imageUrl
           : '${AppConfig.mediaBaseUrl}$imageUrl';
-      return Image.network(
+      return AppNetworkImage(
         resolvedUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const Icon(
+        errorWidget: const Icon(
           Icons.work_outline_rounded,
           size: 20,
           color: Color(0xFF10B981),
@@ -894,8 +892,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
             }
 
             return Padding(
-              padding:
-                  EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
               child: DraggableScrollableSheet(
                 initialChildSize: 0.92,
                 minChildSize: 0.5,
@@ -991,14 +989,12 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                             border: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(12)),
-                              borderSide:
-                                  BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: BorderSide(color: Color(0xFFE2E8F0)),
                             ),
                             enabledBorder: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(12)),
-                              borderSide:
-                                  BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: BorderSide(color: Color(0xFFE2E8F0)),
                             ),
                             focusedBorder: const OutlineInputBorder(
                               borderRadius:
@@ -1024,7 +1020,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                     ? _sheetEmpty()
                                     : ListView(
                                         controller: scrollController,
-                                        padding: const EdgeInsets.only(bottom: 24),
+                                        padding:
+                                            const EdgeInsets.only(bottom: 24),
                                         children: [
                                           if (cats.isNotEmpty) ...[
                                             _sheetSectionLabel(_ts.t(
@@ -1043,13 +1040,11 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                                       Icons
                                                           .arrow_forward_ios_rounded,
                                                       size: 12),
-                                                  onTap: () => go(
-                                                      sheetCtx,
-                                                      '/classified-category',
-                                                      {
-                                                        'categoryId': c.id,
-                                                        'categoryTitle': c.title,
-                                                      }),
+                                                  onTap: () => go(sheetCtx,
+                                                      '/classified-category', {
+                                                    'categoryId': c.id,
+                                                    'categoryTitle': c.title,
+                                                  }),
                                                 )),
                                           ],
                                           if (posts.isNotEmpty) ...[
@@ -1057,8 +1052,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                                 fallback: 'পোস্ট')),
                                             ...posts.map((p) => ListTile(
                                                   leading: const Icon(
-                                                      Icons
-                                                          .article_outlined,
+                                                      Icons.article_outlined,
                                                       color: Color(0xFF10B981)),
                                                   title: Text(
                                                       p['title']?.toString() ??
@@ -1077,8 +1071,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                                               .toString(),
                                                           style: AppFonts.inter(
                                                               fontSize: 11,
-                                                              color: Colors
-                                                                  .grey.shade600))
+                                                              color: Colors.grey
+                                                                  .shade600))
                                                       : null,
                                                   onTap: () => go(
                                                       sheetCtx,
@@ -1128,7 +1122,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
       children: [
-        _sheetSectionLabel(_ts.t('popular_searches', fallback: 'জনপ্রিয় খোঁজ')),
+        _sheetSectionLabel(
+            _ts.t('popular_searches', fallback: 'জনপ্রিয় খোঁজ')),
         const SizedBox(height: 8),
         Wrap(
           spacing: 6,

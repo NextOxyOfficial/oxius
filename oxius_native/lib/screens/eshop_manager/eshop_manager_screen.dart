@@ -15,6 +15,7 @@ import '../../services/review_service.dart';
 import 'create_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../widgets/app_network_image.dart';
 
 class EshopManagerScreen extends StatefulWidget {
   const EshopManagerScreen({super.key});
@@ -266,64 +267,64 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
         if (!didPop && mounted) setState(() => _section = 0);
       },
       child: Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
-      endDrawer: inManager ? _buildEshopDrawer() : null,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, size: 22),
-          onPressed: () {
-            if (inManager && _section != 0) {
-              setState(() => _section = 0);
-            } else {
-              Navigator.pop(context);
-            }
-          },
-          color: const Color(0xFF374151),
-        ),
-        title: Text(
-          inManager
-              ? _sectionTitle()
-              : t('eshop_manager', fallback: 'Shop Manager'),
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
-            letterSpacing: -0.2,
+        key: _scaffoldKey,
+        backgroundColor: const Color(0xFFF9FAFB),
+        endDrawer: inManager ? _buildEshopDrawer() : null,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, size: 22),
+            onPressed: () {
+              if (inManager && _section != 0) {
+                setState(() => _section = 0);
+              } else {
+                Navigator.pop(context);
+              }
+            },
+            color: const Color(0xFF374151),
           ),
-        ),
-        actions: [
-          if (inManager)
-            IconButton(
-              icon: const Icon(Icons.menu_rounded,
-                  size: 24, color: Color(0xFF374151)),
-              tooltip: t('eshop_menu', fallback: 'মেনু'),
-              onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          title: Text(
+            inManager
+                ? _sectionTitle()
+                : t('eshop_manager', fallback: 'Shop Manager'),
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.2,
             ),
-          const SizedBox(width: 4),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: Colors.grey.shade200,
+          ),
+          actions: [
+            if (inManager)
+              IconButton(
+                icon: const Icon(Icons.menu_rounded,
+                    size: 24, color: Color(0xFF374151)),
+                tooltip: t('eshop_menu', fallback: 'মেনু'),
+                onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+              ),
+            const SizedBox(width: 4),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              height: 1,
+              color: Colors.grey.shade200,
+            ),
           ),
         ),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: AdsyLoadingIndicator(
-                color: Color(0xFF10B981),
-              ),
-            )
-          : !_isPro
-              ? _buildUpgradePrompt()
-              : !_hasStore
-                  ? _buildCreateStorePrompt()
-                  : _buildManagerContent(isMobile),
+        body: _isLoading
+            ? const Center(
+                child: AdsyLoadingIndicator(
+                  color: Color(0xFF10B981),
+                ),
+              )
+            : !_isPro
+                ? _buildUpgradePrompt()
+                : !_hasStore
+                    ? _buildCreateStorePrompt()
+                    : _buildManagerContent(isMobile),
       ),
     );
   }
@@ -350,8 +351,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
       (
         Icons.reviews_rounded,
         t('eshop_benefit_reviews', fallback: 'রিভিউ ও রিপ্লাই'),
-        t('eshop_benefit_reviews_sub',
-            fallback: 'কাস্টমার রিভিউতে উত্তর দিন')
+        t('eshop_benefit_reviews_sub', fallback: 'কাস্টমার রিভিউতে উত্তর দিন')
       ),
       (
         Icons.insights_rounded,
@@ -389,7 +389,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               // ── Hero header ──
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 18),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 26, horizontal: 18),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
@@ -715,9 +716,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     final outOfStock = _products
         .where((p) => p.status == 'out-of-stock' || p.stock <= 0)
         .length;
-    final inactive = _products
-        .where((p) => p.status == 'inactive' && p.stock > 0)
-        .length;
+    final inactive =
+        _products.where((p) => p.status == 'inactive' && p.stock > 0).length;
     final activeProducts =
         (totalProducts - outOfStock - inactive).clamp(0, totalProducts);
     final totalOrders = _orders.length;
@@ -842,8 +842,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
     final name = store?.storeName ??
         (AuthService.currentUser?.storeName ??
             t('eshop_my_store', fallback: 'আমার স্টোর'));
-    final uname = store?.storeUsername ??
-        (AuthService.currentUser?.storeUsername ?? '');
+    final uname =
+        store?.storeUsername ?? (AuthService.currentUser?.storeUsername ?? '');
     final active = store?.isActive ?? true;
     const green = Color(0xFF059669);
     const dark = Color(0xFF0F172A);
@@ -863,151 +863,154 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-              children: [
-                // Store avatar — the REAL uploaded logo when there is one,
-                // else the shop icon.
-                Builder(builder: (_) {
-                  final logo =
-                      AppConfig.getAbsoluteUrl(store?.storeLogo ?? '');
-                  if (logo.isEmpty) {
-                    return Image.asset(
-                      'assets/images/icons/shop.png',
-                      width: 54,
-                      height: 54,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(
-                          Icons.storefront_rounded,
-                          size: 44,
-                          color: green),
-                    );
-                  }
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      logo,
-                      width: 54,
-                      height: 54,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Image.asset(
-                        'assets/images/icons/shop.png',
-                        width: 54,
-                        height: 54,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(
-                            Icons.storefront_rounded,
-                            size: 44,
-                            color: green),
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(width: 13),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Name + verified
-                      Row(
+                  children: [
+                    // Store avatar — the REAL uploaded logo when there is one,
+                    // else the shop icon.
+                    Builder(builder: (_) {
+                      final logo =
+                          AppConfig.getAbsoluteUrl(store?.storeLogo ?? '');
+                      if (logo.isEmpty) {
+                        return Image.asset(
+                          'assets/images/icons/shop.png',
+                          width: 54,
+                          height: 54,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(
+                              Icons.storefront_rounded,
+                              size: 44,
+                              color: green),
+                        );
+                      }
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: AppNetworkImage(
+                          logo,
+                          width: 54,
+                          height: 54,
+                          errorWidget: Image.asset(
+                            'assets/images/icons/shop.png',
+                            width: 54,
+                            height: 54,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Icon(
+                                Icons.storefront_rounded,
+                                size: 44,
+                                color: green),
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Flexible(
-                            child: Text(name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: dark,
-                                    fontSize: 16.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.3)),
-                          ),
-                          const SizedBox(width: 5),
-                          const Icon(Icons.verified_rounded,
-                              color: green, size: 16),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                          uname.isNotEmpty
-                              ? '@$uname'
-                              : t('eshop_pro_seller', fallback: 'প্রো সেলার'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: slate,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 9),
-                      // Inline status · pro seller
-                      Row(
-                        children: [
-                          Icon(
-                            active
-                                ? Icons.check_circle_rounded
-                                : Icons.do_not_disturb_on_rounded,
-                            size: 14,
-                            color: active ? green : const Color(0xFF94A3B8),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                              active
-                                  ? t('eshop_active', fallback: 'অ্যাক্টিভ')
-                                  : t('eshop_inactive',
-                                      fallback: 'ইনঅ্যাক্টিভ'),
-                              style: TextStyle(
-                                  color: active ? green : slate,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700)),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 3,
-                            height: 3,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFFCBD5E1),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // PRO badge to the left of the "pro seller" label.
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                          // Name + verified
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        color: dark,
+                                        fontSize: 16.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.3)),
                               ),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text('PRO',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.3)),
+                              const SizedBox(width: 5),
+                              const Icon(Icons.verified_rounded,
+                                  color: green, size: 16),
+                            ],
                           ),
-                          const SizedBox(width: 5),
+                          const SizedBox(height: 3),
                           Text(
-                              t('eshop_pro_seller', fallback: 'প্রো সেলার'),
+                              uname.isNotEmpty
+                                  ? '@$uname'
+                                  : t('eshop_pro_seller',
+                                      fallback: 'প্রো সেলার'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                   color: slate,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600)),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 9),
+                          // Inline status · pro seller
+                          Row(
+                            children: [
+                              Icon(
+                                active
+                                    ? Icons.check_circle_rounded
+                                    : Icons.do_not_disturb_on_rounded,
+                                size: 14,
+                                color: active ? green : const Color(0xFF94A3B8),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                  active
+                                      ? t('eshop_active', fallback: 'অ্যাক্টিভ')
+                                      : t('eshop_inactive',
+                                          fallback: 'ইনঅ্যাক্টিভ'),
+                                  style: TextStyle(
+                                      color: active ? green : slate,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700)),
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 3,
+                                height: 3,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFFCBD5E1),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // PRO badge to the left of the "pro seller" label.
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFBBF24),
+                                      Color(0xFFF59E0B)
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text('PRO',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.3)),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                  t('eshop_pro_seller', fallback: 'প্রো সেলার'),
+                                  style: const TextStyle(
+                                      color: slate,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Edit affordance — opens the full store editor sheet.
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: const Icon(Icons.edit_rounded,
-                      color: slate, size: 15),
-                ),
-              ],
+                    ),
+                    const SizedBox(width: 8),
+                    // Edit affordance — opens the full store editor sheet.
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      child: const Icon(Icons.edit_rounded,
+                          color: slate, size: 15),
+                    ),
+                  ],
                 ),
                 // Store details inline on the dashboard (the old "স্টোর"
                 // section): description, address, public URL and key dates —
@@ -1062,8 +1065,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                               const TextSpan(
                                   text: 'adsyclub.com/eshop/',
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF64748B))),
+                                      fontSize: 12, color: Color(0xFF64748B))),
                               TextSpan(
                                   text: uname,
                                   style: const TextStyle(
@@ -1101,8 +1103,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                         t('eshop_ov_joined_date', fallback: 'জয়েন করেছেন'),
                         _dashDate(store?.createdAt)),
                     _dashMetaTile(
-                        t('eshop_ov_product_slots',
-                            fallback: 'প্রোডাক্ট স্লট'),
+                        t('eshop_ov_product_slots', fallback: 'প্রোডাক্ট স্লট'),
                         '$_currentProductCount / $_productLimit'),
                     _dashMetaTile(
                         t('eshop_ov_renew_date', fallback: 'রিনিউ ডেট'),
@@ -1196,8 +1197,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
         children: [
           _statusPill(t('eshop_active', fallback: 'অ্যাক্টিভ'), active,
               const Color(0xFF10B981)),
-          _statusPill(t('eshop_out_of_stock', fallback: 'স্টক আউট'),
-              outOfStock, const Color(0xFFDC2626)),
+          _statusPill(t('eshop_out_of_stock', fallback: 'স্টক আউট'), outOfStock,
+              const Color(0xFFDC2626)),
           _statusPill(t('eshop_inactive', fallback: 'ইনঅ্যাক্টিভ'), inactive,
               const Color(0xFF94A3B8)),
         ],
@@ -1231,11 +1232,9 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
             Icon(Icons.receipt_long_rounded,
                 size: 34, color: Colors.grey.shade300),
             const SizedBox(height: 8),
-            Text(
-                t('eshop_no_orders_yet',
-                    fallback: 'এখনো কোনো অর্ডার আসেনি'),
-                style: const TextStyle(
-                    fontSize: 12.5, color: Color(0xFF94A3B8))),
+            Text(t('eshop_no_orders_yet', fallback: 'এখনো কোনো অর্ডার আসেনি'),
+                style:
+                    const TextStyle(fontSize: 12.5, color: Color(0xFF94A3B8))),
           ],
         ),
       );
@@ -1257,8 +1256,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
 
   Widget _recentOrderRow(ShopOrder o) {
     final (Color c, String label) = _orderStatusStyle(o.orderStatus);
-    final ref = o.orderNumber ??
-        (o.id.length > 6 ? o.id.substring(0, 6) : o.id);
+    final ref =
+        o.orderNumber ?? (o.id.length > 6 ? o.id.substring(0, 6) : o.id);
     return InkWell(
       onTap: () => _selectSection(2),
       child: Padding(
@@ -1279,7 +1278,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(o.customerName ?? t('eshop_customer', fallback: 'ক্রেতা'),
+                  Text(
+                      o.customerName ?? t('eshop_customer', fallback: 'ক্রেতা'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -1311,9 +1311,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                   ),
                   child: Text(label,
                       style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: c)),
+                          fontSize: 10, fontWeight: FontWeight.w700, color: c)),
                 ),
               ],
             ),
@@ -1460,8 +1458,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -1500,8 +1498,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                 t('eshop_new_product', fallback: 'নতুন প্রোডাক্ট')),
             // NOTE: no separate "স্টোর" item — store details live on the
             // Dashboard now (edit opens from there).
-            _drawerItem(5, Icons.reviews_rounded,
-                t('eshop_reviews', fallback: 'রিভিউ'),
+            _drawerItem(
+                5, Icons.reviews_rounded, t('eshop_reviews', fallback: 'রিভিউ'),
                 badge: _reviewCount > 0 ? '$_reviewCount' : null),
             const Spacer(),
             const Divider(height: 1, color: Color(0xFFF1F5F9)),
@@ -1509,8 +1507,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Text(
                 '$_currentProductCount / $_productLimit ${t('eshop_slots_used', fallback: 'প্রোডাক্ট স্লট ইউজড')}',
-                style: const TextStyle(
-                    fontSize: 11.5, color: Color(0xFF94A3B8)),
+                style:
+                    const TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8)),
               ),
             ),
           ],
@@ -1546,16 +1544,15 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                     label,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight:
-                          selected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                       color: selected ? accent : const Color(0xFF374151),
                     ),
                   ),
                 ),
                 if (badge != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: selected ? accent : const Color(0xFFE5E7EB),
                       borderRadius: BorderRadius.circular(20),

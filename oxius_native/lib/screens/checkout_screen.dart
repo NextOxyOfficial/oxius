@@ -6,6 +6,7 @@ import '../models/cart_item.dart';
 import '../models/order_model.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<CartItem> cartItems;
@@ -373,7 +374,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.25),
+            color:
+                isActive ? Colors.white : Colors.white.withValues(alpha: 0.25),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -485,22 +487,19 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
-            child: Image.network(
+            child: AppNetworkImage(
               product.imageDetails?.isNotEmpty == true
                   ? product.imageDetails!.first.image
                   : 'https://via.placeholder.com/60',
               width: 60,
               height: 60,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 60,
-                  height: 60,
-                  color: const Color(0xFFE5E7EB),
-                  child: const Icon(Icons.image_rounded,
-                      color: Color(0xFF9CA3AF), size: 24),
-                );
-              },
+              errorWidget: Container(
+                width: 60,
+                height: 60,
+                color: const Color(0xFFE5E7EB),
+                child: const Icon(Icons.image_rounded,
+                    color: Color(0xFF9CA3AF), size: 24),
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -1192,7 +1191,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 ),
               ),
             ),
-            if (!last) Container(width: 1.5, height: 34, color: const Color(0xFFEEF2F6)),
+            if (!last)
+              Container(width: 1.5, height: 34, color: const Color(0xFFEEF2F6)),
           ],
         ),
         const SizedBox(width: 12),

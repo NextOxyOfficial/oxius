@@ -9,6 +9,7 @@ import '../../utils/media_headers.dart';
 import 'profile_screen.dart';
 import 'shorts_player_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../widgets/app_network_image.dart';
 
 class PostMediaViewerScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -217,13 +218,11 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
         fit: StackFit.expand,
         children: [
           if (thumbUrl.isNotEmpty)
-            Image.network(
+            AppNetworkImage(
               thumbUrl,
-              headers: kMediaHeaders,
+              httpHeaders: kMediaHeaders,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return _buildVideoThumbFallback();
-              },
+              errorWidget: _buildVideoThumbFallback(),
             )
           else
             _buildVideoThumbFallback(),
@@ -321,8 +320,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                                 child: Text(
                                   '${_currentIndex + 1}/${_post.media.length}',
                                   style: TextStyle(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.95),
+                                    color: Colors.white.withValues(alpha: 0.95),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: 0.4,
@@ -518,9 +516,8 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
             width: active ? 18 : 6,
             height: 6,
             decoration: BoxDecoration(
-              color: active
-                  ? Colors.white
-                  : Colors.white.withValues(alpha: 0.38),
+              color:
+                  active ? Colors.white : Colors.white.withValues(alpha: 0.38),
               borderRadius: BorderRadius.circular(999),
             ),
           );
@@ -550,9 +547,8 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
       onVerticalDragUpdate: dismissEnabled ? _onVerticalDragUpdate : null,
       onVerticalDragEnd: dismissEnabled ? _onVerticalDragEnd : null,
       child: AnimatedContainer(
-        duration: _isDragging
-            ? Duration.zero
-            : const Duration(milliseconds: 250),
+        duration:
+            _isDragging ? Duration.zero : const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         transform: Matrix4.identity()
           ..translateByDouble(0.0, _dragOffset, 0.0, 1.0)
@@ -612,8 +608,8 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                 ? Center(
                     child: Text(
                       'No media',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8)),
+                      style:
+                          TextStyle(color: Colors.white.withValues(alpha: 0.8)),
                     ),
                   )
                 : Stack(
@@ -683,8 +679,7 @@ class _ZoomablePhotoState extends State<_ZoomablePhoto>
   }
 
   void _handleTransformChanged() {
-    final zoomed =
-        _transformationController.value.getMaxScaleOnAxis() > 1.01;
+    final zoomed = _transformationController.value.getMaxScaleOnAxis() > 1.01;
     if (zoomed == _isZoomed) return;
     setState(() {
       _isZoomed = zoomed;
@@ -708,8 +703,7 @@ class _ZoomablePhotoState extends State<_ZoomablePhoto>
           0.0,
           1.0,
         )
-        ..scaleByDouble(
-            _doubleTapScale, _doubleTapScale, 1.0, 1.0);
+        ..scaleByDouble(_doubleTapScale, _doubleTapScale, 1.0, 1.0);
     }
 
     _zoomAnimation = Matrix4Tween(begin: current, end: target).animate(
@@ -752,8 +746,7 @@ class _ZoomablePhotoState extends State<_ZoomablePhoto>
               return Center(
                 child: Text(
                   'Failed to load media',
-                  style:
-                      TextStyle(color: Colors.white.withValues(alpha: 0.75)),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.75)),
                 ),
               );
             },

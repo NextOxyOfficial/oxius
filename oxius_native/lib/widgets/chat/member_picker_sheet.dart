@@ -4,6 +4,7 @@ import '../../config/app_config.dart';
 import '../../services/adsyconnect_service.dart';
 import '../../services/user_search_service.dart';
 import '../common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 /// Search-and-select users bottom sheet; pops the selected user-id list.
 /// Used for adding members to an existing group.
@@ -34,7 +35,8 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
 
   Future<void> _loadRecentPartners() async {
     try {
-      final rooms = await AdsyConnectService.getChatRooms(page: 1, pageSize: 30);
+      final rooms =
+          await AdsyConnectService.getChatRooms(page: 1, pageSize: 30);
       if (!mounted) return;
       final seen = <String>{};
       final recent = <Map<String, dynamic>>[];
@@ -159,66 +161,64 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                     );
                   }
                   return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: list.length + (searchMode ? 0 : 1),
-                            itemBuilder: (_, index) {
-                              if (!searchMode && index == 0) {
-                                return const Padding(
-                                  padding: EdgeInsets.fromLTRB(16, 8, 16, 2),
-                                  child: Text('আপনার পরিচিতরা',
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF94A3B8),
-                                          letterSpacing: 0.3)),
-                                );
-                              }
-                              final i = searchMode ? index : index - 1;
-                              final u = list[i];
-                              final id = u['id'].toString();
-                              final sel = _selected.containsKey(id);
-                              final avatar = AppConfig.getAbsoluteUrl(
-                                  (u['avatar'] ?? '').toString());
-                              final name = u['name'].toString();
-                              return ListTile(
-                                dense: true,
-                                leading: Container(
-                                  width: 38,
-                                  height: 38,
-                                  decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Color(0xFFEFF6FF)),
-                                  clipBehavior: Clip.antiAlias,
-                                  alignment: Alignment.center,
-                                  child: avatar.isNotEmpty
-                                      ? Image.network(avatar,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) =>
-                                              _initial(name))
-                                      : _initial(name),
-                                ),
-                                title: Text(name,
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600)),
-                                trailing: Icon(
-                                  sel
-                                      ? Icons.check_circle_rounded
-                                      : Icons.radio_button_unchecked,
-                                  color: sel
-                                      ? const Color(0xFF2563EB)
-                                      : Colors.grey.shade400,
-                                ),
-                                onTap: () => setState(() {
-                                  if (sel) {
-                                    _selected.remove(id);
-                                  } else {
-                                    _selected[id] = u;
-                                  }
-                                }),
-                              );
-                            },
-                          );
+                    shrinkWrap: true,
+                    itemCount: list.length + (searchMode ? 0 : 1),
+                    itemBuilder: (_, index) {
+                      if (!searchMode && index == 0) {
+                        return const Padding(
+                          padding: EdgeInsets.fromLTRB(16, 8, 16, 2),
+                          child: Text('আপনার পরিচিতরা',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF94A3B8),
+                                  letterSpacing: 0.3)),
+                        );
+                      }
+                      final i = searchMode ? index : index - 1;
+                      final u = list[i];
+                      final id = u['id'].toString();
+                      final sel = _selected.containsKey(id);
+                      final avatar = AppConfig.getAbsoluteUrl(
+                          (u['avatar'] ?? '').toString());
+                      final name = u['name'].toString();
+                      return ListTile(
+                        dense: true,
+                        leading: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: const BoxDecoration(
+                              shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
+                          clipBehavior: Clip.antiAlias,
+                          alignment: Alignment.center,
+                          child: avatar.isNotEmpty
+                              ? AppNetworkImage(
+                                  avatar,
+                                  errorWidget: _initial(name),
+                                )
+                              : _initial(name),
+                        ),
+                        title: Text(name,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        trailing: Icon(
+                          sel
+                              ? Icons.check_circle_rounded
+                              : Icons.radio_button_unchecked,
+                          color: sel
+                              ? const Color(0xFF2563EB)
+                              : Colors.grey.shade400,
+                        ),
+                        onTap: () => setState(() {
+                          if (sel) {
+                            _selected.remove(id);
+                          } else {
+                            _selected[id] = u;
+                          }
+                        }),
+                      );
+                    },
+                  );
                 }),
               ),
               Padding(
@@ -229,8 +229,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                   child: FilledButton(
                     onPressed: _selected.isEmpty
                         ? null
-                        : () =>
-                            Navigator.pop(context, _selected.keys.toList()),
+                        : () => Navigator.pop(context, _selected.keys.toList()),
                     style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF2563EB)),
                     child: Text('যোগ করুন (${_selected.length})'),

@@ -9,6 +9,7 @@ import '../services/user_state_service.dart';
 import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -207,7 +208,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
             context, data['message'] ?? 'Documents submitted successfully!');
         await _loadVerificationStatus();
       } else {
-        AdsyToast.error(context, 'Failed to submit documents. Please try again.');
+        AdsyToast.error(
+            context, 'Failed to submit documents. Please try again.');
       }
     } catch (error) {
       debugPrint('Error submitting documents: $error');
@@ -995,11 +997,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: image.startsWith('http')
-                      ? Image.network(
+                      ? AppNetworkImage(
                           image,
                           height: 190,
                           width: double.infinity,
-                          fit: BoxFit.cover,
                         )
                       : Image.memory(
                           base64Decode(image.split(',').last),

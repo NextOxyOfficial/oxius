@@ -10,6 +10,7 @@ import '../models/referral_reward_models.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class ReferFriendScreen extends StatefulWidget {
   const ReferFriendScreen({super.key});
@@ -252,7 +253,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         context,
         data: AdsyShareData(
           title: 'AdsyClub-এ যোগ দিন',
-          description: 'আমার রেফারেল লিংক দিয়ে রেজিস্ট্রেশন করে ইনকাম শুরু করুন',
+          description:
+              'আমার রেফারেল লিংক দিয়ে রেজিস্ট্রেশন করে ইনকাম শুরু করুন',
           url: _referralLink!,
           subject: 'AdsyClub-এ  রেজিস্ট্রেশন করুন',
           eyebrow: 'রেফার করে ইনকাম',
@@ -470,8 +472,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
             child: Row(
               children: [
                 Expanded(
-                    child: _buildStatCard(
-                        '৫-২০%', 'কমিশন রেট', Colors.green)),
+                    child: _buildStatCard('৫-২০%', 'কমিশন রেট', Colors.green)),
                 const SizedBox(width: 8),
                 Expanded(
                     child: _buildStatCard(
@@ -1211,9 +1212,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 child: Text(
                   claims.program?.name ?? 'রেফারেল রিওয়ার্ড',
                   style: AppFonts.roboto(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: _kDark),
+                      fontSize: 13, fontWeight: FontWeight.w700, color: _kDark),
                 ),
               ),
               if (_eligibleReferrerClaimsCount > 0)
@@ -1312,9 +1311,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
             Text(
               '৳${claim.rewardAmount.toStringAsFixed(0)}',
               style: AppFonts.roboto(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: _kDark),
+                  fontSize: 11, fontWeight: FontWeight.w700, color: _kDark),
             ),
           ],
         ),
@@ -1329,9 +1326,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         Text(
           'রেফার করা ইউজার (${_referredUsers.length})',
           style: AppFonts.roboto(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: _kMuted),
+              fontSize: 12.5, fontWeight: FontWeight.w700, color: _kMuted),
         ),
         const SizedBox(height: 6),
         for (int i = 0; i < _referredUsers.length; i++) ...[
@@ -1354,13 +1349,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
           avatarUrl.isNotEmpty
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
+                  child: AppNetworkImage(
                     avatarUrl,
                     width: 32,
                     height: 32,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        _buildUserInitial(user.initial),
+                    errorWidget: _buildUserInitial(user.initial),
                   ),
                 )
               : _buildUserInitial(user.initial),
@@ -1373,9 +1366,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                 Text(
                   user.displayName,
                   style: AppFonts.roboto(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: _kDark),
+                      fontSize: 13, fontWeight: FontWeight.w600, color: _kDark),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1406,9 +1397,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
       child: Center(
         child: Text(initial,
             style: AppFonts.roboto(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: _kGreen)),
+                fontSize: 12, fontWeight: FontWeight.w700, color: _kGreen)),
       ),
     );
   }
@@ -1420,9 +1409,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: user.isActive
-                ? _kGreen.withValues(alpha: 0.1)
-                : _kHairline,
+            color: user.isActive ? _kGreen.withValues(alpha: 0.1) : _kHairline,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -1463,7 +1450,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                               borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
                         ),
-                        child: Text('নিন ৳${claim.rewardAmount.toStringAsFixed(0)}',
+                        child: Text(
+                            'নিন ৳${claim.rewardAmount.toStringAsFixed(0)}',
                             style: AppFonts.roboto(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
@@ -1483,8 +1471,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
                               color: Colors.amber.shade800)),
                     )
         else
-          Text('-',
-              style: AppFonts.roboto(fontSize: 11, color: _kMuted)),
+          Text('-', style: AppFonts.roboto(fontSize: 11, color: _kMuted)),
       ],
     );
   }

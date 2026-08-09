@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'dart:ui' as ui;
 import '../../models/rideshare_models.dart';
 import 'rideshare_vehicle_catalog.dart';
+import '../../widgets/app_network_image.dart';
 
 class RideshareMapWidget extends StatefulWidget {
   final RidePoint? pickupPoint;
@@ -121,15 +122,14 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
   void _animatedMove(LatLng target, double zoom,
       {Duration duration = const Duration(milliseconds: 650)}) {
     final camera = _mapController.camera;
-    final latTween = Tween<double>(
-        begin: camera.center.latitude, end: target.latitude);
-    final lngTween = Tween<double>(
-        begin: camera.center.longitude, end: target.longitude);
+    final latTween =
+        Tween<double>(begin: camera.center.latitude, end: target.latitude);
+    final lngTween =
+        Tween<double>(begin: camera.center.longitude, end: target.longitude);
     final zoomTween = Tween<double>(begin: camera.zoom, end: zoom);
 
     _cameraController?.dispose();
-    final controller =
-        AnimationController(vsync: this, duration: duration);
+    final controller = AnimationController(vsync: this, duration: duration);
     _cameraController = controller;
     final curve =
         CurvedAnimation(parent: controller, curve: Curves.easeInOutCubic);
@@ -144,8 +144,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
   }
 
   void _cycleMapStyle() {
-    final next = _MapStyle
-        .values[(_style.index + 1) % _MapStyle.values.length];
+    final next = _MapStyle.values[(_style.index + 1) % _MapStyle.values.length];
     setState(() => _style = next);
   }
 
@@ -1129,12 +1128,11 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
                 ),
                 child: avatarUrl != null && avatarUrl.isNotEmpty
                     ? ClipOval(
-                        child: Image.network(
+                        child: AppNetworkImage(
                           avatarUrl,
                           width: 28,
                           height: 28,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
+                          errorWidget:
                               Icon(icon, size: 14, color: Colors.white),
                         ),
                       )
@@ -1217,10 +1215,9 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
             ],
           ),
           child: ClipOval(
-            child: Image.network(
+            child: AppNetworkImage(
               avatarUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorWidget: Container(
                 color: const Color(0xFFF1F5F9),
                 child: Icon(fallbackIcon,
                     size: 22, color: const Color(0xFF64748B)),
@@ -1569,6 +1566,5 @@ class _PinTailPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_PinTailPainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(_PinTailPainter oldDelegate) => oldDelegate.color != color;
 }

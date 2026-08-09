@@ -9,6 +9,7 @@ import '../../widgets/login_prompt_dialog.dart';
 import '../../widgets/mobile_sticky_nav.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../widgets/app_network_image.dart';
 
 class MobileRechargeScreen extends StatefulWidget {
   const MobileRechargeScreen({super.key});
@@ -132,7 +133,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
   List<Map<String, String>> get _filters => [
         {'value': 'all', 'label': _t('recharge_filter_all', 'সব')},
-        {'value': 'balance', 'label': _t('recharge_filter_balance', 'ব্যালেন্স')},
+        {
+          'value': 'balance',
+          'label': _t('recharge_filter_balance', 'ব্যালেন্স')
+        },
         {'value': 'data', 'label': _t('recharge_filter_data', 'ডেটা')},
         {'value': 'voice', 'label': _t('recharge_filter_voice', 'ভয়েস')},
         {'value': 'combo', 'label': _t('recharge_filter_combo', 'কম্বো')},
@@ -208,7 +212,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          _t('recharge_title', 'মোবাইল রিচার্জ'),
+                                          _t('recharge_title',
+                                              'মোবাইল রিচার্জ'),
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,
@@ -270,7 +275,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   onPressed: () => _openRechargeHistory(),
                                   icon: const Icon(Icons.history_rounded,
                                       size: 18),
-                                  label: Text(_t('recharge_history', 'হিস্ট্রি')),
+                                  label:
+                                      Text(_t('recharge_history', 'হিস্ট্রি')),
                                   style: TextButton.styleFrom(
                                     foregroundColor: const Color(0xFF3B82F6),
                                     padding: const EdgeInsets.symmetric(
@@ -548,7 +554,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
               const SizedBox(height: 8),
               Text(
                 _selectedOperator == 'all' && _activeFilter == 'all'
-                    ? _t('recharge_no_packages_db', 'ডেটাবেজে কোনো প্যাকেজ পাওয়া যায়নি')
+                    ? _t('recharge_no_packages_db',
+                        'ডেটাবেজে কোনো প্যাকেজ পাওয়া যায়নি')
                     : _t('recharge_try_filters', 'ফিল্টার বদলে দেখুন'),
                 style: TextStyle(
                   fontSize: 13,
@@ -679,13 +686,11 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         child: package['operator_details']?['icon'] != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(3),
-                                child: Image.network(
+                                child: AppNetworkImage(
                                   package['operator_details']['icon'],
                                   width: 20,
                                   height: 20,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
+                                  errorWidget: const Icon(
                                     Icons.phone_android,
                                     size: 14,
                                     color: Color(0xFF6B7280),
@@ -929,7 +934,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _t('recharge_confirm_title', 'রিচার্জ নিশ্চিত করুন'),
+                            _t('recharge_confirm_title',
+                                'রিচার্জ নিশ্চিত করুন'),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -939,7 +945,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            _t('recharge_review_submit', 'দেখে নিয়ে সাবমিট করুন'),
+                            _t('recharge_review_submit',
+                                'দেখে নিয়ে সাবমিট করুন'),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.white70,
@@ -1030,7 +1037,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             _buildDetailRow(_t('recharge_type', 'ধরন'),
                                 _capitalizeFirst(package['type'] ?? 'N/A')),
                             const Divider(height: 16),
-                            _buildDetailRow(_t('recharge_amount', 'টাকার পরিমাণ'),
+                            _buildDetailRow(
+                                _t('recharge_amount', 'টাকার পরিমাণ'),
                                 '৳${packagePrice.toStringAsFixed(0)}'),
                             const Divider(height: 16),
                             _buildDetailRow(_t('recharge_data', 'ডেটা'),
@@ -1097,7 +1105,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                         context, '/deposit-withdraw');
                                   },
                                   icon: const Icon(Icons.add_rounded, size: 18),
-                                  label: Text(_t('recharge_add_funds', 'টাকা যোগ করুন')),
+                                  label: Text(_t(
+                                      'recharge_add_funds', 'টাকা যোগ করুন')),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF10B981),
                                     foregroundColor: Colors.white,
@@ -1294,10 +1303,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     // Validate phone number
     final phoneRegex = RegExp(r'^(?:\+?88)?01[3-9]\d{8}$');
     if (!phoneRegex.hasMatch(_phoneController.text)) {
-      AdsyToast.warning(
-          context,
-          _t('recharge_invalid_number',
-              'সঠিক বাংলাদেশি মোবাইল নম্বর দিন'));
+      AdsyToast.warning(context,
+          _t('recharge_invalid_number', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন'));
       return;
     }
 
@@ -1330,8 +1337,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   _t('recharge_success', 'রিচার্জ হয়ে গেছে!'));
           _phoneController.clear();
         } else {
-          AdsyToast.error(context,
-              result['message'] ?? _t('recharge_failed', 'রিচার্জ ব্যর্থ হয়েছে'));
+          AdsyToast.error(
+              context,
+              result['message'] ??
+                  _t('recharge_failed', 'রিচার্জ ব্যর্থ হয়েছে'));
         }
       }
     } catch (e) {
@@ -1508,7 +1517,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              _t('recharge_no_history', 'কোনো রিচার্জ হিস্ট্রি নেই'),
+                              _t('recharge_no_history',
+                                  'কোনো রিচার্জ হিস্ট্রি নেই'),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,

@@ -7,6 +7,7 @@ import '../../services/news_service.dart';
 import '../../utils/time_utils.dart';
 import '../common/adsy_toast.dart';
 import '../login_prompt_dialog.dart';
+import '../app_network_image.dart';
 
 /// Comments on an Adsy News story, styled to match Business Network comments.
 ///
@@ -188,8 +189,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
   Widget _buildEmpty() => ListView(
         children: const [
           SizedBox(height: 48),
-          Icon(Icons.mode_comment_outlined,
-              size: 34, color: Color(0xFFCBD5E1)),
+          Icon(Icons.mode_comment_outlined, size: 34, color: Color(0xFFCBD5E1)),
           SizedBox(height: 10),
           Center(
             child: Text(
@@ -218,12 +218,11 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
             ),
             child: ClipOval(
               child: avatar.isNotEmpty
-                  ? Image.network(avatar,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                          Icons.person_rounded,
-                          size: 18,
-                          color: Color(0xFF94A3B8)))
+                  ? AppNetworkImage(
+                      avatar,
+                      errorWidget: const Icon(Icons.person_rounded,
+                          size: 18, color: Color(0xFF94A3B8)),
+                    )
                   : const Icon(Icons.person_rounded,
                       size: 18, color: Color(0xFF94A3B8)),
             ),
@@ -311,8 +310,8 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                 style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
                   hintText: 'কমেন্ট লিখুন...',
-                  hintStyle: const TextStyle(
-                      fontSize: 16, color: Color(0xFF94A3B8)),
+                  hintStyle:
+                      const TextStyle(fontSize: 16, color: Color(0xFF94A3B8)),
                   filled: true,
                   fillColor: const Color(0xFFF1F5F9),
                   contentPadding:

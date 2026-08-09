@@ -13,6 +13,7 @@ import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../app_network_image.dart';
 
 class ProblemDetailBottomSheet extends StatefulWidget {
   final String problemId;
@@ -650,12 +651,11 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
               final imageUrl = AppConfig.getAbsoluteUrl(media.image);
               return ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
+                child: AppNetworkImage(
                   imageUrl,
                   width: 100,
                   height: 100,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorWidget: Container(
                     width: 100,
                     height: 100,
                     color: Colors.grey.shade200,
@@ -1018,12 +1018,11 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                           final fullUrl = AppConfig.getAbsoluteUrl(media.image);
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(4),
-                            child: Image.network(
+                            child: AppNetworkImage(
                               fullUrl,
                               width: 60,
                               height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
+                              errorWidget: Container(
                                 width: 60,
                                 height: 60,
                                 color: Colors.grey.shade200,

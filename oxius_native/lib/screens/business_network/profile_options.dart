@@ -26,6 +26,7 @@ import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import '../../utils/adsy_image_upload.dart';
+import '../../widgets/app_network_image.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
   const ProfileOptionsScreen({super.key});
@@ -70,7 +71,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       return;
     }
 
-
     try {
       if (refreshAuth) {
         await AuthService.refreshUserData();
@@ -89,7 +89,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       if (!mounted) {
         return;
       }
-
     }
   }
 
@@ -504,217 +503,216 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         children: [
           Column(
             children: [
-          // Banner + action buttons
-          Stack(
-            children: [
-              // Banner — tap opens it full-screen in the BN media viewer.
-              GestureDetector(
-                onTap: bannerUrl.isNotEmpty
-                    ? () => _openBannerViewer(bannerUrl, name, avatarUrl)
-                    : null,
-                // Plain full-width banner — no corner rounding.
-                child: SizedBox(
-                  // Ends around the avatar's midline (per design review).
-                  height: 170,
-                  width: double.infinity,
-                  child: bannerUrl.isNotEmpty
-                      ? Image.network(
-                          bannerUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _buildHeaderBannerFallback(),
-                        )
-                      : _buildHeaderBannerFallback(),
-                ),
-              ),
-              // Share button (back removed — bottom nav handles navigation)
-              SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                  child: Row(
-                    children: [
-                      const Spacer(),
-                      _buildGlassButton(
-                        icon: Icons.share_outlined,
-                        onTap: () => _shareProfile(context),
-                      ),
-                    ],
+              // Banner + action buttons
+              Stack(
+                children: [
+                  // Banner — tap opens it full-screen in the BN media viewer.
+                  GestureDetector(
+                    onTap: bannerUrl.isNotEmpty
+                        ? () => _openBannerViewer(bannerUrl, name, avatarUrl)
+                        : null,
+                    // Plain full-width banner — no corner rounding.
+                    child: SizedBox(
+                      // Ends around the avatar's midline (per design review).
+                      height: 170,
+                      width: double.infinity,
+                      child: bannerUrl.isNotEmpty
+                          ? AppNetworkImage(
+                              bannerUrl,
+                              errorWidget: _buildHeaderBannerFallback(),
+                            )
+                          : _buildHeaderBannerFallback(),
+                    ),
                   ),
-                ),
-              ),
-              // Uploading overlay: scrim + live percentage over the banner.
-              if (_bannerUploading)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'আপলোড হচ্ছে ${(_bannerProgress * 100).round()}%',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                  // Share button (back removed — bottom nav handles navigation)
+                  SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                      child: Row(
+                        children: [
+                          const Spacer(),
+                          _buildGlassButton(
+                            icon: Icons.share_outlined,
+                            onTap: () => _shareProfile(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Uploading overlay: scrim + live percentage over the banner.
+                  if (_bannerUploading)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'আপলোড হচ্ছে ${(_bannerProgress * 100).round()}%',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: 160,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: LinearProgressIndicator(
+                                  value: _bannerProgress,
+                                  minHeight: 5,
+                                  backgroundColor:
+                                      Colors.white.withValues(alpha: 0.25),
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  // Banner upload: plain "Add banner" when empty, a small edit
+                  // chip when one is already set.
+                  if (!_bannerUploading)
+                    Positioned(
+                      bottom: 28,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: _uploadBanner,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                bannerUrl.isEmpty
+                                    ? Icons.add_photo_alternate_outlined
+                                    : Icons.edit_rounded,
+                                size: 13,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                bannerUrl.isEmpty ? 'Add banner' : 'Edit',
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: 160,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(3),
-                            child: LinearProgressIndicator(
-                              value: _bannerProgress,
-                              minHeight: 5,
-                              backgroundColor:
-                                  Colors.white.withValues(alpha: 0.25),
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
+                      ),
+                    ),
+                ],
+              ),
+              // White info sheet — its rounded TOP corners rise 18px over the
+              // banner, so the banner peeks through the corner notches (the
+              // radius sits on the WHITE, not the banner).
+              Transform.translate(
+                offset: const Offset(0, -18),
+                child: Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(22)),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 78, 16, 8),
+                  child: Column(
+                    children: [
+                      // Name row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.3,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              // Banner upload: plain "Add banner" when empty, a small edit
-              // chip when one is already set.
-              if (!_bannerUploading)
-              Positioned(
-                bottom: 28,
-                right: 12,
-                child: GestureDetector(
-                  onTap: _uploadBanner,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          bannerUrl.isEmpty
-                              ? Icons.add_photo_alternate_outlined
-                              : Icons.edit_rounded,
-                          size: 13,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 5),
+                          if (isVerified) ...[
+                            const SizedBox(width: 5),
+                            const Icon(Icons.verified_rounded,
+                                color: Color(0xFF3B82F6), size: 18),
+                          ],
+                          if (isPro) ...[
+                            const SizedBox(width: 6),
+                            const AdsyProBadge(),
+                          ],
+                        ],
+                      ),
+                      if (profession.isNotEmpty) ...[
+                        const SizedBox(height: 3),
                         Text(
-                          bannerUrl.isEmpty ? 'Add banner' : 'Edit',
+                          profession,
                           style: const TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // White info sheet — its rounded TOP corners rise 18px over the
-          // banner, so the banner peeks through the corner notches (the
-          // radius sits on the WHITE, not the banner).
-          Transform.translate(
-            offset: const Offset(0, -18),
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(22)),
-              ),
-              padding: const EdgeInsets.fromLTRB(16, 78, 16, 8),
-              child: Column(
-              children: [
-                // Name row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    if (isVerified) ...[
-                      const SizedBox(width: 5),
-                      const Icon(Icons.verified_rounded,
-                          color: Color(0xFF3B82F6), size: 18),
-                    ],
-                    if (isPro) ...[
-                      const SizedBox(width: 6),
-                      const AdsyProBadge(),
-                    ],
-                  ],
-                ),
-                if (profession.isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Text(
-                    profession,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF64748B),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-                if (address.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.location_on_outlined,
-                          size: 13, color: Color(0xFF94A3B8)),
-                      const SizedBox(width: 3),
-                      Flexible(
-                        child: Text(
-                          address,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF94A3B8),
-                          ),
+                      if (address.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.location_on_outlined,
+                                size: 13, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                address,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                      ],
+                      const SizedBox(height: 16),
+                      // Compact stats row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildStat(_resolvedPostCount(), 'Posts'),
+                          _buildStatDivider(),
+                          _buildStat(_resolvedFollowersCount(), 'Followers',
+                              onTap: () =>
+                                  _showFollowListSheet(context, 'followers')),
+                          _buildStatDivider(),
+                          _buildStat(_resolvedFollowingCount(), 'Following',
+                              onTap: () =>
+                                  _showFollowListSheet(context, 'following')),
+                          if (_resolvedDiamondBalance() > 0) ...[
+                            _buildStatDivider(),
+                            _buildStat(_resolvedDiamondBalance(), '💎'),
+                          ],
+                        ],
                       ),
                     ],
                   ),
-                ],
-                const SizedBox(height: 16),
-                // Compact stats row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildStat(_resolvedPostCount(), 'Posts'),
-                    _buildStatDivider(),
-                    _buildStat(_resolvedFollowersCount(), 'Followers',
-                        onTap: () =>
-                            _showFollowListSheet(context, 'followers')),
-                    _buildStatDivider(),
-                    _buildStat(_resolvedFollowingCount(), 'Following',
-                        onTap: () =>
-                            _showFollowListSheet(context, 'following')),
-                    if (_resolvedDiamondBalance() > 0) ...[
-                      _buildStatDivider(),
-                      _buildStat(_resolvedDiamondBalance(), '💎'),
-                    ],
-                  ],
                 ),
-              ],
-            ),
-          ),
-          ),
+              ),
             ],
           ),
           // Centered large avatar — floats over the banner seam.
@@ -740,11 +738,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 ),
                 child: ClipOval(
                   child: avatarUrl.isNotEmpty
-                      ? Image.network(
+                      ? AppNetworkImage(
                           avatarUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _buildAvatarPlaceholder(name),
+                          errorWidget: _buildAvatarPlaceholder(name),
                         )
                       : _buildAvatarPlaceholder(name),
                 ),

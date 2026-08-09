@@ -14,6 +14,7 @@ import '../widgets/product_card.dart';
 import 'vendor_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/app_network_image.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -267,8 +268,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
 
   Future<void> _openStore(String? storeUsername, String storeName) async {
     if (storeUsername == null || storeUsername.isEmpty) {
-      AdsyToast.error(
-          context, 'এই প্রোডাক্টের দোকানের তথ্য পাওয়া যায়নি।');
+      AdsyToast.error(context, 'এই প্রোডাক্টের দোকানের তথ্য পাওয়া যায়নি।');
       return;
     }
 
@@ -920,8 +920,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             ),
             if (shortDescription.trim().length > 140)
               GestureDetector(
-                onTap: () => setState(
-                    () => _shortDescExpanded = !_shortDescExpanded),
+                onTap: () =>
+                    setState(() => _shortDescExpanded = !_shortDescExpanded),
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4),
@@ -1154,19 +1154,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                                 child: imageUrl.isNotEmpty
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(16),
-                                        child: Image.network(
+                                        child: AppNetworkImage(
                                           imageUrl,
                                           fit: BoxFit.contain,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return Center(
-                                              child: Icon(
-                                                Icons.image_outlined,
-                                                size: 48,
-                                                color: Colors.grey.shade300,
-                                              ),
-                                            );
-                                          },
+                                          errorWidget: Center(
+                                            child: Icon(
+                                              Icons.image_outlined,
+                                              size: 48,
+                                              color: Colors.grey.shade300,
+                                            ),
+                                          ),
                                         ),
                                       )
                                     : Center(
@@ -1515,8 +1512,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
           child: SizedBox(
             width: 26,
             height: 26,
-            child: AdsyLoadingIndicator(
-                strokeWidth: 2, color: Color(0xFF10B981)),
+            child:
+                AdsyLoadingIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
           ),
         ),
       );
@@ -1799,8 +1796,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     final currentUserId = AuthService.currentUser?.id;
 
     if (ownerId != null && ownerId == currentUserId) {
-      AdsyToast.warning(
-          context, 'নিজের প্রোডাক্টে রিভিউ দেওয়া যায় না।');
+      AdsyToast.warning(context, 'নিজের প্রোডাক্টে রিভিউ দেওয়া যায় না।');
       return;
     }
 
@@ -1958,7 +1954,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: (rating > 0 && hasComment && !isSubmitting)
+                            onPressed: (rating > 0 &&
+                                    hasComment &&
+                                    !isSubmitting)
                                 ? () async {
                                     modalSetState(() => isSubmitting = true);
                                     final productId = (_productDetails?['id'] ??
@@ -2055,8 +2053,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: crossAxisSpacing,
                   mainAxisSpacing: mainAxisSpacing,
-          textScale: MediaQuery.textScalerOf(context).scale(1.0),
-        ),
+                  textScale: MediaQuery.textScalerOf(context).scale(1.0),
+                ),
                 itemCount: _similarProducts.length,
                 itemBuilder: (context, index) {
                   return ProductCard(
@@ -2206,10 +2204,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                           height: 62,
                           color: _slate100,
                           child: imageUrl.isNotEmpty
-                              ? Image.network(
+                              ? AppNetworkImage(
                                   imageUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Icon(
+                                  errorWidget: Icon(
                                     Icons.image_outlined,
                                     size: 28,
                                     color: _slate500,
