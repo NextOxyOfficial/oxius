@@ -21,6 +21,10 @@ import '../services/fcm_service.dart';
 import 'inbox_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 
+/// The audio-to-video handshake. An upgrade needs both sides to agree — the
+/// other person may be somewhere they would rather not be seen.
+enum _VideoUpgrade { idle, asked, invited }
+
 /// The states a call passes through, in the order the user experiences them.
 enum _CallStage {
   incoming,
@@ -95,7 +99,18 @@ class _CallScreenState extends State<CallScreen>
   bool _acceptanceSent = false;
   bool _isReconnecting = false;
   StreamSubscription<bool>? _reconnectingSub;
+  StreamSubscription<Map<String, dynamic>>? _signalSub;
+  StreamSubscription<void>? _tracksSub;
   late final AnimationController _pulseController;
+
+  /// The call's current mode. Starts as whatever the call was placed as, and
+  /// becomes 'video' if the two sides agree to upgrade mid-call — which is why
+  /// it is state and not `widget.callType`.
+  late String _callType;
+
+  /// Where the audio-to-video handshake stands.
+  _VideoUpgrade _upgrade = _VideoUpgrade.idle;
+  Timer? _upgradeTimeout;
 
   /// Where the user has dragged the self-view to, as a fraction of the free
   /// space in each axis. Fractions rather than pixels so the preview keeps its
@@ -121,6 +136,7 @@ class _CallScreenState extends State<CallScreen>
   @override
   void initState() {
     super.initState();
+    _callType = widget.callType;
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
@@ -141,7 +157,7 @@ class _CallScreenState extends State<CallScreen>
       peerId: widget.calleeId,
       peerName: widget.calleeName,
       peerAvatar: widget.calleeAvatar,
-      callType: widget.callType,
+      callType: _callType,
       isIncoming: widget.isIncoming,
       callId: widget.callId,
     );
@@ -343,6 +359,14 @@ class _CallScreenState extends State<CallScreen>
       setState(() => _isReconnecting = value);
     });
 
+    _signalSub = LiveKitCallService.signalStream.listen(_handleInCallSignal);
+
+    // A camera coming on or going off at either end changes what there is to
+    // render, and nothing else would tell this screen to look again.
+    _tracksSub = LiveKitCallService.videoTracksChangedStream.listen((_) {
+      if (mounted) setState(() {});
+    });
+
     _engineErrorSub = _engineErrorStream.listen((message) {
       // Log the error for debugging but never expose raw Agora SDK messages
       // to the user — they are technical and unprofessional.
@@ -533,7 +557,7 @@ class _CallScreenState extends State<CallScreen>
         final notified = await AgoraCallService.sendCallNotification(
           calleeId: widget.calleeId,
           channelName: widget.channelName,
-          callType: widget.callType,
+          callType: _callType,
         );
 
         if (!notified) {
@@ -587,7 +611,7 @@ class _CallScreenState extends State<CallScreen>
           );
         } else {
           final msg = errStr.toLowerCase().contains('permission')
-              ? 'কল শুরু করতে মাইক্রোফোন${widget.callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
+              ? 'কল শুরু করতে মাইক্রোফোন${_callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
               : _formatCallStartError(
                   AgoraCallService.lastError ??
                       AgoraCallService.lastNotificationError ??
@@ -645,7 +669,7 @@ class _CallScreenState extends State<CallScreen>
 
   Future<bool> _engineJoin() => LiveKitCallService.joinChannel(
         channelName: widget.channelName,
-        callType: widget.callType,
+        callType: _callType,
         callId: widget.callId,
       );
 
@@ -765,7 +789,7 @@ class _CallScreenState extends State<CallScreen>
           );
         } else {
           final msg = errStr.toLowerCase().contains('permission')
-              ? 'মাইক্রোফোন${widget.callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
+              ? 'মাইক্রোফোন${_callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
               : 'কলে যোগ দেওয়া যায়নি। আবার চেষ্টা করুন।';
           AdsyToast.error(context, msg);
           if (mounted) Navigator.of(context).pop();
@@ -785,7 +809,7 @@ class _CallScreenState extends State<CallScreen>
       receiverId: widget.calleeId,
       channelName: widget.channelName,
       status: 'accepted',
-      callType: widget.callType,
+      callType: _callType,
       callId: widget.callId,
     );
   }
@@ -805,7 +829,7 @@ class _CallScreenState extends State<CallScreen>
       receiverId: widget.calleeId,
       channelName: widget.channelName,
       status: 'rejected',
-      callType: widget.callType,
+      callType: _callType,
       callId: widget.callId,
     ));
 
@@ -861,7 +885,7 @@ class _CallScreenState extends State<CallScreen>
         receiverId: widget.calleeId,
         channelName: widget.channelName,
         status: localOutcome,
-        callType: widget.callType,
+        callType: _callType,
         callId: widget.callId,
       ));
     }
@@ -952,7 +976,7 @@ class _CallScreenState extends State<CallScreen>
         debugPrint('🔁 Connect recovery [$reason] stage 1: re-join');
         final ok = await LiveKitCallService.rejoinChannel(
           channelName: widget.channelName,
-          callType: widget.callType,
+          callType: _callType,
           callId: widget.callId,
         );
         debugPrint('🔁 stage 1 re-join: $ok');
@@ -979,7 +1003,7 @@ class _CallScreenState extends State<CallScreen>
         // escalation left.
         final ok = await LiveKitCallService.rejoinChannel(
           channelName: widget.channelName,
-          callType: widget.callType,
+          callType: _callType,
           callId: widget.callId,
         );
         debugPrint('🛡️ stage 2 cloud-proxy re-join: $ok');
@@ -1047,7 +1071,7 @@ class _CallScreenState extends State<CallScreen>
 
     final lower = value.toLowerCase();
     if (lower.contains('permission')) {
-      return 'কল শুরু করতে মাইক্রোফোন${widget.callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।';
+      return 'কল শুরু করতে মাইক্রোফোন${_callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।';
     }
     if (lower.contains('session expired') || lower.contains('sign in again')) {
       return 'আপনার সেশন শেষ হয়ে গেছে। আবার সাইন ইন করুন।';
@@ -1084,7 +1108,7 @@ class _CallScreenState extends State<CallScreen>
   Future<void> _sendCallLog(String outcome) async {
     if (widget.isIncoming) return;
 
-    final label = widget.callType == 'video' ? 'Video call' : 'Audio call';
+    final label = _callType == 'video' ? 'Video call' : 'Audio call';
 
     try {
       final chatroom =
@@ -1124,6 +1148,133 @@ class _CallScreenState extends State<CallScreen>
     });
   }
 
+  // ---------------------------------------------------------------------
+  // Audio → video upgrade
+  //
+  // Turning a voice call into a video call cannot be one-sided: the camera
+  // that has to come on belongs to the other person, who may be somewhere
+  // they would rather not be seen. So it is an offer, and it needs an answer.
+  // ---------------------------------------------------------------------
+
+  static const Duration _upgradeOfferWindow = Duration(seconds: 30);
+
+  void _handleInCallSignal(Map<String, dynamic> signal) {
+    if (!mounted) return;
+    switch (signal['type']?.toString()) {
+      case 'video_upgrade_request':
+        // Ignore an offer for a call that is already video, or while we have
+        // an offer of our own in flight — whoever asked first wins, and the
+        // other side's request lapses on its own timeout.
+        if (_callType == 'video' || _upgrade != _VideoUpgrade.idle) return;
+        _upgradeTimeout?.cancel();
+        _upgradeTimeout = Timer(_upgradeOfferWindow, () {
+          if (!mounted || _upgrade != _VideoUpgrade.invited) return;
+          setState(() => _upgrade = _VideoUpgrade.idle);
+        });
+        setState(() => _upgrade = _VideoUpgrade.invited);
+        break;
+
+      case 'video_upgrade_response':
+        if (_upgrade != _VideoUpgrade.asked) return;
+        _upgradeTimeout?.cancel();
+        _upgradeTimeout = null;
+        if (signal['accepted'] == true) {
+          unawaited(_applyVideoUpgrade());
+        } else {
+          setState(() => _upgrade = _VideoUpgrade.idle);
+          AdsyToast.info(context, '${widget.calleeName} ভিডিওতে রাজি হননি');
+        }
+        break;
+    }
+  }
+
+  Future<void> _requestVideoUpgrade() async {
+    if (_callType == 'video' || _upgrade != _VideoUpgrade.idle) return;
+    if (_stage != _CallStage.connected) {
+      AdsyToast.info(context, 'কল সংযুক্ত হলে ভিডিওতে যেতে পারবেন');
+      return;
+    }
+
+    // Ask for the camera before making a promise we may not be able to keep:
+    // a refusal here should cost the other person nothing.
+    try {
+      await AgoraCallService.ensurePermissions(callType: 'video');
+    } catch (_) {
+      if (!mounted) return;
+      AdsyToast.error(context, 'ক্যামেরার অনুমতি ছাড়া ভিডিও কল সম্ভব নয়');
+      return;
+    }
+    if (!mounted) return;
+
+    setState(() => _upgrade = _VideoUpgrade.asked);
+    _upgradeTimeout?.cancel();
+    _upgradeTimeout = Timer(_upgradeOfferWindow, () {
+      if (!mounted || _upgrade != _VideoUpgrade.asked) return;
+      setState(() => _upgrade = _VideoUpgrade.idle);
+      AdsyToast.info(context, 'ভিডিওর অনুরোধে কোনো সাড়া মেলেনি');
+    });
+
+    await LiveKitCallService.sendSignal({'type': 'video_upgrade_request'});
+  }
+
+  Future<void> _answerVideoUpgrade(bool accepted) async {
+    _upgradeTimeout?.cancel();
+    _upgradeTimeout = null;
+
+    if (!accepted) {
+      setState(() => _upgrade = _VideoUpgrade.idle);
+      await LiveKitCallService.sendSignal(
+        {'type': 'video_upgrade_response', 'accepted': false},
+      );
+      return;
+    }
+
+    try {
+      await AgoraCallService.ensurePermissions(callType: 'video');
+    } catch (_) {
+      if (mounted) {
+        setState(() => _upgrade = _VideoUpgrade.idle);
+        AdsyToast.error(context, 'ক্যামেরার অনুমতি ছাড়া ভিডিও কল সম্ভব নয়');
+      }
+      // The other side is still waiting on an answer; a refused permission is
+      // a "no" to them, not silence.
+      await LiveKitCallService.sendSignal(
+        {'type': 'video_upgrade_response', 'accepted': false},
+      );
+      return;
+    }
+
+    await LiveKitCallService.sendSignal(
+      {'type': 'video_upgrade_response', 'accepted': true},
+    );
+    await _applyVideoUpgrade();
+  }
+
+  /// Switches this side to video once both have agreed.
+  Future<void> _applyVideoUpgrade() async {
+    if (!mounted) return;
+    setState(() {
+      _callType = 'video';
+      _isCameraOff = false;
+      _upgrade = _VideoUpgrade.idle;
+    });
+
+    await LiveKitCallService.toggleCamera(true);
+
+    // Everything outside this screen reads the call type from here: the
+    // minimised bar, the floating bubble, and the foreground service — which
+    // has to claim the camera type now that a camera is running.
+    AgoraCallService.setActiveCallInfo(
+      channelName: widget.channelName,
+      peerId: widget.calleeId,
+      peerName: widget.calleeName,
+      peerAvatar: widget.calleeAvatar,
+      callType: 'video',
+      isIncoming: widget.isIncoming,
+      callId: widget.callId,
+    );
+  }
+
   void _toggleMute() {
     setState(() => _isMuted = !_isMuted);
     LiveKitCallService.toggleMute(_isMuted);
@@ -1157,6 +1308,9 @@ class _CallScreenState extends State<CallScreen>
     _remoteLeaveSub?.cancel();
     _engineErrorSub?.cancel();
     _reconnectingSub?.cancel();
+    _signalSub?.cancel();
+    _tracksSub?.cancel();
+    _upgradeTimeout?.cancel();
     _durationTimer?.cancel();
     _ringingTimer?.cancel();
     _cancelConnectWatchdog();
@@ -1187,7 +1341,7 @@ class _CallScreenState extends State<CallScreen>
           receiverId: widget.calleeId,
           channelName: widget.channelName,
           status: status,
-          callType: widget.callType,
+          callType: _callType,
           callId: widget.callId,
         ));
       }
@@ -1226,7 +1380,7 @@ class _CallScreenState extends State<CallScreen>
 
   @override
   Widget build(BuildContext context) {
-    final hasRemoteVideo = _remoteUid != null && widget.callType == 'video';
+    final hasRemoteVideo = _remoteUid != null && _callType == 'video';
 
     return PopScope(
       canPop: false,
@@ -1264,11 +1418,13 @@ class _CallScreenState extends State<CallScreen>
                   ),
                   _buildTopPanel(),
                   if (_localUserJoined &&
-                      widget.callType == 'video' &&
+                      _callType == 'video' &&
                       !_isCameraOff)
                     _buildLocalPreview(),
                   if (widget.isIncoming && !_callAccepted)
                     _buildIncomingCallUI(),
+                  if (_upgrade == _VideoUpgrade.invited)
+                    _buildVideoUpgradeInvite(),
                   if (_statusOverlay != null) _buildStatusOverlay(),
                   if (_callAccepted || !widget.isIncoming) _buildCallControls(),
                 ],
@@ -1360,7 +1516,7 @@ class _CallScreenState extends State<CallScreen>
                         label: 'নিরাপদ সংযোগ',
                       ),
                       _buildInfoPill(
-                        icon: widget.callType == 'video'
+                        icon: _callType == 'video'
                             ? Icons.videocam_outlined
                             : Icons.call_outlined,
                         label: _callModeLabel,
@@ -1428,7 +1584,7 @@ class _CallScreenState extends State<CallScreen>
                     Expanded(
                       child: _buildIncomingResponseButton(
                         label: 'ধরুন',
-                        icon: widget.callType == 'video'
+                        icon: _callType == 'video'
                             ? Icons.videocam_rounded
                             : Icons.call_rounded,
                         backgroundColor: _accentColor,
@@ -1447,7 +1603,7 @@ class _CallScreenState extends State<CallScreen>
 
   Widget _buildCallControls() {
     final compact = _isCompactLayout;
-    final isVideo = widget.callType == 'video';
+    final isVideo = _callType == 'video';
     final hPad = compact ? 10.0 : 14.0;
     final endSize = compact ? 62.0 : 68.0;
     final btnSize = compact ? 52.0 : 56.0;
@@ -1488,6 +1644,17 @@ class _CallScreenState extends State<CallScreen>
                 activeBg: _accentColor,
                 onTap: _toggleSpeaker,
               ),
+              if (!isVideo) ...[
+                SizedBox(width: compact ? 8 : 10),
+                _buildRoundControl(
+                  icon: Icons.videocam_outlined,
+                  label: _upgrade == _VideoUpgrade.asked ? 'অপেক্ষা' : 'ভিডিও',
+                  size: btnSize,
+                  isActive: _upgrade == _VideoUpgrade.asked,
+                  activeBg: _accentColor,
+                  onTap: () => unawaited(_requestVideoUpgrade()),
+                ),
+              ],
               if (isVideo) ...[
                 SizedBox(width: compact ? 8 : 10),
                 _buildRoundControl(
@@ -1592,13 +1759,13 @@ class _CallScreenState extends State<CallScreen>
   }
 
   Color get _accentColor {
-    return widget.callType == 'video'
+    return _callType == 'video'
         ? const Color(0xFF38BDF8)
         : const Color(0xFF34D399);
   }
 
   String get _callModeLabel {
-    return widget.callType == 'video' ? 'ভিডিও কল' : 'অডিও কল';
+    return _callType == 'video' ? 'ভিডিও কল' : 'অডিও কল';
   }
 
   /// A dot that pulses while the call is still being worked on and holds
@@ -1674,7 +1841,7 @@ class _CallScreenState extends State<CallScreen>
     if (_statusOverlay != null) return _statusOverlay!;
     switch (_stage) {
       case _CallStage.incoming:
-        return widget.callType == 'video'
+        return _callType == 'video'
             ? 'ভিডিও কল আসছে'
             : 'অডিও কল আসছে';
       case _CallStage.ringing:
@@ -1720,7 +1887,7 @@ class _CallScreenState extends State<CallScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: widget.callType == 'video'
+            colors: _callType == 'video'
                 ? const [
                     Color(0xFF172554),
                     Color(0xFF111827),
@@ -1777,7 +1944,7 @@ class _CallScreenState extends State<CallScreen>
 
   Widget _buildTopPanel() {
     final compact = _isCompactLayout;
-    final hasRemoteVideo = _remoteUid != null && widget.callType == 'video';
+    final hasRemoteVideo = _remoteUid != null && _callType == 'video';
     final subtitle = _stageLabel;
 
     // Slim pill for active video call to keep the opponent's video unobstructed;
@@ -2038,6 +2205,73 @@ class _CallScreenState extends State<CallScreen>
     );
   }
 
+  /// The other side has asked to turn the voice call into a video call.
+  ///
+  /// Deliberately a panel above the controls rather than a modal dialog: a
+  /// dialog would sit over the hang-up button, and someone who does not want
+  /// to be on camera should never have to answer a prompt before they can end
+  /// the call.
+  Widget _buildVideoUpgradeInvite() {
+    final compact = _isCompactLayout;
+    return Positioned(
+      left: 18,
+      right: 18,
+      bottom: compact ? 118 : 140,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: _buildGlassPanel(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.videocam_rounded, color: _accentColor, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '${widget.calleeName} ভিডিও কলে যেতে চাইছেন',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildIncomingResponseButton(
+                        label: 'না',
+                        icon: Icons.videocam_off_rounded,
+                        backgroundColor: const Color(0xFF334155),
+                        onTap: () => unawaited(_answerVideoUpgrade(false)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildIncomingResponseButton(
+                        label: 'ক্যামেরা চালু',
+                        icon: Icons.videocam_rounded,
+                        backgroundColor: _accentColor,
+                        onTap: () => unawaited(_answerVideoUpgrade(true)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatusOverlay() {
     return Positioned.fill(
       child: IgnorePointer(
@@ -2089,7 +2323,7 @@ class _CallScreenState extends State<CallScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            widget.callType == 'video'
+            _callType == 'video'
                 ? Icons.videocam_rounded
                 : Icons.call_rounded,
             size: 16,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
@@ -42,6 +43,51 @@ class LiveKitCallService {
   static final StreamController<bool> _reconnectingController =
       StreamController<bool>.broadcast();
   static Stream<bool> get reconnectingStream => _reconnectingController.stream;
+
+  /// In-call messages between the two people already in the room — today the
+  /// audio-to-video upgrade handshake.
+  ///
+  /// These deliberately do NOT go through the backend call-status endpoint.
+  /// Both parties are already connected to the same SFU, so a data packet
+  /// arrives in one hop instead of a round trip through the server and a push;
+  /// and an offer that took three seconds to reach the other phone would be
+  /// answered after the person had given up on it.
+  static const String signalTopic = 'adsy-call';
+
+  static final StreamController<Map<String, dynamic>> _signalController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  static Stream<Map<String, dynamic>> get signalStream =>
+      _signalController.stream;
+
+  static Future<void> sendSignal(Map<String, dynamic> payload) async {
+    final participant = _room?.localParticipant;
+    if (participant == null) {
+      _log('signal dropped, not in a room: ${payload['type']}');
+      return;
+    }
+    try {
+      await participant.publishData(
+        utf8.encode(jsonEncode(payload)),
+        reliable: true,
+        topic: signalTopic,
+      );
+    } catch (error) {
+      _log('signal send failed: $error');
+    }
+  }
+
+  /// Fires whenever the set of renderable video tracks may have changed — a
+  /// track subscribed, dropped, muted or unmuted.
+  ///
+  /// The call screen reads [remoteVideoTrack] while building, so without this
+  /// it only ever sees the tracks that happened to exist the last time
+  /// something else made it rebuild. A camera switched on mid-call — which is
+  /// exactly what an audio-to-video upgrade is — would arrive to a screen that
+  /// never looked again.
+  static final StreamController<void> _tracksChangedController =
+      StreamController<void>.broadcast();
+  static Stream<void> get videoTracksChangedStream =>
+      _tracksChangedController.stream;
 
   static bool _isReconnecting = false;
   static bool get isReconnecting => _isReconnecting;
@@ -201,6 +247,25 @@ class LiveKitCallService {
             e.reason == lk.DisconnectReason.participantRemoved ||
             e.reason == lk.DisconnectReason.duplicateIdentity) {
           _errorController.add('Call ended');
+        }
+      })
+      ..on<lk.TrackSubscribedEvent>((_) => _tracksChangedController.add(null))
+      ..on<lk.TrackUnsubscribedEvent>((_) => _tracksChangedController.add(null))
+      ..on<lk.TrackMutedEvent>((_) => _tracksChangedController.add(null))
+      ..on<lk.TrackUnmutedEvent>((_) => _tracksChangedController.add(null))
+      ..on<lk.LocalTrackPublishedEvent>(
+          (_) => _tracksChangedController.add(null))
+      ..on<lk.LocalTrackUnpublishedEvent>(
+          (_) => _tracksChangedController.add(null))
+      ..on<lk.DataReceivedEvent>((e) {
+        if (e.topic != signalTopic) return;
+        try {
+          final decoded = jsonDecode(utf8.decode(e.data));
+          if (decoded is Map) {
+            _signalController.add(Map<String, dynamic>.from(decoded));
+          }
+        } catch (error) {
+          _log('malformed signal ignored: $error');
         }
       })
       ..on<lk.RoomReconnectingEvent>((_) {
