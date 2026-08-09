@@ -14,6 +14,7 @@ import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
+import '../../widgets/app_network_image.dart';
 
 class EditPostScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -358,10 +359,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
           ),
           child: avatar.isNotEmpty
               ? ClipOval(
-                  child: Image.network(
+                  child: AppNetworkImage(
                     avatar,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _avatarFallback(),
+                    errorWidget: _avatarFallback(),
                   ),
                 )
               : _avatarFallback(),
@@ -562,13 +562,10 @@ class _EditPostScreenState extends State<EditPostScreen> {
                           final avatarUrl =
                               AppConfig.getAbsoluteUrl(data['photo']);
                           if (avatarUrl.isNotEmpty) {
-                            return Image.network(
+                            return AppNetworkImage(
                               avatarUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.person,
-                                    color: Colors.grey.shade400, size: 18);
-                              },
+                              errorWidget: Icon(Icons.person,
+                                  color: Colors.grey.shade400, size: 18),
                             );
                           }
                           return Icon(Icons.person,
@@ -1089,10 +1086,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
           fit: StackFit.expand,
           children: [
             if (imageUrl.isNotEmpty)
-              Image.network(
+              AppNetworkImage(
                 imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorWidget: const Icon(
                   Icons.image_not_supported_outlined,
                   color: Color(0xFF94A3B8),
                 ),

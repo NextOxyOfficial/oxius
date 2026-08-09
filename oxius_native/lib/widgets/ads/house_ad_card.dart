@@ -15,6 +15,7 @@ import '../../services/auth_service.dart';
 import '../../services/fcm_service.dart';
 import '../common/adsy_toast.dart';
 import '../login_prompt_dialog.dart';
+import '../app_network_image.dart';
 
 /// Native-style card for an ABN Ads Panel (house) ad — same chrome as the
 /// AdMob feed card ("Sponsored" strip + white card) so both blend into the
@@ -401,13 +402,11 @@ class _HouseAdCardState extends State<HouseAdCard>
                     clipBehavior: Clip.antiAlias,
                     alignment: Alignment.center,
                     child: ad.advertiserImage.isNotEmpty
-                        ? Image.network(
+                        ? AppNetworkImage(
                             ad.advertiserImage,
-                            fit: BoxFit.cover,
                             width: 36,
                             height: 36,
-                            errorBuilder: (_, __, ___) =>
-                                _avatarInitial(ad.advertiser),
+                            errorWidget: _avatarInitial(ad.advertiser),
                           )
                         : _avatarInitial(ad.advertiser),
                   ),
@@ -483,24 +482,22 @@ class _HouseAdCardState extends State<HouseAdCard>
           else if (ad.images.isNotEmpty)
             GestureDetector(
               onTap: _onCtaTap,
-              child: Image.network(
+              child: AppNetworkImage(
                 ad.images.first,
                 width: double.infinity,
                 height: 210,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                errorWidget: const SizedBox.shrink(),
               ),
             ),
           // ── Companion banner UNDER the video (survives skip) ──
           if (_isVideo && ad.companionBanner.isNotEmpty)
             GestureDetector(
               onTap: _onCtaTap,
-              child: Image.network(
+              child: AppNetworkImage(
                 ad.companionBanner,
                 width: double.infinity,
                 height: 72,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                errorWidget: const SizedBox.shrink(),
               ),
             ),
           Padding(

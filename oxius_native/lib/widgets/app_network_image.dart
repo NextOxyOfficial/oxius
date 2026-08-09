@@ -92,6 +92,10 @@ class AppNetworkImage extends StatelessWidget {
         height: height,
         fit: fit,
         memCacheWidth: cacheWidth,
+        // Cap what is written to disk as well, not just what is decoded.
+        // Storing a 2000px original to paint a 64px avatar spends the user's
+        // storage — and their data — on pixels nothing will ever read.
+        maxWidthDiskCache: cacheWidth,
         fadeInDuration:
             fadeIn ? const Duration(milliseconds: 180) : Duration.zero,
         placeholder: (context, _) => _placeholder(context),

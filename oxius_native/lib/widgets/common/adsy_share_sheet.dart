@@ -11,6 +11,7 @@ import '../../utils/url_launcher_utils.dart';
 import 'adsy_loading.dart';
 import 'adsy_toast.dart';
 import 'adsy_chat_icon.dart';
+import '../app_network_image.dart';
 
 class AdsyShareData {
   final String title;
@@ -554,9 +555,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: avatar.isNotEmpty
-                      ? Image.network(avatar,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => fallbackIcon)
+                      ? AppNetworkImage(avatar, errorWidget: fallbackIcon)
                       : fallbackIcon,
                 ),
                 if (selected || sent)
@@ -891,10 +890,9 @@ class _SharePreview extends StatelessWidget {
                       color: Color(0xFF64748B),
                       size: 28,
                     )
-                  : Image.network(
+                  : AppNetworkImage(
                       imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
+                      errorWidget: const Icon(
                         Icons.public_rounded,
                         color: Color(0xFF64748B),
                         size: 28,
@@ -1290,8 +1288,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
             shape: BoxShape.circle, color: Color(0xFFEFF6FF)),
         clipBehavior: Clip.antiAlias,
         child: avatar.isNotEmpty
-            ? Image.network(avatar,
-                fit: BoxFit.cover, errorBuilder: (_, __, ___) => fallbackIcon)
+            ? AppNetworkImage(avatar, errorWidget: fallbackIcon)
             : fallbackIcon,
       ),
       title: Text(room['name'].toString(),

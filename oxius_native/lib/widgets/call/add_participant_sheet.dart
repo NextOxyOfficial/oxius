@@ -91,7 +91,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
     if (name.isNotEmpty) return name;
     final username = user['username']?.toString().trim() ?? '';
     if (username.contains('@')) return username.split('@').first;
-    return username.isNotEmpty ? username : 'AdsyClub ব্যবহারকারী';
+    return username.isNotEmpty ? username : 'AdsyClub user';
   }
 
   @override
@@ -121,7 +121,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
             child: Row(
               children: [
                 Text(
-                  'কলে যোগ করুন',
+                  'Add to call',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 17,
@@ -175,7 +175,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 40),
         child: Text(
-          'যোগ করার মতো কাউকে পাওয়া যায়নি।',
+          'No one available to add.',
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white70),
         ),

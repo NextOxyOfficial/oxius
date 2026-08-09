@@ -78,11 +78,11 @@ class CallForegroundService {
     final title = peerName.isEmpty ? 'AdsyClub' : peerName;
     final String text;
     if (connectedAt > 0) {
-      text = isVideo ? 'ভিডিও কল চলছে' : 'অডিও কল চলছে';
+      text = isVideo ? 'Video call in progress' : 'Audio call in progress';
     } else if (accepted) {
-      text = 'সংযোগ করা হচ্ছে…';
+      text = 'Connecting…';
     } else {
-      text = 'রিং হচ্ছে…';
+      text = 'Ringing…';
     }
 
     final signature = '$title|$text|$isVideo|$connectedAt';

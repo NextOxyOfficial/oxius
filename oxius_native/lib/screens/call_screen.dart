@@ -179,7 +179,7 @@ class _CallScreenState extends State<CallScreen>
       _startOutgoingRingback();
       _ringingTimer = Timer(const Duration(seconds: 60), () {
         if (!mounted || _didEndCall || _remoteUid != null) return;
-        _showOverlayAndClose('কেউ ধরেনি');
+        _showOverlayAndClose('No answer');
         unawaited(_endCall(
           notifyPeer: true,
           allowLog: true,
@@ -194,7 +194,7 @@ class _CallScreenState extends State<CallScreen>
     if (widget.isIncoming && !widget.autoAccept) {
       _ringingTimer = Timer(const Duration(seconds: 55), () {
         if (!mounted || _didEndCall || _callAccepted) return;
-        _showOverlayAndClose('মিসড কল');
+        _showOverlayAndClose('Missed call');
         unawaited(_endCall(
           notifyPeer: true,
           allowLog: false,
@@ -277,7 +277,7 @@ class _CallScreenState extends State<CallScreen>
       }
 
       if (status == 'rejected' || status == 'declined') {
-        _showOverlayAndClose('কল কেটে দেওয়া হয়েছে');
+        _showOverlayAndClose('Call declined');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -285,7 +285,7 @@ class _CallScreenState extends State<CallScreen>
           closeImmediately: true,
         ));
       } else if (status == 'busy') {
-        _showOverlayAndClose('ব্যবহারকারী এখন ব্যস্ত');
+        _showOverlayAndClose('User is busy');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -293,7 +293,7 @@ class _CallScreenState extends State<CallScreen>
           closeImmediately: true,
         ));
       } else if (status == 'cancelled' || status == 'missed') {
-        _showOverlayAndClose('কল বাতিল হয়েছে');
+        _showOverlayAndClose('Call cancelled');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -301,7 +301,7 @@ class _CallScreenState extends State<CallScreen>
           closeImmediately: true,
         ));
       } else if (status == 'ended' || status == 'failed') {
-        _showOverlayAndClose('কল শেষ হয়েছে');
+        _showOverlayAndClose('Call ended');
         unawaited(_endCall(
           notifyPeer: false,
           allowLog: !widget.isIncoming,
@@ -364,7 +364,7 @@ class _CallScreenState extends State<CallScreen>
       setState(() {
         _remoteUid = null;
       });
-      _showOverlayAndClose('কল শেষ হয়েছে');
+      _showOverlayAndClose('Call ended');
       unawaited(_endCall(
         notifyPeer: false,
         allowLog: !widget.isIncoming,
@@ -386,7 +386,7 @@ class _CallScreenState extends State<CallScreen>
       setState(() => _hasPoorConnection = poor);
     });
 
-    // The call can be ended from outside this screen — the "কল শেষ" action on
+    // The call can be ended from outside this screen — the "End call" action on
     // the ongoing-call notification. When that happens the screen has to go,
     // and it has no other way of finding out.
     _callStateSub = AgoraCallService.callStateStream.listen((inCall) {
@@ -428,7 +428,7 @@ class _CallScreenState extends State<CallScreen>
       if (!_didEndCall &&
           _remoteUid != null &&
           message.contains('Connection lost')) {
-        _showOverlayAndClose('সংযোগ বিচ্ছিন্ন হয়েছে');
+        _showOverlayAndClose('Connection lost');
         unawaited(_endCall(
           notifyPeer: true,
           allowLog: !widget.isIncoming,
@@ -468,7 +468,7 @@ class _CallScreenState extends State<CallScreen>
       await _joinChannel();
     } catch (_) {
       if (!mounted) return;
-      AdsyToast.error(context, 'কলটি ফিরিয়ে আনা যায়নি। আবার চেষ্টা করুন।');
+      AdsyToast.error(context, 'Could not restore the call. Please try again.');
       _markScreenClosing();
       Navigator.of(context).pop();
     }
@@ -604,7 +604,7 @@ class _CallScreenState extends State<CallScreen>
             context,
             _formatCallStartError(
               AgoraCallService.lastNotificationError,
-              fallback: 'কলটি পৌঁছানো যায়নি। আবার চেষ্টা করুন।',
+              fallback: 'Could not reach the recipient. Please try again.',
             ),
           );
           _markScreenClosing();
@@ -636,27 +636,27 @@ class _CallScreenState extends State<CallScreen>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('থাক'),
+                  child: const Text('Not now'),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);
                     openAppSettings();
                   },
-                  child: const Text('সেটিংসে যান'),
+                  child: const Text('Open Settings'),
                 ),
               ],
             ),
           );
         } else {
           final msg = errStr.toLowerCase().contains('permission')
-              ? 'কল শুরু করতে মাইক্রোফোন${_callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
+              ? 'Allow microphone${_callType == 'video' ? ' and camera' : ''} access to start the call.'
               : _formatCallStartError(
                   AgoraCallService.lastError ??
                       AgoraCallService.lastNotificationError ??
                       errStr,
                   fallback:
-                      'কল শুরু করা যায়নি। ইন্টারনেট সংযোগ দেখে নিন।',
+                      'Could not start the call. Check your internet connection.',
                 );
           AdsyToast.error(context, msg);
           _markScreenClosing();
@@ -729,7 +729,7 @@ class _CallScreenState extends State<CallScreen>
         context,
         _formatCallStartError(
           _engineLastError,
-          fallback: 'কলে যোগ দেওয়া যায়নি। আবার চেষ্টা করুন।',
+          fallback: 'Could not join the call. Please try again.',
         ),
       );
       _markScreenClosing();
@@ -768,7 +768,7 @@ class _CallScreenState extends State<CallScreen>
     _ringingTimer?.cancel();
     _ringingTimer = Timer(const Duration(seconds: 30), () {
       if (!mounted || _didEndCall || _remoteUid != null) return;
-      _showOverlayAndClose('সংযোগ করা যায়নি');
+      _showOverlayAndClose('Could not connect');
       unawaited(_endCall(
         notifyPeer: true,
         allowLog: widget.isIncoming,
@@ -817,14 +817,14 @@ class _CallScreenState extends State<CallScreen>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('থাক'),
+                  child: const Text('Not now'),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);
                     openAppSettings();
                   },
-                  child: const Text('সেটিংসে যান'),
+                  child: const Text('Open Settings'),
                 ),
               ],
             ),
@@ -1075,7 +1075,7 @@ class _CallScreenState extends State<CallScreen>
       // Ladder exhausted — now it is a real failure.
       if (!mounted || _didEndCall || _remoteUid != null) return;
       debugPrint('❌ Connect recovery exhausted [$reason]');
-      _showOverlayAndClose('সংযোগ করা যায়নি');
+      _showOverlayAndClose('Could not connect');
       unawaited(_endCall(
         notifyPeer: true,
         allowLog: !widget.isIncoming,
@@ -1131,28 +1131,28 @@ class _CallScreenState extends State<CallScreen>
 
     final lower = value.toLowerCase();
     if (lower.contains('permission')) {
-      return 'কল শুরু করতে মাইক্রোফোন${_callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।';
+      return 'Allow microphone${_callType == 'video' ? ' and camera' : ''} access to start the call.';
     }
     if (lower.contains('session expired') || lower.contains('sign in again')) {
-      return 'আপনার সেশন শেষ হয়ে গেছে। আবার সাইন ইন করুন।';
+      return 'Your session has expired. Please sign in again.';
     }
     if (lower.contains('timed out') || lower.contains('timeout')) {
-      return 'কলের অনুরোধে সময় শেষ। সংযোগ দেখে আবার চেষ্টা করুন।';
+      return 'The call request timed out. Check your connection and try again.';
     }
     if (lower.contains('recipient is unavailable')) {
-      return 'ব্যবহারকারী এখন উপলব্ধ নন।';
+      return 'User is unavailable right now.';
     }
     if (lower.contains('service is unavailable')) {
-      return 'কল সার্ভিস এখন কাজ করছে না। একটু পরে চেষ্টা করুন।';
+      return 'The call service is unavailable. Please try again shortly.';
     }
     if (lower.contains('network') || lower.contains('connection')) {
-      return 'কল শুরুর সময় নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।';
+      return 'Network problem while starting the call. Please try again.';
     }
     if (lower.contains('invalid channel')) {
-      return 'কল সেশনটি সঠিক নয়। আবার চেষ্টা করুন।';
+      return 'Invalid call session. Please try again.';
     }
     if (lower.contains('token')) {
-      return 'কল সেশনের মেয়াদ শেষ। আবার চেষ্টা করুন।';
+      return 'The call session expired. Please try again.';
     }
     if (value.startsWith('{') ||
         value.startsWith('[') ||
@@ -1219,7 +1219,7 @@ class _CallScreenState extends State<CallScreen>
 
   Future<void> _addParticipants() async {
     if (_stage != _CallStage.connected) {
-      AdsyToast.info(context, 'কল সংযুক্ত হলে কাউকে যোগ করতে পারবেন');
+      AdsyToast.info(context, 'You can add people once the call connects');
       return;
     }
 
@@ -1242,7 +1242,7 @@ class _CallScreenState extends State<CallScreen>
     if (!mounted) return;
 
     if (results.isEmpty) {
-      AdsyToast.error(context, 'কাউকে যোগ করা যায়নি');
+      AdsyToast.error(context, 'Could not add anyone');
       return;
     }
 
@@ -1258,14 +1258,14 @@ class _CallScreenState extends State<CallScreen>
     final full = count('call_full');
 
     final parts = <String>[
-      if (ringing > 0) '$ringing জনকে রিং করা হচ্ছে',
-      if (busy > 0) '$busy জন অন্য কলে আছেন',
-      if (unreachable > 0) '$unreachable জনের কাছে পৌঁছানো যায়নি',
-      if (notAllowed > 0) '$notAllowed জনকে কলে যোগ করার অনুমতি নেই',
-      if (full > 0) 'কলে আর জায়গা নেই',
+      if (ringing > 0) 'Ringing $ringing',
+      if (busy > 0) '$busy on another call',
+      if (unreachable > 0) '$unreachable unreachable',
+      if (notAllowed > 0) '$notAllowed cannot be added',
+      if (full > 0) 'The call is full',
     ];
     if (parts.isEmpty) {
-      AdsyToast.error(context, 'কাউকে যোগ করা যায়নি');
+      AdsyToast.error(context, 'Could not add anyone');
     } else if (ringing > 0) {
       AdsyToast.success(context, parts.join(' • '));
     } else {
@@ -1307,7 +1307,7 @@ class _CallScreenState extends State<CallScreen>
           unawaited(_applyVideoUpgrade());
         } else {
           setState(() => _upgrade = _VideoUpgrade.idle);
-          AdsyToast.info(context, '${widget.calleeName} ভিডিওতে রাজি হননি');
+          AdsyToast.info(context, '${widget.calleeName} declined video');
         }
         break;
     }
@@ -1316,7 +1316,7 @@ class _CallScreenState extends State<CallScreen>
   Future<void> _requestVideoUpgrade() async {
     if (_callType == 'video' || _upgrade != _VideoUpgrade.idle) return;
     if (_stage != _CallStage.connected) {
-      AdsyToast.info(context, 'কল সংযুক্ত হলে ভিডিওতে যেতে পারবেন');
+      AdsyToast.info(context, 'You can switch to video once the call connects');
       return;
     }
 
@@ -1326,7 +1326,7 @@ class _CallScreenState extends State<CallScreen>
       await AgoraCallService.ensurePermissions(callType: 'video');
     } catch (_) {
       if (!mounted) return;
-      AdsyToast.error(context, 'ক্যামেরার অনুমতি ছাড়া ভিডিও কল সম্ভব নয়');
+      AdsyToast.error(context, 'Video calls need camera permission');
       return;
     }
     if (!mounted) return;
@@ -1336,7 +1336,7 @@ class _CallScreenState extends State<CallScreen>
     _upgradeTimeout = Timer(_upgradeOfferWindow, () {
       if (!mounted || _upgrade != _VideoUpgrade.asked) return;
       setState(() => _upgrade = _VideoUpgrade.idle);
-      AdsyToast.info(context, 'ভিডিওর অনুরোধে কোনো সাড়া মেলেনি');
+      AdsyToast.info(context, 'No response to the video request');
     });
 
     await LiveKitCallService.sendSignal({'type': 'video_upgrade_request'});
@@ -1359,7 +1359,7 @@ class _CallScreenState extends State<CallScreen>
     } catch (_) {
       if (mounted) {
         setState(() => _upgrade = _VideoUpgrade.idle);
-        AdsyToast.error(context, 'ক্যামেরার অনুমতি ছাড়া ভিডিও কল সম্ভব নয়');
+        AdsyToast.error(context, 'Video calls need camera permission');
       }
       // The other side is still waiting on an answer; a refused permission is
       // a "no" to them, not silence.
@@ -1652,7 +1652,7 @@ class _CallScreenState extends State<CallScreen>
                     children: [
                       _buildInfoPill(
                         icon: Icons.lock_outline_rounded,
-                        label: 'নিরাপদ সংযোগ',
+                        label: 'Secure',
                       ),
                       _buildInfoPill(
                         icon: _callType == 'video'
@@ -1668,7 +1668,7 @@ class _CallScreenState extends State<CallScreen>
                           _peers.first.isMuted)
                         _buildInfoPill(
                           icon: Icons.mic_off_rounded,
-                          label: '${widget.calleeName} মিউট করেছেন',
+                          label: '${widget.calleeName} is muted',
                         ),
                     ],
                   ),
@@ -1701,7 +1701,7 @@ class _CallScreenState extends State<CallScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '$_callModeLabel আসছে',
+                  'Incoming $_callModeLabel',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.72),
                     fontSize: compact ? 14 : 15,
@@ -1710,7 +1710,7 @@ class _CallScreenState extends State<CallScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'কলটি ধরবেন, নাকি কেটে দেবেন?',
+                  'Answer or decline?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -1723,7 +1723,7 @@ class _CallScreenState extends State<CallScreen>
                   children: [
                     Expanded(
                       child: _buildIncomingResponseButton(
-                        label: 'কেটে দিন',
+                        label: 'Decline',
                         icon: Icons.call_end_rounded,
                         backgroundColor: const Color(0xFFEF4444),
                         onTap: _rejectCall,
@@ -1732,7 +1732,7 @@ class _CallScreenState extends State<CallScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildIncomingResponseButton(
-                        label: 'ধরুন',
+                        label: 'Accept',
                         icon: _callType == 'video'
                             ? Icons.videocam_rounded
                             : Icons.call_rounded,
@@ -1781,7 +1781,7 @@ class _CallScreenState extends State<CallScreen>
             children: [
               _buildRoundControl(
                 icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-                label: _isMuted ? 'আনমিউট' : 'মিউট',
+                label: _isMuted ? 'Unmute' : 'Mute',
                 size: btnSize,
                 isActive: _isMuted,
                 activeBg: const Color(0xFFEF4444),
@@ -1792,7 +1792,7 @@ class _CallScreenState extends State<CallScreen>
                 icon: _isSpeakerOn
                     ? Icons.volume_up_rounded
                     : Icons.volume_down_rounded,
-                label: 'স্পিকার',
+                label: 'Speaker',
                 size: btnSize,
                 isActive: _isSpeakerOn,
                 activeBg: _accentColor,
@@ -1802,7 +1802,7 @@ class _CallScreenState extends State<CallScreen>
                 SizedBox(width: compact ? 8 : 10),
                 _buildRoundControl(
                   icon: Icons.videocam_outlined,
-                  label: _upgrade == _VideoUpgrade.asked ? 'অপেক্ষা' : 'ভিডিও',
+                  label: _upgrade == _VideoUpgrade.asked ? 'Waiting' : 'Video',
                   size: btnSize,
                   isActive: _upgrade == _VideoUpgrade.asked,
                   activeBg: _accentColor,
@@ -1815,7 +1815,7 @@ class _CallScreenState extends State<CallScreen>
                   icon: _isCameraOff
                       ? Icons.videocam_off_rounded
                       : Icons.videocam_rounded,
-                  label: 'ক্যামেরা',
+                  label: 'Camera',
                   size: btnSize,
                   isActive: _isCameraOff,
                   activeBg: const Color(0xFFEF4444),
@@ -1824,7 +1824,7 @@ class _CallScreenState extends State<CallScreen>
                 SizedBox(width: compact ? 8 : 10),
                 _buildRoundControl(
                   icon: Icons.cameraswitch_rounded,
-                  label: 'ঘোরান',
+                  label: 'Flip',
                   size: btnSize,
                   isActive: false,
                   onTap: _switchCamera,
@@ -1833,7 +1833,7 @@ class _CallScreenState extends State<CallScreen>
               SizedBox(width: compact ? 8 : 10),
               _buildRoundControl(
                 icon: Icons.person_add_alt_1_rounded,
-                label: 'যোগ করুন',
+                label: 'Add',
                 size: btnSize,
                 isActive: false,
                 onTap: () => unawaited(_addParticipants()),
@@ -1841,7 +1841,7 @@ class _CallScreenState extends State<CallScreen>
               SizedBox(width: compact ? 10 : 12),
               _buildRoundControl(
                 icon: Icons.call_end_rounded,
-                label: 'কল শেষ',
+                label: 'End',
                 size: endSize,
                 isActive: true,
                 activeBg: const Color(0xFFEF4444),
@@ -1928,7 +1928,7 @@ class _CallScreenState extends State<CallScreen>
   }
 
   String get _callModeLabel {
-    return _callType == 'video' ? 'ভিডিও কল' : 'অডিও কল';
+    return _callType == 'video' ? 'video call' : 'audio call';
   }
 
   /// A dot that pulses while the call is still being worked on and holds
@@ -1981,19 +1981,19 @@ class _CallScreenState extends State<CallScreen>
   String get _stageLabel {
     switch (_stage) {
       case _CallStage.incoming:
-        return 'ইনকামিং কল';
+        return 'Incoming call';
       case _CallStage.ringing:
-        return 'রিং হচ্ছে…';
+        return 'Ringing…';
       case _CallStage.connecting:
-        return 'সংযোগ করা হচ্ছে…';
+        return 'Connecting…';
       case _CallStage.connected:
         return _formatDuration(_callDuration);
       case _CallStage.reconnecting:
-        return 'আবার সংযোগ করা হচ্ছে…';
+        return 'Reconnecting…';
       case _CallStage.unreachable:
-        return 'কল পৌঁছাচ্ছে না';
+        return 'Not reaching'; 
       case _CallStage.ended:
-        return 'কল শেষ';
+        return 'Call ended';
     }
   }
 
@@ -2008,20 +2008,20 @@ class _CallScreenState extends State<CallScreen>
             ? 'ভিডিও কল আসছে'
             : 'অডিও কল আসছে';
       case _CallStage.ringing:
-        return 'ওপাশে রিং হচ্ছে…';
+        return 'Ringing…';
       case _CallStage.connecting:
-        return 'সংযোগ করা হচ্ছে…';
+        return 'Connecting…';
       case _CallStage.connected:
         return _formatDuration(_callDuration);
       case _CallStage.reconnecting:
-        return 'নেটওয়ার্ক ফিরে এলেই কল চালু হবে';
+        return 'The call resumes when the network is back';
       case _CallStage.unreachable:
         // The server had nowhere to deliver the ring. Saying "ringing" here
         // is simply untrue, and it costs the caller thirty seconds to learn
         // it themselves.
-        return 'ব্যবহারকারীর ডিভাইসে কল পৌঁছানো যাচ্ছে না';
+        return 'Cannot reach their device';
       case _CallStage.ended:
-        return 'কল শেষ হয়েছে';
+        return 'Call ended';
     }
   }
 
@@ -2125,7 +2125,7 @@ class _CallScreenState extends State<CallScreen>
         ? LiveKitCallService.localVideoTrack
         : null;
     return _buildTile(
-      name: 'আপনি',
+      name: 'You',
       videoTrack: track,
       isMuted: _isMuted,
       isSpeaking: false,
@@ -2256,7 +2256,7 @@ class _CallScreenState extends State<CallScreen>
         !_isGroupCall && _remoteUid != null && _callType == 'video';
     // In a group call the header names the call, not one person in it.
     final title =
-        _isGroupCall ? 'গ্রুপ কল • ${_peers.length + 1} জন' : widget.calleeName;
+        _isGroupCall ? 'Group call • ${_peers.length + 1}' : widget.calleeName;
     final subtitle = _stageLabel;
 
     // Slim pill for active video call to keep the opponent's video unobstructed;
@@ -2495,7 +2495,7 @@ class _CallScreenState extends State<CallScreen>
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Text(
-                                  'আপনি',
+                                  'You',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Colors.white,
@@ -2540,7 +2540,7 @@ class _CallScreenState extends State<CallScreen>
               Icon(Icons.wifi_off_rounded, color: Colors.white, size: 15),
               SizedBox(width: 8),
               Text(
-                'আপনার নেটওয়ার্ক দুর্বল',
+                'Your connection is weak',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12.5,
@@ -2581,7 +2581,7 @@ class _CallScreenState extends State<CallScreen>
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '${widget.calleeName} ভিডিও কলে যেতে চাইছেন',
+                        '${widget.calleeName} wants to switch to video',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14.5,
@@ -2596,7 +2596,7 @@ class _CallScreenState extends State<CallScreen>
                   children: [
                     Expanded(
                       child: _buildIncomingResponseButton(
-                        label: 'না',
+                        label: 'No',
                         icon: Icons.videocam_off_rounded,
                         backgroundColor: const Color(0xFF334155),
                         onTap: () => unawaited(_answerVideoUpgrade(false)),
@@ -2605,7 +2605,7 @@ class _CallScreenState extends State<CallScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildIncomingResponseButton(
-                        label: 'ক্যামেরা চালু',
+                        label: 'Turn on camera',
                         icon: Icons.videocam_rounded,
                         backgroundColor: _accentColor,
                         onTap: () => unawaited(_answerVideoUpgrade(true)),

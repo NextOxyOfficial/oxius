@@ -90,7 +90,7 @@ class CallBubbleService with WidgetsBindingObserver {
       'connectedAt': connectedAt,
       'status': connectedAt > 0
           ? ''
-          : (AgoraCallService.activeCallAccepted ? 'সংযোগ' : 'রিং'),
+          : (AgoraCallService.activeCallAccepted ? 'On call' : 'Ringing'),
     });
     _visible = shown == true;
   }
@@ -128,7 +128,7 @@ class CallBubbleService with WidgetsBindingObserver {
     final grant = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('কল বাবল চালু করবেন?'),
+        title: const Text('Enable the call bubble?'),
         content: const Text(
           'অন্য অ্যাপে থাকা অবস্থায় স্ক্রিনে একটি ছোট ভাসমান বাটন দেখাবে — '
           'এক ট্যাপেই কলে ফিরে আসতে পারবেন।',
@@ -136,11 +136,11 @@ class CallBubbleService with WidgetsBindingObserver {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('এখন না'),
+            child: const Text('Not now'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('অনুমতি দিন'),
+            child: const Text('Allow'),
           ),
         ],
       ),

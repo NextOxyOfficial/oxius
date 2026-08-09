@@ -87,7 +87,7 @@ class AgoraCallService {
   /// must not raise a foreground service for a call nobody is on.
   static bool _callLiveInProcess = false;
 
-  /// Ends the running call from outside the call screen — today, the "কল শেষ"
+  /// Ends the running call from outside the call screen — today, the "End call"
   /// action on the ongoing-call notification.
   ///
   /// The screen may not be mounted at all (the call was minimised, or the user
@@ -568,22 +568,22 @@ class AgoraCallService {
 
     switch (response.statusCode) {
       case 400:
-        return 'কল অনুরোধটি সঠিক নয়। আবার চেষ্টা করুন।';
+        return 'Invalid call request. Please try again.';
       case 401:
-        return 'আপনার সেশন শেষ হয়ে গেছে। আবার সাইন ইন করুন।';
+        return 'Your session has expired. Please sign in again.';
       case 403:
-        return 'এই ব্যবহারকারীকে এখন কল করা যাচ্ছে না।';
+        return 'This user cannot be called right now.';
       case 404:
-        return 'ব্যবহারকারী এখন উপলব্ধ নন।';
+        return 'User is unavailable right now.';
       case 409:
-        return 'ব্যবহারকারী এখন অন্য কলে আছেন।';
+        return 'User is already on another call.';
       case 429:
-        return 'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
+        return 'Too many attempts. Please try again in a moment.';
       default:
         if (response.statusCode >= 500) {
-          return 'কল সার্ভিস এখন কাজ করছে না। একটু পরে চেষ্টা করুন।';
+          return 'The call service is unavailable. Please try again shortly.';
         }
-        return 'কল অনুরোধটি সম্পন্ন করা গেল না।';
+        return 'The call request could not be completed.';
     }
   }
 
