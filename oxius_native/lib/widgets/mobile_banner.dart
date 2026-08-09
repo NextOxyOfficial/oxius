@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/deep_link_service.dart';
 import '../services/eshop_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 class MobileBannerWidget extends StatefulWidget {
   final int autoplayInterval;
@@ -367,7 +367,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       children: [
         // Banner Image
         if (imageUrl.isNotEmpty)
-          AppImage.network(
+          AppNetworkImage(
             imageUrl,
             fit: BoxFit.cover,
             errorWidget: Container(

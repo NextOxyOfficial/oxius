@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../config/app_config.dart';
 import '../../screens/business_network/profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../app_network_image.dart';
 
 /// "People you may know" as a horizontal discovery row — same visual system
 /// as the workspace-gigs / micro-gigs cards so the feed feels consistent.
@@ -299,7 +299,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                 width: tileW,
                 height: imageH,
                 child: imageUrl.isNotEmpty
-                    ? AppImage.network(
+                    ? AppNetworkImage(
                         imageUrl,
                         fit: BoxFit.cover,
                         placeholder: _placeholder(),
@@ -444,7 +444,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                         child: ((previews[i]['image'] ?? '')
                                 .toString()
                                 .isNotEmpty)
-                            ? AppImage.network(
+                            ? AppNetworkImage(
                                 AppConfig.getAbsoluteUrl(
                                     previews[i]['image'].toString()),
                                 fit: BoxFit.cover,

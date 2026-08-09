@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import 'app_network_image.dart';
 
 // Marketplace card palette (screenshot-matched): white surface, green price,
 // red discount pill, amber stars.
@@ -154,7 +154,7 @@ class ProductCard extends StatelessWidget {
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: imageUrl.isNotEmpty
-                        ? AppImage.network(
+                        ? AppNetworkImage(
                             imageUrl,
                             fit: BoxFit.cover,
                             errorWidget: const Center(

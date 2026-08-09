@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
@@ -9,6 +8,7 @@ import '../../screens/business_network/search_screen.dart';
 import 'dart:async';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_header_flare.dart';
+import '../app_network_image.dart';
 
 class BusinessNetworkHeader extends StatefulWidget
     implements PreferredSizeWidget {
@@ -209,7 +209,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                                       );
                                     },
                                   )
-                                : AppImage.network(
+                                : AppNetworkImage(
                                     _businessNetworkLogoUrl!,
                                     height: 32,
                                     fit: BoxFit.contain,
@@ -505,7 +505,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
           ),
           child: ClipOval(
             child: user.profilePicture != null
-                ? AppImage.network(
+                ? AppNetworkImage(
                     user.profilePicture!,
                     fit: BoxFit.cover,
                     width: 40,

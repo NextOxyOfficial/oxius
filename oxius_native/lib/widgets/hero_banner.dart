@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/theme/app_text.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
@@ -18,6 +17,7 @@ import '../screens/news_detail_screen.dart';
 import 'ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'app_network_image.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -583,7 +583,7 @@ class _HeroBannerState extends State<HeroBanner> {
                       : () => _openBannerTarget(target, linkType: linkType),
                   child: SizedBox(
                     width: double.infinity,
-                    child: AppImage.network(
+                    child: AppNetworkImage(
                       imageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,

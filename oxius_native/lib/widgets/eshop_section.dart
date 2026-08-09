@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:oxius_native/theme/app_text.dart';
 import '../services/translation_service.dart';
@@ -14,6 +13,7 @@ import 'hot_arrivals_section.dart';
 import 'mobile_banner.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'app_network_image.dart';
 
 class EshopSection extends StatefulWidget {
   const EshopSection({super.key});
@@ -623,7 +623,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(12)),
-                          child: AppImage.network(
+                          child: AppNetworkImage(
                             imageUrl,
                             fit: BoxFit.cover,
                             errorWidget: Container(

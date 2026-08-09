@@ -130,8 +130,8 @@ class CallBubbleService with WidgetsBindingObserver {
       builder: (ctx) => AlertDialog(
         title: const Text('Enable the call bubble?'),
         content: const Text(
-          'অন্য অ্যাপে থাকা অবস্থায় স্ক্রিনে একটি ছোট ভাসমান বাটন দেখাবে — '
-          'এক ট্যাপেই কলে ফিরে আসতে পারবেন।',
+          'A small floating button stays on screen while you are in other '
+          'apps, so one tap brings you back to the call.',
         ),
         actions: [
           TextButton(

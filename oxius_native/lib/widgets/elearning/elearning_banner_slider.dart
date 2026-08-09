@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/config/app_config.dart';
 import 'package:oxius_native/services/deep_link_service.dart';
 import 'package:oxius_native/services/elearning_service.dart';
 import 'package:oxius_native/services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../app_network_image.dart';
 
 /// Dynamic, admin-managed promotional slider for the eLearning screen.
 ///
@@ -170,7 +170,7 @@ class _ElearningBannerSliderState extends State<ElearningBannerSlider> {
                 child: SizedBox(
                   width: double.infinity,
                   height: double.infinity,
-                  child: AppImage.network(
+                  child: AppNetworkImage(
                     imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,

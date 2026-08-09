@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/eshop_service.dart';
-import '../utils/image_utils.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
@@ -14,6 +13,7 @@ import 'vendor_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
+import '../widgets/app_network_image.dart';
 
 // Clean marketplace palette — matches the vendor store page.
 const _green = Color(0xFF22C55E);
@@ -895,7 +895,7 @@ class _EshopScreenState extends State<EshopScreen> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: img.isNotEmpty
-                          ? AppImage.network(
+                          ? AppNetworkImage(
                               img,
                               fit: BoxFit.cover,
                               errorWidget: const Icon(
@@ -1450,7 +1450,7 @@ class _EshopScreenState extends State<EshopScreen> {
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: img.isNotEmpty
-                        ? AppImage.network(
+                        ? AppNetworkImage(
                             img,
                             fit: BoxFit.cover,
                             errorWidget: const Center(
@@ -1542,7 +1542,7 @@ class _EshopScreenState extends State<EshopScreen> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: logo.isNotEmpty
-                            ? AppImage.network(
+                            ? AppNetworkImage(
                                 logo,
                                 fit: BoxFit.cover,
                                 errorWidget: const Center(

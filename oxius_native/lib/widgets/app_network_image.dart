@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 /// The one way this app loads a picture from the network.
 ///
@@ -64,13 +65,28 @@ class AppNetworkImage extends StatelessWidget {
         ),
       );
 
-  Widget _placeholder(BuildContext context) =>
-      placeholder ??
-      Container(
+  Widget _placeholder(BuildContext context) {
+    if (placeholder != null) return placeholder!;
+
+    // A skeleton, not a spinner. A spinner on every tile in a feed is visual
+    // noise, and it says "working" without saying what will appear; a shimmer
+    // fills the space the picture is about to take, so nothing jumps when it
+    // lands. Colours come from the theme — the old loader hardcoded greys and
+    // flashed light boxes across a dark screen.
+    final scheme = Theme.of(context).colorScheme;
+    return Shimmer.fromColors(
+      baseColor: scheme.surfaceContainerHighest,
+      highlightColor: Color.alphaBlend(
+        scheme.surface.withValues(alpha: 0.6),
+        scheme.surfaceContainerHighest,
+      ),
+      child: Container(
         width: width,
         height: height,
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      );
+        color: scheme.surfaceContainerHighest,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

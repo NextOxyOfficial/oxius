@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 // Clean marketplace palette — matches the eShop / vendor store pages.
 const _dealGreen = Color(0xFF22C55E);
@@ -204,7 +204,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                 fit: StackFit.expand,
                 children: [
                   if (imageUrl.isNotEmpty)
-                    AppImage.network(
+                    AppNetworkImage(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorWidget: const Center(

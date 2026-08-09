@@ -626,12 +626,12 @@ class _CallScreenState extends State<CallScreen>
             context: context,
             builder: (ctx) => AlertDialog(
               title: Text(isMic
-                  ? 'মাইক্রোফোনের অনুমতি দরকার'
-                  : 'ক্যামেরার অনুমতি দরকার'),
+                  ? 'Microphone permission needed'
+                  : 'Camera permission needed'),
               content: Text(
                 isMic
-                    ? 'মাইক্রোফোনের অনুমতি বন্ধ আছে। Settings → AdsyClub → Microphone থেকে চালু করুন।'
-                    : 'ক্যামেরার অনুমতি বন্ধ আছে। Settings → AdsyClub → Camera থেকে চালু করুন।',
+                    ? 'Microphone access is off. Turn it on in Settings -> AdsyClub -> Microphone.'
+                    : 'Camera access is off. Turn it on in Settings -> AdsyClub -> Camera.',
               ),
               actions: [
                 TextButton(
@@ -807,12 +807,12 @@ class _CallScreenState extends State<CallScreen>
             context: context,
             builder: (ctx) => AlertDialog(
               title: Text(isMic
-                  ? 'মাইক্রোফোনের অনুমতি দরকার'
-                  : 'ক্যামেরার অনুমতি দরকার'),
+                  ? 'Microphone permission needed'
+                  : 'Camera permission needed'),
               content: Text(
                 isMic
-                    ? 'মাইক্রোফোনের অনুমতি বন্ধ আছে। Settings → AdsyClub → Microphone থেকে চালু করুন।'
-                    : 'ক্যামেরার অনুমতি বন্ধ আছে। Settings → AdsyClub → Camera থেকে চালু করুন।',
+                    ? 'Microphone access is off. Turn it on in Settings -> AdsyClub -> Microphone.'
+                    : 'Camera access is off. Turn it on in Settings -> AdsyClub -> Camera.',
               ),
               actions: [
                 TextButton(
@@ -831,8 +831,8 @@ class _CallScreenState extends State<CallScreen>
           );
         } else {
           final msg = errStr.toLowerCase().contains('permission')
-              ? 'মাইক্রোফোন${_callType == 'video' ? ' ও ক্যামেরার' : 'ের'} অনুমতি দিন।'
-              : 'কলে যোগ দেওয়া যায়নি। আবার চেষ্টা করুন।';
+              ? 'Allow microphone${_callType == 'video' ? ' and camera' : ''} access.'
+              : 'Could not join the call. Please try again.';
           AdsyToast.error(context, msg);
           if (mounted) Navigator.of(context).pop();
         }
@@ -1991,7 +1991,7 @@ class _CallScreenState extends State<CallScreen>
       case _CallStage.reconnecting:
         return 'Reconnecting…';
       case _CallStage.unreachable:
-        return 'Not reaching'; 
+        return 'Unreachable';
       case _CallStage.ended:
         return 'Call ended';
     }
@@ -2005,8 +2005,8 @@ class _CallScreenState extends State<CallScreen>
     switch (_stage) {
       case _CallStage.incoming:
         return _callType == 'video'
-            ? 'ভিডিও কল আসছে'
-            : 'অডিও কল আসছে';
+            ? 'Incoming video call'
+            : 'Incoming audio call';
       case _CallStage.ringing:
         return 'Ringing…';
       case _CallStage.connecting:

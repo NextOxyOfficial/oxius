@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:oxius_native/theme/app_text.dart';
 import '../services/gigs_service.dart';
@@ -12,6 +11,7 @@ import 'ads/feed_native_ad_card.dart';
 import 'home/account_balance_section.dart';
 import 'home/mobile_recharge_section.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 class MicroGigsSection extends StatefulWidget {
   const MicroGigsSection({super.key});
@@ -838,7 +838,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: AppImage.network(
+                  child: AppNetworkImage(
                     imageUrl,
                     fit: BoxFit.contain,
                     width: 44,

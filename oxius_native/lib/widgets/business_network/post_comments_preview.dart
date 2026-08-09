@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../models/business_network_models.dart';
 import '../../services/user_search_service.dart';
@@ -17,6 +16,7 @@ import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../app_network_image.dart';
 
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -648,7 +648,7 @@ class _ReplyInputState extends State<_ReplyInput> {
                                   final avatarUrl =
                                       AppConfig.getAbsoluteUrl(data['photo']);
                                   if (avatarUrl.isNotEmpty) {
-                                    return AppImage.network(
+                                    return AppNetworkImage(
                                       avatarUrl,
                                       fit: BoxFit.cover,
                                       width: 28,
@@ -881,7 +881,7 @@ class _CommentItemState extends State<_CommentItem> {
                       final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
 
                       if (avatarUrl.isNotEmpty) {
-                        return AppImage.network(
+                        return AppNetworkImage(
                           avatarUrl,
                           fit: BoxFit.cover,
                           width: avatarSize,

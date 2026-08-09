@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'app_network_image.dart';
 
 class HotArrivalsSection extends StatefulWidget {
   final Function(String)? onCategorySelected;
@@ -294,7 +294,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                     if (imageUrl.isNotEmpty)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: AppImage.network(
+                        child: AppNetworkImage(
                           imageUrl,
                           width: double.infinity,
                           height: double.infinity,

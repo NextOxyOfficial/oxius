@@ -149,8 +149,8 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
                     : () => Navigator.pop(context, _selected.toList()),
                 child: Text(
                   _selected.isEmpty
-                      ? 'কাউকে বাছুন'
-                      : '${_selected.length} জনকে যোগ করুন',
+                      ? 'Select people'
+                      : 'Add ${_selected.length}',
                   style: const TextStyle(
                     color: Color(0xFF04231A),
                     fontWeight: FontWeight.w700,

@@ -139,7 +139,7 @@ void main() async {
   // Puts the floating call bubble on screen whenever a call is running and the
   // app is not — and takes it away again on return.
   CallBubbleService.instance.start();
-  // "কল শেষ" on the ongoing-call notification. Wired here rather than in the
+  // "End call" on the ongoing-call notification. Wired here rather than in the
   // call screen because the whole point is that it works when no call screen
   // is on the stack.
   CallForegroundService.onHangUp = AgoraCallService.hangUpActiveCall;

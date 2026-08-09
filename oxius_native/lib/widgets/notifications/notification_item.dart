@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:oxius_native/utils/image_utils.dart';
 import '../../models/notification_models.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/html_content_utils.dart';
+import '../app_network_image.dart';
 
 class NotificationItem extends StatelessWidget {
   final NotificationModel notification;
@@ -51,7 +51,7 @@ class NotificationItem extends StatelessWidget {
                       ),
                       child: ClipOval(
                         child: notification.actor?.image != null
-                            ? AppImage.network(
+                            ? AppNetworkImage(
                                 notification.actor!.image!,
                                 fit: BoxFit.cover,
                                 width: 44,
