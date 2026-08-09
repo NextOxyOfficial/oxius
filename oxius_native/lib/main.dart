@@ -348,12 +348,9 @@ class MyApp extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       child ?? const SizedBox.shrink(),
-                      const Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: OngoingCallBar(),
-                      ),
+                      // The bar positions itself now — it is draggable, and
+                      // pinning it here is what put it over every app bar.
+                      const OngoingCallBar(),
                     ],
                   ),
                 ),

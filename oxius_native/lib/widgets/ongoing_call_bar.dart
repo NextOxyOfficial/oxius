@@ -12,6 +12,16 @@ class OngoingCallBar extends StatefulWidget {
 }
 
 class _OngoingCallBarState extends State<OngoingCallBar> {
+  /// Where the user has dragged the bar to, in global coordinates.
+  ///
+  /// Pinned to the top edge, this bar sat on top of every screen's app bar and
+  /// swallowed the back button — there was no way out of a screen while a call
+  /// was minimised. It now floats above the bottom instead, where nothing
+  /// competes with it, and can be dragged anywhere the user prefers.
+  Offset? _dragPosition;
+  static const double _barHeight = 68;
+  static const double _margin = 12;
+
   StreamSubscription<bool>? _callStateSub;
   bool _isInCall = false;
   bool _isAccepted = false;
@@ -122,10 +132,26 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
         ? '${_formatDuration(_callDuration)} • Tap to return'
         : (_isAccepted ? 'Connecting… tap to return' : 'Ringing… tap to return');
 
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+    final media = MediaQuery.of(context);
+    final width = media.size.width - _margin * 2;
+    // Keep the bar on screen no matter how it was dragged or how the window
+    // changed since — a bar dragged off the edge would be unreachable, and the
+    // only way back to the call would be gone.
+    final maxTop = media.size.height - _barHeight - media.padding.bottom - _margin;
+    final defaultTop = maxTop - 8;
+    final pos = _dragPosition ?? Offset(_margin, defaultTop);
+    final left = pos.dx.clamp(_margin, media.size.width - width - _margin);
+    final top = pos.dy.clamp(media.padding.top + _margin, maxTop);
+
+    return Positioned(
+      left: left,
+      top: top,
+      width: width,
+      child: GestureDetector(
+        behavior: HitTestBehavior.deferToChild,
+        onPanUpdate: (details) => setState(() {
+          _dragPosition = Offset(left, top) + details.delta;
+        }),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
