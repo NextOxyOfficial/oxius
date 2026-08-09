@@ -1099,9 +1099,16 @@ class _PostCardState extends State<PostCard> {
                                     _showFullContent
                                         ? '  কম পড়ুন'
                                         : '  আরো পড়ুন',
+                                    // Same size as the post text it sits at
+                                    // the end of — it always was — but no
+                                    // longer semibold. At a matched size, the
+                                    // heavier weight was what made this read
+                                    // as bigger than the words around it. The
+                                    // grey still marks it as the tappable
+                                    // part without shouting.
                                     style: const TextStyle(
                                       fontSize: 15,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w500,
                                       color: Color(0xFF6B7280),
                                       height: 1.55,
                                     ),
