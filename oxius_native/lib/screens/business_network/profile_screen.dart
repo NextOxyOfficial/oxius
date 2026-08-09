@@ -789,6 +789,19 @@ class _ProfileScreenState extends State<ProfileScreen>
   Future<void> _openChatWithUser() async {
     if (_userData == null) return;
 
+    // showDialog pushes onto the ROOT navigator; popping through
+    // Navigator.of(context) would aim at whichever navigator is nearest the
+    // profile instead, and on a screen reached from a nested stack that pops
+    // the profile itself — taking the user somewhere they never asked to go
+    // and leaving the spinner behind.
+    final dialogNavigator = Navigator.of(context, rootNavigator: true);
+    var dialogOpen = true;
+    void closeLoadingDialog() {
+      if (!dialogOpen) return;
+      dialogOpen = false;
+      if (dialogNavigator.canPop()) dialogNavigator.pop();
+    }
+
     try {
       // Show loading indicator
       showDialog(
@@ -803,8 +816,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       final chatroom =
           await AdsyConnectService.getOrCreateChatRoom(widget.userId);
 
-      // Close loading dialog
-      if (mounted) Navigator.pop(context);
+      closeLoadingDialog();
 
       // Open chat (stack-deduplicated)
       if (mounted) {
@@ -824,8 +836,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } catch (e) {
-      // Close loading dialog if still open
-      if (mounted) Navigator.pop(context);
+      closeLoadingDialog();
 
       if (mounted) {
         // Use NetworkErrorHandler for professional error display

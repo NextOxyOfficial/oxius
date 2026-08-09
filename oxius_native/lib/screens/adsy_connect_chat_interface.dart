@@ -105,6 +105,13 @@ class AdsyConnectChatInterface extends StatefulWidget {
   /// Using a leading slash makes Flutter treat this as a path, not a scheme.
   static String routeNameFor(String chatroomId) => '/adsy_chat/$chatroomId';
   static final Set<String> _openRouteNames = <String>{};
+
+  /// The pushed route for each open chat, so an [open] call for a chat that is
+  /// already on the stack can bring it back to the front instead of refusing.
+  /// [_openRouteNames] alone cannot do that — it knows a chat is open
+  /// somewhere, but not where, and "somewhere" is often buried under the very
+  /// screen the user is tapping Chat on.
+  static final Map<String, Route<dynamic>> _openRoutes = <String, Route<dynamic>>{};
   static const Duration _navigatorSettleDelay = Duration(milliseconds: 380);
   static bool _chatPushInFlight = false;
 
@@ -214,17 +221,30 @@ class AdsyConnectChatInterface extends StatefulWidget {
       await _waitForCurrentRouteToSettle(context);
       if (!context.mounted) return null;
 
-      // The registry initState/dispose maintain is finally consulted: the
-      // same chat must never sit on the stack twice.
-      if (_openRouteNames.contains(routeNameFor(chatroomId))) {
+      final routeName = routeNameFor(chatroomId);
+      var navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+
+      // The same chat must never sit on the stack twice. But refusing outright
+      // is what made the Chat button on a profile look broken: you reach that
+      // profile from the peer's own chat, so their chat route is still alive
+      // directly underneath it — the guard fired, nothing happened, and going
+      // back left you staring at the conversation list. If the chat is on this
+      // navigator, bring it forward; that is what the tap asked for.
+      final existing = _openRoutes[routeName];
+      if (existing != null &&
+          existing.isActive &&
+          identical(existing.navigator, navigator)) {
+        navigator.popUntil((route) => identical(route, existing));
+        return null;
+      }
+      if (existing == null && _openRouteNames.contains(routeName)) {
+        // A copy of this chat is alive without being a route of its own — it
+        // is embedded in a sheet or a card. There is nothing to surface, and a
+        // second instance would fight the first over the same socket.
         return null;
       }
 
-      final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
-
-      try {
-        pushedRoute = navigator.push<T>(
-          _chatRoute<T>(
+      CupertinoPageRoute<T> buildRoute() => _chatRoute<T>(
             chatroomId: chatroomId,
             userId: userId,
             userName: userName,
@@ -233,26 +253,26 @@ class AdsyConnectChatInterface extends StatefulWidget {
             isOnline: isOnline,
             isVerified: isVerified,
             isPro: isPro,
-          ),
-        );
+          );
+
+      var route = buildRoute();
+      try {
+        pushedRoute = navigator.push<T>(route);
       } catch (error) {
         if (!_isNavigatorLockedError(error)) rethrow;
         await Future<void>.delayed(_navigatorSettleDelay);
         if (!context.mounted) return null;
-        pushedRoute =
-            Navigator.of(context, rootNavigator: useRootNavigator).push<T>(
-          _chatRoute<T>(
-            chatroomId: chatroomId,
-            userId: userId,
-            userName: userName,
-            userAvatar: userAvatar,
-            profession: profession,
-            isOnline: isOnline,
-            isVerified: isVerified,
-            isPro: isPro,
-          ),
-        );
+        navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+        route = buildRoute();
+        pushedRoute = navigator.push<T>(route);
       }
+
+      _openRoutes[routeName] = route;
+      unawaited(route.popped.whenComplete(() {
+        if (identical(_openRoutes[routeName], route)) {
+          _openRoutes.remove(routeName);
+        }
+      }));
 
       _releaseChatPushGateAfterTransition();
       return await pushedRoute;
