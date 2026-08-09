@@ -32,6 +32,7 @@ import '../widgets/common/adsy_toast.dart';
 import '../widgets/common/adsy_dialog.dart';
 import 'business_network/profile_screen.dart';
 import 'group_info_screen.dart';
+import '../widgets/app_network_image.dart';
 
 /// Group conversation. Reuses the SAME polished pieces as the 1:1 chat —
 /// [ChatMessageInput] (text, mic recording, attachments with image preview)
@@ -932,13 +933,12 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         body: Center(
           child: InteractiveViewer(
             maxScale: 5,
-            child: Image.network(AppConfig.getAbsoluteUrl(path),
+            child: AppNetworkImage(AppConfig.getAbsoluteUrl(path),
                 fit: BoxFit.contain,
-                headers: kMediaHeaders,
-                errorBuilder: (_, __, ___) => const Icon(
-                    Icons.broken_image_outlined,
-                    color: Colors.white54,
-                    size: 48)),
+                fadeIn: false,
+                httpHeaders: kMediaHeaders,
+                errorWidget: const Icon(Icons.broken_image_outlined,
+                    color: Colors.white54, size: 48)),
           ),
         ),
       ),
@@ -1037,9 +1037,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                 clipBehavior: Clip.antiAlias,
                 alignment: Alignment.center,
                 child: (_group['image_url'] ?? '').toString().isNotEmpty
-                    ? Image.network(_group['image_url'].toString(),
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.groups,
+                    ? AppNetworkImage(_group['image_url'].toString(),
+                        errorWidget: const Icon(Icons.groups,
                             size: 20, color: Color(0xFF111827)))
                     : const Icon(Icons.groups,
                         size: 20, color: Color(0xFF111827)),
@@ -1209,14 +1208,11 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                     clipBehavior: Clip.antiAlias,
                     alignment: Alignment.center,
                     child: avatar.isNotEmpty
-                        ? Image.network(avatar,
-                            fit: BoxFit.cover,
+                        ? AppNetworkImage(avatar,
                             width: 32,
                             height: 32,
-                            errorBuilder: (_, __, ___) => const Icon(
-                                Icons.person_rounded,
-                                size: 18,
-                                color: Color(0xFF94A3B8)))
+                            errorWidget: const Icon(Icons.person_rounded,
+                                size: 18, color: Color(0xFF94A3B8)))
                         : const Icon(Icons.person_rounded,
                             size: 18, color: Color(0xFF94A3B8)),
                   ),
@@ -1440,10 +1436,9 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       child: url.isEmpty
           ? fallback()
           : ClipOval(
-              child: Image.network(
+              child: AppNetworkImage(
                 url,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => fallback(),
+                errorWidget: fallback(),
               ),
             ),
     );

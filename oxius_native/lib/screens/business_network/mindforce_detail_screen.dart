@@ -14,6 +14,7 @@ import '../../widgets/link_preview_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../../widgets/app_network_image.dart';
 
 class MindForceDetailScreen extends StatefulWidget {
   final String problemId;
@@ -474,11 +475,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                     final avatarUrl =
                         AppConfig.getAbsoluteUrl(_problem!.userDetails.image);
                     if (avatarUrl.isNotEmpty) {
-                      return Image.network(
+                      return AppNetworkImage(
                         avatarUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildAvatarFallback(),
+                        errorWidget: _buildAvatarFallback(),
                       );
                     }
                     return _buildAvatarFallback();
@@ -715,10 +714,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                 AppConfig.getAbsoluteUrl(_problem!.media[index].image);
             return ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
+              child: AppNetworkImage(
                 imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+                errorWidget: Container(
                   color: Colors.grey.shade200,
                   child: Icon(Icons.image, color: Colors.grey.shade400),
                 ),
@@ -813,11 +811,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                       final avatarUrl =
                           AppConfig.getAbsoluteUrl(comment.userDetails.image);
                       if (avatarUrl.isNotEmpty) {
-                        return Image.network(
+                        return AppNetworkImage(
                           avatarUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
+                          errorWidget: Container(
                             color: Colors.grey.shade200,
                             child:
                                 Icon(Icons.person, color: Colors.grey.shade400),
@@ -922,12 +918,11 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                   final imageUrl = AppConfig.getAbsoluteUrl(image);
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
+                    child: AppNetworkImage(
                       imageUrl,
                       width: 80,
                       height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                      errorWidget: Container(
                         width: 80,
                         height: 80,
                         color: Colors.grey.shade200,
