@@ -302,170 +302,190 @@ class _WalletScreenState extends State<WalletScreen> {
       body: AdsyRefreshIndicator(
         onRefresh: _refreshAll,
         color: _indigo,
-        child: SingleChildScrollView(
+        // A CustomScrollView rather than a SingleChildScrollView, so the
+        // transaction history below can stay a real (lazy) list instead of a
+        // shrink-wrapped one that builds every row it has ever loaded.
+        child: CustomScrollView(
           controller: _transactionScrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              // Balance Cards Section - Using Homepage Component
-              AccountBalanceSection(key: _balanceKey),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  // Balance Cards Section - Using Homepage Component
+                  AccountBalanceSection(key: _balanceKey),
 
-              // Mobile Recharge Section
-              const MobileRechargeSection(),
+                  // Mobile Recharge Section
+                  const MobileRechargeSection(),
 
-              // Compact Tab Buttons
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _slate200),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.035),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                  // Compact Tab Buttons
+                  Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _slate200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.035),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildTabButton(
-                        0,
-                        Icons.arrow_downward,
-                        'Deposit',
-                      ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildTabButton(
+                            0,
+                            Icons.arrow_downward,
+                            'Deposit',
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildTabButton(
+                            1,
+                            Icons.arrow_upward,
+                            'Withdraw',
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildTabButton(
+                            2,
+                            Icons.swap_horiz,
+                            'Transfer',
+                          ),
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: _buildTabButton(
-                        1,
-                        Icons.arrow_upward,
-                        'Withdraw',
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildTabButton(
-                        2,
-                        Icons.swap_horiz,
-                        'Transfer',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Tab Content
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _slate200),
                   ),
-                  child: _currentTab == 0
-                      ? DepositTab(
-                          balance: _balance?.balance ?? 0.0,
-                          onDepositSuccess: () async {
-                            await _loadBalance();
-                            await _loadTransactions();
-                          },
-                        )
-                      : _currentTab == 1
-                          ? WithdrawTab(
+
+                  // Tab Content
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: _slate200),
+                      ),
+                      child: _currentTab == 0
+                          ? DepositTab(
                               balance: _balance?.balance ?? 0.0,
-                              onWithdrawSuccess: () async {
+                              onDepositSuccess: () async {
                                 await _loadBalance();
                                 await _loadTransactions();
                               },
                             )
-                          : TransferTab(
-                              balance: _balance?.balance ?? 0.0,
-                              userPhone: _userState.userEmail,
-                              initialContact: widget.initialTransferContact,
-                              onTransferSuccess: () async {
-                                await _loadBalance();
-                                await _loadTransactions();
-                              },
-                            ),
-                ),
-              ),
-
-              // Transaction History Section (Always show)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 6),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: _indigo.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Icon(
-                              Icons.history_rounded,
-                              size: 14,
-                              color: _indigo,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            t('transaction_history'),
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: _slate800,
-                            ),
-                          ),
-                        ],
-                      ),
+                          : _currentTab == 1
+                              ? WithdrawTab(
+                                  balance: _balance?.balance ?? 0.0,
+                                  onWithdrawSuccess: () async {
+                                    await _loadBalance();
+                                    await _loadTransactions();
+                                  },
+                                )
+                              : TransferTab(
+                                  balance: _balance?.balance ?? 0.0,
+                                  userPhone: _userState.userEmail,
+                                  initialContact: widget.initialTransferContact,
+                                  onTransferSuccess: () async {
+                                    await _loadBalance();
+                                    await _loadTransactions();
+                                  },
+                                ),
                     ),
-                    const SizedBox(height: 8),
+                  ),
 
-                    // Transaction Type Toggle
-                    Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: _slate200),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildTransactionTabButton('sent', 'Sent'),
+                  // Transaction History Section (Always show)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 6),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: _indigo.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Icon(
+                                  Icons.history_rounded,
+                                  size: 14,
+                                  color: _indigo,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                t('transaction_history'),
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: _slate800,
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: _buildTransactionTabButton(
-                                'received', 'Received'),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Transaction Type Toggle
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _slate200),
                           ),
-                        ],
-                      ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child:
+                                    _buildTransactionTabButton('sent', 'Sent'),
+                              ),
+                              Expanded(
+                                child: _buildTransactionTabButton(
+                                    'received', 'Received'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-
-                    // Transaction List
-                    _isLoadingTransactions
-                        ? const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(32),
-                              child: AdsyLoadingIndicator(),
-                            ),
-                          )
-                        : _buildTransactionList(),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            // The list itself sits outside the box adapter — that is the whole
+            // point: only what is on screen gets built.
+            if (_isLoadingTransactions)
+              const SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: AdsyLoadingIndicator(),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                // Matches the horizontal inset the rows had from the section
+                // container they used to live inside.
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                sliver: _buildTransactionSliver(),
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 6)),
+          ],
         ),
       ),
     );
@@ -595,27 +615,35 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  Widget _buildTransactionList() {
+  /// The transaction history, as a sliver.
+  ///
+  /// It used to be a shrink-wrapped ListView inside a SingleChildScrollView,
+  /// which is the shape that quietly undoes a builder: shrinkWrap makes the
+  /// list measure itself by building every child, so twenty more transactions
+  /// with each page meant the whole history was rebuilt on every layout pass.
+  Widget _buildTransactionSliver() {
     final transactions =
         _transactionTab == 'sent' ? _sentTransactions : _receivedTransactions;
 
     if (transactions.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(Icons.receipt_long, size: 40, color: Colors.grey[300]),
-              const SizedBox(height: 8),
-              Text(
-                'No $_transactionTab transactions',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: _slate500,
-                  fontWeight: FontWeight.w600,
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Icon(Icons.receipt_long, size: 40, color: Colors.grey[300]),
+                const SizedBox(height: 8),
+                Text(
+                  'No $_transactionTab transactions',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: _slate500,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -624,10 +652,8 @@ class _WalletScreenState extends State<WalletScreen> {
     final isLoadingMore =
         _transactionTab == 'sent' ? _isLoadingMoreSent : _isLoadingMoreReceived;
 
-    return ListView.builder(
+    return SliverList.builder(
       key: ValueKey('${_transactionTab}_${transactions.length}'),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       itemCount: transactions.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         // Show loading skeleton at bottom
