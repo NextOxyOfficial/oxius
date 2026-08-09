@@ -4,19 +4,29 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'agora_call_service.dart';
+import 'call_foreground_service.dart';
 import 'call_navigation.dart';
 
-/// The floating call bubble that follows the user out of the app.
+/// Keeping a live call reachable after the user leaves the app.
 ///
-/// The native half (CallBubbleOverlay.kt) owns the window; this side decides
-/// *when* it should exist — while a call is live and the app is not on screen —
-/// and brings the user back to the call screen when the bubble is tapped.
+/// Two mechanisms, and which one runs is decided by what the user has
+/// already agreed to — never by interrupting them:
 ///
-/// Android only. iOS has no equivalent to a system-wide overlay window, and
-/// there the CallKit call in the status bar already does this job.
+///  * **Picture-in-Picture** is the default. Leaving the app during a call
+///    shrinks it into a small floating window that sits over whatever they
+///    open next, drags anywhere, and taps back to full screen. It needs no
+///    permission at all, which is the entire reason it is the default.
+///  * **The overlay bubble** (CallBubbleOverlay.kt) is richer, but it needs
+///    SYSTEM_ALERT_WINDOW — a "special app access" that Android only grants
+///    from its own Settings screen. There is no in-app dialog for it and no
+///    library can make one, so this app never asks: the bubble is used only
+///    when the permission already happens to be there, and the one place to
+///    turn it on is a switch the user goes looking for in Settings.
+///
+/// Android only. iOS has neither, and there the CallKit call in the status
+/// bar already does this job.
 class CallBubbleService with WidgetsBindingObserver {
   CallBubbleService._();
 
@@ -25,14 +35,12 @@ class CallBubbleService with WidgetsBindingObserver {
   static const MethodChannel _channel =
       MethodChannel('com.oxius.app/call_service');
 
-  /// Remembers that the user was already asked once. A "display over other
-  /// apps" prompt is a trip to system Settings; asking on every minimise
-  /// would be nagging.
-  static const String _prefsAskedKey = 'call_bubble_overlay_asked';
-
   bool _started = false;
   bool _appInForeground = true;
   bool _visible = false;
+
+  /// True while Android is showing the app as a floating PiP window.
+  final ValueNotifier<bool> inPictureInPicture = ValueNotifier<bool>(false);
 
   static void _log(String message) {
     if (kDebugMode) debugPrint('🫧 CallBubble: $message');
@@ -42,10 +50,61 @@ class CallBubbleService with WidgetsBindingObserver {
     if (_started || !Platform.isAndroid) return;
     _started = true;
     WidgetsBinding.instance.addObserver(this);
+    // The channel has one handler and CallForegroundService owns it; this
+    // side just registers what it wants dispatched. Attaching a second
+    // handler here would quietly unhook the notification's hang-up button.
+    CallForegroundService.ensureHandlerAttached();
+    CallForegroundService.onPipModeChanged = _handlePipModeChanged;
     // A call can start, connect or end while the app is already in the
     // background, and each of those changes what the bubble should say. The
     // singleton outlives every call, so there is nothing to unsubscribe.
-    AgoraCallService.callStateStream.listen((_) => _sync());
+    AgoraCallService.callStateStream.listen((_) {
+      unawaited(_publishCallState());
+      unawaited(_sync());
+    });
+    unawaited(_publishCallState());
+  }
+
+  /// Native has to know, before the user has finished leaving, whether this
+  /// exit should shrink the app into a floating window. Asking Dart at that
+  /// moment is too late — onUserLeaveHint cannot wait for a round trip — so
+  /// the answer is pushed ahead of time on every call state change.
+  Future<void> _publishCallState() async {
+    if (!Platform.isAndroid) return;
+    final info = AgoraCallService.activeCallInfo;
+    await _invoke('setCallActive', <String, dynamic>{
+      'active': AgoraCallService.isInCall && info != null,
+      'video': info?['callType']?.toString() == 'video',
+    });
+  }
+
+  void _handlePipModeChanged(bool entering) {
+    inPictureInPicture.value = entering;
+
+    // A PiP window and an overlay bubble are the same idea twice over. The
+    // bubble is the one that goes, because PiP is what the user is looking
+    // at. Leaving PiP hands the decision back to _sync.
+    if (entering) {
+      if (_visible) {
+        _visible = false;
+        unawaited(_invoke('bubbleHide'));
+      }
+      return;
+    }
+
+    unawaited(_sync());
+
+    // Coming out of PiP means the user tapped the floating call to get back
+    // to it — the same intent as tapping the in-app bubble, so it lands in
+    // the same place. Without this they would be dropped on whatever route
+    // happened to be underneath, having asked for the call.
+    if (AgoraCallService.isInCall && !AgoraCallService.isCallScreenVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!CallNavigation.openActiveCall()) {
+          _log('left PiP with no active call to return to');
+        }
+      });
+    }
   }
 
   @override
@@ -74,8 +133,15 @@ class CallBubbleService with WidgetsBindingObserver {
     if (!Platform.isAndroid) return;
 
     final info = AgoraCallService.activeCallInfo;
-    final shouldShow =
-        !_appInForeground && AgoraCallService.isInCall && info != null;
+    // Three reasons not to draw the bubble, and only one of them is "no
+    // call": PiP is already showing a floating window, and the permission
+    // the bubble needs may simply never have been granted — which is the
+    // normal case now that nothing ever asks for it.
+    final shouldShow = !_appInForeground &&
+        !inPictureInPicture.value &&
+        AgoraCallService.isInCall &&
+        info != null &&
+        await canDrawOverlays();
 
     if (!shouldShow) {
       if (!_visible) return;
@@ -112,44 +178,33 @@ class CallBubbleService with WidgetsBindingObserver {
     return (await _invoke('canDrawOverlays')) == true;
   }
 
-  /// Asks — once — for the permission the bubble needs.
-  ///
-  /// Returns true when the bubble can already be drawn, so callers can skip
-  /// the explanation entirely in the common case.
-  Future<bool> ensurePermission(BuildContext context) async {
+  /// Whether this device can host a floating Picture-in-Picture window.
+  Future<bool> pipSupported() async {
     if (!Platform.isAndroid) return false;
-    if (await canDrawOverlays()) return true;
+    return (await _invoke('pipSupported')) == true;
+  }
 
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool(_prefsAskedKey) == true) return false;
-    await prefs.setBool(_prefsAskedKey, true);
+  /// Shrinks the app into a floating window right now.
+  ///
+  /// Leaving the app during a call does this on its own via
+  /// onUserLeaveHint; this is for the call screen's own minimise button, so
+  /// that control does the same visible thing as pressing Home.
+  Future<bool> enterPictureInPicture() async {
+    if (!Platform.isAndroid) return false;
+    return (await _invoke('enterPip')) == true;
+  }
 
-    if (!context.mounted) return false;
-    final grant = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Enable the call bubble?'),
-        content: const Text(
-          'A small floating button stays on screen while you are in other '
-          'apps, so one tap brings you back to the call.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Not now'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Allow'),
-          ),
-        ],
-      ),
-    );
-
-    if (grant == true) {
-      await _invoke('requestOverlayPermission');
-    }
-    return false;
+  /// Opens the system page for "display over other apps".
+  ///
+  /// Reached ONLY from the switch in Settings, where the user went looking
+  /// for it. Android grants SYSTEM_ALERT_WINDOW from that page and nowhere
+  /// else — unlike camera or microphone, there is no in-app Allow dialog the
+  /// app could show instead, for any app, including the ones that seem to
+  /// manage it. They use Picture-in-Picture, which is what this app now does
+  /// by default.
+  Future<void> openOverlaySettings() async {
+    if (!Platform.isAndroid) return;
+    await _invoke('requestOverlayPermission');
   }
 
   Future<Object?> _invoke(String method, [Map<String, dynamic>? args]) async {

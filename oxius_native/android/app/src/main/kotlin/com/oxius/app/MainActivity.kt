@@ -1,9 +1,12 @@
 package com.oxius.app
 
 import android.app.KeyguardManager
+import android.app.PictureInPictureParams
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Rational
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -49,6 +53,18 @@ class MainActivity : FlutterActivity() {
 	 * wait, a method call would not.
 	 */
 	private var pendingCallOpen = false
+
+	/**
+	 * Whether a call is live right now, kept in sync from Dart.
+	 *
+	 * onUserLeaveHint has to decide instantly whether leaving the app should
+	 * shrink it into a Picture-in-Picture window, and it cannot ask Dart —
+	 * the answer would arrive after the activity has already stopped.
+	 */
+	private var callIsLive = false
+
+	/** Portrait-ish while the call is audio, video-shaped while it is video. */
+	private var callIsVideo = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -154,6 +170,13 @@ class MainActivity : FlutterActivity() {
 						CallBubbleOverlay.requestOverlayPermission(this)
 						result.success(true)
 					}
+					"setCallActive" -> {
+						callIsLive = call.argument<Boolean>("active") ?: false
+						callIsVideo = call.argument<Boolean>("video") ?: false
+						result.success(true)
+					}
+					"pipSupported" -> result.success(pipSupported())
+					"enterPip" -> result.success(enterPipNow())
 					"consumePendingCallOpen" -> {
 						result.success(pendingCallOpen)
 						pendingCallOpen = false
@@ -167,6 +190,77 @@ class MainActivity : FlutterActivity() {
 		super.onNewIntent(intent)
 		if (intent.getBooleanExtra(CallBubbleOverlay.EXTRA_OPEN_CALL, false)) {
 			pendingCallOpen = true
+		}
+	}
+
+	/**
+	 * The user pressed Home or swiped up while a call was running.
+	 *
+	 * This is the whole point of Picture-in-Picture: the app shrinks into a
+	 * small floating window that sits over whatever they open next, can be
+	 * dragged anywhere, and taps back to full screen. It is what the overlay
+	 * bubble was for — except PiP needs no permission whatsoever, so nobody
+	 * is ever sent to a system Settings page to enable it.
+	 *
+	 * onUserLeaveHint fires only for a deliberate exit. It does NOT fire when
+	 * another activity is launched on top (an incoming system dialog, the
+	 * camera, a share sheet), which is exactly right — those are not the user
+	 * leaving the call behind.
+	 */
+	override fun onUserLeaveHint() {
+		super.onUserLeaveHint()
+		if (callIsLive) {
+			enterPipNow()
+		}
+	}
+
+	override fun onPictureInPictureModeChanged(
+		isInPictureInPictureMode: Boolean,
+		newConfig: Configuration
+	) {
+		super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+		// Dart swaps the visible route for a compact call chip while the
+		// window is thumbnail-sized — a full call screen scaled down to
+		// 200dp is unreadable, and whatever route happened to be on top
+		// (an inbox, a feed) is not what a floating call should show.
+		Handler(Looper.getMainLooper()).post {
+			try {
+				callChannel?.invokeMethod("pipModeChanged", isInPictureInPictureMode)
+			} catch (_: Exception) {
+			}
+		}
+	}
+
+	private fun pipSupported(): Boolean =
+		Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+			packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+
+	/**
+	 * Enters PiP, returning whether the window actually took.
+	 *
+	 * A false here is not a failure to handle — the ongoing-call notification
+	 * is still in the shade and still taps back into the call. It only means
+	 * this device or this moment (the activity is already stopping, PiP is
+	 * switched off for the app) cannot host a floating window.
+	 */
+	private fun enterPipNow(): Boolean {
+		// Inlined rather than delegated to pipSupported() so the compiler can
+		// see the API-26 guard covering enterPictureInPictureMode below.
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
+		if (!packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+			return false
+		}
+		if (isInPictureInPictureMode) return true
+		return try {
+			// Android clamps the aspect ratio to between 1:2.39 and 2.39:1.
+			// A voice call has nothing to show but a face, so it goes square;
+			// a video call keeps a phone-shaped window.
+			val ratio = if (callIsVideo) Rational(9, 16) else Rational(1, 1)
+			enterPictureInPictureMode(
+				PictureInPictureParams.Builder().setAspectRatio(ratio).build()
+			)
+		} catch (_: Exception) {
+			false
 		}
 	}
 

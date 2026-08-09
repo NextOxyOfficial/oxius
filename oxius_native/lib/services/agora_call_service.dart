@@ -40,7 +40,7 @@ class AgoraCallService {
   static void setCallScreenVisible(bool value) {
     final changed = _isCallScreenVisible != value;
     _isCallScreenVisible = value;
-    // Notify OngoingCallBar so it shows/hides when the CallScreen appears/disappears.
+    // Notify the call bubble so it shows/hides as the CallScreen appears and goes.
     if (changed) _emitCallState();
   }
 

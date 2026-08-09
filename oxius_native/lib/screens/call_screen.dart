@@ -15,7 +15,6 @@ import 'package:livekit_client/livekit_client.dart' as lk;
 
 import '../services/agora_call_service.dart';
 import '../services/auth_service.dart';
-import '../services/call_bubble_service.dart';
 import '../services/livekit_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
@@ -1448,7 +1447,7 @@ class _CallScreenState extends State<CallScreen>
     // If _didEndCall is false and a call is still active, the user has merely
     // navigated away from the CallScreen — we must keep the Agora engine,
     // channel, and remote stream alive so audio/video continues and so the
-    // CallScreen can be restored via OngoingCallBar with isReturning=true.
+    // CallScreen can be restored via the call bubble with isReturning=true.
     // Releasing the channel here would prematurely end the call for the peer.
     final shouldTeardown = _didEndCall || !AgoraCallService.isInCall;
 
@@ -1494,10 +1493,13 @@ class _CallScreenState extends State<CallScreen>
     _isMinimizing = true;
     AgoraCallService.setCallScreenVisible(false);
 
-    // Minimising is the moment the floating bubble becomes useful, so it is
-    // also the only honest moment to ask for the permission it needs. Asked
-    // at most once, and the call carries on either way.
-    unawaited(CallBubbleService.instance.ensurePermission(context));
+    // No permission prompt here any more. Minimising used to be the moment
+    // this asked for "display over other apps", which Android can only grant
+    // on a system Settings page — a detour out of a live call, for a
+    // permission most people would not recognise. Leaving the app now
+    // shrinks it into a Picture-in-Picture window instead, which needs
+    // nothing granted, and the in-app minimise below keeps the ongoing-call
+    // bar it always had.
 
     // Always minimize back to AdsyConnect instead of revealing unrelated
     // routes that may be sitting under the call screen.
@@ -2317,7 +2319,8 @@ class _CallScreenState extends State<CallScreen>
             ),
             const SizedBox(width: 10),
             _buildIconChip(
-              icon: Icons.minimize_rounded,
+              icon: Icons.remove_rounded,
+              label: 'Minimise',
               onTap: _minimizeCall,
             ),
           ],
@@ -2397,7 +2400,8 @@ class _CallScreenState extends State<CallScreen>
           ),
           const SizedBox(width: 12),
           _buildIconChip(
-            icon: Icons.minimize_rounded,
+            icon: Icons.remove_rounded,
+            label: 'Minimise',
             onTap: _minimizeCall,
           ),
         ],
@@ -2855,21 +2859,40 @@ class _CallScreenState extends State<CallScreen>
   Widget _buildIconChip({
     required IconData icon,
     required VoidCallback onTap,
+    String? label,
   }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         child: Ink(
-          width: 50,
           height: 50,
+          padding: EdgeInsets.symmetric(horizontal: label == null ? 13 : 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: const Color(0xFF0F172A).withValues(alpha: 0.72),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
-          child: Icon(icon, color: Colors.white, size: 24),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Colors.white, size: 24),
+              // A bare minus reads as "hide" or even "mute" to plenty of
+              // people; the word removes the guess for the cost of 50px.
+              if (label != null) ...[
+                const SizedBox(width: 5),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

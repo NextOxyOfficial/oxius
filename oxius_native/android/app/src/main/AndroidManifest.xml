@@ -73,6 +73,13 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         
+        <!-- supportsPictureInPicture: the floating call window that costs the
+             user nothing. "Display over other apps" (SYSTEM_ALERT_WINDOW) can
+             only be granted from system Settings — Android provides no in-app
+             dialog for it — so PiP carries the call by default and the overlay
+             bubble stays an opt-in for whoever wants it. The configChanges
+             list below already declares every flag PiP requires
+             (orientation | screenSize | smallestScreenSize | screenLayout). -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -81,6 +88,7 @@
             android:theme="@style/LaunchTheme"
             android:showWhenLocked="true"
             android:turnScreenOn="true"
+            android:supportsPictureInPicture="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">

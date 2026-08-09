@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,6 +13,7 @@ import '../config/app_config.dart';
 import '../models/geo_location.dart';
 import '../models/user_profile.dart';
 import '../services/auth_service.dart';
+import '../services/call_bubble_service.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../services/geo_location_service.dart';
 import '../services/settings_service.dart';
@@ -32,7 +35,8 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen>
+    with WidgetsBindingObserver {
   static const _pageBackgroundColor = Color(0xFFF8FAFC);
   static const _surfaceColor = Color(0xFFFFFFFF);
   static const _softSurfaceColor = Color(0xFFF8FAFF);
@@ -114,12 +118,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _showConfirmPassword = false;
   int _mediaRefreshTick = 0;
 
+  /// Whether "display over other apps" is currently granted. Read from the
+  /// system rather than stored, because the user changes it on Android's own
+  /// page and a remembered copy would go stale the moment they did.
+  bool _callBubbleAllowed = false;
+
   @override
   void initState() {
     super.initState();
     _geoService = GeoLocationService(baseUrl: '${AppConfig.mediaBaseUrl}/api');
     _attachControllerListeners();
     _initialize();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_refreshCallBubbleState());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Granting the permission means leaving for Android's Settings and coming
+    // back; this is the only moment the switch can learn what happened there.
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshCallBubbleState());
+    }
+  }
+
+  Future<void> _refreshCallBubbleState() async {
+    if (!Platform.isAndroid) return;
+    final allowed = await CallBubbleService.instance.canDrawOverlays();
+    if (!mounted || allowed == _callBubbleAllowed) return;
+    setState(() => _callBubbleAllowed = allowed);
   }
 
   @override
@@ -146,6 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _oldPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -2397,6 +2425,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
             isBusy: _isSavingPrivacy,
             enabled: _hasPrivacyChanges && !_isSavingPrivacy,
             onPressed: _savePrivacy,
+          ),
+          if (Platform.isAndroid) ...[
+            const SizedBox(height: 10),
+            _buildCallBubbleCard(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// The one place the overlay bubble can be turned on.
+  ///
+  /// Calls no longer ask for "display over other apps" — leaving the app
+  /// during a call floats it as a Picture-in-Picture window, which costs the
+  /// user nothing. The bubble is the richer version of the same idea and it
+  /// is kept for whoever wants it, but Android only grants that permission
+  /// on its own Settings page, so this is opt-in and lives here rather than
+  /// interrupting a live call.
+  Widget _buildCallBubbleCard() {
+    // English throughout, like the rest of the call flow.
+    return _buildSectionCard(
+      title: 'Call bubble',
+      subtitle: 'During a call, the bubble floats over the app and over other '
+          'apps so one tap brings you back. This already works — nothing to '
+          'turn on.',
+      icon: Icons.picture_in_picture_alt_rounded,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Native floating bubble',
+                  style: AppFonts.roboto(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: _headingTextColor),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _callBubbleAllowed
+                      ? 'On. The bubble is drawn by Android itself, so it '
+                          'stays put even while the app is asleep.'
+                      : 'Off — and not needed. Turning it on opens Android\'s '
+                          'own permission page, the only place this one can '
+                          'be granted.',
+                  style: AppFonts.roboto(
+                      fontSize: 12, color: _bodyTextColor, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Switch.adaptive(
+            value: _callBubbleAllowed,
+            activeThumbColor: _primaryColor,
+            onChanged: (_) async {
+              // Both directions land on the same system page: Android grants
+              // and revokes SYSTEM_ALERT_WINDOW there and nowhere else.
+              await CallBubbleService.instance.openOverlaySettings();
+            },
           ),
         ],
       ),

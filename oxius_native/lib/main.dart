@@ -64,7 +64,8 @@ import 'services/online_status_service.dart';
 import 'services/telemetry.dart';
 import 'models/cart_item.dart';
 import 'screens/call_screen.dart';
-import 'widgets/ongoing_call_bar.dart';
+import 'widgets/call/call_bubble.dart';
+import 'widgets/call/call_pip_view.dart';
 import 'screens/rideshare/rideshare_screen.dart';
 import 'screens/rideshare/rideshare_history_screen.dart';
 import 'screens/rideshare/rideshare_vehicles_screen.dart';
@@ -357,9 +358,14 @@ class MyApp extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       child ?? const SizedBox.shrink(),
-                      // The bar positions itself now — it is draggable, and
-                      // pinning it here is what put it over every app bar.
-                      const OngoingCallBar(),
+                      // Draggable, and it positions itself — over a corner
+                      // rather than across a row, so no app bar, search
+                      // field or tab strip ends up underneath it.
+                      const CallBubble(),
+                      // Last, so it covers everything: while Android has the
+                      // app shrunk into a floating call window, nothing else
+                      // in the tree is legible at that size.
+                      const CallPipView(),
                     ],
                   ),
                 ),
