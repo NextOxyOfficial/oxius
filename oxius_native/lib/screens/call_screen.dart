@@ -27,6 +27,43 @@ import '../widgets/app_network_image.dart';
 /// other person may be somewhere they would rather not be seen.
 enum _VideoUpgrade { idle, asked, invited }
 
+/// Screen-edge gap the control bar is allowed to reach.
+///
+/// Top level rather than a field because both the bar and the width test
+/// that decides its shape need it, and they must use the same number.
+const double _kControlsInset = 12;
+
+/// Whether the call controls need a second row at this width.
+///
+/// Pulled out of the widget as a plain function so the arithmetic can be
+/// tested at specific screen widths — the whole point is that the controls
+/// never overflow and never hide behind a scroll gesture, and neither is
+/// something you can eyeball on one device.
+///
+/// The numbers are the same ones the bar lays out with: [count] round
+/// buttons, the last of them the larger End button, separated by [gap], all
+/// inside the bar's own horizontal padding and the screen inset.
+@visibleForTesting
+bool callControlsNeedTwoRows({
+  required double screenWidth,
+  required bool compact,
+  required bool isVideo,
+}) {
+  // mute, speaker, add, end always; video adds camera and flip, audio adds
+  // the upgrade-to-video button.
+  final count = isVideo ? 6 : 5;
+  final btn = compact ? 52.0 : 56.0;
+  final end = compact ? 62.0 : 68.0;
+  final gap = compact ? 8.0 : 10.0;
+  final hPad = compact ? 10.0 : 14.0;
+  final needed = (count - 1) * btn +
+      end +
+      (count - 1) * gap +
+      hPad * 2 +
+      _kControlsInset * 2;
+  return needed > screenWidth;
+}
+
 /// The states a call passes through, in the order the user experiences them.
 enum _CallStage {
   incoming,
@@ -49,6 +86,15 @@ class CallScreen extends StatefulWidget {
   final bool isReturning;
   final bool autoAccept; // When true, skip accept UI and join immediately
 
+  /// Set when this call is ringing a whole group chat rather than one person.
+  ///
+  /// Only the outgoing side needs it: the ring goes to every member at once
+  /// through a different endpoint, and the header says the group's name
+  /// instead of one member's. Everything after the ring is identical — a
+  /// group call is the same CallSession with participants attached.
+  final String? groupId;
+  final String? groupName;
+
   const CallScreen({
     super.key,
     required this.channelName,
@@ -60,6 +106,8 @@ class CallScreen extends StatefulWidget {
     this.callType = 'video',
     this.isReturning = false,
     this.autoAccept = false,
+    this.groupId,
+    this.groupName,
   });
 
   @override
@@ -96,6 +144,14 @@ class _CallScreenState extends State<CallScreen>
   /// "Someone left the call" and the like — shown briefly, then gone.
   String? _transientNote;
   Timer? _transientNoteTimer;
+
+  /// Which member of a group took the callee slot on the server.
+  ///
+  /// A status event is still addressed to one person — that is the shape of
+  /// the endpoint — and the server fans it out to everyone else on the call
+  /// from there. For a group there is no widget.calleeId to use, so the
+  /// server names one when the call starts.
+  String? _groupPrimaryCalleeId;
   bool _isClosing = false;
   bool _isMinimizing = false;
   bool _didEndCall = false;
@@ -610,11 +666,25 @@ class _CallScreenState extends State<CallScreen>
       if (widget.isIncoming && widget.autoAccept) {
         await _acceptCall();
       } else {
-        final notified = await AgoraCallService.sendCallNotification(
-          calleeId: widget.calleeId,
-          channelName: widget.channelName,
-          callType: _callType,
-        );
+        // A group call rings every member through one endpoint; the server
+        // reports back which of them took the callee slot, and status events
+        // are addressed there before it fans them out to the rest.
+        final bool notified;
+        if (widget.groupId != null) {
+          final primary = await AgoraCallService.startGroupCall(
+            groupId: widget.groupId!,
+            channelName: widget.channelName,
+            callType: _callType,
+          );
+          notified = primary != null;
+          if (primary != null) _groupPrimaryCalleeId = primary;
+        } else {
+          notified = await AgoraCallService.sendCallNotification(
+            calleeId: widget.calleeId,
+            channelName: widget.channelName,
+            callType: _callType,
+          );
+        }
 
         if (!notified) {
           _stopOutgoingRingback();
@@ -866,7 +936,7 @@ class _CallScreenState extends State<CallScreen>
     _acceptanceSent = true;
     AgoraCallService.markCallAccepted();
     AgoraCallService.sendCallStatus(
-      receiverId: widget.calleeId,
+      receiverId: _statusReceiverId,
       channelName: widget.channelName,
       status: 'accepted',
       callType: _callType,
@@ -886,7 +956,7 @@ class _CallScreenState extends State<CallScreen>
 
     // 2. Notify the caller in the background — don't block the UI.
     unawaited(AgoraCallService.sendCallStatus(
-      receiverId: widget.calleeId,
+      receiverId: _statusReceiverId,
       channelName: widget.channelName,
       status: 'rejected',
       callType: _callType,
@@ -946,7 +1016,7 @@ class _CallScreenState extends State<CallScreen>
     // Notify peer in background (fire-and-forget).
     if (notifyPeer) {
       unawaited(AgoraCallService.sendCallStatus(
-        receiverId: widget.calleeId,
+        receiverId: _statusReceiverId,
         channelName: widget.channelName,
         status: localOutcome,
         callType: _callType,
@@ -1211,7 +1281,7 @@ class _CallScreenState extends State<CallScreen>
 
       await AdsyConnectService.sendTextMessage(
         chatroomId: chatroomId,
-        receiverId: widget.calleeId,
+        receiverId: _statusReceiverId,
         content: text,
       );
     } catch (_) {
@@ -1248,7 +1318,13 @@ class _CallScreenState extends State<CallScreen>
   /// Everyone else currently in the room.
   List<CallPeer> get _peers => LiveKitCallService.peers;
 
-  bool get _isGroupCall => _peers.length > 1;
+  /// A call rung at a group is a group call from the first second, before
+  /// anyone has picked up — otherwise the header would show one member's
+  /// name while five phones ring.
+  bool get _isGroupCall => _peers.length > 1 || widget.groupId != null;
+
+  /// Where a status event is addressed. See [_groupPrimaryCalleeId].
+  String get _statusReceiverId => _groupPrimaryCalleeId ?? widget.calleeId;
 
   Future<void> _addParticipants() async {
     if (_stage != _CallStage.connected) {
@@ -1499,7 +1575,7 @@ class _CallScreenState extends State<CallScreen>
       if (!_didEndCall && AgoraCallService.isInCall) {
         final status = _callStartedAt != null ? 'ended' : 'cancelled';
         unawaited(AgoraCallService.sendCallStatus(
-          receiverId: widget.calleeId,
+          receiverId: _statusReceiverId,
           channelName: widget.channelName,
           status: status,
           callType: _callType,
@@ -1788,16 +1864,113 @@ class _CallScreenState extends State<CallScreen>
     );
   }
 
+  /// Whether the control bar is two rows tall right now. The self-view reads
+  /// this too, so its clearance and the bar's shape can never disagree.
+  bool get _controlsWrap => callControlsNeedTwoRows(
+        screenWidth: MediaQuery.sizeOf(context).width,
+        compact: _isCompactLayout,
+        isVideo: _callType == 'video',
+      );
+
   Widget _buildCallControls() {
     final compact = _isCompactLayout;
     final isVideo = _callType == 'video';
     final hPad = compact ? 10.0 : 14.0;
     final endSize = compact ? 62.0 : 68.0;
     final btnSize = compact ? 52.0 : 56.0;
+    final gap = compact ? 8.0 : 10.0;
+
+    // Split by what a control does, not by where the arithmetic happens to
+    // land: things you toggle about your own devices, then the two that
+    // change who is on the call. A width-balanced split would put Flip and
+    // Add together on one row and read like an accident.
+    final toggles = <Widget>[
+      _buildRoundControl(
+        icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+        label: _isMuted ? 'Unmute' : 'Mute',
+        size: btnSize,
+        isActive: _isMuted,
+        activeBg: const Color(0xFFEF4444),
+        onTap: _toggleMute,
+      ),
+      _buildRoundControl(
+        icon:
+            _isSpeakerOn ? Icons.volume_up_rounded : Icons.volume_down_rounded,
+        label: 'Speaker',
+        size: btnSize,
+        isActive: _isSpeakerOn,
+        activeBg: _accentColor,
+        onTap: _toggleSpeaker,
+      ),
+      if (!isVideo)
+        _buildRoundControl(
+          icon: Icons.videocam_outlined,
+          label: _upgrade == _VideoUpgrade.asked ? 'Waiting' : 'Video',
+          size: btnSize,
+          isActive: _upgrade == _VideoUpgrade.asked,
+          activeBg: _accentColor,
+          onTap: () => unawaited(_requestVideoUpgrade()),
+        ),
+      if (isVideo) ...[
+        _buildRoundControl(
+          icon: _isCameraOff
+              ? Icons.videocam_off_rounded
+              : Icons.videocam_rounded,
+          label: 'Camera',
+          size: btnSize,
+          isActive: _isCameraOff,
+          activeBg: const Color(0xFFEF4444),
+          onTap: _toggleCamera,
+        ),
+        _buildRoundControl(
+          icon: Icons.cameraswitch_rounded,
+          label: 'Flip',
+          size: btnSize,
+          isActive: false,
+          onTap: _switchCamera,
+        ),
+      ],
+    ];
+
+    final actions = <Widget>[
+      _buildRoundControl(
+        icon: Icons.person_add_alt_1_rounded,
+        label: 'Add',
+        size: btnSize,
+        isActive: false,
+        onTap: () => unawaited(_addParticipants()),
+      ),
+      _buildRoundControl(
+        icon: Icons.call_end_rounded,
+        label: 'End',
+        size: endSize,
+        isActive: true,
+        activeBg: const Color(0xFFEF4444),
+        iconColor: Colors.white,
+        onTap: () => unawaited(_endCall(
+          notifyPeer: true,
+          allowLog: true,
+          closeImmediately: true,
+        )),
+      ),
+    ];
+
+    Widget row(List<Widget> children) => Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) SizedBox(width: gap),
+              children[i],
+            ],
+          ],
+        );
+
+    final wrap = _controlsWrap;
 
     return Positioned(
-      left: 0,
-      right: 0,
+      left: _kControlsInset,
+      right: _kControlsInset,
       bottom: compact ? 16 : 24,
       child: Center(
         child: Container(
@@ -1805,95 +1978,23 @@ class _CallScreenState extends State<CallScreen>
               horizontal: hPad, vertical: compact ? 8 : 10),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.42),
-            borderRadius: BorderRadius.circular(36),
+            borderRadius: BorderRadius.circular(wrap ? 28 : 36),
             border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
           ),
-          // A video group call carries six controls, which is wider than a
-          // small phone. Scrolling keeps every one of them reachable rather
-          // than clipping whichever happens to fall off the end.
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildRoundControl(
-                  icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-                  label: _isMuted ? 'Unmute' : 'Mute',
-                  size: btnSize,
-                  isActive: _isMuted,
-                  activeBg: const Color(0xFFEF4444),
-                  onTap: _toggleMute,
-                ),
-                SizedBox(width: compact ? 8 : 10),
-                _buildRoundControl(
-                  icon: _isSpeakerOn
-                      ? Icons.volume_up_rounded
-                      : Icons.volume_down_rounded,
-                  label: 'Speaker',
-                  size: btnSize,
-                  isActive: _isSpeakerOn,
-                  activeBg: _accentColor,
-                  onTap: _toggleSpeaker,
-                ),
-                if (!isVideo) ...[
-                  SizedBox(width: compact ? 8 : 10),
-                  _buildRoundControl(
-                    icon: Icons.videocam_outlined,
-                    label:
-                        _upgrade == _VideoUpgrade.asked ? 'Waiting' : 'Video',
-                    size: btnSize,
-                    isActive: _upgrade == _VideoUpgrade.asked,
-                    activeBg: _accentColor,
-                    onTap: () => unawaited(_requestVideoUpgrade()),
-                  ),
-                ],
-                if (isVideo) ...[
-                  SizedBox(width: compact ? 8 : 10),
-                  _buildRoundControl(
-                    icon: _isCameraOff
-                        ? Icons.videocam_off_rounded
-                        : Icons.videocam_rounded,
-                    label: 'Camera',
-                    size: btnSize,
-                    isActive: _isCameraOff,
-                    activeBg: const Color(0xFFEF4444),
-                    onTap: _toggleCamera,
-                  ),
-                  SizedBox(width: compact ? 8 : 10),
-                  _buildRoundControl(
-                    icon: Icons.cameraswitch_rounded,
-                    label: 'Flip',
-                    size: btnSize,
-                    isActive: false,
-                    onTap: _switchCamera,
-                  ),
-                ],
-                SizedBox(width: compact ? 8 : 10),
-                _buildRoundControl(
-                  icon: Icons.person_add_alt_1_rounded,
-                  label: 'Add',
-                  size: btnSize,
-                  isActive: false,
-                  onTap: () => unawaited(_addParticipants()),
-                ),
-                SizedBox(width: compact ? 10 : 12),
-                _buildRoundControl(
-                  icon: Icons.call_end_rounded,
-                  label: 'End',
-                  size: endSize,
-                  isActive: true,
-                  activeBg: const Color(0xFFEF4444),
-                  iconColor: Colors.white,
-                  onTap: () => unawaited(_endCall(
-                    notifyPeer: true,
-                    allowLog: true,
-                    closeImmediately: true,
-                  )),
-                ),
-              ],
-            ),
-          ),
+          // Two rows rather than a horizontal scroller. A scrolling control
+          // bar hides controls behind a gesture nobody thinks to try during
+          // a call — End can be the one off the edge — and gives no hint
+          // that anything is there.
+          child: wrap
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    row(toggles),
+                    SizedBox(height: compact ? 8 : 10),
+                    row(actions),
+                  ],
+                )
+              : row([...toggles, ...actions]),
         ),
       ),
     );
@@ -2293,9 +2394,20 @@ class _CallScreenState extends State<CallScreen>
     final compact = _isCompactLayout;
     final hasRemoteVideo =
         !_isGroupCall && _remoteUid != null && _callType == 'video';
-    // In a group call the header names the call, not one person in it.
-    final title =
-        _isGroupCall ? 'Group call • ${_peers.length + 1}' : widget.calleeName;
+    // In a group call the header names the call, not one person in it — and
+    // when the call was rung at a named group, that name is what people
+    // recognise, so it wins over the generic label.
+    final String title;
+    if (widget.groupName != null && widget.groupName!.trim().isNotEmpty) {
+      final joined = _peers.length + 1;
+      title = joined > 1
+          ? '${widget.groupName!.trim()} • $joined'
+          : widget.groupName!.trim();
+    } else if (_isGroupCall) {
+      title = 'Group call • ${_peers.length + 1}';
+    } else {
+      title = widget.calleeName;
+    }
     final subtitle = _stageLabel;
 
     // Slim pill for active video call to keep the opponent's video unobstructed;
@@ -2457,8 +2569,16 @@ class _CallScreenState extends State<CallScreen>
     final compact = _isCompactLayout;
     final width = compact ? 92.0 : 108.0;
     final height = compact ? 128.0 : 150.0;
-    // Clear of the header pill above and the control bar below.
-    const margin = EdgeInsets.fromLTRB(14, 74, 14, 116);
+    // Clear of the header pill above and the control bar below — and the bar
+    // is a row taller when the controls wrap, so the clearance follows it.
+    // Getting this wrong parks the self-view under End, where dragging it
+    // out of the way means pressing the button you are trying to avoid.
+    final margin = EdgeInsets.fromLTRB(
+      14,
+      74,
+      14,
+      116 + (_controlsWrap ? (compact ? 64.0 : 70.0) : 0.0),
+    );
 
     return Positioned.fill(
       child: Padding(

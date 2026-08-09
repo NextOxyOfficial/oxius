@@ -308,3 +308,374 @@ class CallBecomesGroupChatTests(TestCase):
         self.session.refresh_from_db()
         self.assertIsNone(self.session.chat_group)
         self.assertEqual(ChatGroup.objects.count(), 0)
+
+
+class StartGroupCallTests(TestCase):
+    """Ringing a whole group chat at once."""
+
+    def setUp(self):
+        self.users = []
+        for i, (uname, first) in enumerate([
+            ('gina', 'Gina'), ('hugo', 'Hugo'), ('iris', 'Iris'),
+        ]):
+            self.users.append(User.objects.create_user(
+                username=uname, email=f'{uname}@example.com', password='x',
+                first_name=first, phone=f'+88010000002{i}',
+            ))
+        self.owner, self.m2, self.m3 = self.users
+
+        self.group = ChatGroup.objects.create(
+            name='Test Group', creator=self.owner)
+        for user in self.users:
+            ChatGroupMembership.objects.create(
+                group=self.group, user=user,
+                role='admin' if user == self.owner else 'member',
+            )
+
+        self.rung = []
+        push = patch(
+            'adsyconnect.views._send_call_data_message',
+            side_effect=lambda *, target_user, payload: (
+                self.rung.append((target_user.email, dict(payload)))
+                or {'sent_to': 1}
+            ),
+        )
+        push.start()
+        self.addCleanup(push.stop)
+        for target in ('adsyconnect.views._broadcast_to_user',):
+            p = patch(target, return_value=None)
+            p.start()
+            self.addCleanup(p.stop)
+        can_call = patch('adsyconnect.views._can_call', return_value=(True, ''))
+        can_call.start()
+        self.addCleanup(can_call.stop)
+
+    def start(self, user=None, call_type='audio', group_id=None):
+        client = APIClient()
+        client.force_authenticate(user=user or self.owner)
+        return client.post(
+            '/api/adsyconnect/start-group-call/',
+            {
+                'group_id': str(group_id or self.group.id),
+                'channel_name': 'c_group_call_1',
+                'call_type': call_type,
+            },
+            format='json',
+        )
+
+    def test_every_other_member_is_rung_once(self):
+        response = self.start(call_type='video')
+        self.assertEqual(response.status_code, 200, response.content)
+
+        rung_emails = sorted(email for email, _ in self.rung)
+        self.assertEqual(
+            rung_emails, ['hugo@example.com', 'iris@example.com'])
+        # And the caller is never rung for their own call.
+        self.assertNotIn('gina@example.com', rung_emails)
+
+        for _, payload in self.rung:
+            self.assertEqual(payload['type'], 'incoming_call')
+            self.assertEqual(payload['is_group_call'], True)
+            self.assertEqual(payload['group_name'], 'Test Group')
+            self.assertEqual(payload['call_type'], 'video')
+
+    def test_it_is_an_ordinary_call_session_linked_to_the_group(self):
+        """The whole point: no second implementation to keep in step."""
+        response = self.start()
+        session = CallSession.objects.get(id=response.json()['call_id'])
+
+        self.assertEqual(session.caller, self.owner)
+        self.assertEqual(session.chat_group_id, self.group.id)
+        # One member fills the callee slot, the rest are participants — the
+        # exact shape the departure logic already understands.
+        self.assertIn(session.callee, [self.m2, self.m3])
+        others = {p.user for p in session.participants.all()}
+        self.assertEqual(
+            others | {session.callee}, {self.m2, self.m3})
+        self.assertTrue(session.has_extra_participants())
+
+    def test_one_member_hanging_up_leaves_the_others_talking(self):
+        """The group-call fix has to hold for calls that started as groups."""
+        response = self.start()
+        session = CallSession.objects.get(id=response.json()['call_id'])
+        session.update_status(CallSession.STATUS_ACCEPTED)
+        self.rung.clear()
+
+        client = APIClient()
+        client.force_authenticate(user=self.m3)
+        result = client.post(
+            '/api/adsyconnect/send-call-status/',
+            {
+                'receiver_id': str(self.owner.id),
+                'channel_name': session.channel_name,
+                'status': 'ended',
+                'call_type': 'audio',
+                'call_id': str(session.id),
+            },
+            format='json',
+        )
+        self.assertEqual(result.status_code, 200, result.content)
+
+        session.refresh_from_db()
+        self.assertEqual(session.status, CallSession.STATUS_ACCEPTED)
+        self.assertEqual(
+            {email: p['status'] for email, p in self.rung},
+            {
+                'gina@example.com': 'participant_left',
+                'hugo@example.com': 'participant_left',
+            },
+        )
+
+    def test_a_non_member_cannot_ring_the_group(self):
+        outsider = User.objects.create_user(
+            username='mallory', email='mallory@example.com', password='x',
+            first_name='Mallory', phone='+880100000099')
+        response = self.start(user=outsider)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.rung, [])
+
+    def test_a_group_the_caller_is_alone_in_cannot_be_called(self):
+        solo = ChatGroup.objects.create(name='Just Me', creator=self.owner)
+        ChatGroupMembership.objects.create(
+            group=solo, user=self.owner, role='admin')
+        response = self.start(group_id=solo.id)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.rung, [])
+
+    def test_a_busy_member_is_skipped_not_fatal(self):
+        """Hugo is on another call. Iris still gets rung."""
+        # The other party must be someone outside this group, or the fixture
+        # would make Iris busy too and prove nothing.
+        outsider = User.objects.create_user(
+            username='nate', email='nate@example.com', password='x',
+            first_name='Nate', phone='+880100000098')
+        busy_session = CallSession.objects.create(
+            channel_name='c_other_call', caller=self.m2, callee=outsider,
+            call_type='audio', status=CallSession.STATUS_ACCEPTED,
+        )
+        self.addCleanup(busy_session.delete)
+
+        response = self.start()
+        self.assertEqual(response.status_code, 200, response.content)
+        statuses = {r['user_id']: r['status'] for r in response.json()['results']}
+        self.assertEqual(statuses[str(self.m2.id)], 'busy')
+        self.assertEqual(statuses[str(self.m3.id)], 'ringing')
+        self.assertEqual([e for e, _ in self.rung], ['iris@example.com'])
+
+
+class LeavingAGroupCallFreesYouTests(TestCase):
+    """Two bugs that only exist because a group call outlives its leavers.
+
+    Before group calls, hanging up ended the session, so "still a member of a
+    live call" and "still on a call" were the same statement. They are not
+    any more, and both checks that conflated them were wrong.
+    """
+
+    def setUp(self):
+        names = [('opal', 'Opal'), ('pete', 'Pete'), ('quin', 'Quin')]
+        self.a, self.b, self.c = [
+            User.objects.create_user(
+                username=u, email=f'{u}@example.com', password='x',
+                first_name=f, phone=f'+88010000003{i}')
+            for i, (u, f) in enumerate(names)
+        ]
+        self.session = CallSession.objects.create(
+            channel_name='c_leave_frees',
+            caller=self.a, callee=self.b, call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+        )
+        CallParticipant.objects.create(
+            session=self.session, user=self.c, invited_by=self.a,
+            status=CallParticipant.STATUS_ACCEPTED,
+        )
+
+        self.sent = []
+        push = patch(
+            'adsyconnect.views._send_call_data_message',
+            side_effect=lambda *, target_user, payload: (
+                self.sent.append((target_user.email, dict(payload))) or {}
+            ),
+        )
+        push.start()
+        self.addCleanup(push.stop)
+        ws = patch('adsyconnect.views._broadcast_to_user', return_value=None)
+        ws.start()
+        self.addCleanup(ws.stop)
+
+    def hang_up(self, who, receiver):
+        client = APIClient()
+        client.force_authenticate(user=who)
+        return client.post(
+            '/api/adsyconnect/send-call-status/',
+            {
+                'receiver_id': str(receiver.id),
+                'channel_name': self.session.channel_name,
+                'status': 'ended',
+                'call_type': 'audio',
+                'call_id': str(self.session.id),
+            },
+            format='json',
+        )
+
+    def test_leaving_a_group_call_stops_you_looking_busy(self):
+        """The caller walks out. B and C keep talking. A is free.
+
+        _active_call_for_user matched on caller/callee regardless of whether
+        they had left, so A stayed 'busy' for the 90-second window — unable
+        to place a call, and reported busy to anyone calling them.
+        """
+        from adsyconnect.views import _active_call_for_user
+
+        self.hang_up(self.a, self.b)
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ACCEPTED)
+
+        self.assertIsNone(
+            _active_call_for_user(self.a),
+            'a caller who left a still-running group call is not on a call',
+        )
+        # The people still talking are, of course, still busy.
+        self.assertIsNotNone(_active_call_for_user(self.b))
+        self.assertIsNotNone(_active_call_for_user(self.c))
+
+    def test_hanging_up_works_when_your_original_peer_already_left(self):
+        """A's client still names B, who is gone. C must still be told.
+
+        The receiver membership check refused any receiver who had left,
+        which 403'd the whole request — so C was never told A had gone and
+        the session was never ended.
+        """
+        self.hang_up(self.b, self.a)          # B leaves first
+        self.sent.clear()
+
+        response = self.hang_up(self.a, self.b)  # A still addresses B
+        self.assertEqual(response.status_code, 200, response.content)
+
+        self.session.refresh_from_db()
+        # Only C is left, so the call is genuinely over.
+        self.assertEqual(self.session.status, CallSession.STATUS_ENDED)
+        self.assertEqual(
+            {email for email, _ in self.sent}, {'quin@example.com'})
+
+    def test_someone_who_was_never_on_the_call_is_still_refused(self):
+        """Relaxing the receiver check must not open it to strangers."""
+        stranger = User.objects.create_user(
+            username='rita', email='rita@example.com', password='x',
+            first_name='Rita', phone='+880100000039')
+        response = self.hang_up(self.a, stranger)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.sent, [])
+
+    def test_a_departed_member_cannot_act_on_the_call_again(self):
+        """Leaving is one-way: no minting tokens for a call you walked out of."""
+        self.hang_up(self.a, self.b)
+        self.sent.clear()
+
+        response = self.hang_up(self.a, self.b)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.sent, [])
+
+
+class InvitingIntoARealGroupCallTests(TestCase):
+    """A call started from a real group must not grow that group's roster.
+
+    Adding someone to a call and adding someone to a conversation are
+    different acts. The call-becomes-a-group path made them the same, which
+    would have handed an outsider permanent membership of a group they were
+    never invited to.
+    """
+
+    def setUp(self):
+        names = [('sara', 'Sara'), ('theo', 'Theo'), ('umar', 'Umar')]
+        self.owner, self.member, self.outsider = [
+            User.objects.create_user(
+                username=u, email=f'{u}@example.com', password='x',
+                first_name=f, phone=f'+88010000004{i}')
+            for i, (u, f) in enumerate(names)
+        ]
+        self.group = ChatGroup.objects.create(
+            name='Real Group', creator=self.owner)
+        for user in (self.owner, self.member):
+            ChatGroupMembership.objects.create(group=self.group, user=user)
+
+        self.session = CallSession.objects.create(
+            channel_name='c_real_group_call',
+            caller=self.owner, callee=self.member, call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+            chat_group=self.group,
+        )
+
+        for target in ('adsyconnect.views._send_call_data_message',
+                       'adsyconnect.views._broadcast_to_user'):
+            p = patch(target, return_value={'sent_to': 1})
+            p.start()
+            self.addCleanup(p.stop)
+        for target, value in (
+            ('adsyconnect.views._can_call', (True, '')),
+            ('adsyconnect.views._active_call_for_user', None),
+        ):
+            p = patch(target, return_value=value)
+            p.start()
+            self.addCleanup(p.stop)
+
+    def invite(self, invitee):
+        client = APIClient()
+        client.force_authenticate(user=self.owner)
+        return client.post(
+            '/api/adsyconnect/invite-to-call/',
+            {
+                'channel_name': self.session.channel_name,
+                'call_id': str(self.session.id),
+                'invitee_ids': [str(invitee.id)],
+            },
+            format='json',
+        )
+
+    def test_the_outsider_joins_the_call_but_not_the_group(self):
+        before = set(
+            self.group.memberships.values_list('user_id', flat=True))
+
+        response = self.invite(self.outsider)
+        self.assertEqual(response.status_code, 200, response.content)
+
+        # On the call…
+        self.assertTrue(
+            self.session.participants.filter(user=self.outsider).exists())
+        # …and nowhere near the group's member list.
+        after = set(self.group.memberships.values_list('user_id', flat=True))
+        self.assertEqual(after, before)
+        self.assertNotIn(self.outsider.id, after)
+
+    def test_no_system_message_is_posted_into_the_real_group(self):
+        from .models import GroupMessage
+
+        self.invite(self.outsider)
+        self.assertEqual(
+            GroupMessage.objects.filter(group=self.group).count(), 0)
+
+    def test_a_call_born_group_does_still_grow(self):
+        """The behaviour this is protecting must keep working."""
+        plain = CallSession.objects.create(
+            channel_name='c_plain_pair',
+            caller=self.owner, callee=self.member, call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+        )
+        client = APIClient()
+        client.force_authenticate(user=self.owner)
+        client.post(
+            '/api/adsyconnect/invite-to-call/',
+            {
+                'channel_name': plain.channel_name,
+                'call_id': str(plain.id),
+                'invitee_ids': [str(self.outsider.id)],
+            },
+            format='json',
+        )
+
+        plain.refresh_from_db()
+        self.assertIsNotNone(plain.chat_group)
+        self.assertTrue(plain.chat_group.created_from_call)
+        self.assertIn(
+            self.outsider.id,
+            set(plain.chat_group.memberships.values_list('user_id', flat=True)),
+        )

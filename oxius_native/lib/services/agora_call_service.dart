@@ -384,6 +384,81 @@ class AgoraCallService {
     }
   }
 
+  /// Ring every member of a group chat at once.
+  ///
+  /// The server side is the same CallSession a one-to-one call creates, with
+  /// the other members attached as participants, so everything after the
+  /// ring — joining, leaving, the rule that one person hanging up does not
+  /// end it for the rest — is the code that was already there.
+  ///
+  /// Returns the id of the member who took the callee slot, or null when the
+  /// call could not be started. The caller needs it because status events
+  /// are still addressed to one member; the server fans them out from there.
+  static Future<String?> startGroupCall({
+    required String groupId,
+    required String channelName,
+    required String callType,
+  }) async {
+    try {
+      _lastNotificationError = null;
+      if (AuthService.currentUser == null) {
+        _lastNotificationError = 'Your session expired. Please sign in again.';
+        return null;
+      }
+
+      final headers = await ApiService.getHeaders();
+      lastCallReachable = true;
+      lastRingChannel = '';
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/adsyconnect/start-group-call/'),
+            headers: headers,
+            body: json.encode({
+              'group_id': groupId,
+              'channel_name': channelName,
+              'call_type': callType,
+            }),
+          )
+          .timeout(_requestTimeout);
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        _lastNotificationError = _friendlyHttpError(response);
+        return null;
+      }
+
+      final decoded = json.decode(response.body);
+      if (decoded is! Map<String, dynamic>) {
+        _lastNotificationError = 'Unexpected response from the server.';
+        return null;
+      }
+
+      final callId = decoded['call_id']?.toString();
+      if (callId != null && callId.isNotEmpty) {
+        _ensureActiveInfo();
+        _activeCallInfo!['callId'] = callId;
+        _schedulePersistedCallStateSync();
+        _emitCallState();
+      }
+
+      // Reachable if the ring landed on at least one member. Unlike a
+      // one-to-one call there is no single person to be unreachable: a group
+      // where one member's phone is off is still a call worth ringing.
+      final results = decoded['results'];
+      lastCallReachable = results is List &&
+          results.any((r) => r is Map && r['reachable'] == true);
+
+      final primary = decoded['primary_callee_id']?.toString();
+      return (primary == null || primary.isEmpty) ? null : primary;
+    } on TimeoutException {
+      _lastNotificationError = 'Call request timed out. Please try again.';
+      return null;
+    } catch (error) {
+      _lastNotificationError = error.toString();
+      return null;
+    }
+  }
+
   /// False when the last outgoing call could not be delivered to any of the
   /// callee's devices — the call screen shows this instead of ringing on.
   static bool lastCallReachable = true;

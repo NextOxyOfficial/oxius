@@ -158,6 +158,15 @@ class ChatGroup(models.Model):
     last_message_at = models.DateTimeField(default=timezone.now)
     last_message_preview = models.TextField(blank=True, null=True)
 
+    #: True for a group that exists because a call needed one.
+    #
+    # A call can grow members, and for a group born from that call growing
+    # the group alongside it is the whole point. A group somebody made
+    # deliberately is not the same thing: pulling an outsider into a call
+    # that started from it must not hand them permanent membership of a
+    # conversation they were never invited to.
+    created_from_call = models.BooleanField(default=False)
+
     class Meta:
         db_table = 'adsyconnect_chat_groups'
         ordering = ['-last_message_at']

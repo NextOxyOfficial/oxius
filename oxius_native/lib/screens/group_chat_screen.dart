@@ -12,7 +12,9 @@ import 'package:record/record.dart';
 import '../services/active_chat_tracker.dart';
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../services/agora_call_service.dart';
 import '../services/auth_service.dart';
+import 'call_screen.dart';
 import '../utils/chat_autoscroll.dart';
 import '../utils/chat_history_cache.dart';
 import '../utils/image_compressor.dart';
@@ -40,7 +42,11 @@ import '../widgets/app_network_image.dart';
 /// previews, shared-post cards) — so groups feel identical to direct chats.
 /// Adds group-only bits: sender name above received bubbles, a live
 /// "কে/কতজন টাইপ করছে" line, and the group-info management screen.
-/// No audio/video calls in groups — by design.
+///
+/// Audio and video calls ring every member at once from the header. The
+/// screen they open is the same CallScreen a direct call opens, and the
+/// server builds the same CallSession — a group call is not a second kind
+/// of call, it is one with participants attached.
 class GroupChatScreen extends StatefulWidget {
   final Map<String, dynamic> group;
 
@@ -317,8 +323,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         (u['first_name'] ?? '').toString(),
         (u['last_name'] ?? '').toString(),
       ].where((s) => s.isNotEmpty).join(' ').trim();
-      final display =
-          name.isNotEmpty ? name : (u['username'] ?? '').toString();
+      final display = name.isNotEmpty ? name : (u['username'] ?? '').toString();
       if (display.isEmpty) continue;
       if (q.isNotEmpty && !display.toLowerCase().contains(q)) continue;
       out.add({
@@ -469,8 +474,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       final url = (m['media_url'] ?? '').toString();
       return url.isEmpty ? null : AppConfig.getAbsoluteUrl(url);
     }
-    final shared =
-        SharedPostMessage.tryDecode((m['content'] ?? '').toString());
+    final shared = SharedPostMessage.tryDecode((m['content'] ?? '').toString());
     final thumb = shared?.thumbUrl.trim() ?? '';
     return thumb.isEmpty ? null : AppConfig.getAbsoluteUrl(thumb);
   }
@@ -499,9 +503,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     final newText =
         await ChatEditMessageSheet.show(context, initialText: currentText);
     if (newText == null || !mounted) return;
-    final contentToStore = sharedShell != null
-        ? sharedShell.withText(newText).encode()
-        : newText;
+    final contentToStore =
+        sharedShell != null ? sharedShell.withText(newText).encode() : newText;
     final res = await AdsyConnectService.editGroupMessage(
         _groupId, (raw['id'] ?? '').toString(), contentToStore);
     if (!mounted) return;
@@ -563,8 +566,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.videocam_outlined,
-                  color: Color(0xFFDC2626)),
+              leading:
+                  const Icon(Icons.videocam_outlined, color: Color(0xFFDC2626)),
               title: const Text('ভিডিও'),
               onTap: () {
                 Navigator.pop(ctx);
@@ -712,8 +715,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       );
       final path = result?.files.single.path;
       if (path == null) return;
-      await _sendMedia(path, 'document',
-          fileName: result!.files.single.name);
+      await _sendMedia(path, 'document', fileName: result!.files.single.name);
     } catch (_) {
       if (mounted) AdsyToast.error(context, 'ডকুমেন্ট সিলেক্ট  করা যায়নি');
     }
@@ -851,8 +853,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   void _scrollToGroupMessage(String messageId) {
     final id = messageId.trim();
     if (id.isEmpty) return;
-    final idx =
-        _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
+    final idx = _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
     if (idx == -1) {
       AdsyToast.info(context, 'আগের মেসেজটি লোড করা নেই');
       return;
@@ -869,8 +870,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       return;
     }
     if (_scroll.hasClients && _messages.length > 1) {
-      final target = _scroll.position.maxScrollExtent *
-          (idx / (_messages.length - 1));
+      final target =
+          _scroll.position.maxScrollExtent * (idx / (_messages.length - 1));
       _scroll.animateTo(
         target.clamp(0, _scroll.position.maxScrollExtent),
         duration: const Duration(milliseconds: 320),
@@ -922,6 +923,52 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (updated.isNotEmpty) setState(() => _group = updated.first);
   }
 
+  /// Ring every member of this group at once.
+  ///
+  /// The screen it opens is the same CallScreen a one-to-one call opens; only
+  /// the ring differs, and only on the way out. Passing groupId is what tells
+  /// it to use the group endpoint and to name the call after the group.
+  void _startGroupCall(String callType) {
+    final currentUser = AuthService.currentUser;
+    if (currentUser == null) {
+      AdsyToast.warning(context, 'কল করতে সাইন ইন করুন');
+      return;
+    }
+    if (AgoraCallService.isInCall) {
+      AdsyToast.warning(
+          context, 'আপনি ইতিমধ্যে একটি কলে আছেন। আগে সেটি শেষ করুন।');
+      return;
+    }
+
+    final name = (_group['name'] ?? '').toString().trim();
+    // A group of one is the person themselves; nobody to ring.
+    final memberCount = (_group['members'] as List?)?.length ?? 0;
+    if (memberCount <= 1) {
+      AdsyToast.info(context, 'এই গ্রুপে আর কেউ নেই');
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CallScreen(
+          channelName:
+              AgoraCallService.generateChannelName(currentUser.id, _groupId),
+          // No single callee on a group call — the server picks which member
+          // takes that slot and tells the screen. These are the fallbacks
+          // used only until it answers.
+          calleeId: _groupId,
+          calleeName: name.isEmpty ? 'Group call' : name,
+          calleeAvatar: (_group['image'] ?? '').toString(),
+          isIncoming: false,
+          callType: callType,
+          groupId: _groupId,
+          groupName: name,
+        ),
+      ),
+    );
+  }
+
   void _viewImage(String path) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => Scaffold(
@@ -957,8 +1004,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       'isMe': senderId == _myId,
       'mediaUrl': m['media_url']?.toString(),
       'fileName': m['file_name']?.toString(),
-      'voiceDuration':
-          int.tryParse('${m['voice_duration'] ?? ''}') ?? 0,
+      'voiceDuration': int.tryParse('${m['voice_duration'] ?? ''}') ?? 0,
       'isDeleted': m['is_deleted'] == true,
       'isEdited': m['is_edited'] == true,
       // Quote-reply metadata — the bubble renders its standard quote card.
@@ -972,8 +1018,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       // outright — including on tap. Tapping opens the row, so the tick rides
       // along with it exactly as it used to.
       'timeRevealAnimated': (m['id'] ?? '').toString() == _timeShownId,
-      'timeDisplay': _formatTime(
-          DateTime.tryParse((m['created_at'] ?? '').toString())),
+      'timeDisplay':
+          _formatTime(DateTime.tryParse((m['created_at'] ?? '').toString())),
       'isSeen': false,
       // The bubble renders THIS mapped copy, not the raw message, so the
       // reaction list has to be carried across or group chips never show.
@@ -1066,6 +1112,16 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.call_rounded, color: Color(0xFF334155)),
+            onPressed: () => _startGroupCall('audio'),
+            tooltip: 'অডিও কল',
+          ),
+          IconButton(
+            icon: const Icon(Icons.videocam_rounded, color: Color(0xFF334155)),
+            onPressed: () => _startGroupCall('video'),
+            tooltip: 'ভিডিও কল',
+          ),
+          IconButton(
             icon: const Icon(Icons.info_outline_rounded,
                 color: Color(0xFF334155)),
             onPressed: _openInfo,
@@ -1098,8 +1154,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                             },
                             child: ListView.builder(
                               controller: _scroll,
-                              padding:
-                                  const EdgeInsets.fromLTRB(8, 12, 8, 8),
+                              padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
                               itemCount: _messages.length,
                               // Keyed so reply-quote taps can
                               // Scrollable.ensureVisible their target row.
@@ -1142,9 +1197,9 @@ class _GroupChatScreenState extends State<GroupChatScreen>
             recordDuration: Duration(seconds: _recordSeconds),
             replyFromName: _replyingTo != null
                 ? ((Map<String, dynamic>.from(
-                                _replyingTo!['sender'] ?? {})['id'] ??
-                            '')
-                        .toString() ==
+                                    _replyingTo!['sender'] ?? {})['id'] ??
+                                '')
+                            .toString() ==
                         _myId
                     ? 'You'
                     : _senderName(_replyingTo!))
@@ -1196,8 +1251,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
           return InkWell(
             onTap: () => _insertMention(m['name']!),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Row(
                 children: [
                   Container(
@@ -1277,8 +1331,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
             .toString()
         : '';
     final thisSender =
-        (Map<String, dynamic>.from(raw['sender'] ?? {})['id'] ?? '')
-            .toString();
+        (Map<String, dynamic>.from(raw['sender'] ?? {})['id'] ?? '').toString();
     final showAvatar = !isMe && thisSender != prevSender;
 
     final msgId = mapped['id'].toString();

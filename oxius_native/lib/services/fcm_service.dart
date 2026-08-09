@@ -1242,7 +1242,8 @@ class FCMService {
     if (Platform.isIOS) return;
     final data = _pendingBackgroundRing;
     if (data == null) return;
-    final age = DateTime.now().millisecondsSinceEpoch - _pendingBackgroundRingAt;
+    final age =
+        DateTime.now().millisecondsSinceEpoch - _pendingBackgroundRingAt;
     if (age > _callRecoveryMaxAgeMs) {
       _pendingBackgroundRing = null;
       return;
@@ -1404,8 +1405,9 @@ class FCMService {
               'Authorization': 'Bearer $accessToken',
               'Content-Type': 'application/json',
             },
-            body: jsonEncode(
-                {if (fcmToken != null && fcmToken.isNotEmpty) 'fcm_token': fcmToken}),
+            body: jsonEncode({
+              if (fcmToken != null && fcmToken.isNotEmpty) 'fcm_token': fcmToken
+            }),
           )
           .timeout(const Duration(seconds: 5));
       _log('🔕 Removed backend FCM token on logout');
@@ -1719,7 +1721,8 @@ class FCMService {
       // just-accepted call as ended to the caller.
       final callkitUuid = map['id']?.toString() ?? '';
       final wasAccepted = map['isAccepted'] == true ||
-          (callkitUuid.isNotEmpty && _acceptedCallkitUuids.contains(callkitUuid));
+          (callkitUuid.isNotEmpty &&
+              _acceptedCallkitUuids.contains(callkitUuid));
       if (wasAccepted && callkitUuid.isNotEmpty) {
         _acceptedCallkitUuids.add(callkitUuid);
       }
@@ -2613,6 +2616,8 @@ class FCMService {
           isIncoming: true,
           callType: callType,
           autoAccept: true, // Already accepted from CallKit, skip accept UI
+          groupId: _incomingGroupId(data),
+          groupName: _incomingGroupName(data),
         ),
       ),
     );
@@ -2668,9 +2673,26 @@ class FCMService {
           callId: callId,
           isIncoming: true,
           callType: callType,
+          groupId: _incomingGroupId(data),
+          groupName: _incomingGroupName(data),
         ),
       ),
     );
+  }
+
+  /// Which group a ring belongs to, if any.
+  ///
+  /// Only set by the group-call endpoint. On the receiving side it is what
+  /// makes the screen name the call after the group instead of after
+  /// whoever happened to press the button.
+  static String? _incomingGroupId(Map<String, dynamic> data) {
+    final value = data['group_id']?.toString().trim() ?? '';
+    return value.isEmpty ? null : value;
+  }
+
+  static String? _incomingGroupName(Map<String, dynamic> data) {
+    final value = data['group_name']?.toString().trim() ?? '';
+    return value.isEmpty ? null : value;
   }
 
   /// Clean up old call timestamps (older than 2 minutes)
@@ -2878,17 +2900,16 @@ class FCMService {
 
       // Chat messages ring with the AdsyConnect tone on their own channel;
       // everything else keeps the default sound.
-      final isChatMessage =
-          (data['type']?.toString() ?? '') == 'message' ||
-              (data['type']?.toString() ?? '') == 'group_message';
+      final isChatMessage = (data['type']?.toString() ?? '') == 'message' ||
+          (data['type']?.toString() ?? '') == 'group_message';
 
       // Never ring for the conversation the user is LOOKING at right now.
       // 1:1 is also suppressed server-side (ActiveChatSession); this covers
       // groups and doubles as a client-side safety net.
       if (isChatMessage) {
         final active = ActiveChatTracker.activeChatId;
-        final chatId = data['chat_id']?.toString() ??
-            data['chatroom_id']?.toString();
+        final chatId =
+            data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
         final groupId = data['group_id']?.toString();
         if (active != null &&
             ((chatId != null && chatId == active) ||
@@ -3229,9 +3250,8 @@ class FCMService {
     // MISSED CALL — open the conversation with whoever called
     // ============================================
     else if (type == 'missed_call') {
-      final callerId = data['caller_id']?.toString() ??
-          data['sender_id']?.toString() ??
-          '';
+      final callerId =
+          data['caller_id']?.toString() ?? data['sender_id']?.toString() ?? '';
       _log('   → Missed call from $callerId — opening AdsyConnect');
       _dismissBlockingChatOverlay();
       navigator.push(
@@ -3556,8 +3576,8 @@ class FCMService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await prefs.setString(_lastVoipUploadedKey, uploadKey);
-        await prefs.setInt(
-            '${_lastVoipUploadedKey}_at', DateTime.now().millisecondsSinceEpoch);
+        await prefs.setInt('${_lastVoipUploadedKey}_at',
+            DateTime.now().millisecondsSinceEpoch);
         _log('   VoIP token sent to backend successfully');
       } else {
         _log('   Failed to send VoIP token: ${response.statusCode}');

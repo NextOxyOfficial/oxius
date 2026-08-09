@@ -70,7 +70,7 @@ def _active_call_for_user(user):
     ).order_by('-last_status_at').first()
 
 
-def _call_membership_q(user):
+def _call_membership_q(user, *, include_departed=False):
     """Sessions [user] is genuinely part of — the original pair, or invited.
 
     Every place that asks "may this person touch this call?" goes through here,
@@ -78,17 +78,39 @@ def _call_membership_q(user):
     have and nothing more. A participant whose own invitation is dead no longer
     counts: declining and then minting a token would otherwise let someone walk
     back into a call they had refused.
+
+    Leaving counts as dead too, and for the pair that now means checking the
+    departure timestamps rather than the session status. Before group calls
+    the two were the same thing — whoever hung up ended the session — but a
+    group call outlives the people who leave it, and a caller still matching
+    their own live session is a caller the busy check reports as on a call
+    they walked out of, unable to place or receive another for 90 seconds.
+
+    [include_departed] relaxes that back to "was ever on this call", which is
+    what the checks about a message's *recipient* want: someone who left is
+    not a stranger being pushed events at, they are a person the sender was
+    just talking to.
     """
-    return (
-        Q(caller=user)
-        | Q(callee=user)
-        | Q(
-            participants__user=user,
-            participants__status__in=[
-                CallParticipant.STATUS_RINGING,
-                CallParticipant.STATUS_ACCEPTED,
-            ],
+    if include_departed:
+        pair = Q(caller=user) | Q(callee=user)
+        statuses = [
+            CallParticipant.STATUS_RINGING,
+            CallParticipant.STATUS_ACCEPTED,
+            CallParticipant.STATUS_LEFT,
+        ]
+    else:
+        pair = (
+            Q(caller=user, caller_left_at__isnull=True)
+            | Q(callee=user, callee_left_at__isnull=True)
         )
+        statuses = [
+            CallParticipant.STATUS_RINGING,
+            CallParticipant.STATUS_ACCEPTED,
+        ]
+
+    return pair | Q(
+        participants__user=user,
+        participants__status__in=statuses,
     )
 
 
@@ -1221,6 +1243,13 @@ def _ensure_call_chat_group(call_session, *, inviter, invitees, request=None):
     group = call_session.chat_group
     created = group is None
 
+    # A call that started from a real group already has one, and it is not
+    # this function's to grow. Adding someone to the call must not sign them
+    # up to a conversation they were never invited to — they join the call
+    # and nothing else.
+    if not created and not group.created_from_call:
+        return group
+
     if created:
         # Named after the people in it, the way a group nobody bothered to
         # name is named everywhere else.
@@ -1231,6 +1260,7 @@ def _ensure_call_chat_group(call_session, *, inviter, invitees, request=None):
         group = ChatGroup.objects.create(
             name=label[:80],
             creator=call_session.caller,
+            created_from_call=True,
         )
         call_session.chat_group = group
         call_session.save(update_fields=['chat_group'])
@@ -1266,6 +1296,191 @@ def _ensure_call_chat_group(call_session, *, inviter, invitees, request=None):
         _broadcast_to_user(member.id, {'type': 'group_updated', 'group': data})
 
     return group
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def start_group_call(request):
+    """Ring every member of a group chat at once.
+
+    Deliberately not a new kind of call. A group call is the same CallSession
+    every other call uses — the first member becomes its callee and the rest
+    become CallParticipant rows — so everything already built on top of that
+    shape applies without a second implementation to keep in step: the ring
+    channels, the busy checks, CallKit, and the rule that one person leaving
+    a group call does not hang up on the others.
+    """
+    try:
+        group_id = request.data.get('group_id')
+        channel_name = request.data.get('channel_name')
+        call_type = str(request.data.get('call_type', 'audio')).lower()
+        if call_type not in _CALL_TYPE_SET:
+            call_type = 'audio'
+
+        if not group_id or not channel_name:
+            return Response(
+                {'error': 'group_id and channel_name are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not _is_valid_channel_name(channel_name):
+            return Response({'error': 'Invalid channel_name'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        caller = request.user
+        try:
+            group = ChatGroup.objects.get(id=group_id)
+        except (ChatGroup.DoesNotExist, ValidationError, ValueError):
+            return Response({'error': 'Group not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if not group.is_member(caller):
+            return Response({'error': 'You are not a member of this group'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        members = list(
+            User.objects.filter(
+                id__in=group.memberships.values_list('user_id', flat=True)
+            ).exclude(id=caller.id)
+        )
+        if not members:
+            return Response({'error': 'Nobody else is in this group'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Same self-heal as a one-to-one call: a session the caller never hung
+        # up properly would make them permanently "busy" to everyone.
+        stale = CallSession.objects.filter(
+            Q(caller=caller) | Q(callee=caller),
+            status__in=[CallSession.STATUS_RINGING, CallSession.STATUS_ACCEPTED],
+        ).exclude(channel_name=str(channel_name))
+        for old_session in stale:
+            old_session.update_status(CallSession.STATUS_ENDED)
+            logger.warning(
+                'CALLTRACE reclaim stale call=%s %s status was %s',
+                str(old_session.id)[:8], caller.email, old_session.status,
+            )
+
+        if _active_call_for_user(caller):
+            return Response({'error': 'You already have an active call'},
+                            status=status.HTTP_409_CONFLICT)
+
+        # Only people who can actually be rung. The room cap counts the caller.
+        callable_members = []
+        skipped = []
+        for member in members:
+            if len(callable_members) + 1 >= _MAX_CALL_PARTICIPANTS:
+                skipped.append({'user_id': str(member.id), 'status': 'call_full'})
+                continue
+            allowed, _reason = _can_call(caller, member)
+            if not allowed:
+                skipped.append({'user_id': str(member.id), 'status': 'not_allowed'})
+                continue
+            if _active_call_for_user(member):
+                skipped.append({'user_id': str(member.id), 'status': 'busy'})
+                continue
+            callable_members.append(member)
+
+        if not callable_members:
+            return Response(
+                {'error': 'Nobody in this group can be reached right now',
+                 'results': skipped},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        # The first reachable member takes the callee slot the model already
+        # has; everyone else rides the participant table. Which member lands
+        # in which slot makes no difference to anyone — the session is linked
+        # to the group, and the group is what the call is named after.
+        primary, others = callable_members[0], callable_members[1:]
+        call_session, _created = CallSession.objects.get_or_create(
+            channel_name=str(channel_name),
+            defaults={
+                'caller': caller,
+                'callee': primary,
+                'call_type': call_type,
+                'status': CallSession.STATUS_RINGING,
+                'chat_group': group,
+            },
+        )
+        if call_session.chat_group_id != group.id:
+            call_session.chat_group = group
+            call_session.save(update_fields=['chat_group'])
+
+        caller_name = _build_call_display_name(request, caller)
+        caller_avatar = _build_user_avatar_url(request, caller) or ''
+        results = []
+
+        for member in callable_members:
+            if member.id != primary.id:
+                CallParticipant.objects.update_or_create(
+                    session=call_session,
+                    user=member,
+                    defaults={
+                        'invited_by': caller,
+                        'status': CallParticipant.STATUS_RINGING,
+                        'invited_at': timezone.now(),
+                        'responded_at': None,
+                    },
+                )
+
+            payload = {
+                'type': 'incoming_call',
+                'call_id': str(call_session.id),
+                'channel_name': str(call_session.channel_name),
+                'caller_id': str(caller.id),
+                'caller_name': caller_name,
+                'call_type': call_type,
+                'caller_avatar': caller_avatar,
+                'is_group_call': True,
+                # So the ringing phone can say which group is calling rather
+                # than showing one member's name for a room of six.
+                'group_id': str(group.id),
+                'group_name': group.name,
+                **_call_event_metadata(),
+            }
+
+            _broadcast_to_user(
+                member.id, {'type': 'incoming_call_event', 'payload': payload})
+            delivery = _send_call_data_message(target_user=member, payload=payload)
+            reachable = bool(delivery.get('voip_sent_to') or delivery.get('sent_to'))
+            results.append({
+                'user_id': str(member.id),
+                'status': 'ringing' if reachable else 'unreachable',
+                'reachable': reachable,
+            })
+
+        logger.warning(
+            'CALLTRACE groupcall call=%s group=%s %s -> %d member(s) type=%s',
+            str(call_session.id)[:8], str(group.id)[:8], caller.email,
+            len(callable_members), call_type,
+        )
+
+        try:
+            _post_group_system_message(
+                group,
+                caller,
+                '{} একটি {} কল শুরু করেছেন'.format(
+                    _group_display_name(caller),
+                    'ভিডিও' if call_type == 'video' else 'অডিও',
+                ),
+                request=request,
+            )
+        except Exception:
+            logger.exception('Group call system message failed')
+
+        return Response({
+            'success': True,
+            'call_id': str(call_session.id),
+            'channel_name': str(call_session.channel_name),
+            'group_id': str(group.id),
+            'group_name': group.name,
+            'primary_callee_id': str(primary.id),
+            'participant_count': len(callable_members) + 1,
+            'results': results + skipped,
+        })
+    except Exception as e:
+        logger.exception('Group call start failed')
+        return Response({'error': str(e)},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -1485,9 +1700,16 @@ def send_call_status(request):
             )
 
         # And the status only travels to someone who is also on that call.
+        #
+        # include_departed, because on a group call the client still names
+        # whoever it originally paired with, and that person may have hung up
+        # already. Refusing the whole request then would strand everyone else:
+        # nobody gets told, and the session never ends. The check that matters
+        # is that the receiver was on this call at all, which still stops the
+        # endpoint being a way to push events at a stranger.
         if not CallSession.objects.filter(
             pk=call_session.pk,
-        ).filter(_call_membership_q(receiver)).exists():
+        ).filter(_call_membership_q(receiver, include_departed=True)).exists():
             return Response(
                 {'error': 'Receiver is not part of this call'},
                 status=status.HTTP_403_FORBIDDEN,
