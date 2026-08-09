@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../services/translation_service.dart';
 import '../../services/mobile_recharge_service.dart';
 import '../../screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../app_network_image.dart';
+import '../../utils/app_fonts.dart';
 
 // Design tokens — mirrors the rideshare panel palette
 const _emerald = Color(0xFF10B981);
@@ -114,7 +114,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
                       Text(
                         t('mobile_recharge'),
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: _slate800,
@@ -149,7 +149,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
           const SizedBox(width: 6),
           Text(
             'Loading operators...',
-            style: GoogleFonts.inter(fontSize: 11, color: _slate400),
+            style: AppFonts.roboto(fontSize: 11, color: _slate400),
           ),
         ],
       );
@@ -158,7 +158,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
     if (_operators.isEmpty) {
       return Text(
         'Recharge any operator instantly',
-        style: GoogleFonts.inter(fontSize: 11, color: _slate400),
+        style: AppFonts.roboto(fontSize: 11, color: _slate400),
       );
     }
 
@@ -216,7 +216,7 @@ class _OperatorChip extends StatelessWidget {
       child: Center(
         child: Text(
           shortName,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 10,
             fontWeight: FontWeight.w700,
             color: _slate500,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../services/user_state_service.dart';
@@ -13,6 +12,7 @@ import 'withdraw_tab.dart';
 import 'transfer_tab.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -286,7 +286,7 @@ class _WalletScreenState extends State<WalletScreen> {
             const SizedBox(width: 8),
             Text(
               'AdsyPay',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: _slate800,
@@ -427,7 +427,7 @@ class _WalletScreenState extends State<WalletScreen> {
                               const SizedBox(width: 6),
                               Text(
                                 t('transaction_history'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: _slate800,
@@ -515,7 +515,7 @@ class _WalletScreenState extends State<WalletScreen> {
             const SizedBox(width: 6),
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: isSelected ? Colors.white : _slate500,
@@ -605,7 +605,7 @@ class _WalletScreenState extends State<WalletScreen> {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 11,
             fontWeight: FontWeight.w700,
             color: isSelected ? _indigo : _slate500,
@@ -636,7 +636,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'No $_transactionTab transactions',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     color: _slate500,
                     fontWeight: FontWeight.w600,
@@ -742,7 +742,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         children: [
                           Text(
                             _getTransactionTypeName(txn.transactionType),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
                               color: _slate800,

@@ -28,7 +28,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
               Expanded(
                   child: Text(
                       t('rideshare_active_ride', fallback: 'চলমান রাইড'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Colors.white))),
@@ -66,14 +66,14 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                           isVerified: ride.riderIsVerified,
                           isPro: ride.riderIsPro,
                           completedTrips: ride.riderCompletedTrips,
-                          textStyle: GoogleFonts.inter(
+                          textStyle: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: _slate800,
                           ),
                         ),
                         Text(t('rideshare_passenger', fallback: 'যাত্রী'),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 11, color: _slate500)),
                       ]),
                 )),
@@ -188,7 +188,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
           color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(8)),
       child: Text(label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
     );
   }
@@ -212,7 +212,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(t('cancel', fallback: 'বাতিল'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ),
@@ -224,7 +224,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
               icon: const Icon(Icons.navigation_rounded, size: 16),
               label: Text(
                   t('rideshare_start_navigation', fallback: 'নেভিগেশন শুরু করুন'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontWeight: FontWeight.w700, fontSize: 13)),
               style: FilledButton.styleFrom(
                 backgroundColor: _indigo,
@@ -248,7 +248,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(t('cancel', fallback: 'বাতিল'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ),
@@ -259,7 +259,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
               onPressed: () => _advanceRideWithNavigation('in_progress'),
               icon: const Icon(Icons.play_arrow_rounded, size: 18),
               label: Text(t('rideshare_start_ride', fallback: 'রাইড শুরু করুন'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontWeight: FontWeight.w700, fontSize: 14)),
               style: FilledButton.styleFrom(
                 backgroundColor: _emerald,
@@ -286,7 +286,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                         borderRadius: BorderRadius.circular(10)),
                   ),
                   child: Text(t('cancel', fallback: 'বাতিল'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontWeight: FontWeight.w600, fontSize: 13)),
                 ),
               ),
@@ -296,7 +296,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                   onPressed: _showCompleteRideDialog,
                   icon: const Icon(Icons.check_circle_rounded, size: 18),
                   label: Text(t('rideshare_complete', fallback: 'সম্পন্ন করুন'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontWeight: FontWeight.w700, fontSize: 14)),
                   style: FilledButton.styleFrom(
                     backgroundColor: _emerald,
@@ -313,7 +313,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
               icon: const Icon(Icons.flag_circle_rounded, size: 18),
               label: Text(
                   t('rideshare_early_complete', fallback: 'আগেই শেষ করুন'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontWeight: FontWeight.w700, fontSize: 14)),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEA580C),
@@ -339,7 +339,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                 t('rideshare_awaiting_passenger_confirm',
                     fallback:
                         'Early completion payment awaiting passenger confirmation.'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                     fontSize: 12, color: const Color(0xFF92400E)),
               ),
             ),
@@ -354,7 +354,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(t('rideshare_cancel_ride', fallback: 'রাইড বাতিল'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ],
@@ -376,18 +376,18 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
             t('rideshare_early_complete_confirm_title',
                 fallback: 'আগেই শেষ করবেন?'),
             style:
-                GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+                AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
           t('rideshare_early_complete_desc',
               fallback:
                   'This will calculate a partial fare based on distance covered and send a confirmation to the passenger.'),
-          style: GoogleFonts.inter(fontSize: 13, color: _slate500),
+          style: AppFonts.roboto(fontSize: 13, color: _slate500),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(t('cancel', fallback: 'বাতিল'),
-                style: GoogleFonts.inter(color: _slate500)),
+                style: AppFonts.roboto(color: _slate500)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -397,7 +397,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                   borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(t('rideshare_confirm', fallback: 'নিশ্চিত করুন'),
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                style: AppFonts.roboto(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -500,7 +500,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                 const SizedBox(width: 10),
                 Text(
                   t('rideshare_complete_ride', fallback: 'রাইড শেষ করুন'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
                       color: _slate800),
@@ -536,7 +536,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                       isVerified: ride.riderIsVerified,
                       isPro: ride.riderIsPro,
                       completedTrips: ride.riderCompletedTrips,
-                      textStyle: GoogleFonts.inter(
+                      textStyle: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: _slate800),
@@ -567,7 +567,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                               ? ride.pickupAddress
                               : t('rideshare_pickup_location',
                                   fallback: 'পিকআপ লোকেশন'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 12, color: const Color(0xFF475569)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -590,7 +590,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                               ? ride.dropAddress
                               : t('rideshare_drop_location',
                                   fallback: 'গন্তব্য লোকেশন'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 12, color: const Color(0xFF475569)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -616,12 +616,12 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     child: Column(
                       children: [
                         Text('${ride.distanceKm.toStringAsFixed(1)} km',
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 color: const Color(0xFF334155))),
                         Text(t('rideshare_distance', fallback: 'দূরত্ব'),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 10, color: _slate400)),
                       ],
                     ),
@@ -639,12 +639,12 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     child: Column(
                       children: [
                         Text(ride.etaDisplay,
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 color: const Color(0xFF334155))),
                         Text('সময়কাল',
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 10, color: _slate400)),
                       ],
                     ),
@@ -662,12 +662,12 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     child: Column(
                       children: [
                         Text('৳${fare.toStringAsFixed(0)}',
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.white)),
                         Text(t('rideshare_fare', fallback: 'ভাড়া'),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 10,
                                 color: Colors.white.withValues(alpha: 0.8))),
                       ],
@@ -712,7 +712,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                                   fallback: 'ক্যাশ পেমেন্ট')
                               : t('rideshare_wallet_payment',
                                   fallback: 'ওয়ালেট পেমেন্ট'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: isCash
@@ -725,7 +725,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                           isCash
                               ? 'Collect ৳${fare.toStringAsFixed(0)} from passenger then confirm.'
                               : '৳${fare.toStringAsFixed(0)} will be auto-deducted from passenger wallet.',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11,
                             color: isCash
                                 ? const Color(0xFF78350F)
@@ -754,10 +754,10 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(t('rideshare_trip_fare', fallback: 'ট্রিপ ভাড়া'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 12, color: const Color(0xFF475569))),
                       Text('৳${fare.toStringAsFixed(0)}',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF334155))),
@@ -769,10 +769,10 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     children: [
                       Text(
                           '${t('rideshare_platform_fee', fallback: 'প্ল্যাটফর্ম ফি')} (${feePercent.toStringAsFixed(0)}%)',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 12, color: const Color(0xFF64748B))),
                       Text('- ৳${platformFee.toStringAsFixed(0)}',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 12, color: const Color(0xFFDC2626))),
                     ],
                   ),
@@ -786,12 +786,12 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                       Text(
                           t('rideshare_your_earnings',
                               fallback: 'আপনার আয়'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF166534))),
                       Text('৳${driverEarnings.toStringAsFixed(0)}',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
                               color: const Color(0xFF16A34A))),
@@ -814,7 +814,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                           Expanded(
                             child: Text(
                               '৳${platformFee.toStringAsFixed(0)} ${t('rideshare_cash_fee_due_note', fallback: 'প্ল্যাটফর্ম ফি ক্যাশ বকেয়া হিসেবে যোগ হবে')}',
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                   fontSize: 10.5,
                                   color: const Color(0xFF92400E),
                                   height: 1.3),
@@ -842,7 +842,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                           borderRadius: BorderRadius.circular(10)),
                     ),
                     child: Text(t('cancel', fallback: 'বাতিল'),
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                        style: AppFonts.roboto(fontWeight: FontWeight.w700)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -866,7 +866,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                               fallback: 'ক্যাশ পেয়েছি, নিশ্চিত করুন')
                           : t('rideshare_confirm_completion',
                               fallback: 'সম্পন্ন নিশ্চিত করুন'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontWeight: FontWeight.w700, fontSize: 13),
                     ),
                     style: FilledButton.styleFrom(

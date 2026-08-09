@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/workspace_service.dart';
 import '../../services/translation_service.dart';
 import '../../utils/network_error_handler.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -470,7 +470,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                   children: [
                     Text(
                       _t('workspace_post_pro_gig', 'পেশাদার গিগ দিন'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: _slate800,
@@ -480,7 +480,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                     Text(
                       _t('workspace_post_pro_gig_sub',
                           'অফারটি পরিষ্কার, ছোট আর মার্কেটপ্লেসের সাথে মানানসই রাখুন।'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 11,
                         height: 1.35,
                         color: _slate500,
@@ -549,7 +549,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: _slate500,
@@ -558,7 +558,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                 const SizedBox(height: 1),
                 Text(
                   value,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     color: _slate800,
@@ -633,7 +633,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                             const SizedBox(height: 6),
                             Text(
                               _t('workspace_add', 'যোগ'),
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 color: _slate700,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
@@ -678,7 +678,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                             ),
                             child: Text(
                               _t('workspace_main', 'মেইন'),
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 color: Colors.white,
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
@@ -722,7 +722,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                               child: Text(
                                 _t('workspace_set_as_main', 'মেইন করুন'),
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   color: Colors.white,
                                   fontSize: 9,
                                   fontWeight: FontWeight.w700,
@@ -741,7 +741,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           Text(
             _t('workspace_image_size_hint',
                 'সাইজ ১২৮০x৭২০px রাখলে ভালো। পরিষ্কার প্রিভিউ বেশি কাজ করে।'),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               color: _slate500,
               fontSize: 11,
               height: 1.35,
@@ -778,7 +778,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           Text(
             _t('workspace_title_helper',
                 'একনজরে বোঝা যায় এমন একটি প্রতিশ্রুতি দিয়ে শুরু করুন।'),
-            style: GoogleFonts.inter(color: _slate500, fontSize: 11),
+            style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
           const SizedBox(height: 12),
           _buildDropdownField(
@@ -794,7 +794,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                 child: Text(
                   cat['name'] ?? cat['label'] ?? '',
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(fontSize: 12),
+                  style: AppFonts.roboto(fontSize: 12),
                 ),
               );
             }).toList(),
@@ -841,7 +841,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           Text(
             _t('workspace_description_helper',
                 'ছোট কিন্তু পূর্ণাঙ্গ বিবরণ দিন যাতে বায়াররা সহজে ভরসা পায়।'),
-            style: GoogleFonts.inter(color: _slate500, fontSize: 11),
+            style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
         ],
       ),
@@ -862,7 +862,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
               Expanded(
                 child: TextField(
                   controller: _skillInputController,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 12,
                     color: _slate800,
                     fontWeight: FontWeight.w500,
@@ -903,7 +903,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                 return Chip(
                   label: Text(
                     entry.value,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _indigo,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -929,7 +929,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
             const SizedBox(height: 10),
             Text(
               _t('workspace_suggested_skills', 'সাজেস্ট করা দক্ষতা'),
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 color: _slate500,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -955,7 +955,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                     ),
                     child: Text(
                       '+ $skill',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         color: _slate700,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -970,7 +970,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           Text(
             _t('workspace_skills_helper',
                 'সর্বোচ্চ ১০টি দক্ষতা দিন। এন্টার চাপুন বা প্লাস বাটন ব্যবহার করুন।'),
-            style: GoogleFonts.inter(color: _slate500, fontSize: 11),
+            style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
         ],
       ),
@@ -998,7 +998,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                       value: time['days']?.toString(),
                       child: Text(
                         time['label'] ?? '${time['days']} Days',
-                        style: GoogleFonts.inter(fontSize: 12),
+                        style: AppFonts.roboto(fontSize: 12),
                       ),
                     );
                   }).toList(),
@@ -1014,7 +1014,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                       value: rev['count']?.toString(),
                       child: Text(
                         rev['label'] ?? '${rev['count']} Revisions',
-                        style: GoogleFonts.inter(fontSize: 12),
+                        style: AppFonts.roboto(fontSize: 12),
                       ),
                     );
                   }).toList(),
@@ -1036,7 +1036,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                       value: time['days']?.toString(),
                       child: Text(
                         time['label'] ?? '${time['days']} Days',
-                        style: GoogleFonts.inter(fontSize: 12),
+                        style: AppFonts.roboto(fontSize: 12),
                       ),
                     );
                   }).toList(),
@@ -1054,7 +1054,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                       value: rev['count']?.toString(),
                       child: Text(
                         rev['label'] ?? '${rev['count']} Revisions',
-                        style: GoogleFonts.inter(fontSize: 12),
+                        style: AppFonts.roboto(fontSize: 12),
                       ),
                     );
                   }).toList(),
@@ -1103,7 +1103,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                   Expanded(
                     child: TextField(
                       controller: controller,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: _slate800,
                         fontWeight: FontWeight.w500,
@@ -1165,7 +1165,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                   const SizedBox(width: 6),
                   Text(
                     _t('workspace_add_feature', 'ফিচার যোগ করুন'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _slate700,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
@@ -1179,7 +1179,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           Text(
             _t('workspace_features_helper',
                 'অন্তত ৩টি নির্দিষ্ট ডেলিভারেবল দিন যা বায়াররা সহজে যাচাই করতে পারে।'),
-            style: GoogleFonts.inter(color: _slate500, fontSize: 11),
+            style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
         ],
       ),
@@ -1224,7 +1224,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: _slate800,
@@ -1233,7 +1233,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 11,
                         height: 1.35,
                         color: _slate500,
@@ -1269,7 +1269,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: _slate700,
@@ -1278,7 +1278,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
             if (isRequired)
               Text(
                 ' *',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   color: const Color(0xFFEF4444),
                 ),
@@ -1292,7 +1292,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           maxLines: maxLines,
           keyboardType: keyboardType,
           validator: validator,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 12,
             color: _slate800,
             fontWeight: FontWeight.w500,
@@ -1321,7 +1321,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: _slate700,
@@ -1330,7 +1330,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
             if (isRequired)
               Text(
                 ' *',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   color: const Color(0xFFEF4444),
                 ),
@@ -1344,7 +1344,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           items: items,
           onChanged: onChanged,
           validator: validator,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 12,
             color: _slate800,
             fontWeight: FontWeight.w600,
@@ -1367,11 +1367,11 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     return InputDecoration(
       hintText: hintText,
       prefixText: prefixText,
-      hintStyle: GoogleFonts.inter(
+      hintStyle: AppFonts.roboto(
         fontSize: 12,
         color: _slate400,
       ),
-      prefixStyle: GoogleFonts.inter(
+      prefixStyle: AppFonts.roboto(
         fontSize: 12,
         color: _slate700,
         fontWeight: FontWeight.w700,
@@ -1399,7 +1399,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.4),
       ),
-      errorStyle: GoogleFonts.inter(fontSize: 11),
+      errorStyle: AppFonts.roboto(fontSize: 11),
     );
   }
 
@@ -1426,7 +1426,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
               ),
               child: Text(
                 _t('workspace_reset', 'রিসেট'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1466,7 +1466,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                           const SizedBox(width: 6),
                           Text(
                             _t('workspace_create_gig', 'গিগ তৈরি করুন'),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
                             ),

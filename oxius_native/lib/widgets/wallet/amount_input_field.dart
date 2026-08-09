@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _slate50 = Color(0xFFF8FAFC);
@@ -34,7 +34,7 @@ class AmountInputField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: _slate700,
@@ -45,17 +45,19 @@ class AmountInputField extends StatelessWidget {
           controller: controller,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           onChanged: (value) => onChanged?.call(),
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: _slate800,
           ),
           decoration: InputDecoration(
             hintText: hint ?? 'Enter amount',
-            hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
-            prefixIcon: const Icon(Icons.account_balance_wallet_rounded, size: 18, color: _slate400),
+            hintStyle: AppFonts.roboto(fontSize: 13, color: _slate400),
+            prefixIcon: const Icon(Icons.account_balance_wallet_rounded,
+                size: 18, color: _slate400),
             prefixText: '৳ ',
-            prefixStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: _slate800),
+            prefixStyle: AppFonts.roboto(
+                fontSize: 14, fontWeight: FontWeight.w700, color: _slate800),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: _slate200),
@@ -71,7 +73,8 @@ class AmountInputField extends StatelessWidget {
             filled: true,
             fillColor: _slate50,
             errorText: errorText,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
           ),
         ),
         if (minAmount != null)
@@ -85,7 +88,7 @@ class AmountInputField extends StatelessWidget {
                 ),
                 Text(
                   'Minimum $label ৳${minAmount!.toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     color: _slate500,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w500,

@@ -46,7 +46,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                 children: [
                   Text(
                     value,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -55,7 +55,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                   const SizedBox(height: 1),
                   Text(
                     label,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: const Color(0xFFD6D9FF),
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -101,7 +101,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                       defaultVehicle.modelName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
@@ -122,13 +122,13 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(value,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF0F172A))),
         const SizedBox(width: 4),
         Text(label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 12, color: const Color(0xFF94A3B8))),
       ],
     );
@@ -197,7 +197,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     children: [
                       Text(
                         vehicle.displayName,
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           color: _textPrimary,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -206,7 +206,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                       const SizedBox(height: 2),
                       Text(
                         vehicle.registrationNumber,
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           color: _textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -233,7 +233,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                         Text(
                           t('rideshare_vehicle_pending',
                               fallback: 'ভেরিফিকেশন পেন্ডিং'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             color: const Color(0xFFD97706),
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -253,7 +253,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     ),
                     child: Text(
                       t('rideshare_set_default', fallback: 'ডিফল্ট'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         color: const Color(0xFF059669),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -272,7 +272,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                 t('rideshare_vehicle_pending_note',
                     fallback:
                         'অ্যাডমিন গাড়িটি যাচাই করলে তবেই রাইড রিকোয়েস্ট পাবেন — সাধারণত ২৪ ঘণ্টার মধ্যে হয়ে যায়।'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   color: const Color(0xFF92400E),
                   fontSize: 11.5,
                   height: 1.4,
@@ -331,7 +331,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                         label: Text(
                           t('rideshare_edit_via_support',
                               fallback: 'সাপোর্টের মাধ্যমে এডিট'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontWeight: FontWeight.w700, fontSize: 12),
                         ),
                       ),
@@ -359,7 +359,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                         ),
                         label: Text(
                           isDefault ? 'Selected' : 'Set Default',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                               fontWeight: FontWeight.w700, fontSize: 12),
                         ),
                       ),
@@ -403,7 +403,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
         const SizedBox(width: 5),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             color: textColor ?? _textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -456,7 +456,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                   Text(
                     t('rideshare_kyc_under_review',
                         fallback: 'ড্রাইভার প্রোফাইল যাচাই চলছে'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -469,7 +469,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                         fallback:
                             'Your driver registration is currently under review by our admin team. You\'ll be able to add vehicles once your profile is approved.'),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _textSecondary,
                       fontSize: 13,
                       height: 1.6,
@@ -492,7 +492,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                           child: Text(
                             t('rideshare_kyc_timeline',
                                 fallback: 'সাধারণত ২৪-৪৮ ঘণ্টায় এপ্রুভ হয়'),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               color: _warning,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -533,7 +533,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                   Text(
                     t('rideshare_driver_not_approved_title',
                         fallback: 'ড্রাইভার অনুমোদন এখনো মেলেনি'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -548,7 +548,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                           'আপনার ড্রাইভার প্রোফাইল এখনো এপ্রুভড হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন কমপ্লিট করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
                     ),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _textSecondary,
                       fontSize: 13,
                       height: 1.6,
@@ -575,7 +575,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                               fallback:
                                   'অনুমোদন হয়ে গেলে এই পেইজে আপনার গাড়ির তালিকা দেখা যাবে।',
                             ),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               color: _warning,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -617,7 +617,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                   Text(
                     t('rideshare_load_error',
                         fallback: 'গাড়ির তালিকা আনা যায়নি'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -627,7 +627,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                   Text(
                     _errorMessage!,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _textSecondary,
                       fontSize: 12,
                       height: 1.5,
@@ -644,7 +644,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     ),
                     onPressed: _loadVehicles,
                     child: Text(t('try_again', fallback: 'আবার চেষ্টা করুন'),
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                        style: AppFonts.roboto(fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -660,7 +660,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     children: [
                       Text(
                         t('rideshare_your_vehicles', fallback: 'আপনার গাড়িগুলো'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           color: _textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -671,7 +671,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                         t('rideshare_vehicles_manage_desc',
                             fallback:
                                 'Manage which vehicles are active and ready for rides.'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           color: _textSecondary,
                           fontSize: 12,
                         ),
@@ -695,7 +695,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                       Text(
                         t('rideshare_keep_one_default',
                             fallback: 'একটি ডিফল্ট রাখুন'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           color: _warning,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -741,7 +741,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                     Text(
                       t('rideshare_no_vehicles',
                           fallback: 'এখনো কোনো গাড়ি যোগ হয়নি'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         color: _textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -753,7 +753,7 @@ extension _RsVehicleListSection on _RideshareVehiclesScreenState {
                           fallback:
                               'Add your Bike, Car, or Auto to start receiving rides with the right vehicle type.'),
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         color: _textSecondary,
                         fontSize: 12,
                         height: 1.5,

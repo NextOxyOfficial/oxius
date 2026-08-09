@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../screens/terms_and_conditions_screen.dart';
 import '../../screens/privacy_policy_screen.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _slate100 = Color(0xFFF1F5F9);
@@ -54,7 +54,7 @@ class TermsCheckbox extends StatelessWidget {
                 Expanded(
                   child: RichText(
                     text: TextSpan(
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: _slate500,
                         height: 1.45,
@@ -63,7 +63,7 @@ class TermsCheckbox extends StatelessWidget {
                         const TextSpan(text: 'I accept '),
                         TextSpan(
                           text: 'Terms & Conditions',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             color: _indigo,
                             fontWeight: FontWeight.w700,
                           ),
@@ -72,7 +72,8 @@ class TermsCheckbox extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const TermsAndConditionsScreen(),
+                                  builder: (context) =>
+                                      const TermsAndConditionsScreen(),
                                 ),
                               );
                             },
@@ -80,7 +81,7 @@ class TermsCheckbox extends StatelessWidget {
                         const TextSpan(text: ' and '),
                         TextSpan(
                           text: 'Privacy Policy',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             color: _indigo,
                             fontWeight: FontWeight.w700,
                           ),
@@ -89,7 +90,8 @@ class TermsCheckbox extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const PrivacyPolicyScreen(),
+                                  builder: (context) =>
+                                      const PrivacyPolicyScreen(),
                                 ),
                               );
                             },
@@ -108,7 +110,7 @@ class TermsCheckbox extends StatelessWidget {
             padding: const EdgeInsets.only(left: 32, top: 4),
             child: Text(
               errorText!,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 color: Colors.red,
                 fontSize: 12,
               ),

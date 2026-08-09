@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/rideshare_models.dart';
 import '../../services/auth_service.dart';
@@ -8,6 +7,7 @@ import '../../services/translation_service.dart';
 import 'rideshare_page_header.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/app_fonts.dart';
 
 part 'rideshare_vehicles_form.dart';
 part 'rideshare_vehicles_list.dart';
@@ -35,8 +35,6 @@ class RideshareVehiclesScreen extends StatefulWidget {
 }
 
 class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
-
-
   final TranslationService _ts = TranslationService();
   String t(String key, {required String fallback}) =>
       _ts.t(key, fallback: fallback);
@@ -140,14 +138,14 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Text(
             t('rideshare_kyc_required', fallback: 'KYC এপ্রুভাল লাগবে'),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
           ),
           content: Text(
             t('rideshare_kyc_required_desc',
                 fallback:
                     'Your KYC must be approved before you can add a vehicle. Please complete your driver registration and wait for admin approval.'),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 13, color: _textSecondary, height: 1.5),
           ),
           actions: [
@@ -159,7 +157,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     borderRadius: BorderRadius.circular(8)),
               ),
               child: Text(t('ok', fallback: 'ঠিক আছে'),
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                  style: AppFonts.roboto(fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -185,15 +183,15 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
           t('rideshare_contact_support', fallback: 'সাপোর্টে যোগাযোগ করুন'),
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
         ),
         content: Text(
           t('rideshare_vehicle_edit_note',
               fallback:
                   'Vehicle information cannot be edited directly. Please contact our support center to make changes to your vehicle details.'),
-          style: GoogleFonts.inter(
-              fontSize: 13, color: _textSecondary, height: 1.5),
+          style:
+              AppFonts.roboto(fontSize: 13, color: _textSecondary, height: 1.5),
         ),
         actions: [
           FilledButton(
@@ -203,8 +201,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('OK',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            child:
+                Text('OK', style: AppFonts.roboto(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -240,7 +238,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               ),
               title: Text(
                 t('rideshare_delete_confirm', fallback: 'গাড়িটি মুছে ফেলবেন?'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   color: _textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -248,7 +246,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               ),
               content: Text(
                 'This will remove ${vehicle.displayName} from your driver profile.',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   color: _textSecondary,
                   fontSize: 13,
                   height: 1.5,
@@ -272,8 +270,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     ),
                   ),
                   onPressed: () => Navigator.of(context).pop(true),
-                  child:
-                      Text(t('rideshare_delete_vehicle', fallback: 'মুছে ফেলুন')),
+                  child: Text(
+                      t('rideshare_delete_vehicle', fallback: 'মুছে ফেলুন')),
                 ),
               ],
             );
@@ -329,7 +327,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         icon: const Icon(Icons.add_rounded),
         label: Text(
           t('rideshare_add_vehicle', fallback: 'গাড়ি যোগ করুন'),
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
+          style: AppFonts.roboto(fontWeight: FontWeight.w700, fontSize: 12),
         ),
       ),
     );

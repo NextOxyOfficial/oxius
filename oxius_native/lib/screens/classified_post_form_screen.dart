@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
@@ -16,6 +15,7 @@ import '../widgets/geo_selector_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import '../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -452,7 +452,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             const SizedBox(width: 8),
             Text(
               _isEditMode ? 'পোস্ট এডিট করুন' : 'পোস্ট করুন',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 color: _slate800,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -523,7 +523,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               children: [
                 Text(
                   _isEditMode ? 'Update Your Post' : 'নতুন আমার সেবা পোস্ট',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: isMobile ? 15 : 16,
                     fontWeight: FontWeight.w700,
                     color: _slate800,
@@ -532,7 +532,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'পরিষ্কার বিবরণ, দাম, লোকেশন আর ছবি দিন — সঠিক ক্রেতা দ্রুত খুঁজে পাবেন',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: _slate500,
@@ -660,7 +660,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               const SizedBox(width: 10),
               Text(
                 title,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: _slate800,
@@ -682,7 +682,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         RichText(
           text: TextSpan(
             text: 'ক্যাটাগরি',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: _slate700,
@@ -716,14 +716,14 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             filled: true,
             fillColor: _slate50,
             hintText: 'ক্যাটাগরি সিলেক্ট করুন',
-            hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+            hintStyle: AppFonts.roboto(fontSize: 13, color: _slate400),
             prefixIcon:
                 const Icon(Icons.grid_view_rounded, size: 18, color: _slate400),
           ),
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
               color: _slate500, size: 18),
           dropdownColor: Colors.white,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
           items: _categories.map((category) {
             return DropdownMenuItem<String>(
@@ -759,7 +759,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: _slate700,
@@ -782,11 +782,11 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           maxLines: maxLines,
           maxLength: maxLength,
           keyboardType: keyboardType,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.inter(
+            hintStyle: AppFonts.roboto(
               color: _slate400,
               fontSize: 12,
             ),
@@ -810,7 +810,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            counterStyle: GoogleFonts.inter(fontSize: 10, color: _slate400),
+            counterStyle: AppFonts.roboto(fontSize: 10, color: _slate400),
           ),
           validator: required
               ? (value) {
@@ -831,7 +831,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       children: [
         Text(
           'নির্দিষ্ট দাম দিন, অথবা দাম আলোচনা সাপেক্ষ হিসেবে রাখুন।',
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 12,
             color: _slate500,
           ),
@@ -869,7 +869,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'দাম আলোচনা সাপেক্ষ',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     color: _slate700,
                     fontWeight: FontWeight.w500,
@@ -887,17 +887,17 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
             ],
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               hintText: 'দাম লিখুন',
               prefixText: '৳ ',
-              prefixStyle: GoogleFonts.inter(
+              prefixStyle: AppFonts.roboto(
                 color: _slate800,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
-              hintStyle: GoogleFonts.inter(
+              hintStyle: AppFonts.roboto(
                 color: _slate400,
                 fontSize: 13,
               ),
@@ -937,7 +937,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         RichText(
           text: TextSpan(
             text: 'আপনার লোকেশন সিলেক্ট করুন',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: _slate700,
@@ -1012,7 +1012,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           children: [
             Text(
               'Add up to 5 photos',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: _slate700,
@@ -1020,7 +1020,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ),
             Text(
               '${_selectedImages.length}/5',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 11,
                 color: _slate500,
                 fontWeight: FontWeight.w500,
@@ -1111,7 +1111,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             const SizedBox(height: 3),
             Text(
               'Add',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 10,
                 color: _slate500,
                 fontWeight: FontWeight.w500,
@@ -1149,7 +1149,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   color: _slate500,
                   height: 1.3,
@@ -1206,7 +1206,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               )
             : Text(
                 _isEditMode ? 'Update Post' : 'Create Post',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,

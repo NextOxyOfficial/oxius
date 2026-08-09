@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:oxius_native/widgets/chat/chat_message_bubble.dart';
 
@@ -12,7 +11,6 @@ import 'package:oxius_native/widgets/chat/chat_message_bubble.dart';
 /// as the thread was rebuilt from the server. These tests pin the new
 /// contract: the newest outgoing message carries the status, always.
 void main() {
-  setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
   Map<String, dynamic> msg({
     required bool isMe,

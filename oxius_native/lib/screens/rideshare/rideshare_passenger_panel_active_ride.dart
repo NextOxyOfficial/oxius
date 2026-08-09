@@ -27,7 +27,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
       ),
       child: Text(
         label,
-        style: GoogleFonts.inter(
+        style: AppFonts.roboto(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           color: const Color(0xFF0369A1),
@@ -49,7 +49,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
       children: [
         Text(
           name,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1E293B),
@@ -99,13 +99,13 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 11.5,
                         color: const Color(0xFF64748B),
                         height: 1.35),
@@ -189,7 +189,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                       Expanded(
                         child: Text(
                           _passengerStatusLabel(ride),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w800,
                             color: const Color(0xFF0F172A),
@@ -267,7 +267,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             Text(
                               t('rideshare_payment_method',
                                   fallback: 'পেমেন্ট মেথড'),
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF64748B),
@@ -278,7 +278,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                               ride.paymentMethod == 'cash'
                                   ? t('rideshare_cash', fallback: 'ক্যাশ')
                                   : t('rideshare_wallet', fallback: 'ওয়ালেট'),
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: ride.paymentMethod == 'cash'
@@ -299,7 +299,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         // and the one thing a waiting rider wants confirmed.
                         Text(
                           '${ride.assignedDriver!.userName} আসছেন',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF0F172A),
@@ -332,7 +332,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 child: Text(
                                   t('rideshare_continue_ride',
                                       fallback: 'রাইড চালিয়ে যান'),
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                       fontWeight: FontWeight.w600),
                                 ),
                               ),
@@ -352,7 +352,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 child: Text(
                                   t('rideshare_confirm_payment',
                                       fallback: 'পেমেন্ট নিশ্চিত করুন'),
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                       fontWeight: FontWeight.w700),
                                 ),
                               ),
@@ -383,7 +383,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                           fallback: 'রিকোয়েস্ট বাতিল')
                                       : t('rideshare_cancel_ride',
                                           fallback: 'রাইড বাতিল')),
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -422,7 +422,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                       fallback: 'পাঠানো হচ্ছে...')
                                   : t('rideshare_report_driver_cancellation',
                                       fallback: 'ড্রাইভার ক্যানসেলের রিপোর্ট'),
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                   fontWeight: FontWeight.w700),
                             ),
                             style: FilledButton.styleFrom(
@@ -477,7 +477,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
       children: [
         Text(
           value,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 13.5,
             fontWeight: FontWeight.w800,
             color: const Color(0xFF0F172A),
@@ -486,7 +486,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
         const SizedBox(width: 4),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 12, color: const Color(0xFF94A3B8)),
         ),
       ],
@@ -540,7 +540,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   children: [
                     Text(
                       t('rideshare_pickup', fallback: 'পিকআপ').toUpperCase(),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF6366F1),
@@ -549,7 +549,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                     ),
                     Text(
                       ride.pickupAddress,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF1E293B),
@@ -591,7 +591,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   children: [
                     Text(
                       t('rideshare_drop', fallback: 'গন্তব্য').toUpperCase(),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF10B981),
@@ -600,7 +600,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                     ),
                     Text(
                       ride.dropAddress,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF1E293B),
@@ -651,7 +651,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
           Expanded(
             child: Text(
               reason,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFFB91C1C),
@@ -671,7 +671,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF94A3B8),
@@ -680,7 +680,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
           const SizedBox(height: 2),
           Text(
             value,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1E293B),
@@ -817,7 +817,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   model,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0F172A),
@@ -825,7 +825,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 ),
                 Text(
                   plate.isNotEmpty ? plate : vehicle.capacity,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 11.5,
                     color: const Color(0xFF94A3B8),
                   ),
@@ -835,7 +835,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
           ),
           Text(
             '৳${fare.toStringAsFixed(0)}',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 15,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF0F172A),
@@ -871,7 +871,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   ? '${driver.ratingAverage.toStringAsFixed(2)} '
                       '(${driver.ratingCount})'
                   : 'নতুন ড্রাইভার',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF92400E),
@@ -937,7 +937,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 const SizedBox(height: 18),
                 Text(
                   'রাইড সম্পন্ন হয়েছে!',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: const Color(0xFF0F172A),
@@ -946,7 +946,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 const SizedBox(height: 4),
                 Text(
                   'আশা করি যাত্রাটি ভালো লেগেছে',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     color: const Color(0xFF64748B),
                   ),
@@ -994,7 +994,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 if (driver != null && !_rideRatingSubmitted) ...[
                   Text(
                     'ড্রাইভারকে রেটিং দিন',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0F172A),
@@ -1026,11 +1026,11 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   TextField(
                     controller: _ratingCommentController,
                     maxLines: 2,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13.5, color: const Color(0xFF0F172A)),
                     decoration: InputDecoration(
                       hintText: 'অভিজ্ঞতা লিখুন (ঐচ্ছিক)',
-                      hintStyle: GoogleFonts.inter(
+                      hintStyle: AppFonts.roboto(
                           fontSize: 13, color: const Color(0xFF94A3B8)),
                       filled: true,
                       fillColor: const Color(0xFFF1F5F9),
@@ -1071,7 +1071,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             )
                           : Text(
                               'রেটিং জমা দিন',
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -1087,7 +1087,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                       const SizedBox(width: 6),
                       Text(
                         'রেটিংয়ের জন্য ধন্যবাদ!',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF10B981),
@@ -1115,7 +1115,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
               ),
               child: Text(
                 'নতুন রাইড খুঁজুন',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1134,7 +1134,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF94A3B8),
@@ -1145,7 +1145,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
           value,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: emphasize ? 17 : 13,
             fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
             color: const Color(0xFF0F172A),
@@ -1283,7 +1283,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                       widget.driver.userName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w800,
                         color: const Color(0xFF0F172A),
@@ -1291,7 +1291,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                     ),
                     Text(
                       '${widget.driver.totalTrips}টি সম্পন্ন রাইড',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF64748B),
                       ),
@@ -1309,7 +1309,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                       const SizedBox(width: 3),
                       Text(
                         _count > 0 ? _average.toStringAsFixed(2) : '—',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: const Color(0xFF0F172A),
@@ -1319,7 +1319,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                   ),
                   Text(
                     '$_countটি রিভিউ',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       color: const Color(0xFF94A3B8),
                     ),
@@ -1341,7 +1341,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                         padding: const EdgeInsets.symmetric(vertical: 36),
                         child: Text(
                           'এখনো কোনো রিভিউ নেই',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             color: const Color(0xFF94A3B8),
                           ),
@@ -1362,7 +1362,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                                     : () => _load(more: true),
                                 child: Text(
                                   _loadingMore ? 'লোড হচ্ছে…' : 'আরো দেখুন',
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF0F172A),
@@ -1386,7 +1386,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                                         r['rater_name']?.toString() ?? 'যাত্রী',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.inter(
+                                        style: AppFonts.roboto(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w700,
                                           color: const Color(0xFF0F172A),
@@ -1414,7 +1414,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                                   const SizedBox(height: 4),
                                   Text(
                                     r['comment'].toString(),
-                                    style: GoogleFonts.inter(
+                                    style: AppFonts.roboto(
                                       fontSize: 12.5,
                                       height: 1.4,
                                       color: const Color(0xFF475569),
@@ -1624,7 +1624,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                     child: Text(
                       widget.statusMessage,
                       key: ValueKey(widget.statusMessage),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: isNoDriver ? _kRed : _kAmberDark,
@@ -1646,7 +1646,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                       child: Text(
                         _formatCountdown(widget.secondsRemaining),
                         key: ValueKey(widget.secondsRemaining),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           color: accent,
@@ -1766,7 +1766,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                       if (isNoDriver) ...[
                         Text(
                           'এলাকায় ড্রাইভার নেই',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: _kRed,
@@ -1775,7 +1775,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         const SizedBox(height: 4),
                         Text(
                           'আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11.5,
                             color: _kRed,
                             height: 1.45,
@@ -1784,7 +1784,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                       ] else if (hasTargeted) ...[
                         Text(
                           'ড্রাইভারকে অনুরোধ পাঠানো হয়েছে',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: _kAmberDark,
@@ -1799,7 +1799,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                             Expanded(
                               child: Text(
                                 widget.targetedDriverName,
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF1E293B),
@@ -1812,7 +1812,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         const SizedBox(height: 2),
                         Text(
                           'উত্তরের জন্য অপেক্ষা করুন...',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11,
                             color: const Color(0xFF92400E),
                           ),
@@ -1820,7 +1820,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                       ] else ...[
                         Text(
                           'ড্রাইভার খোঁজা হচ্ছে',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: _kAmberDark,
@@ -1829,7 +1829,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         const SizedBox(height: 3),
                         Text(
                           'আশেপাশের ড্রাইভারদের সাথে সংযোগ স্থাপন করা হচ্ছে...',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11.5,
                             color: const Color(0xFF92400E),
                             height: 1.4,
@@ -1839,7 +1839,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                           const SizedBox(height: 3),
                           Text(
                             'ড্রাইভার অনুরোধ #${widget.dispatchAttempt}',
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               fontSize: 10.5,
                               color: const Color(0xFF92400E)
                                   .withValues(alpha: 0.7),

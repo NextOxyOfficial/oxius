@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/wallet_service.dart';
@@ -9,6 +8,7 @@ import '../../widgets/wallet/terms_checkbox.dart';
 import 'transfer_confirmation_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -285,8 +285,8 @@ class _TransferTabState extends State<TransferTab> {
         } catch (e) {
           setState(() => _isLoading = false);
           if (mounted) {
-            AdsyToast.error(
-                context, 'Error: ${e.toString().replaceAll('Exception: ', '')}');
+            AdsyToast.error(context,
+                'Error: ${e.toString().replaceAll('Exception: ', '')}');
           }
         }
       } else {
@@ -349,7 +349,7 @@ class _TransferTabState extends State<TransferTab> {
               onPressed: _showMyQrCode,
               icon: const Icon(Icons.qr_code, size: 18),
               label: Text('Show My QR Code',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 13, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: _indigo,
@@ -369,14 +369,14 @@ class _TransferTabState extends State<TransferTab> {
             controller: _contactController,
             keyboardType: TextInputType.text,
             onChanged: (value) => _validateContact(),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
             decoration: InputDecoration(
               labelText: 'Recipient ID, Email or Phone',
               hintText: 'Enter user ID, email or phone',
-              labelStyle: GoogleFonts.inter(
+              labelStyle: AppFonts.roboto(
                   fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
-              hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+              hintStyle: AppFonts.roboto(fontSize: 13, color: _slate400),
               prefixIcon: const Icon(Icons.person_outline_rounded,
                   size: 18, color: _slate400),
               suffixIcon: IconButton(
@@ -473,7 +473,7 @@ class _TransferTabState extends State<TransferTab> {
                         const SizedBox(width: 8),
                         Text(
                           'Transfer Money',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),

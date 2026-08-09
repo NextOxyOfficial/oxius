@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/rideshare_models.dart';
@@ -14,6 +13,7 @@ import 'rideshare_mode.dart';
 import 'rideshare_page_header.dart';
 import 'rideshare_vehicles_screen.dart';
 import '../../widgets/app_network_image.dart';
+import '../../utils/app_fonts.dart';
 
 /// The rideshare account page — and, since the sidebar drawer is gone, the
 /// single place every rideshare destination now lives.
@@ -377,7 +377,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         const SizedBox(width: 4),
         Text(
           value,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 13.5,
             fontWeight: FontWeight.w800,
             color: _ink,
@@ -386,7 +386,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 12, color: _muted),
+          style: AppFonts.roboto(fontSize: 12, color: _muted),
         ),
       ],
     );
@@ -433,7 +433,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
               // would take you to — the badge above and this line must agree.
               Text(
                 isDriver ? 'ড্রাইভার মোড' : 'প্যাসেঞ্জার মোড',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: _ink,
@@ -443,7 +443,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
                 isDriver
                     ? 'সুইচ বন্ধ করলে প্যাসেঞ্জার মোডে ফিরবেন'
                     : 'সুইচ চালু করলে ড্রাইভার মোডে যাবেন',
-                style: GoogleFonts.inter(fontSize: 11, color: _muted),
+                style: AppFonts.roboto(fontSize: 11, color: _muted),
               ),
             ],
           ),
@@ -510,7 +510,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: fg,
@@ -534,7 +534,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         Text(
           name,
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 17,
             fontWeight: FontWeight.w800,
             color: _ink,
@@ -544,7 +544,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         Text(
           phone,
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(fontSize: 13, color: _muted),
+          style: AppFonts.roboto(fontSize: 13, color: _muted),
         ),
         if (badge != null) ...[
           const SizedBox(height: 6),
@@ -610,7 +610,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: fg,
@@ -678,7 +678,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
                   const SizedBox(width: 8),
                   Text(
                     'ড্রাইভার হতে আবেদন করুন',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -707,7 +707,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
             child: Text(
               '${driver.outstandingCashDueCount}টি রাইডে '
               '৳${driver.outstandingCashDueAmount.toStringAsFixed(0)} ক্যাশ বকেয়া',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF92400E),
@@ -777,12 +777,12 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('কল ৯৯৯',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w800,
                             color: const Color(0xFFDC2626))),
                     Text('জরুরি সেবা',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 11.5, color: const Color(0xFFEF4444))),
                   ],
                 ),
@@ -802,10 +802,9 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text('লগ আউট করবেন?',
-            style:
-                GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+            style: AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text('আবার ব্যবহার করতে লগ ইন করতে হবে।',
-            style: GoogleFonts.inter(fontSize: 13.5)),
+            style: AppFonts.roboto(fontSize: 13.5)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -836,7 +835,7 @@ class _SectionLabel extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 4, top: 2),
         child: Text(
           text.toUpperCase(),
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.7,
@@ -898,7 +897,7 @@ class _MenuRow extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w600,
                       color: color,
@@ -907,7 +906,7 @@ class _MenuRow extends StatelessWidget {
                   if (sublabel != null)
                     Text(
                       sublabel!,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 11.5,
                         color: const Color(0xFF94A3B8),
                       ),
@@ -918,7 +917,7 @@ class _MenuRow extends StatelessWidget {
             if (trailingText != null) ...[
               Text(
                 trailingText!,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF94A3B8),
@@ -975,7 +974,7 @@ class _StatusButton extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: tint,
@@ -984,7 +983,7 @@ class _StatusButton extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 11.5,
                     color: tint.withValues(alpha: 0.8),
                   ),

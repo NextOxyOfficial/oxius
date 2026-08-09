@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,6 +10,7 @@ import '../../services/wallet_service.dart';
 import '../../widgets/wallet/web_checkout_frame.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/app_fonts.dart';
 
 class PaymentVerificationScreen extends StatefulWidget {
   final String orderId;
@@ -427,11 +427,11 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
             ),
             title: Text(
               'Leave payment?',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              style: AppFonts.roboto(fontWeight: FontWeight.w700),
             ),
             content: Text(
               'If you leave now, your payment may still continue in the gateway, but the app will stop monitoring it on this screen.',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 14,
                 color: _slate500,
               ),
@@ -441,7 +441,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                 onPressed: () => Navigator.of(context).pop(false),
                 child: Text(
                   'Stay',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     color: _slate500,
                     fontWeight: FontWeight.w600,
                   ),
@@ -455,7 +455,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                 ),
                 child: Text(
                   'Leave',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                  style: AppFonts.roboto(fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -487,7 +487,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
     }
 
     if (!launched) {
-      AdsyToast.error(context, 'Could not open the payment page on this device.');
+      AdsyToast.error(
+          context, 'Could not open the payment page on this device.');
       return;
     }
 
@@ -568,7 +569,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: done || active ? _slate800 : _slate500,
@@ -615,7 +616,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               const SizedBox(height: 18),
               Text(
                 _statusTitle(),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: _slate800,
@@ -625,7 +626,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               Text(
                 _message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   height: 1.5,
                   color: _slate500,
@@ -685,7 +686,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                     ),
                     child: Text(
                       'Check again',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      style: AppFonts.roboto(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -704,7 +705,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                   ),
                   child: Text(
                     _status == 'success' ? 'Back to wallet' : 'Close',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -754,7 +755,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               Text(
                 'Desktop Preview Limitation',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: _slate800,
@@ -764,7 +765,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               Text(
                 _message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   height: 1.5,
                   color: _slate500,
@@ -810,7 +811,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                     _openedExternalFallback
                         ? 'Open checkout again'
                         : 'Open secure checkout in browser',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                    style: AppFonts.roboto(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -834,7 +835,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                   ),
                   child: Text(
                     'I already paid, check now',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                    style: AppFonts.roboto(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -842,7 +843,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               Text(
                 'On Android and iPhone, this payment opens inside the app. Windows desktop cannot render this gateway with the current Flutter webview plugin.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   height: 1.5,
                   color: _slate500,
@@ -942,7 +943,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                           children: [
                             Text(
                               _statusTitle(),
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
                                 color: _slate800,
@@ -951,7 +952,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                             const SizedBox(height: 2),
                             Text(
                               _message,
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 11,
                                 height: 1.35,
                                 color: _slate500,
@@ -1102,7 +1103,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                                 const SizedBox(height: 14),
                                 Text(
                                   'Loading secure checkout...',
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     color: _slate500,
@@ -1154,7 +1155,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               const SizedBox(height: 18),
               Text(
                 'Verifying payment',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: _slate800,
@@ -1164,7 +1165,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               Text(
                 _message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   height: 1.5,
                   color: _slate500,
@@ -1205,7 +1206,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: _slate500,
@@ -1214,7 +1215,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
         const Spacer(),
         Text(
           value,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: _slate800,
@@ -1252,7 +1253,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
           toolbarHeight: 44,
           title: Text(
             'Complete Deposit',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: _slate800,
@@ -1296,7 +1297,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                 children: [
                   Text(
                     label,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: _slate500,
@@ -1306,7 +1307,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                   Text(
                     value,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: _slate800,

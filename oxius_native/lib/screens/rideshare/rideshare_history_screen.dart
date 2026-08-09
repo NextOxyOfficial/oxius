@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/translation_service.dart';
 import 'rideshare_page_header.dart';
 import 'rideshare_vehicle_catalog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../utils/app_fonts.dart';
 
 class RideshareHistoryScreen extends StatefulWidget {
   final bool asDriver;
@@ -123,11 +123,10 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
           children: [
             RidesharePageHeader(
               title: widget.asDriver
-                  ? t('rideshare_history_driver_title', fallback: 'ড্রাইভার ট্রিপ')
+                  ? t('rideshare_history_driver_title',
+                      fallback: 'ড্রাইভার ট্রিপ')
                   : t('rideshare_history_title', fallback: 'আমার ট্রিপ'),
-              subtitle: _rides.isEmpty
-                  ? null
-                  : '${_rides.length}টি ট্রিপ',
+              subtitle: _rides.isEmpty ? null : '${_rides.length}টি ট্রিপ',
             ),
             Expanded(child: _buildBody()),
           ],
@@ -164,7 +163,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               onPressed: _loadMore,
                               child: Text(
                                 t('rideshare_load_more', fallback: 'আরও দেখুন'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF6366F1),
@@ -196,7 +195,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 _error!,
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   fontSize: 14,
                                   color: const Color(0xFF64748B),
                                 ),
@@ -205,8 +204,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: _loadRides,
-                                child:
-                                    Text(t('try_again', fallback: 'আবার চেষ্টা করুন')),
+                                child: Text(t('try_again',
+                                    fallback: 'আবার চেষ্টা করুন')),
                               ),
                             ],
                           )
@@ -229,7 +228,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               Text(
                                 t('rideshare_no_rides_title',
                                     fallback: 'এখনো কোনো রাইড নেই'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF1E293B),
@@ -244,7 +243,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                                     : t('rideshare_no_rides_passenger',
                                         fallback:
                                             'Your ride history will appear here'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   fontSize: 13,
                                   color: const Color(0xFF64748B),
                                 ),
@@ -279,96 +278,96 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
     return InkWell(
       onTap: () => _showTripDetails(ride),
       child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(width: 34, child: vehicle.artwork(size: 28)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 34, child: vehicle.artwork(size: 28)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            ride.dropAddress.trim().isNotEmpty
+                                ? ride.dropAddress
+                                : vehicle.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppFonts.roboto(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${_formatDate(ride.requestedAt)} · '
+                            '${_formatTime(ride.requestedAt)}',
+                            style: AppFonts.roboto(
+                              fontSize: 11.5,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          ride.dropAddress.trim().isNotEmpty
-                              ? ride.dropAddress
-                              : vehicle.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                          '$_bdtSymbol${fare.toStringAsFixed(0)}',
+                          style: AppFonts.roboto(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
                             color: const Color(0xFF0F172A),
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
                         Text(
-                          '${_formatDate(ride.requestedAt)} · '
-                          '${_formatTime(ride.requestedAt)}',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            color: const Color(0xFF94A3B8),
+                          ride.statusDisplay,
+                          style: AppFonts.roboto(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: statusColor,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '$_bdtSymbol${fare.toStringAsFixed(0)}',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        ride.statusDisplay,
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: statusColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(left: 46),
-                child: _buildRouteRail(ride),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.only(left: 46),
-                child: Text(
-                  [
-                    ...facts,
-                    if (counterpartName.trim().isNotEmpty) counterpartName,
-                  ].join('  ·  '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    color: const Color(0xFF94A3B8),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.only(left: 46),
+                  child: _buildRouteRail(ride),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 46),
+                  child: Text(
+                    [
+                      ...facts,
+                      if (counterpartName.trim().isNotEmpty) counterpartName,
+                    ].join('  ·  '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppFonts.roboto(
+                      fontSize: 11.5,
+                      color: const Color(0xFF94A3B8),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const Divider(height: 1, thickness: 1, color: Color(0xFFF3F5F8)),
-      ],
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF3F5F8)),
+        ],
       ),
     );
   }
@@ -419,7 +418,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                       children: [
                         Text(
                           ride.statusDisplay,
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
                             color: statusColor,
@@ -428,7 +427,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                         Text(
                           '${_formatDate(ride.requestedAt)} · '
                           '${_formatTime(ride.requestedAt)}',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 12,
                             color: const Color(0xFF94A3B8),
                           ),
@@ -438,7 +437,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                   ),
                   Text(
                     '$_bdtSymbol${fare.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 19,
                       fontWeight: FontWeight.w800,
                       color: const Color(0xFF0F172A),
@@ -474,8 +473,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(
-                fontSize: 13, color: const Color(0xFF94A3B8)),
+            style:
+                AppFonts.roboto(fontSize: 13, color: const Color(0xFF94A3B8)),
           ),
           const Spacer(),
           Flexible(
@@ -484,7 +483,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
               textAlign: TextAlign.right,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF0F172A),
@@ -537,7 +536,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                 ride.pickupAddress,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12.5,
                   color: const Color(0xFF475569),
                 ),
@@ -547,7 +546,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                 ride.dropAddress,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12.5,
                   color: const Color(0xFF475569),
                 ),
@@ -558,7 +557,6 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
       ],
     );
   }
-
 
   Color _getStatusColor(String status) {
     switch (status) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/eshop_service.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/mobile_banner.dart';
@@ -14,6 +13,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import '../widgets/app_network_image.dart';
+import '../utils/app_fonts.dart';
 
 // Clean marketplace palette — matches the vendor store page.
 const _green = Color(0xFF22C55E);
@@ -206,7 +206,8 @@ class _EshopScreenState extends State<EshopScreen> {
 
   void _navigateToCheckout(Map<String, dynamic> product) {
     try {
-      debugPrint('🛒 Starting checkout navigation for product: ${product['id']}');
+      debugPrint(
+          '🛒 Starting checkout navigation for product: ${product['id']}');
 
       // Validate required fields
       if (product['id'] == null) {
@@ -493,13 +494,15 @@ class _EshopScreenState extends State<EshopScreen> {
         debugPrint(
             'EshopScreen: Loading products based on recent search: "$recentKeyword"');
         productsToShow = await EshopService.searchProducts(recentKeyword);
-        debugPrint('EshopScreen: Search returned ${productsToShow.length} products');
+        debugPrint(
+            'EshopScreen: Search returned ${productsToShow.length} products');
       } else {
         // No search history, load random products
         debugPrint('EshopScreen: No search history, loading random products');
         productsToShow =
             await EshopService.fetchEshopProducts(page: 1, pageSize: 10);
-        debugPrint('EshopScreen: Fetch returned ${productsToShow.length} products');
+        debugPrint(
+            'EshopScreen: Fetch returned ${productsToShow.length} products');
       }
 
       if (mounted) {
@@ -538,7 +541,6 @@ class _EshopScreenState extends State<EshopScreen> {
       _isSearching = false;
     });
   }
-
 
   void _onSearchChanged(String query) {
     // Cancel previous timers
@@ -749,14 +751,14 @@ class _EshopScreenState extends State<EshopScreen> {
                     _commitSearchToHistory(trimmed);
                   }
                 },
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w500,
                   color: _dark,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search on eShop',
-                  hintStyle: GoogleFonts.inter(
+                  hintStyle: AppFonts.roboto(
                     fontSize: 13,
                     color: _slate400,
                   ),
@@ -825,7 +827,7 @@ class _EshopScreenState extends State<EshopScreen> {
                       children: [
                         Text(
                           'Categories',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
                             color: _dark,
@@ -835,7 +837,7 @@ class _EshopScreenState extends State<EshopScreen> {
                         const SizedBox(height: 2),
                         Text(
                           '${_allCategories.length}টি ক্যাটাগরি থেকে বেছে নিন',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11.5,
                             color: _slate500,
                           ),
@@ -898,10 +900,8 @@ class _EshopScreenState extends State<EshopScreen> {
                           ? AppNetworkImage(
                               img,
                               fit: BoxFit.cover,
-                              errorWidget: const Icon(
-                                  Icons.category_outlined,
-                                  size: 18,
-                                  color: _slate400),
+                              errorWidget: const Icon(Icons.category_outlined,
+                                  size: 18, color: _slate400),
                             )
                           : const Icon(Icons.category_outlined,
                               size: 18, color: _slate400),
@@ -954,10 +954,9 @@ class _EshopScreenState extends State<EshopScreen> {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 13.5,
-                      fontWeight:
-                          selected ? FontWeight.w700 : FontWeight.w600,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                       color: selected ? _greenDark : _dark,
                     ),
                   ),
@@ -966,7 +965,7 @@ class _EshopScreenState extends State<EshopScreen> {
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 11,
                         color: _slate500,
                       ),
@@ -997,7 +996,7 @@ class _EshopScreenState extends State<EshopScreen> {
                 _isSearching
                     ? 'Searching...'
                     : '${_searchResults.length} results for "${_searchController.text}"',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: _slate500,
@@ -1092,7 +1091,7 @@ class _EshopScreenState extends State<EshopScreen> {
               children: [
                 Text(
                   'Recent Searches',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: _dark,
@@ -1162,7 +1161,7 @@ class _EshopScreenState extends State<EshopScreen> {
                         const SizedBox(width: 4),
                         Text(
                           search,
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             color: _dark,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -1198,7 +1197,7 @@ class _EshopScreenState extends State<EshopScreen> {
           if (_searchResults.isNotEmpty) ...[
             Text(
               'Suggested Products',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: _dark,
@@ -1221,8 +1220,7 @@ class _EshopScreenState extends State<EshopScreen> {
                   return ProductCard(
                     product: _searchResults[index],
                     isLoading: false,
-                    onBuyNow: () =>
-                        _navigateToCheckout(_searchResults[index]),
+                    onBuyNow: () => _navigateToCheckout(_searchResults[index]),
                   );
                 },
               ),
@@ -1233,7 +1231,7 @@ class _EshopScreenState extends State<EshopScreen> {
                 padding: const EdgeInsets.all(32),
                 child: Text(
                   'Start typing to search products',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     color: _slate500,
                     fontSize: 13.5,
                   ),
@@ -1260,7 +1258,7 @@ class _EshopScreenState extends State<EshopScreen> {
             const SizedBox(height: 16),
             Text(
               'No results found',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
                 color: _dark,
@@ -1269,7 +1267,7 @@ class _EshopScreenState extends State<EshopScreen> {
             const SizedBox(height: 8),
             Text(
               'Try searching with different keywords or check spelling',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 13,
                 color: _slate500,
               ),
@@ -1371,7 +1369,7 @@ class _EshopScreenState extends State<EshopScreen> {
       padding: const EdgeInsets.fromLTRB(10, 14, 10, 8),
       child: Text(
         title,
-        style: GoogleFonts.inter(
+        style: AppFonts.roboto(
           fontSize: 16.5,
           fontWeight: FontWeight.w800,
           color: _dark,
@@ -1459,8 +1457,8 @@ class _EshopScreenState extends State<EshopScreen> {
                             ),
                           )
                         : const Center(
-                            child: Icon(Icons.category_outlined,
-                                color: _slate400),
+                            child:
+                                Icon(Icons.category_outlined, color: _slate400),
                           ),
                   ),
                   const SizedBox(height: 4),
@@ -1469,11 +1467,10 @@ class _EshopScreenState extends State<EshopScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       height: 1.25,
-                      fontWeight:
-                          selected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                       color: selected ? _greenDark : _dark,
                     ),
                   ),
@@ -1531,82 +1528,81 @@ class _EshopScreenState extends State<EshopScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                      // Store profile image (BN profile photo / settings
-                      // upload).
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _slate100,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: logo.isNotEmpty
-                            ? AppNetworkImage(
-                                logo,
-                                fit: BoxFit.cover,
-                                errorWidget: const Center(
-                                  child: Icon(Icons.storefront_rounded,
-                                      size: 20, color: _slate400),
-                                ),
-                              )
-                            : const Center(
+                    // Store profile image (BN profile photo / settings
+                    // upload).
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _slate100,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: logo.isNotEmpty
+                          ? AppNetworkImage(
+                              logo,
+                              fit: BoxFit.cover,
+                              errorWidget: const Center(
                                 child: Icon(Icons.storefront_rounded,
                                     size: 20, color: _slate400),
                               ),
-                      ),
-                      const SizedBox(width: 10),
-                      // Name + products on the right; Flexible so the border
-                      // wraps content but long names still clamp.
-                      Flexible(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text.rich(
-                              TextSpan(
-                                text: name,
-                                children: [
-                                  if (s['kyc'] == true)
-                                    const WidgetSpan(
-                                      alignment: PlaceholderAlignment.middle,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 3),
-                                        child: Icon(Icons.verified,
-                                            size: 13,
-                                            color: Color(0xFF2563EB)),
-                                      ),
+                            )
+                          : const Center(
+                              child: Icon(Icons.storefront_rounded,
+                                  size: 20, color: _slate400),
+                            ),
+                    ),
+                    const SizedBox(width: 10),
+                    // Name + products on the right; Flexible so the border
+                    // wraps content but long names still clamp.
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              text: name,
+                              children: [
+                                if (s['kyc'] == true)
+                                  const WidgetSpan(
+                                    alignment: PlaceholderAlignment.middle,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 3),
+                                      child: Icon(Icons.verified,
+                                          size: 13, color: Color(0xFF2563EB)),
                                     ),
-                                ],
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                height: 1.2,
-                                fontWeight: FontWeight.w700,
-                                color: _dark,
-                              ),
+                                  ),
+                              ],
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$products Products',
-                              style: GoogleFonts.inter(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w500,
-                                color: _slate500,
-                              ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppFonts.roboto(
+                              fontSize: 12.5,
+                              height: 1.2,
+                              fontWeight: FontWeight.w700,
+                              color: _dark,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$products Products',
+                            style: AppFonts.roboto(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w500,
+                              color: _slate500,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
+            ),
+          );
+        },
       ),
     );
   }
@@ -1618,7 +1614,7 @@ class _EshopScreenState extends State<EshopScreen> {
         child: Center(
           child: Text(
             'No products available',
-            style: GoogleFonts.inter(fontSize: 14, color: _slate500),
+            style: AppFonts.roboto(fontSize: 14, color: _slate500),
           ),
         ),
       );
@@ -1636,7 +1632,7 @@ class _EshopScreenState extends State<EshopScreen> {
                   _selectedCategoryName ?? 'All Products',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 16.5,
                     fontWeight: FontWeight.w800,
                     color: _dark,
@@ -1649,7 +1645,7 @@ class _EshopScreenState extends State<EshopScreen> {
                   onTap: _clearCategoryFilter,
                   child: Text(
                     'Clear',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: _dark,
@@ -1672,8 +1668,8 @@ class _EshopScreenState extends State<EshopScreen> {
                 gridDelegate: ProductCardLayout.buildGridDelegate(
                   availableWidth: constraints.maxWidth,
                   screenWidth: MediaQuery.of(context).size.width,
-          textScale: MediaQuery.textScalerOf(context).scale(1.0),
-        ),
+                  textScale: MediaQuery.textScalerOf(context).scale(1.0),
+                ),
                 itemCount: displayProducts.length,
                 itemBuilder: (context, index) {
                   return ProductCard(
@@ -1710,7 +1706,7 @@ class _EshopScreenState extends State<EshopScreen> {
                 const SizedBox(width: 6),
                 Text(
                   'You\'ve reached the end',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     color: _slate500,
                     fontSize: 12.5,
                     fontWeight: FontWeight.w500,

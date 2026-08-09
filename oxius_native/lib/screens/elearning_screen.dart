@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../widgets/elearning/batch_selector.dart';
 import '../widgets/elearning/division_selector.dart';
 import '../widgets/elearning/subject_selector.dart';
 import '../widgets/elearning/video_lessons.dart';
 import '../widgets/elearning/elearning_banner_slider.dart';
 import '../services/translation_service.dart';
+import '../utils/app_fonts.dart';
 
 class ElearningScreen extends StatefulWidget {
   const ElearningScreen({super.key});
@@ -84,7 +84,8 @@ class _ElearningScreenState extends State<ElearningScreen> {
       appBar: _buildAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 24),
+          padding:
+              EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 24),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1280),
@@ -226,7 +227,7 @@ class _ElearningScreenState extends State<ElearningScreen> {
             children: [
               Text(
                 _i18n.t('el_title', fallback: 'eLearning'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: _slate800,
@@ -234,7 +235,7 @@ class _ElearningScreenState extends State<ElearningScreen> {
               ),
               Text(
                 _i18n.t('el_subtitle', fallback: 'Structured study path'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 11,
                   color: _slate500,
                 ),
@@ -277,20 +278,20 @@ class _ElearningScreenState extends State<ElearningScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text(
           _i18n.t('el_how_title', fallback: 'How eLearning works'),
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: AppFonts.roboto(fontWeight: FontWeight.w700),
         ),
         content: Text(
           _i18n.t('el_how_body',
               fallback:
                   'Start with your batch, narrow it down by division and subject, then continue directly into the lesson videos.'),
-          style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: _slate500),
+          style: AppFonts.roboto(fontSize: 13, height: 1.5, color: _slate500),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               _i18n.t('el_close', fallback: 'Close'),
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: AppFonts.roboto(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -323,7 +324,8 @@ class _RevealStepState extends State<_RevealStep>
       vsync: this,
       duration: const Duration(milliseconds: 380),
     );
-    final curve = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    final curve =
+        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
     _fade = curve;
     _slide = Tween<Offset>(
       begin: const Offset(0, 0.08),

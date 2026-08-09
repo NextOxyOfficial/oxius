@@ -41,30 +41,30 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
               color: approvalColor),
           const SizedBox(width: 4),
           Text(approvalLabel,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                   color: approvalColor)),
           _buildStatDot(),
           Text('${_earnings?.totalTrips ?? 0}',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
                   color: _slate800)),
           const SizedBox(width: 4),
           Text('ট্রিপ',
               style:
-                  GoogleFonts.inter(fontSize: 12, color: _slate400)),
+                  AppFonts.roboto(fontSize: 12, color: _slate400)),
           _buildStatDot(),
           Text('৳${(_earnings?.totalEarnings ?? 0).toStringAsFixed(0)}',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
                   color: _slate800)),
           const SizedBox(width: 4),
           Text('আয়',
               style:
-                  GoogleFonts.inter(fontSize: 12, color: _slate400)),
+                  AppFonts.roboto(fontSize: 12, color: _slate400)),
         ],
       ),
     );
@@ -123,7 +123,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                           ? 'Finish location setup'
                           : t('rideshare_location_mandatory',
                               fallback: 'লোকেশন শেয়ার করা লাগবে'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF991B1B),
@@ -136,7 +136,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                           : t('rideshare_location_mandatory_driver_desc',
                               fallback:
                                   'You must enable location sharing to receive ride requests and go online as a driver.'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF7F1D1D),
                         height: 1.35,
@@ -182,7 +182,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                         ? 'Open settings'
                         : t('rideshare_enable_location',
                             fallback: 'লোকেশন চালু করুন')),
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                style: AppFonts.roboto(fontWeight: FontWeight.w700),
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFDC2626),
@@ -210,7 +210,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
         ),
         child: Column(children: [
           Text(label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: _slate400)),
@@ -222,7 +222,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
               child: Text(value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: const Color(0xFF0F172A))),
@@ -303,12 +303,12 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                   ? t('rideshare_online_status',
                       fallback: 'অনলাইন — রাইড নিচ্ছেন')
                   : t('rideshare_offline_status', fallback: 'অফলাইন'),
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: isOnline ? Colors.white : _slate800)),
           Text(locationSubtitle,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 11,
                   color: isOnline
                       ? Colors.white.withValues(alpha: 0.8)
@@ -399,7 +399,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                     Text(
                       t('rideshare_cash_due_title',
                           fallback: 'ক্যাশ বকেয়া আছে'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: const Color(0xFF92400E)),
@@ -407,7 +407,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                     const SizedBox(height: 2),
                     Text(
                       '৳${dueAmount.toStringAsFixed(0)} pending across $dueCount cash ride${dueCount > 1 ? 's' : ''}.',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 12, color: const Color(0xFF92400E)),
                     ),
                   ],
@@ -424,7 +424,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                 : t('rideshare_cash_due_warning_msg',
                     fallback:
                         'You can keep driving for now, but clear this due from your Adsy balance before it reaches the limit.'),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 12, color: const Color(0xFF78350F), height: 1.35),
           ),
           const SizedBox(height: 12),
@@ -457,7 +457,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                                 ? t('rideshare_pay_due_btn',
                                     fallback: 'বকেয়া পরিশোধ করুন')
                                 : '${t("rideshare_insufficient_balance", fallback: "Insufficient balance")} (৳${walletBalance.toStringAsFixed(0)})',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                        style: AppFonts.roboto(fontWeight: FontWeight.w700),
                       ),
                       style: FilledButton.styleFrom(
                         backgroundColor:
@@ -479,7 +479,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                         label: Text(
                           t('rideshare_add_funds_wallet',
                               fallback: 'Adsy ওয়ালেটে টাকা যোগ করুন'),
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                          style: AppFonts.roboto(fontWeight: FontWeight.w700),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF6366F1),
@@ -539,7 +539,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                             fallback: 'ড্রাইভার হোন')
                         : t('rideshare_driver_profile',
                             fallback: 'ড্রাইভার প্রোফাইল'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: _slate800),
@@ -674,7 +674,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                             : t('rideshare_identity_instructions',
                                 fallback:
                                     'Fill in your identity details once. After submission, license and NID stay locked.'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 12, height: 1.4, color: _indigo),
                       ),
                     ),
@@ -692,7 +692,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                   child: Text(
                     t('rideshare_identity_section',
                         fallback: 'পরিচয় যাচাই'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: _slate800),
@@ -736,7 +736,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                   child: Text(
                     t('rideshare_details_section',
                         fallback: 'ড্রাইভার তথ্য'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: _slate800),
@@ -748,7 +748,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
             // Driver Details Label
             Text(
               t('rideshare_driver_details', fallback: 'অভিজ্ঞতা ও নোট'),
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 11, fontWeight: FontWeight.w600, color: _slate600),
             ),
             const SizedBox(height: 6),
@@ -757,13 +757,13 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
               controller: _driverDetailsController,
               minLines: 3,
               maxLines: 5,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 13, color: _slate800, height: 1.5),
               decoration: InputDecoration(
                 hintText: t('rideshare_driver_details_hint',
                     fallback:
                         'Describe your driving experience, favorite routes, vehicle details, or any special notes...'),
-                hintStyle: GoogleFonts.inter(fontSize: 12, color: _slate400),
+                hintStyle: AppFonts.roboto(fontSize: 12, color: _slate400),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Icon(Icons.description_rounded,
@@ -796,7 +796,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                   child: Text(
                     t('rideshare_documents_section',
                         fallback: 'অতিরিক্ত ডকুমেন্ট'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: _slate800),
@@ -811,7 +811,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                   ),
                   child: Text(
                     '${_additionalDocuments.length}/10',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w700,
                         color: _indigo),
@@ -825,7 +825,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
               t('rideshare_documents_hint',
                   fallback:
                       'Upload additional documents to support your application (licenses, certifications, insurance, etc.)'),
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 11, color: _slate500, height: 1.4),
             ),
             const SizedBox(height: 12),
@@ -838,7 +838,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                 label: Text(
                   t('rideshare_upload_btn',
                       fallback: 'লাইসেন্স ডকুমেন্টের ছবি দিন'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 13, fontWeight: FontWeight.w700),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -855,7 +855,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
               const SizedBox(height: 14),
               Text(
                 t('rideshare_uploaded_docs', fallback: 'আপলোড করা ডকুমেন্ট'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: _slate600),
@@ -911,7 +911,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w600,
                                 color: _slate800),
@@ -950,7 +950,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                   child: Text(
                     t('rideshare_service_section',
                         fallback: 'সার্ভিস সেটিংস'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: _slate800),
@@ -977,7 +977,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                       child: Text(
                         t('rideshare_service_radius',
                             fallback: 'সার্ভিস রেডিয়াস'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: _slate800),
@@ -992,7 +992,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                       ),
                       child: Text(
                         '${_serviceRadius.toStringAsFixed(0)} km',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: _indigo),
@@ -1040,7 +1040,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                       child: Text(
                         t('rideshare_max_ride_distance',
                             fallback: 'সর্বোচ্চ রাইড দূরত্ব'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: _slate800),
@@ -1057,7 +1057,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                         _maxRideDistance == 0
                             ? t('rideshare_no_limit', fallback: 'আনলিমিটেড')
                             : '${_maxRideDistance.toStringAsFixed(0)} km',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: _indigo),
@@ -1112,7 +1112,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                                   fallback: 'ড্রাইভার হতে আবেদন করুন')
                               : t('rideshare_save_profile',
                                   fallback: 'সেভ করুন'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     style: FilledButton.styleFrom(
@@ -1212,7 +1212,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                 ? 'পরিচয়ের তথ্য একবার জমা দিলে আর বদলানো যায় না। স্ট্যাটাস দেখতে বা সার্ভিস রেডিয়াস বদলাতে এই অংশটি খুলুন।'
                 : 'Open this section to complete your driver profile before going online.',
             style:
-                GoogleFonts.inter(fontSize: 11, color: _slate500, height: 1.35),
+                AppFonts.roboto(fontSize: 11, color: _slate500, height: 1.35),
           ),
         ],
       ),
@@ -1240,7 +1240,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 11, fontWeight: FontWeight.w600, color: color),
           ),
         ],
@@ -1268,7 +1268,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
         const SizedBox(width: 8),
         Expanded(
             child: Text(msg,
-                style: GoogleFonts.inter(fontSize: 11, color: textColor))),
+                style: AppFonts.roboto(fontSize: 11, color: textColor))),
       ]),
     );
   }
@@ -1284,7 +1284,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(
         label,
-        style: GoogleFonts.inter(
+        style: AppFonts.roboto(
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: _slate600,
@@ -1295,7 +1295,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
       TextField(
         controller: ctrl,
         readOnly: readOnly,
-        style: GoogleFonts.inter(
+        style: AppFonts.roboto(
           fontSize: 13,
           color: _slate800,
           fontWeight: FontWeight.w500,
@@ -1304,12 +1304,12 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
           hintText: hint,
           helperText: helperText,
           helperMaxLines: 2,
-          helperStyle: GoogleFonts.inter(
+          helperStyle: AppFonts.roboto(
             fontSize: 11,
             color: _slate500,
             height: 1.3,
           ),
-          hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+          hintStyle: AppFonts.roboto(fontSize: 13, color: _slate400),
           prefixIcon: Icon(icon, size: 16, color: _slate400),
           suffixIcon: readOnly
               ? Padding(
@@ -1353,7 +1353,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 10, fontWeight: FontWeight.w700, color: color)),
     );
   }
@@ -1386,7 +1386,7 @@ extension _RsDriverEarningsBreakdown on _RideshareDriverPanelState {
               Expanded(
                 child: Text(
                   'আয়ের হিসাব',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
                     color: _slate800,
@@ -1395,7 +1395,7 @@ extension _RsDriverEarningsBreakdown on _RideshareDriverPanelState {
               ),
               Text(
                 'গত ৩০ দিনে $monthTripsটি ট্রিপে ৳${monthTotal.toStringAsFixed(0)}',
-                style: GoogleFonts.inter(fontSize: 11.5, color: _slate400),
+                style: AppFonts.roboto(fontSize: 11.5, color: _slate400),
               ),
             ],
           ),
@@ -1409,7 +1409,7 @@ extension _RsDriverEarningsBreakdown on _RideshareDriverPanelState {
                 _earningsExpanded
                     ? 'কম দেখুন'
                     : 'সব দেখুন (${_dailyEarnings.length} দিন)',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                   color: _indigo,
@@ -1446,7 +1446,7 @@ extension _RsDriverEarningsBreakdown on _RideshareDriverPanelState {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
                 color: _slate800,
@@ -1455,7 +1455,7 @@ extension _RsDriverEarningsBreakdown on _RideshareDriverPanelState {
           ),
           Text(
             '${day.trips} ট্রিপ',
-            style: GoogleFonts.inter(fontSize: 12, color: _slate400),
+            style: AppFonts.roboto(fontSize: 12, color: _slate400),
           ),
           const SizedBox(width: 14),
           SizedBox(
@@ -1463,7 +1463,7 @@ extension _RsDriverEarningsBreakdown on _RideshareDriverPanelState {
             child: Text(
               '৳${day.earnings.toStringAsFixed(0)}',
               textAlign: TextAlign.right,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF059669),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'app_network_image.dart';
+import '../utils/app_fonts.dart';
 
 // Clean marketplace palette — matches the eShop / vendor store pages.
 const _dealGreen = Color(0xFF22C55E);
@@ -117,7 +117,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
           padding: const EdgeInsets.fromLTRB(10, 14, 10, 8),
           child: Text(
             _translationService.t('special_deals', fallback: 'বিশেষ অফার'),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 16.5,
               fontWeight: FontWeight.w800,
               color: _dealDark,
@@ -157,7 +157,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       onTap: () {
         if (deal['id'] == null) return;
         final categoryId = deal['id'].toString();
-        debugPrint('🔥 Hot deal tapped - ID: ${deal['id']}, Name: ${deal['name']}');
+        debugPrint(
+            '🔥 Hot deal tapped - ID: ${deal['id']}, Name: ${deal['name']}');
 
         // If host supplied a callback (e.g. eShop screen), filter in place.
         if (widget.onCategorySelected != null) {
@@ -236,7 +237,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                         ),
                         child: Text(
                           badge,
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 7.5,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
@@ -251,7 +252,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
             // Name — up to two lines so longer names stay readable.
             Text(
               name,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 11,
                 height: 1.25,
                 fontWeight: FontWeight.w600,

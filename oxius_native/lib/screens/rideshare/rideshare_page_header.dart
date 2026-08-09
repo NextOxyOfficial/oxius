@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../utils/app_fonts.dart';
 
 /// The one header every rideshare sub-page uses: back chevron, centred title,
 /// optional single action. No AppBar, no elevation, no drawer hamburger.
@@ -40,7 +40,7 @@ class RidesharePageHeader extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0F172A),
@@ -52,7 +52,7 @@ class RidesharePageHeader extends StatelessWidget {
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11.5,
                       color: const Color(0xFF94A3B8),
                     ),

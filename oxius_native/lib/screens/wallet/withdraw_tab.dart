@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
@@ -7,6 +6,7 @@ import '../../widgets/wallet/payment_method_selector.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -169,16 +169,16 @@ class _WithdrawTabState extends State<WithdrawTab> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             onChanged: (value) => _validatePhone(),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
             decoration: InputDecoration(
               labelText:
                   '${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} Number',
               hintText:
                   'Enter ${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} number',
-              labelStyle: GoogleFonts.inter(
+              labelStyle: AppFonts.roboto(
                   fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
-              hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+              hintStyle: AppFonts.roboto(fontSize: 13, color: _slate400),
               prefixIcon: const Icon(Icons.phone_android_rounded,
                   size: 18, color: _slate400),
               border: OutlineInputBorder(
@@ -229,14 +229,14 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     children: [
                       Text(
                         'Withdrawal Amount:',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 12,
                             color: _slate700,
                             fontWeight: FontWeight.w600),
                       ),
                       Text(
                         '৳${amount.toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: _slate800,
@@ -250,14 +250,14 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     children: [
                       Text(
                         'Charges (${WalletService.withdrawalChargePercent}%):',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 12,
                             color: _slate500,
                             fontWeight: FontWeight.w600),
                       ),
                       Text(
                         '৳${(amount * WalletService.withdrawalChargePercent / 100).toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           color: _slate800,
                           fontWeight: FontWeight.w700,
@@ -271,7 +271,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     children: [
                       Text(
                         'Total Deduction:',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: _slate800,
@@ -279,7 +279,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
                       ),
                       Text(
                         '৳${totalDeduction.toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: _indigo,
@@ -349,7 +349,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
                         const SizedBox(width: 8),
                         Text(
                           'Submit Withdrawal',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),

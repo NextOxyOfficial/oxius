@@ -39,15 +39,40 @@ class CallForegroundService {
   /// with the call state, not with the notification that describes it.
   static Future<void> Function()? onHangUp;
 
+  /// What to run when Android puts the app into, or takes it out of, a
+  /// floating Picture-in-Picture window.
+  ///
+  /// Injected for the same reason as [onHangUp], and routed through here for
+  /// a blunter one: a MethodChannel is keyed by name, so the LAST
+  /// setMethodCallHandler for 'com.oxius.app/call_service' silently replaces
+  /// every earlier one. Two services listening on this channel would mean
+  /// one of them stops being called, with nothing to show for it. One
+  /// handler, and it dispatches.
+  static void Function(bool inPip)? onPipModeChanged;
+
   static void _ensureHandler() {
     if (_handlerAttached) return;
     _handlerAttached = true;
     _channel.setMethodCallHandler((call) async {
-      if (call.method == 'hangup') {
-        await onHangUp?.call();
+      switch (call.method) {
+        case 'hangup':
+          await onHangUp?.call();
+          break;
+        case 'pipModeChanged':
+          onPipModeChanged?.call(call.arguments == true);
+          break;
       }
       return null;
     });
+  }
+
+  /// Attaches the channel handler before any call exists.
+  ///
+  /// [sync] does this too, but only once a call is running — and PiP can be
+  /// entered on the very first one, before sync has ever been reached.
+  static void ensureHandlerAttached() {
+    if (!Platform.isAndroid) return;
+    _ensureHandler();
   }
 
   /// Brings the service in line with the current call state.

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../utils/app_fonts.dart';
 
 enum RideshareTab { passenger, driver, vehicles, history }
 
@@ -66,9 +66,11 @@ class RideshareBottomNav extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           child: Row(
-            children: tabs.map((t) => Expanded(
-              child: _buildTab(context, t),
-            )).toList(),
+            children: tabs
+                .map((t) => Expanded(
+                      child: _buildTab(context, t),
+                    ))
+                .toList(),
           ),
         ),
       ),
@@ -91,7 +93,7 @@ class RideshareBottomNav extends StatelessWidget {
           const SizedBox(height: 3),
           AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 200),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 10,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
               color: isActive ? _purple : const Color(0xFFB0B8CC),

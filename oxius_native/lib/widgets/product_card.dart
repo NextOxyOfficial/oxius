@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'app_network_image.dart';
+import '../utils/app_fonts.dart';
 
 // Marketplace card palette (screenshot-matched): white surface, green price,
 // red discount pill, amber stars.
@@ -121,8 +121,7 @@ class ProductCard extends StatelessWidget {
         : const <String, dynamic>{};
     final storeName =
         (owner['store_name'] ?? owner['name'] ?? '').toString().trim();
-    final storeVerified =
-        owner['kyc'] == true || owner['is_verified'] == true;
+    final storeVerified = owner['kyc'] == true || owner['is_verified'] == true;
     final storePro = owner['is_pro'] == true;
 
     final navigationCallback = onTap ??
@@ -181,7 +180,7 @@ class ProductCard extends StatelessWidget {
                       ),
                       child: Text(
                         '-$discount%',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -208,7 +207,7 @@ class ProductCard extends StatelessWidget {
                           const SizedBox(width: 3),
                           Text(
                             'FREE',
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               fontSize: 9,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
@@ -238,8 +237,7 @@ class ProductCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   '($reviews)',
-                  style:
-                      GoogleFonts.inter(fontSize: 11, color: _cardSlate500),
+                  style: AppFonts.roboto(fontSize: 11, color: _cardSlate500),
                 ),
               ],
             ],
@@ -255,7 +253,7 @@ class ProductCard extends StatelessWidget {
                     storeName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: _cardSlate500,
@@ -281,7 +279,7 @@ class ProductCard extends StatelessWidget {
             title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 13.5,
               height: 1.25,
               fontWeight: FontWeight.w700,
@@ -302,7 +300,7 @@ class ProductCard extends StatelessWidget {
                           '৳${_formatPrice(regular)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11.5,
                             color: _cardSlate400,
                             decoration: TextDecoration.lineThrough,
@@ -316,7 +314,7 @@ class ProductCard extends StatelessWidget {
                         '৳${_formatPrice(hasDiscount ? sale : regular)}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: _cardGreen,
@@ -341,7 +339,7 @@ class ProductCard extends StatelessWidget {
                       const SizedBox(width: 3),
                       Text(
                         'Buy',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                           color: _cardDark,

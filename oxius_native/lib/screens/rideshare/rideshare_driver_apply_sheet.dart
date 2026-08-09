@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../utils/app_fonts.dart';
 
 /// What the rider filled in, handed back to the caller to submit.
 ///
@@ -82,7 +82,8 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -109,7 +110,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 const SizedBox(height: 18),
                 Text(
                   'ড্রাইভার হোন',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: _ink,
@@ -119,14 +120,13 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 Text(
                   'আবেদন জমা দিলে আমাদের টিম যাচাই করবে। এপ্রুভ হলে আপনার '
                   'অ্যাকাউন্টে ড্রাইভার মোড চালু হয়ে যাবে।',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 12.5,
                     height: 1.5,
                     color: const Color(0xFF64748B),
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 _Field(
                   label: 'ড্রাইভিং লাইসেন্স নম্বর',
                   hint: 'DK-0123456789',
@@ -162,7 +162,6 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                   maxLines: 4,
                   optional: true,
                 ),
-
                 const SizedBox(height: 16),
                 Container(
                   padding:
@@ -180,7 +179,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                       Expanded(
                         child: Text(
                           'এপ্রুভ হওয়ার পর গাড়ি যোগ করলে তবেই রাইড রিকোয়েস্ট পাবেন।',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11.5,
                             height: 1.45,
                             color: const Color(0xFF64748B),
@@ -190,7 +189,6 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -205,7 +203,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                     ),
                     child: Text(
                       'আবেদন জমা দিন',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -259,7 +257,7 @@ class _Field extends StatelessWidget {
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF334155),
@@ -269,7 +267,7 @@ class _Field extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 'ঐচ্ছিক',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 11,
                   color: const Color(0xFF94A3B8),
                 ),
@@ -285,12 +283,11 @@ class _Field extends StatelessWidget {
           inputFormatters: inputFormatters,
           textCapitalization: textCapitalization,
           onChanged: (_) => onChanged?.call(),
-          style: GoogleFonts.inter(
-              fontSize: 14, color: const Color(0xFF0F172A)),
+          style: AppFonts.roboto(fontSize: 14, color: const Color(0xFF0F172A)),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.inter(
-                fontSize: 13.5, color: const Color(0xFFB4BECC)),
+            hintStyle:
+                AppFonts.roboto(fontSize: 13.5, color: const Color(0xFFB4BECC)),
             prefixIcon: maxLines == 1
                 ? Icon(icon, size: 18, color: const Color(0xFF94A3B8))
                 : null,
@@ -299,8 +296,8 @@ class _Field extends StatelessWidget {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             border: _border(const Color(0xFFE9EDF3)),
-            enabledBorder:
-                _border(hasError ? const Color(0xFFFCA5A5) : const Color(0xFFE9EDF3)),
+            enabledBorder: _border(
+                hasError ? const Color(0xFFFCA5A5) : const Color(0xFFE9EDF3)),
             focusedBorder: _border(
                 hasError ? const Color(0xFFEF4444) : const Color(0xFF0F172A),
                 width: 1.4),
@@ -310,7 +307,7 @@ class _Field extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             error!,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 11.5,
               color: const Color(0xFFEF4444),
             ),

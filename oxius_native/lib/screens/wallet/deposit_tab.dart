@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
@@ -10,6 +9,7 @@ import '../../widgets/wallet/terms_checkbox.dart';
 import 'payment_verification_screen.dart';
 import '../settings_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -404,7 +404,7 @@ class _DepositTabState extends State<DepositTab> {
                       children: [
                         Text(
                           'Secure Payment Gateway',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: _slate800,
@@ -412,7 +412,7 @@ class _DepositTabState extends State<DepositTab> {
                         ),
                         Text(
                           'SSL Encrypted & Safe',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             color: _slate500,
@@ -499,7 +499,7 @@ class _DepositTabState extends State<DepositTab> {
                         const SizedBox(width: 8),
                         Text(
                           'Proceed to Payment',
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),

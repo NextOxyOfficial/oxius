@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Drop-in replacement for GoogleFonts to avoid google_fonts package
 /// compatibility issues with newer Dart SDK versions.
-/// 
+///
 /// Uses system fonts instead of downloading Google Fonts at runtime.
 /// Roboto is the default Material Design font and is bundled with Flutter.
 class AppFonts {
@@ -25,6 +25,10 @@ class AppFonts {
     Paint? background,
     List<Shadow>? shadows,
     TextBaseline? textBaseline,
+
+    /// Tabular figures and friends. A duration or a price that changes
+    /// every second must not shift the text beside it.
+    List<FontFeature>? fontFeatures,
   }) {
     return TextStyle(
       fontFamily: 'Roboto',
@@ -42,6 +46,7 @@ class AppFonts {
       background: background,
       shadows: shadows,
       textBaseline: textBaseline,
+      fontFeatures: fontFeatures,
     );
   }
 
@@ -62,6 +67,10 @@ class AppFonts {
     Paint? background,
     List<Shadow>? shadows,
     TextBaseline? textBaseline,
+
+    /// Tabular figures and friends. A duration or a price that changes
+    /// every second must not shift the text beside it.
+    List<FontFeature>? fontFeatures,
   }) {
     return TextStyle(
       fontSize: fontSize,
@@ -78,6 +87,7 @@ class AppFonts {
       background: background,
       shadows: shadows,
       textBaseline: textBaseline,
+      fontFeatures: fontFeatures,
     );
   }
 
@@ -98,6 +108,10 @@ class AppFonts {
     Paint? background,
     List<Shadow>? shadows,
     TextBaseline? textBaseline,
+
+    /// Tabular figures and friends. A duration or a price that changes
+    /// every second must not shift the text beside it.
+    List<FontFeature>? fontFeatures,
   }) {
     return TextStyle(
       fontSize: fontSize,
@@ -114,6 +128,7 @@ class AppFonts {
       background: background,
       shadows: shadows,
       textBaseline: textBaseline,
+      fontFeatures: fontFeatures,
     );
   }
 
@@ -133,6 +148,10 @@ class AppFonts {
     Paint? background,
     List<Shadow>? shadows,
     TextBaseline? textBaseline,
+
+    /// Tabular figures and friends. A duration or a price that changes
+    /// every second must not shift the text beside it.
+    List<FontFeature>? fontFeatures,
   }) {
     return TextStyle(
       fontFamily: 'monospace',
@@ -150,6 +169,7 @@ class AppFonts {
       background: background,
       shadows: shadows,
       textBaseline: textBaseline,
+      fontFeatures: fontFeatures,
     );
   }
 

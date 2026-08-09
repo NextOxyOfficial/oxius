@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
 import 'dart:ui';
@@ -8,6 +7,7 @@ import 'dart:ui' as ui;
 import '../../models/rideshare_models.dart';
 import 'rideshare_vehicle_catalog.dart';
 import '../../widgets/app_network_image.dart';
+import '../../utils/app_fonts.dart';
 
 class RideshareMapWidget extends StatefulWidget {
   final RidePoint? pickupPoint;
@@ -662,7 +662,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
                               title,
                               softWrap: false,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 color: const Color(0xFF0F172A),
@@ -673,7 +673,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
                               subtitle,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: AppFonts.roboto(
                                 fontSize: 10.5,
                                 height: 1.35,
                                 fontWeight: FontWeight.w500,
@@ -873,7 +873,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -908,7 +908,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF0F172A),
@@ -1146,7 +1146,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
                   children: [
                     Text(
                       name,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1E293B),
@@ -1156,7 +1156,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
                     ),
                     Text(
                       subtitle,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 8.5,
                         fontWeight: FontWeight.w500,
                         color: gradientColors.first,
@@ -1286,7 +1286,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
           ),
           child: Text(
             'পিকআপ পয়েন্ট',
-            style: GoogleFonts.notoSansBengali(
+            style: AppFonts.roboto(
               fontSize: 9,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -1360,7 +1360,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
           ),
           child: Text(
             'গন্তব্য',
-            style: GoogleFonts.notoSansBengali(
+            style: AppFonts.roboto(
               fontSize: 9,
               fontWeight: FontWeight.w700,
               color: Colors.white,

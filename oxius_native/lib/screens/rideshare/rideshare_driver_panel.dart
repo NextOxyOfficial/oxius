@@ -3,7 +3,6 @@ import '../../widgets/location_disclosure_dialog.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,6 +23,7 @@ import 'rideshare_map_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import '../../utils/app_fonts.dart';
 
 part 'rideshare_driver_panel_profile.dart';
 part 'rideshare_driver_panel_requests.dart';
@@ -52,6 +52,7 @@ class RideshareDriverPanel extends StatefulWidget {
 class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     with WidgetsBindingObserver {
   final TranslationService _ts = TranslationService();
+
   /// setState relay for the part-file extensions — calling the protected
   /// setState directly from an extension violates @protected even inside the
   /// same library.
@@ -216,7 +217,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: _slate800,
@@ -233,7 +234,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 ),
                 child: Text(
                   badge,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: accentColor,
@@ -293,21 +294,20 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           t('rideshare_add_vehicle_first', fallback: 'আগে একটি গাড়ি যোগ করুন'),
-          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
+          style: AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.w800),
         ),
         content: Text(
           t('rideshare_need_vehicle_msg',
               fallback:
                   'You need an active vehicle. Add a Bike, Car or Auto from the Vehicles section.'),
-          style:
-              GoogleFonts.inter(fontSize: 13, color: _slate500, height: 1.45),
+          style: AppFonts.roboto(fontSize: 13, color: _slate500, height: 1.45),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
               t('rideshare_close', fallback: 'বন্ধ করুন'),
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: AppFonts.roboto(fontWeight: FontWeight.w600),
             ),
           ),
           FilledButton.icon(
@@ -318,7 +318,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             icon: const Icon(Icons.two_wheeler_rounded, size: 16),
             label: Text(
               t('rideshare_open_vehicles', fallback: 'গাড়ি পেজ খুলুন'),
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              style: AppFonts.roboto(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -498,7 +498,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             children: [
               Text(
                 'লোকেশন সেটআপ কমপ্লিট করুন',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: _slate800,
@@ -507,7 +507,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               const SizedBox(height: 8),
               Text(
                 'অ্যাপ ব্যাকগ্রাউন্ডে থাকলেও অনলাইনে থাকতে এবং রাইড রিকোয়েস্ট পেতে অ্যাপ সেটিংস থেকে সবসময় লোকেশন অনুমতি দিন।',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   color: _slate500,
                   height: 1.45,
@@ -526,7 +526,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   children: [
                     Text(
                       'দ্রুত ধাপ',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: _slate800,
@@ -535,7 +535,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     const SizedBox(height: 8),
                     Text(
                       '১. অ্যাপ সেটিংস খুলুন\n২. Permissions> Location এ চাপুন\n৩. Allow All the Time নির্বাচন করুন\n৪. আবার এখানে ফিরে আসুন',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: _slate600,
                         height: 1.55,
@@ -559,7 +559,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       ),
                       child: Text(
                         'এখন নয়',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontWeight: FontWeight.w700,
                           color: _slate600,
                         ),
@@ -581,7 +581,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         goOnlineAfterSetup
                             ? 'সেটিংস খুলুন'
                             : 'সেটআপ কমপ্লিট করুন',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                        style: AppFonts.roboto(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -1359,8 +1359,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           await _startLocationTracking();
           _loadAvailableRequests();
           _syncRealtimeConnections();
-          _showSuccess(
-              t('rideshare_now_online', fallback: 'আপনি এখন অনলাইনে'));
+          _showSuccess(t('rideshare_now_online', fallback: 'আপনি এখন অনলাইনে'));
           unawaited(_ensureDriverAlertReadiness());
         } else {
           _stopLocationTracking();
@@ -1415,7 +1414,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             children: [
               Text(
                 'রাইড অ্যালার্ট সেটআপ কমপ্লিট করুন',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: _slate800,
@@ -1424,7 +1423,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               const SizedBox(height: 8),
               Text(
                 'ফোন লক বা পকেটে থাকা অবস্থায় রাইড রিকোয়েস্ট মিস না করতে নিচের অনুমতিগুলো চালু রাখুন:',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   color: _slate500,
                   height: 1.45,
@@ -1446,7 +1445,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       Expanded(
                         child: Text(
                           issue,
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 12.5,
                             color: _slate600,
                             height: 1.45,
@@ -1471,7 +1470,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       ),
                       child: Text(
                         'পরে',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontWeight: FontWeight.w700,
                           color: _slate600,
                         ),
@@ -1497,7 +1496,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       ),
                       child: Text(
                         'অনুমতি দিন',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                        style: AppFonts.roboto(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -1589,7 +1588,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         });
         _syncRealtimeConnections();
         _refreshSmartRoutePreview(force: true);
-        _showSuccess(t('rideshare_ride_accepted', fallback: 'রাইড নেওয়া হয়েছে!'));
+        _showSuccess(
+            t('rideshare_ride_accepted', fallback: 'রাইড নেওয়া হয়েছে!'));
       } else {
         setState(() {
           _activeRide = null;
@@ -1613,7 +1613,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (ride.targetedDriver == null) {
       if (!mounted) return;
       setState(() => _skippingRideIds.remove(ride.id));
-      _showSuccess(t('rideshare_ride_skipped', fallback: 'রাইডটি স্কিপ হয়েছে।'));
+      _showSuccess(
+          t('rideshare_ride_skipped', fallback: 'রাইডটি স্কিপ হয়েছে।'));
       return;
     }
 
@@ -1624,7 +1625,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     setState(() => _skippingRideIds.remove(ride.id));
 
     if (result.success) {
-      _showSuccess(t('rideshare_ride_skipped', fallback: 'রাইডটি স্কিপ হয়েছে।'));
+      _showSuccess(
+          t('rideshare_ride_skipped', fallback: 'রাইডটি স্কিপ হয়েছে।'));
     } else {
       _showError(result.message);
     }
@@ -1688,8 +1690,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     ? t('rideshare_cash_ride_completed',
                         fallback:
                             'Ride completed. Cash payment marked and due added.')
-                    : t('rideshare_ride_completed',
-                        fallback: 'রাইড সম্পন্ন!'))
+                    : t('rideshare_ride_completed', fallback: 'রাইড সম্পন্ন!'))
                 : t('rideshare_ride_cancelled', fallback: 'রাইড বাতিল হয়েছে'),
           );
         } else {
@@ -1867,7 +1868,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       ),
       child: Text(
         label,
-        style: GoogleFonts.inter(
+        style: AppFonts.roboto(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           color: _slate500,
@@ -1919,7 +1920,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           Icon(icon, size: 10, color: color),
           const SizedBox(width: 3),
           Text(label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 10, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
@@ -2133,7 +2134,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         physics: const AlwaysScrollableScrollPhysics(),
         // The shell has no AppBar; reserve the status bar plus the floating
         // avatar so the first card is not underneath either of them.
-        padding: EdgeInsets.fromLTRB(4, MediaQuery.of(context).padding.top + 62, 4, 8),
+        padding: EdgeInsets.fromLTRB(
+            4, MediaQuery.of(context).padding.top + 62, 4, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -2189,7 +2191,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             ),
             const SizedBox(height: 16),
             Text(t('login_required', fallback: 'লগইন লাগবে'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: _slate800)),
@@ -2198,14 +2200,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 t('rideshare_login_required_subtitle',
                     fallback: 'ড্রাইভার ফিচার ব্যবহারে লগইন করুন।'),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 13, color: _slate500)),
+                style: AppFonts.roboto(fontSize: 13, color: _slate500)),
             const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: () => Navigator.pushNamed(context, '/login')
                   .then((_) => _loadDriverData()),
               icon: const Icon(Icons.login_rounded, size: 18),
               label: Text(t('login_button', fallback: 'লগইন'),
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                  style: AppFonts.roboto(fontWeight: FontWeight.w700)),
               style: FilledButton.styleFrom(
                 backgroundColor: _indigo,
                 padding:

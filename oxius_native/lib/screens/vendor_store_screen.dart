@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../config/app_config.dart';
@@ -14,6 +13,7 @@ import '../widgets/product_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
+import '../utils/app_fonts.dart';
 
 // Clean marketplace palette (screenshot-matched): white surfaces, green
 // accent, near-black text.
@@ -317,8 +317,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   Future<void> _loadStoreReviews() async {
     if (_reviewsLoading || _reviewsLoaded) return;
     setState(() => _reviewsLoading = true);
-    final res =
-        await ReviewService.getPublicStoreReviews(widget.storeUsername);
+    final res = await ReviewService.getPublicStoreReviews(widget.storeUsername);
     if (!mounted) return;
     setState(() {
       _storeReviews = res['reviews'] as List<dynamic>;
@@ -462,8 +461,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
   /// Actives ranked for the Best Seller rail: sales → rating → reviews.
   List<Map<String, dynamic>> get _bestSellers {
-    final actives =
-        _allProducts.where((p) => p['is_active'] == true).toList();
+    final actives = _allProducts.where((p) => p['is_active'] == true).toList();
     actives.sort((a, b) {
       final bySales = _productSales(b).compareTo(_productSales(a));
       if (bySales != 0) return bySales;
@@ -541,7 +539,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       _storeName(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                         color: _dark,
@@ -577,7 +575,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               const SizedBox(height: 12),
               Text(
                 'স্ক্যান করলেই এই স্টোরে চলে আসবে',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: _slate500,
@@ -606,13 +604,12 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     width: 16,
                     height: 16,
                     color: Colors.white,
-                    errorBuilder: (_, __, ___) => const Icon(
-                        Icons.share_outlined,
-                        size: 16),
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.share_outlined, size: 16),
                   ),
                   label: Text(
                     'স্টোর শেয়ার করুন',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
@@ -639,53 +636,53 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         child: Stack(
           children: [
             AdsyRefreshIndicator(
-          color: _green,
-          onRefresh: () => _loadData(refresh: true),
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              // Search bar stays pinned at the top while scrolling.
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _StickyTopBarDelegate(
-                  height: 58,
-                  child: _buildTopBar(),
-                ),
-              ),
-              if (isInitialLoading)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(child: AdsyLoadingIndicator(color: _green)),
-                )
-              else if (_isStoreSubscriptionExpired)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _buildStateCard(
-                    icon: Icons.lock_outline_rounded,
-                    title: 'স্টোরটি এখন দেখা যাচ্ছে না',
-                    subtitle: _storeSubscriptionExpiredMessage ??
-                        EshopService.defaultStoreSubscriptionExpiredMessage,
-                    actionLabel: 'Refresh',
-                    onTap: () => _loadData(refresh: true),
-                  ),
-                )
-              else ...[
-                SliverToBoxAdapter(child: _buildIdentityRow()),
-                SliverToBoxAdapter(child: _buildIconTabs()),
-                ..._buildTabSlivers(),
-                if (_isLoadingProducts && _products.isNotEmpty)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 18),
-                      child:
-                          Center(child: AdsyLoadingIndicator(color: _green)),
+              color: _green,
+              onRefresh: () => _loadData(refresh: true),
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  // Search bar stays pinned at the top while scrolling.
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _StickyTopBarDelegate(
+                      height: 58,
+                      child: _buildTopBar(),
                     ),
                   ),
-                const SliverToBoxAdapter(child: SizedBox(height: 28)),
-              ],
-            ],
-          ),
+                  if (isInitialLoading)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: AdsyLoadingIndicator(color: _green)),
+                    )
+                  else if (_isStoreSubscriptionExpired)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _buildStateCard(
+                        icon: Icons.lock_outline_rounded,
+                        title: 'স্টোরটি এখন দেখা যাচ্ছে না',
+                        subtitle: _storeSubscriptionExpiredMessage ??
+                            EshopService.defaultStoreSubscriptionExpiredMessage,
+                        actionLabel: 'Refresh',
+                        onTap: () => _loadData(refresh: true),
+                      ),
+                    )
+                  else ...[
+                    SliverToBoxAdapter(child: _buildIdentityRow()),
+                    SliverToBoxAdapter(child: _buildIconTabs()),
+                    ..._buildTabSlivers(),
+                    if (_isLoadingProducts && _products.isNotEmpty)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 18),
+                          child: Center(
+                              child: AdsyLoadingIndicator(color: _green)),
+                        ),
+                      ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                  ],
+                ],
+              ),
             ),
             // Universal back-to-top.
             AdsyBackToTop(controller: _scrollController),
@@ -721,14 +718,14 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               child: TextField(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w500,
                   color: _dark,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search on ${_storeName().toLowerCase()}',
-                  hintStyle: GoogleFonts.inter(
+                  hintStyle: AppFonts.roboto(
                     fontSize: 13,
                     color: _slate400,
                   ),
@@ -818,7 +815,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                         _storeName(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 16.5,
                           fontWeight: FontWeight.w800,
                           color: _dark,
@@ -838,7 +835,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   children: [
                     Text(
                       '$_activeCount Products',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: _slate500,
@@ -849,8 +846,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       const SizedBox(
                         width: 12,
                         height: 12,
-                        child: AdsyLoadingIndicator(
-                            strokeWidth: 2, color: _green),
+                        child:
+                            AdsyLoadingIndicator(strokeWidth: 2, color: _green),
                       ),
                     ],
                   ],
@@ -870,8 +867,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 border: Border.all(color: _slate200),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.qr_code_2_rounded,
-                  color: _dark, size: 20),
+              child:
+                  const Icon(Icons.qr_code_2_rounded, color: _dark, size: 20),
             ),
           ),
           const SizedBox(width: 8),
@@ -891,10 +888,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   'assets/icons/share.png',
                   width: 17,
                   height: 17,
-                  errorBuilder: (_, __, ___) => const Icon(
-                      Icons.share_outlined,
-                      color: _dark,
-                      size: 18),
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.share_outlined, color: _dark, size: 18),
                 ),
               ),
             ),
@@ -1069,8 +1064,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                                 Icons.category_outlined,
                                 color: _slate400),
                           )
-                        : const Icon(Icons.category_outlined,
-                            color: _slate400),
+                        : const Icon(Icons.category_outlined, color: _slate400),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -1078,11 +1072,10 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       height: 1.25,
-                      fontWeight:
-                          selected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                       color: selected ? _greenDark : _dark,
                     ),
                   ),
@@ -1096,7 +1089,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   }
 
   Widget _sectionHeader(String title,
-      {bool seeAll = false, String seeAllLabel = 'See all', VoidCallback? onSeeAll}) {
+      {bool seeAll = false,
+      String seeAllLabel = 'See all',
+      VoidCallback? onSeeAll}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 14, 10, 8),
       child: Row(
@@ -1104,7 +1099,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 16.5,
                 fontWeight: FontWeight.w800,
                 color: _dark,
@@ -1117,7 +1112,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               onTap: onSeeAll,
               child: Text(
                 seeAllLabel,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: _dark,
@@ -1148,8 +1143,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   Widget _buildShowcaseCard(Map<String, dynamic> p) {
     final image = _productImage(p);
     final regular = _parseDouble(p['regular_price'] ?? p['price']);
-    final sale =
-        p['sale_price'] != null ? _parseDouble(p['sale_price']) : null;
+    final sale = p['sale_price'] != null ? _parseDouble(p['sale_price']) : null;
     final hasDiscount = sale != null && sale > 0 && sale < regular;
     final discountPct =
         hasDiscount ? (((regular - sale) / regular) * 100).round() : 0;
@@ -1208,7 +1202,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       ),
                       child: Text(
                         '-$discountPct%',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -1234,8 +1228,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   const SizedBox(width: 4),
                   Text(
                     '($reviews)',
-                    style: GoogleFonts.inter(
-                        fontSize: 11, color: _slate500),
+                    style: AppFonts.roboto(fontSize: 11, color: _slate500),
                   ),
                 ],
               ],
@@ -1249,7 +1242,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       ownerStoreName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         color: _slate500,
@@ -1273,7 +1266,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               p['name']?.toString() ?? 'Product',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 13.5,
                 height: 1.25,
                 fontWeight: FontWeight.w700,
@@ -1286,7 +1279,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 if (hasDiscount) ...[
                   Text(
                     '৳${regular.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11.5,
                       color: _slate400,
                       decoration: TextDecoration.lineThrough,
@@ -1296,7 +1289,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 ],
                 Text(
                   '৳${(hasDiscount ? sale : regular).toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: _greenDark,
@@ -1357,7 +1350,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: _dark,
@@ -1369,7 +1362,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w500,
                 color: _slate500,
@@ -1391,7 +1384,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           child: Center(
             child: Text(
               'No categories yet',
-              style: GoogleFonts.inter(fontSize: 13, color: _slate500),
+              style: AppFonts.roboto(fontSize: 13, color: _slate500),
             ),
           ),
         ),
@@ -1464,10 +1457,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     c['name']?.toString() ?? '',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11.5,
-                      fontWeight:
-                          selected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                       color: selected ? _greenDark : _dark,
                     ),
                   ),
@@ -1493,7 +1485,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           const SizedBox(height: 16),
           Text(
             'About ${_storeName()}',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 16.5,
               fontWeight: FontWeight.w800,
               color: _dark,
@@ -1502,7 +1494,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           const SizedBox(height: 8),
           Text(
             _storeDescription(),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 13.5,
               height: 1.6,
               color: _slate500,
@@ -1530,7 +1522,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           // ── Reviews ──
           Text(
             _reviewsTotal > 0 ? 'Reviews ($_reviewsTotal)' : 'Reviews',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 16.5,
               fontWeight: FontWeight.w800,
               color: _dark,
@@ -1547,8 +1539,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(
                 'No reviews yet — be the first to review a product!',
-                style:
-                    GoogleFonts.inter(fontSize: 12.5, color: _slate500),
+                style: AppFonts.roboto(fontSize: 12.5, color: _slate500),
               ),
             )
           else
@@ -1583,7 +1574,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                         r.reviewerName.isNotEmpty
                             ? r.reviewerName[0].toUpperCase()
                             : '?',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: _slate500),
@@ -1599,7 +1590,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       r.reviewerName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
                           color: _dark),
@@ -1619,8 +1610,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                         const SizedBox(width: 5),
                         Text(
                           r.formattedDate,
-                          style: GoogleFonts.inter(
-                              fontSize: 10.5, color: _slate400),
+                          style:
+                              AppFonts.roboto(fontSize: 10.5, color: _slate400),
                         ),
                       ],
                     ),
@@ -1629,15 +1620,15 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               ),
               if (r.isVerifiedPurchase)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: _green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     'Verified',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 9,
                         fontWeight: FontWeight.w700,
                         color: _greenDark),
@@ -1649,7 +1640,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             const SizedBox(height: 8),
             Text(
               r.comment,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 12.5, height: 1.5, color: _slate500),
             ),
           ],
@@ -1658,10 +1649,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             r.productName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: _slate400),
+            style: AppFonts.roboto(
+                fontSize: 11, fontWeight: FontWeight.w600, color: _slate400),
           ),
         ],
       ),
@@ -1677,7 +1666,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.w800,
               color: _dark,
@@ -1686,7 +1675,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.inter(fontSize: 11, color: _slate500),
+            style: AppFonts.roboto(fontSize: 11, color: _slate500),
           ),
         ],
       ),
@@ -1791,7 +1780,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: _dark,
@@ -1801,7 +1790,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   height: 1.5,
                   color: _slate500,
@@ -1812,15 +1801,15 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 onPressed: onTap,
                 style: FilledButton.styleFrom(
                   backgroundColor: _greenDark,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: Text(
                   actionLabel,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),

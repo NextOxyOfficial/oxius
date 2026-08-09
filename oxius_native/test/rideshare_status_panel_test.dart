@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:oxius_native/models/rideshare_models.dart';
 import 'package:oxius_native/screens/rideshare/rideshare_map_widget.dart';
@@ -11,11 +10,6 @@ import 'package:oxius_native/screens/rideshare/rideshare_map_widget.dart';
 /// which is the part that is easy to get subtly wrong (a vertical-only fold
 /// leaves a full-width bar sitting there looking broken).
 void main() {
-  setUpAll(() {
-    // Otherwise every Text tries to pull a font over the network.
-    GoogleFonts.config.allowRuntimeFetching = false;
-  });
-
   /// The basemap tiles 400 under the test HTTP client and every failure is
   /// reported as an unexpected exception, which fails the test for reasons
   /// that have nothing to do with the panel. Drop just those.

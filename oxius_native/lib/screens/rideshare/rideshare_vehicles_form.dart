@@ -123,7 +123,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 vehicle == null
                                     ? 'Add vehicle'
                                     : 'Edit vehicle',
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   color: _textPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
@@ -134,7 +134,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 t('rideshare_vehicle_accuracy_note',
                                     fallback:
                                         'Keep your vehicle details accurate so ride assignment stays smooth.'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   color: _textSecondary,
                                   fontSize: 12,
                                   height: 1.45,
@@ -146,7 +146,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                               DropdownButtonFormField<String>(
                                 initialValue: selectedType,
                                 decoration: _inputDecoration(),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                   color: _textPrimary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -178,7 +178,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 controller: brandController,
                                 decoration: _inputDecoration(
                                     hint: 'Honda, Toyota, Bajaj'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
@@ -188,7 +188,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 controller: modelController,
                                 decoration: _inputDecoration(
                                     hint: 'Civic, Discover, Auto'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
@@ -198,7 +198,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 controller: colorController,
                                 decoration: _inputDecoration(
                                     hint: 'Red, Black, Silver'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
@@ -210,7 +210,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                     TextCapitalization.characters,
                                 decoration: _inputDecoration(
                                     hint: 'DHAKA METRO-GA-12-3456'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontSize: 13, color: _textPrimary),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
@@ -226,7 +226,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 controller: seatController,
                                 keyboardType: TextInputType.number,
                                 decoration: _inputDecoration(hint: '1'),
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontSize: 13, color: _textPrimary),
                                 validator: (value) {
                                   final seats =
@@ -288,7 +288,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                           vehicle == null
                                               ? 'Save vehicle'
                                               : 'Update vehicle',
-                                          style: GoogleFonts.inter(
+                                          style: AppFonts.roboto(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -326,7 +326,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
   InputDecoration _inputDecoration({String? hint}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.inter(color: _textMuted, fontSize: 13),
+      hintStyle: AppFonts.roboto(color: _textMuted, fontSize: 13),
       filled: true,
       fillColor: _surfaceSoft,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -352,7 +352,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: GoogleFonts.inter(
+      style: AppFonts.roboto(
         color: _textPrimary,
         fontSize: 12,
         fontWeight: FontWeight.w700,
@@ -381,7 +381,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     color: _textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -390,7 +390,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     color: _textSecondary,
                     fontSize: 11,
                     height: 1.4,

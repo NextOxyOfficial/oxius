@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/widgets/api_error_ui.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import '../services/gigs_service.dart';
@@ -10,6 +9,7 @@ import '../utils/image_compressor.dart';
 import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -236,8 +236,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
     // Validate action link if provided
     if (_actionLinkController.text.trim().isNotEmpty &&
         !_isValidUrl(_actionLinkController.text.trim())) {
-      AdsyToast.warning(
-          context, 'সঠিক লিংক দিন (যেমন https://example.com)');
+      AdsyToast.warning(context, 'সঠিক লিংক দিন (যেমন https://example.com)');
       return;
     }
 
@@ -465,7 +464,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
             const SizedBox(width: 8),
             Text(
               'Post a Gig',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 color: _slate800,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -533,7 +532,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
               children: [
                 Text(
                   'Create New Gig',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: _slate800,
@@ -542,7 +541,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Design clear tasks and reach the right workers fast',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: _slate500,
@@ -652,7 +651,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Subtotal:',
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontWeight: FontWeight.w600,
                                     color: _slate700,
                                     fontSize: 12)),
@@ -664,7 +663,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Service Fee (10%):',
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontWeight: FontWeight.w600,
                                     color: _slate700,
                                     fontSize: 12)),
@@ -677,12 +676,12 @@ class _PostGigScreenState extends State<PostGigScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Total Cost:',
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14,
                                     color: _slate800)),
                             Text('৳${totalCost.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(
+                                style: AppFonts.roboto(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14,
                                     color: _indigo)),
@@ -721,7 +720,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                   // Instructions field
                   Text(
                     'Provide detailed instructions for completing this gig',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 14,
                       color: _slate500,
                     ),
@@ -859,7 +858,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                               children: [
                                 Text(
                                   _showError!,
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     color: const Color(0xFFB91C1C),
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -870,7 +869,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                                       context, '/deposit-withdraw'),
                                   child: Text(
                                     'Click here to make a deposit',
-                                    style: GoogleFonts.inter(
+                                    style: AppFonts.roboto(
                                       color: _emerald,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -903,7 +902,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                               children: [
                                 Text(
                                   'Insufficient Balance',
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFFF59E0B),
                                   ),
@@ -911,7 +910,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   'Your balance: ৳${_userBalance.toStringAsFixed(2)} | Required: ৳${totalCost.toStringAsFixed(2)}',
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     fontSize: 12,
                                     color: const Color(0xFF92400E),
                                   ),
@@ -922,7 +921,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                                       context, '/deposit-withdraw'),
                                   child: Text(
                                     'Click here to make a deposit',
-                                    style: GoogleFonts.inter(
+                                    style: AppFonts.roboto(
                                       color: _emerald,
                                     ),
                                   ),
@@ -969,7 +968,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Post Gig',
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -1015,7 +1014,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
               const SizedBox(width: 10),
               Text(
                 title,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: _slate800,
@@ -1045,7 +1044,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
         RichText(
           text: TextSpan(
             text: label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: _slate700,
@@ -1065,11 +1064,11 @@ class _PostGigScreenState extends State<PostGigScreen> {
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+            hintStyle: AppFonts.roboto(fontSize: 13, color: _slate400),
             prefixIcon:
                 icon != null ? Icon(icon, size: 18, color: _slate400) : null,
             border: OutlineInputBorder(
@@ -1122,7 +1121,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
         RichText(
           text: TextSpan(
             text: label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: _slate700,
@@ -1142,7 +1141,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
           initialValue: value,
           items: items,
           onChanged: onChanged,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 13, color: _slate800, fontWeight: FontWeight.w600),
           iconEnabledColor: _slate500,
           dropdownColor: Colors.white,
@@ -1185,7 +1184,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
         RichText(
           text: TextSpan(
             text: label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: _slate700,
@@ -1210,7 +1209,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
             final isSelected = selectedValues.contains(optionId);
             return FilterChip(
               label: Text(optionTitle,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 12, fontWeight: FontWeight.w600)),
               selected: isSelected,
               onSelected: (selected) {
@@ -1247,7 +1246,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
       children: [
         Text(
           'Add photos or videos to explain your task (optional)',
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 14,
             color: _slate500,
           ),
@@ -1345,7 +1344,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Uploading...',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           color: _indigo,
                         ),
@@ -1359,7 +1358,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Add Media',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           color: _indigo,
                           fontWeight: FontWeight.w700,

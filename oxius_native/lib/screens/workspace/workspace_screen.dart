@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
@@ -10,6 +9,7 @@ import 'orders_received_tab.dart';
 import 'gigs_ordered_tab.dart';
 import 'create_gig_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -123,7 +123,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                   const SizedBox(width: 10),
                   Text(
                     _t('workspace_title', 'ওয়ার্কস্পেস'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       color: _slate800,
                       fontWeight: FontWeight.w800,
                       fontSize: 18,
@@ -157,9 +157,9 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                     ),
                     dividerColor: Colors.transparent,
                     splashBorderRadius: BorderRadius.circular(12),
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: AppFonts.roboto(
                         fontWeight: FontWeight.w700, fontSize: 14),
-                    unselectedLabelStyle: GoogleFonts.inter(
+                    unselectedLabelStyle: AppFonts.roboto(
                         fontWeight: FontWeight.w600, fontSize: 14),
                     tabAlignment: TabAlignment.start,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 4),

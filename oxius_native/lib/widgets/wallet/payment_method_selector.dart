@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/wallet_models.dart';
+import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _slate50 = Color(0xFFF8FAFC);
@@ -27,7 +27,7 @@ class PaymentMethodSelector extends StatelessWidget {
       children: [
         Text(
           'Select Payment Method',
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: _slate800,
@@ -44,7 +44,8 @@ class PaymentMethodSelector extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isSelected ? _indigo.withValues(alpha: 0.08) : _slate50,
+                    color:
+                        isSelected ? _indigo.withValues(alpha: 0.08) : _slate50,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected ? _indigo : _slate200,
@@ -77,7 +78,7 @@ class PaymentMethodSelector extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         method.label,
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: isSelected ? _indigo : _slate500,

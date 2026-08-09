@@ -26,7 +26,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
             const Icon(Icons.hail_rounded, size: 16, color: _indigo),
             const SizedBox(width: 8),
             Text(t('rideshare_ride_requests', fallback: 'রাইড রিকোয়েস্ট'),
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: _slate800)),
@@ -38,7 +38,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                     color: _emerald.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6)),
                 child: Text('${_availableRequests.length}',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: _emerald)),
@@ -53,7 +53,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                   decoration: BoxDecoration(
                       color: _slate100, borderRadius: BorderRadius.circular(6)),
                   child: Text(t('rideshare_refresh', fallback: 'রিফ্রেশ'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: _slate500)),
@@ -70,7 +70,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                   isOnline
                       ? t('rideshare_online_label', fallback: 'অনলাইন')
                       : t('rideshare_offline_status', fallback: 'অফলাইন'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       color: isOnline ? _emerald : _slate500)),
@@ -113,12 +113,12 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
         ),
         const SizedBox(height: 12),
         Text(title,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
         const SizedBox(height: 4),
         Text(subtitle,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 12, color: _slate500)),
+            style: AppFonts.roboto(fontSize: 12, color: _slate500)),
       ]),
     );
   }
@@ -193,7 +193,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                   isVerified: ride.riderIsVerified,
                   isPro: ride.riderIsPro,
                   completedTrips: ride.riderCompletedTrips,
-                  textStyle: GoogleFonts.inter(
+                  textStyle: AppFonts.roboto(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: _slate800),
@@ -204,7 +204,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                   const SizedBox(width: 4),
                   Text(
                     '${ride.distanceKm.toStringAsFixed(1)} km · ${ride.etaDisplay}',
-                    style: GoogleFonts.inter(fontSize: 11, color: _slate500),
+                    style: AppFonts.roboto(fontSize: 11, color: _slate500),
                   ),
                   const SizedBox(width: 6),
                   _buildPaymentBadge(ride.paymentMethod),
@@ -236,7 +236,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                       isExpired
                           ? t('rideshare_expired', fallback: 'মেয়াদ শেষ')
                           : '${countdown}s',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         color: isExpired ? _slate500 : const Color(0xFFD97706),
@@ -262,7 +262,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                 ),
                 child: Text(
                   '৳${ride.fareEstimate.toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: Colors.white),
@@ -325,7 +325,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                                   size: 15, color: _slate500),
                               const SizedBox(width: 4),
                               Text(t('rideshare_skip', fallback: 'স্কিপ'),
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: _slate500)),
@@ -378,7 +378,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                                         strokeWidth: 2, color: Colors.white)),
                                 const SizedBox(width: 8),
                                 Text('নেওয়া হচ্ছে...',
-                                    style: GoogleFonts.inter(
+                                    style: AppFonts.roboto(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white)),
@@ -398,7 +398,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                                           fallback: 'মেয়াদ শেষ')
                                       : t('rideshare_accept_ride',
                                           fallback: 'রাইড নিন'),
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: isExpired ? _slate500 : Colors.white,
@@ -428,14 +428,14 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
         ),
         child: Column(children: [
           Text(label,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
                   color: _slate400,
                   letterSpacing: 0.4)),
           const SizedBox(height: 3),
           Text(value,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 13, fontWeight: FontWeight.w800, color: vc)),
         ]),
       ),
@@ -503,7 +503,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text('PICK',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 8,
                         fontWeight: FontWeight.w800,
                         color: _indigo,
@@ -513,7 +513,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                 child: Text(ride.pickupAddress,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: _slate800)),
@@ -529,7 +529,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text('DROP',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 8,
                         fontWeight: FontWeight.w800,
                         color: _emerald,
@@ -539,7 +539,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                 child: Text(ride.dropAddress,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: _slate800)),

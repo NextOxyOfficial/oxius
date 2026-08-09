@@ -115,7 +115,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
           // Title
           Text(
             t('rideshare_where_to', fallback: 'কোথায় যাবেন?'),
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF0F172A),
@@ -184,7 +184,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     children: [
                       Text(
                         'পরবর্তী',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -227,7 +227,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         children: [
           Text(
             'পিকআপ লোকেশন?',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF1E293B),
@@ -236,7 +236,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
           const SizedBox(height: 4),
           Text(
             'কোথা থেকে উঠবেন?',
-            style: GoogleFonts.inter(fontSize: 13, color: _kSlate),
+            style: AppFonts.roboto(fontSize: 13, color: _kSlate),
           ),
           const SizedBox(height: 16),
 
@@ -292,7 +292,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     children: [
                       Text(
                         'পরবর্তী',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -340,7 +340,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 Expanded(
                   child: Text(
                     _pickupController.text,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF1E293B),
                         fontWeight: FontWeight.w500),
@@ -359,7 +359,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 Expanded(
                   child: Text(
                     _dropController.text,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF1E293B),
                         fontWeight: FontWeight.w500),
@@ -507,13 +507,13 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               onChanged: onChanged,
               onTap: onTap,
               autofocus: true,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF1E293B)),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.inter(
+                hintStyle: AppFonts.roboto(
                     fontSize: 14, color: const Color(0xFFB0B8CC)),
                 border: InputBorder.none,
                 isDense: true,
@@ -579,7 +579,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 Text(
                   t('rideshare_location_required_title',
                       fallback: 'লোকেশন অনুমতি লাগবে'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1E293B)),
@@ -590,7 +590,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   t('rideshare_enable_location_desc',
                       fallback:
                           'Enable location to book rides and auto-set pickup.'),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 13, color: _kSlate, height: 1.4),
                   textAlign: TextAlign.center,
                 ),
@@ -612,7 +612,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                           ? t('rideshare_enabling', fallback: 'চালু হচ্ছে...')
                           : t('rideshare_enable_location',
                               fallback: 'লোকেশন চালু করুন'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 14, fontWeight: FontWeight.w700),
                     ),
                     style: FilledButton.styleFrom(
@@ -646,7 +646,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             const SizedBox(width: 6),
             Text(
               t('rideshare_payment_method', fallback: 'পেমেন্ট মেথড'),
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1E293B)),
@@ -690,7 +690,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                           const SizedBox(width: 5),
                           Text(
                             t('rideshare_wallet', fallback: 'ওয়ালেট'),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: _selectedPaymentMethod == 'wallet'
@@ -709,7 +709,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                       const SizedBox(height: 4),
                       Text(
                         '৳${walletBalance.toStringAsFixed(0)} ${t("rideshare_balance", fallback: "Balance")}',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
@@ -718,7 +718,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                             Navigator.pushNamed(context, '/deposit-withdraw'),
                         child: Text(
                           t('rideshare_add_funds', fallback: '+ Add Funds'),
-                          style: GoogleFonts.inter(
+                          style: AppFonts.roboto(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF6366F1),
@@ -765,7 +765,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                           const SizedBox(width: 5),
                           Text(
                             t('rideshare_cash', fallback: 'ক্যাশ'),
-                            style: GoogleFonts.inter(
+                            style: AppFonts.roboto(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: _selectedPaymentMethod == 'cash'
@@ -785,14 +785,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                       Text(
                         t('rideshare_pay_driver_directly',
                             fallback: 'ড্রাইভারকে সরাসরি দিন'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         t('rideshare_no_wallet_needed',
                             fallback: 'ওয়ালেট লাগবে না'),
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 10, color: const Color(0xFFCBD5E1)),
                       ),
                     ],
@@ -944,7 +944,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 children: [
                   Text(
                     label,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF94A3B8),
@@ -960,14 +960,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     textInputAction: onSubmitted != null
                         ? TextInputAction.search
                         : TextInputAction.next,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF1E293B),
                     ),
                     decoration: InputDecoration(
                       hintText: hint,
-                      hintStyle: GoogleFonts.inter(
+                      hintStyle: AppFonts.roboto(
                         fontSize: 13,
                         color: const Color(0xFF94A3B8),
                       ),
@@ -1017,7 +1017,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
               child: Text(
                 'Recent places',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF64748B),
@@ -1077,7 +1077,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                                   Expanded(
                                     child: Text(
                                       suggestion.displayTitle,
-                                      style: GoogleFonts.inter(
+                                      style: AppFonts.roboto(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: const Color(0xFF1E293B),
@@ -1100,7 +1100,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                                       ),
                                       child: Text(
                                         badgeLabel,
-                                        style: GoogleFonts.inter(
+                                        style: AppFonts.roboto(
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.w800,
                                           color: const Color(0xFF9A3412),
@@ -1114,7 +1114,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                                 const SizedBox(height: 3),
                                 Text(
                                   subtitle,
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.roboto(
                                     fontSize: 11.5,
                                     color: const Color(0xFF64748B),
                                     height: 1.3,
@@ -1169,7 +1169,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   const SizedBox(width: 4),
                   Text(
                     t('rideshare_current_location_btn', fallback: 'বর্তমান'),
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -1191,7 +1191,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Text(
             '+ আপনার নিজের বাড়ি বা ব্যবসার লোকেশন অ্যাড করুন',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF9A3412),
@@ -1210,7 +1210,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       children: [
         Text(
           t('rideshare_select_for_trip', fallback: 'ট্রিপের জন্য একটি বেছে নিন'),
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 15,
             fontWeight: FontWeight.w800,
             color: const Color(0xFF0F172A),
@@ -1274,7 +1274,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 alignment: Alignment.centerRight,
                 child: Text(
                   vehicle.capacity,
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF94A3B8),
@@ -1286,7 +1286,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               const SizedBox(height: 6),
               Text(
                 vehicle.label,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF0F172A),
@@ -1298,7 +1298,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     ? null
                     : Text(
                         fare,
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                           color: const Color(0xFF0F172A),
@@ -1363,7 +1363,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       const SizedBox(height: 14),
       Text(
         t('rideshare_suggestions', fallback: 'সাজেশন'),
-        style: GoogleFonts.inter(
+        style: AppFonts.roboto(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.7,
@@ -1401,7 +1401,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     entry.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF0F172A),
@@ -1412,7 +1412,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                       entry.subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 11.5,
                         color: const Color(0xFF94A3B8),
                       ),
@@ -1455,7 +1455,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -1495,7 +1495,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             const SizedBox(width: 10),
             Text(
               t('rideshare_calculating_fare', fallback: 'ভাড়া হিসাব হচ্ছে...'),
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                 fontSize: 13,
                 color: const Color(0xFF64748B),
               ),
@@ -1525,7 +1525,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 Text(
                   t('rideshare_estimated_fare', fallback: 'আনুমানিক ভাড়া')
                       .toUpperCase(),
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF16A34A),
@@ -1535,7 +1535,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 const SizedBox(height: 2),
                 Text(
                   '৳${_estimate!.fare.toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
                     color: const Color(0xFF15803D),
@@ -1564,7 +1564,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     const SizedBox(width: 4),
                     Text(
                       '${_estimate!.distanceKm.toStringAsFixed(1)} km',
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF15803D),
@@ -1591,7 +1591,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     const SizedBox(width: 4),
                     Text(
                       _estimate!.etaDisplay,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF15803D),
@@ -1655,7 +1655,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                               fallback: 'রাইড কনফার্ম করুন')
                           : t('rideshare_enter_locations',
                               fallback: 'লোকেশন দিন'),
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),

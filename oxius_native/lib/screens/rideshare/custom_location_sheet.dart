@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/auth_service.dart';
@@ -8,6 +7,7 @@ import '../../utils/payment_policy.dart';
 import '../../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../../utils/app_fonts.dart';
 
 const double customLocationFee = 199.0;
 
@@ -371,7 +371,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                     ),
                     child: Text(
                       _error!,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.red.shade700,
@@ -434,7 +434,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: active ? FontWeight.w800 : FontWeight.w600,
                   color: active
@@ -484,7 +484,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             Text(
               'আপনি এখনো কোনো লোকেশন অ্যাড করেননি',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF334155)),
@@ -493,7 +493,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             Text(
               'আপনার বাড়ি, অফিস বা পছন্দের জায়গা সেভ করে রাখুন যাতে দ্রুত রাইড নিতে পারেন।',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 12, color: const Color(0xFF94A3B8), height: 1.4),
             ),
             const SizedBox(height: 20),
@@ -504,7 +504,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
               }),
               icon: const Icon(Icons.add_rounded, size: 18),
               label: Text('লোকেশন অ্যাড করুন',
-                  style: GoogleFonts.inter(
+                  style: AppFonts.roboto(
                       fontSize: 14, fontWeight: FontWeight.w700)),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEA580C),
@@ -557,7 +557,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                 _deleteSecondConfirm
                     ? 'সত্যিই ডিলিট করবেন?'
                     : '"${loc.name}" ডিলিট করবেন?',
-                style: GoogleFonts.inter(
+                style: AppFonts.roboto(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: Colors.red.shade800),
@@ -569,7 +569,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             _deleteSecondConfirm
                 ? '⚠ এই অ্যাকশন ফেরানো যাবে না। লোকেশন অ্যাড করতে দেওয়া ৳199 রিফান্ড করা হবে না।'
                 : 'লোকেশন ডিলিট করলে এটি সার্চ থেকে সরিয়ে দেওয়া হবে। পেমেন্ট রিফান্ড করা হবে না।',
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 12, color: Colors.red.shade700, height: 1.4),
           ),
           const SizedBox(height: 12),
@@ -589,7 +589,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                       borderRadius: BorderRadius.circular(10)),
                 ),
                 child: Text('বাতিল',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: Colors.red.shade700)),
@@ -617,7 +617,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                         _deleteSecondConfirm
                             ? 'হ্যাঁ, ডিলিট করুন'
                             : 'ডিলিট করুন',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 13, fontWeight: FontWeight.w800),
                       ),
               ),
@@ -642,7 +642,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('এডিট করুন',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFF9A3412))),
@@ -676,7 +676,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                       borderRadius: BorderRadius.circular(10)),
                 ),
                 child: Text('বাতিল',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF475569))),
@@ -699,7 +699,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                         child: AdsyLoadingIndicator(
                             strokeWidth: 2, color: Colors.white))
                     : Text('সেভ করুন',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 13, fontWeight: FontWeight.w800)),
               ),
             ),
@@ -742,7 +742,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                 children: [
                   Text(
                     loc.name,
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A)),
@@ -753,7 +753,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                     const SizedBox(height: 2),
                     Text(
                       loc.subtitle,
-                      style: GoogleFonts.inter(
+                      style: AppFonts.roboto(
                           fontSize: 12, color: const Color(0xFF64748B)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -816,7 +816,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                 children: [
                   Text(
                     'নতুন লোকেশন অ্যাড',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
                         color: const Color(0xFF0F172A)),
@@ -824,7 +824,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                   const SizedBox(height: 3),
                   Text(
                     'প্রতি লোকেশন সেভ করতে ৳199 AdsyPay ব্যালেন্স থেকে কাটা হবে।',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF64748B),
                         height: 1.35),
@@ -889,7 +889,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
           if (!hasEnoughBalance) ...[
             Text(
               'আপনার ব্যালেন্স কম আছে। আগে wallet-এ টাকা add করলে লোকেশন সেভ করতে পারবেন।',
-              style: GoogleFonts.inter(
+              style: AppFonts.roboto(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFFB91C1C)),
@@ -910,7 +910,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                       borderRadius: BorderRadius.circular(14)),
                 ),
                 child: Text('বাতিল',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF475569))),
@@ -935,7 +935,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                         child: AdsyLoadingIndicator(
                             strokeWidth: 2, color: Colors.white))
                     : Text('৳199 দিয়ে সেভ করুন',
-                        style: GoogleFonts.inter(
+                        style: AppFonts.roboto(
                             fontSize: 14, fontWeight: FontWeight.w800)),
               ),
             ),
@@ -959,7 +959,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: GoogleFonts.inter(
+            style: AppFonts.roboto(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF334155))),
@@ -967,14 +967,14 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF0F172A)),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle:
-                GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
+                AppFonts.roboto(fontSize: 13, color: const Color(0xFF94A3B8)),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
             contentPadding:
@@ -1012,7 +1012,7 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppFonts.roboto(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: onTap == null
