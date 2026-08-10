@@ -166,9 +166,29 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
   /// Until a banner image resolves we do not know its shape, so the box
   /// starts at the old fixed ratio and corrects itself once measured.
   static const double _fallbackRatio = 2.08;
+
+  /// How wide the banner is ever allowed to be relative to its height.
+  ///
+  /// Following the artwork's own shape sounds right and is not: a 1200x300
+  /// upload is 4:1, which inside this carousel is a ~75px strip across the
+  /// screen — the banner stops reading as a banner. The cap sits just wider
+  /// than the design's own 2.08 so an over-wide upload still lands close to
+  /// the height everything else was laid out around, and because the image is
+  /// drawn with BoxFit.cover the surplus width is cropped from the sides
+  /// rather than letterboxed, so the box stays full.
+  ///
+  /// Raise it if a banner's artwork starts losing something at its edges;
+  /// that is the trade this number makes.
+  static const double _maxRatio = 2.4;
+
+  /// And the other way: a near-square upload would eat half the screen before
+  /// the user has seen a single product.
+  static const double _minRatio = 1.6;
+
   double? _measuredRatio;
 
-  double get _bannerRatio => _measuredRatio ?? _fallbackRatio;
+  double get _bannerRatio =>
+      (_measuredRatio ?? _fallbackRatio).clamp(_minRatio, _maxRatio);
 
   /// Reads the intrinsic size of the first banner and adopts its ratio.
   ///
@@ -186,8 +206,9 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       final w = info.image.width, h = info.image.height;
       if (!mounted || h <= 0) return;
       final ratio = w / h;
-      // Guard against a corrupt or absurd asset stretching the whole page.
-      if (ratio < 1.2 || ratio > 8) return;
+      // No rejection here — _bannerRatio clamps. Rejecting meant a wide
+      // upload silently fell back to 2.08 while a slightly-less-wide one was
+      // honoured, so two similar banners rendered at different heights.
       setState(() => _measuredRatio = ratio);
     }, onError: (_, __) => stream.removeListener(listener));
     stream.addListener(listener);
