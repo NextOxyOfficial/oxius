@@ -93,7 +93,10 @@ class _InlineFollowButtonState extends State<InlineFollowButton> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         child: Text(
-          _following ? 'ফলোয়িং' : 'ফলো',
+          // English on purpose: Follow / Following is what the rest of the
+          // business network says, and it sits inline beside a name where a
+          // longer Bangla word would crowd the row.
+          _following ? 'Following' : 'Follow',
           style: TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w700,
