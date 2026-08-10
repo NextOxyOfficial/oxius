@@ -295,8 +295,12 @@ class _EshopSectionState extends State<EshopSection> {
                 if (!isLoading) ...[
                   const SizedBox(width: 8),
                   Text(
+                    // Bangla is what this button says when no server
+                    // translation is configured for the key, which is the
+                    // case today — and the rest of this section already
+                    // reads in Bangla around it.
                     _translationService.t('browse_eshop',
-                        fallback: 'Browse eShop'),
+                        fallback: 'শপে যান'),
                     style: AppText.button(color: const Color(0xFF7C3AED)),
                   ),
                 ],
