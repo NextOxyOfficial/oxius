@@ -182,21 +182,21 @@ class CallRoundControl extends StatelessWidget {
         if (!showLabel)
           SizedBox(width: size)
         else ...[
-        const SizedBox(height: 5),
-        SizedBox(
-          width: size + _kControlLabelPad,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.72),
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
+          const SizedBox(height: 5),
+          SizedBox(
+            width: size + _kControlLabelPad,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.72),
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-        ),
         ],
       ],
     );
@@ -223,9 +223,7 @@ class CallControlsBar extends StatelessWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onToggleSpeaker;
   final VoidCallback onToggleCamera;
-  final VoidCallback onSwitchCamera;
   final VoidCallback onRequestVideo;
-  final VoidCallback onAddParticipants;
   final VoidCallback onEndCall;
 
   const CallControlsBar({
@@ -240,9 +238,7 @@ class CallControlsBar extends StatelessWidget {
     required this.onToggleMute,
     required this.onToggleSpeaker,
     required this.onToggleCamera,
-    required this.onSwitchCamera,
     required this.onRequestVideo,
-    required this.onAddParticipants,
     required this.onEndCall,
   });
 
@@ -267,9 +263,7 @@ class CallControlsBar extends StatelessWidget {
         onTap: onToggleMute,
       ),
       CallRoundControl(
-        icon: isSpeakerOn
-            ? Icons.volume_up_rounded
-            : Icons.volume_down_rounded,
+        icon: isSpeakerOn ? Icons.volume_up_rounded : Icons.volume_down_rounded,
         label: 'Speaker',
         size: btnSize,
         showLabel: m.showLabels,
@@ -288,31 +282,19 @@ class CallControlsBar extends StatelessWidget {
         ),
       if (isVideo) ...[
         CallRoundControl(
-          icon: isCameraOff
-              ? Icons.videocam_off_rounded
-              : Icons.videocam_rounded,
+          icon:
+              isCameraOff ? Icons.videocam_off_rounded : Icons.videocam_rounded,
           label: 'Camera',
           size: btnSize,
           isActive: isCameraOff,
           activeBg: const Color(0xFFEF4444),
           onTap: onToggleCamera,
         ),
-        CallRoundControl(
-          icon: Icons.cameraswitch_rounded,
-          label: 'Flip',
-          size: btnSize,
-          isActive: false,
-          onTap: onSwitchCamera,
-        ),
       ],
-      CallRoundControl(
-        icon: Icons.person_add_alt_1_rounded,
-        label: 'Add',
-        size: btnSize,
-        showLabel: m.showLabels,
-        isActive: false,
-        onTap: onAddParticipants,
-      ),
+      // Flip and Add are not here: they live on the left edge as bare icons
+      // (see CallSideActions). Both are occasional, and next to Mute, Speaker
+      // and End — which are not — they made the bar long enough to scroll on
+      // a small phone, pushing the one button that must never be hunted for.
       CallRoundControl(
         icon: Icons.call_end_rounded,
         label: 'End',
@@ -331,8 +313,7 @@ class CallControlsBar extends StatelessWidget {
       bottom: compact ? 10 : 16,
       child: Center(
         child: Container(
-          padding:
-              EdgeInsets.symmetric(horizontal: m.hPad, vertical: m.vPad),
+          padding: EdgeInsets.symmetric(horizontal: m.hPad, vertical: m.vPad),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.42),
             borderRadius: BorderRadius.circular(m.height / 2),

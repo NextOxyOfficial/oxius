@@ -24,6 +24,7 @@ import '../widgets/call/call_chrome.dart';
 import '../widgets/call/call_controls_bar.dart';
 import 'inbox_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import '../widgets/call/call_side_actions.dart';
 
 /// The audio-to-video handshake. An upgrade needs both sides to agree — the
 /// other person may be somewhere they would rather not be seen.
@@ -1485,8 +1486,8 @@ class _CallScreenState extends State<CallScreen>
 
     // Sent over the call's own data channel, which can be a moment behind the
     // audio right after connecting — so one retry rather than a lost request.
-    var sent = await LiveKitCallService.sendSignal(
-        {'type': 'video_upgrade_request'});
+    var sent =
+        await LiveKitCallService.sendSignal({'type': 'video_upgrade_request'});
     if (!sent) {
       await Future<void>.delayed(const Duration(milliseconds: 600));
       sent = await LiveKitCallService.sendSignal(
@@ -1726,6 +1727,14 @@ class _CallScreenState extends State<CallScreen>
                     ),
                   ),
                   _buildTopPanel(),
+                  // Flip and Add, on the left edge clear of the header pill.
+                  if (_callAccepted || !widget.isIncoming)
+                    CallSideActions(
+                      top: _isCompactLayout ? 66 : 78,
+                      showFlipCamera: _callType == 'video' && !_isCameraOff,
+                      onSwitchCamera: _switchCamera,
+                      onAddParticipants: () => unawaited(_addParticipants()),
+                    ),
                   if (_localUserJoined &&
                       _callType == 'video' &&
                       !_isCameraOff &&
@@ -1987,14 +1996,12 @@ class _CallScreenState extends State<CallScreen>
         onToggleMute: _toggleMute,
         onToggleSpeaker: _toggleSpeaker,
         onToggleCamera: _toggleCamera,
-        onSwitchCamera: _switchCamera,
         onRequestVideo: () => unawaited(_requestVideoUpgrade()),
-        onAddParticipants: () => unawaited(_addParticipants()),
         onEndCall: () => unawaited(_endCall(
-              notifyPeer: true,
-              allowLog: true,
-              closeImmediately: true,
-            )),
+          notifyPeer: true,
+          allowLog: true,
+          closeImmediately: true,
+        )),
       );
 
   Color get _accentColor {
@@ -2509,8 +2516,7 @@ class _CallScreenState extends State<CallScreen>
     // Clear of the header pill above and the control bar below. Measured
     // from the bar rather than guessed: parking the self-view under End
     // means dragging it clear requires pressing the button you are avoiding.
-    final margin = EdgeInsets.fromLTRB(
-      14, 74, 14, _controlsFootprint + 12);
+    final margin = EdgeInsets.fromLTRB(14, 74, 14, _controlsFootprint + 12);
 
     return Positioned.fill(
       child: Padding(
