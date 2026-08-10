@@ -22,6 +22,7 @@ import 'api_service.dart';
 import 'adsyconnect_realtime_service.dart';
 import 'business_network_service.dart';
 import 'agora_call_service.dart';
+import 'livekit_call_service.dart';
 import 'rideshare_service.dart';
 import 'telemetry.dart';
 import '../firebase_options.dart';
@@ -2131,6 +2132,29 @@ class FCMService {
         callId: callId,
       ));
     }
+
+    // Join the room NOW, without waiting for a screen to appear.
+    //
+    // This is what a locked-screen answer was missing. Accepting from the
+    // lock screen told the caller "accepted" and marked the CallKit call
+    // started, so iOS showed a call in progress — but the media join lived in
+    // CallScreen, and on a locked phone that screen does not mount for
+    // seconds, or until the phone is unlocked. Nobody ever joined the room,
+    // so the caller sat on "Connecting…" looking at a call the callee
+    // believed was already running.
+    //
+    // Media does not need a UI. joinChannel is idempotent per room, so the
+    // call screen calling it again when it finally mounts is a no-op rather
+    // than a teardown of the audio this just established.
+    unawaited(LiveKitCallService.joinChannel(
+      channelName: channelName,
+      callType: callType,
+      callId: callId,
+    ).then((joined) {
+      _log(joined
+          ? '📞 Joined $channelName from the CallKit accept'
+          : '📞 Join from CallKit accept failed: ${LiveKitCallService.lastError}');
+    }));
 
     // Mark the CallKit call connected — this stops the ringtone and starts
     // the call in iOS call history.

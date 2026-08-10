@@ -181,6 +181,18 @@ class _CallScreenState extends State<CallScreen>
       return;
     }
 
+    // Catch up on what the media layer already did.
+    //
+    // The screen learns that the other person arrived from an event, and an
+    // event that fired before _bindServiceStreams ran is an event this screen
+    // never sees. That used to be rare; it is now normal, because answering
+    // joins the room from the CallKit handler without waiting for a screen to
+    // exist. Without this the call would carry audio perfectly while the
+    // header read "Connecting…" for ever — and everything gated on the call
+    // being connected, the switch-to-video button included, would stay
+    // refused for a call that had plainly connected.
+    _reconcileWithMediaLayer();
+
     AgoraCallService.setInCall(true);
     AgoraCallService.setActiveCallInfo(
       channelName: widget.channelName,
@@ -475,6 +487,39 @@ class _CallScreenState extends State<CallScreen>
         ));
       }
     });
+  }
+
+  /// Adopts the media layer's current state, whatever this screen has heard.
+  ///
+  /// Safe to call on a call that has not been answered: it only acts when we
+  /// are actually in this call's room, so an incoming call still waiting on
+  /// Accept is left exactly as it is.
+  void _reconcileWithMediaLayer() {
+    if (LiveKitCallService.joinedRoomName != widget.channelName) return;
+    if (!LiveKitCallService.isConnected) return;
+
+    final peers = LiveKitCallService.peers;
+    _localUserJoined = true;
+    if (peers.isEmpty) {
+      // In the room, nobody else here yet — the join events will arrive.
+      _isConnecting = true;
+      return;
+    }
+
+    _remoteUid ??= peers.first.uid;
+    _callAccepted = true;
+    _isConnecting = false;
+    _ringingTimer?.cancel();
+    _ringingTimer = null;
+    _cancelConnectWatchdog();
+    _stopOutgoingRingback();
+
+    final connectedAtMs = AgoraCallService.activeCallConnectedAtMs;
+    _startCallTimer(
+      connectedAt: connectedAtMs != null
+          ? DateTime.fromMillisecondsSinceEpoch(connectedAtMs)
+          : null,
+    );
   }
 
   void _restoreActiveCallState() {
@@ -1438,7 +1483,23 @@ class _CallScreenState extends State<CallScreen>
       AdsyToast.info(context, 'No response to the video request');
     });
 
-    await LiveKitCallService.sendSignal({'type': 'video_upgrade_request'});
+    // Sent over the call's own data channel, which can be a moment behind the
+    // audio right after connecting — so one retry rather than a lost request.
+    var sent = await LiveKitCallService.sendSignal(
+        {'type': 'video_upgrade_request'});
+    if (!sent) {
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      sent = await LiveKitCallService.sendSignal(
+          {'type': 'video_upgrade_request'});
+    }
+    if (sent || !mounted) return;
+
+    // Nothing left this phone. Saying so beats "Waiting" for fifteen seconds
+    // followed by a timeout that blames the other person.
+    _upgradeTimeout?.cancel();
+    _upgradeTimeout = null;
+    setState(() => _upgrade = _VideoUpgrade.idle);
+    AdsyToast.error(context, 'Could not ask to switch to video. Try again.');
   }
 
   Future<void> _answerVideoUpgrade(bool accepted) async {

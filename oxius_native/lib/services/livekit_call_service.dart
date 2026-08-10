@@ -82,11 +82,18 @@ class LiveKitCallService {
   static Stream<Map<String, dynamic>> get signalStream =>
       _signalController.stream;
 
-  static Future<void> sendSignal(Map<String, dynamic> payload) async {
+  /// Sends an in-call message to the other side, reporting whether it left.
+  ///
+  /// The return value matters: this used to swallow both failure modes, so a
+  /// video-upgrade request that was never sent was indistinguishable from one
+  /// waiting for an answer. The button said "Waiting" for the length of the
+  /// offer window and then gave up, and to the user tapping it simply did
+  /// nothing.
+  static Future<bool> sendSignal(Map<String, dynamic> payload) async {
     final participant = _room?.localParticipant;
     if (participant == null) {
       _log('signal dropped, not in a room: ${payload['type']}');
-      return;
+      return false;
     }
     try {
       await participant.publishData(
@@ -94,8 +101,10 @@ class LiveKitCallService {
         reliable: true,
         topic: signalTopic,
       );
+      return true;
     } catch (error) {
       _log('signal send failed: $error');
+      return false;
     }
   }
 
@@ -277,6 +286,17 @@ class LiveKitCallService {
   }) async {
     lastError = null;
     try {
+      // Already in this room. Answering now joins from two places — the
+      // CallKit accept handler and the call screen — because on a locked
+      // iPhone the screen may not exist for seconds yet and the media must
+      // not wait for it. Whichever arrives second has nothing to do, and must
+      // not tear the live connection down to rebuild it: that would drop the
+      // audio the first one had already established.
+      if (_joinedRoomName == channelName && isConnected) {
+        _log('already in $channelName — join is a no-op');
+        return true;
+      }
+
       // Single use, deliberately. A rejoin happens because something went
       // wrong, and handing it the same token the failed attempt used is how
       // a self-heal turns into a second failure.
