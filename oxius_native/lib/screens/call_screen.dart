@@ -1603,9 +1603,20 @@ class _CallScreenState extends State<CallScreen>
     // nothing granted, and the in-app minimise below keeps the ongoing-call
     // bar it always had.
 
-    // Always minimize back to AdsyConnect instead of revealing unrelated
-    // routes that may be sitting under the call screen.
-    _showAdsyConnectInbox();
+    // Back to whatever the user was doing.
+    //
+    // This used to replace the call screen with the AdsyConnect inbox on the
+    // grounds that the routes underneath were "unrelated" — but a call is
+    // exactly when they are not. People browse the feed, check an order or
+    // look something up while talking, and minimising dumped them in a chat
+    // list they then had to navigate out of.
+    //
+    // _popCallScreen already does the right thing, and has all along: back to
+    // the screen underneath, falling back to the inbox only when the call
+    // screen is the first route — which is what a call answered from a push
+    // on a cold-started app looks like, and the one case where popping would
+    // leave an empty app.
+    _popCallScreen();
   }
 
   @override
