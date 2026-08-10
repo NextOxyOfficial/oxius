@@ -6,6 +6,7 @@ import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../app_network_image.dart';
+import '../common/inline_follow_button.dart';
 
 class PostHeader extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -83,6 +84,10 @@ class PostHeader extends StatelessWidget {
     );
   }
 
+  /// The id the follow endpoint understands. The feed model carries a numeric
+  /// id too, which the API has no use for.
+  String get followUserId => (post.user.uuid ?? '').trim();
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -146,6 +151,17 @@ class PostHeader extends StatelessWidget {
                             child: const AdsyProBadge(),
                           ),
                         ],
+                        // Follow, right where the name is — offered only to
+                        // people the viewer does not already follow, so it
+                        // says something on the posts where it matters instead
+                        // of repeating "Following" down the whole feed. Once
+                        // tapped the control stays and flips, so the tap has
+                        // visible confirmation.
+                        if (!post.user.isFollowing && followUserId.isNotEmpty)
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: InlineFollowButton(userId: followUserId),
+                          ),
                       ],
                     ),
                     maxLines: 3,

@@ -16,6 +16,7 @@ import '../../services/fcm_service.dart';
 import '../common/adsy_toast.dart';
 import '../login_prompt_dialog.dart';
 import '../app_network_image.dart';
+import '../common/inline_follow_button.dart';
 
 /// Native-style card for an ABN Ads Panel (house) ad — same chrome as the
 /// AdMob feed card ("Sponsored" strip + white card) so both blend into the
@@ -63,8 +64,7 @@ class HouseAdCard extends StatefulWidget {
         if (ad.advertiserPro) ...[
           const SizedBox(width: 4),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
             decoration: BoxDecoration(
               color: const Color(0xFF6366F1),
               borderRadius: BorderRadius.circular(999),
@@ -78,6 +78,13 @@ class HouseAdCard extends StatefulWidget {
               ),
             ),
           ),
+        ],
+        // An ad is a post from someone the viewer may not know yet, so it gets
+        // the same offer a post does — and only when there is something to
+        // offer, i.e. they are not already following.
+        if (!ad.advertiserIsFollowing && ad.advertiserId.trim().isNotEmpty) ...[
+          const SizedBox(width: 2),
+          InlineFollowButton(userId: ad.advertiserId.trim()),
         ],
       ],
     );
@@ -120,7 +127,8 @@ class HouseAdCard extends StatefulWidget {
   /// Every branch here has to END somewhere the tapper understands. Silence
   /// reads as a broken button, which is exactly how this looked to an
   /// advertiser testing their own ad: it pushed their own profile.
-  static Future<void> _openAdvertiserChat(HouseAd ad, {String placement = ''}) async {
+  static Future<void> _openAdvertiserChat(HouseAd ad,
+      {String placement = ''}) async {
     final advertiserId = ad.advertiserId.trim();
     final ctx = FCMService.navigatorKey.currentContext;
     if (ctx == null) return;
@@ -367,215 +375,215 @@ class _HouseAdCardState extends State<HouseAdCard>
       key: Key('housead_${widget.ad.id}_${widget.placement}'),
       onVisibilityChanged: _onVisibility,
       child: Container(
-      // Full screen width, edge-to-edge like a regular feed post; also pins
-      // the video Stack's width so the Skip chip can never fall off-screen.
-      width: double.infinity,
-      clipBehavior: Clip.hardEdge,
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade200),
-          bottom: BorderSide(color: Colors.grey.shade200),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Feed-post style header: advertiser avatar + name, "Sponsored"
-          // as the meta line underneath. Tapping either opens the
-          // advertiser's BN profile.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: _openAdvertiserProfile,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFF1F5F9),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    alignment: Alignment.center,
-                    child: ad.advertiserImage.isNotEmpty
-                        ? AppNetworkImage(
-                            ad.advertiserImage,
-                            width: 36,
-                            height: 36,
-                            errorWidget: _avatarInitial(ad.advertiser),
-                          )
-                        : _avatarInitial(ad.advertiser),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: _openAdvertiserProfile,
-                        child: HouseAdCard.advertiserNameRow(ad),
-                      ),
-                      const SizedBox(height: 1),
-                      Row(
-                        children: [
-                          const Icon(Icons.campaign_outlined,
-                              size: 12, color: Color(0xFF94A3B8)),
-                          const SizedBox(width: 3),
-                          const Text(
-                            'Sponsored',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF94A3B8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                // ✕ — hides this ad + mutes its category for 48h.
-                InkWell(
-                  onTap: _closeAd,
-                  borderRadius: BorderRadius.circular(999),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(Icons.close_rounded,
-                        size: 18, color: Colors.grey.shade400),
-                  ),
-                ),
-              ],
-            ),
+        // Full screen width, edge-to-edge like a regular feed post; also pins
+        // the video Stack's width so the Skip chip can never fall off-screen.
+        width: double.infinity,
+        clipBehavior: Clip.hardEdge,
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Colors.grey.shade200),
+            bottom: BorderSide(color: Colors.grey.shade200),
           ),
-          // ── Creative: 5s-skippable video OR image ──
-          // In-feed the video ad flows like a normal post — NO skip button
-          // (nothing is being interrupted). The skippable variant lives in
-          // the mid-roll overlay inside feed videos (post_media_gallery).
-          if (_isVideo && _videoReady)
-            ClipRect(
-              child: AspectRatio(
-                aspectRatio: (_video!.value.aspectRatio <= 0)
-                    ? 16 / 9
-                    : _video!.value.aspectRatio.clamp(0.8, 1.9),
-                // Cover-fill exactly like feed post videos — without this
-                // the platform video view letterboxes (side gaps on web).
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  clipBehavior: Clip.hardEdge,
-                  child: SizedBox(
-                    width: _video!.value.size.width > 0
-                        ? _video!.value.size.width
-                        : 16,
-                    height: _video!.value.size.height > 0
-                        ? _video!.value.size.height
-                        : 9,
-                    child: VideoPlayer(_video!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Feed-post style header: advertiser avatar + name, "Sponsored"
+            // as the meta line underneath. Tapping either opens the
+            // advertiser's BN profile.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: _openAdvertiserProfile,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFFF1F5F9),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      alignment: Alignment.center,
+                      child: ad.advertiserImage.isNotEmpty
+                          ? AppNetworkImage(
+                              ad.advertiserImage,
+                              width: 36,
+                              height: 36,
+                              errorWidget: _avatarInitial(ad.advertiser),
+                            )
+                          : _avatarInitial(ad.advertiser),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: _openAdvertiserProfile,
+                          child: HouseAdCard.advertiserNameRow(ad),
+                        ),
+                        const SizedBox(height: 1),
+                        Row(
+                          children: [
+                            const Icon(Icons.campaign_outlined,
+                                size: 12, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 3),
+                            const Text(
+                              'Sponsored',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // ✕ — hides this ad + mutes its category for 48h.
+                  InkWell(
+                    onTap: _closeAd,
+                    borderRadius: BorderRadius.circular(999),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(Icons.close_rounded,
+                          size: 18, color: Colors.grey.shade400),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // ── Creative: 5s-skippable video OR image ──
+            // In-feed the video ad flows like a normal post — NO skip button
+            // (nothing is being interrupted). The skippable variant lives in
+            // the mid-roll overlay inside feed videos (post_media_gallery).
+            if (_isVideo && _videoReady)
+              ClipRect(
+                child: AspectRatio(
+                  aspectRatio: (_video!.value.aspectRatio <= 0)
+                      ? 16 / 9
+                      : _video!.value.aspectRatio.clamp(0.8, 1.9),
+                  // Cover-fill exactly like feed post videos — without this
+                  // the platform video view letterboxes (side gaps on web).
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    clipBehavior: Clip.hardEdge,
+                    child: SizedBox(
+                      width: _video!.value.size.width > 0
+                          ? _video!.value.size.width
+                          : 16,
+                      height: _video!.value.size.height > 0
+                          ? _video!.value.size.height
+                          : 9,
+                      child: VideoPlayer(_video!),
+                    ),
                   ),
                 ),
+              )
+            else if (ad.images.isNotEmpty)
+              GestureDetector(
+                onTap: _onCtaTap,
+                child: AppNetworkImage(
+                  ad.images.first,
+                  width: double.infinity,
+                  height: 210,
+                  errorWidget: const SizedBox.shrink(),
+                ),
               ),
-            )
-          else if (ad.images.isNotEmpty)
-            GestureDetector(
-              onTap: _onCtaTap,
-              child: AppNetworkImage(
-                ad.images.first,
-                width: double.infinity,
-                height: 210,
-                errorWidget: const SizedBox.shrink(),
+            // ── Companion banner UNDER the video (survives skip) ──
+            if (_isVideo && ad.companionBanner.isNotEmpty)
+              GestureDetector(
+                onTap: _onCtaTap,
+                child: AppNetworkImage(
+                  ad.companionBanner,
+                  width: double.infinity,
+                  height: 72,
+                  errorWidget: const SizedBox.shrink(),
+                ),
               ),
-            ),
-          // ── Companion banner UNDER the video (survives skip) ──
-          if (_isVideo && ad.companionBanner.isNotEmpty)
-            GestureDetector(
-              onTap: _onCtaTap,
-              child: AppNetworkImage(
-                ad.companionBanner,
-                width: double.infinity,
-                height: 72,
-                errorWidget: const SizedBox.shrink(),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Headline + body are part of the tap target. Reading the copy
-                // and then having to hunt for a button is old-school ad
-                // behaviour — the text does what the button does.
-                InkWell(
-                  onTap: _onCtaTap,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ad.title,
-                        // Three lines whether or not there is a description:
-                        // the two-line title was cutting offers off mid
-                        // sentence, and one clamp is easier to reason about.
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          height: 1.3,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      if (ad.description.trim().isNotEmpty) ...[
-                        const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Headline + body are part of the tap target. Reading the copy
+                  // and then having to hunt for a button is old-school ad
+                  // behaviour — the text does what the button does.
+                  InkWell(
+                    onTap: _onCtaTap,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          ad.description,
+                          ad.title,
+                          // Three lines whether or not there is a description:
+                          // the two-line title was cutting offers off mid
+                          // sentence, and one clamp is easier to reason about.
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFF64748B),
-                            height: 1.35,
+                            fontSize: 13.5,
+                            height: 1.3,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A),
                           ),
                         ),
+                        if (ad.description.trim().isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            ad.description,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: Color(0xFF64748B),
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // Full-width tonal action — same shape and colour as the strip
-                // under a post's media, so every ad surface presses the same.
-                SizedBox(
-                  width: double.infinity,
-                  height: 40,
-                  child: FilledButton.icon(
-                    onPressed: _onCtaTap,
-                    icon: ad.ctaIconWidget(size: 17),
-                    label: Text(
-                      ad.ctaLabel,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFEFF6FF),
-                      foregroundColor: const Color(0xFF1D4ED8),
-                      elevation: 0,
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  // Full-width tonal action — same shape and colour as the strip
+                  // under a post's media, so every ad surface presses the same.
+                  SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: FilledButton.icon(
+                      onPressed: _onCtaTap,
+                      icon: ad.ctaIconWidget(size: 17),
+                      label: Text(
+                        ad.ctaLabel,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFEFF6FF),
+                        foregroundColor: const Color(0xFF1D4ED8),
+                        elevation: 0,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

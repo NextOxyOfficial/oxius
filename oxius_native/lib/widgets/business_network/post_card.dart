@@ -91,6 +91,36 @@ class _PostCardState extends State<PostCard> {
   // this card without a feed reload).
   StreamSubscription<MapEntry<int, int>>? _shareCountSub;
 
+  /// Expand or collapse the post body.
+  ///
+  /// Collapsing shortens the card by however much the long text was taking,
+  /// and everything below slides up to fill the gap — so the reader who just
+  /// finished this post is looking at the *next* one, having been moved
+  /// without asking. Scrolling the card's own top back to the top of the
+  /// viewport puts them back where they were reading.
+  void _toggleFullContent() {
+    final collapsing = _showFullContent;
+    setState(() => _showFullContent = !_showFullContent);
+    if (!collapsing) return;
+
+    // After the frame that shrinks the card, or the offset would be measured
+    // against the height it is about to stop having.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final target = context;
+      if (Scrollable.maybeOf(target) == null) return;
+      Scrollable.ensureVisible(
+        target,
+        // 0 = the card's leading edge meets the viewport's leading edge.
+        alignment: 0,
+        // Matches the AnimatedSize collapse, so the card settles and the
+        // scroll arrives together instead of as two separate jolts.
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1091,10 +1121,7 @@ class _PostCardState extends State<PostCard> {
                                 alignment: PlaceholderAlignment.baseline,
                                 baseline: TextBaseline.alphabetic,
                                 child: GestureDetector(
-                                  onTap: () {
-                                    setState(() =>
-                                        _showFullContent = !_showFullContent);
-                                  },
+                                  onTap: _toggleFullContent,
                                   child: Text(
                                     _showFullContent
                                         ? '  কম পড়ুন'

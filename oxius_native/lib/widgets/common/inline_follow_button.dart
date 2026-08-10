@@ -2,35 +2,36 @@ import 'package:flutter/material.dart';
 
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
-import '../../widgets/login_prompt_dialog.dart';
+import '../login_prompt_dialog.dart';
 
-/// Follow / Following control shown beside an advertiser's name on ad surfaces.
+/// Follow / Following control shown beside a name, inline with it.
 ///
-/// Ads carry a real BN profile, so the name was tappable but there was no way to
-/// actually follow the advertiser without leaving the feed. One widget is used
-/// everywhere an ad shows a profile name, so feed and shorts stay consistent.
+/// Used wherever the feed shows someone the viewer might not follow yet — a
+/// post header, an ad, a short. One widget everywhere so the wording, the
+/// optimistic update and the rollback behave the same in all three, and so a
+/// name that is tappable is never the only thing offered.
 ///
-/// Renders nothing when there is no advertiser, or when the viewer IS the
-/// advertiser — nobody should be offered "follow yourself".
-class AdFollowButton extends StatefulWidget {
-  final String advertiserId;
+/// Renders nothing when there is no user, or when the viewer IS that user —
+/// nobody should be offered "follow yourself".
+class InlineFollowButton extends StatefulWidget {
+  final String userId;
   final bool initiallyFollowing;
 
   /// Shorts sit on video, so the light-on-dark variant is needed there.
   final bool onDark;
 
-  const AdFollowButton({
+  const InlineFollowButton({
     super.key,
-    required this.advertiserId,
+    required this.userId,
     this.initiallyFollowing = false,
     this.onDark = false,
   });
 
   @override
-  State<AdFollowButton> createState() => _AdFollowButtonState();
+  State<InlineFollowButton> createState() => _InlineFollowButtonState();
 }
 
-class _AdFollowButtonState extends State<AdFollowButton> {
+class _InlineFollowButtonState extends State<InlineFollowButton> {
   late bool _following;
   bool _busy = false;
 
@@ -41,10 +42,10 @@ class _AdFollowButtonState extends State<AdFollowButton> {
   }
 
   @override
-  void didUpdateWidget(AdFollowButton old) {
+  void didUpdateWidget(InlineFollowButton old) {
     super.didUpdateWidget(old);
     // A recycled card can be handed a different advertiser.
-    if (old.advertiserId != widget.advertiserId ||
+    if (old.userId != widget.userId ||
         old.initiallyFollowing != widget.initiallyFollowing) {
       _following = widget.initiallyFollowing;
     }
@@ -53,7 +54,7 @@ class _AdFollowButtonState extends State<AdFollowButton> {
   Future<void> _toggle() async {
     if (_busy) return;
     if (AuthService.currentUser == null) {
-      LoginPromptDialog.show(context, action: 'follow this advertiser');
+      LoginPromptDialog.show(context, action: 'follow');
       return;
     }
     final wasFollowing = _following;
@@ -64,8 +65,8 @@ class _AdFollowButtonState extends State<AdFollowButton> {
       _following = !wasFollowing;
     });
     final ok = wasFollowing
-        ? await BusinessNetworkService.unfollowUser(widget.advertiserId)
-        : await BusinessNetworkService.followUser(widget.advertiserId);
+        ? await BusinessNetworkService.unfollowUser(widget.userId)
+        : await BusinessNetworkService.followUser(widget.userId);
     if (!mounted) return;
     setState(() {
       _busy = false;
@@ -76,7 +77,7 @@ class _AdFollowButtonState extends State<AdFollowButton> {
   @override
   Widget build(BuildContext context) {
     final me = AuthService.currentUser?.id;
-    if (widget.advertiserId.isEmpty || widget.advertiserId == me) {
+    if (widget.userId.isEmpty || widget.userId == me) {
       return const SizedBox.shrink();
     }
 

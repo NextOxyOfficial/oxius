@@ -8,7 +8,7 @@ import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/house_ads_service.dart';
-import '../../widgets/ads/ad_follow_button.dart';
+import '../../widgets/common/inline_follow_button.dart';
 import '../../widgets/app_network_image.dart';
 import '../../widgets/ads/house_ad_card.dart';
 import '../../widgets/ads/shorts_cta_bar.dart';
@@ -2911,8 +2911,8 @@ class _SponsoredShortPageState extends State<_SponsoredShortPage> {
                                 // Same follow control as the feed ad, in its
                                 // light-on-dark form for video.
                                 const SizedBox(width: 8),
-                                AdFollowButton(
-                                  advertiserId: widget.ad.advertiserId,
+                                InlineFollowButton(
+                                  userId: widget.ad.advertiserId,
                                   initiallyFollowing:
                                       widget.ad.advertiserIsFollowing,
                                   onDark: true,
