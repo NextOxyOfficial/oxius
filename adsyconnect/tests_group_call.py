@@ -247,6 +247,13 @@ class CallBecomesGroupChatTests(TestCase):
         active.start()
         self.addCleanup(active.stop)
 
+        # Only someone the inviter has talked to may be pulled into a call, so
+        # the person doing the inviting needs a conversation with each of them
+        # — which is exactly what the picker requires before offering them.
+        from .models import ChatRoom
+        for other in (self.c, self.d):
+            ChatRoom.objects.create(user1=self.a, user2=other)
+
     def invite(self, inviter, invitees):
         client = APIClient()
         client.force_authenticate(user=inviter)
@@ -604,6 +611,10 @@ class InvitingIntoARealGroupCallTests(TestCase):
             status=CallSession.STATUS_ACCEPTED,
             chat_group=self.group,
         )
+        # See above: an invite needs a prior conversation. This suite is about
+        # what happens to the GROUP's roster afterwards, not about the gate.
+        from .models import ChatRoom
+        ChatRoom.objects.create(user1=self.owner, user2=self.outsider)
 
         for target in ('adsyconnect.views._send_call_data_message',
                        'adsyconnect.views._broadcast_to_user'):
@@ -1005,3 +1016,85 @@ class ReconnectRelayTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(self.sent, [])
+
+
+class InviteRequiresAPriorChatTests(TestCase):
+    """You may only pull into a call someone you have talked to.
+
+    The picker offers the inviter's own conversations, but that is a list in
+    an app — it decides what is easy, not what is possible. Without the rule
+    here, a posted user id would be enough to make a stranger's phone ring.
+    """
+
+    def setUp(self):
+        self.a = User.objects.create_user(
+            username='ivy', email='ivy@example.com', password='x',
+            first_name='Ivy', phone='+880100000091')
+        self.b = User.objects.create_user(
+            username='jon', email='jon@example.com', password='x',
+            first_name='Jon', phone='+880100000092')
+        self.stranger = User.objects.create_user(
+            username='kim', email='kim@example.com', password='x',
+            first_name='Kim', phone='+880100000093')
+
+        self.session = CallSession.objects.create(
+            channel_name='c_invite_gate',
+            caller=self.a, callee=self.b, call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+        )
+        for target in ('adsyconnect.views._send_call_data_message',
+                       'adsyconnect.views._broadcast_to_user'):
+            p = patch(target, return_value={'sent_to': 1})
+            p.start()
+            self.addCleanup(p.stop)
+        for target, value in (
+            ('adsyconnect.views._can_call', (True, '')),
+            ('adsyconnect.views._active_call_for_user', None),
+        ):
+            p = patch(target, return_value=value)
+            p.start()
+            self.addCleanup(p.stop)
+
+    def invite(self, invitee):
+        client = APIClient()
+        client.force_authenticate(user=self.a)
+        return client.post(
+            '/api/adsyconnect/invite-to-call/',
+            {
+                'channel_name': self.session.channel_name,
+                'call_id': str(self.session.id),
+                'invitee_ids': [str(invitee.id)],
+            },
+            format='json',
+        )
+
+    def test_a_stranger_cannot_be_added(self):
+        response = self.invite(self.stranger)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()['results'][0]['status'], 'not_allowed')
+        self.assertFalse(
+            self.session.participants.filter(user=self.stranger).exists())
+
+    def test_someone_you_have_chatted_with_can_be_added(self):
+        from adsyconnect.models import ChatRoom
+        ChatRoom.objects.create(user1=self.a, user2=self.stranger)
+
+        response = self.invite(self.stranger)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            response.json()['results'][0]['status'], ('ringing', 'unreachable'))
+        self.assertTrue(
+            self.session.participants.filter(user=self.stranger).exists())
+
+    def test_the_chat_counts_in_either_direction(self):
+        """Who opened the conversation does not matter."""
+        from adsyconnect.models import ChatRoom
+        ChatRoom.objects.create(user1=self.stranger, user2=self.a)
+
+        response = self.invite(self.stranger)
+
+        self.assertIn(
+            response.json()['results'][0]['status'], ('ringing', 'unreachable'))

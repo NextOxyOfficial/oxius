@@ -6,10 +6,15 @@ import '../../services/adsyconnect_service.dart';
 
 /// Picks who to pull into a call that is already running.
 ///
-/// The list is the user's recent conversations rather than a full contact
-/// search: the person you want mid-call is almost always someone you were
-/// already talking to, and a search field is a lot to ask of someone holding a
-/// phone to their ear.
+/// The list is the user's own conversations, and the search box filters that
+/// list — it never queries the directory. That is the whole point: anyone
+/// reachable here is somebody the user has already exchanged messages with,
+/// so the feature cannot be turned into a way to ring strangers. A global
+/// people-search behind an "add to call" button is a spam tool with extra
+/// steps.
+///
+/// Recent conversations come first, so the person wanted mid-call is usually
+/// already on screen and the search box is there for the times they are not.
 class AddParticipantSheet extends StatefulWidget {
   const AddParticipantSheet({super.key, required this.excludedUserIds});
 
@@ -39,15 +44,44 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
   List<Map<String, dynamic>> _contacts = const [];
   bool _loading = true;
 
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      final next = _searchController.text.trim().toLowerCase();
+      if (next == _query) return;
+      setState(() => _query = next);
+    });
     unawaited(_load());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// The conversations matching what has been typed.
+  ///
+  /// Filtered in memory over the list already fetched, which is what keeps
+  /// this a search of the user's own contacts rather than of everyone.
+  List<Map<String, dynamic>> get _visible {
+    if (_query.isEmpty) return _contacts;
+    return _contacts
+        .where((contact) =>
+            (contact['name'] as String).toLowerCase().contains(_query))
+        .toList();
   }
 
   Future<void> _load() async {
     try {
-      final rooms = await AdsyConnectService.getChatRooms(pageSize: 40);
+      // Larger than the list can show, because the search box reaches past
+      // what fits on screen and a contact missing from the page is a contact
+      // the user cannot find at all.
+      final rooms = await AdsyConnectService.getChatRooms(pageSize: 200);
       final contacts = <Map<String, dynamic>>[];
       final seen = <String>{};
       for (final room in rooms) {
@@ -131,6 +165,41 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
               ],
             ),
           ),
+          if (!_loading && _contacts.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white, fontSize: 14.5),
+                cursorColor: const Color(0xFF34D399),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: 'Search your chats',
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.38),
+                    fontSize: 14,
+                  ),
+                  prefixIcon: Icon(Icons.search_rounded,
+                      size: 19, color: Colors.white.withValues(alpha: 0.5)),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: Icon(Icons.close_rounded,
+                              size: 18,
+                              color: Colors.white.withValues(alpha: 0.6)),
+                          onPressed: _searchController.clear,
+                        ),
+                  filled: true,
+                  fillColor: Colors.white.withValues(alpha: 0.06),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
           Flexible(child: _buildBody()),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -182,16 +251,29 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
       );
     }
 
+    final visible = _visible;
+    if (visible.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+        child: Text(
+          // Says WHY, so a blank result does not read as a broken search.
+          'No match. You can only add people you have chatted with.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white70, height: 1.4),
+        ),
+      );
+    }
+
     return ListView.separated(
       shrinkWrap: true,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      itemCount: _contacts.length,
+      itemCount: visible.length,
       separatorBuilder: (_, __) => Divider(
         height: 1,
         color: Colors.white.withValues(alpha: 0.06),
       ),
       itemBuilder: (context, index) {
-        final contact = _contacts[index];
+        final contact = visible[index];
         final id = contact['id'] as String;
         final avatar = contact['avatar'] as String;
         final picked = _selected.contains(id);

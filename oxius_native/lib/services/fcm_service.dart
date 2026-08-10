@@ -2325,6 +2325,11 @@ class FCMService {
       _log(joined
           ? '📞 Joined $channelName from the CallKit accept'
           : '📞 Join from CallKit accept failed: ${LiveKitCallService.lastError}');
+      // Watch it. This join has no call screen behind it — answering on a
+      // locked phone can be followed by a whole conversation without the
+      // screen ever mounting — so the screen's connect ladder cannot cover
+      // it. The service guard stands down the moment a screen appears.
+      AgoraCallService.startConnectGuard();
     }));
 
     // Mark the CallKit call connected — this stops the ringtone and starts

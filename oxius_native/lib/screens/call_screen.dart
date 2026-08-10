@@ -113,9 +113,6 @@ class _CallScreenState extends State<CallScreen>
   int _jointRepairs = 0;
   static const int _maxJointRepairs = 2;
 
-  /// Set while rejoining because the peer asked. Stops the two sides
-  /// answering each other's requests forever.
-  bool _repairingForPeer = false;
   DateTime? _callStartedAt;
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
@@ -331,7 +328,12 @@ class _CallScreenState extends State<CallScreen>
       // with them. Handled before the terminal branches, and deliberately
       // never treated as one: this is a repair request, not a hang-up.
       if (status == 'reconnect') {
-        unawaited(_repairForPeer());
+        // The rejoin itself is AgoraCallService's — it has to work when this
+        // screen does not exist, so it cannot also live here or the two would
+        // rebuild the connection twice over each other. This is the part only
+        // a screen can do: say so.
+        _showTransientNote('Reconnecting…');
+        if (!_isConnecting) setState(() => _isConnecting = true);
         return;
       }
 
@@ -1386,34 +1388,6 @@ class _CallScreenState extends State<CallScreen>
     setState(() {
       _statusOverlay = text;
     });
-  }
-
-  /// Rejoins the room because the other side asked.
-  ///
-  /// Their join is not seeing ours, and one side rejoining alone lands in a
-  /// room the other has already left. This is the half that makes it a
-  /// handshake — and it does NOT ask them back, or the two would trade
-  /// requests until the call timed out.
-  Future<void> _repairForPeer() async {
-    if (!mounted || _didEndCall) return;
-    if (_repairingForPeer) return;
-    // Already talking: whatever went wrong at their end, our media is up and
-    // tearing it down to rebuild would break a working call.
-    if (_remoteUid != null && _callStartedAt != null) return;
-
-    _repairingForPeer = true;
-    try {
-      _showTransientNote('Reconnecting…');
-      if (mounted) setState(() => _isConnecting = true);
-      final ok = await LiveKitCallService.rejoinChannel(
-        channelName: widget.channelName,
-        callType: _callType,
-        callId: widget.callId,
-      );
-      debugPrint('🤝 rejoined because the peer asked: $ok');
-    } finally {
-      _repairingForPeer = false;
-    }
   }
 
   /// A note that clears itself, for something that happened to someone else.

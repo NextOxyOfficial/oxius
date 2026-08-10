@@ -42,6 +42,14 @@ class AgoraCallService {
     _isCallScreenVisible = value;
     // Notify the call bubble so it shows/hides as the CallScreen appears and goes.
     if (changed) _emitCallState();
+
+    // The screen owns connect recovery while it is up, and its ladder dies
+    // with it. Minimising a call whose media has not come up yet would
+    // otherwise leave nothing watching — so the service picks the watch up
+    // here, and drops it again once a screen is back to do the job better.
+    if (!value && _isInCall && LiveKitCallService.peers.isEmpty) {
+      startConnectGuard();
+    }
   }
 
   static Map<String, dynamic>? _activeCallInfo;
@@ -127,6 +135,7 @@ class AgoraCallService {
     _callLiveInProcess = value;
     if (!value) {
       _activeCallInfo = null;
+      stopConnectGuard();
     }
     _schedulePersistedCallStateSync();
     _emitCallState();
@@ -266,6 +275,18 @@ class AgoraCallService {
       return;
     }
 
+    // The peer's media has not come up and they are asking us to rejoin with
+    // them. Handled HERE, not only in the call screen, because the screen is
+    // the one thing that may not exist: a call answered on a locked phone
+    // joins its room from the CallKit handler and can be talked through
+    // without the screen ever mounting, and a minimised call has popped it.
+    // A repair request that only a visible screen can answer is absent in
+    // exactly the states that need it most.
+    if (status == 'reconnect') {
+      await _repairAtPeerRequest(channelName, callId);
+      return;
+    }
+
     const terminalStatuses = {
       'rejected',
       'declined',
@@ -287,6 +308,113 @@ class AgoraCallService {
     // Media teardown belongs to the engine that owns it.
     await LiveKitCallService.leaveChannel();
     setInCall(false);
+  }
+
+  /// Rebuilds this side's media because the other side asked.
+  ///
+  /// Deliberately does not ask them back: two sides trading requests would
+  /// spend the call reconnecting. And it leaves a working connection alone —
+  /// whatever went wrong at their end, tearing ours down to rebuild it would
+  /// break audio that is already flowing.
+  static bool _repairInFlight = false;
+
+  static Future<void> _repairAtPeerRequest(
+      String channelName, String? callId) async {
+    if (_repairInFlight) return;
+    if (!isInCall) return;
+    if (LiveKitCallService.peers.isNotEmpty) return;
+
+    _repairInFlight = true;
+    try {
+      final callType = _activeCallInfo?['callType']?.toString() ?? 'audio';
+      final ok = await LiveKitCallService.rejoinChannel(
+        channelName: channelName,
+        callType: callType,
+        callId: callId ?? _activeCallInfo?['callId']?.toString(),
+      );
+      _log('rejoined because the peer asked: $ok');
+    } catch (error) {
+      _log('peer-requested rejoin failed: $error');
+    } finally {
+      _repairInFlight = false;
+    }
+  }
+
+  /// Watches a call that has no screen driving its recovery.
+  ///
+  /// The call screen runs its own connect ladder, and while it is up that
+  /// ladder is the richer of the two, so this stands down for it. It exists
+  /// for the case the ladder cannot cover: answering on a locked phone joins
+  /// the room from the CallKit handler, and the screen may not mount until
+  /// the phone is unlocked — which for someone who answers and talks is
+  /// never. Without this, media that stalls there stalls for the whole call.
+  static Timer? _connectGuard;
+  static int _guardRepairs = 0;
+  static const int _maxGuardRepairs = 2;
+
+  static void startConnectGuard() {
+    _connectGuard?.cancel();
+    _guardRepairs = 0;
+    _connectGuard = Timer.periodic(
+        const Duration(seconds: 9), (_) => _checkMediaCameUp());
+  }
+
+  static void stopConnectGuard() {
+    _connectGuard?.cancel();
+    _connectGuard = null;
+    _guardRepairs = 0;
+  }
+
+  static Future<void> _checkMediaCameUp() async {
+    // Media is flowing, or there is no call left to fix.
+    if (!isInCall || LiveKitCallService.peers.isNotEmpty) {
+      stopConnectGuard();
+      return;
+    }
+    // A visible call screen owns recovery; two ladders climbing at once would
+    // rejoin over each other.
+    if (isCallScreenVisible) return;
+    if (_guardRepairs >= _maxGuardRepairs) {
+      stopConnectGuard();
+      return;
+    }
+    if (_repairInFlight) return;
+
+    _guardRepairs += 1;
+    final info = _activeCallInfo;
+    final channelName = info?['channelName']?.toString();
+    if (channelName == null || channelName.isEmpty) {
+      stopConnectGuard();
+      return;
+    }
+    final peerId = info?['peerId']?.toString() ?? '';
+    final callType = info?['callType']?.toString() ?? 'audio';
+    final callId = info?['callId']?.toString();
+
+    _log('screenless connect guard: joint repair $_guardRepairs');
+    _repairInFlight = true;
+    try {
+      if (peerId.isNotEmpty) {
+        unawaited(sendCallStatus(
+          receiverId: peerId,
+          channelName: channelName,
+          status: 'reconnect',
+          callType: callType,
+          callId: callId,
+        ));
+      }
+      // A beat, so the peer is coming back in rather than still leaving.
+      await Future<void>.delayed(const Duration(milliseconds: 900));
+      await LiveKitCallService.rejoinChannel(
+        channelName: channelName,
+        callType: callType,
+        callId: callId,
+      );
+    } catch (error) {
+      _log('screenless repair failed: $error');
+    } finally {
+      _repairInFlight = false;
+    }
   }
 
   static String generateChannelName(String callerId, String calleeId) {

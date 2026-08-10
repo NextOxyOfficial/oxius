@@ -1592,6 +1592,30 @@ def invite_to_call(request):
                 results.append({'user_id': invitee_id, 'status': 'not_allowed'})
                 continue
 
+            # And only someone the inviter has actually talked to.
+            #
+            # The picker offers the inviter's own conversations and nothing
+            # else, but that is a list in an app — it decides what is easy,
+            # not what is possible. Without the same rule here, anyone able to
+            # post a user id could make a stranger's phone ring by adding them
+            # to a call, which is a colder intrusion than the message they
+            # would have been stopped from sending. Being on the call already
+            # counts as knowing each other.
+            knows_invitee = (
+                ChatRoom.objects.filter(
+                    Q(user1=inviter, user2=invitee)
+                    | Q(user1=invitee, user2=inviter)
+                ).exists()
+                or str(invitee.id) in existing_ids
+            )
+            if not knows_invitee:
+                logger.warning(
+                    'CALLTRACE invite refused call=%s %s -> %s (no chat)',
+                    str(call_session.id)[:8], inviter.email, invitee.email,
+                )
+                results.append({'user_id': invitee_id, 'status': 'not_allowed'})
+                continue
+
             if _active_call_for_user(invitee):
                 results.append({'user_id': invitee_id, 'status': 'busy'})
                 continue
