@@ -553,6 +553,13 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
   // app's registered handler and every notification tap after it would be
   // silently dropped. The main isolate calls _showRingNotificationWith()
   // below with its already-initialized instance instead.
+  // Somebody else may already be ringing this call.
+  //
+  // The main isolate gets the same call over the WebSocket, and it raises a
+  // different surface with a different notification id — so without this the
+  // phone showed the call twice and answering one left the other ringing.
+  if (!await FCMService.claimRing(channelName)) return;
+
   // -------- 1. CallKit: the actual ring --------
   //
   // This runs only when the app is NOT in the foreground, so it cannot
@@ -1196,6 +1203,8 @@ class FCMService {
     final callId = _buildCallId(callerId, channelName);
     _activeCallIds.remove(callId);
     _callTimestamps.remove(callId);
+    // The ring is over, so the next call on this channel may raise its own.
+    unawaited(releaseRingClaim(channelName));
     if (_pendingBackgroundRing?['channel_name']?.toString() == channelName) {
       _pendingBackgroundRing = null;
     }
@@ -1238,6 +1247,70 @@ class FCMService {
   /// Prefs key the BACKGROUND isolate writes when it sees a terminal
   /// call_status. Shared across isolates, not part of any app API.
   static const String bgRingTerminalPrefsKey = 'bg_ring_terminal_v1';
+
+  /// Which call already has a ringing UI on screen, and since when.
+  static const String ringOwnerPrefsKey = 'call_ring_owner_v1';
+
+  /// Longest a claim can hold — a shade over the 90s the backend rings for.
+  static const int _ringClaimTtlMs = 95000;
+
+  /// Claims the right to raise a ringing UI for [channelName].
+  ///
+  /// Returns false when this call is already ringing somewhere. Two isolates
+  /// can be told about the same call: FCM wakes the background one while the
+  /// WebSocket reaches the main one. They raise DIFFERENT surfaces with
+  /// different notification ids — a CallKit call and a local notification —
+  /// so neither replaces the other, and the phone showed one incoming call
+  /// twice. Answering one left the other ringing, and that stray surface's
+  /// timeout then declined the call the user had just picked up.
+  ///
+  /// In-memory flags cannot arbitrate this: the two isolates share no memory.
+  /// SharedPreferences is the one thing both can see.
+  static Future<bool> claimRing(String channelName) async {
+    if (channelName.isEmpty) return true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Written by the OTHER isolate, so the copy cached at startup is stale.
+      await prefs.reload();
+      final raw = prefs.getString(ringOwnerPrefsKey);
+      if (raw != null && raw.isNotEmpty) {
+        final owner = jsonDecode(raw);
+        if (owner is Map && owner['channel']?.toString() == channelName) {
+          final at = int.tryParse(owner['at']?.toString() ?? '') ?? 0;
+          if (DateTime.now().millisecondsSinceEpoch - at < _ringClaimTtlMs) {
+            _log('📞 Ring for $channelName already claimed — not ringing twice');
+            return false;
+          }
+        }
+      }
+      await prefs.setString(
+        ringOwnerPrefsKey,
+        jsonEncode({
+          'channel': channelName,
+          'at': DateTime.now().millisecondsSinceEpoch,
+        }),
+      );
+      return true;
+    } catch (_) {
+      // Never lose a call because storage misbehaved.
+      return true;
+    }
+  }
+
+  /// Gives the claim up, so a later call on the same channel can ring.
+  static Future<void> releaseRingClaim(String channelName) async {
+    if (channelName.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      final raw = prefs.getString(ringOwnerPrefsKey);
+      if (raw == null || raw.isEmpty) return;
+      final owner = jsonDecode(raw);
+      if (owner is Map && owner['channel']?.toString() == channelName) {
+        await prefs.remove(ringOwnerPrefsKey);
+      }
+    } catch (_) {}
+  }
 
   static Future<void> _tryResumePendingBackgroundRing() async {
     if (Platform.isIOS) return;
@@ -2484,6 +2557,9 @@ class FCMService {
         _log('🚫 Ignoring stale background ring');
         return;
       }
+      // Same question from the other side: the background isolate may have
+      // already rung this call via CallKit.
+      if (!await claimRing(channelName)) return;
       final ringData = {...data, 'caller_name': callerName};
       _stashBackgroundRing(ringData);
       // MAIN isolate: ring through the app's own initialized plugin. Never
@@ -2710,6 +2786,11 @@ class FCMService {
     }
 
     unawaited(dismissVisibleCallUi(channelName: channelName));
+
+    // The call screen is this call's ringing surface, so record that — not to
+    // gate it (an open app must always show an incoming call) but so a push
+    // arriving a moment later does not stack a notification on top of it.
+    unawaited(claimRing(channelName));
 
     // Close any full-screen chat overlay first — otherwise the CallScreen would
     // be pushed BEHIND it and the user could hear the ringtone without ever
