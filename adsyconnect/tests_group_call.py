@@ -901,3 +901,107 @@ class LateAcceptRevivesTheCallTests(TestCase):
         self.session.refresh_from_db()
         self.assertEqual(self.session.status, CallSession.STATUS_ENDED)
         self.assertIsNotNone(self.session.accepted_at)
+
+
+class ReconnectRelayTests(TestCase):
+    """"Rejoin, both of us" — a request, not a state change.
+
+    Each side already retried its own join, and that is what did not work: a
+    side that rejoins while the other has stalled arrives in an empty room and
+    its ladder declares failure. This relay is how they rejoin together, so it
+    must reach the peer while touching nothing about the call.
+    """
+
+    def setUp(self):
+        self.caller = User.objects.create_user(
+            username='zed', email='zed@example.com', password='x',
+            first_name='Zed', phone='+880100000071')
+        self.callee = User.objects.create_user(
+            username='ada', email='ada@example.com', password='x',
+            first_name='Ada', phone='+880100000072')
+        self.session = CallSession.objects.create(
+            channel_name='c_reconnect',
+            caller=self.caller, callee=self.callee, call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+        )
+        self.sent = []
+        push = patch(
+            'adsyconnect.views._send_call_data_message',
+            side_effect=lambda *, target_user, payload: (
+                self.sent.append((target_user.email, dict(payload))) or {}
+            ),
+        )
+        push.start()
+        self.addCleanup(push.stop)
+        ws = patch('adsyconnect.views._broadcast_to_user', return_value=None)
+        ws.start()
+        self.addCleanup(ws.stop)
+
+    def ask(self, sender, receiver, channel=None):
+        client = APIClient()
+        client.force_authenticate(user=sender)
+        return client.post(
+            '/api/adsyconnect/send-call-status/',
+            {
+                'receiver_id': str(receiver.id),
+                'channel_name': channel or self.session.channel_name,
+                'status': 'reconnect',
+                'call_type': 'audio',
+                'call_id': str(self.session.id),
+            },
+            format='json',
+        )
+
+    def test_it_reaches_the_peer(self):
+        response = self.ask(self.callee, self.caller)
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertTrue(response.json()['relayed_only'])
+        self.assertEqual(
+            [(e, p['status']) for e, p in self.sent],
+            [('zed@example.com', 'reconnect')],
+        )
+
+    def test_it_changes_nothing_about_the_call(self):
+        before = CallSession.objects.get(pk=self.session.pk)
+
+        self.ask(self.callee, self.caller)
+
+        after = CallSession.objects.get(pk=self.session.pk)
+        self.assertEqual(after.status, before.status)
+        self.assertEqual(after.accepted_at, before.accepted_at)
+        self.assertEqual(after.ended_at, before.ended_at)
+        self.assertEqual(after.last_status_at, before.last_status_at)
+
+    def test_it_works_on_a_call_that_is_still_ringing(self):
+        """Media can fail before anyone has pressed accept."""
+        self.session.status = CallSession.STATUS_RINGING
+        self.session.accepted_at = None
+        self.session.save(update_fields=['status', 'accepted_at'])
+
+        response = self.ask(self.callee, self.caller)
+
+        self.assertEqual(response.status_code, 200)
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_RINGING)
+
+    def test_a_stranger_cannot_ask(self):
+        """The relay sits behind the same membership checks as everything else."""
+        stranger = User.objects.create_user(
+            username='eve', email='eve@example.com', password='x',
+            first_name='Eve', phone='+880100000079')
+
+        response = self.ask(stranger, self.caller)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.sent, [])
+
+    def test_it_cannot_be_aimed_at_someone_outside_the_call(self):
+        outsider = User.objects.create_user(
+            username='mal', email='mal@example.com', password='x',
+            first_name='Mal', phone='+880100000078')
+
+        response = self.ask(self.callee, outsider)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.sent, [])

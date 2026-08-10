@@ -283,6 +283,11 @@ class LiveKitCallService {
     required String channelName,
     required String callType,
     String? callId,
+    /// Rebuild the connection even if this side thinks it is already in the
+    /// room. A repair is called precisely because "connected" is not
+    /// producing media, so believing it is the one thing that must not
+    /// happen here.
+    bool force = false,
   }) async {
     lastError = null;
     try {
@@ -292,7 +297,7 @@ class LiveKitCallService {
       // not wait for it. Whichever arrives second has nothing to do, and must
       // not tear the live connection down to rebuild it: that would drop the
       // audio the first one had already established.
-      if (_joinedRoomName == channelName && isConnected) {
+      if (!force && _joinedRoomName == channelName && isConnected) {
         _log('already in $channelName — join is a no-op');
         return true;
       }
@@ -438,13 +443,23 @@ class LiveKitCallService {
 
   /// Full reconnect. LiveKit already retries internally, so this is the call
   /// screen's escalation step when its own watchdog says nothing arrived.
+  /// Tears the connection down and builds it again.
+  ///
+  /// Always forced. Every caller is a recovery path — a stalled join, a peer
+  /// asking to reconnect — and the idempotent shortcut in [joinChannel] would
+  /// turn each of them into a no-op that reports success, leaving the call
+  /// exactly as broken as it was and the ladder none the wiser.
   static Future<bool> rejoinChannel({
     required String channelName,
     required String callType,
     String? callId,
   }) =>
       joinChannel(
-          channelName: channelName, callType: callType, callId: callId);
+        channelName: channelName,
+        callType: callType,
+        callId: callId,
+        force: true,
+      );
 
   static Future<void> leaveChannel() async {
     final room = _room;

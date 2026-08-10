@@ -1737,6 +1737,47 @@ def send_call_status(request):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # "Rejoin, both of us."
+        #
+        # Not a state change and never written to the session — a request one
+        # side makes of the other when the media has not come up. Each side
+        # already retries its own join, and that is exactly what did not work:
+        # a side that rejoins while the other has stalled or left arrives in
+        # an empty room, sees nobody, and its ladder declares failure. Both
+        # rejoining together is the repair that actually reconnects them.
+        #
+        # Relay-only, so it cannot resurrect, end, or otherwise disturb a
+        # call; the worst a spurious one can do is cost a rejoin.
+        if status_value == 'reconnect':
+            payload = {
+                'type': 'call_status',
+                'status': 'reconnect',
+                'event_id': str(uuid.uuid4()),
+                'channel_name': str(channel_name),
+                'call_type': str(call_session.call_type),
+                'call_id': str(call_session.id),
+                'sender_id': str(sender.id),
+                'receiver_id': str(receiver.id),
+                'timestamp': str(int(time.time() * 1000)),
+            }
+            logger.warning(
+                'CALLTRACE reconnect call=%s %s asked %s to rejoin',
+                str(call_session.id)[:8], sender.email, receiver.email,
+            )
+            _broadcast_to_user(
+                receiver.id,
+                {'type': 'call_status_event', 'payload': payload},
+            )
+            delivery = _send_call_data_message(
+                target_user=receiver, payload=payload)
+            return Response({
+                'success': True,
+                'status': 'reconnect',
+                'relayed_only': True,
+                'call_id': str(call_session.id),
+                **delivery,
+            })
+
         # Somebody answered a call the server had already written off.
         #
         # Found in production: of 38 answered calls in a day, 7 never reached
