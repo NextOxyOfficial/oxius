@@ -288,7 +288,10 @@ class MyApp extends StatelessWidget {
         // Show splash screen while initializing
         if (userState.isInitializing) {
           return MaterialApp(
-            title: 'AdsyClub Native',
+            // Android shows this in the task switcher, so it is a
+            // user-facing name, not a project name. The launcher icon
+            // has always said AdsyClub; this said AdsyClub Native.
+            title: 'AdsyClub',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               colorScheme:
@@ -325,7 +328,10 @@ class MyApp extends StatelessWidget {
 
         return Portal(
           child: MaterialApp(
-            title: 'AdsyClub Native',
+            // Android shows this in the task switcher, so it is a
+            // user-facing name, not a project name. The launcher icon
+            // has always said AdsyClub; this said AdsyClub Native.
+            title: 'AdsyClub',
             navigatorKey: FCMService.navigatorKey,
             navigatorObservers: [
               FCMService.routeObserver,
