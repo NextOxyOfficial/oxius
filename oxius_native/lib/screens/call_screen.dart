@@ -1829,7 +1829,10 @@ class _CallScreenState extends State<CallScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Incoming $_callModeLabel',
+                  // The label is capitalised because it usually stands on its
+                  // own — as a pill, or at the head of "Audio call • Ringing".
+                  // Here it is mid-sentence, where a capital reads as a typo.
+                  'Incoming ${_callModeLabel.toLowerCase()}',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.72),
                     fontSize: compact ? 14 : 15,
@@ -1929,7 +1932,7 @@ class _CallScreenState extends State<CallScreen>
   }
 
   String get _callModeLabel {
-    return _callType == 'video' ? 'video call' : 'audio call';
+    return _callType == 'video' ? 'Video call' : 'Audio call';
   }
 
   /// A dot that pulses while the call is still being worked on and holds
