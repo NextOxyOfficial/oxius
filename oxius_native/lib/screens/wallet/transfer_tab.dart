@@ -6,8 +6,6 @@ import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import 'transfer_confirmation_dialog.dart';
-import 'package:oxius_native/widgets/common/adsy_loading.dart';
-import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../utils/app_fonts.dart';
 
 const _indigo = Color(0xFF6366F1);
@@ -42,7 +40,6 @@ class _TransferTabState extends State<TransferTab> {
   final TextEditingController _contactController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   bool _acceptedTerms = false;
-  bool _isLoading = false;
   String? _contactError;
   String? _amountError;
   String? _termsError;
@@ -253,50 +250,36 @@ class _TransferTabState extends State<TransferTab> {
       ),
     );
 
-    if (result != null && result.isNotEmpty) {
-      // If result is a user ID (from QR code), fetch user's email
-      // Backend expects email or phone, not user ID
-      if (int.tryParse(result) != null) {
-        // It's a user ID, fetch user details
-        setState(() => _isLoading = true);
-        try {
-          final userData = await WalletService.getUserById(result);
-          if (userData != null) {
-            // Prefer email, fallback to phone
-            final contact = userData['email'] ?? userData['phone'];
-            if (contact != null && contact.toString().isNotEmpty) {
-              setState(() {
-                _contactController.text = contact.toString();
-                _isLoading = false;
-              });
-              _validateContact();
-            } else {
-              setState(() => _isLoading = false);
-              if (mounted) {
-                AdsyToast.error(context, 'User has no email or phone number');
-              }
-            }
-          } else {
-            setState(() => _isLoading = false);
-            if (mounted) {
-              AdsyToast.error(context, 'User not found. Please try again.');
-            }
-          }
-        } catch (e) {
-          setState(() => _isLoading = false);
-          if (mounted) {
-            AdsyToast.error(context,
-                'Error: ${e.toString().replaceAll('Exception: ', '')}');
-          }
-        }
-      } else {
-        // It's already an email or phone
-        setState(() {
-          _contactController.text = result;
-        });
-        _validateContact();
-      }
+    if (result == null || result.isEmpty) return;
+
+    // Whatever the QR held goes straight in the box. The transfer endpoint
+    // resolves its `contact` by id, email OR phone, so all three are valid
+    // answers and none of them needs translating first.
+    //
+    // This used to swap a scanned id for the recipient's email before
+    // sending, on the belief that the backend would not take an id. It does —
+    // and the swap broke outright once contact details started following each
+    // user's own privacy switches, because the email it went looking for is
+    // no longer readable by anyone but its owner. The id it already had was
+    // the better answer the whole time, and it keeps the payer from learning
+    // the payee's email address as a side effect of paying them.
+    setState(() {
+      _contactController.text = _payeeFromQr(result);
+    });
+    _validateContact();
+  }
+
+  /// The payee identifier inside a scanned code.
+  ///
+  /// Accepts a bare id/email/phone as well as an `adsypay://pay/<id>` link,
+  /// since the same QR is what the AdsyPay sheet produces.
+  static String _payeeFromQr(String raw) {
+    final value = raw.trim();
+    const prefix = 'adsypay://pay/';
+    if (value.startsWith(prefix)) {
+      return value.substring(prefix.length).trim();
     }
+    return value;
   }
 
   Future<void> _handleTransfer() async {
@@ -447,7 +430,7 @@ class _TransferTabState extends State<TransferTab> {
               ],
             ),
             child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleTransfer,
+              onPressed: _handleTransfer,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
@@ -457,16 +440,7 @@ class _TransferTabState extends State<TransferTab> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: AdsyLoadingIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Row(
+              child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.swap_horiz, size: 18),

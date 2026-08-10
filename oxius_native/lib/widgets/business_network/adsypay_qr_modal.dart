@@ -66,18 +66,27 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
       }
       setState(() => _resolving = true);
       try {
+        // The QR already carries the one thing the transfer needs. This used
+        // to trade the id for the recipient's email or phone and send that
+        // instead, which stopped working the day contact details started
+        // following each user's own privacy switches — every scan of someone
+        // who keeps their email private failed with "payment info not found".
+        //
+        // The transfer endpoint resolves its `contact` by id, email OR phone,
+        // so the id is a first-class answer and always was. Nothing about a
+        // payment needs the payer to learn the payee's email address.
         final userData = await WalletService.getUserById(userId);
         if (!mounted) return;
         setState(() => _resolving = false);
-        final contact =
-            (userData?['email'] ?? userData?['phone'])?.toString() ?? '';
-        if (contact.isEmpty) {
+        if (userData == null) {
           AdsyToast.error(
-              context, 'এই ইউজারের পেমেন্ট তথ্য পাওয়া যায়নি।');
+              context, 'ইউজার খুঁজে পাওয়া যায়নি। আবার চেষ্টা করুন।');
           return;
         }
-        final name = (userData?['name'] ??
-                userData?['first_name'] ??
+        // Name is still public, so the payer can be shown who they are
+        // paying — a nicety, not something to fail the scan over.
+        final name = (userData['name'] ??
+                userData['first_name'] ??
                 'AdsyClub ইউজার')
             .toString();
         final navigator = Navigator.of(context, rootNavigator: true);
@@ -85,7 +94,7 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
         navigator.push(MaterialPageRoute(
           builder: (_) => WalletScreen(
             initialTab: 2,
-            initialTransferContact: contact,
+            initialTransferContact: userId,
           ),
         ));
         // Small heads-up so the user knows who they're paying.
