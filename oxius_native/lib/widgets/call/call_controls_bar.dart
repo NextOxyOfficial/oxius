@@ -25,6 +25,14 @@ class CallControlMetrics {
   final double hPad;
   final double vPad;
 
+  /// Whether each control shows its word.
+  ///
+  /// The labels are worth real width — 12dp per control — and on the
+  /// narrowest phones a video call cannot afford six of them AND buttons big
+  /// enough to hit. Given that choice the words go: an icon you can press
+  /// beats a label under a target too small to press.
+  final bool showLabels;
+
   /// Total height of the bar, labels and padding included.
   ///
   /// Everything that has to stay clear of the bar reads this rather than
@@ -39,11 +47,21 @@ class CallControlMetrics {
     required this.hPad,
     required this.vPad,
     required this.height,
+    required this.showLabels,
   });
 }
 
 /// Height of the word under each control: the 5px gap plus one 10px line.
 const double _kControlLabelHeight = 18;
+
+/// How much wider a control is than its button.
+///
+/// The label under each button gets a box of `size + 12` so a word like
+/// "Speaker" is not clipped, and THAT is the control's real footprint. The
+/// first version of this arithmetic measured buttons and forgot the labels,
+/// which came to 60dp across five controls — enough to push End off the edge
+/// of a 360dp phone even though the numbers said it fitted.
+const double _kControlLabelPad = 12;
 
 /// A control smaller than this stops being a reliable tap target.
 const double _kMinControlSize = 38;
@@ -63,17 +81,27 @@ CallControlMetrics callControlMetrics({
   final vPad = compact ? 7.0 : 9.0;
   var gap = compact ? 6.0 : 8.0;
 
-  double fit(double g) =>
-      (screenWidth - kCallControlsInset * 2 - hPad * 2 - (count - 1) * g) /
+  double fit(double g, bool labels) =>
+      (screenWidth -
+          kCallControlsInset * 2 -
+          hPad * 2 -
+          (count - 1) * g -
+          (labels ? count * _kControlLabelPad : 0)) /
       (count - 1 + _kEndScale);
 
-  var button = fit(gap);
+  var showLabels = true;
+  var button = fit(gap, showLabels);
 
-  // Too tight for a comfortable target: buy back width from the gaps before
-  // shrinking the buttons any further.
+  // Too tight for a comfortable target. Buy back width in the order that
+  // costs the user least: first the gaps, then the words.
   if (button < _kMinControlSize) {
     gap = 4;
-    button = fit(gap);
+    button = fit(gap, showLabels);
+  }
+  if (button < _kMinControlSize) {
+    showLabels = false;
+    gap = compact ? 6.0 : 8.0;
+    button = fit(gap, showLabels);
   }
 
   // And never larger than the old fixed size, or a tablet gets dinner plates.
@@ -87,7 +115,8 @@ CallControlMetrics callControlMetrics({
     gap: gap,
     hPad: hPad,
     vPad: vPad,
-    height: end + _kControlLabelHeight + vPad * 2,
+    showLabels: showLabels,
+    height: end + (showLabels ? _kControlLabelHeight : 0) + vPad * 2,
   );
 }
 
@@ -100,6 +129,7 @@ class CallRoundControl extends StatelessWidget {
   final Color? activeBg;
   final Color? iconColor;
   final VoidCallback onTap;
+  final bool showLabel;
 
   const CallRoundControl({
     super.key,
@@ -110,6 +140,7 @@ class CallRoundControl extends StatelessWidget {
     required this.onTap,
     this.activeBg,
     this.iconColor,
+    this.showLabel = true,
   });
 
   @override
@@ -145,12 +176,15 @@ class CallRoundControl extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 5),
         // Icons alone leave people guessing which one is the speaker and
         // which the microphone, and a call is the worst place to find out by
-        // trial and error.
+        // trial and error — so the word stays wherever there is room for it.
+        if (!showLabel)
+          SizedBox(width: size)
+        else ...[
+        const SizedBox(height: 5),
         SizedBox(
-          width: size + 12,
+          width: size + _kControlLabelPad,
           child: Text(
             label,
             textAlign: TextAlign.center,
@@ -163,6 +197,7 @@ class CallRoundControl extends StatelessWidget {
             ),
           ),
         ),
+        ],
       ],
     );
   }
@@ -226,6 +261,7 @@ class CallControlsBar extends StatelessWidget {
         icon: isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
         label: isMuted ? 'Unmute' : 'Mute',
         size: btnSize,
+        showLabel: m.showLabels,
         isActive: isMuted,
         activeBg: const Color(0xFFEF4444),
         onTap: onToggleMute,
@@ -236,6 +272,7 @@ class CallControlsBar extends StatelessWidget {
             : Icons.volume_down_rounded,
         label: 'Speaker',
         size: btnSize,
+        showLabel: m.showLabels,
         isActive: isSpeakerOn,
         activeBg: accent,
         onTap: onToggleSpeaker,
@@ -272,6 +309,7 @@ class CallControlsBar extends StatelessWidget {
         icon: Icons.person_add_alt_1_rounded,
         label: 'Add',
         size: btnSize,
+        showLabel: m.showLabels,
         isActive: false,
         onTap: onAddParticipants,
       ),
@@ -279,6 +317,7 @@ class CallControlsBar extends StatelessWidget {
         icon: Icons.call_end_rounded,
         label: 'End',
         size: endSize,
+        showLabel: m.showLabels,
         isActive: true,
         activeBg: const Color(0xFFEF4444),
         iconColor: Colors.white,

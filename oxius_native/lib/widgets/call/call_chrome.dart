@@ -139,52 +139,6 @@ class CallInfoPill extends StatelessWidget {
   }
 }
 
-/// "Voice Call" / "Video Call", above the avatar while the call is being set up.
-class CallTypeBadge extends StatelessWidget {
-  final bool isVideo;
-  final String label;
-  final Color accent;
-
-  const CallTypeBadge({
-    super.key,
-    required this.isVideo,
-    required this.label,
-    required this.accent,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isVideo ? Icons.videocam_rounded : Icons.call_rounded,
-            size: 16,
-            color: accent,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// The peer's photo, or a person glyph when there is none.
 class CallAvatarImage extends StatelessWidget {
   final String? avatarUrl;

@@ -1714,12 +1714,10 @@ class _CallScreenState extends State<CallScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CallTypeBadge(
-                    isVideo: _callType == 'video',
-                    label: _callModeLabel,
-                    accent: _accentColor,
-                  ),
-                  SizedBox(height: compact ? 20 : 24),
+                  // No call-type badge here. The header already says
+                  // "audio call • Ringing…" and the pill row below the name
+                  // says it a third time; one screen stating the same fact
+                  // three times reads as a mistake, which it was.
                   CallAnimatedAvatar(
                     size: compact ? 116 : 138,
                     pulse: _pulseController,
