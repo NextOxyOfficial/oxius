@@ -3504,7 +3504,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                   itemPositionsListener: _itemPositionsListener,
                                   reverse: true,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 12),
+                                      horizontal: 8, vertical: 6),
                                   itemCount: _messages.length +
                                       (_isLoadingMoreMessages ||
                                               !_hasMoreMessages

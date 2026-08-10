@@ -1154,7 +1154,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                             },
                             child: ListView.builder(
                               controller: _scroll,
-                              padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+                              padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
                               itemCount: _messages.length,
                               // Keyed so reply-quote taps can
                               // Scrollable.ensureVisible their target row.
@@ -1418,7 +1418,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 6, top: 10, bottom: 3),
+            padding: const EdgeInsets.only(left: 6, top: 6, bottom: 2),
             // Tapping the avatar/name opens the sender's BN profile.
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,

@@ -324,9 +324,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             transform: Matrix4.translationValues(_swipeOffset, 0, 0),
             child: Padding(
               padding: EdgeInsets.only(
-                bottom: 4,
-                left: isMe ? 48 : 0,
-                right: isMe ? 0 : 48,
+                bottom: 2,
+                left: isMe ? 56 : 0,
+                right: isMe ? 0 : 56,
               ),
               child: Row(
                 mainAxisAlignment:
@@ -447,7 +447,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                                         ),
                                         child: Padding(
                                           padding: const EdgeInsets.only(
-                                              top: 3),
+                                              top: 1),
                                           child: _buildTimestamp(
                                               message, isMe),
                                         ),
@@ -456,7 +456,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                                     // it would re-fade on every scroll-back.
                                     : Padding(
                                         padding:
-                                            const EdgeInsets.only(top: 3),
+                                            const EdgeInsets.only(top: 1),
                                         child: _buildTimestamp(
                                             message, isMe),
                                       ),
@@ -590,7 +590,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             children: [
               quoteCard,
               Padding(
-                padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+                padding: const EdgeInsets.fromLTRB(12, 6, 12, 7),
                 child: _buildContent(message, isMe, null),
               ),
             ],
@@ -602,7 +602,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     return Container(
       padding: previewOnly || isMedia
           ? EdgeInsets.zero
-          : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          : const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: isMedia
           // Media stands alone — no bubble background behind photos/videos.
           ? const BoxDecoration(color: Colors.transparent)
@@ -683,9 +683,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               LinkifyText(
                 own,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   color: Color(0xFF1F2937),
-                  height: 1.38,
+                  height: 1.32,
                 ),
                 linkStyle: const TextStyle(
                   color: Color(0xFF111827),
@@ -771,9 +771,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 : LinkifyText(
                     text,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: const Color(0xFF1F2937),
-                      height: 1.38,
+                      height: 1.32,
                     ),
                     linkStyle: TextStyle(
                       color: const Color(0xFF111827),
@@ -1323,7 +1323,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         if (showTime && message['timeDisplay'] != null)
           Text(
             message['timeDisplay'].toString(),
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            style: TextStyle(
+              fontSize: 10.5,
+              color: Colors.grey.shade500,
+              // Inherited from the ambient DefaultTextStyle otherwise, which
+              // was drawing a line under every timestamp.
+              decoration: TextDecoration.none,
+            ),
           ),
         if (isMe && showTicks) ...[
           if (showTime) const SizedBox(width: 4),
