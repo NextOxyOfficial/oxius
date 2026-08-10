@@ -679,3 +679,123 @@ class InvitingIntoARealGroupCallTests(TestCase):
             self.outsider.id,
             set(plain.chat_group.memberships.values_list('user_id', flat=True)),
         )
+
+
+class AcceptedCallCannotBeUnansweredTests(TestCase):
+    """A call that was answered must not be un-answered by a late signal.
+
+    'rejected', 'busy' and 'missed' all mean "nobody picked up". Arriving
+    after somebody has, each one is read as terminal by the caller's screen
+    and tears down a conversation that is in progress. They do arrive:
+    CallKit can emit a decline behind an accept, a retry can land late, and
+    a second device that was also ringing reports its own timeout once the
+    first device answers.
+    """
+
+    def setUp(self):
+        self.caller = User.objects.create_user(
+            username='vic', email='vic@example.com', password='x',
+            first_name='Vic', phone='+880100000051')
+        self.callee = User.objects.create_user(
+            username='wren', email='wren@example.com', password='x',
+            first_name='Wren', phone='+880100000052')
+        self.session = CallSession.objects.create(
+            channel_name='c_accept_race',
+            caller=self.caller, callee=self.callee, call_type='audio',
+            status=CallSession.STATUS_RINGING,
+        )
+
+        self.sent = []
+        push = patch(
+            'adsyconnect.views._send_call_data_message',
+            side_effect=lambda *, target_user, payload: (
+                self.sent.append((target_user.email, dict(payload))) or {}
+            ),
+        )
+        push.start()
+        self.addCleanup(push.stop)
+        ws = patch('adsyconnect.views._broadcast_to_user', return_value=None)
+        ws.start()
+        self.addCleanup(ws.stop)
+
+    def post(self, sender, status_value, receiver):
+        client = APIClient()
+        client.force_authenticate(user=sender)
+        return client.post(
+            '/api/adsyconnect/send-call-status/',
+            {
+                'receiver_id': str(receiver.id),
+                'channel_name': self.session.channel_name,
+                'status': status_value,
+                'call_type': 'audio',
+                'call_id': str(self.session.id),
+            },
+            format='json',
+        )
+
+    def accept(self):
+        response = self.post(self.callee, 'accepted', self.caller)
+        self.assertEqual(response.status_code, 200)
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ACCEPTED)
+        self.assertIsNotNone(self.session.accepted_at)
+        self.sent.clear()
+
+    def test_a_decline_after_an_accept_is_ignored(self):
+        self.accept()
+
+        response = self.post(self.callee, 'rejected', self.caller)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['ignored'])
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ACCEPTED)
+        # And crucially: the caller is told nothing at all.
+        self.assertEqual(self.sent, [])
+
+    def test_busy_and_missed_after_an_accept_are_ignored_too(self):
+        # Through the real endpoint, so accepted_at is stamped the way a real
+        # accept stamps it — that timestamp, not the status, is what marks a
+        # call as having been answered, and it outlives the call ending.
+        self.accept()
+
+        for late in ('busy', 'missed'):
+            with self.subTest(status=late):
+                self.sent.clear()
+
+                response = self.post(self.callee, late, self.caller)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.json()['ignored'])
+                self.session.refresh_from_db()
+                self.assertEqual(
+                    self.session.status, CallSession.STATUS_ACCEPTED)
+                self.assertEqual(self.sent, [])
+
+    def test_hanging_up_an_accepted_call_still_works(self):
+        """The guard must not make an answered call impossible to end."""
+        self.accept()
+
+        response = self.post(self.callee, 'ended', self.caller)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('ignored', response.json())
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ENDED)
+        self.assertEqual(
+            {e: p['status'] for e, p in self.sent},
+            {'vic@example.com': 'ended'},
+        )
+
+    def test_declining_a_call_nobody_answered_still_works(self):
+        """The ordinary decline is untouched."""
+        response = self.post(self.callee, 'rejected', self.caller)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('ignored', response.json())
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_REJECTED)
+        self.assertEqual(
+            {e: p['status'] for e, p in self.sent},
+            {'vic@example.com': 'rejected'},
+        )

@@ -795,6 +795,13 @@ class _CallScreenState extends State<CallScreen>
     if (_acceptanceSent) {
       return;
     }
+    // Accepting a call that is already on its way out joins a dead channel
+    // and tells the caller their hung-up call was answered. Reachable by a
+    // double tap that lands on Decline first, or by a CallKit accept
+    // arriving after the caller cancelled.
+    if (_isClosing || _didEndCall) {
+      return;
+    }
 
     // 1. Notify caller immediately (fire-and-forget, no await).
     _notifyCallAccepted();
@@ -912,6 +919,12 @@ class _CallScreenState extends State<CallScreen>
   Future<void> _rejectCall() async {
     // Guard re-entry — only reject once.
     if (_isClosing || _didEndCall) return;
+    // And never after accepting. The caller has already been told the call
+    // was answered; a 'rejected' behind it reads as "answered, then refused"
+    // and kills a live conversation at the other end. This is the second
+    // half of the guard in _acceptCall — between them, exactly one of the
+    // two decisions can ever reach the caller.
+    if (_acceptanceSent) return;
     _isClosing = true;
     _didEndCall = true;
 

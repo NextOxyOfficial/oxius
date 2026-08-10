@@ -1715,6 +1715,41 @@ def send_call_status(request):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # A call that was answered cannot go back to unanswered.
+        #
+        # 'rejected', 'busy' and 'missed' all say "nobody picked up". Once
+        # somebody has, they are not just wrong, they are destructive: the
+        # caller's screen treats each of them as terminal and tears down a
+        # conversation that is in progress. And they do arrive — CallKit can
+        # emit a decline after an accept, a queued retry can land late, and a
+        # second device that was also ringing reports its own timeout as
+        # 'missed' once the first device answers.
+        #
+        # Guarded here rather than only in the apps because this is the one
+        # place both platforms pass through, and because a phone that already
+        # has the old build keeps the fix.
+        _CANNOT_FOLLOW_ACCEPT = {
+            CallSession.STATUS_REJECTED,
+            CallSession.STATUS_BUSY,
+            CallSession.STATUS_MISSED,
+        }
+        if (
+            call_session.accepted_at is not None
+            and status_value in _CANNOT_FOLLOW_ACCEPT
+        ):
+            logger.warning(
+                'CALLTRACE ignore call=%s %s tried %s on a call accepted at %s',
+                str(call_session.id)[:8], sender.email, status_value,
+                call_session.accepted_at,
+            )
+            return Response({
+                'success': True,
+                'ignored': True,
+                'reason': 'call_already_accepted',
+                'call_id': str(call_session.id),
+                'status': call_session.status,
+            })
+
         # Is this one person leaving, or the call ending?
         #
         # On a one-to-one call there is no difference and none of the group

@@ -2171,6 +2171,27 @@ class FCMService {
     }
   }
 
+  /// Whether this call has already been answered on this device.
+  ///
+  /// CallKit does not guarantee that accept is the last event it sends: a
+  /// decline, or the ring timeout, can arrive behind it. Both then reported
+  /// the callee's decision a second time and contradicted the first —
+  /// 'rejected' or 'cancelled' behind an 'accepted' hangs up a conversation
+  /// that is already running at the caller's end. _handleCallEnded has always
+  /// checked this; the other two never did.
+  static bool _alreadyAnswered(String callkitUuid, String channelName) {
+    if (callkitUuid.isNotEmpty &&
+        _acceptedCallkitUuids.contains(callkitUuid)) {
+      return true;
+    }
+    // No usable uuid: this channel is the call we are on, and we are on it
+    // because somebody answered it.
+    return AgoraCallService.isInCall &&
+        AgoraCallService.activeCallAccepted &&
+        AgoraCallService.activeCallInfo?['channelName']?.toString() ==
+            channelName;
+  }
+
   /// Handle call declined from CallKit
   static void _handleCallDeclined(CallEvent event) {
     final extra = _parseCallkitExtra(event.body['extra']);
@@ -2183,6 +2204,10 @@ class FCMService {
     final incomingKind = extra['incoming_kind']?.toString();
 
     if (callerId == null || channelName == null) return;
+    if (_alreadyAnswered(callkitUuid, channelName)) {
+      _log('📞 CallKit decline ignored: this call was already answered');
+      return;
+    }
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
     unawaited(dismissVisibleCallUi(channelName: channelName));
@@ -2289,6 +2314,10 @@ class FCMService {
     final incomingKind = extra['incoming_kind']?.toString();
 
     if (callerId == null || channelName == null) return;
+    if (_alreadyAnswered(callkitUuid, channelName)) {
+      _log('📞 CallKit ring timeout ignored: this call was already answered');
+      return;
+    }
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
     unawaited(dismissVisibleCallUi(channelName: channelName));
