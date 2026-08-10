@@ -199,6 +199,13 @@ Future<void> _bootstrap(UserStateService userState) async {
   await _safeInit('FCMPendingNotification',
       () => FCMService.consumePendingLocalNotificationPayload());
 
+  // And any call that is ringing right now. Android's full-screen intent
+  // launches this activity without telling Flutter why, so a call answered
+  // from a locked screen arrives here with the app running and nothing on
+  // screen to answer. This finds the ring the background isolate raised —
+  // only while it is still ringing.
+  await _safeInit('FCMPendingRing', () => FCMService.consumePendingRing());
+
   // User session is the most important – give it a slightly longer timeout
   // but still bounded so the splash always resolves.
   await _safeInit('UserState', () => userState.initialize(),

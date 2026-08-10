@@ -498,16 +498,29 @@ Future<void> _showRingNotificationWith(
     audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
   );
 
+  final payload = jsonEncode({
+    ...data,
+    'type': 'incoming_call',
+  });
+
   await plugin.show(
     _callNotificationIdForChannel(channelName),
     '$callerName is calling',
     callTypeLabel,
     NotificationDetails(android: details),
-    payload: jsonEncode({
-      ...data,
-      'type': 'incoming_call',
-    }),
+    payload: payload,
   );
+
+  // Leave it where the main isolate can find it. Android's full-screen intent
+  // launches the activity without telling Flutter why, and this payload lives
+  // in whichever isolate raised the ring — so without this, a locked-screen
+  // call reaches a running app with no idea a call is ringing.
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(FCMService.pendingRingPrefsKey, payload);
+  } catch (_) {
+    // The notification is up either way; only the cold-start hand-off is lost.
+  }
 }
 
 Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
@@ -560,20 +573,39 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
   // phone showed the call twice and answering one left the other ringing.
   if (!await FCMService.claimRing(channelName)) return;
 
-  // -------- 1. CallKit: the actual ring --------
+  // -------- Android: our own notification IS the ring --------
   //
-  // This runs only when the app is NOT in the foreground, so it cannot
-  // collide with the app's own call screen — that one is used when the app
-  // is already open, and this one when it is not. One ringing surface at a
-  // time, either way.
+  // It carries a full-screen intent, so on a locked or dark screen Android
+  // launches MainActivity — which is showWhenLocked/turnScreenOn — and the
+  // user sees the app's own call screen. CallKit's Android UI is a plain blue
+  // sheet with two buttons and none of the app's design, and for a while that
+  // is exactly what a locked phone showed, because this used to ring CallKit
+  // first and keep the notification only as a fallback.
   //
-  // A local notification stays as the fallback for the case where CallKit
-  // cannot start (OEM restrictions on the foreground service) — raised
-  // below, and only if CallKit is verifiably not ringing.
+  // That order existed to avoid raising both. It is not needed any more: the
+  // ring claim above already guarantees a single surface, and it does so
+  // across isolates, which cancelling-after-the-fact never could.
   //
-  // On iOS this is not a preference at all: a PushKit VoIP wake MUST be
-  // answered with reportNewIncomingCall or iOS kills the app and eventually
-  // stops delivering VoIP pushes.
+  // Unlocked and in use, Android deliberately downgrades a full-screen intent
+  // to a heads-up notification — a call is not allowed to seize a screen
+  // someone is using. Tapping it opens the same call screen. That is OS
+  // policy, and every calling app on Android behaves this way.
+  if (Platform.isAndroid) {
+    try {
+      final plugin = FlutterLocalNotificationsPlugin();
+      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+      await plugin.initialize(const InitializationSettings(android: androidInit));
+      await _showRingNotificationWith(plugin, data);
+    } catch (e) {
+      _log('⚠️ Android ring notification failed: $e');
+    }
+    return;
+  }
+
+  // -------- iOS: CallKit, and not by preference --------
+  //
+  // A PushKit VoIP wake MUST be answered with reportNewIncomingCall or iOS
+  // kills the app and eventually stops delivering VoIP pushes.
   final uuid = const Uuid().v4();
 
   final params = CallKitParams(
@@ -643,25 +675,11 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     _log('⚠️ CallKit ring failed: $e');
   }
 
-  // -------- 2. Fallback banner, only if CallKit is not ringing --------
-  //
-  // This used to be raised first and cancelled once CallKit came up. The
-  // cancel is a race, and on a locked screen it is lost often enough that
-  // the user sees two incoming calls — CallKit's full-screen one and a
-  // notification with its own accept/decline — for the same single call.
-  // Never raising it is a better guarantee than cancelling it quickly.
-  if (callkitRinging) {
-    return;
-  }
-
-  try {
-    _log('⚠️ CallKit is not ringing — raising the notification fallback');
-    final plugin = FlutterLocalNotificationsPlugin();
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    await plugin.initialize(const InitializationSettings(android: androidInit));
-    await _showRingNotificationWith(plugin, data);
-  } catch (e) {
-    _log('⚠️ Fallback call notification failed too: $e');
+  // Nothing to fall back to on iOS: an alert notification is what the server
+  // already sent to a device with no VoIP token, and CallKit not starting
+  // here means the VoIP wake itself failed.
+  if (!callkitRinging) {
+    _log('⚠️ CallKit did not start for $channelName');
   }
 }
 
@@ -1205,6 +1223,7 @@ class FCMService {
     _callTimestamps.remove(callId);
     // The ring is over, so the next call on this channel may raise its own.
     unawaited(releaseRingClaim(channelName));
+    unawaited(_clearPendingRing(channelName));
     if (_pendingBackgroundRing?['channel_name']?.toString() == channelName) {
       _pendingBackgroundRing = null;
     }
@@ -1294,6 +1313,85 @@ class FCMService {
     } catch (_) {
       // Never lose a call because storage misbehaved.
       return true;
+    }
+  }
+
+  /// Whether [channelName] still holds a live ring claim.
+  ///
+  /// Read-only counterpart to [claimRing], used to decide whether a stashed
+  /// ring is still worth showing. The claim's lifetime is exactly right for
+  /// this: it is taken when the ring goes up and released the moment the call
+  /// is answered, declined or ended, so "the claim holds" means "this call is
+  /// still ringing" without inventing a second expiry to keep in step.
+  static Future<bool> ringClaimHolds(String channelName) async {
+    if (channelName.isEmpty) return false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      final raw = prefs.getString(ringOwnerPrefsKey);
+      if (raw == null || raw.isEmpty) return false;
+      final owner = jsonDecode(raw);
+      if (owner is! Map) return false;
+      if (owner['channel']?.toString() != channelName) return false;
+      final at = int.tryParse(owner['at']?.toString() ?? '') ?? 0;
+      return DateTime.now().millisecondsSinceEpoch - at < _ringClaimTtlMs;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> _clearPendingRing(String channelName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      final raw = prefs.getString(pendingRingPrefsKey);
+      if (raw == null || raw.isEmpty) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is Map &&
+          decoded['channel_name']?.toString() == channelName) {
+        await prefs.remove(pendingRingPrefsKey);
+      }
+    } catch (_) {}
+  }
+
+  /// The ring the background isolate put up, kept where the main one can see it.
+  static const String pendingRingPrefsKey = 'pending_ring_v1';
+
+  /// Shows the call a background ring is for, if it is still ringing.
+  ///
+  /// Android's full-screen intent launches the activity but tells Flutter
+  /// nothing, and the payload lives in the background isolate's memory, which
+  /// the main isolate cannot read. So a locked-screen call used to need
+  /// CallKit's own blue screen to have anywhere to appear at all. The ring is
+  /// stashed in shared storage instead, and this is what picks it up — gated
+  /// on the claim still holding, so an ignored call from ten minutes ago does
+  /// not spring open the next time the app is launched.
+  static Future<void> consumePendingRing() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      final raw = prefs.getString(pendingRingPrefsKey);
+      if (raw == null || raw.isEmpty) return;
+
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) {
+        await prefs.remove(pendingRingPrefsKey);
+        return;
+      }
+      final data = Map<String, dynamic>.from(decoded);
+      final channelName = data['channel_name']?.toString() ?? '';
+
+      if (!await ringClaimHolds(channelName)) {
+        _log('📞 Stashed ring for $channelName is over — discarding');
+        await prefs.remove(pendingRingPrefsKey);
+        return;
+      }
+
+      _log('📞 Showing the call a background ring was raised for');
+      await prefs.remove(pendingRingPrefsKey);
+      _navigateBasedOnData(data);
+    } catch (e) {
+      _log('⚠️ consumePendingRing failed: $e');
     }
   }
 
