@@ -465,7 +465,9 @@ class _SettingsScreenState extends State<SettingsScreen>
         (current.whoCanMessage ?? 'everyone') !=
             (original.whoCanMessage ?? 'everyone') ||
         (current.followListVisibility ?? 'everyone') !=
-            (original.followListVisibility ?? 'everyone');
+            (original.followListVisibility ?? 'everyone') ||
+        (current.whoCanCall ?? 'everyone') !=
+            (original.whoCanCall ?? 'everyone');
   }
 
   int get _passwordStrength {
@@ -730,6 +732,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         'whatsapp_public': _userProfile?.whatsappPublic ?? true,
         'about_public': _userProfile?.aboutPublic ?? true,
         'who_can_message': _userProfile?.whoCanMessage ?? 'everyone',
+        'who_can_call': _userProfile?.whoCanCall ?? 'everyone',
         'follow_list_visibility':
             _userProfile?.followListVisibility ?? 'everyone',
       };
@@ -793,6 +796,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         'whatsapp_public': _userProfile?.whatsappPublic ?? true,
         'about_public': _userProfile?.aboutPublic ?? true,
         'who_can_message': _userProfile?.whoCanMessage ?? 'everyone',
+        'who_can_call': _userProfile?.whoCanCall ?? 'everyone',
         'follow_list_visibility':
             _userProfile?.followListVisibility ?? 'everyone',
       };
@@ -2139,90 +2143,105 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     final whoCanMessage = profile.whoCanMessage ?? 'everyone';
     final followListVisibility = profile.followListVisibility ?? 'everyone';
+    final whoCanCall = profile.whoCanCall ?? 'everyone';
+
+    // Who-can-do-what settings share one vocabulary, so they share one list.
+    List<_PrivacyChoice> reachChoices(String subject) => [
+          _PrivacyChoice(
+            value: 'everyone',
+            label: _t('settings_reach_everyone', 'সবাই'),
+            description: _t('settings_reach_everyone_desc',
+                'যেকোনো ব্যবহারকারী পারবে।'),
+          ),
+          _PrivacyChoice(
+            value: 'followers',
+            label: _t('settings_reach_followers', 'যারা ফলো করে'),
+            description: _t('settings_reach_followers_desc',
+                'শুধু আপনাকে ফলো করা ব্যবহারকারীরা পারবে।'),
+          ),
+          _PrivacyChoice(
+            value: 'following',
+            label: _t('settings_reach_following', 'যাদের ফলো করি'),
+            description: _t('settings_reach_following_desc',
+                'শুধু আপনি যাদের ফলো করেন তারাই পারবে।'),
+          ),
+          _PrivacyChoice(
+            value: 'mutual',
+            label: _t('settings_reach_mutual', 'শুধু মিউচুয়াল'),
+            description: _t('settings_reach_mutual_desc',
+                'দুজন দুজনকে ফলো করলে তবেই পারবে।'),
+          ),
+        ];
 
     return _buildRefreshableTab(
       key: const ValueKey('privacy-tab'),
       child: Column(
         children: [
           _buildSectionCard(
-            title: _t('settings_who_can_message', 'কে মেসেজ পাঠাতে পারবে'),
-            subtitle: _t('settings_who_can_message_sub',
-                'AdsyConnect-এ কারা আপনাকে নতুন মেসেজ পাঠাতে পারবে ঠিক করুন।'),
-            icon: Icons.forum_outlined,
+            title: _t('settings_who_can_reach', 'কারা আপনার কাছে পৌঁছাতে পারবে'),
+            subtitle: _t('settings_who_can_reach_sub',
+                'প্রতিটি সেটিংয়ের ডানদিকে বর্তমান উত্তর দেখা যাচ্ছে — বদলাতে ট্যাপ করুন।'),
+            icon: Icons.shield_outlined,
             child: Column(
               children: [
-                _buildMessagePrivacyOption(
-                  value: 'everyone',
-                  groupValue: whoCanMessage,
-                  icon: Icons.public_rounded,
-                  title: _t('settings_msg_everyone', 'সবাই'),
-                  description: _t('settings_msg_everyone_desc',
-                      'যেকোনো ব্যবহারকারী আপনাকে মেসেজ পাঠাতে পারবে।'),
+                _buildChoiceRow(
+                  icon: Icons.forum_outlined,
+                  label: _t('settings_who_can_message', 'কে মেসেজ পাঠাতে পারবে'),
+                  value: whoCanMessage,
+                  choices: reachChoices('message'),
+                  onChanged: _setWhoCanMessage,
                 ),
-                _buildMessagePrivacyOption(
-                  value: 'followers',
-                  groupValue: whoCanMessage,
-                  icon: Icons.group_outlined,
-                  title: _t('settings_msg_followers', 'যারা ফলো করে'),
-                  description: _t('settings_msg_followers_desc',
-                      'শুধু আপনাকে ফলো করা ব্যবহারকারীরা মেসেজ পাঠাতে পারবে।'),
+                _buildChoiceRow(
+                  icon: Icons.call_outlined,
+                  label: _t('settings_who_can_call', 'কে কল করতে পারবে'),
+                  value: whoCanCall,
+                  choices: [
+                    ...reachChoices('call'),
+                    // Only calls get this. A message can wait to be read; a
+                    // ringing phone cannot be ignored the same way, so "not
+                    // right now, by anyone" is a real answer here.
+                    _PrivacyChoice(
+                      value: 'nobody',
+                      label: _t('settings_reach_nobody', 'কেউ নয়'),
+                      description: _t('settings_reach_nobody_desc',
+                          'কেউ আপনাকে কল করতে পারবে না। মেসেজ আগের মতোই চলবে।'),
+                    ),
+                  ],
+                  onChanged: _setWhoCanCall,
                 ),
-                _buildMessagePrivacyOption(
-                  value: 'following',
-                  groupValue: whoCanMessage,
-                  icon: Icons.person_add_alt_1_outlined,
-                  title: _t('settings_msg_following', 'যাদের ফলো করেন'),
-                  description: _t('settings_msg_following_desc',
-                      'শুধু আপনি যাদের ফলো করেন তারাই মেসেজ পাঠাতে পারবে।'),
-                ),
-                _buildMessagePrivacyOption(
-                  value: 'mutual',
-                  groupValue: whoCanMessage,
-                  icon: Icons.handshake_outlined,
-                  title: _t('settings_msg_mutual', 'শুধু মিউচুয়াল'),
-                  description: _t('settings_msg_mutual_desc',
-                      'দুজন দুজনকে ফলো করলে তবেই মেসেজ পাঠানো যাবে।'),
+                _buildChoiceRow(
+                  icon: Icons.groups_outlined,
+                  label: _t('settings_follow_list_visibility',
+                      'ফলোয়ার তালিকা কে দেখবে'),
+                  value: followListVisibility,
+                  choices: [
+                    _PrivacyChoice(
+                      value: 'everyone',
+                      label: _t('settings_reach_everyone', 'সবাই'),
+                      description: _t('settings_follow_list_everyone_desc',
+                          'যে কেউ আপনার ফলোয়ার ও ফলোইং তালিকা দেখতে পাবে।'),
+                    ),
+                    _PrivacyChoice(
+                      value: 'followers',
+                      label: _t('settings_reach_followers', 'যারা ফলো করে'),
+                      description: _t('settings_follow_list_followers_desc',
+                          'শুধু আপনাকে ফলো করা ব্যবহারকারীরাই তালিকা দেখতে পাবে।'),
+                    ),
+                    _PrivacyChoice(
+                      value: 'following',
+                      label: _t('settings_reach_following', 'যাদের ফলো করি'),
+                      description: _t('settings_follow_list_following_desc',
+                          'শুধু আপনি যাদের ফলো করেন তারাই তালিকা দেখতে পাবে।'),
+                    ),
+                    _PrivacyChoice(
+                      value: 'only_me',
+                      label: _t('settings_follow_list_only_me', 'শুধু আমি'),
+                      description: _t('settings_follow_list_only_me_desc',
+                          'আপনি ছাড়া কেউ এই তালিকা দেখতে পাবে না। সংখ্যা সবাই দেখতে পাবে।'),
+                    ),
+                  ],
+                  onChanged: _setFollowListVisibility,
                   isLast: true,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          _buildSectionCard(
-            title:
-                _t('settings_follow_list_visibility', 'ফলোয়ার ও ফলোইং তালিকা'),
-            subtitle: _t('settings_follow_list_visibility_sub',
-                'আপনার ফলোয়ার ও ফলোইং তালিকা কারা দেখতে পাবে ঠিক করুন। সংখ্যা সবাই দেখতে পাবে।'),
-            icon: Icons.groups_outlined,
-            child: Column(
-              children: [
-                _buildMessagePrivacyOption(
-                  value: 'everyone',
-                  groupValue: followListVisibility,
-                  icon: Icons.public_rounded,
-                  title: _t('settings_follow_list_everyone', 'সবাই'),
-                  description: _t('settings_follow_list_everyone_desc',
-                      'যে কেউ আপনার ফলোয়ার ও ফলোইং তালিকা দেখতে পাবে।'),
-                  onSelect: _setFollowListVisibility,
-                ),
-                _buildMessagePrivacyOption(
-                  value: 'followers',
-                  groupValue: followListVisibility,
-                  icon: Icons.group_outlined,
-                  title: _t('settings_follow_list_followers', 'যারা ফলো করে'),
-                  description: _t('settings_follow_list_followers_desc',
-                      'শুধু আপনাকে ফলো করা ব্যবহারকারীরাই তালিকা দেখতে পাবে।'),
-                  onSelect: _setFollowListVisibility,
-                ),
-                _buildMessagePrivacyOption(
-                  value: 'only_me',
-                  groupValue: followListVisibility,
-                  icon: Icons.lock_outline_rounded,
-                  title: _t('settings_follow_list_only_me', 'শুধু আমি'),
-                  description: _t('settings_follow_list_only_me_desc',
-                      'আপনি ছাড়া কেউ এই তালিকা দেখতে পাবে না।'),
-                  isLast: true,
-                  onSelect: _setFollowListVisibility,
                 ),
               ],
             ),
@@ -2498,86 +2517,201 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   // A single selectable "who can message me" choice — radio-style row.
+  void _setWhoCanMessage(String value) {
+    setState(() {
+      _userProfile = _userProfile?.copyWith(whoCanMessage: value);
+    });
+  }
+
+  void _setWhoCanCall(String value) {
+    setState(() {
+      _userProfile = _userProfile?.copyWith(whoCanCall: value);
+    });
+  }
+
   void _setFollowListVisibility(String value) {
     setState(() {
       _userProfile = _userProfile?.copyWith(followListVisibility: value);
     });
   }
 
-  Widget _buildMessagePrivacyOption({
-    required String value,
-    required String groupValue,
+  /// One privacy setting: its name on the left, its current answer on the
+  /// right, tapped to change.
+  ///
+  /// The page used to give every setting a card of radio rows, each with an
+  /// icon, a title and a sentence of description — three settings and the
+  /// page was a long scroll of prose to change one word. A setting is a
+  /// question with one answer; this is that shape. The explanations have not
+  /// been thrown away, they moved into the picker, where they are read at the
+  /// moment somebody is actually choosing.
+  Widget _buildChoiceRow({
     required IconData icon,
-    required String title,
-    required String description,
+    required String label,
+    required String value,
+    required List<_PrivacyChoice> choices,
+    required ValueChanged<String> onChanged,
     bool isLast = false,
-    // Which setting this row belongs to. Defaults to who-can-message so the
-    // existing card keeps working untouched.
-    ValueChanged<String>? onSelect,
   }) {
-    final selected = value == groupValue;
-    const accent = Color(0xFF3B82F6);
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          if (onSelect != null) {
-            onSelect(value);
-            return;
-          }
-          setState(() {
-            _userProfile = _userProfile?.copyWith(whoCanMessage: value);
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color:
-                selected ? accent.withValues(alpha: 0.06) : _softSurfaceColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: selected ? accent : Colors.transparent,
-              width: 1.2,
+    final current = choices.firstWhere(
+      (choice) => choice.value == value,
+      orElse: () => choices.first,
+    );
+
+    return Column(
+      children: [
+        InkWell(
+          onTap: () => _pickChoice(
+            label: label,
+            value: value,
+            choices: choices,
+            onChanged: onChanged,
+          ),
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
+            child: Row(
+              children: [
+                Icon(icon, size: 18, color: _bodyTextColor),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppFonts.roboto(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: _headingTextColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // The answer, not a chevron with the answer hidden behind it.
+                // Reading the page should tell you how the account is set
+                // without opening anything.
+                Flexible(
+                  child: Text(
+                    current.label,
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppFonts.roboto(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _primaryColor,
+                    ),
+                  ),
+                ),
+                Icon(Icons.arrow_drop_down_rounded,
+                    size: 22, color: _primaryColor),
+              ],
             ),
           ),
-          child: Row(
+        ),
+        if (!isLast)
+          Divider(height: 1, thickness: 1, color: _softSurfaceColor),
+      ],
+    );
+  }
+
+  /// The picker behind a choice row.
+  Future<void> _pickChoice({
+    required String label,
+    required String value,
+    required List<_PrivacyChoice> choices,
+    required ValueChanged<String> onChanged,
+  }) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon,
-                  size: 20, color: selected ? accent : Colors.grey.shade500),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color:
-                                selected ? accent : const Color(0xFF1F2937))),
-                    const SizedBox(height: 2),
-                    Text(description,
-                        style: TextStyle(
-                            fontSize: 11.5,
-                            color: Colors.grey.shade600,
-                            height: 1.3)),
-                  ],
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: _softSurfaceColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                selected
-                    ? Icons.radio_button_checked_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                size: 20,
-                color: selected ? accent : Colors.grey.shade400,
+              Text(
+                label,
+                style: AppFonts.roboto(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: _headingTextColor,
+                ),
               ),
+              const SizedBox(height: 10),
+              for (final choice in choices)
+                InkWell(
+                  onTap: () => Navigator.pop(sheetContext, choice.value),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          choice.value == value
+                              ? Icons.radio_button_checked_rounded
+                              : Icons.radio_button_unchecked_rounded,
+                          size: 20,
+                          color: choice.value == value
+                              ? _primaryColor
+                              : _bodyTextColor,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                choice.label,
+                                style: AppFonts.roboto(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: _headingTextColor,
+                                ),
+                              ),
+                              // Here rather than on the page: this is the
+                              // moment the difference between two options
+                              // actually matters to somebody.
+                              const SizedBox(height: 2),
+                              Text(
+                                choice.description,
+                                style: AppFonts.roboto(
+                                  fontSize: 12,
+                                  color: _bodyTextColor,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
       ),
     );
+
+    if (picked != null && picked != value) onChanged(picked);
   }
 
   Widget _buildPrivacyTile({
@@ -3352,4 +3486,21 @@ class _SettingsScreenState extends State<SettingsScreen>
       ),
     );
   }
+}
+
+/// One answer a privacy setting can take.
+///
+/// The description travels with the option rather than living on the settings
+/// page, so the page stays a list of questions and answers and the
+/// explanation appears where somebody is choosing between them.
+class _PrivacyChoice {
+  final String value;
+  final String label;
+  final String description;
+
+  const _PrivacyChoice({
+    required this.value,
+    required this.label,
+    required this.description,
+  });
 }

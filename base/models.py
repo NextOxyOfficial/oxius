@@ -221,12 +221,32 @@ class User(AbstractUser):
     FOLLOW_LIST_VISIBILITY_CHOICES = [
         ("everyone", "Everyone"),
         ("followers", "People who follow me"),
+        # People I follow — the inverse of "followers", and the one users ask
+        # for by name: show my lists to the people I chose, not to the people
+        # who chose me.
+        ("following", "People I follow"),
         ("only_me", "Only me"),
     ]
     follow_list_visibility = models.CharField(
         max_length=20,
         choices=FOLLOW_LIST_VISIBILITY_CHOICES,
         default="everyone",
+    )
+    # Who may place a call to this user.
+    #
+    # Deliberately its own setting rather than following who_can_message. A
+    # call interrupts and a message waits, so plenty of people want to be
+    # reachable by text and not by phone — and tying the two meant tightening
+    # one silently took the other away.
+    WHO_CAN_CALL_CHOICES = [
+        ("everyone", "Everyone"),
+        ("followers", "People who follow me"),
+        ("following", "People I follow"),
+        ("mutual", "Mutual connections only"),
+        ("nobody", "Nobody"),
+    ]
+    who_can_call = models.CharField(
+        max_length=20, choices=WHO_CAN_CALL_CHOICES, default="everyone"
     )
     # Account suspension. Unlike is_active (which blocks auth entirely), a
     # suspended user can still authenticate so the app can show a "suspended"

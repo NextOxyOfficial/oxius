@@ -54,6 +54,11 @@ class UserProfile {
   final String? whoCanMessage;
   final String? followListVisibility;
 
+  /// Who may ring this user. Its own setting rather than following
+  /// whoCanMessage: a call interrupts and a message waits, so being reachable
+  /// by text without being reachable by phone is a normal thing to want.
+  final String? whoCanCall;
+
   UserProfile({
     this.id,
     required this.email,
@@ -106,6 +111,7 @@ class UserProfile {
     this.skillsPublic,
     this.whoCanMessage,
     this.followListVisibility,
+    this.whoCanCall,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -162,6 +168,7 @@ class UserProfile {
       whoCanMessage: json['who_can_message']?.toString(),
       followListVisibility:
           json['follow_list_visibility']?.toString(),
+      whoCanCall: json['who_can_call']?.toString(),
     );
   }
 
@@ -248,6 +255,7 @@ class UserProfile {
     bool? aboutPublic,
     String? whoCanMessage,
     String? followListVisibility,
+    String? whoCanCall,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -290,6 +298,7 @@ class UserProfile {
       whoCanMessage: whoCanMessage ?? this.whoCanMessage,
       followListVisibility:
           followListVisibility ?? this.followListVisibility,
+      whoCanCall: whoCanCall ?? this.whoCanCall,
     );
   }
 }

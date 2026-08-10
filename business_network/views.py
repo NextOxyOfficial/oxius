@@ -1968,6 +1968,13 @@ def can_view_follow_lists(viewer, owner):
             follower_id=viewer_id, following_id=owner.id
         ).exists()
 
+    if pref == "following":
+        # The inverse of "followers", and the one people ask for by name: show
+        # my lists to the people I chose to follow, not to whoever chose me.
+        return BusinessNetworkFollowerModel.objects.filter(
+            follower_id=owner.id, following_id=viewer_id
+        ).exists()
+
     # "only_me", or an unrecognised value stored by an older client.
     return False
 

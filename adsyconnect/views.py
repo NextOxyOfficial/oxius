@@ -537,7 +537,14 @@ def _can_call(caller, callee):
         # did not choose to share.
         return False, 'এই ব্যবহারকারীকে এখন কল করা যাচ্ছে না।'
 
-    # who_can_message gates a NEW conversation, not an existing one — that is
+    # "Nobody" means nobody, existing conversation or not. It is the one
+    # answer that is about the phone ringing rather than about who is asking,
+    # so a chat history cannot override it.
+    pref = getattr(callee, 'who_can_call', 'everyone') or 'everyone'
+    if pref == 'nobody':
+        return False, 'এই ব্যবহারকারী এখন কল গ্রহণ করছেন না।'
+
+    # Otherwise the setting gates a NEW conversation, not an existing one —
     # the rule messaging itself follows. Calls are placed from inside a chat,
     # so applying it to a thread these two already have would be stricter for
     # calling than for the messages they are already exchanging: tighten the
@@ -548,8 +555,23 @@ def _can_call(caller, callee):
     if already_talking:
         return True, ''
 
-    allowed, _reason = _can_message(caller, callee)
-    if not allowed:
+    from business_network.models import BusinessNetworkFollowerModel as F_
+
+    caller_follows_callee = F_.objects.filter(
+        follower=caller, following=callee).exists()
+    callee_follows_caller = F_.objects.filter(
+        follower=callee, following=caller).exists()
+
+    if pref == 'followers':
+        ok = caller_follows_callee
+    elif pref == 'following':
+        ok = callee_follows_caller
+    elif pref == 'mutual':
+        ok = caller_follows_callee and callee_follows_caller
+    else:
+        ok = True
+
+    if not ok:
         return False, 'এই ব্যবহারকারী শুধু নির্দিষ্ট মানুষের কল গ্রহণ করেন।'
     return True, ''
 
