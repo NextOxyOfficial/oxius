@@ -222,6 +222,52 @@ class LiveKitCallService {
     return null;
   }
 
+  /// A token fetched before it was needed, waiting for the join that uses it.
+  ///
+  /// Answering a call used to pay for a round trip to mint the token, at the
+  /// one moment the user is watching the screen and waiting. The channel is
+  /// known the instant the phone starts ringing and the endpoint issues a
+  /// token for any non-terminal session, so it can be fetched during the
+  /// ring instead — by the time Accept is pressed the join has everything it
+  /// needs and goes straight to the media server.
+  static LiveKitAuth? _warmAuth;
+  static String? _warmChannel;
+  static DateTime? _warmAt;
+
+  /// Long enough to cover a full ring, short enough that a token is never
+  /// used near its expiry.
+  static const Duration _warmTtl = Duration(seconds: 90);
+
+  /// Fetches the join token ahead of time. Safe to call more than once, and
+  /// safe to fail — the join refetches when there is nothing warm.
+  static Future<void> prewarmToken({
+    required String channelName,
+    String? callId,
+  }) async {
+    if (_warmChannel == channelName && _warmFresh) return;
+    try {
+      final auth = await AdsyConnectService.fetchLiveKitToken(
+        channelName: channelName,
+        callId: callId,
+      );
+      if (auth == null) return;
+      _warmAuth = auth;
+      _warmChannel = channelName;
+      _warmAt = DateTime.now();
+    } catch (_) {
+      // A prewarm that fails costs nothing; the join will fetch its own.
+    }
+  }
+
+  static bool get _warmFresh =>
+      _warmAt != null && DateTime.now().difference(_warmAt!) < _warmTtl;
+
+  static void _clearWarmToken() {
+    _warmAuth = null;
+    _warmChannel = null;
+    _warmAt = null;
+  }
+
   /// Connects to [channelName] as a room. The token is minted server-side and
   /// is scoped to this one room, so a stolen token cannot open another call.
   static Future<bool> joinChannel({
@@ -231,7 +277,16 @@ class LiveKitCallService {
   }) async {
     lastError = null;
     try {
-      final auth = await AdsyConnectService.fetchLiveKitToken(
+      // Single use, deliberately. A rejoin happens because something went
+      // wrong, and handing it the same token the failed attempt used is how
+      // a self-heal turns into a second failure.
+      LiveKitAuth? auth;
+      if (_warmChannel == channelName && _warmFresh) {
+        auth = _warmAuth;
+      }
+      _clearWarmToken();
+
+      auth ??= await AdsyConnectService.fetchLiveKitToken(
         channelName: channelName,
         callId: callId,
       );

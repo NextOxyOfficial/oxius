@@ -619,6 +619,18 @@ class _CallScreenState extends State<CallScreen>
         setState(() {
           _isConnecting = false;
         });
+        // Ringing is dead time on the network, and the join needs a token
+        // that the server will issue for any call that has not ended. Fetch
+        // it now so pressing Accept goes straight to the media server
+        // instead of stopping for a round trip while the user watches.
+        //
+        // Deliberately not awaited and deliberately unable to fail loudly:
+        // the ring must not wait on it, and joinChannel fetches its own if
+        // there is nothing warm.
+        unawaited(LiveKitCallService.prewarmToken(
+          channelName: widget.channelName,
+          callId: widget.callId,
+        ));
         return;
       }
 
@@ -2476,46 +2488,59 @@ class _CallScreenState extends State<CallScreen>
                     _selfViewAlignment.y < 0 ? -1 : 1,
                   );
                 }),
-                child: CallGlassPanel(
-                  padding: const EdgeInsets.all(4),
-                  borderRadius: BorderRadius.circular(22),
-                  child: Container(
-                    width: width,
-                    height: height,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12)),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        _localVideoView(),
-                        Positioned(
-                          left: 8,
-                          right: 8,
-                          bottom: 8,
+                // Just the picture, softly rounded. It used to sit inside a
+                // frosted panel with its own inset border, which put two
+                // visible edges around a thumbnail already distinct from what
+                // is behind it. The shadow does that job without drawing a line.
+                child: Container(
+                  width: width,
+                  height: height,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: const Color(0xFF0F172A),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.34),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // The renderer is a native view on Android and takes
+                      // pointer events for itself, which starved the drag
+                      // above it — the self-view simply would not move. It
+                      // has nothing to do with touches, so it stops seeing
+                      // them and the gesture detector gets every one.
+                      IgnorePointer(child: _localVideoView()),
+                      Positioned(
+                        left: 6,
+                        right: 6,
+                        bottom: 6,
+                        child: IgnorePointer(
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.46),
-                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.black.withValues(alpha: 0.42),
+                              borderRadius: BorderRadius.circular(9),
                             ),
                             child: const Text(
                               'You',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 11,
+                                fontSize: 10.5,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),

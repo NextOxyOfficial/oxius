@@ -1715,6 +1715,77 @@ def send_call_status(request):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # Somebody answered a call the server had already written off.
+        #
+        # Found in production: of 38 answered calls in a day, 7 never reached
+        # media, and every one of them logged a terminal status arriving
+        # BEFORE the accept —
+        #
+        #     status=ended     then  status=accepted
+        #     status=busy      then  status=accepted
+        #
+        # The callee's own device sent both, seconds apart. Whatever confused
+        # it, by the time the human's answer arrived the session was terminal,
+        # so the token endpoint refused it with a 409 and the call could never
+        # connect. The person had pressed Accept and got silence.
+        #
+        # A human answering is a stronger signal than an automatic 'busy' or a
+        # stray 'ended', so an accept close behind one of those revives the
+        # call. Only those two: 'rejected' is somebody deliberately declining
+        # and 'cancelled' is the caller giving up, and neither should be
+        # undone by a late accept from the other side.
+        _REVIVABLE = {
+            CallSession.STATUS_ENDED,
+            CallSession.STATUS_BUSY,
+            CallSession.STATUS_MISSED,
+            CallSession.STATUS_FAILED,
+        }
+        _REVIVE_WINDOW = timezone.timedelta(seconds=20)
+        if (
+            status_value == CallSession.STATUS_ACCEPTED
+            and call_session.status in CallSession.TERMINAL_STATUSES
+        ):
+            since_end = (
+                timezone.now() - call_session.ended_at
+                if call_session.ended_at is not None
+                else None
+            )
+            revivable = (
+                call_session.status in _REVIVABLE
+                and since_end is not None
+                and since_end <= _REVIVE_WINDOW
+            )
+            if not revivable:
+                # An accept for a call that is genuinely over: declined,
+                # cancelled, or dead long enough that nobody is still waiting
+                # on it. Letting it through would reopen a finished call and
+                # put the caller back on a screen they had left.
+                logger.warning(
+                    'CALLTRACE ignore-accept call=%s %s accepted a call '
+                    'marked %s%s',
+                    str(call_session.id)[:8], sender.email,
+                    call_session.status,
+                    ' %.1fs ago' % since_end.total_seconds()
+                    if since_end else ' (no end time)',
+                )
+                return Response({
+                    'success': True,
+                    'ignored': True,
+                    'reason': 'call_already_over',
+                    'call_id': str(call_session.id),
+                    'status': call_session.status,
+                })
+
+            logger.warning(
+                'CALLTRACE revive call=%s %s answered a call marked %s '
+                '%.1fs earlier',
+                str(call_session.id)[:8], sender.email, call_session.status,
+                since_end.total_seconds(),
+            )
+            call_session.ended_at = None
+            call_session.duration_seconds = None
+            call_session.save(update_fields=['ended_at', 'duration_seconds'])
+
         # A call that was answered cannot go back to unanswered.
         #
         # 'rejected', 'busy' and 'missed' all say "nobody picked up". Once
@@ -1733,6 +1804,16 @@ def send_call_status(request):
             CallSession.STATUS_BUSY,
             CallSession.STATUS_MISSED,
         }
+        # 'cancelled' means the caller gave up before it was answered. After
+        # an accept it is the wrong word for the right intent — the call IS
+        # over, so record it as ended rather than as a call nobody took.
+        # Seen in production behind a double accept.
+        if (
+            call_session.accepted_at is not None
+            and status_value == CallSession.STATUS_CANCELLED
+        ):
+            status_value = CallSession.STATUS_ENDED
+
         if (
             call_session.accepted_at is not None
             and status_value in _CANNOT_FOLLOW_ACCEPT

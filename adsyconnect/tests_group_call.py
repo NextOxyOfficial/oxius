@@ -799,3 +799,105 @@ class AcceptedCallCannotBeUnansweredTests(TestCase):
             {e: p['status'] for e, p in self.sent},
             {'vic@example.com': 'rejected'},
         )
+
+
+class LateAcceptRevivesTheCallTests(TestCase):
+    """A human answering beats an automatic status that got there first.
+
+    Measured in production: of 38 answered calls in a day, 7 never reached
+    media, and every one logged a terminal status BEFORE the accept — the
+    callee's own device sending 'ended' or 'busy' seconds before the person
+    pressed Accept. The session was terminal by then, the token endpoint
+    409'd, and the call could never connect.
+    """
+
+    def setUp(self):
+        self.caller = User.objects.create_user(
+            username='xan', email='xan@example.com', password='x',
+            first_name='Xan', phone='+880100000061')
+        self.callee = User.objects.create_user(
+            username='yara', email='yara@example.com', password='x',
+            first_name='Yara', phone='+880100000062')
+        self.session = CallSession.objects.create(
+            channel_name='c_late_accept',
+            caller=self.caller, callee=self.callee, call_type='audio',
+            status=CallSession.STATUS_RINGING,
+        )
+        for target in ('adsyconnect.views._send_call_data_message',
+                       'adsyconnect.views._broadcast_to_user'):
+            p = patch(target, return_value={})
+            p.start()
+            self.addCleanup(p.stop)
+
+    def post(self, sender, status_value, receiver):
+        client = APIClient()
+        client.force_authenticate(user=sender)
+        return client.post(
+            '/api/adsyconnect/send-call-status/',
+            {
+                'receiver_id': str(receiver.id),
+                'channel_name': self.session.channel_name,
+                'status': status_value,
+                'call_type': 'audio',
+                'call_id': str(self.session.id),
+            },
+            format='json',
+        )
+
+    def test_accept_after_a_stray_ended_revives_the_call(self):
+        self.post(self.callee, 'ended', self.caller)
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ENDED)
+
+        self.post(self.callee, 'accepted', self.caller)
+
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ACCEPTED)
+        self.assertIsNotNone(self.session.accepted_at)
+        # ended_at cleared, or the token endpoint keeps refusing the call.
+        self.assertIsNone(self.session.ended_at)
+
+    def test_accept_after_an_automatic_busy_revives_the_call(self):
+        self.post(self.callee, 'busy', self.caller)
+        self.post(self.callee, 'accepted', self.caller)
+
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ACCEPTED)
+        self.assertIsNone(self.session.ended_at)
+
+    def test_a_deliberate_decline_is_not_undone(self):
+        """Rejecting is a person's decision; a late accept must not reverse it."""
+        self.post(self.callee, 'rejected', self.caller)
+        self.post(self.callee, 'accepted', self.caller)
+
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_REJECTED)
+
+    def test_a_caller_giving_up_is_not_undone(self):
+        self.post(self.caller, 'cancelled', self.callee)
+        self.post(self.callee, 'accepted', self.caller)
+
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_CANCELLED)
+
+    def test_an_old_dead_call_is_not_revived(self):
+        """Only a fresh mistake is worth undoing."""
+        from django.utils import timezone as tz
+        self.post(self.callee, 'ended', self.caller)
+        self.session.refresh_from_db()
+        self.session.ended_at = tz.now() - tz.timedelta(minutes=5)
+        self.session.save(update_fields=['ended_at'])
+
+        self.post(self.callee, 'accepted', self.caller)
+
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ENDED)
+
+    def test_cancelled_after_an_accept_is_recorded_as_ended(self):
+        """Wrong word, right intent — the call was answered, then it stopped."""
+        self.post(self.callee, 'accepted', self.caller)
+        self.post(self.callee, 'cancelled', self.caller)
+
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, CallSession.STATUS_ENDED)
+        self.assertIsNotNone(self.session.accepted_at)
