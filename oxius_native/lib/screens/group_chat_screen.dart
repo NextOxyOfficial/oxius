@@ -143,6 +143,28 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     }
   }
 
+  /// Tapping the composer opens the keyboard, which takes roughly a third of
+  /// the screen from the bottom. Unlike the one-to-one thread, this list is
+  /// not reversed, so the newest messages do not stay pinned — they simply
+  /// slide out of sight behind the keyboard, at the exact moment the user has
+  /// decided to reply to them. Follow them down, the way every other
+  /// messenger does.
+  void _onComposerFocusChanged() {
+    if (!_messageFocusNode.hasFocus) return;
+    // The keyboard animates in over ~250ms and maxScrollExtent only grows as
+    // it does, so a single jump now would stop short. Nudge twice: once the
+    // viewport has begun shrinking, and once it has settled.
+    for (final delay in const [
+      Duration(milliseconds: 60),
+      Duration(milliseconds: 320)
+    ]) {
+      Future.delayed(delay, () {
+        if (!mounted || !_messageFocusNode.hasFocus) return;
+        _jumpToBottom();
+      });
+    }
+  }
+
   void _jumpToBottom() {
     if (!_scroll.hasClients) return;
     _scroll.animateTo(
@@ -170,6 +192,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       (_) => AdsyConnectService.setActiveGroup(_groupId),
     );
     _messageController.addListener(_onInputChanged);
+    _messageFocusNode.addListener(_onComposerFocusChanged);
     _scroll.addListener(_onScrollChanged);
     // Instant open: paint cached history with no spinner; the fetch below
     // reconciles with fresh data (stale-while-revalidate).
@@ -250,6 +273,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     _recordTimer?.cancel();
     _messageController.removeListener(_onInputChanged);
     _messageController.dispose();
+    _messageFocusNode.removeListener(_onComposerFocusChanged);
     _messageFocusNode.dispose();
     _scroll.dispose();
     _recorder.dispose();

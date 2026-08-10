@@ -390,6 +390,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     AdsyConnectService.setActiveChat(widget.chatroomId);
     _startActiveChatHeartbeat();
     _isOtherUserOnline = widget.isOnline;
+    _messageFocusNode.addListener(_onComposerFocusChanged);
     // The ad/post this chat was opened about — pending until the user sends
     // (or dismisses) it.
     _pendingAttachment = widget.pendingAttachment;
@@ -616,6 +617,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _searchController.dispose();
     _itemPositionsListener.itemPositions
         .removeListener(_onItemPositionsChanged);
+    _messageFocusNode.removeListener(_onComposerFocusChanged);
     _messageFocusNode.dispose();
     _searchFocusNode.dispose();
     _audioRecorder.dispose();
@@ -1534,6 +1536,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
       }
     });
+  }
+
+  /// Opening the keyboard takes about a third of the screen. This thread is
+  /// reversed, so the newest row is anchored and should survive that on its
+  /// own — but the group thread is not, and the two are the same feature to
+  /// the person using them. Sticking to the newest row on focus makes both
+  /// behave alike, and costs nothing here when it is already in view.
+  void _onComposerFocusChanged() {
+    if (!_messageFocusNode.hasFocus) return;
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
