@@ -18,11 +18,18 @@ class ChatMediaItem {
   final String? senderName;
   final String? timeLabel;
 
+  /// The chat message this media came from. Carried so a reply typed in the
+  /// viewer can quote the right thing; surfaces with no chat behind them
+  /// (a gig submission, a bare video link) simply leave it null and get no
+  /// composer.
+  final Map<String, dynamic>? sourceMessage;
+
   const ChatMediaItem({
     required this.url,
     required this.isVideo,
     this.senderName,
     this.timeLabel,
+    this.sourceMessage,
   });
 }
 
@@ -43,11 +50,17 @@ class ChatMediaViewer extends StatefulWidget {
   /// Long-press on the media (save / share, supplied by the chat screen).
   final void Function(ChatMediaItem item)? onLongPress;
 
+  /// Send a reply to [item] with [text]. Supplied by the chat screen, which
+  /// owns the composing, the optimistic bubble and the reply encoding — the
+  /// viewer only collects the words. Omit it and no composer is shown.
+  final void Function(ChatMediaItem item, String text)? onSendReply;
+
   const ChatMediaViewer({
     super.key,
     required this.items,
     this.initialIndex = 0,
     this.onLongPress,
+    this.onSendReply,
   });
 
   static Future<void> open(
@@ -55,6 +68,7 @@ class ChatMediaViewer extends StatefulWidget {
     required List<ChatMediaItem> items,
     int initialIndex = 0,
     void Function(ChatMediaItem item)? onLongPress,
+    void Function(ChatMediaItem item, String text)? onSendReply,
   }) {
     return Navigator.of(context).push(
       PageRouteBuilder(
@@ -65,6 +79,7 @@ class ChatMediaViewer extends StatefulWidget {
           items: items,
           initialIndex: initialIndex,
           onLongPress: onLongPress,
+          onSendReply: onSendReply,
         ),
         transitionsBuilder: (_, animation, __, child) =>
             FadeTransition(opacity: animation, child: child),
@@ -92,10 +107,35 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
   @override
   void dispose() {
     _pages.dispose();
+    _reply.dispose();
+    _replyFocus.dispose();
     super.dispose();
   }
 
   ChatMediaItem get _current => widget.items[_index];
+
+  final TextEditingController _reply = TextEditingController();
+  final FocusNode _replyFocus = FocusNode();
+  bool _replySent = false;
+
+  /// A reply needs both a chat willing to send it and a message to attach it
+  /// to. The gig-submission and bare-video callers have neither.
+  bool get _canReply =>
+      widget.onSendReply != null && _current.sourceMessage != null;
+
+  void _sendReply() {
+    final text = _reply.text.trim();
+    if (text.isEmpty || !_canReply) return;
+    widget.onSendReply!(_current, text);
+    _reply.clear();
+    _replyFocus.unfocus();
+    // The reply lands in the thread behind this screen, so say it went —
+    // otherwise the only feedback is the box emptying itself.
+    setState(() => _replySent = true);
+    Future.delayed(const Duration(milliseconds: 1600), () {
+      if (mounted) setState(() => _replySent = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +144,7 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
     final fade = (1 - (_dragOffset.abs() / 320)).clamp(0.35, 1.0);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black.withValues(alpha: fade),
       body: Stack(
         children: [
@@ -147,7 +188,134 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
             ),
           ),
           _header(),
+          if (_canReply) _composer(),
+          if (_replySent) _sentToast(),
         ],
+      ),
+    );
+  }
+
+  /// The reply box, pinned to the bottom and lifted by the keyboard.
+  ///
+  /// Scaffold's own resize is off here — the photo must keep the whole screen
+  /// rather than being squeezed into what the keyboard leaves — so the inset
+  /// is applied to this bar alone.
+  Widget _composer() {
+    final inset = MediaQuery.of(context).viewInsets.bottom;
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: inset),
+        child: Container(
+          padding: EdgeInsets.fromLTRB(
+            10,
+            8,
+            10,
+            8 + (inset > 0 ? 0 : MediaQuery.of(context).padding.bottom),
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [
+                Colors.black.withValues(alpha: 0.72),
+                Colors.transparent,
+              ],
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(24),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.22)),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: TextField(
+                    controller: _reply,
+                    focusNode: _replyFocus,
+                    minLines: 1,
+                    maxLines: 4,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendReply(),
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                      border: InputBorder.none,
+                      hintText: _current.isVideo
+                          ? 'ভিডিওটিতে রিপ্লাই দিন…'
+                          : 'ছবিটিতে রিপ্লাই দিন…',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Enabled only with something to send, so the button never
+              // promises an action it will ignore.
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _reply,
+                builder: (context, value, _) {
+                  final ready = value.text.trim().isNotEmpty;
+                  return GestureDetector(
+                    onTap: ready ? _sendReply : null,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: ready
+                            ? const Color(0xFF2563EB)
+                            : Colors.white.withValues(alpha: 0.16),
+                      ),
+                      child: Icon(
+                        Icons.send_rounded,
+                        size: 20,
+                        color: ready
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sentToast() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 96 + MediaQuery.of(context).viewInsets.bottom,
+      child: IgnorePointer(
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'রিপ্লাই পাঠানো হয়েছে',
+              style: TextStyle(color: Colors.white, fontSize: 12.5),
+            ),
+          ),
+        ),
       ),
     );
   }

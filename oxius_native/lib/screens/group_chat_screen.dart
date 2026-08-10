@@ -1,5 +1,4 @@
 import 'dart:async';
-import '../utils/media_headers.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -35,6 +34,7 @@ import '../widgets/common/adsy_dialog.dart';
 import 'business_network/profile_screen.dart';
 import 'group_info_screen.dart';
 import '../widgets/app_network_image.dart';
+import '../widgets/chat/chat_media_viewer.dart';
 
 /// Group conversation. Reuses the SAME polished pieces as the 1:1 chat —
 /// [ChatMessageInput] (text, mic recording, attachments with image preview)
@@ -993,27 +993,56 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     );
   }
 
+  /// Open the group's photos and videos in the same viewer the one-to-one
+  /// thread uses.
+  ///
+  /// This screen had its own: an AppBar over a bare InteractiveViewer, which
+  /// showed one image in isolation, could not play a video, and had nothing to
+  /// reply with. The same media in a group and in a direct message should not
+  /// be two different experiences.
   void _viewImage(String path) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.black,
-          iconTheme: const IconThemeData(color: Colors.white),
-        ),
-        body: Center(
-          child: InteractiveViewer(
-            maxScale: 5,
-            child: AppNetworkImage(AppConfig.getAbsoluteUrl(path),
-                fit: BoxFit.contain,
-                fadeIn: false,
-                httpHeaders: kMediaHeaders,
-                errorWidget: const Icon(Icons.broken_image_outlined,
-                    color: Colors.white54, size: 48)),
-          ),
-        ),
-      ),
-    ));
+    final media = <ChatMediaItem>[];
+    var initial = 0;
+    for (final raw in _messages) {
+      final m = _bubbleMessage(raw);
+      final type = (m['type'] ?? 'text').toString();
+      if (type != 'image' && type != 'video') continue;
+      final url = (m['mediaUrl'] ?? '').toString();
+      if (url.isEmpty) continue;
+      if (url == path) initial = media.length;
+      media.add(ChatMediaItem(
+        url: AppConfig.getAbsoluteUrl(url),
+        isVideo: type == 'video',
+        senderName:
+            m['isMe'] == true ? 'আপনি' : (m['senderName'] ?? '').toString(),
+        timeLabel: m['timeDisplay']?.toString(),
+        // The raw payload, because that is what _replyingTo expects.
+        sourceMessage: raw,
+      ));
+    }
+    if (media.isEmpty) {
+      media.add(ChatMediaItem(
+        url: AppConfig.getAbsoluteUrl(path),
+        isVideo: false,
+      ));
+    }
+
+    ChatMediaViewer.open(
+      context,
+      items: media,
+      initialIndex: initial,
+      onSendReply: _sendReplyToMedia,
+    );
+  }
+
+  /// Send a reply typed inside the media viewer, through the same path the
+  /// composer uses so it is an ordinary group reply on arrival.
+  void _sendReplyToMedia(ChatMediaItem item, String text) {
+    final source = item.sourceMessage;
+    if (source == null || text.trim().isEmpty) return;
+    _replyingTo = source;
+    _messageController.text = text.trim();
+    unawaited(_sendText());
   }
 
   // ── Message mapping — group payload → the 1:1 bubble's shape ────────────

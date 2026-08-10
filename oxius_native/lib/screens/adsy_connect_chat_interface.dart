@@ -3863,6 +3863,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         isVideo: type == 'video',
         senderName: m['isMe'] == true ? 'আপনি' : widget.userName,
         timeLabel: m['timeDisplay']?.toString(),
+        // Carried so a reply typed in the viewer quotes this exact message.
+        sourceMessage: m,
       ));
     }
     if (media.isEmpty) {
@@ -3874,7 +3876,23 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       items: media,
       initialIndex: initial,
       onLongPress: (item) => _showImageOptions(item.url, isVideo: item.isVideo),
+      onSendReply: _sendReplyToMedia,
     );
+  }
+
+  /// Send a reply typed inside the media viewer.
+  ///
+  /// Deliberately routed through the ordinary composer rather than a second
+  /// send path: _sendMessage already owns the optimistic bubble, the reply
+  /// encoding, the failure handling and the scroll. Borrowing it means a reply
+  /// sent from the viewer is indistinguishable from one typed in the thread —
+  /// which is the point.
+  void _sendReplyToMedia(ChatMediaItem item, String text) {
+    final source = item.sourceMessage;
+    if (source == null || text.trim().isEmpty) return;
+    _replyingToMessage = source;
+    _messageController.text = text.trim();
+    unawaited(_sendMessage());
   }
 
   void _showImageOptions(String filePath, {bool isVideo = false}) {
