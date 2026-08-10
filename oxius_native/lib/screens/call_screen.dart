@@ -1662,9 +1662,14 @@ class _CallScreenState extends State<CallScreen>
 
   Widget _buildWaitingView() {
     final compact = _isCompactLayout;
+    // The controls own the bottom of the screen; everything here sits above
+    // them. Taken from the bar itself — a fixed number here is what put
+    // "Secure" and "audio call" on top of the Mute and Video buttons.
+    final controls = _controlsFootprint;
     final bottomReserved = widget.isIncoming && !_callAccepted
-        ? (compact ? 210.0 : 248.0)
-        : (compact ? 150.0 : 188.0);
+        // The incoming Accept/Decline panel sits above the bar as well.
+        ? controls + (compact ? 96.0 : 112.0)
+        : controls + (compact ? 16.0 : 24.0);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1675,8 +1680,11 @@ class _CallScreenState extends State<CallScreen>
                 EdgeInsets.fromLTRB(24, compact ? 90 : 104, 24, bottomReserved),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight:
-                    math.max(0, constraints.maxHeight - (compact ? 170 : 206)),
+                minHeight: math.max(
+                    0,
+                    constraints.maxHeight -
+                        bottomReserved -
+                        (compact ? 20 : 24)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1849,13 +1857,22 @@ class _CallScreenState extends State<CallScreen>
     );
   }
 
-  /// Whether the control bar is two rows tall right now. The self-view reads
-  /// this too, so its clearance and the bar's shape can never disagree.
-  bool get _controlsWrap => callControlsNeedTwoRows(
-        screenWidth: MediaQuery.sizeOf(context).width,
-        compact: _isCompactLayout,
-        isVideo: _callType == 'video',
-      );
+  /// How much room the control bar takes at the bottom, measured the same
+  /// way the bar measures itself.
+  ///
+  /// Read by the self-view and by the waiting view's reserved space. Both
+  /// used to carry their own guess at this, and when the bar changed shape
+  /// the guesses were wrong — the info pills ended up drawn underneath the
+  /// buttons.
+  double get _controlsFootprint {
+    final metrics = callControlMetrics(
+      screenWidth: MediaQuery.sizeOf(context).width,
+      compact: _isCompactLayout,
+      isVideo: _callType == 'video',
+    );
+    // Bar height plus the gap it sits above the screen edge.
+    return metrics.height + (_isCompactLayout ? 10 : 16);
+  }
 
   /// The control bar, wired to this call.
   ///
@@ -2298,22 +2315,22 @@ class _CallScreenState extends State<CallScreen>
     }
 
     return Positioned(
-      top: compact ? 8 : 14,
-      left: 18,
-      right: 18,
+      top: compact ? 6 : 12,
+      left: 14,
+      right: 14,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: CallGlassPanel(
-              padding: EdgeInsets.fromLTRB(compact ? 12 : 14, compact ? 12 : 14,
-                  compact ? 12 : 14, compact ? 12 : 14),
-              borderRadius: BorderRadius.circular(24),
+              padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 9 : 12, vertical: compact ? 8 : 10),
+              borderRadius: BorderRadius.circular(compact ? 18 : 22),
               child: Row(
                 children: [
                   Container(
-                    width: compact ? 40 : 46,
-                    height: compact ? 40 : 46,
+                    width: compact ? 34 : 40,
+                    height: compact ? 34 : 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -2321,9 +2338,9 @@ class _CallScreenState extends State<CallScreen>
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: CallAvatarImage(
-                        avatarUrl: widget.calleeAvatar, iconSize: 22),
+                        avatarUrl: widget.calleeAvatar, iconSize: 19),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: compact ? 9 : 11),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2335,15 +2352,15 @@ class _CallScreenState extends State<CallScreen>
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: compact ? 15 : 16,
+                            fontSize: compact ? 14 : 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: compact ? 1 : 2),
                         Row(
                           children: [
                             _buildStageDot(),
-                            const SizedBox(width: 7),
+                            const SizedBox(width: 6),
                             Flexible(
                               child: Text(
                                 '$_callModeLabel • $_stageLabel',
@@ -2351,7 +2368,7 @@ class _CallScreenState extends State<CallScreen>
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.68),
-                                  fontSize: compact ? 11 : 12,
+                                  fontSize: compact ? 10.5 : 11.5,
                                   fontWeight: FontWeight.w600,
                                   fontFeatures: const [
                                     FontFeature.tabularFigures()
@@ -2368,10 +2385,11 @@ class _CallScreenState extends State<CallScreen>
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: compact ? 8 : 10),
           CallIconChip(
             icon: Icons.remove_rounded,
-            label: 'Minimise',
+            label: compact ? null : 'Minimise',
+            dense: compact,
             onTap: _minimizeCall,
           ),
         ],
@@ -2390,19 +2408,11 @@ class _CallScreenState extends State<CallScreen>
     final compact = _isCompactLayout;
     final width = compact ? 92.0 : 108.0;
     final height = compact ? 128.0 : 150.0;
-    // Clear of the header pill above and the control bar below — and the bar
-    // is a row taller when the controls wrap, so the clearance follows it.
-    // Getting this wrong parks the self-view under End, where dragging it
-    // out of the way means pressing the button you are trying to avoid.
+    // Clear of the header pill above and the control bar below. Measured
+    // from the bar rather than guessed: parking the self-view under End
+    // means dragging it clear requires pressing the button you are avoiding.
     final margin = EdgeInsets.fromLTRB(
-      14,
-      74,
-      14,
-      116 +
-          (_controlsWrap
-              ? callControlsWrapExtraHeight(compact: compact)
-              : 0.0),
-    );
+      14, 74, 14, _controlsFootprint + 12);
 
     return Positioned.fill(
       child: Padding(

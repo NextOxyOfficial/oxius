@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'agora_call_service.dart';
 import 'call_foreground_service.dart';
 import 'call_navigation.dart';
+import 'fcm_service.dart';
+import 'livekit_call_service.dart';
 
 /// Keeping a live call reachable after the user leaves the app.
 ///
@@ -41,6 +45,9 @@ class CallBubbleService with WidgetsBindingObserver {
 
   /// True while Android is showing the app as a floating PiP window.
   final ValueNotifier<bool> inPictureInPicture = ValueNotifier<bool>(false);
+
+  /// Runs only while the overlay bubble is on screen. See [_watchForDeath].
+  Timer? _livenessTimer;
 
   static void _log(String message) {
     if (kDebugMode) debugPrint('🫧 CallBubble: $message');
@@ -131,6 +138,7 @@ class CallBubbleService with WidgetsBindingObserver {
 
   Future<void> _sync() async {
     if (!Platform.isAndroid) return;
+    _updateDeathWatch();
 
     final info = AgoraCallService.activeCallInfo;
     // Three reasons not to draw the bubble, and only one of them is "no
@@ -159,6 +167,82 @@ class CallBubbleService with WidgetsBindingObserver {
           : (AgoraCallService.activeCallAccepted ? 'On call' : 'Ringing'),
     });
     _visible = shown == true;
+  }
+
+  /// Whether this isolate is currently deaf to call events.
+  ///
+  /// Away from the foreground, a terminal call_status lands in the FCM
+  /// background isolate instead of this one — so both surfaces that can be
+  /// on screen while the app is away (the overlay bubble and the PiP window)
+  /// need watching, not just the bubble.
+  bool get _needsDeathWatch =>
+      AgoraCallService.isInCall &&
+      (!_appInForeground || inPictureInPicture.value);
+
+  void _updateDeathWatch() {
+    if (_needsDeathWatch) {
+      _livenessTimer ??= Timer.periodic(
+          const Duration(seconds: 2), (_) => _checkStillAlive());
+      return;
+    }
+    _livenessTimer?.cancel();
+    _livenessTimer = null;
+  }
+
+  /// Notice a call that ended while the app was away.
+  ///
+  /// Away from the foreground, a terminal call_status arrives in the FCM
+  /// *background* isolate, which cannot reach this one's state. So the app
+  /// went on believing the call was live: the bubble stayed over the home
+  /// screen after the other side hung up, and it only vanished once tapping
+  /// it resumed the app and something finally reconciled.
+  ///
+  /// The background isolate does leave a marker naming the dead channel.
+  /// Nothing was reading it while the app was away; now something does.
+  Future<void> _checkStillAlive() async {
+    if (!_needsDeathWatch) {
+      _updateDeathWatch();
+      // The call may have ended between ticks — let _sync take the surfaces
+      // down rather than leaving whichever one is up.
+      if (!AgoraCallService.isInCall) await _sync();
+      return;
+    }
+
+    final channel = AgoraCallService.activeCallInfo?['channelName']?.toString();
+    if (channel == null || channel.isEmpty) return;
+
+    String? raw;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Reload: this value is written by the OTHER isolate, so the copy this
+      // one cached at startup would never change.
+      await prefs.reload();
+      raw = prefs.getString(FCMService.bgRingTerminalPrefsKey);
+    } catch (_) {
+      return;
+    }
+    if (raw == null || raw.isEmpty) return;
+
+    try {
+      final marker = jsonDecode(raw);
+      if (marker is! Map || marker['channel']?.toString() != channel) return;
+    } catch (_) {
+      return;
+    }
+
+    _log('peer ended the call while backgrounded — tearing down');
+    // Same teardown handleRemoteCallStatus does for a call with no screen in
+    // front of it. Media first, so the room is left before the state flips
+    // and the UI stops asking about it.
+    try {
+      await LiveKitCallService.leaveChannel();
+    } catch (_) {}
+    AgoraCallService.setInCall(false);
+    await _sync();
+    // A PiP window is Android's, not ours to hide — ask for it to be left.
+    if (inPictureInPicture.value) {
+      await _invoke('exitPip');
+    }
   }
 
   Future<void> _handlePendingCallOpen() async {

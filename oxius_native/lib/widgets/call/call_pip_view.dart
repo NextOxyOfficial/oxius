@@ -76,59 +76,87 @@ class _PipBodyState extends State<_PipBody> {
   @override
   Widget build(BuildContext context) {
     final info = AgoraCallService.activeCallInfo;
-    final name = info?['peerName']?.toString().trim() ?? '';
     final avatar = info?['peerAvatar']?.toString() ?? '';
+    final isVideo = info?['callType']?.toString() == 'video';
+
+    // Deliberately the in-app bubble's composition, not a smaller call
+    // screen: ringed face, call-type marker, one dark pill underneath. The
+    // window it is drawn in changes; the thing being drawn should not.
+    const face = 64.0;
 
     return Material(
       color: const Color(0xFF0B1220),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: face,
+                height: face,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  // The same green ring as the in-app bubble — one bubble,
-                  // two places it can be drawn.
+                  color: const Color(0xFF0B1220),
                   border: Border.all(color: const Color(0xFF22C55E), width: 2),
                 ),
-                child: ClipOval(
-                  child: avatar.isNotEmpty
-                      ? AppNetworkImage(
-                          avatar,
-                          width: 52,
-                          height: 52,
-                          errorWidget: const _PipAvatarFallback(),
-                        )
-                      : const _PipAvatarFallback(),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: ClipOval(
+                        child: avatar.isNotEmpty
+                            ? AppNetworkImage(
+                                avatar,
+                                width: face,
+                                height: face,
+                                errorWidget: const _PipAvatarFallback(),
+                              )
+                            : const _PipAvatarFallback(),
+                      ),
+                    ),
+                    // A glance tells voice from video without reading.
+                    Positioned(
+                      right: -1,
+                      bottom: -1,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF22C55E),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: Icon(
+                          isVideo
+                              ? Icons.videocam_rounded
+                              : Icons.call_rounded,
+                          size: 11,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (name.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  name,
+              const SizedBox(height: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF111827),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _status,
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.clip,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
+                    height: 1.2,
+                    fontFeatures: [FontFeature.tabularFigures()],
                   ),
-                ),
-              ],
-              const SizedBox(height: 2),
-              Text(
-                _status,
-                maxLines: 1,
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 11,
-                  fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
             ],

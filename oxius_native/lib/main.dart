@@ -358,14 +358,30 @@ class MyApp extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       child ?? const SizedBox.shrink(),
-                      // Draggable, and it positions itself — over a corner
-                      // rather than across a row, so no app bar, search
-                      // field or tab strip ends up underneath it.
-                      const CallBubble(),
-                      // Last, so it covers everything: while Android has the
-                      // app shrunk into a floating call window, nothing else
-                      // in the tree is legible at that size.
-                      const CallPipView(),
+                      // These two sit OUTSIDE the Navigator, so nothing below
+                      // them provides a Material — and text with no Material
+                      // ancestor is painted by Flutter with a yellow
+                      // underline, which is what was showing under the call
+                      // bubble's label. One transparent Material over both
+                      // fixes every Text inside them at once; patching each
+                      // Text with TextDecoration.none would leave the next
+                      // one added to inherit the same surprise.
+                      const Material(
+                        type: MaterialType.transparency,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Draggable, and it positions itself — over a
+                            // corner rather than across a row, so no app bar,
+                            // search field or tab strip ends up underneath it.
+                            CallBubble(),
+                            // Last, so it covers everything: while Android has
+                            // the app shrunk into a floating call window,
+                            // nothing else in the tree is legible at that size.
+                            CallPipView(),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

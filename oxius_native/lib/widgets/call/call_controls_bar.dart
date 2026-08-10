@@ -7,17 +7,51 @@ import 'package:flutter/material.dart';
 /// disagree.
 const double kCallControlsInset = 12;
 
-/// Whether the call controls need a second row at this width.
+/// The sizes the control bar lays out with at a given width.
 ///
-/// A plain function so the arithmetic can be tested at specific screen
-/// widths. The whole point is that the controls never overflow and never
-/// hide behind a scroll gesture, and neither is something you can eyeball on
-/// one device.
-///
-/// The numbers are the ones the bar lays out with: [count] round buttons,
-/// the last of them the larger End button, separated by a gap, all inside
-/// the bar's horizontal padding and the screen inset.
-bool callControlsNeedTwoRows({
+/// One row, always. The controls used to be a fixed size and either
+/// overflowed, scrolled (hiding End off the edge), or wrapped to a second
+/// row that ate the screen. Sizing them to the width instead means every
+/// control is visible and reachable on every phone, and the bar stays one
+/// line high.
+class CallControlMetrics {
+  /// Diameter of an ordinary round control.
+  final double button;
+
+  /// Diameter of End, which stays a little larger than the rest.
+  final double end;
+
+  final double gap;
+  final double hPad;
+  final double vPad;
+
+  /// Total height of the bar, labels and padding included.
+  ///
+  /// Everything that has to stay clear of the bar reads this rather than
+  /// keeping its own guess, which is how the info pills ended up drawn
+  /// underneath the buttons.
+  final double height;
+
+  const CallControlMetrics({
+    required this.button,
+    required this.end,
+    required this.gap,
+    required this.hPad,
+    required this.vPad,
+    required this.height,
+  });
+}
+
+/// Height of the word under each control: the 5px gap plus one 10px line.
+const double _kControlLabelHeight = 18;
+
+/// A control smaller than this stops being a reliable tap target.
+const double _kMinControlSize = 38;
+
+/// End relative to the others — enough to find without looking.
+const double _kEndScale = 1.12;
+
+CallControlMetrics callControlMetrics({
   required double screenWidth,
   required bool compact,
   required bool isVideo,
@@ -25,23 +59,37 @@ bool callControlsNeedTwoRows({
   // mute, speaker, add, end always; video adds camera and flip, audio adds
   // the upgrade-to-video button.
   final count = isVideo ? 6 : 5;
-  final btn = compact ? 52.0 : 56.0;
-  final end = compact ? 62.0 : 68.0;
-  final gap = compact ? 8.0 : 10.0;
-  final hPad = compact ? 10.0 : 14.0;
-  final needed = (count - 1) * btn +
-      end +
-      (count - 1) * gap +
-      hPad * 2 +
-      kCallControlsInset * 2;
-  return needed > screenWidth;
-}
+  final hPad = compact ? 8.0 : 12.0;
+  final vPad = compact ? 7.0 : 9.0;
+  var gap = compact ? 6.0 : 8.0;
 
-/// How much taller the bar is when it wraps — the self-view reads this so it
-/// never parks under End, where dragging it clear means pressing the button
-/// you are trying to avoid.
-double callControlsWrapExtraHeight({required bool compact}) =>
-    compact ? 64.0 : 70.0;
+  double fit(double g) =>
+      (screenWidth - kCallControlsInset * 2 - hPad * 2 - (count - 1) * g) /
+      (count - 1 + _kEndScale);
+
+  var button = fit(gap);
+
+  // Too tight for a comfortable target: buy back width from the gaps before
+  // shrinking the buttons any further.
+  if (button < _kMinControlSize) {
+    gap = 4;
+    button = fit(gap);
+  }
+
+  // And never larger than the old fixed size, or a tablet gets dinner plates.
+  final maxButton = compact ? 52.0 : 56.0;
+  if (button > maxButton) button = maxButton;
+
+  final end = button * _kEndScale;
+  return CallControlMetrics(
+    button: button,
+    end: end,
+    gap: gap,
+    hPad: hPad,
+    vPad: vPad,
+    height: end + _kControlLabelHeight + vPad * 2,
+  );
+}
 
 /// One round button with its word underneath.
 class CallRoundControl extends StatelessWidget {
@@ -120,12 +168,13 @@ class CallRoundControl extends StatelessWidget {
   }
 }
 
-/// The bar of controls across the bottom of a call.
+/// The bar of controls across the bottom of a call — always a single row.
 ///
-/// Two rows rather than a horizontal scroller when the controls do not fit.
-/// A scrolling control bar hides controls behind a gesture nobody thinks to
-/// try during a call — End can be the one off the edge — and gives no hint
-/// that anything is there.
+/// Neither of the earlier answers worked. A horizontal scroller hid controls
+/// behind a gesture nobody thinks to try mid-call, and End could be the one
+/// off the edge. Wrapping to a second row kept them all visible but took a
+/// large bite out of a phone screen. Sizing the controls to the width fits
+/// every one of them on one line instead, on every phone.
 class CallControlsBar extends StatelessWidget {
   final bool compact;
   final bool isVideo;
@@ -164,16 +213,15 @@ class CallControlsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hPad = compact ? 10.0 : 14.0;
-    final endSize = compact ? 62.0 : 68.0;
-    final btnSize = compact ? 52.0 : 56.0;
-    final gap = compact ? 8.0 : 10.0;
+    final m = callControlMetrics(
+      screenWidth: MediaQuery.sizeOf(context).width,
+      compact: compact,
+      isVideo: isVideo,
+    );
+    final btnSize = m.button;
+    final endSize = m.end;
 
-    // Split by what a control does, not by where the arithmetic happens to
-    // land: things you toggle about your own devices, then the two that
-    // change who is on the call. A width-balanced split would put Flip and
-    // Add together on one row and read like an accident.
-    final toggles = <Widget>[
+    final controls = <Widget>[
       CallRoundControl(
         icon: isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
         label: isMuted ? 'Unmute' : 'Mute',
@@ -220,9 +268,6 @@ class CallControlsBar extends StatelessWidget {
           onTap: onSwitchCamera,
         ),
       ],
-    ];
-
-    final actions = <Widget>[
       CallRoundControl(
         icon: Icons.person_add_alt_1_rounded,
         label: 'Add',
@@ -241,46 +286,29 @@ class CallControlsBar extends StatelessWidget {
       ),
     ];
 
-    Widget row(List<Widget> children) => Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var i = 0; i < children.length; i++) ...[
-              if (i > 0) SizedBox(width: gap),
-              children[i],
-            ],
-          ],
-        );
-
-    final wrap = callControlsNeedTwoRows(
-      screenWidth: MediaQuery.sizeOf(context).width,
-      compact: compact,
-      isVideo: isVideo,
-    );
-
     return Positioned(
       left: kCallControlsInset,
       right: kCallControlsInset,
-      bottom: compact ? 16 : 24,
+      bottom: compact ? 10 : 16,
       child: Center(
         child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: hPad, vertical: compact ? 8 : 10),
+          padding:
+              EdgeInsets.symmetric(horizontal: m.hPad, vertical: m.vPad),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.42),
-            borderRadius: BorderRadius.circular(wrap ? 28 : 36),
+            borderRadius: BorderRadius.circular(m.height / 2),
             border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
           ),
-          child: wrap
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    row(toggles),
-                    SizedBox(height: compact ? 8 : 10),
-                    row(actions),
-                  ],
-                )
-              : row([...toggles, ...actions]),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < controls.length; i++) ...[
+                if (i > 0) SizedBox(width: m.gap),
+                controls[i],
+              ],
+            ],
+          ),
         ),
       ),
     );

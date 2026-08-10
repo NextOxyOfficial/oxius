@@ -177,6 +177,7 @@ class MainActivity : FlutterActivity() {
 					}
 					"pipSupported" -> result.success(pipSupported())
 					"enterPip" -> result.success(enterPipNow())
+					"exitPip" -> result.success(exitPipNow())
 					"consumePendingCallOpen" -> {
 						result.success(pendingCallOpen)
 						pendingCallOpen = false
@@ -228,6 +229,24 @@ class MainActivity : FlutterActivity() {
 				callChannel?.invokeMethod("pipModeChanged", isInPictureInPictureMode)
 			} catch (_: Exception) {
 			}
+		}
+	}
+
+	/**
+	 * Leaves the floating window when the call it was showing has ended.
+	 *
+	 * Android gives no "exit PiP" call — an app's PiP window closes when its
+	 * activity finishes, and finishing here would take the whole app with it.
+	 * moveTaskToBack dismisses the window and leaves the app where the user
+	 * left it, which is what "the call is over" should mean.
+	 */
+	private fun exitPipNow(): Boolean {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false
+		if (!isInPictureInPictureMode) return false
+		return try {
+			moveTaskToBack(true)
+		} catch (_: Exception) {
+			false
 		}
 	}
 

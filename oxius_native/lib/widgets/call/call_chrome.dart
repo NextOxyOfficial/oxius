@@ -38,37 +38,45 @@ class CallGlassPanel extends StatelessWidget {
 }
 
 /// A tappable chip in the header — icon, optionally with a word beside it.
+///
+/// [dense] shrinks it for narrow phones, where the full-size chip took
+/// enough width to truncate the caller's own name beside it.
 class CallIconChip extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final String? label;
+  final bool dense;
 
   const CallIconChip({
     super.key,
     required this.icon,
     required this.onTap,
     this.label,
+    this.dense = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final radius = dense ? 14.0 : 18.0;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(radius),
         child: Ink(
-          height: 50,
-          padding: EdgeInsets.symmetric(horizontal: label == null ? 13 : 12),
+          height: dense ? 38 : 50,
+          padding: EdgeInsets.symmetric(
+            horizontal: label == null ? (dense ? 9 : 13) : 12,
+          ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(radius),
             color: const Color(0xFF0F172A).withValues(alpha: 0.72),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: Colors.white, size: 24),
+              Icon(icon, color: Colors.white, size: dense ? 20 : 24),
               // A bare minus reads as "hide" or even "mute" to plenty of
               // people; the word removes the guess for the cost of 50px.
               if (label != null) ...[
