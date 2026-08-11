@@ -16,8 +16,9 @@ library;
 ///
 /// 'accepted' is deliberately absent: a call that was answered is beginning,
 /// not ending. Nor is 'participant_left', which is one person leaving a group
-/// call the others are still on, or 'reconnect', which is a request to
-/// rebuild the media rather than a state at all.
+/// call the others are still on, nor its opposite 'participant_joined', which
+/// is somebody walking into a call from the group chat, nor 'reconnect',
+/// which is a request to rebuild the media rather than a state at all.
 const Set<String> kTerminalCallStatuses = {
   'rejected',
   'declined',

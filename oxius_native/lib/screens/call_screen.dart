@@ -50,6 +50,13 @@ class CallScreen extends StatefulWidget {
   final bool isIncoming;
   final String callType; // 'video' or 'audio'
   final bool isReturning;
+
+  /// Walking into a call that is already running (a group call in progress).
+  ///
+  /// Neither outgoing nor incoming: nobody is rung, nothing waits for an
+  /// answer, and the call is connected from the first frame — the joiner is
+  /// the one arriving late.
+  final bool isJoining;
   final bool autoAccept; // When true, skip accept UI and join immediately
 
   /// Set when this call is ringing a whole group chat rather than one person.
@@ -71,6 +78,7 @@ class CallScreen extends StatefulWidget {
     this.isIncoming = false,
     this.callType = 'video',
     this.isReturning = false,
+    this.isJoining = false,
     this.autoAccept = false,
     this.groupId,
     this.groupName,
@@ -234,15 +242,17 @@ class _CallScreenState extends State<CallScreen>
       callId: widget.callId,
     );
 
-    if (widget.autoAccept) {
+    if (widget.autoAccept || widget.isJoining) {
       _callAccepted = true;
     } else if (widget.isIncoming) {
       unawaited(_startIncomingAlert());
     }
 
     // Start ringing timeout for outgoing calls — if the other party doesn't
-    // pick up within 60 seconds, end the call automatically.
-    if (!widget.isIncoming) {
+    // pick up within 60 seconds, end the call automatically. A joiner is not
+    // waiting for an answer, so neither the ringback nor the timeout applies:
+    // it would hang up a live call 60 seconds in.
+    if (!widget.isIncoming && !widget.isJoining) {
       _startOutgoingRingback();
       _ringingTimer = Timer(const Duration(seconds: 60), () {
         if (!mounted || _didEndCall || _remoteUid != null) return;
@@ -353,6 +363,22 @@ class _CallScreenState extends State<CallScreen>
         // a screen can do: say so.
         _showTransientNote('Reconnecting…');
         if (!_isConnecting) setState(() => _isConnecting = true);
+        return;
+      }
+
+      // Someone walked into the call from the group chat. Nobody rang them,
+      // so this is the only notice the people already talking get.
+      //
+      // Their roster line is dropped: if they had been rung earlier and
+      // ignored it, they would otherwise sit in the strip as "Name…" while
+      // their media was arriving, and show twice once it did.
+      if (status == 'participant_joined') {
+        final who = data['joined_user_name']?.toString().trim() ?? '';
+        if (who.isNotEmpty) _showTransientNote('$who joined the call');
+        final joinedId = data['joined_user_id']?.toString() ?? '';
+        if (joinedId.isNotEmpty && _roster.containsKey(joinedId)) {
+          setState(() => _roster.remove(joinedId));
+        }
         return;
       }
 
@@ -734,7 +760,12 @@ class _CallScreenState extends State<CallScreen>
       // engine that belongs to no project and can never carry audio.
       // joinChannel() fetches the token (which carries the App ID) and then
       // builds the engine in the right order; _acceptCall does the same.
-      if (widget.isIncoming && widget.autoAccept) {
+      if (widget.isJoining) {
+        // Nobody to notify — the server already added this user to the call
+        // when they asked to join, and the people talking were told over the
+        // socket. All that is left is to arrive.
+        await _joinChannel();
+      } else if (widget.isIncoming && widget.autoAccept) {
         await _acceptCall();
       } else {
         // A group call rings every member through one endpoint; the server

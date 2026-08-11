@@ -167,6 +167,60 @@ class AdsyConnectService {
   /// Returns the server's per-invitee outcome list — with several people
   /// invited at once, one overall success flag would hide the one who was
   /// busy or unreachable, which is the only part the caller can act on.
+  /// The call this group is on right now, or null.
+  ///
+  /// Null also when the caller is already on it — the banner exists to offer
+  /// a way in, and offering one to somebody already inside is noise.
+  static Future<Map<String, dynamic>?> groupActiveCall(String groupId) async {
+    if (groupId.isEmpty) return null;
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+                '${ApiService.baseUrl}/adsyconnect/groups/$groupId/active-call/'),
+            headers: await _getHeaders(),
+          )
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body);
+      if (data is! Map || data['active'] != true) return null;
+      return Map<String, dynamic>.from(data);
+    } catch (_) {
+      // A banner that fails to appear is better than one that breaks the
+      // chat screen behind it.
+      return null;
+    }
+  }
+
+  /// Joins the call the group is already on.
+  ///
+  /// Returns the call to open, or null with [lastJoinCallError] set.
+  static String? lastJoinCallError;
+
+  static Future<Map<String, dynamic>?> joinGroupCall(String groupId) async {
+    lastJoinCallError = null;
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/adsyconnect/join-group-call/'),
+            headers: await _getHeaders(),
+            body: jsonEncode({'group_id': groupId}),
+          )
+          .timeout(const Duration(seconds: 12));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data is Map) {
+        return Map<String, dynamic>.from(data);
+      }
+      lastJoinCallError =
+          (data is Map ? data['error']?.toString() : null) ?? 'Could not join';
+      return null;
+    } catch (e) {
+      lastJoinCallError = 'Could not join the call. Please try again.';
+      return null;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> inviteToCall({
     required String channelName,
     required List<String> inviteeIds,

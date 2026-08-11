@@ -20,6 +20,7 @@ import '../utils/image_compressor.dart';
 import '../utils/mention_navigator.dart';
 import '../utils/url_launcher_utils.dart';
 import '../utils/video_upload_helper.dart';
+import '../widgets/call/group_call_banner.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_edit_message_sheet.dart';
 import '../widgets/chat/chat_message_input.dart';
@@ -174,6 +175,12 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     );
   }
 
+  // The call this group is on right now, if there is one and this user is
+  // not already in it. Null means no banner.
+  Map<String, dynamic>? _activeCall;
+  bool _joiningCall = false;
+  Timer? _activeCallTimer;
+
   @override
   void initState() {
     super.initState();
@@ -217,6 +224,13 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         _applyReactionEvent(event);
         return;
       }
+      // Somebody started, joined, or left a call: re-ask rather than trying to
+      // reconstruct the roster from the event. One cheap request, always right.
+      final eventType = event['type'];
+      if (eventType == 'call_status' || eventType == 'incoming_call') {
+        unawaited(_refreshActiveCall());
+        return;
+      }
       if (event['type'] != 'group_message') return;
       final msg = event['message'];
       if (msg is! Map) return;
@@ -238,6 +252,16 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       }
       _loadMessages();
     });
+    // A call can start while this screen is open, and it can end while the
+    // banner is still on screen. Both need to show up without a reopen.
+    unawaited(_refreshActiveCall());
+    _activeCallTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        return;
+      }
+      _refreshActiveCall();
+    });
+
     _typingPollTimer =
         Timer.periodic(const Duration(seconds: 3), (_) => _pollTyping());
     _player.positionStream.listen((p) {
@@ -265,6 +289,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       WidgetsBinding.instance.removeObserver(this);
     }
     _activeGroupTimer?.cancel();
+    _activeCallTimer?.cancel();
     // Let the server resume pushing for this group.
     AdsyConnectService.clearActiveChat();
     _realtimeSub?.cancel();
@@ -806,6 +831,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (state == AppLifecycleState.resumed) {
       AdsyConnectService.setActiveGroup(_groupId);
       _loadMessages();
+      unawaited(_refreshActiveCall());
     } else if (state == AppLifecycleState.paused) {
       AdsyConnectService.clearActiveChat();
     }
@@ -945,6 +971,75 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         .where((g) => g['id'].toString() == _groupId)
         .toList();
     if (updated.isNotEmpty) setState(() => _group = updated.first);
+  }
+
+  /// Ask whether the group is on a call, and keep the banner in step.
+  ///
+  /// The server answers "no" both when there is no call and when this user is
+  /// already in it, so the banner never offers a way into a room they are
+  /// standing in.
+  Future<void> _refreshActiveCall() async {
+    if (!mounted) return;
+    // While this user is on a call the banner is meaningless — and asking
+    // during a call is a request that can only ever answer "no".
+    if (AgoraCallService.isInCall) {
+      if (_activeCall != null && mounted) setState(() => _activeCall = null);
+      return;
+    }
+    final call = await AdsyConnectService.groupActiveCall(_groupId);
+    if (!mounted) return;
+    final before = _activeCall?['call_id']?.toString();
+    final after = call?['call_id']?.toString();
+    final countChanged =
+        _activeCall?['participant_count'] != call?['participant_count'];
+    if (before == after && !countChanged) return;
+    setState(() => _activeCall = call);
+  }
+
+  /// Walk into the call the group is already on.
+  Future<void> _joinActiveCall() async {
+    final call = _activeCall;
+    if (call == null || _joiningCall) return;
+    if (AgoraCallService.isInCall) {
+      AdsyToast.warning(
+          context, 'আপনি ইতিমধ্যে একটি কলে আছেন। আগে সেটি শেষ করুন।');
+      return;
+    }
+    setState(() => _joiningCall = true);
+    final joined = await AdsyConnectService.joinGroupCall(_groupId);
+    if (!mounted) return;
+    setState(() => _joiningCall = false);
+
+    if (joined == null) {
+      AdsyToast.error(
+          context, AdsyConnectService.lastJoinCallError ?? 'Could not join');
+      // Refused because it ended between the banner and the tap — drop it.
+      unawaited(_refreshActiveCall());
+      return;
+    }
+
+    final name = (_group['name'] ?? '').toString().trim();
+    setState(() => _activeCall = null);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CallScreen(
+          channelName: (joined['channel_name'] ?? '').toString(),
+          callId: (joined['call_id'] ?? '').toString(),
+          calleeId: _groupId,
+          calleeName: name.isEmpty ? 'Group call' : name,
+          calleeAvatar: (_group['image'] ?? '').toString(),
+          isIncoming: false,
+          // Not a new call: no ring, no waiting for an answer.
+          isJoining: true,
+          callType: (joined['call_type'] ?? 'audio').toString(),
+          groupId: _groupId,
+          groupName: name,
+        ),
+      ),
+    ).then((_) {
+      if (mounted) unawaited(_refreshActiveCall());
+    });
   }
 
   /// Ring every member of this group at once.
@@ -1184,6 +1279,11 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       ),
       body: Column(
         children: [
+          GroupCallJoinBanner(
+            call: _activeCall,
+            joining: _joiningCall,
+            onJoin: _joinActiveCall,
+          ),
           Expanded(
             child: _loading
                 ? const Center(child: AdsyLoadingIndicator())
