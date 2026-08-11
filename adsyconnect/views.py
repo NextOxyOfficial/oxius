@@ -1386,6 +1386,241 @@ def _ensure_call_chat_group(call_session, *, inviter, invitees, request=None):
     return group
 
 
+# How long a session that is still only ringing counts as a call worth
+# offering, and the outer age limit on any of them. Both exist because a
+# client that dies mid-call never writes its terminal status, and a banner
+# reading "join the call" that opens an empty room is worse than no banner.
+_JOINABLE_RINGING_WINDOW = timezone.timedelta(seconds=90)
+_JOINABLE_MAX_AGE = timezone.timedelta(hours=6)
+
+
+def _live_call_for_group(group):
+    """The call this group is on right now, if any.
+
+    Newest first, because a group that somehow has two live sessions should
+    show people the one they are most likely to be looking for.
+    """
+    now = timezone.now()
+    candidates = (
+        CallSession.objects
+        .filter(chat_group=group, started_at__gte=now - _JOINABLE_MAX_AGE)
+        .exclude(status__in=CallSession.TERMINAL_STATUSES)
+        .order_by('-started_at')[:5]
+    )
+    for session in candidates:
+        # Still ringing long after it was placed means it rang out and nobody
+        # was left to write that down.
+        if (session.status == CallSession.STATUS_RINGING
+                and session.started_at < now - _JOINABLE_RINGING_WINDOW):
+            continue
+        # Nobody in there to join.
+        if not session.live_member_ids():
+            continue
+        return session
+    return None
+
+
+def _is_on_call(call_session, user):
+    """Whether [user] is genuinely in this call, as opposed to being rung.
+
+    Deliberately stricter than live_member_ids(), which counts anyone who has
+    not declined so that a ringing phone is not hung up on. Someone whose
+    phone rang out is precisely who the join banner is for, so treating them
+    as already in it is what closed the door on the commonest case.
+
+    The callee slot is filled the moment the call is placed, so for that one
+    person the session having been answered is what separates being in the
+    call from having missed it.
+    """
+    participant = call_session.participants.filter(user=user).first()
+    if participant is not None:
+        return participant.status == CallParticipant.STATUS_ACCEPTED
+    if call_session.caller_id == user.id:
+        return call_session.caller_left_at is None
+    if call_session.callee_id == user.id:
+        return (call_session.callee_left_at is None
+                and call_session.accepted_at is not None)
+    return False
+
+
+def _describe_group_call(call_session, request):
+    """What the group chat needs in order to offer a way in."""
+    live_ids = call_session.live_member_ids()
+    on_call = list(User.objects.filter(id__in=live_ids)[:4])
+    return {
+        'call_id': str(call_session.id),
+        'channel_name': call_session.channel_name,
+        'call_type': call_session.call_type,
+        'started_at': call_session.started_at,
+        'participant_count': len(live_ids),
+        # A few names, so the banner can say who is on it rather than "a call
+        # is happening" — the difference between joining and wondering.
+        'participants': [
+            {
+                'id': str(user.id),
+                'name': _build_call_display_name(request, user),
+                'avatar': _build_user_avatar_url(request, user) or '',
+            }
+            for user in on_call
+        ],
+        'is_full': len(live_ids) >= _MAX_CALL_PARTICIPANTS,
+    }
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def group_active_call(request, group_id):
+    """Whether this group has a call going, for the join banner."""
+    try:
+        group = ChatGroup.objects.get(id=group_id)
+    except (ChatGroup.DoesNotExist, ValidationError, ValueError):
+        return Response({'error': 'Group not found'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    if not group.is_member(request.user):
+        return Response({'error': 'You are not a member of this group'},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    call_session = _live_call_for_group(group)
+    if call_session is None:
+        return Response({'active': False})
+
+    # Already on it — the banner would offer a way into the room they are
+    # standing in.
+    if _is_on_call(call_session, request.user):
+        return Response({'active': False, 'reason': 'already_in_call'})
+
+    return Response({'active': True,
+                     **_describe_group_call(call_session, request)})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_group_call(request):
+    """Let a group member walk into the call their group is already on.
+
+    Until now a group call could only be entered by being rung for it: miss
+    the ring, or join the group afterwards, and the call carried on with no
+    way in. Membership of the group is the invitation.
+
+    The joiner is recorded as accepted, which is what the token endpoint
+    checks — without that the join would be refused by _call_membership_q no
+    matter what the client did. How it is recorded depends on who they are:
+    a participant row for anyone invited, and for the original pair the
+    departure timestamp they are tracked by.
+    """
+    try:
+        group_id = request.data.get('group_id')
+        if not group_id:
+            return Response({'error': 'group_id is required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            group = ChatGroup.objects.get(id=group_id)
+        except (ChatGroup.DoesNotExist, ValidationError, ValueError):
+            return Response({'error': 'Group not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        joiner = request.user
+        if not group.is_member(joiner):
+            return Response({'error': 'You are not a member of this group'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        call_session = _live_call_for_group(group)
+        if call_session is None:
+            return Response({'error': 'This group has no call right now'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        live_ids = {str(uid) for uid in call_session.live_member_ids()}
+        already_in = _is_on_call(call_session, joiner)
+        # Someone who was rung and never answered is already counted against
+        # the cap, so walking in makes the call no bigger than it was.
+        counts_already = str(joiner.id) in live_ids
+
+        if not counts_already and len(live_ids) >= _MAX_CALL_PARTICIPANTS:
+            return Response({'error': 'This call is full'},
+                            status=status.HTTP_409_CONFLICT)
+
+        # Someone mid-call elsewhere would be pulled out of it silently.
+        other_call = _active_call_for_user(joiner)
+        if other_call and str(other_call.id) != str(call_session.id):
+            return Response({'error': 'You already have an active call'},
+                            status=status.HTTP_409_CONFLICT)
+
+        if not already_in:
+            is_pair = joiner.id in (call_session.caller_id,
+                                    call_session.callee_id)
+            if is_pair:
+                # The pair are tracked by their departure timestamps, not by a
+                # participant row — mark_member_left() only knows about those,
+                # so giving them a row as well would leave them counted as
+                # live for ever once they hung up. Coming back is clearing the
+                # timestamp.
+                fields = []
+                if (joiner.id == call_session.caller_id
+                        and call_session.caller_left_at is not None):
+                    call_session.caller_left_at = None
+                    fields.append('caller_left_at')
+                if (joiner.id == call_session.callee_id
+                        and call_session.callee_left_at is not None):
+                    call_session.callee_left_at = None
+                    fields.append('callee_left_at')
+                if fields:
+                    call_session.save(update_fields=fields)
+            else:
+                CallParticipant.objects.update_or_create(
+                    session=call_session,
+                    user=joiner,
+                    defaults={
+                        'invited_by': None,
+                        # Accepted, not ringing: nobody rang them, they
+                        # walked in.
+                        'status': CallParticipant.STATUS_ACCEPTED,
+                        'invited_at': timezone.now(),
+                        'responded_at': timezone.now(),
+                    },
+                )
+            logger.warning(
+                'CALLTRACE groupjoin call=%s group=%s %s joined (now %d)',
+                str(call_session.id)[:8], str(group.id)[:8], joiner.email,
+                len(live_ids | {str(joiner.id)}),
+            )
+
+            # Tell the room, so the people already talking see them arrive
+            # rather than having someone appear with no explanation.
+            payload = {
+                'type': 'call_status',
+                'status': 'participant_joined',
+                'event_id': str(uuid.uuid4()),
+                'call_id': str(call_session.id),
+                'channel_name': call_session.channel_name,
+                'call_type': call_session.call_type,
+                'joined_user_id': str(joiner.id),
+                'joined_user_name': _build_call_display_name(request, joiner),
+                'sender_id': str(joiner.id),
+                'timestamp': str(int(time.time() * 1000)),
+            }
+            for uid in live_ids - {str(joiner.id)}:
+                _broadcast_to_user(
+                    uid,
+                    {'type': 'call_status_event',
+                     'payload': dict(payload, receiver_id=str(uid))},
+                )
+
+        return Response({
+            'success': True,
+            'call_id': str(call_session.id),
+            'channel_name': call_session.channel_name,
+            'call_type': call_session.call_type,
+            'group_id': str(group.id),
+            'group_name': group.name,
+            'participant_count': len(live_ids | {str(joiner.id)}),
+        })
+    except Exception as e:
+        logger.exception('Join group call failed')
+        return Response({'error': str(e)},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def start_group_call(request):

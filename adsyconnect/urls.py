@@ -12,6 +12,7 @@ from .views import (
     ChatGroupViewSet,
     agora_rtc_token, agora_config, call_media_connected, firebase_custom_token, send_call_notification, send_call_status,
     call_config, livekit_token, invite_to_call, start_group_call,
+    group_active_call, join_group_call,
     set_active_chat, clear_active_chat, heartbeat)
 
 router = DefaultRouter()
@@ -38,6 +39,10 @@ urlpatterns = [
     path('invite-to-call/', invite_to_call, name='invite_to_call'),
     # Ring a whole group chat at once.
     path('start-group-call/', start_group_call, name='start_group_call'),
+    # Walk into a call the group is already on.
+    path('groups/<uuid:group_id>/active-call/', group_active_call,
+         name='group_active_call'),
+    path('join-group-call/', join_group_call, name='join_group_call'),
     path('set-active-chat/', set_active_chat, name='set_active_chat'),
     path('clear-active-chat/', clear_active_chat, name='clear_active_chat'),
     path('heartbeat/', heartbeat, name='heartbeat'),

@@ -13,6 +13,9 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from datetime import timedelta
+
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from .models import CallParticipant, CallSession, ChatGroup, ChatGroupMembership
@@ -1098,3 +1101,394 @@ class InviteRequiresAPriorChatTests(TestCase):
 
         self.assertIn(
             response.json()['results'][0]['status'], ('ringing', 'unreachable'))
+
+
+class JoiningACallInProgressTests(TestCase):
+    """Missing the ring must not mean missing the call.
+
+    A group call used to be enterable only by answering the ring for it. Join
+    the group afterwards, decline by accident, or simply have your phone in
+    another room, and the call carried on with no way back in.
+    """
+
+    def setUp(self):
+        self.users = []
+        for i, (uname, first) in enumerate([
+            ('jack', 'Jack'), ('kate', 'Kate'), ('liam', 'Liam'),
+            ('mona', 'Mona'),
+        ]):
+            self.users.append(User.objects.create_user(
+                username=uname, email='%s@example.com' % uname, password='x',
+                first_name=first, phone='+88010000004%d' % i,
+            ))
+        self.owner, self.m2, self.latecomer, self.outsider = self.users
+
+        self.group = ChatGroup.objects.create(
+            name='Join Group', creator=self.owner)
+        for user in (self.owner, self.m2, self.latecomer):
+            ChatGroupMembership.objects.create(
+                group=self.group, user=user,
+                role='admin' if user == self.owner else 'member',
+            )
+
+        # The call the group is already on: owner and m2 talking, and the
+        # latecomer never answered — the case the banner exists for.
+        self.session = CallSession.objects.create(
+            channel_name='c_join_1',
+            caller=self.owner,
+            callee=self.m2,
+            call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+            # What answering actually records. Only the callee's own accept
+            # reaches update_status — an invited participant accepting is
+            # written to their own row — so this is the mark of the callee
+            # having picked up, and _is_on_call reads it as exactly that.
+            accepted_at=timezone.now(),
+            chat_group=self.group,
+        )
+
+        self.broadcasts = []
+        ws = patch(
+            'adsyconnect.views._broadcast_to_user',
+            side_effect=lambda user_id, event: self.broadcasts.append(
+                (str(user_id), event)
+            ),
+        )
+        ws.start()
+        self.addCleanup(ws.stop)
+        push = patch('adsyconnect.views._send_call_data_message',
+                     return_value={})
+        push.start()
+        self.addCleanup(push.stop)
+
+    def ask(self, user, group_id=None):
+        client = APIClient()
+        client.force_authenticate(user=user)
+        return client.get('/api/adsyconnect/groups/%s/active-call/'
+                          % (group_id or self.group.id))
+
+    def join(self, user, group_id=None):
+        client = APIClient()
+        client.force_authenticate(user=user)
+        return client.post(
+            '/api/adsyconnect/join-group-call/',
+            {'group_id': str(group_id or self.group.id)},
+            format='json',
+        )
+
+    # ── seeing it ───────────────────────────────────────────────────────────
+
+    def test_a_member_who_is_not_on_the_call_is_offered_a_way_in(self):
+        response = self.ask(self.latecomer)
+        self.assertEqual(response.status_code, 200, response.content)
+        body = response.json()
+
+        self.assertTrue(body['active'])
+        self.assertEqual(body['channel_name'], 'c_join_1')
+        self.assertEqual(body['call_type'], 'audio')
+        self.assertEqual(body['call_id'], str(self.session.id))
+        self.assertEqual(body['participant_count'], 2)
+        self.assertFalse(body['is_full'])
+        # Named, so the banner can say who is talking.
+        names = {p['name'] for p in body['participants']}
+        self.assertIn('Jack', names)
+        self.assertIn('Kate', names)
+
+    def test_somebody_already_on_the_call_is_not_offered_a_way_in(self):
+        """The banner would be a door into the room they are standing in."""
+        for member in (self.owner, self.m2):
+            body = self.ask(member).json()
+            self.assertFalse(body['active'])
+            self.assertEqual(body['reason'], 'already_in_call')
+
+    def test_a_non_member_is_refused(self):
+        self.assertEqual(self.ask(self.outsider).status_code, 403)
+        self.assertEqual(self.join(self.outsider).status_code, 403)
+
+    def test_no_call_means_no_banner(self):
+        self.session.status = CallSession.STATUS_ENDED
+        self.session.save(update_fields=['status'])
+        self.assertFalse(self.ask(self.latecomer).json()['active'])
+
+    def test_an_ended_call_is_never_offered_even_with_a_live_one_before_it(self):
+        """Terminal is terminal, whichever way the session got there."""
+        for terminal in CallSession.TERMINAL_STATUSES:
+            self.session.status = terminal
+            self.session.save(update_fields=['status'])
+            self.assertFalse(
+                self.ask(self.latecomer).json()['active'],
+                'status=%s was still offered as joinable' % terminal)
+
+    # ── walking in ──────────────────────────────────────────────────────────
+
+    def test_joining_puts_them_on_the_call_for_real(self):
+        response = self.join(self.latecomer)
+        self.assertEqual(response.status_code, 200, response.content)
+        body = response.json()
+
+        self.assertTrue(body['success'])
+        self.assertEqual(body['channel_name'], 'c_join_1')
+        self.assertEqual(body['call_id'], str(self.session.id))
+        self.assertEqual(body['group_id'], str(self.group.id))
+        self.assertEqual(body['participant_count'], 3)
+
+        # Accepted, not ringing: nobody rang them.
+        participant = CallParticipant.objects.get(
+            session=self.session, user=self.latecomer)
+        self.assertEqual(participant.status, CallParticipant.STATUS_ACCEPTED)
+        self.assertIsNotNone(participant.responded_at)
+        self.assertIn(self.latecomer.id, self.session.live_member_ids())
+
+    def test_the_token_endpoint_will_now_serve_them(self):
+        """Without this the join is a row in a table and nothing more.
+
+        _call_membership_q is what every "may this person touch this call?"
+        check runs through, and it is the reason the participant row has to
+        exist before the client asks for a token.
+        """
+        from .views import _call_membership_q
+
+        self.assertFalse(
+            CallSession.objects.filter(
+                _call_membership_q(self.latecomer), id=self.session.id
+            ).exists())
+
+        self.assertEqual(self.join(self.latecomer).status_code, 200)
+
+        self.assertTrue(
+            CallSession.objects.filter(
+                _call_membership_q(self.latecomer), id=self.session.id
+            ).exists())
+
+    def test_the_people_talking_are_told_somebody_arrived(self):
+        self.broadcasts.clear()
+        self.join(self.latecomer)
+
+        told = {}
+        for user_id, event in self.broadcasts:
+            payload = event.get('payload', {})
+            if payload.get('status') == 'participant_joined':
+                told[user_id] = payload
+
+        self.assertEqual(
+            sorted(told), sorted([str(self.owner.id), str(self.m2.id)]))
+        for payload in told.values():
+            self.assertEqual(payload['joined_user_id'], str(self.latecomer.id))
+            self.assertEqual(payload['joined_user_name'], 'Liam')
+            self.assertEqual(payload['channel_name'], 'c_join_1')
+        # And the joiner is not sent news of their own arrival.
+        self.assertNotIn(str(self.latecomer.id), told)
+
+    def test_joining_twice_is_harmless(self):
+        self.assertEqual(self.join(self.latecomer).status_code, 200)
+        self.broadcasts.clear()
+        self.assertEqual(self.join(self.latecomer).status_code, 200)
+
+        self.assertEqual(
+            CallParticipant.objects.filter(
+                session=self.session, user=self.latecomer).count(), 1)
+        # Nobody is told twice that the same person arrived.
+        self.assertFalse([
+            1 for _, event in self.broadcasts
+            if event.get('payload', {}).get('status') == 'participant_joined'
+        ])
+
+    def test_a_full_call_is_refused(self):
+        extras = []
+        for i in range(6):
+            user = User.objects.create_user(
+                username='filler%d' % i, email='filler%d@example.com' % i,
+                password='x', first_name='F%d' % i,
+                phone='+8801000000%d' % (50 + i))
+            ChatGroupMembership.objects.create(group=self.group, user=user)
+            CallParticipant.objects.create(
+                session=self.session, user=user,
+                status=CallParticipant.STATUS_ACCEPTED)
+            extras.append(user)
+
+        # caller + callee + 6 = 8, the cap.
+        self.assertEqual(len(self.session.live_member_ids()), 8)
+
+        response = self.join(self.latecomer)
+        self.assertEqual(response.status_code, 409)
+        self.assertIn('full', response.json()['error'].lower())
+        self.assertTrue(self.ask(self.latecomer).json()['is_full'])
+        self.assertFalse(CallParticipant.objects.filter(
+            session=self.session, user=self.latecomer).exists())
+
+    def test_somebody_mid_call_elsewhere_is_refused(self):
+        """Joining must not silently drop the call they are already on."""
+        other = CallSession.objects.create(
+            channel_name='c_elsewhere',
+            caller=self.latecomer,
+            callee=self.outsider,
+            call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+        )
+
+        response = self.join(self.latecomer)
+        self.assertEqual(response.status_code, 409)
+        self.assertIn('active call', response.json()['error'].lower())
+        self.assertFalse(CallParticipant.objects.filter(
+            session=self.session, user=self.latecomer).exists())
+
+        other.status = CallSession.STATUS_ENDED
+        other.save(update_fields=['status'])
+        self.assertEqual(self.join(self.latecomer).status_code, 200)
+
+    def test_being_rung_for_this_very_call_does_not_block_joining(self):
+        """The commonest case: rung, ignored it, taps Join a minute later."""
+        CallParticipant.objects.create(
+            session=self.session, user=self.latecomer,
+            status=CallParticipant.STATUS_RINGING)
+
+        self.assertEqual(self.join(self.latecomer).status_code, 200)
+        participant = CallParticipant.objects.get(
+            session=self.session, user=self.latecomer)
+        self.assertEqual(participant.status, CallParticipant.STATUS_ACCEPTED)
+
+    def test_someone_who_declined_can_still_change_their_mind(self):
+        CallParticipant.objects.create(
+            session=self.session, user=self.latecomer,
+            status=CallParticipant.STATUS_REJECTED)
+
+        self.assertTrue(self.ask(self.latecomer).json()['active'])
+        self.assertEqual(self.join(self.latecomer).status_code, 200)
+        self.assertEqual(
+            CallParticipant.objects.get(
+                session=self.session, user=self.latecomer).status,
+            CallParticipant.STATUS_ACCEPTED)
+
+    def test_a_call_that_ended_between_the_banner_and_the_tap(self):
+        self.assertTrue(self.ask(self.latecomer).json()['active'])
+        self.session.status = CallSession.STATUS_ENDED
+        self.session.save(update_fields=['status'])
+
+        response = self.join(self.latecomer)
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(CallParticipant.objects.filter(
+            session=self.session, user=self.latecomer).exists())
+
+    def test_a_one_to_one_call_is_not_offered_to_a_group(self):
+        """Only calls that belong to this group are joinable from it."""
+        self.session.chat_group = None
+        self.session.save(update_fields=['chat_group'])
+
+        self.assertFalse(self.ask(self.latecomer).json()['active'])
+        self.assertEqual(self.join(self.latecomer).status_code, 404)
+
+    def test_a_missing_group_is_a_404_not_a_crash(self):
+        import uuid as _uuid
+        ghost = _uuid.uuid4()
+        self.assertEqual(self.ask(self.latecomer, group_id=ghost).status_code,
+                         404)
+        self.assertEqual(self.join(self.latecomer, group_id=ghost).status_code,
+                         404)
+
+    def test_group_id_is_required(self):
+        client = APIClient()
+        client.force_authenticate(user=self.latecomer)
+        response = client.post('/api/adsyconnect/join-group-call/', {},
+                               format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_the_callee_who_never_answered_is_still_offered_a_way_in(self):
+        """The server picks who fills the callee slot; missing the ring there
+        must not be different from missing it as an invitee.
+
+        Somebody else answering marks the session accepted at the top level,
+        which is why "the call was answered" cannot stand in for "you
+        answered it".
+        """
+        unanswered = CallSession.objects.create(
+            channel_name='c_join_3',
+            caller=self.owner,
+            callee=self.latecomer,
+            call_type='audio',
+            status=CallSession.STATUS_ACCEPTED,
+            chat_group=self.group,
+        )
+        # m2 was an invitee and picked up; the callee's phone rang out.
+        CallParticipant.objects.create(
+            session=unanswered, user=self.m2,
+            status=CallParticipant.STATUS_ACCEPTED)
+
+        body = self.ask(self.latecomer).json()
+        self.assertTrue(body['active'])
+        self.assertEqual(body['call_id'], str(unanswered.id))
+        self.assertEqual(self.join(self.latecomer).status_code, 200)
+
+    def test_somebody_who_left_can_come_back(self):
+        """Leaving a group call is not being thrown out of the group."""
+        self.session.callee_left_at = timezone.now()
+        self.session.save(update_fields=['callee_left_at'])
+        self.assertNotIn(self.m2.id, self.session.live_member_ids())
+
+        self.assertTrue(self.ask(self.m2).json()['active'])
+        self.assertEqual(self.join(self.m2).status_code, 200)
+
+        self.session.refresh_from_db()
+        # Back through the timestamp they are tracked by, NOT a participant
+        # row — mark_member_left only knows about the timestamp, so a row
+        # would leave them counted as live for ever after they next hang up.
+        self.assertIsNone(self.session.callee_left_at)
+        self.assertIn(self.m2.id, self.session.live_member_ids())
+        self.assertFalse(CallParticipant.objects.filter(
+            session=self.session, user=self.m2).exists())
+
+    def test_an_invitee_who_accepted_is_not_offered_a_way_in(self):
+        CallParticipant.objects.create(
+            session=self.session, user=self.latecomer,
+            status=CallParticipant.STATUS_ACCEPTED)
+        body = self.ask(self.latecomer).json()
+        self.assertFalse(body['active'])
+        self.assertEqual(body['reason'], 'already_in_call')
+
+    def test_a_call_that_rang_out_is_not_offered(self):
+        """A client that dies mid-ring never writes its own ending.
+
+        Without an age limit that session stays non-terminal for ever and the
+        banner offers a way into an empty room.
+        """
+        self.session.status = CallSession.STATUS_RINGING
+        self.session.accepted_at = None
+        self.session.started_at = timezone.now() - timedelta(minutes=10)
+        self.session.save(
+            update_fields=['status', 'accepted_at', 'started_at'])
+
+        self.assertFalse(self.ask(self.latecomer).json()['active'])
+        self.assertEqual(self.join(self.latecomer).status_code, 404)
+
+    def test_a_call_still_ringing_moments_ago_is_offered(self):
+        self.session.status = CallSession.STATUS_RINGING
+        self.session.accepted_at = None
+        self.session.save(update_fields=['status', 'accepted_at'])
+        self.assertTrue(self.ask(self.latecomer).json()['active'])
+
+    def test_a_call_nobody_is_left_in_is_not_offered(self):
+        self.session.caller_left_at = timezone.now()
+        self.session.callee_left_at = timezone.now()
+        self.session.save(
+            update_fields=['caller_left_at', 'callee_left_at'])
+        self.assertEqual(self.session.live_member_ids(), [])
+
+        self.assertFalse(self.ask(self.latecomer).json()['active'])
+
+    def test_a_call_from_yesterday_is_not_offered(self):
+        self.session.started_at = timezone.now() - timedelta(hours=30)
+        self.session.save(update_fields=['started_at'])
+        self.assertFalse(self.ask(self.latecomer).json()['active'])
+
+    def test_the_newest_call_is_the_one_offered(self):
+        """Two live sessions on one group: show the one they are looking for."""
+        newer = CallSession.objects.create(
+            channel_name='c_join_2',
+            caller=self.m2,
+            callee=self.owner,
+            call_type='video',
+            status=CallSession.STATUS_RINGING,
+            chat_group=self.group,
+        )
+        body = self.ask(self.latecomer).json()
+        self.assertEqual(body['call_id'], str(newer.id))
+        self.assertEqual(body['call_type'], 'video')
