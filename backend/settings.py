@@ -157,6 +157,26 @@ REST_FRAMEWORK = {
     # Always attach a clean, human-readable `message` to API errors so the app
     # never shows a raw serializer dump / exception code.
     "EXCEPTION_HANDLER": "base.error_utils.custom_exception_handler",
+    # Rates for the throttles in base/throttling.py.
+    #
+    # There is deliberately NO "DEFAULT_THROTTLE_CLASSES": a default would cover
+    # reads as well, and the clients poll — the chat list, the feed, presence,
+    # typing. Throttling those would break the app in order to defend it. Each
+    # limit is attached to a specific write endpoint instead.
+    #
+    # Set for a real person having a fast conversation, not for the minimum that
+    # would technically work. A limit a human can reach is a bug report waiting
+    # to happen.
+    "DEFAULT_THROTTLE_RATES": {
+        # Two a second, sustained, for a whole minute.
+        "chat_message": "120/min",
+        # Redialling a missed call is normal; a loop is not.
+        "call_ring": "30/min",
+        "bn_post": "40/hour",
+        "bn_comment": "180/hour",
+        "bn_follow": "120/hour",
+        "upload": "120/hour",
+    },
 }
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

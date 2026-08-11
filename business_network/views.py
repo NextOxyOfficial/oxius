@@ -21,13 +21,19 @@ from django.db.models import (
     Value,
     When,
 )
-from django.db.models.functions import Cast, Extract, Mod, Now, Power
+from django.db.models.functions import Cast, Extract, Mod, Now, Power, Right
 from django.shortcuts import get_object_or_404
 from django.utils.html import strip_tags
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from base.throttling import (
+    CommentThrottle,
+    FollowThrottle,
+    PostCreateThrottle,
+)
+from base.upload_limits import LIMITS as UPLOAD_LIMITS, check_upload
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -59,8 +65,10 @@ from rest_framework.exceptions import ValidationError  # noqa: E402
 #
 # These constants remain only as sanity ceilings against a hostile client, set
 # far above anything the app itself can send.
-_MAX_IMAGE_BYTES = 64 * 1024 * 1024          # 64 MB
-_MAX_VIDEO_BYTES = 4 * 1024 * 1024 * 1024    # 4 GB
+_MAX_IMAGE_BYTES = UPLOAD_LIMITS['image']    # 64 MB, see base/upload_limits.py
+# One number for the whole codebase — see base/upload_limits.py. This used to
+# be 4GB, which on a 3.8GB box with 61GB free is not a limit at all.
+_MAX_VIDEO_BYTES = UPLOAD_LIMITS['video']
 
 
 def base64ToFile(base64_data):
@@ -365,6 +373,15 @@ class UserSearchView(generics.ListAPIView):
 
 # Post Views
 class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
+    # Creating is rate limited; the feed is not — see get_throttles().
+    throttle_classes = [PostCreateThrottle]
+
+    def get_throttles(self):
+        """Never throttle the feed itself — the clients poll it."""
+        if self.request.method in ("GET", "HEAD", "OPTIONS"):
+            return []
+        return super().get_throttles()
+
     serializer_class = BusinessNetworkPostSerializer
     pagination_class = MediumDevicePagination  # Changed for better performance
     permission_classes = [IsAuthenticated]
@@ -472,7 +489,25 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     is_banned=False,
                     visibility__in=["public", "followers"],
                 )
-                .select_related("author")
+                .select_related(
+                    "author", "author__refer",
+                    "shared_from", "shared_from__author",
+                )
+                .prefetch_related(
+                    "media__media_likes__user",
+                    "media__media_comments__author",
+                    # get_shared_from_details serialises the ORIGINAL post's
+                    # media in full, so without these a reshare row costs five
+                    # queries of its own.
+                    "shared_from__media__media_likes__user",
+                    "shared_from__media__media_comments__author",
+                    "tags",
+                    "post_comments__author",
+                    "post_followers__user",
+                )
+                # This branch carried no annotations, so every count on the
+                # Following tab was a query per post.
+                .annotate(**feed_count_annotations(self.request.user))
                 .order_by("-created_at")
             )
             if self.request.query_params.get("media") == "video":
@@ -487,7 +522,22 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 BusinessNetworkPost.objects.filter(
                     visibility="public", is_banned=False
                 )
-                .select_related("author")
+                .select_related(
+                    "author", "author__refer",
+                    "shared_from", "shared_from__author",
+                )
+                .prefetch_related(
+                    "media__media_likes__user",
+                    "media__media_comments__author",
+                    "shared_from__media__media_likes__user",
+                    "shared_from__media__media_comments__author",
+                    "tags",
+                    "post_comments__author",
+                    "post_followers__user",
+                )
+                # Anonymous readers were paying the per-post counts too, and
+                # this is the feed a first-time visitor lands on.
+                .annotate(**feed_count_annotations(None))
                 .order_by("-created_at")
             )
 
@@ -809,13 +859,44 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 # to reshuffle a cluster of similarly-scored fresh posts (a
                 # relationship tier is 20-35 pts apart) without drowning out
                 # relevance across tiers.
-                jitter=Mod(
-                    Cast("id", BigIntegerField()) * Value(2654435) + Value(feed_shuffle_seed),
-                    Value(100),
+                # Both of these used to cast the WHOLE id to bigint and
+                # multiply it. A post id is normally `yymmddHHMM` — ten digits,
+                # which survives — but two posts created in the same minute get
+                # a four-digit collision suffix, and 14 digits times 2,654,435
+                # is past the top of bigint. One such post anywhere in the
+                # window took the ENTIRE ranked feed down with "bigint out of
+                # range", for every user, not just for that post. The rarer
+                # uuid fallback id is not numeric at all and fails the cast
+                # outright.
+                #
+                # The last nine digits keep the shuffle varying per minute and
+                # per collision suffix, and nine digits times 2,654,435 cannot
+                # overflow. The regex guard scores a non-numeric id zero rather
+                # than raising.
+                jitter=Case(
+                    When(
+                        id__regex=r"[0-9]{9}$",
+                        then=Mod(
+                            Cast(Right("id", 9), BigIntegerField())
+                            * Value(2654435)
+                            + Value(feed_shuffle_seed),
+                            Value(100),
+                        ),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
                 ),
-                shuffle_score=Mod(
-                    Cast("id", BigIntegerField()) + Value(feed_shuffle_seed),
-                    Value(997),
+                shuffle_score=Case(
+                    When(
+                        id__regex=r"[0-9]{9}$",
+                        then=Mod(
+                            Cast(Right("id", 9), BigIntegerField())
+                            + Value(feed_shuffle_seed),
+                            Value(997),
+                        ),
+                    ),
+                    default=Value(0),
+                    output_field=IntegerField(),
                 ),
             )
             .annotate(
@@ -832,13 +913,29 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     output_field=FloatField(),
                 ),
             )
-            .select_related("author")
+            # shared_from/shared_from__author were missing here, so every
+            # reshare row in the ranked feed cost two extra queries in
+            # get_shared_from_details.
+            # author__refer because UserSerializer has Meta depth = 1 and the
+            # User model has a self-FK `refer`, so every author with a referrer
+            # (15% of accounts) cost an extra query. Fetching it with the row
+            # changes nothing about the output.
+            .select_related(
+                "author", "author__refer", "shared_from", "shared_from__author"
+            )
             # post_likes is deliberately NOT prefetched: the feed only needs a
             # count and an is-liked flag, both of which now come from
             # feed_count_annotations. Prefetching it pulled every like row (and
             # a User per like) into memory — 20k rows for one integer.
             .prefetch_related(
                 "media__media_likes__user",
+                # Nested many=True on the media, so without this it is one
+                # SELECT per media item — ten on a seven-post page. The rows
+                # are serialised in full either way; this only batches them.
+                "media__media_comments__author",
+                # Same again for the original of a reshare.
+                "shared_from__media__media_likes__user",
+                "shared_from__media__media_comments__author",
                 "tags",
                 "post_comments__author",
                 "post_followers__user",
@@ -884,6 +981,22 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
         image_files = _get_file_list("images")
         video_files = _get_file_list("videos")
+
+        # Nothing capped these. A post could carry a 500MB "video", which was
+        # spooled to the box's disk and then streamed on to R2 — the storage
+        # bill is per gigabyte and the disk is 78GB.
+        for upload in image_files:
+            too_big = check_upload(upload, declared_kind="image",
+                                   raise_error=False)
+            if too_big:
+                return Response({"error": too_big},
+                                status=status.HTTP_400_BAD_REQUEST)
+        for upload in video_files:
+            too_big = check_upload(upload, declared_kind="video",
+                                   raise_error=False)
+            if too_big:
+                return Response({"error": too_big},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
             serializer = self.get_serializer(
@@ -1590,6 +1703,14 @@ class BusinessNetworkPostFollowDestroyView(generics.DestroyAPIView):
 
 # Comment Views
 class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
+    throttle_classes = [CommentThrottle]
+
+    def get_throttles(self):
+        """Reading a comment thread is not an abuse vector."""
+        if self.request.method in ("GET", "HEAD", "OPTIONS"):
+            return []
+        return super().get_throttles()
+
     serializer_class = BusinessNetworkPostCommentSerializer
     pagination_class = StandardResultsSetPagination
     # permission_classes = [IsAuthenticated]
@@ -1886,6 +2007,8 @@ class UserFollowCreateView(generics.CreateAPIView):
     queryset = BusinessNetworkFollowerModel.objects.all()
     serializer_class = BusinessNetworkFollowerSerializer
     permission_classes = [IsAuthenticated]
+    # Mass-follow is the classic spam vector, and each one also fires a push.
+    throttle_classes = [FollowThrottle]
 
     def create(self, request, *args, **kwargs):
         user_id = self.kwargs.get("user_id")
@@ -1926,6 +2049,8 @@ class UserFollowCreateView(generics.CreateAPIView):
 
 class UserUnfollowDestroyView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
+    # Follow/unfollow churn is the same abuse, so it shares the budget.
+    throttle_classes = [FollowThrottle]
 
     def get_object(self):
         user_id = self.kwargs.get("user_id")
@@ -2184,6 +2309,14 @@ class BusinessNetworkMediaLikeDestroyView(generics.DestroyAPIView):
 
 
 class BusinessNetworkMediaCommentListCreateView(generics.ListCreateAPIView):
+    throttle_classes = [CommentThrottle]
+
+    def get_throttles(self):
+        """Reading a comment thread is not an abuse vector."""
+        if self.request.method in ("GET", "HEAD", "OPTIONS"):
+            return []
+        return super().get_throttles()
+
     serializer_class = BusinessNetworkMediaCommentSerializer
     permission_classes = [IsAuthenticated]
     # pagination_class = StandardResultsSetPagination

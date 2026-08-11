@@ -390,3 +390,70 @@ def trim_notifications(sender, instance, created, **kwargs):
             BusinessNetworkNotification.objects.filter(id__in=ids).delete()
     except Exception as e:
         print(f"Error trimming notifications: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Realtime
+# ---------------------------------------------------------------------------
+# The Business Network had no websocket path at all: notifications went out as
+# FCM push, which reaches a phone in a pocket and does nothing for the person
+# looking at the screen. The bell's count only moved on a reload.
+#
+# ONE receiver on the notification model rather than a broadcast bolted onto
+# each of the eight signals above. Every type that exists gets realtime
+# delivery, and so does every type anybody adds later — there is no second
+# place to remember.
+
+
+@receiver(post_save, sender=BusinessNetworkNotification)
+def push_notification_over_socket(sender, instance, created, **kwargs):
+    if not created:
+        return
+    from .realtime import broadcast_notification
+    broadcast_notification(instance)
+
+
+@receiver(post_save, sender=BusinessNetworkPostComment)
+def push_comment_to_readers(sender, instance, created, **kwargs):
+    """Tell everyone reading this post that a comment arrived.
+
+    Separate from the notification above, which only ever reaches the post's
+    author. Anyone else with the post open — including the other people in the
+    thread — heard nothing until they refreshed.
+    """
+    if not created:
+        return
+    from .realtime import broadcast_post_activity
+    author = instance.author
+    try:
+        author_name = (author.get_full_name() or '').strip()
+    except Exception:
+        author_name = ''
+    broadcast_post_activity(instance.post_id, {
+        'event': 'comment_added',
+        'comment_id': str(instance.id),
+        'author_id': str(author.id),
+        'author_name': author_name or getattr(author, 'email', ''),
+        'preview': (instance.content or '')[:140],
+        'parent_id': str(getattr(instance, 'parent_id', '') or ''),
+    })
+
+
+@receiver(post_save, sender=BusinessNetworkPostLike)
+def push_like_to_readers(sender, instance, created, **kwargs):
+    if not created:
+        return
+    from .realtime import broadcast_post_activity
+    broadcast_post_activity(instance.post_id, {
+        'event': 'like_added',
+        'user_id': str(instance.user_id),
+    })
+
+
+@receiver(post_delete, sender=BusinessNetworkPostLike)
+def push_unlike_to_readers(sender, instance, **kwargs):
+    from .realtime import broadcast_post_activity
+    broadcast_post_activity(instance.post_id, {
+        'event': 'like_removed',
+        'user_id': str(instance.user_id),
+    })

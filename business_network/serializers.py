@@ -246,15 +246,46 @@ class _PostListSerializer(serializers.ListSerializer):
                 getattr(getattr(p, "shared_from", None), "author_id", None)
                 for p in items
             }
-            # Comment authors go through the same UserSerializer, so each one
-            # costs the same per-user stat queries. They are already in the
-            # prefetch cache, so gathering them here adds no query of its own.
+            # Everyone else the page renders through UserSerializer pays the
+            # same four stat queries, and the primer used to know only about
+            # post and comment authors. Four users a page — media likers, post
+            # followers, the "liked by" faces — were still taking the slow path
+            # and that alone was sixteen queries.
+            #
+            # All of these are already in the prefetch cache, so gathering them
+            # costs nothing; the ones that are not simply are not added.
             for p in items:
                 cached = getattr(p, "_prefetched_objects_cache", None) or {}
                 for c in cached.get("post_comments", None) or []:
                     author_ids.add(getattr(c, "author_id", None))
-            prime_user_stats(request, {a for a in author_ids if a})
+                for f in cached.get("post_followers", None) or []:
+                    author_ids.add(getattr(f, "user_id", None))
+                for m in cached.get("media", None) or []:
+                    media_cache = getattr(m, "_prefetched_objects_cache", None) or {}
+                    for ml in media_cache.get("media_likes", None) or []:
+                        author_ids.add(getattr(ml, "user_id", None))
+                    for mc in media_cache.get("media_comments", None) or []:
+                        author_ids.add(getattr(mc, "author_id", None))
+                # _prime_liked_previews has not run yet at this point, so read
+                # the likes it will use rather than its cache.
+                for pl in cached.get("post_likes", None) or []:
+                    author_ids.add(getattr(pl, "user_id", None))
+
+            # The liked-by faces MUST be primed too, and that means building
+            # their cache FIRST.
+            #
+            # This ran the other way round, and post_likes is deliberately not
+            # prefetched (see the comment on the feed queryset), so the loop
+            # above found nothing and every face in the preview took the
+            # four-query per-user stats path. Measured: that alone was the
+            # whole of the feed's per-post cost — 7 posts, 7 unprimed users,
+            # 28 queries.
             _prime_liked_previews(items)
+            for p in items:
+                for like in getattr(p, "_liked_preview_cache", None) or []:
+                    author_ids.add(getattr(like, "user_id", None))
+
+            prime_user_stats(request, {a for a in author_ids if a})
         return super().to_representation(items)
 
 
@@ -370,8 +401,10 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
 
     def get_share_count(self, obj):
         """Reshares PLUS non-repost shares (sent to chat / external apps)."""
-        cache = self._prefetched(obj, "reshares")
-        reshares = len(cache) if cache is not None else obj.reshares.count()
+        reshares = self._annotated(obj, "reshare_count_db")
+        if reshares is None:
+            cache = self._prefetched(obj, "reshares")
+            reshares = len(cache) if cache is not None else obj.reshares.count()
         return reshares + (obj.external_share_count or 0)
 
     def get_shared_from_details(self, obj):

@@ -1,5 +1,13 @@
 import { ref, computed, nextTick } from 'vue'
 import { useToast } from '#ui/composables/useToast'
+import { syncMessages } from '~/utils/chatMessageSync'
+import { POLL_INTERVALS, shouldPoll } from '~/utils/pollingPlan'
+import {
+  eventTouchesChatList,
+  messagesAfterEvent,
+  presenceFromEvent,
+  typingFromEvent,
+} from '~/utils/chatSocketEvents'
 
 /**
  * AdsyConnect Chat Composable
@@ -26,6 +34,11 @@ let onlineStatusInterval = null
 let heartbeatInterval = null // Heartbeat to keep user online
 let chatRoomsPollingInterval = null // Poll for new chat rooms/messages in list
 let headerPollingInterval = null // Poll for unread count in headers (global)
+let visibilityCatchUpInstalled = false // one listener per page, not per caller
+let disconnectSocket = null // teardown for the chat websocket
+let socketConnected = null // ref from the socket composable
+let socketIdleTick = 0 // how many message polls the socket has let us skip
+const otherUserTyping = ref(false) // driven by the socket, polled as a fallback
 
 export const useAdsyChat = () => {
   const toast = useToast()
@@ -219,6 +232,12 @@ export const useAdsyChat = () => {
         const index = messages.value.findIndex(m => m.temp_id === tempId)
         if (index !== -1) {
           messages.value[index] = data
+        } else if (!messages.value.some(m => String(m.id) === String(data.id))) {
+          // The temporary row is gone — a poll landed in the window between
+          // sending and the reply. Dropping the real message here is what
+          // made the sender's own message disappear until a later poll
+          // happened to include it.
+          messages.value.push(data)
         }
         
         // Update chat room last message
@@ -281,35 +300,121 @@ export const useAdsyChat = () => {
     startPolling()
   }
   
+  // Coming back to a tab must feel instant. The intervals skip their ticks
+  // while it is hidden, so without this the user would stare at a stale thread
+  // for up to one full interval after switching back.
+  const installVisibilityCatchUp = () => {
+    if (visibilityCatchUpInstalled) return
+    if (typeof document === 'undefined') return
+    visibilityCatchUpInstalled = true
+    document.addEventListener('visibilitychange', () => {
+      if (!shouldPoll()) return
+      if (activeChat.value) loadMessagesQuietly(activeChat.value.id)
+      refreshChatRoomsSilently()
+    })
+  }
+
+  // The polling body, reusable for the catch-up above so a returning tab does
+  // not wait for the next tick.
+  const loadMessagesQuietly = async (chatRoomId) => {
+    if (!chatRoomId) return
+    try {
+      const { data, error } = await get(`/adsyconnect/messages/?chatroom=${chatRoomId}`)
+      if (!data || error) return
+      const { changed, messages: merged } = syncMessages(
+        messages.value, data.results || data || []
+      )
+      if (changed) {
+        const somethingArrived = merged.length > messages.value.length
+        messages.value = merged
+        if (somethingArrived) scrollToBottom()
+      }
+    } catch (error) {
+      // A catch-up that fails just leaves the next tick to do it.
+    }
+  }
+
+  /**
+   * Open the chat websocket, the same one the mobile app uses.
+   *
+   * Until this existed the web had no realtime path at all: a reply took up to
+   * three seconds to appear and the chat list — the heaviest endpoint in
+   * AdsyConnect — was refetched every five. Polling stays as the fallback for
+   * a socket that cannot open, which is why the intervals below still exist.
+   */
+  const startSocket = () => {
+    if (disconnectSocket) return
+    const { connect, isConnected } = useAdsyChatSocket()
+    socketConnected = isConnected
+    disconnectSocket = connect((event) => {
+      const activeId = activeChat.value?.id
+      updateCurrentUserId()
+
+      const { changed, messages: merged } = messagesAfterEvent(
+        messages.value, event, activeId
+      )
+      if (changed) {
+        const arrived = merged.length > messages.value.length
+        messages.value = merged
+        if (arrived) scrollToBottom()
+      }
+
+      if (eventTouchesChatList(event, activeId)) {
+        refreshChatRoomsSilently()
+      }
+
+      const typing = typingFromEvent(event, activeId, currentUserId.value)
+      if (typing !== null) otherUserTyping.value = typing
+
+      const presence = presenceFromEvent(
+        event, activeChat.value?.other_user?.id
+      )
+      if (presence !== null) {
+        otherUserOnline.value = presence
+        if (activeChat.value?.other_user) {
+          activeChat.value.other_user.is_online = presence
+        }
+      }
+    })
+  }
+
+  const stopSocket = () => {
+    if (!disconnectSocket) return
+    disconnectSocket()
+    disconnectSocket = null
+  }
+
+  /** True when the socket is carrying the conversation. */
+  const socketIsLive = () => Boolean(socketConnected?.value)
+
   const startPolling = () => {
+    startSocket()
+    installVisibilityCatchUp()
     if (pollingInterval) clearInterval(pollingInterval)
     if (chatRoomsPollingInterval) clearInterval(chatRoomsPollingInterval)
     
     // Poll for new messages in active chat
-    pollingInterval = setInterval(async () => {
-      if (activeChat.value) {
-        try {
-          const { data, error } = await get(`/adsyconnect/messages/?chatroom=${activeChat.value.id}`)
-          if (data && !error) {
-            const newMessages = data.results || data || []
-            
-            // Only update if we have new messages
-            if (newMessages.length > messages.value.length) {
-              messages.value = newMessages
-              scrollToBottom()
-            }
-          }
-        } catch (error) {
-          // Silently handle polling errors
-        }
+    pollingInterval = setInterval(() => {
+      // Nobody is reading a hidden tab, and a forgotten one used to poll all
+      // day. The visibilitychange listener catches up when it returns.
+      if (!shouldPoll()) return
+      // With the socket live this is only a safety net for a frame the socket
+      // dropped, so it runs every fourth tick instead of every one.
+      if (socketIsLive()) {
+        socketIdleTick = (socketIdleTick + 1) % 4
+        if (socketIdleTick !== 0) return
+      } else {
+        socketIdleTick = 0
       }
-    }, 3000) // Poll every 3 seconds for active chat messages
+      if (activeChat.value) loadMessagesQuietly(activeChat.value.id)
+    }, POLL_INTERVALS.messages)
     
     // Poll for new chat rooms / incoming messages (for recipient to see new messages)
     chatRoomsPollingInterval = setInterval(async () => {
+      if (!shouldPoll()) return
       await refreshChatRoomsSilently()
-    }, 5000) // Poll every 5 seconds for chat list updates
-    
+    }, POLL_INTERVALS.chatRooms)
+
     // Start online status polling
     startOnlineStatusPolling()
   }
@@ -320,8 +425,9 @@ export const useAdsyChat = () => {
     
     // Poll for new chat rooms / incoming messages
     chatRoomsPollingInterval = setInterval(async () => {
+      if (!shouldPoll()) return
       await refreshChatRoomsSilently()
-    }, 5000)
+    }, POLL_INTERVALS.chatRooms)
   }
   
   // Start header polling for unread count (used by headers when not in AdsyConnect tab)
@@ -331,8 +437,9 @@ export const useAdsyChat = () => {
     
     // Poll for unread count every 10 seconds
     headerPollingInterval = setInterval(async () => {
+      if (!shouldPoll()) return
       await refreshChatRoomsSilently()
-    }, 10000)
+    }, POLL_INTERVALS.headerUnread)
   }
   
   // Stop header polling
@@ -355,15 +462,19 @@ export const useAdsyChat = () => {
     
     // Poll for other user's online status every 5 seconds (more responsive)
     onlineStatusInterval = setInterval(() => {
+      if (!shouldPoll()) return
       if (activeChat.value?.other_user?.id) {
         checkOtherUserOnlineStatus()
       }
-    }, 5000)
+    }, POLL_INTERVALS.onlineStatus)
     
     // Heartbeat to keep user online - every 5 seconds
     heartbeatInterval = setInterval(() => {
+      // The heartbeat is the one thing worth sending from a hidden tab: it is
+      // what keeps the user online while they read something else. Every 30s,
+      // against a 90s staleness window on the server.
       updateOnlineStatus(true)
-    }, 5000)
+    }, POLL_INTERVALS.heartbeat)
   }
   
   const checkOtherUserOnlineStatus = async () => {
@@ -462,9 +573,13 @@ export const useAdsyChat = () => {
       clearInterval(chatRoomsPollingInterval)
       chatRoomsPollingInterval = null
     }
+    // The socket goes with the page. Leaving it open would keep receiving
+    // frames for a screen that no longer exists.
+    stopSocket()
     // Set user as offline when leaving chat
     updateOnlineStatus(false)
     otherUserOnline.value = false
+    otherUserTyping.value = false
   }
   
   // Check if a specific user is online
@@ -586,6 +701,8 @@ export const useAdsyChat = () => {
     sendMessage,
     selectChat,
     scrollToBottom,
+    otherUserTyping,
+    stopSocket,
     startPolling,
     stopPolling,
     isUserOnline,

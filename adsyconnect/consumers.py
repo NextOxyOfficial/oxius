@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
@@ -12,6 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    #: How many Business Network posts one socket may follow at once. Scrolling
+    #: a feed subscribes and unsubscribes as cards come and go; this is the
+    #: backstop for a client that forgets the second half.
+    MAX_POST_SUBSCRIPTIONS = 30
+
     """
     WebSocket consumer for real-time chat functionality
     """
@@ -32,6 +38,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user_id = str(authenticated_user.id)
         self.user_group_name = f'user_{self.user_id}'
         self.user = authenticated_user
+        # Business Network posts this socket is currently reading.
+        self._post_groups = set()
         
         # Join user's personal group
         await self.channel_layer.group_add(
@@ -54,12 +62,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'user_id': self.user_id,
         }))
 
-        # Update user's online status
-        last_seen = await self.update_online_status(True)
-        
-        # Notify other users that this user is online
-        await self.broadcast_online_status(True, last_seen=last_seen)
-        
+        # Update user's online status. Only the FIRST socket is news: a
+        # second device arriving does not change whether this user is online,
+        # and telling every chat partner again costs one message per partner.
+        first, last_seen = await self.register_connection()
+        if first:
+            await self.broadcast_online_status(True, last_seen=last_seen)
+
         logger.info(f"User {self.user.username} connected to chat")
 
     async def disconnect(self, close_code):
@@ -70,13 +79,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.user_group_name,
                 self.channel_name
             )
+            # ...and any post groups, or the layer keeps a dead channel in
+            # every post this socket ever opened.
+            for group_name in list(getattr(self, '_post_groups', ())):
+                await self.channel_layer.group_discard(
+                    group_name, self.channel_name)
+            self._post_groups = set()
             
-            # Update user's online status
-            last_seen = await self.update_online_status(False)
-            
-            # Notify other users that this user is offline
-            await self.broadcast_online_status(False, last_seen=last_seen)
-            
+            # Going offline is only true once the LAST socket closes.
+            # Marking it on the first close is what showed a user as offline
+            # while they were still holding their phone.
+            last, last_seen = await self.release_connection()
+            if last:
+                await self.broadcast_online_status(False, last_seen=last_seen)
+
             logger.info(f"User {self.user.username} disconnected from chat")
 
     async def receive(self, text_data):
@@ -94,6 +110,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             elif message_type == 'ping':
                 await self.update_online_status(True)
                 await self.send(text_data=json.dumps({'type': 'pong'}))
+            elif message_type == 'subscribe_post':
+                await self.handle_subscribe_post(data)
+            elif message_type == 'unsubscribe_post':
+                await self.handle_unsubscribe_post(data)
             else:
                 logger.warning(f"Unknown message type: {message_type}")
                 
@@ -145,6 +165,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
         except Exception as e:
             logger.error(f"Error sending message: {e}")
+
+    async def handle_subscribe_post(self, data):
+        """Follow a Business Network post while it is on screen.
+
+        Notifications reach the person a thing happened to, over their own
+        user group. A comment arriving on a post is news to everybody READING
+        that post, which needs a group per post — joined while it is open and
+        left when it is not, so a client is never fed activity for a hundred
+        posts it scrolled past.
+        """
+        post_id = str(data.get('post_id') or '').strip()
+        if not post_id or len(post_id) > 64:
+            return
+        from business_network.realtime import post_group
+        group_name = post_group(post_id)
+        if group_name in self._post_groups:
+            return
+        # A hard ceiling: a client that forgets to unsubscribe must not end up
+        # in every group in the database.
+        if len(self._post_groups) >= self.MAX_POST_SUBSCRIPTIONS:
+            oldest = next(iter(self._post_groups))
+            self._post_groups.discard(oldest)
+            await self.channel_layer.group_discard(oldest, self.channel_name)
+        self._post_groups.add(group_name)
+        await self.channel_layer.group_add(group_name, self.channel_name)
+
+    async def handle_unsubscribe_post(self, data):
+        post_id = str(data.get('post_id') or '').strip()
+        if not post_id:
+            return
+        from business_network.realtime import post_group
+        group_name = post_group(post_id)
+        if group_name not in self._post_groups:
+            return
+        self._post_groups.discard(group_name)
+        await self.channel_layer.group_discard(group_name, self.channel_name)
 
     async def handle_typing_status(self, data):
         """Handle typing status updates"""
@@ -264,12 +320,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def typing_status_update(self, event):
-        """Send typing status update to WebSocket"""
+        """Send typing status update to WebSocket.
+
+        Carries chatroom_id for a 1:1 chat and group_id for a group, so one
+        event type serves both and a client only reacts to the conversation it
+        has open.
+        """
         await self.send(text_data=json.dumps({
             'type': 'typing_status',
-            'chatroom_id': event['chatroom_id'],
+            'chatroom_id': event.get('chatroom_id'),
+            'group_id': event.get('group_id'),
             'user_id': event['user_id'],
-            'is_typing': event['is_typing']
+            'user_name': event.get('user_name'),
+            'is_typing': event['is_typing'],
         }))
 
     async def message_read_update(self, event):
@@ -290,6 +353,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'is_online': event['is_online'],
             'last_seen': event.get('last_seen')
         }))
+
+    async def bn_notification_event(self, event):
+        """A Business Network notification, live rather than only as push."""
+        await self.send(text_data=json.dumps(event['payload']))
+
+    async def bn_post_activity_event(self, event):
+        """Something happened on a post this socket is reading."""
+        await self.send(text_data=json.dumps(event['payload']))
 
     async def incoming_call_event(self, event):
         """Send incoming call event to WebSocket."""
@@ -370,6 +441,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return None
 
     @database_sync_to_async
+    def register_connection(self):
+        """Record this socket. Returns (is_first, last_seen_iso)."""
+        try:
+            online_status, _ = OnlineStatus.objects.get_or_create(
+                user=self.user,
+                defaults={'is_online': True, 'last_seen': timezone.now()},
+            )
+            first = online_status.register_connection()
+            return first, online_status.last_seen.isoformat()
+        except Exception as e:
+            logger.error(f"Error registering connection: {e}")
+            # Announce it rather than leaving the peer with a stale "offline"
+            # — a duplicate online event is harmless.
+            return True, None
+
+    @database_sync_to_async
+    def release_connection(self):
+        """Drop this socket. Returns (was_last, last_seen_iso)."""
+        try:
+            online_status = OnlineStatus.objects.filter(user=self.user).first()
+            if online_status is None:
+                return True, None
+            last = online_status.release_connection()
+            return last, online_status.last_seen.isoformat()
+        except Exception as e:
+            logger.error(f"Error releasing connection: {e}")
+            return False, None
+
+    @database_sync_to_async
     def update_online_status(self, is_online):
         """Update user's online status"""
         try:
@@ -420,21 +520,80 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error broadcasting online status: {e}")
 
+    #: Nobody who has not spoken to this user in this long is looking at a
+    #: presence dot for them. A real account had 84 conversations, so every
+    #: reconnect — and mobile reconnects constantly — meant 84 messages, nearly
+    #: all of them to people whose app was not even open on that chat.
+    PRESENCE_AUDIENCE_DAYS = 30
+    #: A hard ceiling for an account with thousands of conversations, newest
+    #: first. Beyond this the fan-out costs more than the dot is worth.
+    PRESENCE_AUDIENCE_LIMIT = 60
+
     @database_sync_to_async
     def get_connected_users(self):
-        """Get list of user IDs who have chats with this user"""
+        """Who should hear that this user came online or went offline.
+
+        Not "everyone they have ever messaged": the people they have spoken to
+        recently, newest conversation first. Anyone else still sees correct
+        presence — the REST serializers read it from the row, which is always
+        up to date; they just do not get a push about it.
+        """
         try:
             from django.db.models import Q
-            
-            chatrooms = ChatRoom.objects.filter(
-                Q(user1=self.user) | Q(user2=self.user)
-            ).select_related('user1', 'user2')
-            
+
+            cutoff = timezone.now() - timedelta(days=self.PRESENCE_AUDIENCE_DAYS)
+            chatrooms = (
+                ChatRoom.objects.filter(
+                    Q(user1=self.user) | Q(user2=self.user),
+                )
+                .filter(Q(last_message_at__gte=cutoff)
+                        | Q(last_message_at__isnull=True,
+                            created_at__gte=cutoff))
+                .order_by('-last_message_at')
+                .values_list('user1_id', 'user2_id')[
+                    :self.PRESENCE_AUDIENCE_LIMIT]
+            )
+
+            my_id = str(self.user.id)
             user_ids = []
-            for chatroom in chatrooms:
-                other_user = chatroom.user2 if chatroom.user1 == self.user else chatroom.user1
-                user_ids.append(str(other_user.id))
-            
+            seen = {my_id}
+            for user1_id, user2_id in chatrooms:
+                other = str(user2_id if str(user1_id) == my_id else user1_id)
+                if other in seen:
+                    continue
+                seen.add(other)
+                user_ids.append(other)
+
+            # Group co-members too. Presence was fanned out to one-to-one chat
+            # partners only, so somebody you only ever talk to in a group never
+            # saw you come online.
+            #
+            # Same recency and same overall cap: a member of a group nobody has
+            # posted in for a month is not watching for a dot.
+            if len(user_ids) < self.PRESENCE_AUDIENCE_LIMIT:
+                from .models import ChatGroup, ChatGroupMembership
+
+                active_groups = ChatGroup.objects.filter(
+                    memberships__user=self.user,
+                ).filter(
+                    Q(last_message_at__gte=cutoff)
+                    | Q(last_message_at__isnull=True, created_at__gte=cutoff)
+                ).values_list('id', flat=True)[:20]
+
+                room = self.PRESENCE_AUDIENCE_LIMIT - len(user_ids)
+                for member_id in (
+                    ChatGroupMembership.objects
+                    .filter(group_id__in=list(active_groups))
+                    .exclude(user=self.user)
+                    .values_list('user_id', flat=True)
+                    .distinct()[:room]
+                ):
+                    other = str(member_id)
+                    if other in seen:
+                        continue
+                    seen.add(other)
+                    user_ids.append(other)
+
             return user_ids
         except Exception as e:
             logger.error(f"Error getting connected users: {e}")

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:oxius_native/services/adsyconnect_realtime_service.dart';
 import '../../models/notification_models.dart';
 import '../../services/notification_service.dart';
 import '../../services/business_network_service.dart';
@@ -31,17 +33,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   int _unreadCount = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
+  StreamSubscription<Map<String, dynamic>>? _liveSub;
 
   @override
   void initState() {
     super.initState();
     _loadNotifications(isInitial: true);
     _markAllNotificationsAsRead();
+    // A notification arriving while this list is open used to need a pull to
+    // refresh. The server now pushes it, so reload the first page — the row
+    // has to be rendered by the same code path as the rest, and one page
+    // fetch is cheaper than teaching this screen to build a row from an event.
+    _liveSub = AdsyConnectRealtimeService.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event['type'] != 'bn_notification') return;
+      _loadNotifications();
+      _markAllNotificationsAsRead();
+    });
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    _liveSub?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();

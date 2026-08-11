@@ -1196,7 +1196,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _idlePollTick = 0;
         }
         if (_idlePollTick == 0) _checkForNewMessages();
-        _pollTypingStatus();
+        // Typing arrives over the socket (handled above, `typing_status`), so
+        // asking for it as well every 4s was fifteen requests a minute for
+        // something already in hand. Only ask when there is no socket to ask
+        // through.
+        if (!AdsyConnectRealtimeService.instance.isConnected) {
+          _pollTypingStatus();
+        }
         _statusPollCounter++;
         if (_statusPollCounter >= 8) {
           _statusPollCounter = 0;

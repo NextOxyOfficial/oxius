@@ -169,6 +169,17 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
 
     if (type == 'group_updated') {
+      // A removal or a deletion carries the id and no usable group body, so
+      // drop the row immediately rather than waiting for the refetch — the
+      // group is already gone server-side and the reload would 404 it away
+      // a beat later anyway.
+      if (event['removed'] == true) {
+        final goneId = (event['group_id'] ?? '').toString();
+        if (goneId.isNotEmpty) {
+          setState(() => _groups.removeWhere(
+              (g) => (g['id'] ?? '').toString() == goneId));
+        }
+      }
       unawaited(_loadGroups());
     }
   }

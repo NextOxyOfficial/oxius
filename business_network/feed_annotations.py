@@ -57,10 +57,17 @@ def feed_count_annotations(user=None):
         BusinessNetworkPostLike,
     )
 
+    from .models import BusinessNetworkPost
+
     annotations = {
         "like_count_db": _count_subquery(BusinessNetworkPostLike),
         "comment_count_db": _count_subquery(BusinessNetworkPostComment),
         "follower_count_db": _count_subquery(BusinessNetworkPostFollow),
+        # Reshares point at the original through shared_from, so the same
+        # subquery shape works — and without it get_share_count fell through to
+        # obj.reshares.count(), one COUNT per post on every feed page.
+        "reshare_count_db": _count_subquery(
+            BusinessNetworkPost, fk_name="shared_from"),
     }
 
     if user is not None and getattr(user, "is_authenticated", False):

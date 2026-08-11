@@ -1128,11 +1128,39 @@ class AdsyConnectService {
     }
   }
 
-  static Future<List<dynamic>> getGroupMessages(String groupId) async {
+  /// Stamp a group as read without fetching anything.
+  ///
+  /// Marking read by re-fetching the last hundred messages — the only way
+  /// before this endpoint existed — cost a full page load per message that
+  /// arrived over the socket.
+  static Future<void> markGroupRead(String groupId) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/groups/$groupId/mark-read/'),
+        headers: await _getHeaders(),
+      );
+    } catch (e) {
+      // The next real read will stamp it; a failed badge update is not worth
+      // surfacing.
+      debugPrint('markGroupRead failed: $e');
+    }
+  }
+
+  /// Fetch a group's messages.
+  ///
+  /// [markRead] must be false for a refresh nobody is looking at — a poll
+  /// while the app is backgrounded. The server stamps last_read_at on a read,
+  /// so a background poll used to mark messages read and the unread badge
+  /// never appeared.
+  static Future<List<dynamic>> getGroupMessages(
+    String groupId, {
+    bool markRead = true,
+  }) async {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('$baseUrl/groups/$groupId/messages/'),
+        Uri.parse('$baseUrl/groups/$groupId/messages/'
+            '${markRead ? '' : '?mark_read=0'}'),
         headers: headers,
       );
       if (response.statusCode == 200) {

@@ -7,7 +7,11 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import (
+    api_view, permission_classes, throttle_classes,
+)
+from base.throttling import CallRingThrottle, ChatMessageThrottle
+from base.upload_limits import check_upload
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
@@ -1158,6 +1162,7 @@ def livekit_token(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([CallRingThrottle])
 def send_call_notification(request):
     """Create a call session and deliver the ringing signal."""
     try:
@@ -1683,6 +1688,7 @@ def join_group_call(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([CallRingThrottle])
 def start_group_call(request):
     """Ring every member of a group chat at once.
 
@@ -1876,6 +1882,7 @@ def start_group_call(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([CallRingThrottle])
 def invite_to_call(request):
     """Ring more people into a call that is already running.
 
@@ -2473,7 +2480,12 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         user = self.request.user
         qs = ChatRoom.objects.filter(
             Q(user1=user) | Q(user2=user)
-        ).select_related('user1', 'user2', 'blocked_by')
+        ).select_related(
+            'user1', 'user2', 'blocked_by',
+            # UserBasicSerializer.get_is_online reads user.online_status, which
+            # without this is one query per conversation in the list.
+            'user1__online_status', 'user2__online_status',
+        )
 
         # The archived split only makes sense for the list view. Detail actions
         # (retrieve, archive/unarchive, mute, …) must still resolve an archived
@@ -2762,10 +2774,23 @@ class MessageViewSet(viewsets.ModelViewSet):
     ViewSet for managing messages
     """
     permission_classes = [IsAuthenticated]
+    # Sending is rate limited; reading is not. See get_throttles().
+    throttle_classes = [ChatMessageThrottle]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at']
     ordering = ['created_at']
     pagination_class = None  # Disable pagination for messages to return direct list
+
+    def get_throttles(self):
+        """Limit sending, never reading.
+
+        The chat screen polls this endpoint as a safety net behind the socket,
+        so throttling GET would break the very fallback that exists to make the
+        chat reliable.
+        """
+        if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return []
+        return super().get_throttles()
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -3305,13 +3330,86 @@ def clear_active_chat(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def heartbeat(request):
-    """Update user's online status - call periodically to stay online"""
-    online_status, _ = OnlineStatus.objects.get_or_create(
+    """Update user's online status - call periodically to stay online.
+
+    Also announces the user when this heartbeat is what brought them back.
+    It used to repair the row silently, so someone whose socket had dropped
+    stayed "offline" on every peer's screen until that peer's own status poll
+    came round — the data was right and nobody had been told.
+    """
+    online_status, created = OnlineStatus.objects.get_or_create(
         user=request.user,
         defaults={'is_online': True, 'last_seen': timezone.now()}
     )
+    # A row that had to be created means there was no presence at all, which
+    # is not "was already online" — it is exactly the transition worth
+    # announcing.
+    was_online = (not created) and online_status.is_effectively_online()
     online_status.set_presence(True)
+
+    # Only on the transition. Every 30 seconds forever would be one message
+    # per chat partner per heartbeat, for news nobody was waiting for.
+    if not was_online:
+        _broadcast_presence(request.user, True, online_status.last_seen)
+
     return Response({'status': 'online', 'timestamp': timezone.now().isoformat()})
+
+
+def _broadcast_group_typing(group, typist, is_typing):
+    """Tell a group's other members that someone is typing."""
+    try:
+        payload = {
+            'type': 'typing_status_update',
+            # The 1:1 event carries chatroom_id; a group carries group_id, and
+            # a client that knows neither shape can ignore it safely.
+            'group_id': str(group.id),
+            'chatroom_id': None,
+            'user_id': str(typist.id),
+            'user_name': (typist.first_name or typist.username or 'Someone'),
+            'is_typing': bool(is_typing),
+        }
+        member_ids = group.memberships.exclude(
+            user=typist
+        ).values_list('user_id', flat=True)
+        for member_id in member_ids:
+            _broadcast_to_user(member_id, payload)
+    except Exception:
+        logger.exception('group typing broadcast failed')
+
+
+def _broadcast_presence(user, is_online, last_seen):
+    """Tell this user's chat partners about a presence change.
+
+    The socket consumer does this on connect and disconnect; this is the same
+    message for the REST paths, so a client cannot tell which route the news
+    arrived by.
+    """
+    try:
+        # Bounded the same way the consumer bounds it: recent conversations
+        # only, newest first. See ChatConsumer.get_connected_users.
+        cutoff = timezone.now() - timezone.timedelta(days=30)
+        rows = (
+            ChatRoom.objects.filter(Q(user1=user) | Q(user2=user))
+            .filter(Q(last_message_at__gte=cutoff)
+                    | Q(last_message_at__isnull=True, created_at__gte=cutoff))
+            .order_by('-last_message_at')
+            .values_list('user1_id', 'user2_id')[:60]
+        )
+        partner_ids = set()
+        for row in rows:
+            partner_ids.update(str(uid) for uid in row)
+        partner_ids.discard(str(user.id))
+
+        payload = {
+            'type': 'user_online_status',
+            'user_id': str(user.id),
+            'is_online': bool(is_online),
+            'last_seen': last_seen.isoformat() if last_seen else None,
+        }
+        for partner_id in partner_ids:
+            _broadcast_to_user(partner_id, payload)
+    except Exception:
+        logger.exception('presence broadcast failed')
 
 
 class ChatGroupViewSet(viewsets.ModelViewSet):
@@ -3399,11 +3497,21 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         payload = GroupMessageSerializer(
             msg, context={'request': self.request}
         ).data
-        for member_id in group.memberships.values_list('user_id', flat=True):
-            _broadcast_to_user(member_id, {
-                'type': 'group_message',
-                'message': payload,
-            })
+        # values_list on the related manager, deliberately: it ignores the
+        # prefetch cache from get_object() and so cannot address a member who
+        # has just been removed.
+        try:
+            for member_id in ChatGroupMembership.objects.filter(
+                group=group
+            ).values_list('user_id', flat=True):
+                _broadcast_to_user(member_id, {
+                    'type': 'group_message',
+                    'message': payload,
+                })
+        except Exception:
+            # The notice is already stored; a socket that is down must not turn
+            # "member removed" into a 500 on an action that already happened.
+            logger.exception('system message broadcast failed')
 
     def _require_member(self, group):
         if not group.is_member(self.request.user):
@@ -3441,6 +3549,9 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         if photo_changed:
             self._system_msg(
                 group, f'{self._actor_name()} গ্রুপের ছবি বদলেছেন')
+        if updates:
+            # Everyone else kept the old name and photo until they reloaded.
+            self._announce_group(group)
         return Response(
             ChatGroupSerializer(group, context={'request': request}).data
         )
@@ -3451,7 +3562,22 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         err = self._require_admin(group)
         if err:
             return err
+        # Serialise and collect the audience BEFORE the rows are gone.
+        member_ids = [
+            str(uid) for uid in
+            group.memberships.values_list('user_id', flat=True)
+        ]
+        group_id = str(group.id)
         group.delete()
+        # Otherwise a deleted group sat in every member's chat list until they
+        # reloaded, and opening it 404'd.
+        for uid in member_ids:
+            _broadcast_to_user(uid, {
+                'type': 'group_updated',
+                'group': None,
+                'removed': True,
+                'group_id': group_id,
+            })
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post'], url_path='edit-message')
@@ -3539,6 +3665,9 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                     group,
                     f'{self._actor_name()} {self._display_name(target)}-কে '
                     'কো-অ্যাডমিন বানিয়েছেন')
+            # my_role changed for the new admin, and the member list's roles
+            # changed for everyone.
+            self._announce_group(group)
         return Response({'promoted': bool(updated)})
 
     @action(detail=True, methods=['post'])
@@ -3565,6 +3694,7 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                     group,
                     f'{self._actor_name()} {self._display_name(target)}-কে '
                     'কো-অ্যাডমিন থেকে সরিয়েছেন')
+            self._announce_group(group)
         return Response({'demoted': bool(updated)})
 
     @action(detail=True, methods=['post'])
@@ -3578,6 +3708,69 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         group.memberships.filter(user=request.user).update(muted=value)
         return Response({'muted': value})
 
+    def _announce_group(self, group, *, extra_user_ids=(), removed_user_ids=()):
+        """Tell everyone concerned that this group changed.
+
+        Sent to the current members plus anybody named in [extra_user_ids] —
+        which is how a REMOVED member hears about it, since by then they are no
+        longer in the membership table and would otherwise never be told.
+
+        [removed_user_ids] get the same group payload with `removed: True` so
+        their client can close the screen and drop the row rather than having to
+        work out from a member list that they are missing from it.
+        """
+        try:
+            # Re-read the group. The instance in hand came from get_object(),
+            # which prefetches memberships__user, so serialising it after a
+            # membership change would send everybody a member list that still
+            # contained the person who had just been removed.
+            fresh = (
+                ChatGroup.objects
+                .prefetch_related('memberships__user')
+                .filter(pk=group.pk)
+                .first()
+            )
+            if fresh is None:
+                return
+            data = ChatGroupSerializer(
+                fresh, context={'request': self.request}).data
+            member_ids = {
+                str(uid) for uid in
+                ChatGroupMembership.objects
+                .filter(group=fresh)
+                .values_list('user_id', flat=True)
+            }
+            for uid in member_ids | {str(u) for u in extra_user_ids if u}:
+                payload = {'type': 'group_updated', 'group': data}
+                if uid in {str(u) for u in removed_user_ids if u}:
+                    payload = {
+                        'type': 'group_updated',
+                        'group': data,
+                        'removed': True,
+                        'group_id': str(group.id),
+                    }
+                _broadcast_to_user(uid, payload)
+        except Exception:
+            # A stale member list is not worth failing the action that caused
+            # it — the change itself is already committed.
+            logger.exception('group_updated broadcast failed')
+
+    @action(detail=True, methods=['post'], url_path='mark-read')
+    def mark_read(self, request, pk=None):
+        """Stamp this group as read, without fetching anything.
+
+        Reading a message that arrived over the socket is still a read, but
+        marking it by re-fetching the last hundred messages — the only way to
+        do it before this existed — costs a full page load per message.
+        """
+        group = self.get_object()
+        err = self._require_member(group)
+        if err:
+            return err
+        group.memberships.filter(user=request.user).update(
+            last_read_at=timezone.now())
+        return Response({'ok': True})
+
     @action(detail=True, methods=['get', 'post'])
     def typing(self, request, pk=None):
         """POST: I'm typing (heartbeat). GET: who else is typing right now."""
@@ -3589,6 +3782,15 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             group.memberships.filter(user=request.user).update(
                 typing_at=timezone.now()
             )
+            # Tell the others over the socket as well as recording it.
+            #
+            # Only the timestamp was written, so a group had no realtime typing
+            # path at all and every member's app polled this endpoint every
+            # three seconds to find out — twenty requests a minute each, for
+            # something the socket could deliver instantly. The 1:1 chat has
+            # broadcast this from the start; `group_id` is what tells a client
+            # which conversation the bubble belongs to.
+            _broadcast_group_typing(group, request.user, True)
             return Response({'ok': True})
         cutoff = timezone.now() - timezone.timedelta(seconds=6)
         names = []
@@ -3647,6 +3849,10 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
                 group,
                 f'{self._actor_name()} {self._display_name(target)}-কে '
                 'গ্রুপ থেকে বাদ দিয়েছেন')
+            # The removed person is told too — they are out of the membership
+            # table by now, so this is their only notice.
+            self._announce_group(
+                group, extra_user_ids=[target.id], removed_user_ids=[target.id])
         return Response({'removed': bool(deleted)})
 
     @action(detail=True, methods=['post'])
@@ -3658,7 +3864,16 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         ChatGroupMembership.objects.filter(
             group=group, user=request.user
         ).delete()
-        remaining = group.memberships.all()
+        # A FRESH queryset, not group.memberships.all().
+        #
+        # get_object() prefetches memberships__user, so .all() handed back the
+        # cache from before this delete — three rows when one had just gone.
+        # .exists() then read that cache and said yes, so the last member
+        # leaving skipped the group-delete branch, fell through to the
+        # admin-rescue, and .first() (which DOES hit the database) returned
+        # None: `oldest.role = 'admin'` raised AttributeError and the request
+        # 500'd. The group was never cleaned up either.
+        remaining = ChatGroupMembership.objects.filter(group=group)
         if not remaining.exists():
             group.delete()
             return Response({'left': True, 'deleted': True})
@@ -3667,12 +3882,29 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         # Never leave a group admin-less.
         if not remaining.filter(role='admin').exists():
             oldest = remaining.order_by('joined_at').first()
-            oldest.role = 'admin'
-            oldest.save(update_fields=['role'])
+            # Belt and braces: if the row vanished between the two queries,
+            # there is nobody to promote and nothing to do.
+            if oldest is not None:
+                oldest.role = 'admin'
+                oldest.save(update_fields=['role'])
+        # Member count and the possible new admin both changed for everyone
+        # still in it; the leaver's own list needs the row gone.
+        self._announce_group(
+            group,
+            extra_user_ids=[request.user.id],
+            removed_user_ids=[request.user.id],
+        )
         return Response({'left': True})
 
     @action(detail=True, methods=['get', 'post'])
     def messages(self, request, pk=None):
+        # Sending gets the same limit as a one-to-one message. Reading does not:
+        # GET shares this action and the group screen polls it, so a
+        # throttle_classes on the action itself would rate-limit the safety net.
+        if request.method == 'POST':
+            throttle = ChatMessageThrottle()
+            if not throttle.allow_request(request, self):
+                self.throttled(request, throttle.wait())
         group = self.get_object()
         err = self._require_member(group)
         if err:
@@ -3690,7 +3922,16 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
             msgs = list(qs.order_by('-created_at')[:100])[::-1]
             # Opening the group marks it read — the list's unread badge
             # (ChatGroupSerializer.unread_count) counts from this stamp.
-            if membership:
+            #
+            # But the app POLLS this endpoint, and every poll used to stamp it.
+            # A message arriving while the phone was in a pocket, with this
+            # screen still mounted, was therefore marked read and never raised
+            # a badge. `mark_read=0` is how a refresh says "nobody is looking
+            # at this"; the default stays on so an older build keeps working.
+            mark_read = str(
+                request.query_params.get('mark_read', '1')
+            ).strip().lower() not in {'0', 'false', 'no'}
+            if membership and mark_read:
                 membership.last_read_at = timezone.now()
                 membership.save(update_fields=['last_read_at'])
             return Response(GroupMessageSerializer(
@@ -3700,6 +3941,12 @@ class ChatGroupViewSet(viewsets.ModelViewSet):
         message_type = (request.data.get('message_type') or 'text').strip()
         content = (request.data.get('content') or '').strip()
         media = request.FILES.get('media_file')
+        if media is not None:
+            # Same cap as a one-to-one message — this path had none either.
+            too_big = check_upload(
+                media, declared_kind=message_type, raise_error=False)
+            if too_big:
+                return Response({'error': too_big}, status=400)
         if message_type == 'text' and not content:
             return Response({'error': 'মেসেজ লিখুন'}, status=400)
         if message_type in ('voice', 'image', 'video', 'document')                 and media is None:

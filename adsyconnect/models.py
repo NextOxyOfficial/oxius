@@ -604,7 +604,19 @@ class OnlineStatus(models.Model):
     )
     is_online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(default=timezone.now)
-    
+    #: How many sockets this user currently has open.
+    #:
+    #: A flag alone could not answer "is this user still connected?", so the
+    #: first socket to close marked them offline for everybody — closing a
+    #: tablet while holding the phone, or a mobile network flap where the new
+    #: socket connects before the old one's disconnect arrives.
+    #:
+    #: A missed decrement (a worker killed mid-request) would leave this above
+    #: zero for ever, but it cannot strand anyone online: is_effectively_online
+    #: also requires a last_seen inside STALE_AFTER, and only a live client
+    #: keeps that fresh.
+    connection_count = models.PositiveIntegerField(default=0)
+
     class Meta:
         db_table = 'adsyconnect_online_status'
 
@@ -622,7 +634,48 @@ class OnlineStatus(models.Model):
         self.is_online = is_online
         self.last_seen = seen_at or timezone.now()
         self.save(update_fields=['is_online', 'last_seen'])
-    
+
+    def register_connection(self):
+        """A socket opened. True when it is this user's first.
+
+        Counted with an UPDATE rather than read-modify-write because two
+        devices connecting at once would otherwise both read the same count
+        and both write 1.
+        """
+        from django.db.models import F
+        type(self).objects.filter(pk=self.pk).update(
+            connection_count=F('connection_count') + 1,
+            is_online=True,
+            last_seen=timezone.now(),
+        )
+        self.refresh_from_db(
+            fields=['connection_count', 'is_online', 'last_seen'])
+        return self.connection_count <= 1
+
+    def release_connection(self):
+        """A socket closed. True when it was this user's last.
+
+        Only the last one going marks the user offline; anything else just
+        refreshes the timestamp, because they are still there on another
+        device.
+        """
+        from django.db.models import F
+        # The __gt=0 guard is what stops a duplicate disconnect from pushing
+        # the count negative — which would make the NEXT connect look like a
+        # second one and never announce the user as online.
+        type(self).objects.filter(pk=self.pk, connection_count__gt=0).update(
+            connection_count=F('connection_count') - 1)
+        self.refresh_from_db(fields=['connection_count'])
+
+        if self.connection_count > 0:
+            self.last_seen = timezone.now()
+            self.save(update_fields=['last_seen'])
+            return False
+
+        self.is_online = False
+        self.last_seen = timezone.now()
+        self.save(update_fields=['is_online', 'last_seen'])
+        return True
     def update_last_seen(self):
         """Update last seen timestamp"""
         self.set_presence(self.is_online, seen_at=timezone.now())

@@ -62,6 +62,11 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   late Map<String, dynamic> _group;
   List<Map<String, dynamic>> _messages = [];
   List<String> _typingNames = [];
+  /// When each person's socket "typing" arrived, so a name can expire on its
+  /// own. Nobody sends a "stopped typing" event — they just stop sending — so
+  /// without this a bubble would stay up until the next poll.
+  final Map<String, DateTime> _typingSeenAt = {};
+  Timer? _typingExpiryTimer;
   bool _loading = true;
   // Messenger-style timestamps: tap a message to reveal its time, tap it
   // again (or anywhere outside) to hide.
@@ -231,16 +236,34 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         unawaited(_refreshActiveCall());
         return;
       }
+      if (eventType == 'typing_status') {
+        _applyTypingEvent(event);
+        return;
+      }
+      if (eventType == 'group_updated') {
+        _applyGroupUpdate(event);
+        return;
+      }
       if (event['type'] != 'group_message') return;
       final msg = event['message'];
       if (msg is! Map) return;
       final gid = (msg['group'] ?? msg['group_id'] ?? '').toString();
       // Broadcasts arrive for every group the user belongs to.
       if (gid.isNotEmpty && gid != _groupId) return;
-      _loadMessages();
+      // The event carries the whole message, so merge it rather than
+      // refetching the last hundred. In a nineteen-member group every message
+      // used to trigger nineteen full refetches — and each of those also
+      // stamped the group as read.
+      _mergeIncomingGroupMessage(Map<String, dynamic>.from(msg));
     });
 
     _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      // Nobody is reading a screen the app is not showing. Polling on regardless
+      // burned battery and data, and every one of those requests used to mark
+      // the group read.
+      if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        return;
+      }
       // With a live socket the poll is only there to catch a missed frame, so
       // it runs every ~30s instead of every 5s. If the socket is down it falls
       // back to the original cadence.
@@ -262,8 +285,16 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       _refreshActiveCall();
     });
 
-    _typingPollTimer =
-        Timer.periodic(const Duration(seconds: 3), (_) => _pollTyping());
+    // Typing now arrives over the socket, so this is only a fallback for a
+    // socket that is down — it used to be the ONLY path, at twenty requests a
+    // minute per member for something the socket delivers instantly.
+    _typingPollTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        return;
+      }
+      if (AdsyConnectRealtimeService.instance.isConnected) return;
+      _pollTyping();
+    });
     _player.positionStream.listen((p) {
       if (mounted && _playingVoiceId != null) {
         setState(() => _voicePosition = p);
@@ -295,6 +326,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     _realtimeSub?.cancel();
     _pollTimer?.cancel();
     _typingPollTimer?.cancel();
+    _typingExpiryTimer?.cancel();
     _recordTimer?.cancel();
     _messageController.removeListener(_onInputChanged);
     _messageController.dispose();
@@ -436,19 +468,139 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     _messageFocusNode.requestFocus();
   }
 
-  Future<void> _pollTyping() async {
-    final names = await AdsyConnectService.getGroupTyping(_groupId);
-    if (!mounted) return;
+  /// Fold one socket message into the thread.
+  ///
+  /// An edit or a delete arrives as the same `group_message` event carrying the
+  /// updated row, so this replaces by id when it already knows the message and
+  /// appends when it does not. Falling back to a full reload only when the id
+  /// is missing keeps the old behaviour for anything unexpected.
+  void _mergeIncomingGroupMessage(Map<String, dynamic> msg) {
+    final id = (msg['id'] ?? '').toString();
+    if (id.isEmpty) {
+      unawaited(_loadMessages());
+      return;
+    }
+
+    final index = _messages.indexWhere((m) => (m['id'] ?? '').toString() == id);
+    final wasNearBottom = !_scroll.hasClients ||
+        _scroll.position.pixels >= _scroll.position.maxScrollExtent - 120;
+
+    setState(() {
+      if (index >= 0) {
+        _messages[index] = msg;
+      } else {
+        _messages.add(msg);
+      }
+      _loading = false;
+    });
+    ChatHistoryCache.put('group:$_groupId', _messages);
+
+    // Only a new arrival chases the bottom; an edit must not yank the view.
+    if (index < 0 && wasNearBottom) {
+      ChatAutoScroll.stickToBottom(_scroll, animate: true);
+    }
+
+    // Seeing a message is reading it — but only if the app is actually on
+    // screen. Backgrounded, this must not clear the unread badge.
+    if (index < 0 &&
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+      unawaited(AdsyConnectService.markGroupRead(_groupId));
+    }
+  }
+
+  /// The group changed under us — renamed, re-photographed, or we were
+  /// removed from it.
+  ///
+  /// Being removed used to be entirely silent: the screen stayed open, the
+  /// composer still worked, and the first sign anything had happened was a 403
+  /// on send.
+  void _applyGroupUpdate(Map<String, dynamic> event) {
+    final eventGroupId =
+        (event['group_id'] ?? (event['group'] is Map ? event['group']['id'] : ''))
+            .toString();
+    if (eventGroupId != _groupId) return;
+
+    if (event['removed'] == true) {
+      if (!mounted) return;
+      AdsyToast.info(context, 'আপনি আর এই গ্রুপে নেই');
+      Navigator.of(context).maybePop();
+      return;
+    }
+
+    final group = event['group'];
+    if (group is! Map) return;
+    setState(() => _group = Map<String, dynamic>.from(group));
+  }
+
+  /// A member started typing, straight off the socket.
+  void _applyTypingEvent(Map<String, dynamic> event) {
+    if ((event['group_id'] ?? '').toString() != _groupId) return;
+    final userId = (event['user_id'] ?? '').toString();
+    if (userId.isEmpty || userId == AuthService.currentUser?.id) return;
+    final name = (event['user_name'] ?? '').toString().trim();
+    if (name.isEmpty) return;
+
+    if (event['is_typing'] == false) {
+      _typingSeenAt.remove(name);
+    } else {
+      _typingSeenAt[name] = DateTime.now();
+    }
+    _recomputeTypingNames();
+    _startTypingExpiry();
+  }
+
+  /// Names whose last keystroke was recent enough to still show.
+  ///
+  /// The server's own GET uses a 6-second window; matching it keeps the socket
+  /// path and the poll path from disagreeing about who is typing.
+  void _recomputeTypingNames() {
+    final cutoff = DateTime.now().subtract(const Duration(seconds: 6));
+    _typingSeenAt.removeWhere((_, at) => at.isBefore(cutoff));
+    final names = _typingSeenAt.keys.toList()..sort();
     if (names.join(',') != _typingNames.join(',')) {
       setState(() => _typingNames = names);
     }
+  }
+
+  void _startTypingExpiry() {
+    _typingExpiryTimer?.cancel();
+    if (_typingSeenAt.isEmpty) return;
+    _typingExpiryTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mounted || _typingSeenAt.isEmpty) {
+        timer.cancel();
+        return;
+      }
+      _recomputeTypingNames();
+    });
+  }
+
+  Future<void> _pollTyping() async {
+    final names = await AdsyConnectService.getGroupTyping(_groupId);
+    if (!mounted) return;
+    // Feed the same map the socket writes to, so whichever path is live wins
+    // and neither leaves a stale name behind.
+    final now = DateTime.now();
+    for (final name in names) {
+      _typingSeenAt[name] = now;
+    }
+    _typingSeenAt.removeWhere((name, _) => !names.contains(name));
+    _recomputeTypingNames();
+    if (names.isNotEmpty) _startTypingExpiry();
   }
 
   /// [force] pins the view to the newest message regardless of where the user
   /// was scrolled — used after THEY send, since sending is an explicit request
   /// to see your own message.
   Future<void> _loadMessages({bool initial = false, bool force = false}) async {
-    final raw = await AdsyConnectService.getGroupMessages(_groupId);
+    // Opening the group is a read. A refresh that happens while the app is in
+    // the background is not — and telling the server otherwise is what let a
+    // group's unread badge clear itself without anybody seeing the messages.
+    final isReading = initial ||
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    final raw = await AdsyConnectService.getGroupMessages(
+      _groupId,
+      markRead: isReading,
+    );
     if (!mounted) return;
     final msgs = raw
         .map<Map<String, dynamic>>((m) => Map<String, dynamic>.from(m))

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:oxius_native/services/adsyconnect_realtime_service.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
@@ -64,6 +66,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Random _random = Random();
 
+  StreamSubscription<Map<String, dynamic>>? _liveNotificationSub;
+
   static const ScrollPhysics _feedScrollPhysics =
       AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics());
 
@@ -73,6 +77,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     _loadPosts();
     _loadSponsoredProducts();
     _loadUnreadNotificationCount();
+    _listenForLiveNotifications();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _checkCommunityGuidelines());
@@ -303,6 +308,26 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     }
   }
 
+  /// Keep the bell's count live.
+  ///
+  /// It used to be fetched once, when this screen was built, and never again —
+  /// so a like or a comment arriving while the user sat on the feed did not
+  /// move the badge until they navigated away and back. The Business Network
+  /// had no socket path at all; now the server pushes each notification with
+  /// the recipient's own unread total attached, so this needs no request.
+  void _listenForLiveNotifications() {
+    _liveNotificationSub =
+        AdsyConnectRealtimeService.instance.events.listen((event) {
+      if (!mounted) return;
+      if (event['type'] != 'bn_notification') return;
+      final count = event['unread_count'];
+      setState(() {
+        _unreadNotificationCount =
+            count is int ? count : _unreadNotificationCount + 1;
+      });
+    });
+  }
+
   Future<void> _loadUnreadNotificationCount() async {
     if (!AuthService.isAuthenticated) return;
 
@@ -406,6 +431,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   @override
   void dispose() {
     _disposed = true;
+    _liveNotificationSub?.cancel();
     _chromeVisible.dispose();
     _scrollController.dispose();
     super.dispose();

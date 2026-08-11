@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Count, Q
+
+from base.upload_limits import check_upload
 from .models import (
     ChatRoom, Message, MessageReport,
     BlockedUser, TypingStatus, OnlineStatus,
@@ -139,6 +141,12 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         if message_type in ['image', 'video', 'document', 'voice'] and not media_file:
             raise serializers.ValidationError(f"{message_type} messages must have a media file")
 
+        # Nothing capped the size of this before. FILE_UPLOAD_MAX_MEMORY_SIZE
+        # only decides when Django stops holding the bytes in RAM, so a 500MB
+        # "video" was accepted, spooled to disk and streamed on to R2.
+        if media_file is not None:
+            check_upload(media_file, declared_kind=message_type)
+
         if sender and receiver and chatroom:
             is_chat_blocked = bool(chatroom.is_blocked)
             is_user_blocked = BlockedUser.objects.filter(
@@ -191,6 +199,101 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         user = getattr(self.context.get('request'), 'user', None)
         return obj.is_muted_for(user) if user else False
 
+    # ── per-list caches ─────────────────────────────────────────────────
+    #
+    # A SerializerMethodField runs once per row, so anything that queries
+    # inside one is a query per conversation. These four each answer for every
+    # room in the list in a single round trip, computed on first use and held
+    # for the life of the serializer (one request).
+
+    def _room_ids(self):
+        """The rooms in this list, whether it is a list or a single room."""
+        instance = self.instance
+        if instance is None:
+            return []
+        if isinstance(instance, ChatRoom):
+            return [instance.id]
+        try:
+            return [room.id for room in instance]
+        except TypeError:
+            return []
+
+    def _blocked_by_me_ids(self):
+        """Users the viewer has blocked — one query for the whole list."""
+        if not hasattr(self, '_blocked_cache'):
+            user = getattr(self.context.get('request'), 'user', None)
+            if not user or not getattr(user, 'is_authenticated', False):
+                self._blocked_cache = set()
+            else:
+                self._blocked_cache = {
+                    str(uid) for uid in BlockedUser.objects.filter(
+                        blocker=user
+                    ).values_list('blocked_id', flat=True)
+                }
+        return self._blocked_cache
+
+    def _last_messages(self):
+        """{room_id: Message} — the newest message in each room, in one query.
+
+        DISTINCT ON is Postgres-specific, which this project is, and is the
+        only way to get one row per group without a query per room or pulling
+        every message in the conversation into memory.
+        """
+        if not hasattr(self, '_last_message_cache'):
+            room_ids = self._room_ids()
+            if not room_ids:
+                self._last_message_cache = {}
+            else:
+                rows = (
+                    Message.objects.filter(chatroom_id__in=room_ids)
+                    .select_related('sender')
+                    .order_by('chatroom_id', '-created_at')
+                    .distinct('chatroom_id')
+                )
+                self._last_message_cache = {
+                    str(m.chatroom_id): m for m in rows
+                }
+        return self._last_message_cache
+
+    def _unread_counts(self):
+        """{room_id: count} — every room's unread total in one grouped query."""
+        if not hasattr(self, '_unread_cache'):
+            user = getattr(self.context.get('request'), 'user', None)
+            room_ids = self._room_ids()
+            if not user or not room_ids:
+                self._unread_cache = {}
+            else:
+                rows = (
+                    Message.objects.filter(
+                        chatroom_id__in=room_ids, is_read=False,
+                    )
+                    .exclude(sender=user)
+                    .values('chatroom_id')
+                    .annotate(n=Count('id'))
+                )
+                self._unread_cache = {
+                    str(row['chatroom_id']): row['n'] for row in rows
+                }
+        return self._unread_cache
+
+    def _spam_room_ids(self):
+        """Rooms where the other person has sent something marked spam."""
+        if not hasattr(self, '_spam_cache'):
+            user = getattr(self.context.get('request'), 'user', None)
+            room_ids = self._room_ids()
+            if not user or not room_ids:
+                self._spam_cache = set()
+            else:
+                self._spam_cache = {
+                    str(cid) for cid in Message.objects.filter(
+                        chatroom_id__in=room_ids, is_spam=True,
+                        is_deleted=False,
+                    ).exclude(sender=user).values_list(
+                        'chatroom_id', flat=True
+                    ).distinct()
+                }
+        return self._spam_cache
+
     def _follow_sets(self):
         """(i_follow ids, they_follow ids) for the current user, computed once
         per request and shared across every room in the list (avoids N+1)."""
@@ -231,8 +334,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         return self.get_i_follow_them(obj) and self.get_they_follow_me(obj)
 
     def get_is_spam(self, obj):
-        user = getattr(self.context.get('request'), 'user', None)
-        return obj.has_spam_from_other(user) if user else False
+        return str(obj.id) in self._spam_room_ids()
 
     def get_blocked_by_me(self, obj):
         """True if the current user is the one who blocked this conversation.
@@ -242,14 +344,11 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         canonical BlockedUser table so it stays correct regardless of which
         surface (chat or business-network profile) created the block.
         """
-        request = self.context.get('request')
-        user = getattr(request, 'user', None)
+        user = getattr(self.context.get('request'), 'user', None)
         if user and user.is_authenticated:
             other_user = obj.get_other_user(user)
             if other_user:
-                return BlockedUser.objects.filter(
-                    blocker=user, blocked=other_user
-                ).exists()
+                return str(other_user.id) in self._blocked_by_me_ids()
         return False
     
     def get_other_user(self, obj):
@@ -262,7 +361,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     def get_unread_count(self, obj):
         request = self.context.get('request')
         if request and request.user:
-            return obj.get_unread_count(request.user)
+            return self._unread_counts().get(str(obj.id), 0)
         return 0
     
     def _cleared_at_for(self, obj):
@@ -294,7 +393,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
     def get_last_message(self, obj):
         # Include deleted messages so frontend can show "Message removed"
-        last_msg = obj.messages.order_by('-created_at').first()
+        last_msg = self._last_messages().get(str(obj.id))
 
         # Respect a per-user clear: the participant who cleared must not see a
         # pre-clear message resurface as the chat-list preview.
@@ -393,9 +492,74 @@ class GroupMessageSerializer(serializers.ModelSerializer):
     reply_preview = serializers.SerializerMethodField()
     reply_sender_name = serializers.SerializerMethodField()
     reactions = serializers.SerializerMethodField()
+    # How many other members have seen this, and whether that is all of them.
+    #
+    # A group message carried no read state at all, so a sender could not tell
+    # whether anybody had seen it — the one-to-one chat has had receipts from
+    # the start.
+    #
+    # DERIVED from the last_read_at that ChatGroupMembership already keeps for
+    # the unread badge, rather than a row per message per member: a join table
+    # would be one write per member per message read, for a number the badge
+    # can already answer.
+    read_count = serializers.SerializerMethodField()
+    read_by_all = serializers.SerializerMethodField()
 
     def get_reactions(self, obj):
         return _reaction_payload(obj, self.context)
+
+    def _read_state(self, obj):
+        """(read_count, eligible_count) for this message.
+
+        The membership rows are fetched ONCE for the whole page and held on the
+        serializer, so a hundred messages cost one query rather than a hundred.
+        A ListSerializer reuses a single child instance, which is what makes
+        caching on `self` work with many=True.
+        """
+        group_id = getattr(obj, 'group_id', None)
+        if not hasattr(self, '_membership_rows'):
+            self._membership_rows = {}
+        # Keyed BY GROUP rather than one list for the serializer.
+        #
+        # Every caller today passes messages from a single group, so a single
+        # list would work — and would silently return one group's receipts for
+        # another's the first time somebody serialised across groups. One query
+        # per group in the page either way.
+        if group_id not in self._membership_rows:
+            self._membership_rows[group_id] = list(
+                ChatGroupMembership.objects
+                .filter(group_id=group_id)
+                .values_list('user_id', 'joined_at', 'last_read_at',
+                             'cleared_at')
+            ) if group_id else []
+        rows = self._membership_rows[group_id]
+
+        created_at = obj.created_at
+        if created_at is None:
+            return 0, 0
+
+        read = 0
+        eligible = 0
+        for user_id, joined_at, last_read_at, cleared_at in rows:
+            # The sender is not part of their own receipt.
+            if user_id == obj.sender_id:
+                continue
+            # Somebody who joined after the message was sent never had it to
+            # read, so counting them would make "seen by all" unreachable.
+            if joined_at is not None and joined_at > created_at:
+                continue
+            eligible += 1
+            stamp = last_read_at or cleared_at
+            if stamp is not None and stamp >= created_at:
+                read += 1
+        return read, eligible
+
+    def get_read_count(self, obj):
+        return self._read_state(obj)[0]
+
+    def get_read_by_all(self, obj):
+        read, eligible = self._read_state(obj)
+        return eligible > 0 and read >= eligible
 
     class Meta:
         model = GroupMessage
@@ -404,6 +568,7 @@ class GroupMessageSerializer(serializers.ModelSerializer):
             'file_name', 'voice_duration', 'created_at', 'is_deleted',
             'is_edited', 'edited_at',
             'reply_to', 'reply_preview', 'reply_sender_name', 'reactions',
+            'read_count', 'read_by_all',
         ]
         read_only_fields = [
             'id', 'sender', 'created_at', 'is_deleted', 'is_edited', 'edited_at',
@@ -488,13 +653,25 @@ class ChatGroupSerializer(serializers.ModelSerializer):
         return url
 
     def get_member_count(self, obj):
-        return obj.memberships.count()
+        # len() of the prefetched list, not .count() — a COUNT here is one
+        # query per group in the chat list, and the members are already loaded
+        # for the `members` field anyway.
+        return len(obj.memberships.all())
 
-    def get_my_role(self, obj):
+    def _my_membership(self, obj):
+        """This viewer's membership row, from the prefetched list.
+
+        .filter(user=...) on the related manager ignores the prefetch and
+        issues a query per group — and my_role and unread_count each did one.
+        """
         user = getattr(self.context.get('request'), 'user', None)
         if not user or not getattr(user, 'is_authenticated', False):
             return None
-        m = obj.memberships.filter(user=user).first()
+        return next(
+            (m for m in obj.memberships.all() if m.user_id == user.id), None)
+
+    def get_my_role(self, obj):
+        m = self._my_membership(obj)
         return m.role if m else None
 
     def get_unread_count(self, obj):
@@ -503,18 +680,64 @@ class ChatGroupSerializer(serializers.ModelSerializer):
         Cutoff = last_read_at, else cleared_at, else joined_at — so a fresh
         member doesn't inherit the whole history as unread.
         """
-        user = getattr(self.context.get('request'), 'user', None)
-        if not user or not getattr(user, 'is_authenticated', False):
-            return 0
-        m = obj.memberships.filter(user=user).first()
+        m = self._my_membership(obj)
         if m is None:
             return 0
-        cutoff = m.last_read_at or m.cleared_at or m.joined_at
-        qs = (
-            obj.messages.filter(is_deleted=False)
-            .exclude(sender=user)
-            .exclude(message_type='system')
-        )
-        if cutoff:
-            qs = qs.filter(created_at__gt=cutoff)
-        return qs.count()
+        return self._group_unread_counts().get(str(obj.id), 0)
+
+    def _group_ids(self):
+        instance = self.instance
+        if instance is None:
+            return []
+        if isinstance(instance, ChatGroup):
+            return [instance.id]
+        try:
+            return [group.id for group in instance]
+        except TypeError:
+            return []
+
+    def _group_unread_counts(self):
+        """{group_id: unread} for every listed group, in ONE query.
+
+        A COUNT per group is one round trip per group in the chat list. Each
+        member has their own cutoff, so the counts cannot share a single WHERE
+        — but they can share a single query: one OR-ed clause per group, and
+        the database does the counting and the grouping.
+
+        Deliberately not "fetch the dates and count in Python": that would
+        pull every message in every group into memory, which is worse than the
+        COUNT it replaced for any group with real history.
+        """
+        if not hasattr(self, '_group_unread_cache'):
+            user = getattr(self.context.get('request'), 'user', None)
+            groups = self._group_ids()
+            if not user or not getattr(user, 'is_authenticated', False) or not groups:
+                self._group_unread_cache = {}
+                return self._group_unread_cache
+
+            instance = self.instance
+            rows = [instance] if isinstance(instance, ChatGroup) else list(instance)
+
+            clause = Q(pk__in=[])          # matches nothing, so an empty list is safe
+            for group in rows:
+                membership = self._my_membership(group)
+                if membership is None:
+                    continue
+                cutoff = (membership.last_read_at or membership.cleared_at
+                          or membership.joined_at)
+                if cutoff is None:
+                    clause |= Q(group_id=group.id)
+                else:
+                    clause |= Q(group_id=group.id, created_at__gt=cutoff)
+
+            counted = (
+                GroupMessage.objects.filter(clause, is_deleted=False)
+                .exclude(sender=user)
+                .exclude(message_type='system')
+                .values('group_id')
+                .annotate(n=Count('id'))
+            )
+            self._group_unread_cache = {
+                str(row['group_id']): row['n'] for row in counted
+            }
+        return self._group_unread_cache
