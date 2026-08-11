@@ -254,6 +254,65 @@ def _build_agora_rtc_token(*, channel_name, uid, role='publisher'):
     }
 
 
+#: What a push provider says when a token belongs to an app that is no longer
+#: installed, or has been replaced.
+#:
+#: The FCM half is the same vocabulary base.fcm_service already retires
+#: tokens on — the notification path has done this for a long time; the CALL
+#: path never did, which is why a call rings four registered devices and
+#: reaches two. Extended with the two answers APNs gives for the same thing,
+#: since VoIP pushes do not go through FCM at all.
+#:
+#: Anything else — a network blip, a quota error, a malformed payload — is
+#: our fault, not the device's, and must never retire a phone somebody is
+#: still using.
+_DEAD_TOKEN_SIGNS = (
+    'unregistered',                     # FCM UNREGISTERED, APNs 410
+    'not_found',
+    'not found',
+    'registration-token-not-registered',
+    'registration_token_not_registered',
+    'invalid_argument',
+    'invalid-registration-token',
+    'mismatchsenderid',
+    'baddevicetoken',                   # APNs 400
+)
+
+
+def _looks_like_a_dead_token(error_text):
+    if not error_text:
+        return False
+    lowered = str(error_text).lower()
+    return any(sign in lowered for sign in _DEAD_TOKEN_SIGNS)
+
+
+def _retire_token(fcm_token, error_text, channel):
+    """Stop ringing a device the push provider says is gone.
+
+    Nothing did this before: a send that failed was logged and the row left
+    active, so every later call paid for the same doomed request. It shows up
+    as 'fcm=2/4' in the ring log — four registered devices, two that can
+    actually be reached — and 16% of rings were going to a token untouched
+    for a month or more.
+
+    Deactivated rather than deleted: the row is the only evidence of which
+    device this was, and save_fcm_token revives it by token on the next
+    launch if the app comes back.
+    """
+    try:
+        if not fcm_token.is_active:
+            return
+        fcm_token.is_active = False
+        fcm_token.save(update_fields=['is_active'])
+        logger.warning(
+            'CALLTRACE retire %s token=%s user=%s reason=%s',
+            channel, fcm_token.pk,
+            getattr(fcm_token.user, 'email', None), str(error_text)[:120],
+        )
+    except Exception as exc:
+        logger.warning('Could not retire token %s: %s', fcm_token.pk, exc)
+
+
 def _send_call_data_message(*, target_user, payload):
     from base.models import FCMToken
 
@@ -478,6 +537,8 @@ def _send_call_data_message(*, target_user, payload):
                     fcm_token.token[:20],
                     exc,
                 )
+                if _looks_like_a_dead_token(exc):
+                    _retire_token(fcm_token, exc, 'fcm')
     except Exception as exc:
         last_send_error = str(exc)
         logger.warning('AdsyConnect call FCM fallback failed: %s', exc)
@@ -750,6 +811,11 @@ def _send_voip_call_pushes(*, target_user, payload):
                 delivered_ids.add(token.pk)
             elif result.get('error'):
                 last_error = result.get('error')
+                # APNs answers 410 Unregistered, or 400 BadDeviceToken, for a
+                # device that will never ring again. Leaving it active means
+                # every future call waits on the same refusal.
+                if _looks_like_a_dead_token(last_error):
+                    _retire_token(token, last_error, 'voip')
         except Exception as exc:
             last_error = str(exc)
             logger.warning('Failed to send AdsyConnect VoIP push: %s', exc)

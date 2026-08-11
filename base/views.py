@@ -6847,6 +6847,8 @@ def save_fcm_token(request):
         action = 'created' if created else 'updated'
         print(f'   ✅ FCM token {action} successfully')
 
+        _trim_token_history(request.user)
+
         # If the user just came back online, re-push what they missed.
         if was_offline and fcm_token:
             try:
@@ -6867,6 +6869,42 @@ def save_fcm_token(request):
             {'error': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+#: How many devices one account may keep registered.
+#:
+#: Generous — a phone, a spare, a tablet, and room for a reinstall or two
+#: that has not been retired yet. Well short of the 43 rows one test account
+#: had accumulated, every one of which every incoming call was paying to
+#: ring.
+_MAX_TOKENS_PER_USER = 8
+
+
+def _trim_token_history(user):
+    """Retire this account's oldest registrations past the cap.
+
+    A row is created per token, and a token changes on reinstall, on a
+    restore to a new phone, and whenever the OS decides to rotate it — so
+    without a cap the list only grows. The provider tells us about tokens it
+    knows are dead, but a phone that was wiped never produces that answer,
+    and those rows sit in the send loop forever.
+
+    Deactivated by recency, so the devices actually in use are the ones kept.
+    """
+    try:
+        rows = list(
+            FCMToken.objects.filter(user=user, is_active=True)
+            .order_by('-updated_at')
+            .values_list('id', flat=True)
+        )
+        if len(rows) <= _MAX_TOKENS_PER_USER:
+            return
+        stale = rows[_MAX_TOKENS_PER_USER:]
+        FCMToken.objects.filter(id__in=stale).update(is_active=False)
+        print(f'   🧹 retired {len(stale)} old token row(s) for {user.email}')
+    except Exception as e:
+        # Never let housekeeping break a login.
+        print(f'   token trim failed: {e}')
 
 
 @api_view(['POST'])
