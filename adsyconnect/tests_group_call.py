@@ -389,6 +389,57 @@ class StartGroupCallTests(TestCase):
             self.assertEqual(payload['group_name'], 'Test Group')
             self.assertEqual(payload['call_type'], 'video')
 
+    def test_a_big_group_rings_every_one_of_them(self):
+        """The old cap silently left most of a group out of its own call.
+
+        Eight was the ceiling, so ringing a twenty-person group rang seven
+        people and skipped the rest with a 'call_full' nobody ever saw.
+        """
+        for i in range(20):
+            user = User.objects.create_user(
+                username='crowd%d' % i, email='crowd%d@example.com' % i,
+                password='x', first_name='C%d' % i,
+                phone='+8801000001%02d' % i)
+            ChatGroupMembership.objects.create(group=self.group, user=user)
+
+        response = self.start()
+        self.assertEqual(response.status_code, 200, response.content)
+
+        # Everybody but the caller.
+        self.assertEqual(len(self.rung), 22)
+        self.assertNotIn('gina@example.com', [e for e, _ in self.rung])
+        self.assertFalse([
+            r for r in response.json().get('skipped', [])
+            if r.get('status') == 'call_full'
+        ])
+
+    def test_one_phone_that_cannot_be_reached_does_not_sink_the_call(self):
+        """The pushes go out together now, so one throwing must be contained.
+
+        Sequentially an exception ended the request; the members after the
+        failing one were never rung and the caller got a 500 for a call the
+        rest of the group could have joined.
+        """
+        rung = []
+
+        def flaky(*, target_user, payload):
+            if target_user.email == 'hugo@example.com':
+                raise RuntimeError('APNs said no')
+            rung.append(target_user.email)
+            return {'sent_to': 1}
+
+        with patch('adsyconnect.views._send_call_data_message',
+                   side_effect=flaky):
+            response = self.start()
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertIn('iris@example.com', rung)
+
+        by_user = {r['user_id']: r for r in response.json()['results']}
+        self.assertFalse(by_user[str(self.m2.id)]['reachable'])
+        self.assertEqual(by_user[str(self.m2.id)]['status'], 'unreachable')
+        self.assertTrue(by_user[str(self.m3.id)]['reachable'])
+
     def test_it_is_an_ordinary_call_session_linked_to_the_group(self):
         """The whole point: no second implementation to keep in step."""
         response = self.start()
@@ -1293,9 +1344,15 @@ class JoiningACallInProgressTests(TestCase):
             if event.get('payload', {}).get('status') == 'participant_joined'
         ])
 
-    def test_a_full_call_is_refused(self):
-        extras = []
-        for i in range(6):
+    def test_a_big_call_is_not_a_full_call(self):
+        """There is no ceiling on how many people a call may hold.
+
+        There used to be one at eight, which turned "your phone will work
+        harder" into "you cannot join". The media layer handles the load —
+        adaptive stream pauses video nobody is looking at — so the twentieth
+        person gets in exactly like the third.
+        """
+        for i in range(20):
             user = User.objects.create_user(
                 username='filler%d' % i, email='filler%d@example.com' % i,
                 password='x', first_name='F%d' % i,
@@ -1304,17 +1361,21 @@ class JoiningACallInProgressTests(TestCase):
             CallParticipant.objects.create(
                 session=self.session, user=user,
                 status=CallParticipant.STATUS_ACCEPTED)
-            extras.append(user)
 
-        # caller + callee + 6 = 8, the cap.
-        self.assertEqual(len(self.session.live_member_ids()), 8)
+        self.assertEqual(len(self.session.live_member_ids()), 22)
+
+        body = self.ask(self.latecomer).json()
+        self.assertTrue(body['active'])
+        self.assertFalse(body['is_full'])
+        self.assertEqual(body['participant_count'], 22)
 
         response = self.join(self.latecomer)
-        self.assertEqual(response.status_code, 409)
-        self.assertIn('full', response.json()['error'].lower())
-        self.assertTrue(self.ask(self.latecomer).json()['is_full'])
-        self.assertFalse(CallParticipant.objects.filter(
-            session=self.session, user=self.latecomer).exists())
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['participant_count'], 23)
+        self.assertEqual(
+            CallParticipant.objects.get(
+                session=self.session, user=self.latecomer).status,
+            CallParticipant.STATUS_ACCEPTED)
 
     def test_somebody_mid_call_elsewhere_is_refused(self):
         """Joining must not silently drop the call they are already on."""

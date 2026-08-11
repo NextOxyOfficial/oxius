@@ -33,10 +33,21 @@ logger = logging.getLogger(__name__)
 
 _CALL_TYPE_SET = {'audio', 'video'}
 
-#: Ceiling on how many people one call may hold, counting the original pair.
-#: Chosen for what a phone can actually decode and what the SFU should be
-#: asked to fan out, not for what the model can store.
-_MAX_CALL_PARTICIPANTS = 8
+#: There is deliberately NO ceiling on how many people a call may hold.
+#:
+#: There used to be one, at eight, reasoning about what a phone can decode.
+#: The media layer already answers that better than a number here can: the
+#: room runs with adaptive stream, dynacast and simulcast, so video for a
+#: tile nobody is looking at is paused at the SFU rather than decoded and
+#: thrown away, and a struggling receiver drops to a smaller layer instead of
+#: stalling everyone. A hard cap only ever turned "your phone will work
+#: harder" into "you cannot join", which is not the same thing and not ours
+#: to decide for a group.
+#:
+#: What remains is a bound on ONE REQUEST, not on the call: an invite call
+#: that names people explicitly still refuses an absurd list, because that is
+#: a malformed request rather than a big call. Invite again to add more.
+_MAX_INVITES_PER_REQUEST = 50
 
 #: How a call-level status reads when it came from an invited participant
 #: rather than one of the two people the call is between.
@@ -311,6 +322,59 @@ def _retire_token(fcm_token, error_text, channel):
         )
     except Exception as exc:
         logger.warning('Could not retire token %s: %s', fcm_token.pk, exc)
+
+
+def _ring_many(targets):
+    """Ring several people at once. [targets] is [(user, payload), ...].
+
+    Returns {user_id: delivery dict}, the same dicts
+    _send_call_data_message returns, so callers read the result exactly as
+    they did when this was a for-loop.
+
+    The first target is rung on this thread. That is not only for the person
+    who matters most — the callee — but because _send_call_data_message
+    initialises the Firebase app on first use, and two threads racing to do
+    that is an exception rather than a slow ring.
+
+    Each worker closes its own database connections. The sender reads the
+    target's tokens and can retire a dead one, and Django hands every thread
+    its own connection; a thread that leaves one behind leaks one per call.
+    """
+    if not targets:
+        return {}
+
+    deliveries = {}
+
+    def ring(target):
+        user, payload = target
+        try:
+            return str(user.id), _send_call_data_message(
+                target_user=user, payload=payload)
+        except Exception:
+            # One unreachable phone must not sink the whole group's call.
+            logger.exception('Ring failed for %s', getattr(user, 'email', '?'))
+            return str(user.id), {}
+
+    first, rest = targets[0], targets[1:]
+    key, value = ring(first)
+    deliveries[key] = value
+
+    if not rest:
+        return deliveries
+
+    from concurrent.futures import ThreadPoolExecutor
+    from django.db import connections
+
+    def ring_and_release(target):
+        try:
+            return ring(target)
+        finally:
+            connections.close_all()
+
+    with ThreadPoolExecutor(max_workers=min(8, len(rest))) as pool:
+        for key, value in pool.map(ring_and_release, rest):
+            deliveries[key] = value
+    return deliveries
 
 
 def _send_call_data_message(*, target_user, payload):
@@ -1463,7 +1527,10 @@ def _describe_group_call(call_session, request):
             }
             for user in on_call
         ],
-        'is_full': len(live_ids) >= _MAX_CALL_PARTICIPANTS,
+        # Kept in the payload because the app renders it, and because a
+        # capacity that is not ours — a LiveKit room limit, say — could one
+        # day need saying. Nothing in this codebase sets it any more.
+        'is_full': False,
     }
 
 
@@ -1532,13 +1599,6 @@ def join_group_call(request):
 
         live_ids = {str(uid) for uid in call_session.live_member_ids()}
         already_in = _is_on_call(call_session, joiner)
-        # Someone who was rung and never answered is already counted against
-        # the cap, so walking in makes the call no bigger than it was.
-        counts_already = str(joiner.id) in live_ids
-
-        if not counts_already and len(live_ids) >= _MAX_CALL_PARTICIPANTS:
-            return Response({'error': 'This call is full'},
-                            status=status.HTTP_409_CONFLICT)
 
         # Someone mid-call elsewhere would be pulled out of it silently.
         other_call = _active_call_for_user(joiner)
@@ -1686,13 +1746,12 @@ def start_group_call(request):
             return Response({'error': 'You already have an active call'},
                             status=status.HTTP_409_CONFLICT)
 
-        # Only people who can actually be rung. The room cap counts the caller.
+        # Only people who can actually be rung. Everyone else in the group
+        # is rung, however many that is — a group call that quietly left half
+        # the group out was the old behaviour and nobody could tell.
         callable_members = []
         skipped = []
         for member in members:
-            if len(callable_members) + 1 >= _MAX_CALL_PARTICIPANTS:
-                skipped.append({'user_id': str(member.id), 'status': 'call_full'})
-                continue
             allowed, _reason = _can_call(caller, member)
             if not allowed:
                 skipped.append({'user_id': str(member.id), 'status': 'not_allowed'})
@@ -1732,6 +1791,10 @@ def start_group_call(request):
         caller_avatar = _build_user_avatar_url(request, caller) or ''
         results = []
 
+        # Two passes. Everything that touches the database or the socket
+        # happens here, on this thread and inside the request's transaction;
+        # only the push sends fan out below.
+        ring_targets = []
         for member in callable_members:
             if member.id != primary.id:
                 CallParticipant.objects.update_or_create(
@@ -1763,8 +1826,13 @@ def start_group_call(request):
 
             _broadcast_to_user(
                 member.id, {'type': 'incoming_call_event', 'payload': payload})
-            delivery = _send_call_data_message(target_user=member, payload=payload)
-            reachable = bool(delivery.get('voip_sent_to') or delivery.get('sent_to'))
+            ring_targets.append((member, payload))
+
+        deliveries = _ring_many(ring_targets)
+        for member, _payload in ring_targets:
+            delivery = deliveries.get(str(member.id)) or {}
+            reachable = bool(delivery.get('voip_sent_to')
+                             or delivery.get('sent_to'))
             results.append({
                 'user_id': str(member.id),
                 'status': 'ringing' if reachable else 'unreachable',
@@ -1834,9 +1902,10 @@ def invite_to_call(request):
             )
         if not _is_valid_channel_name(channel_name):
             return Response({'error': 'Invalid channel_name'}, status=status.HTTP_400_BAD_REQUEST)
-        if len(invitee_ids) > _MAX_CALL_PARTICIPANTS:
+        if len(invitee_ids) > _MAX_INVITES_PER_REQUEST:
             return Response(
-                {'error': f'At most {_MAX_CALL_PARTICIPANTS} people can be invited at once'},
+                {'error': f'At most {_MAX_INVITES_PER_REQUEST} people can be '
+                          'invited at once — invite again to add more'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -1876,10 +1945,6 @@ def invite_to_call(request):
             if invitee_id in existing_ids:
                 results.append({'user_id': invitee_id, 'status': 'already_in_call'})
                 continue
-            if len(existing_ids) >= _MAX_CALL_PARTICIPANTS:
-                results.append({'user_id': invitee_id, 'status': 'call_full'})
-                continue
-
             try:
                 invitee = User.objects.get(id=invitee_id)
             except (User.DoesNotExist, ValidationError, ValueError):
