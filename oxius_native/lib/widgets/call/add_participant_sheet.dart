@@ -22,12 +22,18 @@ class AddParticipantSheet extends StatefulWidget {
   /// the server answers with "already_in_call".
   final Set<String> excludedUserIds;
 
-  /// Returns the selected user ids, or null if the sheet was dismissed.
-  static Future<List<String>?> show(
+  /// Returns the selected contacts as {id, name, avatar}, or null if the
+  /// sheet was dismissed.
+  ///
+  /// The names come back with the ids because the caller needs them and this
+  /// is the only place that has them — the invite endpoint answers with user
+  /// ids and a status, so a roster built from that alone could only count
+  /// people, not name them.
+  static Future<List<Map<String, dynamic>>?> show(
     BuildContext context, {
     required Set<String> excludedUserIds,
   }) {
-    return showModalBottomSheet<List<String>>(
+    return showModalBottomSheet<List<Map<String, dynamic>>>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -215,7 +221,12 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
                 ),
                 onPressed: _selected.isEmpty
                     ? null
-                    : () => Navigator.pop(context, _selected.toList()),
+                    : () => Navigator.pop(
+                          context,
+                          _contacts
+                              .where((c) => _selected.contains(c['id']))
+                              .toList(),
+                        ),
                 child: Text(
                   _selected.isEmpty
                       ? 'Select people'

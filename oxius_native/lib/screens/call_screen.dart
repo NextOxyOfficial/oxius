@@ -117,6 +117,18 @@ class _CallScreenState extends State<CallScreen>
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
 
+  /// People invited into this call and what became of them.
+  ///
+  /// A group call showed nothing about who else was in it. The invite result
+  /// was a toast that vanished, and after that the only visible people were
+  /// the ones whose media had already arrived — so a phone still ringing
+  /// looked exactly like a person who had declined, or like nobody at all.
+  ///
+  /// Keyed by user id. Peers who arrive move to joined; a 'participant_left'
+  /// moves them to left. Names come from the picker, since the invite
+  /// endpoint answers with ids and a status and nothing else.
+  final Map<String, _RosterEntry> _roster = <String, _RosterEntry>{};
+
   /// Whose camera is on the stage: theirs by default, yours when swapped.
   ///
   /// Tapping the small window trades the two, and tapping it again trades
@@ -349,6 +361,11 @@ class _CallScreenState extends State<CallScreen>
       if (status == 'participant_left') {
         final who = data['left_user_name']?.toString().trim() ?? '';
         if (who.isNotEmpty) _showTransientNote('$who left the call');
+        final leftId = data['left_user_id']?.toString() ?? '';
+        if (leftId.isNotEmpty && _roster.containsKey(leftId)) {
+          setState(() => _roster[leftId] =
+              _roster[leftId]!.copyWith(state: _RosterState.left));
+        }
         return;
       }
 
@@ -554,21 +571,13 @@ class _CallScreenState extends State<CallScreen>
   }
 
   void _restoreActiveCallState() {
-    final info = AgoraCallService.activeCallInfo;
     // "Already in the room?" — the SFU connection is the only truth now that
     // there is no engine object to hold on to.
     _localUserJoined = LiveKitCallService.isConnected;
     _callAccepted = AgoraCallService.activeCallAccepted;
     _isConnecting = !_callAccepted;
-    _remoteUid = info?['remoteUid'] is int ? info!['remoteUid'] as int : null;
-
-    // That key is never written — nothing has ever put a real remoteUid into
-    // activeCallInfo — so a call reopened after minimising came back with no
-    // peer id, and the remote video stage is gated on exactly that. The video
-    // was still arriving; the screen had simply forgotten who it was from.
-    //
-    // Ask the media layer, which does know. Every other way of building this
-    // screen already does.
+    // Who is on the other end comes from the media layer, which knows,
+    // rather than from activeCallInfo, which never did.
     _reconcileWithMediaLayer();
 
     final connectedAtMs = AgoraCallService.activeCallConnectedAtMs;
@@ -1004,13 +1013,15 @@ class _CallScreenState extends State<CallScreen>
 
     _acceptanceSent = true;
     AgoraCallService.markCallAccepted();
-    AgoraCallService.sendCallStatus(
+    // Skipped when the CallKit handler already got one through — see
+    // sendAcceptedOnce. It still fires if that attempt failed, which is the
+    // case this second send was put here for.
+    unawaited(AgoraCallService.sendAcceptedOnce(
       receiverId: _statusReceiverId,
       channelName: widget.channelName,
-      status: 'accepted',
       callType: _callType,
       callId: widget.callId,
-    );
+    ));
   }
 
   Future<void> _rejectCall() async {
@@ -1406,6 +1417,55 @@ class _CallScreenState extends State<CallScreen>
     });
   }
 
+  /// Who else is on this call, and who has not answered yet.
+  ///
+  /// Sits under the header in a group call. Without it the only visible
+  /// people were the ones whose media had arrived, so a phone still ringing
+  /// was indistinguishable from a person who had declined — the caller had
+  /// no way to tell whether to keep waiting.
+  Widget _buildRosterStrip() {
+    final joined = _peers.map((peer) => peer.name.trim()).where(
+          (name) => name.isNotEmpty,
+        );
+    final ringing = _roster.values
+        .where((entry) => entry.state == _RosterState.ringing)
+        .map((entry) => entry.name);
+
+    final parts = <String>[
+      ...joined,
+      // Named while ringing too — "waiting for Rahim" is worth more than
+      // "waiting for 1".
+      for (final name in ringing) '$name…',
+    ];
+    if (parts.isEmpty) return const SizedBox.shrink();
+
+    return Positioned(
+      top: (_isCompactLayout ? 72 : 86),
+      left: 18,
+      right: 18,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.38),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+          ),
+          child: Text(
+            parts.join(' · '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.82),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// A note that clears itself, for something that happened to someone else.
   ///
   /// [_showOverlayAndClose] is for the end of a call and stays up until the
@@ -1453,12 +1513,32 @@ class _CallScreenState extends State<CallScreen>
         await AddParticipantSheet.show(context, excludedUserIds: excluded);
     if (picked == null || picked.isEmpty || !mounted) return;
 
+    final nameById = {
+      for (final contact in picked)
+        contact['id'].toString(): (contact['name'] ?? '').toString(),
+    };
+
     final results = await AdsyConnectService.inviteToCall(
       channelName: widget.channelName,
-      inviteeIds: picked,
+      inviteeIds: nameById.keys.toList(),
       callId: widget.callId,
     );
     if (!mounted) return;
+
+    // Remember who is now ringing, so the call shows it for as long as it is
+    // true rather than for the few seconds a toast lasts.
+    setState(() {
+      for (final row in results) {
+        final id = row['user_id']?.toString() ?? '';
+        if (id.isEmpty || row['status'] != 'ringing') continue;
+        _roster[id] = _RosterEntry(
+          name: nameById[id]?.trim().isNotEmpty == true
+              ? nameById[id]!.trim()
+              : 'Guest',
+          state: _RosterState.ringing,
+        );
+      }
+    });
 
     if (results.isEmpty) {
       AdsyToast.error(context, 'Could not add anyone');
@@ -1830,6 +1910,7 @@ class _CallScreenState extends State<CallScreen>
                     CallPoorConnectionBanner(compact: _isCompactLayout),
                   if (_statusOverlay != null)
                     CallStatusOverlay(text: _statusOverlay!),
+                  if (isGroup) _buildRosterStrip(),
                   if (_transientNote != null)
                     CallTransientNote(
                       text: _transientNote!,
@@ -2793,4 +2874,25 @@ class _CallScreenState extends State<CallScreen>
       ),
     );
   }
+}
+
+/// Where an invited person has got to.
+enum _RosterState { ringing, left }
+
+/// One line of a group call's roster.
+///
+/// Only covers people this device invited. Anyone whose media has arrived is
+/// already in LiveKitCallService.peers with a name attached, so tracking them
+/// here as well would be two records of the same fact — and the one that went
+/// stale would be this one.
+class _RosterEntry {
+  final String name;
+  final _RosterState state;
+
+  const _RosterEntry({required this.name, required this.state});
+
+  _RosterEntry copyWith({String? name, _RosterState? state}) => _RosterEntry(
+        name: name ?? this.name,
+        state: state ?? this.state,
+      );
 }

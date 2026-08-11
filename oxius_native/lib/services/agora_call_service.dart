@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
 import 'call_foreground_service.dart';
+import 'call_status.dart';
 import 'livekit_call_service.dart';
 import 'package:flutter/foundation.dart';
 
@@ -160,10 +161,54 @@ class AgoraCallService {
       'isIncoming': isIncoming,
       'accepted': _activeCallInfo?['accepted'] == true,
       'connectedAt': _activeCallInfo?['connectedAt'],
-      'remoteUid': _activeCallInfo?['remoteUid'],
+      // No 'remoteUid' here. It existed for years, copied forward from itself
+      // on every update and never once written with a real value — so it read
+      // null always. The call screen trusted it to decide whether anyone was
+      // on the other end, which is why a minimised video call came back with
+      // no picture. Who is in the room is the media layer's to answer, and
+      // LiveKitCallService.peers answers it.
     };
     _schedulePersistedCallStateSync();
     _emitCallState();
+  }
+
+  /// Channels whose 'accepted' the server has confirmed receiving.
+  ///
+  /// Two places tell the caller a call was answered: the CallKit handler,
+  /// which fires while a cold-started phone may have no screen yet, and the
+  /// call screen when it mounts. The redundancy is deliberate and worth
+  /// keeping — but only for the case it exists for. In production 41 of 98
+  /// answered calls sent it twice, and the second one is pure cost: another
+  /// request, another push at the caller, another line in the log, and one
+  /// more chance for two statuses to arrive out of order.
+  static final Set<String> _acceptedConfirmed = <String>{};
+
+  /// Tells the caller the call was answered, at most once per call.
+  ///
+  /// Re-sends only if the previous attempt did NOT reach the server, which
+  /// is exactly the situation the second send was added for.
+  static Future<void> sendAcceptedOnce({
+    required String receiverId,
+    required String channelName,
+    required String callType,
+    String? callId,
+  }) async {
+    if (_acceptedConfirmed.contains(channelName)) return;
+    final ok = await sendCallStatus(
+      receiverId: receiverId,
+      channelName: channelName,
+      status: 'accepted',
+      callType: callType,
+      callId: callId,
+    );
+    if (ok) {
+      _acceptedConfirmed.add(channelName);
+      // Channel names are unique per call, so this only ever grows with real
+      // calls — trimmed anyway so a long-lived process cannot hoard them.
+      if (_acceptedConfirmed.length > 50) {
+        _acceptedConfirmed.remove(_acceptedConfirmed.first);
+      }
+    }
   }
 
   static void markCallAccepted() {
@@ -287,17 +332,7 @@ class AgoraCallService {
       return;
     }
 
-    const terminalStatuses = {
-      'rejected',
-      'declined',
-      'busy',
-      'cancelled',
-      'ended',
-      'missed',
-      'failed',
-    };
-
-    if (!terminalStatuses.contains(status)) {
+    if (!isTerminalCallStatus(status)) {
       return;
     }
 

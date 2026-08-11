@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'dart:io' show Platform;
 import 'dart:ui';
 import 'package:http/http.dart' as http;
@@ -22,6 +23,7 @@ import 'api_service.dart';
 import 'adsyconnect_realtime_service.dart';
 import 'business_network_service.dart';
 import 'agora_call_service.dart';
+import 'call_status.dart';
 import 'livekit_call_service.dart';
 import 'rideshare_service.dart';
 import 'telemetry.dart';
@@ -326,17 +328,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // so the recipient doesn't see a ghost incoming call after the caller
   // already cancelled/ended.
   if (type == 'call_status') {
-    final bgStatus = message.data['status']?.toString().toLowerCase();
-    const terminalStatuses = {
-      'rejected',
-      'declined',
-      'busy',
-      'cancelled',
-      'ended',
-      'missed',
-      'failed',
-    };
-    if (bgStatus != null && terminalStatuses.contains(bgStatus)) {
+    final bgStatus = message.data['status']?.toString();
+    if (isTerminalCallStatus(bgStatus)) {
       try {
         final channelName = message.data['channel_name']?.toString();
         if (channelName != null && channelName.isNotEmpty) {
@@ -1243,19 +1236,10 @@ class FCMService {
   /// Clears the stash when a terminal status arrives for its channel, so a
   /// dead ring can never resurface on resume.
   static void _clearBackgroundRingIfTerminal(Map<String, dynamic> data) {
-    final status = (data['status'] ?? '').toString();
-    // Keep in lockstep with the background isolate's terminalStatuses set.
-    const terminal = {
-      'rejected',
-      'declined',
-      'busy',
-      'cancelled',
-      'ended',
-      'missed',
-      'failed',
-      'accepted',
-    };
-    if (!terminal.contains(status)) return;
+    // Answering ends a ring as surely as declining does, so this one uses
+    // the ring-over set rather than the terminal one — the difference the
+    // four hand-written copies had already drifted into.
+    if (!isRingOverStatus(data['status'])) return;
     final channel = (data['channel_name'] ?? '').toString();
     if (channel.isEmpty ||
         _pendingBackgroundRing?['channel_name']?.toString() == channel) {
@@ -1302,13 +1286,44 @@ class FCMService {
           }
         }
       }
+      // Stake a claim under an id only this attempt knows.
+      //
+      // SharedPreferences has no compare-and-set, so read-then-write cannot
+      // be made atomic: two isolates can both read an empty slot and both
+      // conclude they won. Writing an id and then checking whose id survived
+      // turns that into last-write-wins, which has exactly one winner —
+      // whoever wrote second — instead of two.
+      final claimant = '${DateTime.now().microsecondsSinceEpoch}'
+          '-${Random().nextInt(1 << 32)}';
       await prefs.setString(
         ringOwnerPrefsKey,
         jsonEncode({
           'channel': channelName,
           'at': DateTime.now().millisecondsSinceEpoch,
+          'by': claimant,
         }),
       );
+
+      // Long enough for a write racing ours to land before we look. The two
+      // deliveries this arbitrates between — a push and a socket — normally
+      // arrive seconds apart, so this only matters in the rare overlap.
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      await prefs.reload();
+      final settled = prefs.getString(ringOwnerPrefsKey);
+      if (settled != null && settled.isNotEmpty) {
+        try {
+          final owner = jsonDecode(settled);
+          if (owner is Map &&
+              owner['channel']?.toString() == channelName &&
+              owner['by']?.toString() != claimant) {
+            _log('📞 Lost the ring claim for $channelName to another isolate');
+            return false;
+          }
+        } catch (_) {
+          // Unreadable: fall through and ring. A duplicate ring is a far
+          // smaller failure than a call that never rings at all.
+        }
+      }
       return true;
     } catch (_) {
       // Never lose a call because storage misbehaved.
@@ -2295,10 +2310,9 @@ class FCMService {
     // CallScreen sends the same status when it mounts; the server takes the
     // repeat as a no-op.
     if (callId != null || channelName.isNotEmpty) {
-      unawaited(AgoraCallService.sendCallStatus(
+      unawaited(AgoraCallService.sendAcceptedOnce(
         receiverId: callerId,
         channelName: channelName,
-        status: 'accepted',
         callType: callType,
         callId: callId,
       ));
@@ -3001,17 +3015,7 @@ class FCMService {
       // When a terminal call_status arrives via FCM, dismiss any lingering
       // CallKit notification so ghost incoming-call screens don't appear.
       if (type == 'call_status') {
-        final fgStatus = payload['status']?.toString().toLowerCase();
-        const terminalStatuses = {
-          'rejected',
-          'declined',
-          'busy',
-          'cancelled',
-          'ended',
-          'missed',
-          'failed',
-        };
-        if (fgStatus != null && terminalStatuses.contains(fgStatus)) {
+        if (isTerminalCallStatus(payload['status'])) {
           unawaited(dismissVisibleCallUi(
             channelName: payload['channel_name']?.toString(),
           ));
