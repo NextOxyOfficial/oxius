@@ -46,6 +46,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   bool _isLoadingChats = true;
   bool _isLoadingMore = false;
   List<Map<String, dynamic>> _chatConversations = [];
+  StreamSubscription<String>? _clearedSubscription;
   int _currentPage = 1;
   bool _hasMore = true;
   bool _didOpenInitialChat = false;
@@ -98,6 +99,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _realtimeSubscription = AdsyConnectRealtimeService.instance.events.listen(
       _handleRealtimeEvent,
     );
+    // Clearing a chat from inside the conversation leaves this screen holding
+    // the row it built earlier, preview and all — so the message the user had
+    // just deleted stayed on the list until something refetched it.
+    _clearedSubscription =
+        AdsyConnectService.conversationClearedStream.listen(_onChatCleared);
     _startRealTimePolling();
     _startOnlineStatusPolling();
     _chatSearchController.addListener(_onChatSearchChanged);
@@ -581,6 +587,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _pollingTimer?.cancel();
     _onlineStatusTimer?.cancel();
     _realtimeSubscription?.cancel();
+    _clearedSubscription?.cancel();
     // No navigator work from dispose — the element is deactivated and the
     // ancestor lookup throws. The route cleans itself up.
     _activeOverlayChatroomId = null;
@@ -1760,6 +1767,27 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     } else {
       AdsyToast.error(context, 'মুছতে ব্যর্থ');
     }
+  }
+
+  /// A conversation was cleared — from this screen or from inside the chat.
+  ///
+  /// Updates the row in place rather than refetching: the answer is already
+  /// known, and a network round trip would leave the deleted message on
+  /// screen for as long as it took.
+  void _onChatCleared(String chatroomId) {
+    if (!mounted) return;
+    final index = _chatConversations
+        .indexWhere((chat) => chat['id']?.toString() == chatroomId);
+    if (index == -1) return;
+    setState(() {
+      _chatConversations[index] = {
+        ..._chatConversations[index],
+        // The same words the list shows for a conversation with no history,
+        // because that is now exactly what this is.
+        'lastMessage': 'No messages yet',
+        'unreadCount': 0,
+      };
+    });
   }
 
   IconData get _chatTabEmptyIcon {

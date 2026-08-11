@@ -740,6 +740,18 @@ class AdsyConnectService {
   /// keeps their history; once both sides have cleared, the server hard-deletes
   /// the records nobody can see anymore. Returns the server response
   /// ({both_cleared, purged}) or null on failure.
+  /// Fires with a chatroom id whenever its history is cleared.
+  ///
+  /// The chat list keeps its rows in memory, so a clear performed inside the
+  /// conversation left the list showing the preview of a message the user had
+  /// just deleted until something happened to refetch it. The server hides
+  /// the preview correctly; this is how the screen already holding the old
+  /// copy finds out.
+  static final StreamController<String> _conversationClearedController =
+      StreamController<String>.broadcast();
+  static Stream<String> get conversationClearedStream =>
+      _conversationClearedController.stream;
+
   static Future<Map<String, dynamic>?> clearConversation(
       String chatroomId) async {
     try {
@@ -749,6 +761,9 @@ class AdsyConnectService {
         headers: headers,
       );
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        // Announced from here rather than from each caller, so every way of
+        // clearing a chat updates the list — including any added later.
+        _conversationClearedController.add(chatroomId);
         return Map<String, dynamic>.from(json.decode(response.body));
       }
       debugPrint(

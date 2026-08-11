@@ -171,6 +171,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     they_follow_me = serializers.SerializerMethodField()
     is_mutual = serializers.SerializerMethodField()
     is_spam = serializers.SerializerMethodField()
+    last_message_preview = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
@@ -264,22 +265,44 @@ class ChatRoomSerializer(serializers.ModelSerializer):
             return obj.get_unread_count(request.user)
         return 0
     
+    def _cleared_at_for(self, obj):
+        """When this viewer cleared the chat, if they did."""
+        user = getattr(self.context.get('request'), 'user', None)
+        if user is None:
+            return None
+        if user == obj.user1:
+            return obj.cleared_at_user1
+        if user == obj.user2:
+            return obj.cleared_at_user2
+        return None
+
+    def get_last_message_preview(self, obj):
+        """The denormalised preview, hidden from whoever cleared the chat.
+
+        A column on the room, so it is the same string for both people and
+        knows nothing about a clear that only one of them performed. The app
+        falls back to it when last_message is null — which is exactly what
+        the clear makes it — so the message the user had just deleted came
+        straight back as the chat-list preview. Both now answer to the clear.
+        """
+        cleared_at = self._cleared_at_for(obj)
+        if cleared_at is not None:
+            last_at = obj.last_message_at
+            if last_at is None or last_at <= cleared_at:
+                return None
+        return obj.last_message_preview
+
     def get_last_message(self, obj):
         # Include deleted messages so frontend can show "Message removed"
         last_msg = obj.messages.order_by('-created_at').first()
 
         # Respect a per-user clear: the participant who cleared must not see a
         # pre-clear message resurface as the chat-list preview.
-        request = self.context.get('request')
-        user = getattr(request, 'user', None)
-        if last_msg is not None and user is not None:
-            cleared_at = (
-                obj.cleared_at_user1 if user == obj.user1
-                else obj.cleared_at_user2 if user == obj.user2
-                else None
-            )
-            if cleared_at is not None and last_msg.created_at <= cleared_at:
-                return None
+        cleared_at = self._cleared_at_for(obj)
+        if (last_msg is not None
+                and cleared_at is not None
+                and last_msg.created_at <= cleared_at):
+            return None
 
         if last_msg:
             return {
@@ -424,6 +447,7 @@ class ChatGroupSerializer(serializers.ModelSerializer):
     my_role = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
     members = GroupMemberSerializer(source='memberships', many=True, read_only=True)
+    last_message_preview = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatGroup
@@ -433,6 +457,24 @@ class ChatGroupSerializer(serializers.ModelSerializer):
             'last_message_preview', 'created_at',
         ]
         read_only_fields = fields
+
+    def get_last_message_preview(self, obj):
+        """Hidden from a member who cleared the group, same as the 1:1 case.
+
+        ChatGroupMembership.cleared_at is per-member; this column is not.
+        """
+        user = getattr(self.context.get('request'), 'user', None)
+        if user is None or not getattr(user, 'is_authenticated', False):
+            return obj.last_message_preview
+
+        membership = next(
+            (m for m in obj.memberships.all() if m.user_id == user.id), None)
+        cleared_at = getattr(membership, 'cleared_at', None)
+        if cleared_at is not None:
+            last_at = obj.last_message_at
+            if last_at is None or last_at <= cleared_at:
+                return None
+        return obj.last_message_preview
 
     def get_image_url(self, obj):
         if not obj.image:
