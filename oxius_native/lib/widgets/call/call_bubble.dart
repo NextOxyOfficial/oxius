@@ -1,10 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:livekit_client/livekit_client.dart' as lk;
 
 import '../../services/agora_call_service.dart';
 import '../../services/call_navigation.dart';
+import '../../services/livekit_call_service.dart';
 import '../app_network_image.dart';
+
+/// Diameter of the bubble. Top level because the face drawn inside it lays
+/// itself out against the same number.
+const double _size = 62;
 
 /// The floating call bubble: who you are talking to, and for how long.
 ///
@@ -32,7 +38,6 @@ class CallBubble extends StatefulWidget {
 class _CallBubbleState extends State<CallBubble>
     with SingleTickerProviderStateMixin {
   /// Diameter of the avatar circle. The duration pill hangs below it.
-  static const double _size = 62;
   static const double _margin = 12;
 
   /// Where the user last put it, as the bubble's top-left in logical pixels.
@@ -171,14 +176,12 @@ class _CallBubbleState extends State<CallBubble>
                 children: [
                   Positioned.fill(
                     child: ClipOval(
-                      child: avatar.isNotEmpty
-                          ? AppNetworkImage(
-                              avatar,
-                              width: _size,
-                              height: _size,
-                              errorWidget: const _BubbleAvatarFallback(),
-                            )
-                          : const _BubbleAvatarFallback(),
+                      // On a video call the bubble shows the call itself —
+                      // the other person's camera, with your own inset in the
+                      // corner — rather than a still photo of somebody you
+                      // are looking at live. Falls back to the photo whenever
+                      // there is no video yet, or their camera is off.
+                      child: _BubbleFace(avatar: avatar, isVideo: isVideo),
                     ),
                   ),
                   // A small marker so a glance tells voice from video without
@@ -229,6 +232,62 @@ class _CallBubbleState extends State<CallBubble>
           ],
         ),
       ),
+    );
+  }
+}
+
+/// What fills the bubble: live video when there is any, the photo otherwise.
+class _BubbleFace extends StatelessWidget {
+  final String avatar;
+  final bool isVideo;
+
+  const _BubbleFace({required this.avatar, required this.isVideo});
+
+  @override
+  Widget build(BuildContext context) {
+    final remote = isVideo ? LiveKitCallService.remoteVideoTrack : null;
+    final local = isVideo ? LiveKitCallService.localVideoTrack : null;
+
+    if (remote == null && local == null) {
+      return avatar.isNotEmpty
+          ? AppNetworkImage(
+              avatar,
+              width: _size,
+              height: _size,
+              errorWidget: const _BubbleAvatarFallback(),
+            )
+          : const _BubbleAvatarFallback();
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (remote != null)
+          lk.VideoTrackRenderer(remote, fit: lk.VideoViewFit.cover)
+        else if (avatar.isNotEmpty)
+          AppNetworkImage(avatar,
+              width: _size,
+              height: _size,
+              errorWidget: const _BubbleAvatarFallback())
+        else
+          const _BubbleAvatarFallback(),
+        // Both parties, in a circle the size of a coin: theirs fills it, ours
+        // sits in the corner — the same arrangement as the call screen, so
+        // the bubble reads as the call shrunk rather than something new.
+        if (local != null && remote != null)
+          Positioned(
+            left: 3,
+            top: 3,
+            width: _size * 0.34,
+            height: _size * 0.34,
+            child: ClipOval(
+              child: Container(
+                color: const Color(0xFF0B1220),
+                child: lk.VideoTrackRenderer(local, fit: lk.VideoViewFit.cover),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

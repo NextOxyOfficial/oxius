@@ -117,6 +117,13 @@ class _CallScreenState extends State<CallScreen>
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
 
+  /// Whose camera is on the stage: theirs by default, yours when swapped.
+  ///
+  /// Tapping the small window trades the two, and tapping it again trades
+  /// them back — the gesture people already know from every other calling
+  /// app, and the only way to see your own camera at a useful size.
+  bool _selfViewIsMain = false;
+
   /// "Someone left the call" and the like — shown briefly, then gone.
   String? _transientNote;
   Timer? _transientNoteTimer;
@@ -554,6 +561,15 @@ class _CallScreenState extends State<CallScreen>
     _callAccepted = AgoraCallService.activeCallAccepted;
     _isConnecting = !_callAccepted;
     _remoteUid = info?['remoteUid'] is int ? info!['remoteUid'] as int : null;
+
+    // That key is never written — nothing has ever put a real remoteUid into
+    // activeCallInfo — so a call reopened after minimising came back with no
+    // peer id, and the remote video stage is gated on exactly that. The video
+    // was still arriving; the screen had simply forgotten who it was from.
+    //
+    // Ask the media layer, which does know. Every other way of building this
+    // screen already does.
+    _reconcileWithMediaLayer();
 
     final connectedAtMs = AgoraCallService.activeCallConnectedAtMs;
     if (connectedAtMs != null) {
@@ -1625,7 +1641,13 @@ class _CallScreenState extends State<CallScreen>
   }
 
   void _toggleCamera() {
-    setState(() => _isCameraOff = !_isCameraOff);
+    setState(() {
+      _isCameraOff = !_isCameraOff;
+      // Nothing of ours left to put on the stage, and the small window — which
+      // would be holding THEIR video while swapped — is hidden along with the
+      // camera. Left swapped, turning the camera off blanked both surfaces.
+      if (_isCameraOff) _selfViewIsMain = false;
+    });
     LiveKitCallService.toggleCamera(!_isCameraOff);
   }
 
@@ -2371,7 +2393,7 @@ class _CallScreenState extends State<CallScreen>
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _remoteVideoView(),
+          _selfViewIsMain ? _localVideoView() : _remoteVideoView(),
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -2625,6 +2647,10 @@ class _CallScreenState extends State<CallScreen>
                     _selfViewAlignment.y < 0 ? -1 : 1,
                   );
                 }),
+                // Swap which camera has the screen. On the same detector as
+                // the drag, which is fine: a tap is a pan that never moved,
+                // and Flutter tells them apart.
+                onTap: () => setState(() => _selfViewIsMain = !_selfViewIsMain),
                 // Just the picture, softly rounded. It used to sit inside a
                 // frosted panel with its own inset border, which put two
                 // visible edges around a thumbnail already distinct from what
@@ -2652,7 +2678,11 @@ class _CallScreenState extends State<CallScreen>
                       // above it — the self-view simply would not move. It
                       // has nothing to do with touches, so it stops seeing
                       // them and the gesture detector gets every one.
-                      IgnorePointer(child: _localVideoView()),
+                      IgnorePointer(
+                        child: _selfViewIsMain
+                            ? _remoteVideoView()
+                            : _localVideoView(),
+                      ),
                       Positioned(
                         left: 6,
                         right: 6,
