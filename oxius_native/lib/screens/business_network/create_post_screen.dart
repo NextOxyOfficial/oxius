@@ -49,6 +49,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   static const int _maxVideos = 2;
   static const int _maxVideoDurationSeconds = 600; // 10 minutes
 
+  // Vertical room the composer leaves for the rest of the page. Two figures,
+  // because the right answer changes the moment the keyboard appears.
+  //
+  // Idle: reserve the identity row, hashtag block, media block and the gaps
+  // between them, so opening the composer shows every control at once.
+  static const double _reservedIdle = 360;
+  // Typing: the keyboard eats roughly a third of the screen, and holding the
+  // idle reserve there would squeeze the field down to three lines — you
+  // would be writing through a letterbox. Only the identity row and hashtag
+  // block are guaranteed; the media block sits one short scroll below, which
+  // is where it belongs while someone is mid-sentence.
+  static const double _reservedWhileTyping = 210;
+  // Content font size 15.5 at line height 1.5.
+  static const double _composerLineHeight = 15.5 * 1.5;
+  // Never smaller than the old fixed field, never so tall that the mention
+  // suggestion list is pushed out of reach.
+  static const int _composerMinLines = 3;
+  static const int _composerMaxLines = 14;
+
   @override
   void initState() {
     super.initState();
@@ -361,6 +380,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     final currentUser = AuthService.currentUser;
 
+    // The composer takes whatever vertical room the rest of the page does not
+    // need, so the empty lower half of the screen becomes writing space
+    // instead of dead space. This recomputes whenever the view insets change,
+    // so raising the keyboard just re-divides what is left.
+    //
+    // minLines and maxLines come out equal on purpose: a fixed box that
+    // scrolls its own text means the controls below it never shift under the
+    // reader's thumb while they type.
+    final view = MediaQuery.of(context);
+    final typing = view.viewInsets.bottom > 0;
+    final composerRoom = view.size.height -
+        view.padding.top -
+        kToolbarHeight -
+        view.viewInsets.bottom -
+        (typing ? _reservedWhileTyping : _reservedIdle);
+    final composerLines = (composerRoom / _composerLineHeight)
+        .floor()
+        .clamp(_composerMinLines, _composerMaxLines)
+        .toInt();
+
     return Portal(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -591,8 +630,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ),
                   ],
                 ),
-                maxLines: 6,
-                minLines: 3,
+                maxLines: composerLines,
+                minLines: composerLines,
                 // Rebuild on every keystroke so the URL preview below reacts
                 // in real time as a link is typed/pasted.
                 onChanged: (_) => setState(() {}),
@@ -738,7 +777,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               border: InputBorder.none,
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 11),
+                                  horizontal: 8, vertical: 7),
                             ),
                             onSubmitted: (_) => _addHashtag(),
                           ),
