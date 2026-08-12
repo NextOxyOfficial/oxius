@@ -203,26 +203,43 @@ class HouseAd {
     return Icon(ctaIcon, size: size, color: color);
   }
 
+  /// The button's fill. Solid, and branded where a brand exists — a
+  /// WhatsApp button that is not WhatsApp green is just a blue button with a
+  /// borrowed glyph, and people tap brand colours faster than they read
+  /// labels. Everything else takes the product accent.
+  ///
+  /// #128C7E is WhatsApp's own darker brand green rather than the familiar
+  /// #25D366: white text on #25D366 sits near 1.9:1 contrast, which is
+  /// unreadable in sunlight. This keeps the brand and clears 4:1.
+  Color get ctaFillColor {
+    switch (adType) {
+      case 'call_on_whatsapp':
+        return const Color(0xFF128C7E);
+      default:
+        return const Color(0xFF2563EB);
+    }
+  }
+
   /// Icon paired with [ctaLabel]. Mirrors the web's ListBannerAd map and the
   /// ads-panel preview, so one ad type looks the same everywhere it runs.
   IconData get ctaIcon {
     switch (adType) {
       case 'message_on_adsyconnect':
-        // Outlined throughout, one weight. The filled bubble and the filled
-        // launch arrow read as two different design languages sitting in the
-        // same button row.
-        return Icons.chat_bubble_outline_rounded;
+        // Solid glyphs now, because they sit on a solid fill: an outlined
+        // icon at 15px on a coloured button reads as a hairline and looks
+        // unfinished next to the label's weight.
+        return Icons.chat_bubble_rounded;
       case 'call_on_whatsapp':
         // The brand mark, not a generic bubble — it says which app opens.
         return FontAwesomeIcons.whatsapp.data;
       case 'call_on_phone':
-        return Icons.phone_outlined;
+        return Icons.phone_rounded;
       case 'email_us':
-        return Icons.mail_outline_rounded;
+        return Icons.mail_rounded;
       case 'shop_now':
-        return Icons.shopping_bag_outlined;
+        return Icons.shopping_bag_rounded;
       default:
-        return Icons.arrow_outward_rounded;
+        return Icons.open_in_new_rounded;
     }
   }
 }

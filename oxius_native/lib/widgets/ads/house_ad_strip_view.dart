@@ -137,7 +137,7 @@ class HouseAdStripView extends StatelessWidget {
                             maxLines: subtitle.isEmpty ? 3 : 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 13.5,
+                              fontSize: 12.5,
                               height: 1.3,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF111827),
@@ -150,9 +150,11 @@ class HouseAdStripView extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 11.5,
                                 height: 1.35,
-                                color: Color(0xFF5A6273),
+                                // Darker than the surrounding meta greys: this
+                                // is the offer itself, not a timestamp.
+                                color: Color(0xFF39414F),
                               ),
                             ),
                           ],
@@ -166,25 +168,25 @@ class HouseAdStripView extends StatelessWidget {
                 // the end of a row and read as a link, not something to press.
                 SizedBox(
                   width: double.infinity,
-                  height: 38,
+                  height: 44,
                   child: FilledButton.icon(
                     onPressed: _open,
-                    icon: ad.ctaIconWidget(size: 16),
+                    icon: ad.ctaIconWidget(size: 16, color: Colors.white),
                     label: Text(
                       ad.ctaLabel,
                       style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
                       ),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFDBEAFE),
-                      foregroundColor: const Color(0xFF1D4ED8),
+                      backgroundColor: ad.ctaFillColor,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                       padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      // A full pill — the reference "ইনকাম করুন" button.
+                      shape: const StadiumBorder(),
                     ),
                   ),
                 ),

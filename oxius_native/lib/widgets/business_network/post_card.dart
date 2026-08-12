@@ -402,8 +402,10 @@ class _PostCardState extends State<PostCard> {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF556278),
+            // w600 made this compete with the post text above it; it is a
+            // caption about the post, not part of it.
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF39414F),
           ),
         ),
       );
@@ -456,9 +458,10 @@ class _PostCardState extends State<PostCard> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  // Slightly darker so the names read clearly on white.
-                  color: Color(0xFF3F4A5A),
+                  fontWeight: FontWeight.w500,
+                  // Darker ink, lighter weight: the names stay readable
+                  // without the row shouting over the caption above it.
+                  color: Color(0xFF39414F),
                 ),
               ),
             ),
@@ -1032,9 +1035,12 @@ class _PostCardState extends State<PostCard> {
     if (_isHidden) return _buildHiddenCard();
 
     final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
-    final previewPostContent = _showFullContent
-        ? plainPostContent
-        : HtmlContentUtils.previewText(plainPostContent, 320);
+    // Full text always goes into the span; the 3-line clamp below decides
+    // what is visible. Cutting at 320 CHARACTERS was the old approach and it
+    // gave a different height for every post — a line of Bengali holds far
+    // fewer characters than a line of English, so the same 320 could be two
+    // lines or six.
+    final previewPostContent = plainPostContent;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1085,48 +1091,68 @@ class _PostCardState extends State<PostCard> {
                         AdsyToast.success(
                             context, 'Content copied to clipboard');
                       },
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            ...MentionParser.parseTextWithMentions(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // The toggle cannot live inside the span any more: at
+                          // maxLines 3 the ellipsis eats whatever sits at the
+                          // end, so an inline toggle is the first thing clipped
+                          // and would never be seen. A TextPainter decides
+                          // whether the text really overflowed three lines - a
+                          // character count cannot, because a line of Bengali
+                          // holds far fewer characters than a line of English.
+                          const contentStyle = TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF111827),
+                            height: 1.50,
+                          );
+                          final span = TextSpan(
+                            children: MentionParser.parseTextWithMentions(
                               previewPostContent,
                               context,
                               onMentionTap: _handleMentionTap,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFF111827),
-                                height: 1.50,
-                              ),
+                              style: contentStyle,
                             ),
-                            if (plainPostContent.length > 320)
-                              WidgetSpan(
-                                alignment: PlaceholderAlignment.baseline,
-                                baseline: TextBaseline.alphabetic,
-                                child: GestureDetector(
+                          );
+                          final painter = TextPainter(
+                            text: span,
+                            maxLines: 3,
+                            textDirection: Directionality.of(context),
+                          )..layout(maxWidth: constraints.maxWidth);
+                          final overflows = painter.didExceedMaxLines;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(
+                                span,
+                                maxLines: _showFullContent ? null : 3,
+                                overflow: _showFullContent
+                                    ? TextOverflow.clip
+                                    : TextOverflow.ellipsis,
+                              ),
+                              if (overflows)
+                                GestureDetector(
                                   onTap: _toggleFullContent,
-                                  child: Text(
-                                    _showFullContent
-                                        ? '  কম পড়ুন'
-                                        : '  আরো পড়ুন',
-                                    // Same size as the post text it sits at
-                                    // the end of — it always was — but no
-                                    // longer semibold. At a matched size, the
-                                    // heavier weight was what made this read
-                                    // as bigger than the words around it. The
-                                    // grey still marks it as the tappable
-                                    // part without shouting.
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF5A6273),
-                                      height: 1.50,
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      _showFullContent
+                                          ? 'কম পড়ুন'
+                                          : 'আরো পড়ুন',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF5A6273),
+                                        height: 1.50,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -1188,25 +1214,21 @@ class _PostCardState extends State<PostCard> {
                         ),
                       );
                     },
-                    borderRadius: BorderRadius.circular(999),
-                    child: Container(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                        horizontal: 2,
+                        vertical: 2,
                       ),
-                      // No outline. A hashtag is a word you can tap, not a
-                      // control — the box around it made a caption full of
-                      // tags look like a row of buttons. The tinted ground
-                      // still marks the tap target.
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
+                      // No ground and no outline — a hashtag is a word you can
+                      // tap, not a control. Colour alone carries the
+                      // affordance, the way it does everywhere else people
+                      // read hashtags.
                       child: Text(
                         '#${tag.tag}',
                         style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF3D4759),
+                          fontSize: 13,
+                          color: Color(0xFF2563EB),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

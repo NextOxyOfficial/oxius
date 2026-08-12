@@ -336,14 +336,10 @@ class _HouseAdCardState extends State<HouseAdCard>
     super.dispose();
   }
 
-  Widget _avatarInitial(String name) => Text(
-        name.isNotEmpty ? name.characters.first.toUpperCase() : 'A',
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF3D4759),
-        ),
-      );
+  Widget _defaultAdvertiserAvatar() {
+    return const Icon(Icons.person_rounded,
+        size: 22, color: Color(0xFF94A3B8));
+  }
 
   /// Advertiser avatar/name → their BN profile.
   void _openAdvertiserProfile() {
@@ -409,14 +405,18 @@ class _HouseAdCardState extends State<HouseAdCard>
                       ),
                       clipBehavior: Clip.antiAlias,
                       alignment: Alignment.center,
+                      // A default person mark, not an initial. The letter was
+                      // laid out by its own text metrics inside a 36px circle,
+                      // so it sat off-centre and low - and it told the reader
+                      // nothing the name beside it did not already say.
                       child: ad.advertiserImage.isNotEmpty
                           ? AppNetworkImage(
                               ad.advertiserImage,
                               width: 36,
                               height: 36,
-                              errorWidget: _avatarInitial(ad.advertiser),
+                              errorWidget: _defaultAdvertiserAvatar(),
                             )
-                          : _avatarInitial(ad.advertiser),
+                          : _defaultAdvertiserAvatar(),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -530,7 +530,7 @@ class _HouseAdCardState extends State<HouseAdCard>
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 12.5,
                             height: 1.3,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF0F172A),
@@ -544,7 +544,7 @@ class _HouseAdCardState extends State<HouseAdCard>
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11.5,
-                              color: Color(0xFF556278),
+                              color: Color(0xFF39414F),
                               height: 1.35,
                             ),
                           ),
@@ -557,25 +557,27 @@ class _HouseAdCardState extends State<HouseAdCard>
                   // under a post's media, so every ad surface presses the same.
                   SizedBox(
                     width: double.infinity,
-                    height: 40,
+                    height: 38,
                     child: FilledButton.icon(
                       onPressed: _onCtaTap,
-                      icon: ad.ctaIconWidget(size: 15),
+                      icon: ad.ctaIconWidget(size: 17, color: Colors.white),
                       label: Text(
                         ad.ctaLabel,
                         style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          // w700 on a solid fill shouts; the colour is already
+                          // doing the work of drawing the eye.
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.2,
                         ),
                       ),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFDBEAFE),
-                        foregroundColor: const Color(0xFF1D4ED8),
+                        backgroundColor: ad.ctaFillColor,
+                        foregroundColor: Colors.white,
                         elevation: 0,
                         padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        // A full pill — the reference "ইনকাম করুন" button.
+                        shape: const StadiumBorder(),
                       ),
                     ),
                   ),
