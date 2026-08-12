@@ -210,7 +210,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _fieldLabel('বিষয়', 'এক লাইনে সমস্যাটা কী — যেমন "টাকা উত্তোলন হচ্ছে না"'),
+                  _fieldLabel('বিষয়', 'এক লাইনে সমস্যাটা কী — যেমন "টাকা তোলা যাচ্ছে না"'),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _titleController,

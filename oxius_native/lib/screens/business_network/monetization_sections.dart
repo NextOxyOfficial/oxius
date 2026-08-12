@@ -131,15 +131,15 @@ MonStatus monStatusOf(String status) {
         'রিভিউয়ে',
         Color(0xFFD97706),
         Icons.pause_circle_outline_rounded,
-        'অস্বাভাবিক ভিউ অ্যাক্টিভিটি যাচাই করা হচ্ছে, তাই এই মাসের আয় '
-            'সাময়িকভাবে আটকে আছে। যাচাই শেষ হলে নিজে থেকেই চালু হবে।',
+        'অস্বাভাবিক ভিউ অ্যাক্টিভিটি চেক করা হচ্ছে, তাই এই মাসের আয় '
+            'সাময়িকভাবে আটকে আছে। চেক শেষ হলে নিজে থেকেই চালু হবে।',
       );
     case 'forfeited':
       return const MonStatus(
         'বাতিল',
         Color(0xFFDC2626),
         Icons.cancel_outlined,
-        'নীতিমালা লঙ্ঘনের কারণে এই মাসের আয় বাতিল হয়েছে। বারবার হলে '
+        'নিয়ম লঙ্ঘনের কারণে এই মাসের আয় বাতিল হয়েছে। বারবার হলে '
             'মনিটাইজেশন স্থায়ীভাবে বন্ধ হয়ে যেতে পারে।',
       );
     case 'cleared':
@@ -149,7 +149,7 @@ MonStatus monStatusOf(String status) {
         Icons.task_alt_rounded,
       );
     case 'paid':
-      return const MonStatus('পরিশোধিত', monMoney, Icons.verified_rounded);
+      return const MonStatus('পেমেন্টিত', monMoney, Icons.verified_rounded);
     default:
       return const MonStatus('চলমান', monAccent, Icons.trending_up_rounded);
   }
@@ -502,7 +502,7 @@ class MonetizationPayoutScreen extends StatelessWidget {
       (
         Icons.account_balance_wallet_outlined,
         'কোথায় পাবেন',
-        'অনুমোদিত আয় আপনার AdsyPay ব্যালেন্সে যোগ করা হয়, সেখান থেকে '
+        'এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে যোগ করা হয়, সেখান থেকে '
             'স্বাভাবিক নিয়মেই তুলতে পারবেন।',
       ),
       (
@@ -512,13 +512,13 @@ class MonetizationPayoutScreen extends StatelessWidget {
       ),
       (
         Icons.schedule_outlined,
-        'যাচাইয়ের সময়',
-        'মাস শেষ হওয়ার পর ${bnDigits(holdback.toString())} দিন যাচাই চলে, '
+        'চেকয়ের সময়',
+        'মাস শেষ হওয়ার পর ${bnDigits(holdback.toString())} দিন চেক চলে, '
             'তারপর পেমেন্ট ছাড়া হয়।',
       ),
       (
-        Icons.savings_outlined,
-        'সর্বনিম্ন পেআউট',
+        Icons.account_balance_wallet_outlined,
+        'কমপক্ষে পেআউট',
         '${monTaka(earnings['min_payout'])} — এর কম হলে টাকা হারায় না, '
             'পরের মাসের সাথে যোগ হয়ে জমা থাকে।',
       ),
@@ -598,12 +598,12 @@ class MonetizationPayoutScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded(child: _tile('সর্বমোট আয়', monTaka(lifetime), monInk)),
+            Expanded(child: _tile('মোট আয়', monTaka(lifetime), monInk)),
             Container(width: 1, height: 34, color: const Color(0xFFE2E8F0)),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 16),
-                child: _tile('পরিশোধিত', monTaka(paid), monMoney),
+                child: _tile('পেমেন্টিত', monTaka(paid), monMoney),
               ),
             ),
           ],

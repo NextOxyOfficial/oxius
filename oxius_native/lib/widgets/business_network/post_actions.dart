@@ -237,9 +237,25 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
     });
   }
 
+  /// The people you follow, first.
+  ///
+  /// A likers list is most useful for seeing which of YOUR people reacted;
+  /// alphabetical-by-arrival buries them under strangers on any post with more
+  /// than a handful of likes. Ordering is stable within each group, so the
+  /// list does not reshuffle as you follow someone from inside the sheet —
+  /// `_followOverride` deliberately is not consulted here.
+  List<PostLike> get _ordered {
+    final known = <PostLike>[];
+    final rest = <PostLike>[];
+    for (final l in _likes) {
+      (l.isFollowing ? known : rest).add(l);
+    }
+    return [...known, ...rest];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final likes = _likes;
+    final likes = _ordered;
     // Tapping the dimmed area above the sheet closes it: the
     // DraggableScrollableSheet fills the whole modal height, so its
     // transparent top region used to swallow the tap before it could reach

@@ -269,8 +269,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 14),
                     child: _heroFoot(
-                      Icons.savings_outlined,
-                      'সর্বমোট আয়',
+                      Icons.account_balance_wallet_outlined,
+                      'মোট আয়',
                       monTaka(e['lifetime_earned']),
                     ),
                   ),
@@ -586,18 +586,18 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         _infoLine(
           Icons.account_balance_wallet_outlined,
           'AdsyPay ব্যালেন্সে যোগ হয়',
-          'অনুমোদিত আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, সেখান থেকে স্বাভাবিক '
+          'এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, সেখান থেকে স্বাভাবিক '
               'নিয়মেই তুলতে পারবেন।',
         ),
         _infoLine(
           Icons.schedule_outlined,
-          'মাস শেষে যাচাই',
-          'মাস শেষ হওয়ার পর ${bnDigits(holdback.toString())} দিন যাচাই চলে, '
+          'মাস শেষে চেক',
+          'মাস শেষ হওয়ার পর ${bnDigits(holdback.toString())} দিন চেক চলে, '
               'তারপর টাকা ছাড়া হয়।',
         ),
         _infoLine(
-          Icons.savings_outlined,
-          'সর্বনিম্ন ${monTaka(e['min_payout'])}',
+          Icons.account_balance_wallet_outlined,
+          'কমপক্ষে ${monTaka(e['min_payout'])}',
           'এর কম হলে টাকা হারায় না — পরের মাসের সাথে যোগ হয়ে জমা থাকে।',
         ),
         Material(
@@ -695,7 +695,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           ),
           SizedBox(height: 14),
           Text(
-            'শুধু আসল ভিউ গণনা হয়',
+            'শুধু আসল ভিউ হিসাব হয়',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -778,7 +778,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         default:
           icon = Icons.hourglass_top_rounded;
           color = const Color(0xFFD97706);
-          title = 'আবেদন যাচাই চলছে';
+          title = 'আবেদন চেক চলছে';
           subtitle = 'আমাদের টিম আপনার প্রোফাইল ও কনটেন্ট দেখছে। সিদ্ধান্ত হলে '
               'নোটিফিকেশনে জানিয়ে দেওয়া হবে।';
       }
@@ -1011,7 +1011,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
       (
         Icons.account_balance_wallet_outlined,
         'AdsyPay-তে সরাসরি',
-        'অনুমোদিত আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, আলাদা কোনো ঝামেলা নেই।'
+        'এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, আলাদা কোনো ঝামেলা নেই।'
       ),
     ];
     return Padding(
@@ -1080,7 +1080,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
       (
         'অনুমোদনের পর আয় শুরু',
         'এরপর আপনার কনটেন্টে আসা সাড়া থেকে আয় জমতে থাকবে। প্রতি মাসের হিসাব '
-            'মাস শেষে চূড়ান্ত হয় এবং যাচাইয়ের পর টাকা AdsyPay-তে যোগ হয়।'
+            'মাস শেষে চূড়ান্ত হয় এবং চেকয়ের পর টাকা AdsyPay-তে যোগ হয়।'
       ),
     ];
 

@@ -402,9 +402,7 @@ class _PostCardState extends State<PostCard> {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 12.5,
-            // w600 made this compete with the post text above it; it is a
-            // caption about the post, not part of it.
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             color: Color(0xFF39414F),
           ),
         ),
@@ -458,9 +456,9 @@ class _PostCardState extends State<PostCard> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w500,
-                  // Darker ink, lighter weight: the names stay readable
-                  // without the row shouting over the caption above it.
+                  // Back up to semibold: at w500 the names sank into the row
+                  // of avatars beside them. The darker ink stays.
+                  fontWeight: FontWeight.w600,
                   color: Color(0xFF39414F),
                 ),
               ),
@@ -1229,7 +1227,9 @@ class _PostCardState extends State<PostCard> {
                         style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF2563EB),
-                          fontWeight: FontWeight.w600,
+                          // The blue already says "tappable"; semibold on top
+                          // of it made a row of tags shout over the caption.
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),

@@ -341,6 +341,26 @@ class UserSearchView(generics.ListAPIView):
                 id__in=blocked_by_ids
             )
 
+        # People you already follow come first, whatever the text match says.
+        # A search for "ra" that puts three strangers above the friend you were
+        # actually reaching for is a search that makes you type the whole name.
+        # This is a separate ordering key from `priority` so it re-ranks WITHIN
+        # the existing relevance tiers rather than replacing them: a followed
+        # exact-match still beats a followed contains-match.
+        if request_user.is_authenticated:
+            following_ids = BusinessNetworkFollowerModel.objects.filter(
+                follower=request_user
+            ).values_list("following_id", flat=True)
+            users = users.annotate(
+                is_known=Case(
+                    When(id__in=list(following_ids), then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                )
+            )
+        else:
+            users = users.annotate(is_known=Value(1, output_field=IntegerField()))
+
         # Add priority scoring for ordering
         users = users.annotate(
             priority=Case(
@@ -358,8 +378,8 @@ class UserSearchView(generics.ListAPIView):
                 default=Value(6),
                 output_field=IntegerField(),
             )
-        ).order_by('priority', 'first_name', 'last_name').distinct()
-        
+        ).order_by('is_known', 'priority', 'first_name', 'last_name').distinct()
+
         return users
 
 

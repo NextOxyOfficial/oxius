@@ -455,7 +455,7 @@ extension _RsDriverProfileSection on _RideshareDriverPanelState {
                             ? t('rideshare_paying', fallback: 'পেমেন্ট হচ্ছে...')
                             : hasEnough
                                 ? t('rideshare_pay_due_btn',
-                                    fallback: 'বকেয়া পরিশোধ করুন')
+                                    fallback: 'বকেয়া মিটিয়ে দিন')
                                 : '${t("rideshare_insufficient_balance", fallback: "Insufficient balance")} (৳${walletBalance.toStringAsFixed(0)})',
                         style: AppFonts.roboto(fontWeight: FontWeight.w700),
                       ),

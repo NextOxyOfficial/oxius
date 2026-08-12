@@ -792,7 +792,7 @@ class _ClassifiedPostDetailsScreenState
           const SizedBox(height: 10),
           _buildSafetyTip('পরিচিত ও জনবহুল স্থানে দেখা করুন'),
           _buildSafetyTip('পণ্য ভালোভাবে দেখে ও যাচাই করে কিনুন'),
-          _buildSafetyTip('পণ্য হাতে পাওয়ার আগে টাকা পরিশোধ করবেন না'),
+          _buildSafetyTip('পণ্য হাতে পাওয়ার আগে টাকা দেবেন না'),
           _buildSafetyTip('অগ্রিম বিকাশ/নগদ পাঠানোর অনুরোধ থেকে সতর্ক থাকুন'),
           _buildSafetyTip(
               'অপরিচিত লিংকে ক্লিক করা বা ব্যক্তিগত তথ্য শেয়ার করা থেকে বিরত থাকুন'),

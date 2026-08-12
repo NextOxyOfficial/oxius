@@ -33,7 +33,10 @@ class ResharedPostCard extends StatelessWidget {
     final isLongText = fullText.length > 160;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 2, 6, 8),
+      // Tighter gutters. This card is nested inside a post that already
+      // has its own side padding, so 6 on top of that stacked into a
+      // visible margin down both edges and squeezed the embedded media.
+      padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
