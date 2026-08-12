@@ -149,11 +149,18 @@ def fraud_score(points):
     return min(score, 100)
 
 
-def creator_content_breakdown(user, start, end, conf, limit=10):
+def creator_content_breakdown(user, start, end, conf, limit=25):
     """Per-post engagement + points inside [start, end) for the earnings
     page's "which content earned what" list, plus a daily-views series for
     the analytics chart. Uses the same account-age gate as creator_points
-    (per-viewer daily cap skipped — display-level detail)."""
+    (per-viewer daily cap skipped — display-level detail).
+
+    Returns `content_points_total` alongside the truncated `top_content` list:
+    the caller splits the month's money by each post's share of THAT total, so
+    the per-post figures add up to the headline no matter where the list is
+    cut off. Dividing by the creator's total points instead would not add up —
+    those include follower points, which no single post can be credited with.
+    """
     from .models import (
         BusinessNetworkMediaView,
         BusinessNetworkPost,
@@ -215,6 +222,8 @@ def creator_content_breakdown(user, start, end, conf, limit=10):
             + stats["comments"] * conf.point_comment
         )
 
+    content_points_total = sum(s["points"] for s in posts.values())
+
     top_ids = sorted(posts, key=lambda p: -posts[p]["points"])[:limit]
     top_content = []
     if top_ids:
@@ -249,7 +258,12 @@ def creator_content_breakdown(user, start, end, conf, limit=10):
         .order_by("created_at__date")
     ]
 
-    return {"top_content": top_content, "daily_views": daily_views}
+    return {
+        "top_content": top_content,
+        "content_points_total": content_points_total,
+        "content_count": len(posts),
+        "daily_views": daily_views,
+    }
 
 
 def compute_period_earnings(period=None):

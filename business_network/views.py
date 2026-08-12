@@ -3456,8 +3456,17 @@ class ContentMonetizationApplyView(APIView):
 
 
 class ContentMonetizationEarningsView(APIView):
-    """Approved creator's earnings: live points for the current month, the
-    stored pool share (refreshed by the daily compute job) and history."""
+    """Approved creator's earnings: live activity for the current month, the
+    stored pool share (refreshed by the daily compute job) and history.
+
+    Deliberately NOT exposed: `monthly_pool_amount` and the per-action point
+    weights. Together they let anyone derive the platform's payout budget and
+    the exact rate per view, which turns every payout into an argument about
+    the formula rather than the work. Creators see what they did and what they
+    earned; the rate stays a business lever the admin can retune. Both fields
+    were served until Aug 2026, so installs older than that will render them
+    as zero until updated — a stale zero is better than a live leak.
+    """
 
     permission_classes = [IsAuthenticated]
 
@@ -3505,20 +3514,39 @@ class ContentMonetizationEarningsView(APIView):
 
         # Per-content breakdown + daily views for the analytics section.
         breakdown = creator_content_breakdown(request.user, start, end, conf)
-        # Attribute the stored month amount across content by point share so
-        # the user sees roughly which content earned what.
+        # Split the month's money across content by each post's share of the
+        # CONTENT points — not the creator's total points. The total also
+        # carries follower points, which belong to no single post, so dividing
+        # by it left the rows adding up to less than the headline and the page
+        # looked like it was hiding money. Dividing by the same total the
+        # shares are drawn from makes them add up exactly; whatever the
+        # truncated list leaves out is returned as other_content_amount rather
+        # than silently vanishing.
         from decimal import Decimal
 
-        my_points = points.get("total_points") or 0
         amount = row.amount if row else None
+        content_total = breakdown["content_points_total"]
+        shown = Decimal("0")
         for c in breakdown["top_content"]:
-            if amount is not None and my_points > 0:
-                share = (amount * c["points"] / my_points).quantize(
+            if amount is not None and content_total > 0:
+                share = (amount * c["points"] / content_total).quantize(
                     Decimal("0.01")
                 )
                 c["estimated_amount"] = str(share)
+                shown += share
             else:
                 c["estimated_amount"] = None
+
+        other_content_amount = None
+        if amount is not None and content_total > 0:
+            other_content_amount = str(max(amount - shown, Decimal("0")))
+
+        from django.db.models import Q, Sum
+
+        totals = CreatorMonthlyEarning.objects.filter(user=request.user).aggregate(
+            lifetime=Sum("amount"),
+            paid=Sum("amount", filter=Q(status="paid")),
+        )
 
         history = [
             {
@@ -3540,13 +3568,6 @@ class ContentMonetizationEarningsView(APIView):
             {
                 "period": period,
                 "points": points,
-                "weights": {
-                    "view": conf.point_view,
-                    "like": conf.point_like,
-                    "comment": conf.point_comment,
-                    "follower": conf.point_follower,
-                },
-                "pool_amount": str(conf.monthly_pool_amount),
                 "estimated_amount": str(row.amount) if row else None,
                 "current_status": row.status if row else "accruing",
                 "fraud_flagged": bool(row and row.status == "held"),
@@ -3554,7 +3575,11 @@ class ContentMonetizationEarningsView(APIView):
                 "holdback_days": conf.holdback_days,
                 "expected_payout_date": expected_payout.strftime("%d-%m-%Y"),
                 "top_content": breakdown["top_content"],
+                "other_content_amount": other_content_amount,
+                "content_count": breakdown["content_count"],
                 "daily_views": breakdown["daily_views"],
                 "history": history,
+                "lifetime_earned": str(totals["lifetime"] or 0),
+                "paid_total": str(totals["paid"] or 0),
             }
         )
