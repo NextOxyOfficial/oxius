@@ -76,16 +76,32 @@ def process_auto_renewals():
         try:
             balance = user.balance or 0
             if balance >= price:
+                from base import wallet
+
                 with transaction.atomic():
+                    # Charge FIRST, and only extend the subscription if the
+                    # money actually moved. `user.balance = balance - price`
+                    # wrote a figure computed before the transaction opened, so
+                    # a renewal running beside any other balance write lost one
+                    # of them — and duplicate beat schedulers are a known
+                    # hazard on this deployment, which would have renewed twice
+                    # for one charge.
+                    if not wallet.debit(
+                        user.pk, wallet.to_money(price),
+                        reason="subscription_autorenew:%s" % sub.pk,
+                    ):
+                        continue
+
                     base = sub.end_date if (sub.end_date and sub.end_date > now) else now
                     sub.end_date = base + timedelta(days=plan.duration_days)
                     sub.status = "active"
                     sub.save(update_fields=["end_date", "status", "updated_at"])
 
-                    user.balance = balance - price
-                    user.is_pro = True
-                    user.pro_validity = sub.end_date
-                    user.save(update_fields=["balance", "is_pro", "pro_validity"])
+                    User = type(user)
+                    User.objects.filter(pk=user.pk).update(
+                        is_pro=True, pro_validity=sub.end_date)
+                    user.refresh_from_db(
+                        fields=["balance", "is_pro", "pro_validity"])
 
                     Balance.objects.create(
                         user=user, transaction_type="subscription",

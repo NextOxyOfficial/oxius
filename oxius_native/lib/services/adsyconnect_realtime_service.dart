@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 
+import 'realtime_event_fingerprint.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -255,80 +256,13 @@ class AdsyConnectRealtimeService {
     }
   }
 
-  String _eventFingerprint(Map<String, dynamic> event) {
-    final type = event['type']?.toString() ?? '';
-
-    // Reactions repeat on the SAME message id — add one, swap it, take it
-    // away. The generic branch below keys purely on that id, so only the
-    // first reaction on a message survived and every later change was
-    // dropped as a duplicate. That is what kept reactions from the other
-    // side invisible until the thread was rebuilt. Hash the state instead.
-    if (type == 'message_reaction') {
-      // Do NOT dedupe reaction events at all. Keying on the state's CONTENT
-      // looked right but reaction state legitimately repeats: react ❤️,
-      // un-react, react ❤️ again produces a fingerprint identical to the
-      // first — still in the 64-entry ring — so the peer never saw the
-      // reaction come back. The handler just assigns the server's full list,
-      // so replaying one is harmless; dropping one is not.
-      return '';
-    }
-
-    // Same reasoning as reactions: edit A->B->A->B makes the last event's
-    // content-keyed fingerprint identical to the first's, still inside the
-    // ring — and the peer misses the final state. Applying a replayed
-    // edit/delete is a harmless idempotent merge; dropping a real one is not.
-    if (type == 'message_edited' || type == 'message_deleted') {
-      return '';
-    }
-
-    final eventId = event['event_id'] ?? event['id'] ?? event['message_id'];
-    if (eventId != null && eventId.toString().isNotEmpty) {
-      return 'id:$eventId';
-    }
-
-    if (type == 'incoming_call' || type == 'call_status') {
-      return [
-        type,
-        event['call_id']?.toString() ?? '',
-        event['channel_name']?.toString() ?? '',
-        event['status']?.toString() ?? '',
-        event['caller_id']?.toString() ?? event['sender_id']?.toString() ?? '',
-        event['receiver_id']?.toString() ?? '',
-        event['timestamp']?.toString() ?? '',
-      ].join('|');
-    }
-
-    // Chat events (new_message / message_sent / edits / deletes) carry their
-    // identifiers inside the nested `message` map. With only top-level fields
-    // every one of them hashed to the same fingerprint, so the dedupe filter
-    // swallowed all but the FIRST event — the chat list then sat frozen until
-    // a manual reload. Hash the message id (+ content state, so edits and
-    // soft-deletes of the same message still get through).
-    final message = event['message'];
-    if (message is Map) {
-      final mid = message['id']?.toString() ?? '';
-      if (mid.isNotEmpty) {
-        return '$type|msg:$mid'
-            '|${message['is_deleted'] ?? ''}'
-            '|${(message['content'] ?? '').hashCode}'
-            '|${message['is_read'] ?? ''}';
-      }
-    }
-
-    // Status-style events flip a boolean (typing on/off, online/offline) with
-    // no timestamp — include the state itself so the "off" event isn't treated
-    // as a duplicate of the earlier "on".
-    return [
-      type,
-      event['chatroom_id'] ?? '',
-      event['user_id'] ?? '',
-      event['message_id'] ?? '',
-      event['is_typing'] ?? '',
-      event['is_online'] ?? '',
-      event['status'] ?? '',
-      event['timestamp'] ?? event['created_at'] ?? '',
-    ].join('|');
-  }
+  /// Delegates to the pure function in realtime_event_fingerprint.dart.
+  ///
+  /// It was inline and private here, which made it untestable — and it was
+  /// wrong: every bn_notification collapsed to one constant fingerprint, so
+  /// the user received exactly one live notification per socket.
+  String _eventFingerprint(Map<String, dynamic> event) =>
+      eventFingerprint(event);
 
   void _send(Map<String, dynamic> payload) {
     final channel = _channel;

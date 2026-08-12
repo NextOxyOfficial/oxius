@@ -327,13 +327,18 @@ class SubscriptionUpgradeView(APIView):
             return True, None  # Free plans don't need payment
             
         if payment_method == 'account_balance':
-            # Check if user has sufficient balance
-            if user.balance < plan.price:
+            from base import wallet
+
+            # Was `balance < price` followed by a read-modify-write and a
+            # full-row save: two concurrent subscriptions both passed and the
+            # second deduction was lost, so the extra plan was free. The
+            # conditional debit is the check and the write in one statement.
+            charge = wallet.to_money(plan.price)
+            if charge > 0 and not wallet.debit(
+                user.pk, charge, reason="subscription_plan:%s" % plan.pk,
+            ):
                 return False, "Insufficient balance"
-                
-            # Deduct from user balance
-            user.balance -= plan.price
-            user.save()
+            user.refresh_from_db(fields=['balance'])
             
             # Create balance record
             from base.models import Balance

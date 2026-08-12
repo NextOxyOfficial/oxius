@@ -313,10 +313,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def group_updated(self, event):
-        """A group this user belongs to was created/changed."""
+        """A group this user belongs to was created, changed, or lost.
+
+        Forwards the WHOLE contract, not just `group`. The senders add two more
+        keys and this handler used to drop both, which killed the entire
+        "you were removed from the group" path end to end:
+
+          * `removed` — set for the person who was removed, who left, or whose
+            group was deleted. Without it their client fell through to the
+            ordinary update branch, left the screen open, kept the composer
+            live, and handed them a member list they were no longer entitled
+            to; the first sign anything had happened was a 403 on send.
+          * `group_id` — the only identifier present when a group is DELETED,
+            because `group` is None by then. Without it the client could not
+            tell which group the event was about and discarded it.
+
+        Both are read by the app already (group_chat_screen and the chat list),
+        so this needs no client change to take effect.
+        """
         await self.send(text_data=json.dumps({
             'type': 'group_updated',
-            'group': event['group']
+            'group': event.get('group'),
+            'removed': bool(event.get('removed', False)),
+            # Fall back to the group body's own id for the ordinary
+            # update case, where the senders do not set group_id.
+            'group_id': (
+                event.get('group_id')
+                or (event.get('group') or {}).get('id')
+            ),
         }))
 
     async def typing_status_update(self, event):

@@ -353,8 +353,9 @@ def ads_daily_settlement(target_date=None):
     from datetime import timedelta
     from decimal import Decimal
 
-    from django.db.models import Count, Q
+    from django.db.models import Count, F, Q
 
+    from base import wallet
     from base.models import DiamondTransaction, User
     from .models import (
         AdEvent,
@@ -375,14 +376,24 @@ def ads_daily_settlement(target_date=None):
             diamonds = min(
                 row.views // cfg.views_per_diamond, cfg.max_daily_diamonds
             )
+            # CLAIM BEFORE AWARDING. `row.rewarded = True` followed by a save
+            # was already the right ordering, but it was not conditional: two
+            # beat schedulers running the task at once (a known hazard on this
+            # deployment) both saw rewarded=False and both awarded. The
+            # conditional UPDATE lets exactly one through.
+            claimed = type(row).objects.filter(
+                pk=row.pk, rewarded=False,
+            ).update(rewarded=True, diamonds_awarded=diamonds)
+            if not claimed:
+                continue
             row.rewarded = True
             row.diamonds_awarded = diamonds
-            row.save(update_fields=["rewarded", "diamonds_awarded"])
             if diamonds <= 0:
                 continue
             user = row.user
-            user.diamond_balance += diamonds
-            user.save(update_fields=["diamond_balance"])
+            User.objects.filter(pk=user.pk).update(
+                diamond_balance=F("diamond_balance") + diamonds)
+            user.refresh_from_db(fields=["diamond_balance"])
             DiamondTransaction.objects.create(
                 user=user,
                 transaction_type="bonus",
@@ -440,15 +451,27 @@ def ads_daily_settlement(target_date=None):
                 "amount": amount,
             },
         )
+        # CLAIM THE ROW BEFORE PAYING. `if row.credited: continue` was read
+        # from an object fetched before the credit, and `row.credited = True`
+        # was written after the money moved — so two schedulers running this
+        # nightly task at once both saw credited=False and both paid the
+        # creator. Duplicate celery beats are a known hazard on this
+        # deployment, which makes this the most likely of these races to have
+        # actually fired. This is real recurring money, credited unattended.
         if row.credited:
             continue
+        if not CreatorAdEarning.objects.filter(
+            pk=row.pk, credited=False,
+        ).update(credited=True):
+            continue
+        row.credited = True
+
         if amount > 0:
             creator = User.objects.filter(id=s["creator"]).first()
             if creator:
-                creator.balance += amount
-                creator.save(update_fields=["balance"])
-        row.credited = True
-        row.save(update_fields=["credited"])
+                wallet.credit(
+                    creator.pk, amount,
+                    reason="creator_ad_earning:%s" % row.pk)
         credited_creators += 1
 
     # ── 3. Interest decay ────────────────────────────────────────────────

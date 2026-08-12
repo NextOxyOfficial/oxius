@@ -9,15 +9,24 @@ from django.core.cache import cache
 from django.shortcuts import render
 import requests
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from shurjopay_plugin import *
+
+from .throttling import PaymentFinalizeThrottle
+
+from payments.models import ProcessedPayment
 
 from .models import Balance
 
 
 logger = logging.getLogger(__name__)
+
+# Namespace for payment claims. Every ShurjoPay payment identity lives under
+# this provider so a future gateway cannot collide with an existing invoice
+# number that happens to look the same.
+_PAYMENT_PROVIDER = "shurjopay"
 
 
 _PAYMENT_STATE_MAX_AGE = 60 * 60 * 6
@@ -199,13 +208,11 @@ def _finalize_verified_deposit(*, user, payment_details):
         transaction_type="deposit",
     ).first()
 
+    # Fast path only. This SELECT answers "was this already credited long ago"
+    # cheaply, but it CANNOT be the thing that prevents a double credit: two
+    # requests reach it before either has inserted anything, both see nothing,
+    # and both proceed. The claim below is what actually decides.
     if existing_transaction:
-        if existing_transaction.completed or existing_transaction.bank_status == "completed":
-            return {
-                "already_processed": True,
-                "transaction_id": str(existing_transaction.id),
-            }
-
         return {
             "already_processed": True,
             "transaction_id": str(existing_transaction.id),
@@ -226,17 +233,68 @@ def _finalize_verified_deposit(*, user, payment_details):
     except (InvalidOperation, TypeError, ValueError):
         received_amount = payable_amount
 
-    transaction = Balance.objects.create(
-        user=user,
-        transaction_type="deposit",
-        payment_method=payment_details.get("payment_method") or "shurjopay",
-        amount=amount,
-        payable_amount=payable_amount,
-        received_amount=received_amount,
-        merchant_invoice_no=merchant_invoice_no,
-        shurjopay_order_id=payment_details.get("shurjopay_order_id") or payment_details.get("sp_order_id") or "",
-        payment_confirmed_at=payment_details.get("payment_confirmed_at"),
-        bank_status="completed",
+    # ── the exactly-once gate ───────────────────────────────────────────────
+    # Inserting this row is the single atomic act that decides who may credit.
+    # Concurrent requests carrying the same genuine payment all reach here; the
+    # unique (provider, invoice_no) index lets exactly one INSERT through and
+    # turns the rest into created=False. Whoever loses must return without
+    # touching the balance — not fall through to "well, I didn't see a row".
+    claim, claimed = ProcessedPayment.claim(
+        provider=_PAYMENT_PROVIDER,
+        invoice_no=merchant_invoice_no,
+        account_id=getattr(user, "pk", ""),
+        amount=payable_amount,
+    )
+
+    if not claimed:
+        # Another request owns this payment. It may not have committed its
+        # Balance row yet, so re-read rather than assuming, and fall back to
+        # whatever the winner recorded on the claim.
+        winner = Balance.objects.filter(
+            user=user,
+            merchant_invoice_no=merchant_invoice_no,
+            transaction_type="deposit",
+        ).first()
+        logger.info(
+            "Deposit %s already claimed by a concurrent request; not crediting again",
+            merchant_invoice_no,
+        )
+        return {
+            "already_processed": True,
+            "transaction_id": (
+                str(winner.id) if winner
+                else (getattr(claim, "balance_id", "") or None)
+            ),
+        }
+
+    try:
+        transaction = Balance.objects.create(
+            user=user,
+            transaction_type="deposit",
+            payment_method=payment_details.get("payment_method") or "shurjopay",
+            amount=amount,
+            payable_amount=payable_amount,
+            received_amount=received_amount,
+            merchant_invoice_no=merchant_invoice_no,
+            shurjopay_order_id=payment_details.get("shurjopay_order_id") or payment_details.get("sp_order_id") or "",
+            payment_confirmed_at=payment_details.get("payment_confirmed_at"),
+            bank_status="completed",
+        )
+    except Exception:
+        # The credit definitively did not happen, so hand the claim back or the
+        # payment could never be retried and the user would be left paid-but-
+        # not-credited — the one failure mode worse than a double credit.
+        ProcessedPayment.release(
+            provider=_PAYMENT_PROVIDER, invoice_no=merchant_invoice_no
+        )
+        logger.exception(
+            "Deposit credit failed for invoice %s; claim released for retry",
+            merchant_invoice_no,
+        )
+        raise
+
+    ProcessedPayment.objects.filter(pk=claim.pk).update(
+        balance_id=str(transaction.id)
     )
 
     return {
@@ -438,6 +496,7 @@ def makePayment(request):
 
 
 @api_view(["POST"])
+@throttle_classes([PaymentFinalizeThrottle])
 def finalizePaymentWithState(request):
     payment_ref = (
         request.data.get("payment_ref")
@@ -522,6 +581,14 @@ def finalizePaymentWithState(request):
         return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as exc:
         return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # Burn the reference. It carries the user identity for an unauthenticated
+    # endpoint, and `cache.get` left it valid for six hours — a reusable bearer
+    # token for crediting an account. Deleting it here means a settled payment
+    # cannot be re-submitted at all, rather than merely being caught later by
+    # the claim. Only on success: a pending payment returns earlier and must
+    # keep its reference so the client can poll.
+    cache.delete(_payment_ref_cache_key(payment_ref))
 
     return Response(
         {

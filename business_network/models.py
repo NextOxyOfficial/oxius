@@ -938,13 +938,31 @@ class GoldSponsor(models.Model):
             if getattr(self, '_discount_eligible', False):
                 price = GoldSponsorSettings.current().discounted(price)
 
-            if self.user.balance < price:
-                from django.core.exceptions import ValidationError
-                raise ValidationError(f"Insufficient balance. You need ৳{price} but have ৳{self.user.balance}")
+            from django.core.exceptions import ValidationError
 
-            # Deduct money from user's balance
-            self.user.balance -= price
-            self.user.save()
+            from base import wallet
+
+            # `balance < price` then `balance -= price; save()` is check-then-act:
+            # two sponsorships bought at once both passed the check and the
+            # second full-row save discarded the first deduction, so one balance
+            # paid for two. The conditional debit is one statement and its WHERE
+            # clause IS the affordability check.
+            from base import wallet
+
+            # `balance < price` then `balance -= price; save()` is check-then-act:
+            # two sponsorships bought at once both passed the check and the
+            # second full-row save discarded the first deduction, so one balance
+            # paid for two. The conditional debit is one statement and its WHERE
+            # clause IS the affordability check.
+            charge = wallet.to_money(price)
+            if charge > 0 and not wallet.debit(
+                self.user_id, charge,
+                reason="gold_sponsor:%s" % (self.pk or "new"),
+            ):
+                self.user.refresh_from_db(fields=["balance"])
+                raise ValidationError(
+                    f"Insufficient balance. You need ৳{price} but have ৳{self.user.balance}")
+            self.user.refresh_from_db(fields=["balance"])
             self.amount_paid = price
 
         super().save(*args, **kwargs)

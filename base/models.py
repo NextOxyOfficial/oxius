@@ -17,6 +17,9 @@ from django.utils import timezone
 from django.utils.text import slugify
 from tinymce import models as tinymce_models
 
+# Safe at module level: wallet imports models only from inside its functions.
+from . import wallet
+
 
 def generate_unique_id():
     return int(time.time() * 1) + random.randint(0, 999)
@@ -344,13 +347,45 @@ class Subscription(models.Model):
     total = models.DecimalField(max_digits=8, decimal_places=2, default=149.00)
 
     def save(self, *args, **kwargs):
+        # `not self.pk` is load-bearing and stays: a subscription that is merely
+        # edited or re-saved must never charge again.
         if not self.pk:
-            self.user.is_pro = True
-            self.user.pro_validity = timezone.now() + timedelta(
-                days=30 * int(self.months)
-            )
-            self.user.balance -= Decimal(self.total)
-            self.user.save()
+            # There was NO affordability check here at all. The only one lived
+            # in the view that creates this, in Python, against an unlocked
+            # read — and the deduction below was a read-modify-write finished
+            # by a full-row User.save().
+            #
+            # The balance never actually went negative, because User.save()
+            # refuses that. What happened instead was quieter and worse: two
+            # concurrent purchases both read the same balance and both wrote
+            # the same reduced total, so the second deduction was simply lost.
+            # Measured: five concurrent purchases produced five Pro
+            # subscriptions for 298.00 of a 745.00 bill. The extra ones were
+            # free.
+            price = wallet.to_money(self.total)
+            with db_transaction.atomic():
+                if price > 0 and not wallet.debit(
+                    self.user_id, price,
+                    reason="pro_subscription:%s" % self.user_id,
+                ):
+                    raise ValidationError("পর্যাপ্ত ব্যালেন্স নেই।")
+
+                # Targeted UPDATE rather than user.save(): the latter writes
+                # every column from an object that may predate a deposit
+                # landing mid-purchase, undoing it.
+                User.objects.filter(pk=self.user_id).update(
+                    is_pro=True,
+                    pro_validity=timezone.now() + timedelta(
+                        days=30 * int(self.months)
+                    ),
+                )
+                # Inside the same transaction, so a failure here returns the
+                # money rather than leaving a paid-for subscription unsaved.
+                super(Subscription, self).save(*args, **kwargs)
+
+            self.user.refresh_from_db(
+                fields=["balance", "is_pro", "pro_validity"])
+            return
         super(Subscription, self).save(*args, **kwargs)
 
 
@@ -830,8 +865,31 @@ class MicroGigPost(models.Model):
                 )
             else:
                 if self.required_quantity > 0:
-                    self.user.balance += self.balance
-                    self.user.save()
+                    # CLAIM THE POT, THEN PAY IT OUT. This credited the
+                    # advertiser by read-modify-write and only afterwards zeroed
+                    # `self.balance` in memory, so two stop requests arriving
+                    # together both read the same unspent figure and both
+                    # refunded it. Zeroing the row with a conditional UPDATE
+                    # makes the database decide who gets to refund, and the
+                    # amount comes from the row rather than from this object.
+                    with db_transaction.atomic():
+                        unspent = wallet.to_money(
+                            MicroGigPost.objects.filter(pk=self.pk).values_list(
+                                "balance", flat=True).first() or 0
+                        ) if self.pk else wallet.to_money(self.balance or 0)
+
+                        claimed = bool(self.pk) and bool(
+                            MicroGigPost.objects.filter(
+                                pk=self.pk, balance=unspent,
+                            ).exclude(balance=0).update(balance=0)
+                        )
+
+                        if claimed and unspent > 0:
+                            wallet.credit(
+                                self.user_id, unspent,
+                                reason="microgig_stop_refund:%s" % self.pk)
+                            self.user.refresh_from_db(fields=["balance"])
+
                     self.balance = 0
                     self.gig_status = "completed"
 
@@ -935,9 +993,20 @@ class ReferBonus(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk and not self.completed:
             self.completed = True
-            self.user.balance += self.amount
-            self.user.commission_earned += self.amount
-            self.user.save()
+            # `not self.pk` already stops this paying twice; the risk here was
+            # the full-row save discarding whatever else had just changed on the
+            # referrer's account. balance and commission_earned move in one
+            # statement so they can never disagree.
+            bonus = wallet.to_money(self.amount)
+            if bonus > 0:
+                with db_transaction.atomic():
+                    wallet.credit(
+                        self.user_id, bonus,
+                        reason="refer_bonus:%s" % self.user_id)
+                    User.objects.filter(pk=self.user_id).update(
+                        commission_earned=F("commission_earned") + bonus)
+                self.user.refresh_from_db(
+                    fields=["balance", "commission_earned"])
 
             # Create balance transaction record
             Balance.objects.create(
@@ -1008,25 +1077,71 @@ class MicroGigPostTask(models.Model):
             # The gig must actually be able to pay. Without these guards
             # gig.balance went negative while workers still accrued
             # pending_balance — real money against an unfunded gig.
-            if self.gig.filled_quantity >= self.gig.required_quantity:
-                raise ValidationError(
-                    "এই কাজের সব স্লট ইতিমধ্যে পূর্ণ হয়ে গেছে।"
+            # ONE STATEMENT DECIDES: funded, has a free slot, and take both.
+            #
+            # These were two Python checks followed by a read-modify-write on
+            # the gig. Two workers submitting at the same moment both read the
+            # same balance and the same filled_quantity, both passed, and the
+            # second save overwrote the first — the funding pot could be spent
+            # past zero and more submissions accepted than the gig had slots,
+            # with real pending_balance accruing against money that was not
+            # there. Putting both conditions in the WHERE clause makes the
+            # database the arbiter: the loser matches no rows.
+            price = wallet.to_money(self.gig.price)
+            with db_transaction.atomic():
+                reserved = MicroGigPost.objects.filter(
+                    pk=self.gig_id,
+                    balance__gte=price,
+                    filled_quantity__lt=F("required_quantity"),
+                ).update(
+                    balance=F("balance") - price,
+                    filled_quantity=F("filled_quantity") + 1,
                 )
-            if self.gig.balance < self.gig.price:
-                raise ValidationError(
-                    "এই কাজে পর্যাপ্ত ব্যালেন্স নেই — বিজ্ঞাপনদাতাকে টপ-আপ করতে হবে।"
-                )
-            self.gig.filled_quantity += 1
-            self.gig.balance -= self.gig.price
-            self.gig.save()
-            self.user.pending_balance += self.gig.price
-            self.user.save()
+                if not reserved:
+                    # Re-read to tell the worker which of the two it was.
+                    self.gig.refresh_from_db(
+                        fields=["balance", "filled_quantity", "required_quantity"])
+                    if self.gig.filled_quantity >= self.gig.required_quantity:
+                        raise ValidationError(
+                            "এই কাজের সব স্লট ইতিমধ্যে পূর্ণ হয়ে গেছে।"
+                        )
+                    raise ValidationError(
+                        "এই কাজে পর্যাপ্ত ব্যালেন্স নেই — বিজ্ঞাপনদাতাকে টপ-আপ করতে হবে।"
+                    )
+                # The reservation leaves the pot and lands in the worker's
+                # pending balance in the same transaction.
+                wallet.credit_pending(
+                    self.user_id, price,
+                    reason="microgig_reserve:%s" % self.gig_id)
+            self.gig.refresh_from_db(fields=["balance", "filled_quantity"])
+            self.user.refresh_from_db(fields=["pending_balance"])
         # Mark as completed if approved
-        if self.approved and not self.completed:
+        if self.approved and not self.completed and not is_new:
+            # CLAIM THE SETTLEMENT. `not self.completed` was read from memory,
+            # so two admins approving the same submission — or one clicking
+            # twice — both saw False and both paid. Measured: a single 50.00
+            # reservation produced 100.00 of payout. Flipping completed
+            # False -> True with a conditional UPDATE makes the database pick
+            # exactly one winner; the loser matches no rows and pays nothing.
+            price = wallet.to_money(self.gig.price)
+            with db_transaction.atomic():
+                claimed = MicroGigPostTask.objects.filter(
+                    pk=self.pk, completed=False,
+                ).update(completed=True)
+
+                if claimed:
+                    # pending -> balance, the escrow release this primitive
+                    # was written for. Its own pending_balance >= amount guard
+                    # is a second line of defence.
+                    wallet.move_pending(
+                        self.user_id, price, to_balance=True,
+                        reason="microgig_approve:%s" % self.pk)
+
             self.completed = True
-            self.user.balance += self.gig.price
-            self.user.pending_balance -= self.gig.price
-            self.user.save()
+            if not claimed:
+                # Another writer already settled this submission.
+                return
+            self.user.refresh_from_db(fields=["balance", "pending_balance"])
             if self.user.refer:
                 ReferBonus.objects.create(
                     user=self.user.refer,
@@ -1035,13 +1150,29 @@ class MicroGigPostTask(models.Model):
             # add balance
 
         # Reduce filled quantity and mark as completed if rejected
-        if self.rejected and not self.completed:
-            self.gig.filled_quantity -= 1
-            self.gig.balance += self.gig.price
-            self.gig.save()
+        if self.rejected and not self.completed and not is_new:
+            # Same claim, same token. Approve and reject compete for it, so a
+            # submission can be paid out or returned to the pot, never both.
+            price = wallet.to_money(self.gig.price)
+            with db_transaction.atomic():
+                claimed = MicroGigPostTask.objects.filter(
+                    pk=self.pk, completed=False,
+                ).update(completed=True)
+
+                if claimed:
+                    wallet.discard_pending(
+                        self.user_id, price,
+                        reason="microgig_reject:%s" % self.pk)
+                    MicroGigPost.objects.filter(pk=self.gig_id).update(
+                        balance=F("balance") + price,
+                        filled_quantity=F("filled_quantity") - 1,
+                    )
+
             self.completed = True
-            self.user.pending_balance -= self.gig.price
-            self.user.save()
+            if not claimed:
+                return
+            self.gig.refresh_from_db(fields=["balance", "filled_quantity"])
+            self.user.refresh_from_db(fields=["pending_balance"])
 
         # Call the original save method
         super(MicroGigPostTask, self).save(*args, **kwargs)
@@ -1183,16 +1314,23 @@ class Balance(models.Model):
             and is_new
             and not self.completed
             and not self.approved
+            # A row born already rejected must not be held: the refund below
+            # can only claim a row that exists in the database, so holding here
+            # would debit money that nothing would ever give back.
+            and not self.rejected
         ):
             # Held once, when the request is first created. Without the is_new
             # guard any re-save before an admin approved it deducted again, and
             # without the conditional update the balance could go negative.
-            amount = Decimal(self.payable_amount)
+            #
+            # payable_amount is the authoritative held figure — the refund path
+            # below must credit back exactly this, and nothing else.
+            amount = wallet.to_money(self.payable_amount)
             if amount <= 0:
                 raise ValidationError("উত্তোলনের পরিমাণ শূন্যের বেশি হতে হবে।")
-            if not User.objects.filter(
-                pk=self.user_id, balance__gte=amount
-            ).update(balance=F("balance") - amount):
+            if not wallet.debit(
+                self.user_id, amount, reason="withdraw_hold:%s" % (self.pk or "new")
+            ):
                 raise ValidationError("পর্যাপ্ত ব্যালেন্স নেই।")
             self.user.refresh_from_db(fields=["balance"])
 
@@ -1205,9 +1343,30 @@ class Balance(models.Model):
             except Exception as e:
                 print(f"Error sending withdraw emails: {str(e)}")
         if self.transaction_type == "withdraw" and self.approved:
+            # Approval moves no money — the amount was already held when the
+            # request was created; approving simply means it was paid out
+            # off-platform. There is nothing to write to the user row.
+            #
+            # `self.user.save()` used to be here, and it was actively harmful:
+            # it writes EVERY column of a User object that may have been loaded
+            # before some other transaction changed the balance, so approving a
+            # withdrawal could silently roll a concurrent deposit or earning
+            # back to a stale figure.
+            #
+            # Approval still has to CLAIM the row, even though it moves no
+            # money. A withdrawal settles exactly once — either it is paid out
+            # or it is refunded, never both. Without this claim, one admin
+            # approving while another rejects leaves the reject free to take
+            # the token and refund money that was simultaneously being paid
+            # out by hand. Taking it here makes the two mutually exclusive.
+            if not is_new:
+                Balance.objects.filter(
+                    pk=self.pk,
+                    transaction_type="withdraw",
+                    completed=False,
+                ).update(completed=True)
             self.completed = True
             self.approved = True
-            self.user.save()
 
             # Create notification for successful withdrawal approval
             try:
@@ -1228,10 +1387,58 @@ class Balance(models.Model):
                     send_withdraw_approved_email(self.user, self.payable_amount, str(self.id))
             except Exception as e:
                 print(f"Error sending withdraw approved email: {str(e)}")
-        if self.transaction_type == "withdraw" and self.rejected and not self.completed:
+        if (
+            self.transaction_type == "withdraw"
+            and self.rejected
+            and not self.completed
+            # Only a row that already exists can be claimed atomically below.
+            and not is_new
+        ):
+            # REFUND — the money the user is owed back.
+            #
+            # This credited `self.amount`, while the hold above debits
+            # `payable_amount`. They are two different columns (both default
+            # 0.00) and nothing on any withdrawal path ever populates `amount`:
+            # neither client sends it and postBalance never sets it. So a
+            # rejected withdrawal refunded ZERO — the user's held money was
+            # gone, `completed` was set so it could never be retried, and they
+            # received an email saying they had been refunded.
+            #
+            # The refund now comes from the same authoritative column the hold
+            # debited, and can never come from the client.
+            refund = wallet.to_money(self.payable_amount)
+
+            # EXACTLY-ONCE. The old guard was the in-memory `not
+            # self.completed`, which two concurrent saves both read as False —
+            # both would refund. Claiming the row with a conditional UPDATE
+            # makes the database the arbiter: whichever save flips
+            # completed=False -> True is the one that pays, and the loser
+            # matches zero rows and pays nothing.
+            # NOTE the filter deliberately does NOT include `rejected=True`.
+            # An admin ticking the box sets it in memory only; the row is not
+            # written until super().save() at the end of this method, so the
+            # database still reads rejected=False right here. Filtering on it
+            # would match zero rows and silently never refund anyone.
+            # `completed` is the idempotency token and the only correct gate.
+            with db_transaction.atomic():
+                claimed = Balance.objects.filter(
+                    pk=self.pk,
+                    transaction_type="withdraw",
+                    completed=False,
+                ).update(completed=True)
+
+                if claimed and refund > 0:
+                    # Inside the same transaction: if the credit raises, the
+                    # claim rolls back with it and the refund can be retried
+                    # rather than being lost with the row marked settled.
+                    wallet.credit(
+                        self.user_id, refund,
+                        reason="withdraw_refund:%s" % self.pk,
+                    )
+
             self.completed = True
-            self.user.balance += self.amount
-            self.user.save()
+            if claimed:
+                self.user.refresh_from_db(fields=["balance"])
 
             # Notify the user their withdrawal was declined + refunded
             try:
@@ -1244,11 +1451,41 @@ class Balance(models.Model):
             except Exception as e:
                 print(f"Error sending withdraw rejected email: {e}")
         if self.transaction_type == "deposit":
-            self.user.balance += self.payable_amount
+            # This branch had NO guard of any kind: every call to save() on a
+            # deposit row credited the balance again. Opening a completed
+            # deposit in the admin and pressing Save minted the whole amount a
+            # second time. Found by the withdrawal-refund tests in this batch.
+            #
+            # Same exactly-once gate as the refund above: a brand-new row
+            # credits (it cannot be claimed — it is not in the database until
+            # super().save() at the end of this method), and any later save has
+            # to win the completed=False -> True flip to credit anything.
+            deposit_amount = wallet.to_money(self.payable_amount)
+            if is_new:
+                credit_now = True
+            else:
+                credit_now = bool(
+                    Balance.objects.filter(
+                        pk=self.pk,
+                        transaction_type="deposit",
+                        completed=False,
+                    ).update(completed=True)
+                )
+
+            if credit_now and deposit_amount > 0:
+                wallet.credit(
+                    self.user_id, deposit_amount,
+                    reason="deposit:%s" % (self.pk or "new"),
+                )
+                self.user.refresh_from_db(fields=["balance"])
+
             self.completed = True
             self.approved = True
             self.bank_status = "completed"  # Mark as completed for instant deposit
-            self.user.save()
+            # No self.user.save() here — wallet.credit() already wrote the
+            # balance atomically, and writing the whole User row back from a
+            # stale in-memory object would undo it along with anything else
+            # that changed on that user in the meantime.
 
             # Create notification for successful deposit
             try:
@@ -1804,40 +2041,63 @@ class DiamondTransaction(models.Model):
     def save(self, *args, **kwargs):
         # Diamond purchase from balance
         if self.transaction_type == "purchase" and not self.completed:
-            if self.user.balance >= self.cost:
-                self.user.balance -= self.cost
-                self.user.diamond_balance += self.amount
-                self.completed = True
-                self.approved = True
-                self.user.save()
-            else:
+            # ONE STATEMENT TAKES THE MONEY AND GRANTS THE DIAMONDS.
+            #
+            # This checked `balance >= cost` in Python and then wrote both
+            # columns through a full-row user.save(). Two purchases interleaved
+            # there both passed the check and both wrote, so one payment bought
+            # two packs — and the stale row write could undo a deposit that
+            # landed while the buyer was choosing.
+            #
+            # The live HTTP endpoint happens to hold a select_for_update() on
+            # the user row, which is why buyers could not trigger this; the
+            # Django admin, where these rows can also be created, holds no such
+            # lock. The safety belongs in the model, not in one caller's memory.
+            if not wallet.buy_diamonds(
+                self.user_id, self.cost, self.amount,
+                reason="diamond_purchase:%s" % (self.pk or "new"),
+            ):
                 raise ValidationError("Insufficient balance for diamond purchase")
+            self.completed = True
+            self.approved = True
+            self.user.refresh_from_db(fields=["balance", "diamond_balance"])
 
         # Gift diamonds to another user
         if self.transaction_type == "gift" and self.to_user and not self.completed:
-            if self.user.diamond_balance >= self.amount:
-                self.user.diamond_balance -= self.amount
-                self.to_user.diamond_balance += self.amount
-                self.completed = True
-                self.approved = True
-                self.user.save()
-                self.to_user.save()
-            else:
-                raise ValidationError("Insufficient diamond balance for gifting")
+            # Diamonds are a soft currency, so this is lower-stakes than the
+            # wallet — but it was still check-then-act with two full-row saves,
+            # which could gift the same diamonds twice and clobber whatever else
+            # had changed on either account. The conditional UPDATE on the
+            # sender is both the balance check and the deduction.
+            with db_transaction.atomic():
+                sent = User.objects.filter(
+                    pk=self.user_id, diamond_balance__gte=self.amount,
+                ).update(diamond_balance=F("diamond_balance") - self.amount)
+                if not sent:
+                    raise ValidationError("Insufficient diamond balance for gifting")
+                User.objects.filter(pk=self.to_user_id).update(
+                    diamond_balance=F("diamond_balance") + self.amount)
+            self.completed = True
+            self.approved = True
+            self.user.refresh_from_db(fields=["diamond_balance"])
+            self.to_user.refresh_from_db(fields=["diamond_balance"])
 
         # Admin adjustment
         if self.transaction_type == "admin" and not self.completed:
-            self.user.diamond_balance += self.amount  # Can be positive or negative
+            # Deliberately unguarded on sign — an adjustment may be negative.
+            User.objects.filter(pk=self.user_id).update(
+                diamond_balance=F("diamond_balance") + self.amount)
             self.completed = True
             self.approved = True
-            self.user.save()
+            self.user.refresh_from_db(fields=["diamond_balance"])
 
         # Bonus diamonds
         if self.transaction_type == "bonus" and not self.completed:
-            self.user.diamond_balance += self.amount
+            User.objects.filter(pk=self.user_id).update(
+                diamond_balance=F("diamond_balance") + self.amount)
             self.completed = True
             self.approved = True
-            self.user.save()
+            self.user.refresh_from_db(fields=["diamond_balance"])
 
         # Mark as completed if approved
         if self.approved and not self.completed:

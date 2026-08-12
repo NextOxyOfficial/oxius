@@ -16,7 +16,8 @@ queries. An exact number would go stale the first time anybody added a field.
 """
 from django.contrib.auth import get_user_model
 from django.db import connection
-from django.test import TestCase
+from django.core.cache import cache
+from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APIClient
 
@@ -34,8 +35,23 @@ from .models import (
 User = get_user_model()
 
 
+# These tests count queries, and the ranked feed answers some of them from a
+# five-minute relationship cache. The project's real cache is Redis on a shared
+# database that Django never clears between tests — so whether a lookup was a
+# hit or a miss depended on what earlier tests, and even earlier RUNS, happened
+# to leave behind. The count was therefore stable only by luck: it passed for
+# months and went red the moment the suite grew, with nothing in the feed
+# changed. Pinning a private in-memory cache and clearing it per test makes the
+# measurement depend on the feed alone.
+@override_settings(CACHES={
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "feed-query-tests",
+    }
+})
 class FeedQueryCountTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.viewer = User.objects.create_user(
             username='fq0', email='fq0@example.com', password='x',
             first_name='Viewer', phone='+880100003001')

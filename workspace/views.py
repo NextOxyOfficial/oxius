@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -6,8 +8,200 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import get_user_model
 from django.db.models import F, Q
 
+# The single audited way to move money. Settlement must not grow a second one.
+from base import wallet
+
 User = get_user_model()
 from django.utils import timezone
+
+# These were `print()`. On a Windows console (cp1252) printing the emoji they
+# carried raised UnicodeEncodeError, and because print() propagates, the
+# exception escaped send_workspace_notification and turned order completion and
+# cancellation into HTTP 500s — locally only; production stdout is UTF-8, so it
+# never fired there. The class of bug is wider than the emoji: these lines also
+# print user-supplied content and exception text, which on this platform can
+# carry Bengali. logging cannot take an endpoint down that way — a handler that
+# fails prints its own diagnostic and the caller continues.
+logger = logging.getLogger(__name__)
+
+
+def claim_escrow_hold(order, *, settle_as):
+    """Consume an order's pending escrow record and return what it held.
+
+    Every path that releases escrow — buyer refund, seller payout, admin
+    dispute resolution — goes through here, so there is exactly one definition
+    of "who is allowed to pay this out". Flipping the row out of 'pending' with
+    a conditional UPDATE is the token: of any number of concurrent releasers,
+    exactly one changes a row and exactly one may move money.
+
+    `settle_as` records WHY it was consumed ('refunded' or 'completed'); it has
+    no bearing on the claim itself.
+
+    Returns the held Decimal, or None when there is nothing to release.
+    """
+    from .models import GigOrderTransaction
+
+    hold = GigOrderTransaction.objects.filter(
+        order=order, transaction_type='hold', status='pending',
+    ).first()
+    if hold is None:
+        return None
+
+    if not GigOrderTransaction.objects.filter(
+        pk=hold.pk, status='pending',
+    ).update(status=settle_as):
+        # Lost the race; the winner owns the money.
+        return None
+
+    return hold.amount
+
+
+def settle_dispute(dispute, *, outcome, resolved_by=None):
+    """Resolve a dispute once, paying out the escrow it is about.
+
+    `outcome` is one of 'resolved_buyer', 'resolved_seller', 'resolved_partial'.
+
+    Returns None if somebody else already settled it, otherwise a dict of what
+    THIS call actually moved: {'held', 'buyer', 'seller'}. Callers must use
+    those figures rather than the form's, because a partial split is clamped to
+    the escrow — telling a buyer they were refunded what they asked for, when
+    they were refunded what was held, is its own kind of wrong.
+
+    WHY THIS EXISTS
+
+    Dispute resolution was six read-modify-write mutations spread over two
+    entry points that duplicate each other — the bulk admin actions and
+    `save_model` handling a directly edited status. None of them claimed
+    anything, so re-running an action paid again: measured, a 600.00 escrow
+    paid out 1200.00. The partial branch was worse — it refunded the
+    admin-entered `refund_amount` and released `order.price` minus that figure,
+    neither checked against the escrow, so entering 99999.00 against a 600.00
+    hold paid out 99999.00.
+
+    None of the six consumed the `hold` row either, leaving the escrow ledger
+    claiming money was still held after it had been paid out.
+
+    Two claims here, in one transaction: the dispute row (so one resolution
+    wins) and the escrow hold (so one payout happens). The amount comes from
+    the hold, never from the order or the form.
+    """
+    from decimal import Decimal
+
+    from django.db import transaction as db_transaction
+
+    from .models import GigOrder, GigOrderTransaction, OrderDispute
+
+    if outcome not in ('resolved_buyer', 'resolved_seller', 'resolved_partial'):
+        raise ValueError('Unknown dispute outcome: %r' % (outcome,))
+
+    with db_transaction.atomic():
+        # 1. Claim the dispute. Only an unresolved one can be resolved, and
+        #    only one caller gets to do it.
+        claimed = OrderDispute.objects.filter(
+            pk=dispute.pk, status__in=['open', 'under_review'],
+        ).update(
+            status=outcome,
+            resolved_by=resolved_by,
+            resolved_at=timezone.now(),
+        )
+        if not claimed:
+            return None
+
+        order = dispute.order
+
+        # 2. Claim the escrow. A resolution whose order was already settled by
+        #    complete/cancel/decline finds nothing here and moves no money —
+        #    the dispute still closes, which is the correct bookkeeping.
+        settle_as = 'refunded' if outcome == 'resolved_buyer' else 'completed'
+        held = claim_escrow_hold(order, settle_as=settle_as)
+        held = Decimal('0') if held is None else held
+
+        buyer_gets = Decimal('0')
+        seller_gets = Decimal('0')
+
+        if outcome == 'resolved_buyer':
+            buyer_gets = held
+            new_status = 'cancelled'
+        elif outcome == 'resolved_seller':
+            seller_gets = held
+            new_status = 'completed'
+        else:
+            # The split is bounded by the escrow at both ends: a negative or
+            # oversized refund_amount can only ever redistribute what is
+            # actually held, never create or destroy any of it.
+            requested = dispute.refund_amount or Decimal('0')
+            buyer_gets = min(max(requested, Decimal('0')), held)
+            seller_gets = held - buyer_gets
+            new_status = 'completed'
+
+        if buyer_gets > 0:
+            wallet.credit(order.buyer_id, buyer_gets,
+                          reason='dispute_%s_buyer:%s' % (outcome, dispute.pk))
+            GigOrderTransaction.objects.create(
+                order=order, user=order.buyer, amount=buyer_gets,
+                transaction_type='refund', status='completed',
+                description='Dispute resolution refund for order #%s'
+                            % str(order.id)[:8])
+        if seller_gets > 0:
+            wallet.credit(order.seller_id, seller_gets,
+                          reason='dispute_%s_seller:%s' % (outcome, dispute.pk))
+            GigOrderTransaction.objects.create(
+                order=order, user=order.seller, amount=seller_gets,
+                transaction_type='release', status='completed',
+                description='Dispute resolution payout for order #%s'
+                            % str(order.id)[:8])
+
+        fields = {'status': new_status, 'updated_at': timezone.now()}
+        if new_status == 'completed':
+            fields['completed_at'] = timezone.now()
+        GigOrder.objects.filter(pk=order.pk).update(**fields)
+
+    logger.info('Dispute %s settled as %s: buyer=%s seller=%s of %s held',
+                dispute.pk, outcome, buyer_gets, seller_gets, held)
+    dispute.refresh_from_db()
+    return {'held': held, 'buyer': buyer_gets, 'seller': seller_gets}
+
+
+def release_escrow_to_buyer(order, *, reason):
+    """Return a cancelled order's escrow to its buyer, at most once.
+
+    THE AMOUNT IS NOT GUESSED AND NEVER COMES FROM THE CLIENT. When an order is
+    placed the buyer's balance is debited and a `hold` GigOrderTransaction is
+    written with the amount that actually left their wallet. That row is the
+    only record of what is owed back, so it is what the refund is derived from
+    — not the request, and not `order.price`, which is a live figure that can
+    drift from what was really taken.
+
+    Flipping that row from 'pending' to 'refunded' is also the idempotency
+    token. It is a conditional UPDATE, so of any number of concurrent declines
+    exactly one changes a row and exactly one pays. Its absence is equally
+    meaningful: no pending hold means nothing is being held — the order was
+    free, or the escrow was already released — and nothing may be paid out.
+
+    Returns the refunded amount, or None when there was nothing to refund.
+    """
+    from .models import GigOrderTransaction
+
+    amount = claim_escrow_hold(order, settle_as='refunded')
+    if amount is None:
+        # No escrow outstanding. A free gig, or somebody already released it.
+        return None
+    if not amount or amount <= 0:
+        # The hold is settled, but a zero hold must not mint anything, and
+        # wallet.credit refuses non-positive amounts by design.
+        return None
+
+    wallet.credit(order.buyer_id, amount, reason='%s:%s' % (reason, order.id))
+
+    GigOrderTransaction.objects.create(
+        order=order,
+        user=order.buyer,
+        amount=amount,
+        transaction_type='refund',
+        status='completed',
+        description='Refund for order #%s' % str(order.id)[:8],
+    )
+    return amount
 
 
 def send_workspace_notification(recipient_user, title, body, data=None):
@@ -38,15 +232,17 @@ def send_workspace_notification(recipient_user, title, body, data=None):
                 success_count += 1
         
         if tokens:
-            print(f'📤 Workspace notification sent to {recipient_user.email} ({success_count}/{len(list(tokens))} devices)')
+            logger.info('Workspace notification sent to %s (%s/%s devices)',
+                        recipient_user.email, success_count, len(list(tokens)))
         else:
-            print(f'⚠️ No FCM tokens found for user: {recipient_user.email}')
+            logger.warning('No FCM tokens found for user: %s', recipient_user.email)
             
         return success_count > 0
     except Exception as e:
-        print(f'❌ Error sending workspace notification: {e}')
-        import traceback
-        traceback.print_exc()
+        # logger.exception already records the full traceback, so print_exc()
+        # only duplicated it — while remaining the last statement in this
+        # function that could raise into the caller and 500 a settlement.
+        logger.exception('Error sending workspace notification: %s', e)
         return False
 
 from .models import (
@@ -131,10 +327,12 @@ class GigCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
-        print(f"📝 GigCreateView: Received data: {request.data}")
+        # debug, not info: this is a whole request body and can carry personal
+        # data. It stays available when someone turns the level up deliberately.
+        logger.debug("GigCreateView: received data: %s", request.data)
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
-            print(f"❌ GigCreateView: Validation errors: {serializer.errors}")
+            logger.warning("GigCreateView: validation errors: %s", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         # Gig is created with status='pending' by default (set in model)
@@ -463,7 +661,7 @@ def create_order(request, gig_id):
         from base.email_service import send_gig_order_placed_email
         send_gig_order_placed_email(buyer, gig.user, gig.title, price, order.id)
     except Exception as e:
-        print(f"Error sending gig order email: {e}")
+        logger.exception("Error sending gig order email: %s", e)
     
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({
@@ -499,17 +697,44 @@ def complete_order_payment(request, order_id):
     
     try:
         with db_transaction.atomic():
-            # Update order status
-            order.status = 'completed'
-            order.completed_at = timezone.now()
-            order.save(update_fields=['status', 'completed_at'])
-            
+            # CLAIM THE ORDER FIRST, AND LET THE DATABASE DECIDE.
+            #
+            # The status check above is a courtesy that produces a friendly
+            # error; it cannot be the gate. It ran against an unlocked read, so
+            # six concurrent clicks all saw 'delivered', all passed it, and all
+            # paid — 2000.00 released from a single 500.00 escrow hold, four of
+            # them answering 200. `transaction.atomic()` did not help: those are
+            # six separate transactions, each individually valid. Nor did the
+            # F(): it stops a payout being *overwritten*, which is precisely why
+            # the duplicates added up cleanly instead of colliding.
+            #
+            # This UPDATE is the gate. `status='delivered'` in the WHERE clause
+            # means whichever request flips delivered -> completed is the only
+            # one that matches a row; the rest update nothing and pay nothing.
+            # The claim and the payout share one transaction, so if the credit
+            # raises, the order goes back to 'delivered' and can be retried
+            # rather than being marked paid while the seller got nothing.
+            claimed = GigOrder.objects.filter(
+                pk=order.pk, status='delivered',
+            ).update(status='completed', completed_at=timezone.now())
+
+            if not claimed:
+                return Response(
+                    {'error': 'Order must be delivered before completion'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # The in-memory object still says 'delivered'; the response
+            # serialises it further down.
+            order.refresh_from_db(fields=['status', 'completed_at'])
+
             # Release payment to seller
             seller = order.seller
-            # F() so a concurrent balance write can't overwrite this payout.
-            User.objects.filter(pk=seller.pk).update(
-                balance=F('balance') + order.price
-            )
+            if order.price > 0:
+                wallet.credit(
+                    seller.pk, order.price,
+                    reason='gig_release:%s' % order.id,
+                )
             seller.refresh_from_db(fields=['balance'])
             
             # Update hold transaction to completed
@@ -557,7 +782,7 @@ def complete_order_payment(request, order_id):
         from base.email_service import send_gig_order_completed_email
         send_gig_order_completed_email(order.buyer, seller, order.gig.title, order.price, order.id)
     except Exception as e:
-        print(f"Error sending gig completion email: {e}")
+        logger.exception("Error sending gig completion email: %s", e)
     
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({
@@ -590,16 +815,35 @@ def cancel_order(request, order_id):
     
     try:
         with db_transaction.atomic():
+            # CLAIM BEFORE REFUNDING — note the original order of these two
+            # steps. The refund ran FIRST and the status was written after, so
+            # concurrent cancels did not even need to interleave narrowly: five
+            # clicks refunded 2000.00 against a single 500.00 hold, straight
+            # into the buyer's own wallet. Both parties may cancel, so a buyer
+            # and a seller pressing it together hit the same window.
+            #
+            # Only a request that moves the row out of a cancellable status is
+            # allowed to pay, and it takes that right atomically.
+            claimed = GigOrder.objects.filter(
+                pk=order.pk, status__in=['pending', 'in_progress'],
+            ).update(status='cancelled')
+
+            if not claimed:
+                return Response(
+                    {'error': 'Cannot cancel order in current status'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            order.refresh_from_db(fields=['status'])
+
             # Refund buyer
             buyer = order.buyer
-            User.objects.filter(pk=buyer.pk).update(
-                balance=F('balance') + order.price
-            )
+            if order.price > 0:
+                wallet.credit(
+                    buyer.pk, order.price,
+                    reason='gig_refund:%s' % order.id,
+                )
             buyer.refresh_from_db(fields=['balance'])
-            
-            # Update order status
-            order.status = 'cancelled'
-            order.save(update_fields=['status'])
             
             # Update hold transaction
             GigOrderTransaction.objects.filter(
@@ -898,11 +1142,13 @@ def update_order_status(request, order_id, action):
             'from_status': ['in_progress', 'revision'],
             'to_status': 'delivered'
         },
-        'complete': {
-            'allowed_by': 'buyer',
-            'from_status': ['delivered'],
-            'to_status': 'completed'
-        },
+        # 'complete' deliberately absent. It used to move an order to
+        # 'completed' from here WITHOUT paying the seller — unreachable only
+        # because urls.py declares the explicit `complete/` route (which does
+        # pay, via complete_order_payment) before this catch-all. Reordering
+        # that file would have silently started settling orders and keeping the
+        # seller's money. Removing the action means the worst a reordering can
+        # do is answer "Invalid action".
         'reopen': {
             'allowed_by': 'buyer',
             'from_status': ['delivered'],
@@ -932,9 +1178,52 @@ def update_order_status(request, order_id, action):
             'error': f'Cannot {action} order with status "{order.status}"'
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Update status
-    order.status = action_config['to_status']
-    order.save(update_fields=['status', 'updated_at'])
+    # CLAIM THE TRANSITION, THEN RELEASE THE ESCROW.
+    #
+    # This route is `orders/<uuid>/<str:action>/`, the catch-all beneath
+    # `complete/` and `cancel/`. Those two carry their own paying handlers, so
+    # `decline` was the one live action here that ends a PAID order: the seller
+    # declined, the status became 'cancelled', HTTP 200 came back — and the
+    # money the buyer had already paid was never returned. Measured on this
+    # code: buyer balance 0.00 after a 500.00 order was declined. That is a
+    # legitimate buyer permanently losing what they paid.
+    #
+    # The status write was also a plain read-modify-write over an unlocked
+    # read, the same shape that let concurrent completions pay a seller four
+    # times. Both problems close together: the conditional UPDATE decides who
+    # owns the transition, and only that request releases the escrow. The two
+    # share one transaction, so a failed refund rolls the status back rather
+    # than leaving the order cancelled with the money still gone.
+    from django.db import transaction as db_transaction
+
+    refunded = None
+    with db_transaction.atomic():
+        claimed = GigOrder.objects.filter(
+            pk=order.pk, status__in=action_config['from_status'],
+        ).update(
+            status=action_config['to_status'],
+            # .update() bypasses auto_now, so it is set by hand here.
+            updated_at=timezone.now(),
+        )
+
+        if not claimed:
+            # Someone else moved the order between the read above and here.
+            order.refresh_from_db(fields=['status'])
+            return Response({
+                'error': f'Cannot {action} order with status "{order.status}"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        order.refresh_from_db(fields=['status', 'updated_at'])
+
+        # Any transition that ends the order as 'cancelled' leaves the buyer's
+        # money in escrow. Keyed on the destination rather than on the action
+        # name so a new cancelling action cannot quietly reintroduce this.
+        if action_config['to_status'] == 'cancelled':
+            refunded = release_escrow_to_buyer(
+                order, reason='gig_%s_refund' % action)
+            if refunded is not None:
+                logger.info('Order %s %s: refunded %s to buyer %s',
+                            order.id, action, refunded, order.buyer_id)
     
     # Create a system message in the order chat
     action_messages = {
@@ -995,7 +1284,7 @@ def update_order_status(request, order_id, action):
         if recipient.email:
             send_gig_order_status_email(recipient, order.gig.title, order.id, action_config['to_status'], actor_name)
     except Exception as e:
-        print(f"Error sending gig order status email: {e}")
+        logger.exception("Error sending gig order status email: %s", e)
     
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({

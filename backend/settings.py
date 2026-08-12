@@ -39,6 +39,16 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-only-do-not-use-in-pro
 # DEBUG=True adds ~2-3s latency per request (full query logging, verbose errors).
 DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1", "yes", "on")
 
+# Error tracking. A no-op unless SENTRY_DSN is set, so this is safe here and in
+# every environment that does not have one. See backend/observability.py for
+# what is scrubbed before anything is transmitted.
+try:
+    from .observability import init_sentry
+    init_sentry()
+except Exception:
+    # Observability must never be the reason the site fails to boot.
+    pass
+
 _local_hosts = ["localhost", "127.0.0.1", "10.0.2.2"]
 _prod_hosts = ["adsyclub.com", "www.adsyclub.com"]
 # Loopback addresses are always safe — they are unreachable from the internet.
@@ -78,6 +88,7 @@ INSTALLED_APPS = [
     "zonal",  # Zonal office dashboard (per-city agents)
     "ads",  # Server-controlled ad monetization (AppLovin MAX)
     "workspace",  # Workspace gigs system
+    "payments",  # Exactly-once claims for externally-verified payments
     "referral_rewards",  # New Year referral reward program
     "raise_up",  # Raise Up crowdfunding system
     "rideshare",  # Ride share MVP

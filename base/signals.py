@@ -1,6 +1,17 @@
+import logging
+
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import AdminNotice, ClassifiedCategoryPost, FCMToken, MicroGigPost
+
+# These were print(). Eleven of them carried emoji, and several interpolate
+# user-supplied text that can be Bengali. On a Windows console (cp1252) print()
+# raises UnicodeEncodeError, and because this runs in a post_save receiver the
+# exception propagates out of MicroGigPost.save() — so merely creating a gig
+# blew up. Production stdout is UTF-8 so it never fired there, but it made the
+# whole micro-gig money path untestable locally. logging cannot escape into the
+# caller this way.
+logger = logging.getLogger(__name__)
 
 
 @receiver(pre_save, sender=MicroGigPost)
@@ -22,22 +33,22 @@ def handle_gig_status_change(sender, instance, created, **kwargs):
     Signal to handle gig status changes
     Create notification when gig is approved (status changed from 'pending' to 'approved')
     """
-    print(f"=== GIG STATUS SIGNAL TRIGGERED ===")
-    print(f"Created: {created}")
-    print(f"Instance ID: {instance.id}")
-    print(f"Current gig_status: {instance.gig_status}")
-    print(f"Previous gig_status: {getattr(instance, '_previous_gig_status', 'Unknown')}")
-    print(f"User: {instance.user}")
+    logger.debug(f"=== GIG STATUS SIGNAL TRIGGERED ===")
+    logger.debug(f"Created: {created}")
+    logger.debug(f"Instance ID: {instance.id}")
+    logger.debug(f"Current gig_status: {instance.gig_status}")
+    logger.debug(f"Previous gig_status: {getattr(instance, '_previous_gig_status', 'Unknown')}")
+    logger.debug(f"User: {instance.user}")
     
     # Only process if this is an update (not a new creation)
     if not created and hasattr(instance, '_previous_gig_status'):
         previous_status = instance._previous_gig_status
         current_status = instance.gig_status
         
-        print(f"Processing gig status change: {previous_status} -> {current_status}")
+        logger.debug(f"Processing gig status change: {previous_status} -> {current_status}")
           # Check if status changed from pending to approved
         if previous_status == 'pending' and current_status == 'approved':
-            print(f"✅ Gig status changed to approved! Creating notification...")
+            logger.debug(f"Gig status changed to approved! Creating notification...")
             try:
                 # Check if notification already exists for this gig to prevent duplicates
                 from .models import AdminNotice
@@ -48,7 +59,7 @@ def handle_gig_status_change(sender, instance, created, **kwargs):
                 ).first()
                 
                 if existing_notification:
-                    print(f"⚠️ Notification already exists for gig {instance.id}, skipping creation")
+                    logger.debug(f"Notification already exists for gig {instance.id}, skipping creation")
                     return
                 
                 from .views import create_gig_approved_notification
@@ -58,16 +69,16 @@ def handle_gig_status_change(sender, instance, created, **kwargs):
                     gig_title=instance.title,
                     reference_id=str(instance.id)  # Pass gig ID as reference
                 )
-                print(f"✅ Successfully created approval notification: {notification.title}")
-                print(f"Notification ID: {notification.id}")
+                logger.debug(f"Successfully created approval notification: {notification.title}")
+                logger.debug(f"Notification ID: {notification.id}")
             except Exception as e:
-                print(f"❌ Error creating gig approval notification: {e}")
+                logger.error(f"Error creating gig approval notification: {e}")
                 import traceback
                 traceback.print_exc()
         
         # Check if status changed from pending to rejected
         elif previous_status == 'pending' and current_status == 'rejected':
-            print(f"❌ Gig status changed to rejected! Creating notification...")
+            logger.debug(f"Gig status changed to rejected! Creating notification...")
             try:
                 # Check if notification already exists for this gig to prevent duplicates
                 from .models import AdminNotice
@@ -78,7 +89,7 @@ def handle_gig_status_change(sender, instance, created, **kwargs):
                 ).first()
                 
                 if existing_notification:
-                    print(f"⚠️ Rejection notification already exists for gig {instance.id}, skipping creation")
+                    logger.debug(f"Rejection notification already exists for gig {instance.id}, skipping creation")
                     return
                 
                 from .views import create_gig_rejected_notification
@@ -88,21 +99,21 @@ def handle_gig_status_change(sender, instance, created, **kwargs):
                     gig_title=instance.title,
                     reference_id=str(instance.id)  # Pass gig ID as reference
                 )
-                print(f"✅ Successfully created rejection notification: {notification.title}")
-                print(f"Notification ID: {notification.id}")
+                logger.debug(f"Successfully created rejection notification: {notification.title}")
+                logger.debug(f"Notification ID: {notification.id}")
             except Exception as e:
-                print(f"❌ Error creating gig rejection notification: {e}")
+                logger.error(f"Error creating gig rejection notification: {e}")
                 import traceback
                 traceback.print_exc()
         else:
-            print(f"ℹ️ No notification needed for gig status change: {previous_status} -> {current_status}")
+            logger.debug(f"No notification needed for gig status change: {previous_status} -> {current_status}")
     else:
         if created:
-            print(f"ℹ️ New gig created with status: {instance.gig_status}")
+            logger.debug(f"New gig created with status: {instance.gig_status}")
         else:
-            print(f"ℹ️ Update without previous status tracking")
+            logger.debug(f"Update without previous status tracking")
     
-    print(f"=== END GIG STATUS SIGNAL ===\n")
+    logger.debug(f"=== END GIG STATUS SIGNAL ===\n")
 
 
 SITE = "https://adsyclub.com"
@@ -191,4 +202,4 @@ def _notify_service_approved(sender, instance, created, **kwargs):
                 reference_id=str(instance.id),
             )
         except Exception as e:
-            print(f"Error creating service approved notice: {e}")
+            logger.error(f"Error creating service approved notice: {e}")

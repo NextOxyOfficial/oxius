@@ -6,6 +6,8 @@ import logging
 from datetime import timedelta
 
 from django.conf import settings
+from django.db import IntegrityError
+from django.db import transaction as db_transaction
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -156,11 +158,52 @@ def iap_verify(request):
                 {"success": False, "error": "purchase not completed"}, status=402
             )
 
+    # ── claim the token before granting ─────────────────────────────────────
+    # The row is INSERTed here, before any diamonds move. `purchase_token` is
+    # unique, so of N concurrent requests carrying the same token exactly one
+    # INSERT succeeds; the rest raise IntegrityError and must not grant.
+    #
+    # This ordering is the whole fix. Previously the row was saved AFTER
+    # grants.grant(), so the unique constraint fired on a purchase that had
+    # already been paid out: every concurrent request granted its diamonds and
+    # only then collided, turning one payment into N diamond packs (and a 500
+    # for the losers).
+    #
+    # Verification happens above, before the claim, so a Google outage leaves
+    # no row behind and the buyer can simply retry.
+    try:
+        with db_transaction.atomic():
+            if purchase.pk and not purchase._state.adding:
+                # A row already exists (an earlier failed attempt). Take it only
+                # if it has not been granted — a conditional UPDATE, so two
+                # retries racing each other still produce one winner.
+                claimed = bool(
+                    IapPurchase.objects.filter(pk=purchase.pk)
+                    .exclude(status="granted")
+                    .update(status="granted")
+                )
+            else:
+                purchase.status = "granted"
+                purchase.save()
+                claimed = True
+    except IntegrityError:
+        # Lost the insert race: another request owns this token and is granting
+        # (or already has). Report success without granting anything.
+        logger.info("[iap] token already claimed concurrently; not granting again")
+        return Response({"success": True, "status": "already_granted"})
+
+    if not claimed:
+        logger.info("[iap] purchase already granted by a concurrent request")
+        return Response({"success": True, "status": "already_granted"})
+
     granted = grants.grant(
         purchase, product, google_data, amount=request.data.get("amount")
     )
     purchase.raw = google_data
-    purchase.status = "granted" if granted else "failed"
+    if not granted:
+        # Hand the claim back so a retry can grant. Leaving it "granted" after a
+        # failed grant would mean the buyer paid and can never be credited.
+        purchase.status = "failed"
     purchase.save()
 
     if granted:

@@ -909,21 +909,19 @@ class OrderDisputeAdmin(admin.ModelAdmin):
     def resolve_for_buyer(self, request, queryset):
         from .views import send_workspace_notification
         
+        from .views import settle_dispute
+
         for dispute in queryset.filter(status__in=['open', 'under_review']):
-            # Refund buyer
             order = dispute.order
-            order.buyer.balance += order.price
-            order.buyer.save(update_fields=['balance'])
-            
-            # Update order and dispute status
-            order.status = 'cancelled'
-            order.save(update_fields=['status'])
-            
-            dispute.status = 'resolved_buyer'
-            dispute.resolved_by = request.user
-            dispute.resolved_at = timezone.now()
-            dispute.resolution_notes = dispute.resolution_notes or 'Dispute resolved in favor of buyer. Full refund issued.'
-            dispute.save()
+            # One database-arbitrated settlement. Re-running this action used
+            # to pay again — a 600.00 escrow measured at 1200.00 paid out.
+            if not settle_dispute(dispute, outcome='resolved_buyer',
+                                  resolved_by=request.user):
+                continue
+            if not dispute.resolution_notes:
+                OrderDispute.objects.filter(pk=dispute.pk).update(
+                    resolution_notes='Dispute resolved in favor of buyer. '
+                                     'Full refund issued.')
             
             # Notify both parties
             send_workspace_notification(
@@ -945,23 +943,17 @@ class OrderDisputeAdmin(admin.ModelAdmin):
     def resolve_for_seller(self, request, queryset):
         from .views import send_workspace_notification
         
+        from .views import settle_dispute
+
         for dispute in queryset.filter(status__in=['open', 'under_review']):
             order = dispute.order
-            
-            # Release payment to seller
-            order.seller.balance += order.price
-            order.seller.save(update_fields=['balance'])
-            
-            # Update order and dispute status
-            order.status = 'completed'
-            order.completed_at = timezone.now()
-            order.save(update_fields=['status', 'completed_at'])
-            
-            dispute.status = 'resolved_seller'
-            dispute.resolved_by = request.user
-            dispute.resolved_at = timezone.now()
-            dispute.resolution_notes = dispute.resolution_notes or 'Dispute resolved in favor of seller. Payment released.'
-            dispute.save()
+            if not settle_dispute(dispute, outcome='resolved_seller',
+                                  resolved_by=request.user):
+                continue
+            if not dispute.resolution_notes:
+                OrderDispute.objects.filter(pk=dispute.pk).update(
+                    resolution_notes='Dispute resolved in favor of seller. '
+                                     'Payment released.')
             
             # Notify both parties
             send_workspace_notification(
@@ -980,7 +972,7 @@ class OrderDisputeAdmin(admin.ModelAdmin):
         self.message_user(request, f'{queryset.count()} dispute(s) resolved for seller.')
     
     def save_model(self, request, obj, form, change):
-        from .views import send_workspace_notification
+        from .views import send_workspace_notification, settle_dispute
         
         if change and 'status' in form.changed_data:
             old_status = form.initial.get('status')
@@ -991,17 +983,12 @@ class OrderDisputeAdmin(admin.ModelAdmin):
                 
                 # Handle resolve for seller
                 if obj.status == 'resolved_seller':
-                    # Release payment to seller
-                    order.seller.balance += order.price
-                    order.seller.save(update_fields=['balance'])
-                    
-                    # Update order status
-                    order.status = 'completed'
-                    order.completed_at = timezone.now()
-                    order.save(update_fields=['status', 'completed_at'])
-                    
-                    obj.resolved_by = request.user
-                    obj.resolved_at = timezone.now()
+                    # Same single settlement path as the bulk action, so the
+                    # two entry points cannot disagree or pay twice between
+                    # them. settle_dispute writes the dispute status itself.
+                    settle_dispute(obj, outcome='resolved_seller',
+                                   resolved_by=request.user)
+                    order.refresh_from_db()
                     
                     # Notify both parties
                     send_workspace_notification(
@@ -1019,16 +1006,9 @@ class OrderDisputeAdmin(admin.ModelAdmin):
                 
                 # Handle resolve for buyer
                 elif obj.status == 'resolved_buyer':
-                    # Refund buyer
-                    order.buyer.balance += order.price
-                    order.buyer.save(update_fields=['balance'])
-                    
-                    # Update order status
-                    order.status = 'cancelled'
-                    order.save(update_fields=['status'])
-                    
-                    obj.resolved_by = request.user
-                    obj.resolved_at = timezone.now()
+                    settle_dispute(obj, outcome='resolved_buyer',
+                                   resolved_by=request.user)
+                    order.refresh_from_db()
                     
                     # Notify both parties
                     send_workspace_notification(
@@ -1046,36 +1026,29 @@ class OrderDisputeAdmin(admin.ModelAdmin):
                 
                 # Handle partial refund
                 elif obj.status == 'resolved_partial' and obj.refund_amount:
-                    # Refund partial amount to buyer
-                    order.buyer.balance += obj.refund_amount
-                    order.buyer.save(update_fields=['balance'])
-                    
-                    # Release remaining to seller
-                    remaining = order.price - obj.refund_amount
-                    if remaining > 0:
-                        order.seller.balance += remaining
-                        order.seller.save(update_fields=['balance'])
-                    
-                    order.status = 'completed'
-                    order.completed_at = timezone.now()
-                    order.save(update_fields=['status', 'completed_at'])
-                    
-                    obj.resolved_by = request.user
-                    obj.resolved_at = timezone.now()
-                    
-                    # Notify both parties
-                    send_workspace_notification(
-                        recipient_user=order.buyer,
-                        title='⚖️ Dispute Resolved - Partial Refund',
-                        body=f'৳{obj.refund_amount} refunded for order #{str(order.id)[:8].upper()}.',
-                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
-                    )
-                    send_workspace_notification(
-                        recipient_user=order.seller,
-                        title='⚖️ Dispute Resolved - Partial Refund',
-                        body=f'৳{remaining} released for order #{str(order.id)[:8].upper()}.',
-                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
-                    )
+                    # The split is now bounded by the escrow. This refunded
+                    # `refund_amount` and released `order.price` minus it, with
+                    # neither figure checked against what was held — entering
+                    # 99999.00 against a 600.00 hold paid out 99999.00.
+                    split = settle_dispute(obj, outcome='resolved_partial',
+                                           resolved_by=request.user)
+                    order.refresh_from_db()
+
+                    # Report what actually moved, not what was typed into the
+                    # form — the split is clamped to the escrow.
+                    if split:
+                        send_workspace_notification(
+                            recipient_user=order.buyer,
+                            title='⚖️ Dispute Resolved - Partial Refund',
+                            body=f'৳{split["buyer"]} refunded for order #{str(order.id)[:8].upper()}.',
+                            data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                        )
+                        send_workspace_notification(
+                            recipient_user=order.seller,
+                            title='⚖️ Dispute Resolved - Partial Refund',
+                            body=f'৳{split["seller"]} released for order #{str(order.id)[:8].upper()}.',
+                            data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                        )
         
         super().save_model(request, obj, form, change)
 

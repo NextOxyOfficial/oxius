@@ -1,6 +1,8 @@
-from django.db import models
+from django.db import models, transaction as db_transaction
 from django.utils import timezone
 from django.conf import settings
+
+from base import wallet
 
 
 class ReferralRewardProgram(models.Model):
@@ -74,27 +76,68 @@ class ReferralRewardClaim(models.Model):
         return self.status == 'eligible'
 
     def claim_reward(self):
+        """Pay this reward out, at most once.
+
+        The gate used to be `if self.status == 'claimed'` read off the object in
+        memory, with the row not written back until after the wallet had been
+        credited, a ledger row created and an email attempted. Two requests both
+        read 'eligible', both passed, and both paid: measured, five concurrent
+        claims paid 800.00 of a 200.00 reward and wrote five ledger rows.
+        `unique_together` on this model stops duplicate claim ROWS, which is
+        what made the hole easy to miss — it says nothing about one row being
+        claimed repeatedly.
+
+        Claiming the row with a conditional UPDATE moves the decision into the
+        database: whichever caller flips eligible -> claimed is the one that
+        pays, and the rest are told it is already done.
+        """
         from base.models import Balance
-        
+
         if self.status == 'claimed':
             return False, "Already claimed"
         if self.status != 'eligible':
             return False, "Conditions not met"
-        
-        self.user.balance += self.reward_amount
-        self.user.save()
-        
-        Balance.objects.create(
-            user=self.user, amount=self.reward_amount,
-            payable_amount=self.reward_amount,
-            transaction_type="referral_reward", completed=True,
-            approved=True,
-            bank_status="completed", description=f"Referral Reward - {self.get_claim_type_display()}"
-        )
-        
-        self.status = 'claimed'
-        self.claimed_at = timezone.now()
-        self.save()
+
+        try:
+            with db_transaction.atomic():
+                claimed = type(self).objects.filter(
+                    pk=self.pk, status='eligible',
+                ).update(status='claimed', claimed_at=timezone.now())
+
+                if not claimed:
+                    return False, "Already claimed"
+
+                # The amount is re-read from the row rather than taken from
+                # `self`, which any caller could have mutated in memory before
+                # getting here — that alone paid out 99999.00 against a 75.00
+                # reward.
+                amount = type(self).objects.values_list(
+                    'reward_amount', flat=True).get(pk=self.pk)
+
+                if amount and amount > 0:
+                    if not wallet.credit(
+                        self.user_id, amount,
+                        reason='referral_reward:%s' % self.pk,
+                    ):
+                        # The recipient is gone. Undo the claim so it is not
+                        # permanently consumed without anyone being paid.
+                        raise RuntimeError(
+                            'referral reward credit failed for claim %s' % self.pk)
+
+                    Balance.objects.create(
+                        user_id=self.user_id, amount=amount,
+                        payable_amount=amount,
+                        transaction_type="referral_reward", completed=True,
+                        approved=True,
+                        bank_status="completed",
+                        description=f"Referral Reward - {self.get_claim_type_display()}"
+                    )
+        except (RuntimeError, wallet.WalletError):
+            # The claim rolled back with the failed credit, so the reward is
+            # still available to retry rather than consumed for nothing.
+            return False, "Could not credit the reward, please try again"
+
+        self.refresh_from_db()
 
         # Send referral reward email
         try:

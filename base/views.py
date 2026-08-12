@@ -1,6 +1,8 @@
 import base64
 import json
 import logging
+
+from base import wallet
 import random
 import re
 import uuid
@@ -1046,41 +1048,63 @@ def update_micro_gig_post(request, pk):
                 Decimal("0.01")
             )
 
-            if additional_cost > 0 and not User.objects.filter(
-                pk=request.user.pk, balance__gte=additional_cost
-            ).update(balance=F("balance") - additional_cost):
-                return Response(
-                    {
-                        "message": "Insufficient balance",
-                        "errors": "Insufficient balance",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+            # Serialise top-ups of the SAME gig. The buyer-side debit below is
+            # already atomic, but the three gig-side increments are read-modify-
+            # write on this in-memory object and serializer.save() then writes
+            # the whole row — so two concurrent top-ups both charged their buyer
+            # and only one funding increment survived, losing real money out of
+            # the gig's pot. An F() update cannot fix that here because the
+            # serializer would overwrite it; locking the row for the rest of the
+            # request is the smallest correct answer and matches the pattern
+            # already used for diamond purchases.
+            with db_transaction.atomic():
+                micro_gig_post = (
+                    MicroGigPost.objects.select_for_update().get(pk=micro_gig_post.pk)
                 )
-            request.user.refresh_from_db(fields=["balance"])
 
-            micro_gig_post.total_cost = micro_gig_post.total_cost + additional_cost
-            micro_gig_post.balance += funding
-            micro_gig_post.required_quantity += extra_quantity
-
-            # Check if this is an appeal (rejected -> pending)
-            if micro_gig_post.gig_status == 'rejected' and request.data.get('gig_status') == 'pending':
-                micro_gig_post.appeal_count += 1
-
-            # Update the MicroGigPost using serializer
-            serializer = MicroGigPostSerializer(
-                micro_gig_post, data=request.data, partial=True
-            )
-            if serializer.is_valid():
-                try:
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
-                except ValidationError as e:
-                    # Return the validation error message from the model
+                if additional_cost > 0 and not wallet.debit(
+                    request.user.pk, additional_cost,
+                    reason="microgig_topup:%s" % micro_gig_post.pk,
+                ):
                     return Response(
-                        {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
+                        {
+                            "message": "Insufficient balance",
+                            "errors": "Insufficient balance",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                request.user.refresh_from_db(fields=["balance"])
+
+                micro_gig_post.total_cost = micro_gig_post.total_cost + additional_cost
+                micro_gig_post.balance += funding
+                micro_gig_post.required_quantity += extra_quantity
+
+                # Check if this is an appeal (rejected -> pending)
+                if micro_gig_post.gig_status == 'rejected' and request.data.get('gig_status') == 'pending':
+                    micro_gig_post.appeal_count += 1
+
+                # The write stays inside the lock, or the row would be released
+                # before the increments were persisted and the race would be
+                # exactly as open as before.
+                serializer = MicroGigPostSerializer(
+                    micro_gig_post, data=request.data, partial=True
+                )
+                if serializer.is_valid():
+                    try:
+                        serializer.save()
+                        return Response(serializer.data, status=status.HTTP_200_OK)
+                    except ValidationError as e:
+                        # The money was already debited above. Returning a 400
+                        # from inside atomic() would COMMIT that debit against a
+                        # gig that was never funded, so the transaction is
+                        # explicitly rolled back first.
+                        db_transaction.set_rollback(True)
+                        return Response(
+                            {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
+                        )
+                else:
+                    db_transaction.set_rollback(True)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(
                 {"error": "You are not authorized to update this post."},
@@ -1809,7 +1833,28 @@ def update_microgigpost_tasks(request, gig_id):
 #     lookup_field = 'user'
 
 
-class UserBalance(generics.ListCreateAPIView):
+class UserBalance(generics.ListAPIView):
+    """The caller's own transaction history. READ ONLY.
+
+    This was a ListCreateAPIView, and the create half was a money printer.
+    `get_queryset` scoped the GET by request.user, which made the view look
+    owner-safe — but nothing governed the POST: DRF's inherited create() took
+    `user` straight from the request body, and Balance.save() then moved that
+    account's money. `transaction_type="deposit"` credits unconditionally
+    (models.py, the deposit branch), so any authenticated user could mint into
+    their own or anyone else's wallet; `"withdraw"` runs the hold, so the same
+    request shape drained a victim instead. The route even carries a
+    `<str:email>` segment the view never reads, implying a scoping the code did
+    not perform.
+
+    Nothing was using it. Both clients only ever GET this endpoint —
+    oxius_native wallet_service.dart:195 and :448, frontend
+    deposit-withdraw.vue:2368 — and every write goes to `/add-user-balance/`
+    (postBalance), which verifies deposits against ShurjoPay before crediting.
+
+    So the create path is removed rather than guarded: an attack surface with
+    no legitimate caller should not exist to be defended.
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = BalanceSerializer
 
@@ -2953,10 +2998,22 @@ def subscribeToPro(request):
         if is_first_time and user.refer:
             try:
                 referrer = user.refer
-                commission_amount = total_decimal * Decimal("0.05")  # 5%
-                referrer.balance += commission_amount
-                referrer.commission_earned += commission_amount
-                referrer.save()
+                commission_amount = wallet.to_money(
+                    total_decimal * Decimal("0.05"))  # 5%
+                # Was a read-modify-write finished by a full-row referrer.save(),
+                # which could discard whatever else had just changed on that
+                # account — the referrer is a third party who may be spending at
+                # the same moment. commission_earned moves in the same statement
+                # so the two can never disagree.
+                if commission_amount > 0:
+                    wallet.credit(
+                        referrer.pk, commission_amount,
+                        reason="referral_commission:%s" % user.pk)
+                    User.objects.filter(pk=referrer.pk).update(
+                        commission_earned=F("commission_earned")
+                        + commission_amount)
+                    referrer.refresh_from_db(
+                        fields=["balance", "commission_earned"])
                 Balance.objects.create(
                     user=referrer,
                     to_user=user,
@@ -4881,13 +4938,16 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                 # order edit, so an insufficient buyer balance must NOT block the
                 # edit — we simply skip the wallet settlement in that case and
                 # still persist the item/total changes.
-                if (
-                    order.payment_method == "balance"
-                    and buyer.balance >= total_additional_amount
+                # The conditional debit replaces `balance >= x` followed by a
+                # read-modify-write: it is one statement, so a concurrent order
+                # edit or purchase cannot be silently discarded by it, and the
+                # WHERE clause doubles as the affordability check that used to
+                # be a separate Python read.
+                if order.payment_method == "balance" and wallet.debit(
+                    buyer.pk, total_additional_amount,
+                    reason="order_update:%s" % order.id,
                 ):
-                    # Deduct additional amount from buyer's balance
-                    buyer.balance -= total_additional_amount
-                    buyer.save()  # Create transaction record for the buyer's payment
+                    buyer.refresh_from_db(fields=["balance"])
                     Balance.objects.create(
                         user=buyer,
                         to_user=None,  # No specific seller at this point
@@ -4904,17 +4964,20 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         payment_amount = seller_data["amount"]
 
                         if payment_amount > 0:
-                            # Update seller balance (only for positive adjustments)
-                            seller.balance += payment_amount
-                            seller.save()  # Create transaction record
+                            wallet.credit(
+                                seller.pk, payment_amount,
+                                reason="order_update_payout:%s" % order.id)
+                            seller.refresh_from_db(fields=["balance"])
 
             elif total_additional_amount < 0 and order.payment_method == "balance":
                 # Handle refund for reduced items
                 refund_amount = -total_additional_amount  # Make positive for refund
 
                 # Add refund to buyer's balance
-                buyer.balance += refund_amount
-                buyer.save()  # Create transaction record for refund
+                wallet.credit(
+                    buyer.pk, refund_amount,
+                    reason="order_refund:%s" % order.id)
+                buyer.refresh_from_db(fields=["balance"])
                 Balance.objects.create(
                     user=buyer,
                     # No specific seller is needed here as this is a refund to the buyer
@@ -4934,8 +4997,23 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                     if payment_amount < 0:
                         # Deduct from seller balance (negative adjustment becomes positive)
                         deduction_amount = -payment_amount
-                        seller.balance -= deduction_amount
-                        seller.save()
+                        # `seller.balance -= x; seller.save()` raised
+                        # ValueError("Balance can't be negative") from User.save
+                        # when the seller had already spent the money, aborting a
+                        # half-applied edit with a 500. Refusing the single
+                        # deduction and leaving the rest of the edit intact is
+                        # the lesser failure; the ledger row now only appears if
+                        # the money actually moved.
+                        if not wallet.debit(
+                            seller.pk, deduction_amount,
+                            reason="order_deduction:%s" % order.id,
+                        ):
+                            logger.warning(
+                                "Order %s: seller %s could not fund a %s "
+                                "deduction; skipped",
+                                order.id, seller.pk, deduction_amount)
+                            continue
+                        seller.refresh_from_db(fields=["balance"])
                         # Create transaction record
                         Balance.objects.create(
                             user=seller,
@@ -5086,18 +5164,22 @@ def purchase_product_slots(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # Check if user has sufficient balance
-    if user.balance < cost:
-        return Response(
-            {"success": False, "message": "Insufficient balance"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
     try:
-        # Update user's product limit and balance
-        user.product_limit += slot_count
-        user.balance -= cost
-        user.save()
+        # The conditional debit replaces a Python `balance < cost` check followed
+        # by a read-modify-write: one statement, so two slot purchases fired
+        # together cannot both spend the same balance, and the WHERE clause is
+        # the affordability check.
+        charge = wallet.to_money(cost)
+        if charge > 0 and not wallet.debit(
+            user.pk, charge, reason="product_slots:%s" % user.pk,
+        ):
+            return Response(
+                {"success": False, "message": "Insufficient balance"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        User.objects.filter(pk=user.pk).update(
+            product_limit=F("product_limit") + slot_count)
+        user.refresh_from_db(fields=["balance", "product_limit"])
 
         # Return updated user info
         return Response(

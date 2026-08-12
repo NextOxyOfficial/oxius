@@ -70,3 +70,40 @@ class FollowThrottle(_PerUserThrottle):
 class UploadThrottle(_PerUserThrottle):
     """Anything that accepts a file. Bandwidth is the scarce thing here."""
     scope = 'upload'
+
+
+class PaymentFinalizeThrottle(SimpleRateThrottle):
+    """Cap replays of a single payment finalization.
+
+    `finalizePaymentWithState` is deliberately unauthenticated — it is the
+    return path from the gateway and has to work even when the app has lost its
+    session — so there is no user to count against.
+
+    Keying on the CLIENT IP would be wrong here: Bangladeshi mobile carriers NAT
+    huge numbers of subscribers behind one address, so an IP limit tight enough
+    to matter would lock out real buyers who share a carrier with somebody
+    checking out. The payment reference is the natural identity — it is what a
+    replay has to reuse — so the limit is per payment, and one buyer's retries
+    can never exhaust another's budget.
+
+    The rate lives here rather than in DEFAULT_THROTTLE_RATES so this stays a
+    self-contained change. It is generous on purpose: the client polls this
+    endpoint while a payment is pending, and correctness comes from the
+    database claim in `_finalize_verified_deposit`, not from this. The throttle
+    only removes the ability to fire hundreds of concurrent attempts at once.
+    """
+
+    scope = 'payment_finalize'
+
+    def get_rate(self):
+        return '60/min'
+
+    def get_cache_key(self, request, view):
+        ref = (
+            request.data.get('payment_ref')
+            or request.query_params.get('payment_ref')
+            or request.data.get('payment_state')
+            or request.query_params.get('payment_state')
+        )
+        ident = str(ref) if ref else self.get_ident(request)
+        return self.cache_format % {'scope': self.scope, 'ident': ident}

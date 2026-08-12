@@ -661,6 +661,20 @@ class BalanceSerializer(serializers.ModelSerializer):
             "rejected",
             "bank_status",
             "received_amount",
+            # `user` is WHOSE WALLET MOVES. It was writable, and UserBalance
+            # (a ListCreateAPIView) has no perform_create, so DRF took it
+            # straight from the request body: POSTing {"user": <anyone>,
+            # "transaction_type": "deposit", "payable_amount": N} ran the
+            # unconditional credit in Balance.save() for an arbitrary account,
+            # and "withdraw" ran the debit — mint and drain from one endpoint.
+            # The view now binds it from request.user; this is the second lock
+            # so no future caller can reintroduce it.
+            "user",
+            # `amount` is the field the rejection refund pays out. Leaving it
+            # client-settable turns an admin rejecting a withdrawal into a mint:
+            # hold payable_amount=200, set amount=99999, get rejected, receive
+            # 99999. The server derives it — see Balance.save().
+            "amount",
         ]
 
 

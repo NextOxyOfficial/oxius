@@ -503,14 +503,27 @@ class AbnAdsPanelAdmin(admin.ModelAdmin):
 
         reason = self.REJECT_TEMPLATES[reason_key]
         refunded = 0
+        from base import wallet
+
         for ad in queryset.exclude(status="rejected"):
+            # CLAIM THE REJECTION FIRST. The queryset's exclude() was the only
+            # guard, and it was evaluated before any row was written — two
+            # admins rejecting the same ad both saw it un-rejected and both
+            # refunded the unspent budget. Flipping the status with a
+            # conditional UPDATE means whoever moves it out of its current
+            # state is the one who refunds.
+            claimed = type(ad).objects.filter(pk=ad.pk).exclude(
+                status="rejected"
+            ).update(status="rejected", reject_reason=reason)
+            if not claimed:
+                continue
+
             unspent = Decimal(ad.budget or 0) - Decimal(ad.spent or 0)
-            if ad.user and unspent > 0:
-                ad.user.balance += unspent
-                ad.user.save(update_fields=["balance"])
-            ad.status = "rejected"
-            ad.reject_reason = reason
-            ad.save(update_fields=["status", "reject_reason"])
+            if ad.user_id and unspent > 0:
+                wallet.credit(
+                    ad.user_id, unspent,
+                    reason="ad_reject_refund:%s" % ad.pk)
+            ad.refresh_from_db(fields=["status", "reject_reason"])
             notify_advertiser(
                 ad,
                 "বিজ্ঞাপন অনুমোদন হয়নি",
