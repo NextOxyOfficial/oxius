@@ -834,10 +834,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     // nothing when the fetched post has no media).
                     if (thumb.isNotEmpty)
                       SizedBox(
-                        // A quarter wider than before: at 78 the picture was
-                        // a stripe beside the text rather than the thing the
-                        // card is about.
-                        width: 98,
+                        // A proper thumbnail, not a stripe: the height gives the
+                        // card real presence so the picture reads as the thing
+                        // the card is about, with the name and caption beside
+                        // it. BoxFit.cover (AppNetworkImage's default) crops to
+                        // fill the taller box, so no image is distorted.
+                        width: _kSharedThumbWidth,
+                        height: _kSharedThumbHeight,
                         child: AppNetworkImage(
                           thumb,
                           // The CDN serves media only to a recognised client.
@@ -1384,6 +1387,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 // ---------------------------------------------------------------------------
 
 /// Grey placeholder icon for a shared-post card with no usable image.
+// Size of the thumbnail in a shared-post preview card. The card is a Row under
+// IntrinsicHeight, so the thumbnail's height is what the whole card stands to —
+// the text column stretches to match it. Kept as one pair of constants so every
+// thumbnail state (embedded thumb, resolved thumb, fallback icon) is the same
+// size and the card never changes height depending on which one rendered.
+const double _kSharedThumbWidth = 104;
+const double _kSharedThumbHeight = 128;
+
 class _SharedThumbIcon extends StatelessWidget {
   const _SharedThumbIcon();
 
@@ -1453,7 +1464,8 @@ class _SharedThumbResolverState extends State<_SharedThumbResolver> {
     // card reads as a clean text-only preview.
     if (t.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      width: 78,
+      width: _kSharedThumbWidth,
+      height: _kSharedThumbHeight,
       child: AppNetworkImage(
         AppConfig.getAbsoluteUrl(t),
         errorWidget: const SizedBox.shrink(),
