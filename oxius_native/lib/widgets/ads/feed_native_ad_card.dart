@@ -1,17 +1,16 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import '../business_network/post_card.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import '../../services/ads_service.dart';
 import '../../services/house_ads_service.dart';
+import '../business_network/post_card.dart';
 import 'house_ad_card.dart';
 
-/// Business Network feed native ad slot — HYBRID waterfall.
+/// Business Network feed ad slot — house ads only.
 ///
-/// First asks the ABN Ads Panel for a matching advertiser (house) ad; only
-/// when none is available does it fall back to Google AdMob. Both paths are
-/// tracked so viewer rewards + creator earnings count every ad exposure.
+/// This used to be a waterfall that fell back to Google AdMob when no
+/// advertiser matched. AdMob is gone (account terminated for invalid traffic,
+/// appeal refused), so the slot now asks the ABN Ads Panel and renders nothing
+/// when it has nothing to show — an empty slot reads as a normal feed, whereas
+/// a dead ad request reads as a broken app.
 class FeedNativeAdCard extends StatefulWidget {
   final String placementKey;
   // Owner of the content this ad slot follows (creator revenue share).
@@ -28,11 +27,7 @@ class FeedNativeAdCard extends StatefulWidget {
 
 class _FeedNativeAdCardState extends State<FeedNativeAdCard>
     with AutomaticKeepAliveClientMixin {
-  NativeAd? _ad;
-  bool _loaded = false;
-  bool _failed = false;
   HouseAd? _houseAd;
-  bool _admobTracked = false;
   bool _boostTracked = false;
 
   // Serve-API placement key: 'bn_feed_native' → 'bn_feed' etc.
@@ -42,181 +37,52 @@ class _FeedNativeAdCardState extends State<FeedNativeAdCard>
   // Keep the loaded ad alive while the feed recycles items — otherwise every
   // scroll-away disposes and re-requests the ad (wasted fill + flicker).
   @override
-  bool get wantKeepAlive => _loaded || _houseAd != null;
+  bool get wantKeepAlive => _houseAd != null;
 
   @override
   void initState() {
     super.initState();
-    _loadHybrid();
-  }
-
-  Future<void> _loadHybrid() async {
-    // 1) House ad first — 100% of that revenue stays on the platform.
-    final house = await HouseAdsService.fetch(_housePlacement);
-    if (!mounted) return;
-    if (house != null) {
-      setState(() => _houseAd = house);
-      updateKeepAlive();
-      // A boost renders as a plain PostCard, which knows nothing about ads —
-      // so nothing reported the exposure and the campaign never accrued views,
-      // spend, creator share or viewer diamonds. HouseAdCard tracks its own,
-      // hence the boost-only condition.
-      if (house.boostedPostModel != null && !_boostTracked) {
-        _boostTracked = true;
-        HouseAdsService.track(
-          eventType: 'impression',
-          placement: _housePlacement,
-          adId: house.id,
-          creatorId: widget.creatorId,
-        );
-      }
-      return;
-    }
-    // 2) AdMob fallback.
     _load();
   }
 
-  void _load() {
-    if (kIsWeb) return;
-    final unitId = AdsService.adUnitId(widget.placementKey);
-    if (unitId == null || unitId.isEmpty) return;
-
-    _ad = NativeAd(
-      adUnitId: unitId,
-      request: const AdRequest(),
-      nativeTemplateStyle: NativeTemplateStyle(
-        templateType: TemplateType.medium,
-        mainBackgroundColor: Colors.white,
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF0F172A),
-          size: 14.5,
-          style: NativeTemplateFontStyle.bold,
-        ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF64748B),
-          size: 12.5,
-        ),
-        tertiaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF64748B),
-          size: 12,
-        ),
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: const Color(0xFF16A34A),
-          size: 14,
-          style: NativeTemplateFontStyle.bold,
-        ),
-      ),
-      listener: NativeAdListener(
-        onAdLoaded: (_) {
-          if (mounted) {
-            setState(() => _loaded = true);
-            updateKeepAlive();
-            // Count the AdMob exposure too — viewer rewards + creator share.
-            if (!_admobTracked) {
-              _admobTracked = true;
-              HouseAdsService.track(
-                eventType: 'impression',
-                placement: _housePlacement,
-                source: 'admob',
-                creatorId: widget.creatorId,
-              );
-            }
-          }
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-          if (mounted) setState(() => _failed = true);
-          debugPrint(
-              '[ads] feed native failed: ${error.code} ${error.message}');
-        },
-      ),
-    )..load();
-  }
-
-  @override
-  void dispose() {
-    _ad?.dispose();
-    super.dispose();
+  Future<void> _load() async {
+    final house = await HouseAdsService.fetch(_housePlacement);
+    if (!mounted || house == null) return;
+    setState(() => _houseAd = house);
+    updateKeepAlive();
+    // A boost renders as a plain PostCard, which knows nothing about ads —
+    // so nothing reported the exposure and the campaign never accrued views,
+    // spend, creator share or viewer diamonds. HouseAdCard tracks its own,
+    // hence the boost-only condition.
+    if (house.boostedPostModel != null && !_boostTracked) {
+      _boostTracked = true;
+      HouseAdsService.track(
+        eventType: 'impression',
+        placement: _housePlacement,
+        adId: house.id,
+        creatorId: widget.creatorId,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final house = _houseAd;
-    if (house != null) {
-      // A boosted post IS a post — render the real PostCard so it reads and
-      // behaves exactly like the rest of the feed (like / comment / share all
-      // work because it is the genuine post), with "Sponsored" in the
-      // timestamp slot. Only non-boost creatives use the ad-card chrome.
-      final boosted = house.boostedPostModel;
-      if (boosted != null) {
-        // Pass the campaign so the card can offer its action button.
-        return PostCard(post: boosted, isSponsored: true, sponsoredAd: house);
-      }
-      return HouseAdCard(
-        ad: house,
-        placement: _housePlacement,
-        creatorId: widget.creatorId,
-      );
+    if (house == null) return const SizedBox.shrink();
+    // A boosted post IS a post — render the real PostCard so it reads and
+    // behaves exactly like the rest of the feed (like / comment / share all
+    // work because it is the genuine post), with "Sponsored" in the timestamp
+    // slot. Only non-boost creatives use the ad-card chrome.
+    final boosted = house.boostedPostModel;
+    if (boosted != null) {
+      // Pass the campaign so the card can offer its action button.
+      return PostCard(post: boosted, isSponsored: true, sponsoredAd: house);
     }
-    final ad = _ad;
-    if (ad == null || _failed || !_loaded) return const SizedBox.shrink();
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade200),
-          bottom: BorderSide(color: Colors.grey.shade200),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: Row(
-              children: [
-                Icon(Icons.campaign_outlined,
-                    size: 15, color: Color(0xFF94A3B8)),
-                SizedBox(width: 6),
-                Text(
-                  'Sponsored',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF94A3B8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // The medium template is a 16:9 media image stacked on a text +
-          // CTA block, so its height follows the CARD WIDTH — not just the
-          // text scale. Sizing on text scale alone fitted a 360dp phone and
-          // clipped the CTA on every wider one, which is exactly how the
-          // "Open" button ended up sliced in half.
-          LayoutBuilder(builder: (context, constraints) {
-            final width = constraints.maxWidth.isFinite
-                ? constraints.maxWidth
-                : MediaQuery.sizeOf(context).width;
-            final textScale =
-                MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.6);
-            // 16:9 media + headline/body/CTA block, the latter growing with
-            // the reader's font size. The floor keeps short ads from looking
-            // cramped; the ceiling stops a giant tablet ad eating the feed.
-            final height =
-                (width / 1.78 + 150.0 * textScale).clamp(340.0, 520.0);
-            return SizedBox(
-              height: height,
-              width: double.infinity,
-              child: AdWidget(ad: ad),
-            );
-          }),
-        ],
-      ),
+    return HouseAdCard(
+      ad: house,
+      placement: _housePlacement,
+      creatorId: widget.creatorId,
     );
   }
 }

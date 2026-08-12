@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.android.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 8.2.0+193
+version: 8.2.1+194
 
 environment:
   sdk: ^3.6.0
@@ -30,9 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Ads: Google AdMob (switched from AppLovin MAX — that account was never
-  # approved). Server config /api/ads/config/ still controls everything.
-  google_mobile_ads: ^5.2.0
+  # No third-party ad SDK. AdMob was removed in Aug 2026 (publisher account
+  # terminated for invalid traffic, appeal refused) and AppLovin MAX before it
+  # was never approved. All ads are our own, served by the ABN Ads Panel over
+  # plain HTTP — see lib/services/house_ads_service.dart.
   # Google Play In-App Purchase (diamonds, Pro, Gold Sponsor)
   in_app_purchase: 3.3.0
   flutter_mentions: ^2.0.0
@@ -158,9 +159,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
-  # iOS: google_mobile_ads is CocoaPods-only; with Swift Package Manager
-  # enabled the pod install conflicts (google_mobile_ads vs
-  # webview_flutter_wkwebview). Keep SPM off until google_mobile_ads adopts it.
+  # SPM stays off. It was forced off by google_mobile_ads (CocoaPods-only,
+  # conflicted with webview_flutter_wkwebview), and that reason is gone — but
+  # flipping it changes how every iOS pod resolves, so it is its own change to
+  # make and verify on a Mac, not a side effect of removing AdMob.
   config:
     enable-swift-package-manager: false
 

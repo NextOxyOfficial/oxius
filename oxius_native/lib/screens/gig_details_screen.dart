@@ -8,7 +8,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
-import '../services/ads_service.dart';
 import '../services/auth_service.dart';
 import '../services/microgig_service.dart';
 import '../widgets/common/adsy_dialog.dart';
@@ -56,8 +55,6 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
   void initState() {
     super.initState();
     _loadGigDetails();
-    // Warm up the highest-eCPM slot so tapping Submit shows it instantly.
-    AdsService.preloadRewarded('gig_submit_rewarded');
   }
 
   @override
@@ -180,14 +177,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       return;
     }
 
-    // Monetization: a rewarded video plays before the work is submitted.
-    // This is the app's highest-eCPM slot and fits the earning context.
-    // It NEVER blocks — if no ad is ready, showRewarded returns instantly and
-    // the submission proceeds as normal.
-    if (AdsService.placementActive('gig_submit_rewarded')) {
-      await AdsService.showRewarded('gig_submit_rewarded');
-      if (!mounted) return;
-    }
+    // A rewarded video used to play here before the work was submitted. It is
+    // gone for good: an ad watched for a reward, inside an app people open to
+    // earn, is the incentivised-traffic pattern that got the AdMob account
+    // terminated. Submitting work must never cost the worker an ad.
 
     setState(() => _isSubmitting = true);
 

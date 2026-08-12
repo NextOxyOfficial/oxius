@@ -212,16 +212,11 @@ Future<void> _bootstrap(UserStateService userState) async {
       timeout: const Duration(seconds: 12));
 
   await _safeInit('DeepLink', () => DeepLinkService.instance.init());
-  // Ads (Google AdMob) — server-config driven; no-op when disabled.
-  _safeInit('Ads', () async {
-    await AdsService.init();
-    AdsService.loadAppOpen();
-  });
+  // House-ad slot config — which feed slots are live and how often they
+  // repeat. No third-party ad SDK is initialized; AdMob is gone.
+  _safeInit('Ads', () => AdsService.init());
   // Google Play In-App Purchase (diamonds, Pro, Gold Sponsor).
   _safeInit('IAP', () => GooglePlayBilling.init());
-  // App-open ad on returning to the app (never on first launch; cooldown +
-  // gap enforced inside AdsService).
-  WidgetsBinding.instance.addObserver(_AppOpenLifecycleObserver());
 
   if (userState.isAuthenticated) {
     debugPrint('Session restored: ${userState.userName}');
@@ -267,17 +262,6 @@ class _SuspensionLifecycleObserver extends WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed && AuthService.isAuthenticated) {
       // validateToken() pulls a fresh profile and locks the app if suspended.
       AuthService.validateToken();
-    }
-  }
-}
-
-class _AppOpenLifecycleObserver extends WidgetsBindingObserver {
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Only on genuine resume (returning from background) — never the cold
-    // start. AdsService enforces the cooldown + no-stacking gap.
-    if (state == AppLifecycleState.resumed) {
-      AdsService.showAppOpenIfReady();
     }
   }
 }

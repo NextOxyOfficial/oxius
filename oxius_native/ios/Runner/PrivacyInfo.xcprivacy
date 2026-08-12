@@ -2,8 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- The app does not track users (no ATT prompt; AdMob serves only
-	     non-personalized ads). -->
+	<!-- The app does not track users: no ATT prompt, and since Aug 2026 no
+	     third-party ad SDK at all — every ad is our own. -->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
